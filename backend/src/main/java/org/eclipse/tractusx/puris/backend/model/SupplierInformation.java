@@ -20,7 +20,7 @@
  */
 package org.eclipse.tractusx.puris.backend.model;
 
-import javax.persistence.Embeddable;
+import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

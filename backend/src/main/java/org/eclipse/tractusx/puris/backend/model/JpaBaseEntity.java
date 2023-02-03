@@ -20,9 +20,9 @@
  */
 package org.eclipse.tractusx.puris.backend.model;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
 
 /**
  * Parent Class for JPA entities (so not every JPA Class has to implement own ID).

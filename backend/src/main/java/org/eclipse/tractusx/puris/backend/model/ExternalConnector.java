@@ -24,7 +24,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
 /**
  * External Connector object, will be used for dropdown selection in frontend.
