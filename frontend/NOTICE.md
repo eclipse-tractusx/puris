@@ -37,11 +37,11 @@ This project leverages the following third party content.
 
 See DEPENDENCIES file. Further, the following third-party content is used that isn't listed in the DEPENDENCIES file:
 
-feather(4.29)
-    * License: MIT License
-    * Licence Path: https://github.com/feathericons/feather/blob/master/LICENSE
-    * Project URL:  https://feathericons.com/
-    * Source URL:   https://github.com/feathericons/feather
+feather (4.29)
+* License: MIT License
+* Licence Path: https://github.com/feathericons/feather/blob/master/LICENSE
+* Project URL:  https://feathericons.com/
+* Source URL:   https://github.com/feathericons/feather
 
 
 ## Cryptography
