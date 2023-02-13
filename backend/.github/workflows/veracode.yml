@@ -55,5 +55,5 @@ jobs:
           appname: "PURIS-Backend"
           createprofile: false
           filepath: "./target/*.jar"
-          vid: "${{ secrets.VERACODE_API_ID }}"
-          vkey: "${{ secrets.VERACODE_API_KEY }}"
+          vid: "${{ secrets.VERACODE_API_ID || secrets.ORG_VERACODE_API_ID }}"
+          vkey: "${{ secrets.VERACODE_API_KEY || secrets.ORG_VERACODE_API_KEY }}"
