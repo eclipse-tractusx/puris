@@ -7,5 +7,8 @@
 4. Run the application:
     - (Java) Use `mvn install` to build the project and run the generated `.jar` file
     - (Docker) Run `docker build .` and `docker run -d -p 8081:8081 CONTAINERID`
-5. Done! The Swagger UI should be available at `http://YOURIP:8081/catena/swagger-ui/index.html`
+    - (Kubernetes) Run `helm install puris-backend`
+5. Done! The Swagger UI should be available at 
+    - (Java & Docker) `http://YOURIP:8081/catena/swagger-ui/index.html`
+    - (Kubernetes) `http://CLUSTERIP:30001/catena/swagger-ui/index.html`
 6. It is highly suggested to install and run the PURIS frontend afterward
