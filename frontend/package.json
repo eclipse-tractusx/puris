@@ -4,6 +4,10 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
+    "local": "vite build --mode minikube",
+    "develop": "vite build --mode dev",
+    "integration": "vite build --mode int",
+    "beta": "vite build --mode beta",
     "preview": "vite preview --port 4173",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },

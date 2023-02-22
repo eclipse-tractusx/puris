@@ -33,29 +33,32 @@ export default {
   },
   methods: {
     getConnectors() {
-      fetch(this.baseUrl + "/externalConnector/all")
+      let vm = this;
+      fetch(vm.baseUrl + "/externalConnector/all")
         .then((response) => response.json())
         .then((data) => {
-          this.connectors = data;
+          vm.connectors = data;
         });
     },
     createConnector(from) {
+      let vm = this;
       let jsonData = {};
       jsonData["name"] = from.name;
       jsonData["url"] = from.url;
 
-      fetch(this.baseUrl + "/externalConnector/create", {
+      fetch(vm.baseUrl + "/externalConnector/create", {
         method: "POST",
         body: JSON.stringify(jsonData),
         headers: { "Content-type": "application/json; charset=UTF-8" },
       })
         .then((response) => response.text())
-        .then((_json) => this.getConnectors())
+        .then((_json) => vm.getConnectors())
         .catch((err) => window.alert(err));
     },
   },
   mounted() {
-    this.getConnectors();
+    let vm = this;
+    vm.getConnectors();
   },
 };
 </script>
@@ -104,7 +107,7 @@ export default {
               class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               id="createBtn"
               type="create"
-              v-on:click="createConnector(this.connector)"
+              v-on:click="createConnector(connector)"
             >
               Create Connector
             </button>
@@ -114,7 +117,7 @@ export default {
       <div
         class="min-h-max min-w-max h-full text-center block p-6 max-w-sm bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 mx-4"
       >
-        <li class="list-none" v-for="conn in this.connectors">
+        <li class="list-none" v-for="conn in connectors">
           <div
             class="grid grid-cols-2 gap-4 text-center mx-4 my-4 block p-6 max-w-sm bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
           >

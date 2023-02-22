@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "puris-frontend.fullname" . }}
+  labels:
+    {{- include "puris-frontend.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      nodePort: 30000
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "puris-frontend.selectorLabels" . | nindent 4 }}

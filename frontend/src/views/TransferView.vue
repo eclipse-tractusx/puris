@@ -29,15 +29,17 @@ export default {
   },
   methods: {
     getCatalog() {
-      fetch(this.baseUrl + "/edc/transfers")
+      const vm = this;
+      fetch(vm.baseUrl + "/edc/transfers")
         .then((response) => response.json())
         .then((data) => {
-          this.catalog = data;
+          vm.catalog = data;
         });
     },
   },
   mounted() {
-    this.getCatalog();
+    let vm = this;
+    vm.getCatalog();
   },
 };
 </script>
@@ -47,7 +49,7 @@ export default {
     <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
       View EDC Transfers
     </h1>
-    <li class="list-none" v-for="offer in this.catalog">
+    <li class="list-none" v-for="offer in catalog">
       <div
         class="text-center mx-4 my-8 block p-6 w-full bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
       >

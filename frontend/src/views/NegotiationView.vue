@@ -29,17 +29,18 @@ export default {
   },
   methods: {
     getCatalog() {
-      fetch(this.baseUrl + "/edc/negotiations")
+      let vm = this;
+      fetch(vm.baseUrl + "/edc/negotiations")
         .then((response) => response.json())
         .then((data) => {
-          this.catalog = data;
+          vm.catalog = data;
         });
     },
     startTransfer(orderId, url) {
       const idArray = orderId.split(":");
       const edcEncoded = encodeURIComponent(url);
       fetch(
-        this.baseUrl +
+        vm.baseUrl +
           "/edc/startTransfer?orderId=" +
           idArray[0] +
           "&connectorAddress=" +
@@ -54,7 +55,8 @@ export default {
     },
   },
   mounted() {
-    this.getCatalog();
+    let vm = this;
+    vm.getCatalog();
   },
 };
 </script>
@@ -64,7 +66,7 @@ export default {
     <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
       View EDC Negotiations
     </h1>
-    <li class="list-none" v-for="offer in this.catalog">
+    <li class="list-none" v-for="offer in catalog">
       <div
         class="text-center mx-4 my-8 block p-6 w-full bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
       >
@@ -96,7 +98,7 @@ export default {
           id="orderBtn"
           type="submit"
           v-on:click="
-            this.startTransfer(
+            startTransfer(
               offer.contractAgreementId,
               offer.counterPartyAddress
             )

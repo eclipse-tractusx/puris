@@ -31,25 +31,27 @@ export default {
   },
   methods: {
     getTransfers() {
-      fetch(this.baseUrl + "/edc/transfers")
+      let vm = this;
+      fetch(vm.baseUrl + "/edc/transfers")
         .then((response) => response.json())
         .then((data) => {
           data.forEach((element) => {
             if (element.state === "COMPLETED" && element.type === "CONSUMER") {
-              this.getBackend(element.dataRequest.contractId);
+              vm.getBackend(element.dataRequest.contractId);
             }
           });
         });
     },
     getBackend(id) {
+      let vm = this;
       const idArray = id.split(":");
-      fetch(this.baseUrl + "/edc/backend?transferId=" + idArray[1])
+      fetch(vm.baseUrl + "/edc/backend?transferId=" + idArray[1])
         .then((response) => response.json())
         .then((jsonObj) => {
           const jsonSet = {};
           jsonSet.key = idArray[0];
           jsonSet.value = jsonObj;
-          this.backendData.push(jsonSet);
+          vm.backendData.push(jsonSet);
         });
     },
     parseDate(dateString) {
@@ -58,14 +60,15 @@ export default {
     },
   },
   mounted() {
-    this.getTransfers();
+    let vm = this;
+    vm.getTransfers();
   },
 };
 </script>
 
 <template>
   <h1 class="text-center bold text-5xl mb-6 pb-6">Responses</h1>
-  <li class="list-none" v-for="entry in this.backendData">
+  <li class="list-none" v-for="entry in backendData">
     <h1
       class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white"
     >

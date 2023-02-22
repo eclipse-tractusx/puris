@@ -30,37 +30,41 @@ export default {
   },
   methods: {
     getPendingOrders() {
-      fetch(this.baseUrl + "/orders/orders/pending")
+      let vm = this;
+      fetch(vm.baseUrl + "/orders/orders/pending")
         .then((response) => response.json())
         .then((data) => {
-          this.pendingOrders = data;
+          vm.pendingOrders = data;
         });
     },
     getSentOrders() {
-      fetch(this.baseUrl + "/orders/orders/sent")
+      let vm = this;
+      fetch(vm.baseUrl + "/orders/orders/sent")
         .then((response) => response.json())
         .then((data) => {
-          this.sentOrders = data;
+          vm.sentOrders = data;
         });
     },
     publishAtEdc(order) {
-      fetch(this.baseUrl + "/edc/publish?orderId=" + order.orderId)
+      let vm = this;
+      fetch(vm.baseUrl + "/edc/publish?orderId=" + order.orderId)
         .then((response) => response.text())
         .then((json) => {
           window.alert(json);
-          this.getPendingOrders();
-          this.getSentOrders();
+          vm.getPendingOrders();
+          vm.getSentOrders();
         })
         .catch((err) => window.alert(err));
     },
     deleteOrder(order) {
-      fetch(this.baseUrl + "/orders/order?id=" + order.orderId, {
+      let vm = this;
+      fetch(vm.baseUrl + "/orders/order?id=" + order.orderId, {
         method: "DELETE",
       })
         .then((response) => response.text())
         .then((json) => {
           console.log(json);
-          this.getPendingOrders();
+          vm.getPendingOrders();
         })
         .catch((err) => window.alert(err));
     },
@@ -70,8 +74,9 @@ export default {
     },
   },
   mounted() {
-    this.getPendingOrders();
-    this.getSentOrders();
+    let vm = this;
+    vm.getPendingOrders();
+    vm.getSentOrders();
   },
 };
 </script>
@@ -89,7 +94,7 @@ export default {
           Pending Call-offs
         </h5>
         <div>
-          <li class="list-none" v-for="ord in this.pendingOrders">
+          <li class="list-none" v-for="ord in pendingOrders">
             <div
               class="text-center mx-4 my-8 block p-6 max-w-sm bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
             >
@@ -145,7 +150,7 @@ export default {
           Call-offs to Supplier (one-down)
         </h5>
         <div>
-          <li class="list-none" v-for="ord in this.sentOrders">
+          <li class="list-none" v-for="ord in sentOrders">
             <div
               class="text-center mx-4 my-8 block p-6 max-w-sm bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
             >

@@ -41,23 +41,25 @@ export default {
   },
   methods: {
     createDemand(from) {
+      let vm = this;
       if (from.part != null && from.date != null && from.amount != null) {
         let dem = {};
         dem.part = from.part;
         dem.date = from.date;
         dem.amount = from.amount;
         dem.note = from.note;
-        this.demands.push(dem);
+        vm.demands.push(dem);
       } else {
         window.alert("Order is incomplete!");
       }
     },
     createOrder(from) {
+      let vm = this;
       let jsonData = {};
       let customerInformation = {};
       let supplierInformation = {};
       jsonData["name"] = from.name;
-      jsonData["orderId"] = this.createUUID();
+      jsonData["orderId"] = vm.createUUID();
       jsonData["orderDate"] = new Date().toISOString();
       jsonData["description"] = from.desc;
       var selected_customer = from.customer;
@@ -68,9 +70,9 @@ export default {
       supplierInformation["supplierId"] = selected_supplier;
       jsonData["customerInformation"] = customerInformation;
       jsonData["supplierInformation"] = supplierInformation;
-      jsonData["orderPositions"] = this.createPositions(this.demands);
+      jsonData["orderPositions"] = vm.createPositions(vm.demands);
 
-      fetch(this.baseUrl + "/orders/order", {
+      fetch(vm.baseUrl + "/orders/order", {
         method: "POST",
         body: JSON.stringify(jsonData),
         headers: { "Content-type": "application/json; charset=UTF-8" },
@@ -90,10 +92,11 @@ export default {
       );
     },
     createPositions(from) {
+      let vm = this;
       let positions = [];
       from.forEach((element) => {
         let jsonData = {};
-        jsonData["positionId"] = this.createUUID();
+        jsonData["positionId"] = vm.createUUID();
         jsonData["itemName"] = element.part;
         jsonData["itemId"] = element.part;
         jsonData["desiredDate"] = element.date;
@@ -105,7 +108,8 @@ export default {
       return positions;
     },
     deletePosition(position) {
-      this.demands = this.demands.filter(function (value, index, arr) {
+      let vm = this;
+      vm.demands = vm.demands.filter(function (value, index, arr) {
         return value !== position;
       });
     },
@@ -179,7 +183,7 @@ export default {
               class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               id="orderBtn"
               type="submit"
-              v-on:click="createOrder(this.order)"
+              v-on:click="createOrder(order)"
             >
               Create Call-off
             </button>
@@ -241,7 +245,7 @@ export default {
             class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             id="position"
             type="submit"
-            v-on:click="createDemand(this.tempDemand)"
+            v-on:click="createDemand(tempDemand)"
           >
             Add
           </button>
@@ -259,7 +263,7 @@ export default {
             </h3>
           </div>
           <div>
-            <li class="list-none" v-for="dem in this.demands">
+            <li class="list-none" v-for="dem in demands">
               <div
                 class="grid grid-cols-2 gap-4 text-center mx-4 my-4 block p-6 max-w-sm bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
               >
@@ -272,7 +276,7 @@ export default {
                   <h2
                     class="font-normal text-medium text-gray-700 dark:text-gray-400"
                   >
-                    ETD: {{ this.parseDate(dem.date) }}
+                    ETD: {{ parseDate(dem.date) }}
                   </h2>
                   <h2
                     class="font-normal text-medium text-gray-700 dark:text-gray-400"

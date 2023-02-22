@@ -32,18 +32,20 @@ export default {
   },
   methods: {
     getCatalog(url) {
+      let vm = this;
       const edcEncoded = encodeURIComponent(url);
-      fetch(this.baseUrl + "/edc/catalog?idsUrl=" + edcEncoded)
+      fetch(vm.baseUrl + "/edc/catalog?idsUrl=" + edcEncoded)
         .then((response) => response.json())
         .then((data) => {
-          this.catalog = data;
+          vm.catalog = data;
         });
     },
     startNegotiation(id) {
+      let vm = this;
       const idArray = id.split(":");
-      const edcEncoded = encodeURIComponent(this.edc.url);
+      const edcEncoded = encodeURIComponent(vm.edc.url);
       fetch(
-        this.baseUrl +
+        vm.baseUrl +
           "/edc/startNegotiation?orderId=" +
           idArray[0] +
           "&connectorAddress=" +
@@ -77,12 +79,12 @@ export default {
         class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         id="orderBtn"
         type="submit"
-        v-on:click="getCatalog(this.edc.url)"
+        v-on:click="getCatalog(edc.url)"
       >
         Get Catalog
       </button>
     </div>
-    <li class="list-none" v-for="offer in this.catalog.contractOffers">
+    <li class="list-none" v-for="offer in catalog.contractOffers">
       <div
         class="text-center mx-4 my-8 block p-6 w-full bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
       >
@@ -100,7 +102,7 @@ export default {
           class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           id="orderBtn"
           type="submit"
-          v-on:click="this.startNegotiation(offer.id)"
+          v-on:click="startNegotiation(offer.id)"
         >
           Start Negotiation
         </button>

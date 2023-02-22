@@ -33,18 +33,20 @@ export default {
   },
   methods: {
     getOrderNum() {
-      fetch(this.baseUrl + "/dashboard/data")
+      let vm = this;
+      fetch(vm.baseUrl + "/dashboard/data")
         .then((response) => response.json())
         .then((data) => {
           console.log(data);
-          this.dash.orders = data.orders;
-          this.dash.ordersSent = JSON.parse(data.ordersSent).length;
-          this.dash.responses = JSON.parse(data.responses).length;
+          vm.dash.orders = data.orders;
+          vm.dash.ordersSent = JSON.parse(data.ordersSent).length;
+          vm.dash.responses = JSON.parse(data.responses).length;
         });
     },
   },
   mounted() {
-    this.getOrderNum();
+    let vm = this;
+    vm.getOrderNum();
   },
 };
 </script>
