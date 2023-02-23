@@ -35,7 +35,7 @@ $ helm install puris-backend --namespace puris --create-namespace .
 | edc.backend.url | string | `"http://172.17.0.2:32084"` | URL of the EDC backend service |
 | edc.controlplane.data.port | int | `30091` | Data port of the EDC control plane |
 | edc.controlplane.host | string | `"172.17.0.2"` | IP address of the EDC control plane |
-| edc.controlplane.key | string | `"password"` | Key for the EDC control plane |
+| edc.controlplane.key | string | `""` | Key for the EDC control plane |
 | fullnameOverride | string | `""` | Possibility to override the fullname |
 | image.pullPolicy | string | `"IfNotPresent"` | THe policy for the image pull process |
 | image.repository | string | `"ghcr.io/catenax-ng/tx-puris-backend/puris-backend"` | Repository of the docker image |

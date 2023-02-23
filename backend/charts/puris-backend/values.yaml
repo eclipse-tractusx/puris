@@ -184,7 +184,7 @@ edc:
       # -- Data port of the EDC control plane
       port: 30091
     # -- Key for the EDC control plane
-    key: password
+    key: ""
   backend:
     # -- URL of the EDC backend service
     url: http://172.17.0.2:32084

@@ -51,7 +51,7 @@ spec:
             - name: EDC_CONTROLPLANE_DATA_PORT
               value: "{{ .Values.edc.controlplane.data.port }}"
             - name: EDC_CONTROLPLANE_KEY
-              value: "{{ .Values.edc.controlplane.key }}"
+              value: "{{ .Values.edc.controlplane.key | default (randAlphaNum 16) }}"
             - name: EDC_BACKEND_URL
               value: "{{ .Values.edc.backend.url }}"
           ports:
