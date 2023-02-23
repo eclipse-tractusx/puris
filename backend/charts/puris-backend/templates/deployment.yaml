@@ -33,6 +33,27 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SERVER_PORT
+              value: "{{ .Values.service.port }}"
+            - name: API_ROOTDIR
+              value: "{{ .Values.api.rootDir }}"
+            - name: DATASOURCE_DRIVERCLASSNAME
+              value: "{{ .Values.datasource.driverClassName }}"
+            - name: DATASOURCE_URL
+              value: "{{ .Values.datasource.url }}"
+            - name: DATASOURCE_USERNAME
+              value: "{{ .Values.datasource.username }}"
+            - name: DATASOURCE_PASSWORD
+              value: "{{ .Values.datasource.password }}"
+            - name: EDC_CONTROLPLANE_HOST
+              value: "{{ .Values.edc.controlplane.host }}"
+            - name: EDC_CONTROLPLANE_DATA_PORT
+              value: "{{ .Values.edc.controlplane.data.port }}"
+            - name: EDC_CONTROLPLANE_KEY
+              value: "{{ .Values.edc.controlplane.key }}"
+            - name: EDC_BACKEND_URL
+              value: "{{ .Values.edc.backend.url }}"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

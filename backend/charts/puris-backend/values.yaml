@@ -82,16 +82,6 @@ resources:
   requests:
     cpu: 1000m
     memory: 2048Mi
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
 
 autoscaling:
   # -- Enable or disable the autoscaling of pods
@@ -109,7 +99,7 @@ ingress:
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
     # -- The backend protocol type (e.g. HTTP)
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-  # -- Hosts for the Ingress controler
+  # -- Hosts for the Ingress controller
   hosts:
     - host: "home.int.demo.catena-x.net"
       paths:
@@ -169,3 +159,32 @@ readinessProbe:
   successThreshold: 1
   # -- Timeout in seconds of the readiness probe
   timeoutSeconds: 1
+
+
+# APPLICATION SPECIFIC
+api:
+  # -- The root directory of the API
+  rootDir: /catena
+
+datasource:
+  # -- Driver class name of the database
+  driverClassName: org.hsqldb.jdbc.JDBCDriver
+  # -- URL of the database
+  url: jdbc:hsqldb:mem:testdb;DB_CLOSE_DELAY=-1
+  # -- Username of the database
+  username: sa
+  # -- Password for the database user
+  password: ""
+
+edc:
+  controlplane:
+    # -- IP address of the EDC control plane
+    host: 172.17.0.2
+    data:
+      # -- Data port of the EDC control plane
+      port: 30091
+    # -- Key for the EDC control plane
+    key: password
+  backend:
+    # -- URL of the EDC backend service
+    url: http://172.17.0.2:32084

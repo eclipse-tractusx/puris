@@ -26,7 +26,16 @@ $ helm install puris-backend --namespace puris --create-namespace .
 | affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app.kubernetes.io/name","operator":"DoesNotExist"}]},"topologyKey":"kubernetes.io/hostname"},"weight":100}]` | Rules for the scheduler to find a pod |
 | affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions | list | `[{"key":"app.kubernetes.io/name","operator":"DoesNotExist"}]` | Matching Expressions as key and operators for the pod affinity |
 | affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey | string | `"kubernetes.io/hostname"` | Topology key of the Kubernetes cluster |
+| api.rootDir | string | `"/catena"` | The root directory of the API |
 | autoscaling.enabled | bool | `false` | Enable or disable the autoscaling of pods |
+| datasource.driverClassName | string | `"org.hsqldb.jdbc.JDBCDriver"` | Driver class name of the database |
+| datasource.password | string | `""` | Password for the database user |
+| datasource.url | string | `"jdbc:hsqldb:mem:testdb;DB_CLOSE_DELAY=-1"` | URL of the database |
+| datasource.username | string | `"sa"` | Username of the database |
+| edc.backend.url | string | `"http://172.17.0.2:32084"` | URL of the EDC backend service |
+| edc.controlplane.data.port | int | `30091` | Data port of the EDC control plane |
+| edc.controlplane.host | string | `"172.17.0.2"` | IP address of the EDC control plane |
+| edc.controlplane.key | string | `"password"` | Key for the EDC control plane |
 | fullnameOverride | string | `""` | Possibility to override the fullname |
 | image.pullPolicy | string | `"IfNotPresent"` | THe policy for the image pull process |
 | image.repository | string | `"ghcr.io/catenax-ng/tx-puris-backend/puris-backend"` | Repository of the docker image |
@@ -37,7 +46,7 @@ $ helm install puris-backend --namespace puris --create-namespace .
 | ingress.annotations."nginx.ingress.kubernetes.io/force-ssl-redirect" | string | `"true"` | Force redirects from HTTP to HTTPS |
 | ingress.annotations."nginx.ingress.kubernetes.io/ssl-passthrough" | string | `"true"` | Pass SSL traffic to the backend ports |
 | ingress.enabled | bool | `true` | Enable the Ingress |
-| ingress.hosts | list | `[{"host":"home.int.demo.catena-x.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controler |
+| ingress.hosts | list | `[{"host":"home.int.demo.catena-x.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
 | ingress.tls | list | `[{"hosts":["home.int.demo.catena-x.net"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
 | livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":250,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
