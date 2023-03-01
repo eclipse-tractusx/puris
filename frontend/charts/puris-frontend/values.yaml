@@ -1,35 +1,60 @@
-# Default values for puris-frontend.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+#
+# Copyright (c) 2023 Volkswagen AG
+# Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2023 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 
+# -- Number of replicas of the Kubernetes deployment
 replicaCount: 1
 
 image:
+  # -- Repository of the docker image
   repository: ghcr.io/catenax-ng/tx-puris-frontend/puris-frontend
+  # -- THe policy for the image pull process
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  # tag: "latest"
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag: ""
 
+# -- List of used secrets
 imagePullSecrets: []
+# -- Possibility to override the name
 nameOverride: ""
+# -- Possibility to override the fullname
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
+  # -- Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
+  # -- Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
+  # -- The name of the service account to use. If not set and create is true, a name is generated using the fullname template
   name: ""
 
+# -- Annotations added to a running pod
 podAnnotations: {}
 
+# -- Added security contexts for a pod
 podSecurityContext: {}
-  # fsGroup: 2000
+# fsGroup: 2000
 
 # Following Catena-X Helm Best Practices @url: https://catenax-ng.github.io/docs/kubernetes-basics/helm
 # @url: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+# -- Security configurations
 securityContext: {}
 #  allowPrivilegeEscalation: false
 #  runAsNonRoot: true
@@ -37,70 +62,103 @@ securityContext: {}
 #  runAsGroup: 3000
 
 service:
+  # -- Type of the service
   type: NodePort
+  # -- The port of the service
   port: 8080
 
 ingress:
+  # -- Enable the Ingress
   enabled: false
+  # -- Class name for the Ingress controller
   className: ""
+  # -- Annotations for the Ingress controller
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  # -- Hosts for the Ingress controller
   hosts:
     - host: chart-example.local
       paths:
         - path: /
           pathType: ImplementationSpecific
+  # -- TLS certificates for the Ingress controller
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 # Following Catena-X Helm Best Practices @url: https://catenax-ng.github.io/docs/kubernetes-basics/helm
 # @url: https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-resource-requests-and-limits
 resources:
+  # -- Maximum resource limits of CPU und memory
   limits:
     cpu: 500m
     memory: 128Mi
+  # -- Minimum requested resources for CPU und memory
   requests:
     cpu: 100m
     memory: 128Mi
 
 autoscaling:
+  # -- Enable or disable the autoscaling of pods
   enabled: false
+  # -- Number of minimum replica pods for autoscaling
   minReplicas: 1
+  # -- Number of maximum replica pods for autoscaling
   maxReplicas: 100
+  # -- Value of CPU usage in percentage for autoscaling decisions
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+# -- Constrains for the node selector
 nodeSelector: {}
 
+# -- Constrains for tolerations
 tolerations: []
 
 # Following Catena-X Helm Best Practices @url: https://catenax-ng.github.io/docs/kubernetes-basics/helm
 # @url: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 affinity:
   podAntiAffinity:
+    # -- Rules for the scheduler to find a pod
     preferredDuringSchedulingIgnoredDuringExecution:
       - weight: 100
         podAffinityTerm:
           labelSelector:
+            # -- Matching Expressions as key and operators for the pod affinity
             matchExpressions:
               - key: app.kubernetes.io/name
                 operator: DoesNotExist
+          # -- Topology key of the Kubernetes cluster
           topologyKey: kubernetes.io/hostname
 
 # Following Catena-X Helm Best Practices @url: https://catenax-ng.github.io/docs/kubernetes-basics/helm
 # @url: https://github.com/helm/charts/blob/master/stable/nginx-ingress/values.yaml#L210
+# -- Checks whether a pod is alive or not
 livenessProbe:
+  # -- Number of failures (threshold) for a liveness probe
   failureThreshold: 3
+  # -- Delay in seconds after which an initial liveness probe is checked
   initialDelaySeconds: 10
+  # -- Wait time in seconds between liveness probes
   periodSeconds: 10
+  # -- Number of trys until a pod is marked alive
   successThreshold: 1
+  # -- Timeout in seconds of the liveness probe
   timeoutSeconds: 1
+# -- Checks if the pod is fully ready to operate
 readinessProbe:
+  # -- Number of failures (threshold) for a readiness probe
   failureThreshold: 3
+  # -- Delay in seconds after which an initial readiness probe is checked
   initialDelaySeconds: 10
+  # -- Wait time in seconds between readiness probes
   periodSeconds: 10
+  # -- Number of trys until a pod is marked ready
   successThreshold: 1
+  # -- Timeout in seconds of the readiness probe
   timeoutSeconds: 1
+
+
+# APPLICATION SPECIFIC
+app:
+  # -- The name of the app displayed in the frontend
+  viteAppName: PURIS
+  # -- The base URL for vite
+  viteBaseUrl: http://192.168.49.2:30001/catena

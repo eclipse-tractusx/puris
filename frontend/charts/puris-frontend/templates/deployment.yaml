@@ -34,8 +34,10 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            - name: VITE_APP_NAME
+              value: "{{ .Values.app.viteAppName }}"
             - name: VITE_BASE_URL
-              value: http://192.168.49.2:30001/catena
+              value: "{{ .Values.app.viteBaseUrl }}"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
