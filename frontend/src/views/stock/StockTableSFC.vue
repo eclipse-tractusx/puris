@@ -1,10 +1,10 @@
 <template>
-  <div class="grow flex flex-row content-evenly">
+  <div class="flex flex-row">
     <!--class="grid grid-rows-1 grid-flow-col gap-4"> -->
-    <div>
+    <div class="basis-1/2 pr-5">
       <h2 class="text-center bold text-3xl">{{ title }}</h2>
-      <table class="table-auto">
-        <tr>
+      <table class="">
+        <tr class="text-left">
           <th>ID</th>
           <th>Name</th>
           <th>Quantity</th>
@@ -21,7 +21,7 @@
         </tr>
       </table>
     </div>
-    <div>
+    <div class="basis-1/2">
       <PartnerStockSFC
         selected-stock="this.selectedStock"
         :key="this.selectedStock"
@@ -64,5 +64,8 @@ export default {
 <style scoped>
 .highlight {
   background-color: orange;
+}
+table {
+  width:100%
 }
 </style>
