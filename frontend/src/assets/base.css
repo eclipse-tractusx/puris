@@ -72,3 +72,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+th{
+  background-color: lightslategray;
+}
+
+th,td {
+  padding: 5px;
+}
+
+tr:nth-child(odd){
+  background-color: lightgray;
+}

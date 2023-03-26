@@ -68,6 +68,11 @@ const router = createRouter({
       name: "connectors",
       component: () => import("../views/ConnectorView.vue"),
     },
+    {
+      path: "/stocks",
+      name: "stocks",
+      component: () => import("../views/StockView.vue")
+    },
   ],
 });
 
