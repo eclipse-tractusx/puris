@@ -10,10 +10,10 @@
           <th>Quantity</th>
         </tr>
         <tr
-          v-for="stock in stocks"
-          :key="stock.id"
-          @click="selectStock(stock.id)"
-          :class="{ highlight: stock.id === selectedStock }"
+            v-for="stock in stocks"
+            :key="stock.id"
+            @click="selectStock(stock.id)"
+            :class="{ highlight: stock.id === selectedStockId }"
         >
           <td>{{ stock.id }}</td>
           <td>{{ stock.name }}</td>
@@ -23,8 +23,8 @@
     </div>
     <div class="basis-1/2">
       <PartnerStockSFC
-        selected-stock="this.selectedStock"
-        :key="this.selectedStock"
+          :selectedMaterialOrProductId="this.selectedStockId"
+          :key="this.selectedStockId"
       />
       <!--
       <h2 class="text-center bold text-3xl">You're currently seeing your suppliers' stocks for {{this.selectedMaterial.name}} [{{ this.selectedMaterial.id }}]</h2>
@@ -38,24 +38,24 @@ import PartnerStockSFC from "@/views/stock/PartnerStockSFC.vue";
 
 export default {
   name: "StockTableSFC",
-  components: { PartnerStockSFC },
+  components: {PartnerStockSFC},
 
   props: {
-    title: { type: String, required: true, default: "Stock" },
-    stocks: { type: Array, required: true },
+    title: {type: String, required: true, default: "Stock"},
+    stocks: {type: Array, required: true},
   },
 
   data() {
     return {
-      selectedStock: "",
+      selectedStockId: "",
     };
   },
 
   methods: {
     selectStock(stockId) {
-      this.selectedStock = stockId;
+      this.selectedStockId = stockId;
       console.log(stockId);
-      console.log(this.selectedStock);
+      console.log(this.selectedStockId);
     },
   },
 };
@@ -65,7 +65,8 @@ export default {
 .highlight {
   background-color: orange;
 }
+
 table {
-  width:100%
+  width: 100%;
 }
 </style>
