@@ -1,12 +1,12 @@
 <template>
   <div v-if="this.selectedMaterialOrProductId === ''">
     <h2 class="text-center bold text-3xl">
-      Your suppliers' stocks for no material.
+      Your {{ this.partnerRole }}s' stocks for no material.
     </h2>
   </div>
   <div v-else>
     <h2 class="text-center bold text-3xl">
-      Your suppliers' stocks for
+      Your {{ this.partnerRole }}s' stocks for
       {{ this.selectedMaterialOrProductId }}.
     </h2>
     <table class="">
@@ -15,12 +15,13 @@
         <th>Quantity</th>
         <th>Last updated on</th>
       </tr>
-      <tr v-for="material in availableMaterials" :key="material.id">
-        <td>{{ material.supplierName }} ({{ material.supplierBpnl }})</td>
-        <td>
-          {{ material.quantity.number }} {{ material.quantity.unitOfMeasure }}
-        </td>
-        <td>{{ material.lastUpdatedOn }}</td>
+      <tr
+          v-for="stock in availableMaterialsOrProducts"
+          :key="stock.partnerBpnl"
+      >
+        <td>{{ stock.partnerName }} ({{ stock.partnerBpnl }})</td>
+        <td>{{ stock.quantity.number }} {{ stock.quantity.unitOfMeasure }}</td>
+        <td>{{ stock.lastUpdatedOn }}</td>
       </tr>
     </table>
   </div>
@@ -31,18 +32,26 @@ export default {
   name: "PartnerStockSFC",
 
   props: {
-    selectedMaterialOrProductId: {required: true},
+    selectedMaterialOrProductId: {type: String, required: true},
+    partnerRole: {type: String, required: true},
   },
   data() {
     return {
-      availableMaterials: [],
+      availableMaterialsOrProducts: [],
     };
   },
   created() {
+    console.log("PartnerRole in PartnerStockSFC: " + this.partnerRole);
     if (this.selectedMaterialOrProductId !== "") {
-      this.availableMaterials = this.getAvailableMaterials(
-          this.selectedMaterialOrProductId
-      );
+      if (this.partnerRole === "supplier") {
+        this.availableMaterialsOrProducts = this.getAvailableMaterials(
+            this.selectedMaterialOrProductId
+        );
+      } else if (this.partnerRole === "customer") {
+        this.availableMaterialsOrProducts = this.getAvailableProducts(
+            this.selectedMaterialOrProductId
+        );
+      }
     }
   },
   methods: {
@@ -54,8 +63,8 @@ export default {
       if (materialId === "M4711") {
         return [
           {
-            supplierBpnl: "BPNS123456789ZZ",
-            supplierName: "Test Supplier 1",
+            partnerBpnl: "BPNS123456789ZZ",
+            partnerName: "Test Supplier 1",
             quantity: {
               number: 20,
               unitOfMeasure: "pcs",
@@ -66,8 +75,8 @@ export default {
       } else if (materialId === "M4712") {
         return [
           {
-            supplierBpnl: "BPNS123466789ZZ",
-            supplierName: "Test Supplier 2",
+            partnerBpnl: "BPNS123466789ZZ",
+            partnerName: "Test Supplier 2",
             quantity: {
               number: 50,
               unitOfMeasure: "pcs",
@@ -75,8 +84,8 @@ export default {
             lastUpdatedOn: "2023-03-04, 15:15",
           },
           {
-            supplierBpnl: "BPNS123666789ZZ",
-            supplierName: "Test Supplier 3",
+            partnerBpnl: "BPNS123666789ZZ",
+            partnerName: "Test Supplier 3",
             quantity: {
               number: 10,
               unitOfMeasure: "pcs",
@@ -86,6 +95,25 @@ export default {
         ];
       } else if (materialId === "M4713") {
         return [];
+      }
+    },
+    getAvailableProducts(productId) {
+      console.log("MaterialId" + productId);
+      if (productId === null) {
+        return [];
+      }
+      if (productId === "P4711") {
+        return [
+          {
+            partnerBpnl: "BPNS123456799ZZ",
+            partnerName: "Test Customer 1",
+            quantity: {
+              number: 20,
+              unitOfMeasure: "pcs",
+            },
+            lastUpdatedOn: "2023-03-04, 15:15",
+          },
+        ];
       }
     },
   },

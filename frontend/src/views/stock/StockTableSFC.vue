@@ -24,6 +24,7 @@
     <div class="basis-1/2">
       <PartnerStockSFC
           :selectedMaterialOrProductId="this.selectedStockId"
+          :partnerRole="this.partnerRole"
           :key="this.selectedStockId"
       />
       <!--
@@ -43,12 +44,16 @@ export default {
   props: {
     title: {type: String, required: true, default: "Stock"},
     stocks: {type: Array, required: true},
+    partnerRole: {type: String, required: true, default: ""},
   },
 
   data() {
     return {
       selectedStockId: "",
     };
+  },
+  created() {
+    console.log("PartnerRole in StockTablesSFC: " + this.partnerRole);
   },
 
   methods: {

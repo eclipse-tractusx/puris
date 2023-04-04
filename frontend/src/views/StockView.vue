@@ -6,27 +6,26 @@
 
     <div>
       <form
-        @submit.prevent="addOrUpdateStock(this.changedStock)"
-        class="w-max max-w-lg"
+          @submit.prevent="addOrUpdateStock(this.changedStock)"
+          class="w-max max-w-lg"
       >
-        >
         <div class="flex flex-row justify-start space-x-3">
           <div class="space-x-2">
             <input
-              type="radio"
-              v-model="this.changedStock.type"
-              value="Material"
-              @change="toggleMaterialOrProduct(changedStock)"
+                type="radio"
+                v-model="this.changedStock.type"
+                value="Material"
+                @change="toggleMaterialOrProduct(changedStock)"
             />
             <label>Material</label>
           </div>
 
           <div class="space-x-2">
             <input
-              type="radio"
-              v-model="this.changedStock.type"
-              value="Product"
-              @change="toggleMaterialOrProduct(changedStock)"
+                type="radio"
+                v-model="this.changedStock.type"
+                value="Product"
+                @change="toggleMaterialOrProduct(changedStock)"
             />
             <label>Product</label>
           </div>
@@ -35,10 +34,10 @@
         <div>
           <label for="material">Material</label>
           <select
-            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-            id="materialSelect"
-            v-model="this.changedStock.materialId"
-            :disabled="this.changedStock.type === 'Product'"
+              class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+              id="materialSelect"
+              v-model="this.changedStock.materialId"
+              :disabled="this.changedStock.type === 'Product'"
           >
             <option v-for="material in this.materials" :value="material.id">
               {{ material.id }} ({{ material.name }})
@@ -48,10 +47,10 @@
         <div>
           <label for="product">Product</label>
           <select
-            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-            id="productSelect"
-            v-model="this.changedStock.productId"
-            :disabled="this.changedStock.type === 'Material'"
+              class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+              id="productSelect"
+              v-model="this.changedStock.productId"
+              :disabled="this.changedStock.type === 'Material'"
           >
             <option v-for="product in this.products" :value="product.id">
               {{ product.id }} ({{ product.name }})
@@ -61,17 +60,17 @@
         <div>
           <label for="Quantity">Quantity</label>
           <input
-            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-            type="number"
-            id="quantityInput"
-            v-model="this.changedStock.quantity"
+              class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+              type="number"
+              id="quantityInput"
+              v-model="this.changedStock.quantity"
           />
         </div>
 
         <div class="text-center">
           <button
-            class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            id="stockBtn"
+              class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              id="stockBtn"
           >
             Add or Update
           </button>
@@ -80,8 +79,16 @@
 
       <!-- separator -->
       <div id="materialAndProductStockTables" class="flex flex-col max-w-max">
-        <StockTableSFC title="Material Stocks" :stocks="this.materialStocks" />
-        <StockTableSFC title="Product Stocks" :stocks="this.productStocks" />
+        <StockTableSFC
+            title="Material Stocks"
+            :stocks="this.materialStocks"
+            :partnerRole="'supplier'"
+        />
+        <StockTableSFC
+            title="Product Stocks"
+            :stocks="this.productStocks"
+            :partnerRole="'customer'"
+        />
       </div>
     </div>
   </main>
@@ -92,7 +99,7 @@ import StockTableSFC from "@/views/stock/StockTableSFC.vue";
 
 export default {
   name: "StockView",
-  components: { StockTableSFC },
+  components: {StockTableSFC},
 
   data() {
     return {
@@ -158,7 +165,7 @@ export default {
     addOrUpdateStock(changedStock) {
       if (changedStock.type === "Material") {
         var existingMaterialStock = this.materialStocks.filter(
-          (stock) => stock.id === changedStock.materialId
+            (stock) => stock.id === changedStock.materialId
         );
 
         if (existingMaterialStock.length === 1) {
@@ -166,7 +173,7 @@ export default {
           material.quantity = changedStock.quantity;
         } else {
           var existingMaterial = this.materials.filter(
-            (m) => m.materialId === changedStock.materialId
+              (m) => m.materialId === changedStock.materialId
           )[0];
           var newStock = {
             id: changedStock.materialId,
@@ -178,7 +185,7 @@ export default {
         }
       } else if (changedStock.type === "Product") {
         var existingProductStock = this.productStocks.filter(
-          (stock) => stock.id === changedStock.productId
+            (stock) => stock.id === changedStock.productId
         );
 
         if (existingProductStock.length === 1) {
@@ -186,7 +193,7 @@ export default {
           product.quantity = changedStock.quantity;
         } else {
           var existingProduct = this.products.filter(
-            (p) => p.id === changedStock.productId
+              (p) => p.id === changedStock.productId
           )[0];
           newStock = {
             id: changedStock.productId,
