@@ -24,11 +24,17 @@
       Your {{ this.partnerRole }}s' stocks for no material.
     </h2>
   </div>
-  <div v-else>
+  <div v-else class="grid">
     <h2 class="text-center bold text-3xl">
       Your {{ this.partnerRole }}s' stocks for
       {{ this.selectedMaterialOrProductId }}.
     </h2>
+    <button
+        class="btn-primary place-self-end"
+        @click="updateMaterialOrProduct()"
+    >
+      Update
+    </button>
     <table class="">
       <tr class="text-left">
         <th>Supplier</th>
@@ -61,7 +67,6 @@ export default {
     };
   },
   created() {
-    console.log("PartnerRole in PartnerStockSFC: " + this.partnerRole);
     if (this.selectedMaterialOrProductId !== "") {
       if (this.partnerRole === "supplier") {
         this.availableMaterialsOrProducts = this.getAvailableMaterials(
@@ -76,7 +81,6 @@ export default {
   },
   methods: {
     getAvailableMaterials(materialId) {
-      console.log("MaterialId" + materialId);
       if (materialId === null) {
         return [];
       }
@@ -118,7 +122,6 @@ export default {
       }
     },
     getAvailableProducts(productId) {
-      console.log("MaterialId" + productId);
       if (productId === null) {
         return [];
       }
@@ -136,6 +139,24 @@ export default {
         ];
       }
     },
+    updateMaterialOrProduct() {
+      var options = {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }
+      var currentDate = new Date();
+      var currentDateString = currentDate.toLocaleString("de-DE", options);
+
+      // Note: Reactivity needs proxy
+      for (let i = 0; i < this.availableMaterialsOrProducts.length; i++) {
+        this.availableMaterialsOrProducts[i].lastUpdatedOn = currentDateString;
+      }
+
+
+    }
   },
 };
 </script>

@@ -102,7 +102,7 @@
 
         <div class="text-center">
           <button
-              class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              class="btn-primary"
               id="stockBtn"
           >
             Add or Update
@@ -111,7 +111,7 @@
       </form>
 
       <!-- separator -->
-      <div id="materialAndProductStockTables" class="flex flex-col max-w-max">
+      <div id="materialAndProductStockTables" class="flex flex-col space-y-2 max-w-max">
         <StockTableSFC
             title="Material Stocks"
             :stocks="this.materialStocks"
@@ -266,7 +266,6 @@ export default {
       }
     },
     toggleMaterialOrProduct(changedStock) {
-      console.log(changedStock.type);
       if (changedStock.type === "Material") {
         changedStock.productId = "";
       } else if (changedStock.type === "Product") {
