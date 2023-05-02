@@ -50,7 +50,7 @@ jobs:
         run: mvn package --batch-mode -DskipTests
 
       - name: Run Veracode Upload And Scan
-        uses: veracode/veracode-uploadandscan-action@0.2.1
+        uses: veracode/veracode-uploadandscan-action@0.2.6
         with:
           appname: "PURIS-Backend"
           createprofile: false
