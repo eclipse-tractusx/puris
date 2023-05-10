@@ -8,6 +8,7 @@
           <th>ID</th>
           <th>Name</th>
           <th>Quantity</th>
+          <th v-if="partnerRole=='customer'">Allocated to customer</th>
         </tr>
         <tr
             v-for="stock in stocks"
@@ -18,6 +19,7 @@
           <td>{{ stock.id }}</td>
           <td>{{ stock.name }}</td>
           <td>{{ stock.quantity }} {{ stock.unitOfMeasure }}</td>
+          <td v-if="partnerRole=='customer'">{{ stock.customer }}</td>
         </tr>
       </table>
     </div>
