@@ -66,6 +66,17 @@
               v-model="this.changedStock.quantity"
           />
         </div>
+        <div>
+          <label for="allocatedToCustomer">Allocated to Customer</label>
+          <select
+            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+            id="allocatedToCustomer"
+          >
+            <option v-for="customer in this.customers" :value="customer.bpnl">
+              {{ customer.name }}
+            </option>
+          </select>
+        </div>
 
         <div class="text-center">
           <button
@@ -129,6 +140,32 @@ export default {
           id: "M4713",
           name: "Wheel",
           unitOfMeasure: "Parts",
+        },
+      ],
+      customers: [
+        {
+          name: "Test Customer #1",
+          actsAsCustomerFlag: true,
+          actsAsSupplierFlag: false,
+          edcUrl: "TODO",
+          bpnl: "BPNL4444444444XX",
+          siteBpns: "BPNS4444444444XX",
+        },
+        {
+          name: "Test Customer #2",
+          actsAsCustomerFlag: true,
+          actsAsSupplierFlag: false,
+          edcUrl: "TODO",
+          bpnl: "BPNL4444444442XX",
+          siteBpns: "BPNS4444444442XX",
+        },
+        {
+          name: "Test Customer #3",
+          actsAsCustomerFlag: true,
+          actsAsSupplierFlag: false,
+          edcUrl: "TODO",
+          bpnl: "BPNL4444444443XX",
+          siteBpns: "BPNS4444444443XX",
         },
       ],
       products: [
