@@ -18,33 +18,40 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain;
+package org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
-import java.util.UUID;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Response;
 
 /**
- * Allows different Identification Patterns for the api {@link MessageContent}
+ * Enum to track the status of
+ * {@link Request} and
+ * {@link Response}.
  */
-@Entity
-@Table(name = "ReferenceIdentification")
-@DiscriminatorColumn(name = "reference_identification_type")
-@Getter
-@Setter
-@ToString
-@NoArgsConstructor
-public abstract class ReferenceIdentification {
+public enum DT_RequestStateEnum {
+    /**
+     * The consumer requested something.
+     */
+    REQUESTED,
 
     /**
-     * Technical identifier for a Reference Identification.
+     * The provider receipt the request of the consumer.
      */
-    @Id
-    @GeneratedValue
-    private UUID uuid;
+    RECEIPT,
+
+    /**
+     * The provider works on fulfilling the requested service or data.
+     */
+    WORKING,
+
+    /**
+     * The provider fulfilled the service and sent the data to the consumer.
+     */
+    COMPLETED,
+
+    /**
+     * An error occured between the start and completion of a request.
+     */
+    ERROR
 
 }

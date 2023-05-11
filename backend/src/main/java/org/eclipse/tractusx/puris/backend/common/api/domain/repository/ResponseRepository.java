@@ -18,37 +18,23 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain.datatype;
+package org.eclipse.tractusx.puris.backend.common.api.domain.repository;
+
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
 
 /**
- * Enum to track the status of
- * {@link org.eclipse.tractusx.puris.backend.common.api.domain.Request} and
- * {@link org.eclipse.tractusx.puris.backend.common.api.domain.Response}.
+ * Repository to access Responses
  */
-public enum DT_RequestStateEnum {
-    /**
-     * The consumer requested something.
-     */
-    REQUESTED,
+public interface ResponseRepository extends JpaRepository<Request, UUID> {
 
     /**
-     * The provider receipt the request of the consumer.
+     * find the request by the requestUuuid from the message's header
+     *
+     * @param headerRequestUuid uuid set by the sending partner in the header
+     * @return Request
      */
-    RECEIPT,
-
-    /**
-     * The provider works on fulfilling the requested service or data.
-     */
-    WORKING,
-
-    /**
-     * The provider fulfilled the service and sent the data to the consumer.
-     */
-    COMPLETED,
-
-    /**
-     * An error occured between the start and completion of a request.
-     */
-    ERROR
-
+    public Request findResponseByPayload_Header_RequestId(UUID headerRequestUuid);
 }

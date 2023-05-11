@@ -18,12 +18,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain.datatype;
+package org.eclipse.tractusx.puris.backend.common.api.domain.repository;
+
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
 
 /**
- * Enum listing supported API for Catena-X use cases.
+ * Repository to access ReferenceIdentification
  */
-public enum DT_UseCaseEnum {
+public interface ReferenceIdentificationRepository extends JpaRepository<Request, UUID> {
 
-    PURIS
 }

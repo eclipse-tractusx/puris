@@ -18,53 +18,32 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain;
+package org.eclipse.tractusx.puris.backend.common.api.domain.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 /**
- * The Payload always consists of steering information ({@link MessageHeader}) and an actual
- * payload consisting of n >= 0 {@link MessageContent}.
+ * Class representing either an api specific content or an error.
  */
 @Entity
-@Table(name = "Payload")
+@Table(name = "MessageContent")
+@DiscriminatorColumn(name = "content_type")
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-public class Payload {
+public abstract class MessageContent {
 
     @Id
     @GeneratedValue
     /**
-     * Technical identifier for a Payload.
+     * Technical identifier for a Message Content.
      */
     private UUID uuid;
-
-    /**
-     * Steering information of a {@link Request} or {@link Response} api message.
-     */
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "message_header_uuid")
-    @NotNull
-    private MessageHeader header;
-
-    /**
-     * List of actual content of the payload.
-     * <p>
-     * May contain also errors.
-     */
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "message_content_uuid")
-    @NotNull
-    private List<MessageContent> payload = new ArrayList<>();
 }

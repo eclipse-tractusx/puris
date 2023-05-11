@@ -18,7 +18,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain;
+package org.eclipse.tractusx.puris.backend.common.api.domain.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -26,47 +26,45 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.eclipse.tractusx.puris.backend.common.api.domain.datatype.DT_RequestStateEnum;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * This Request represents the message received via a Request API.
- * <p>
- * This Request may not be confused with an HTTP request.
- * Both, the Response and the Request, are called (api) request.
+ * The Message always consists of steering information ({@link MessageHeader}) and an actual
+ * payload consisting of n >= 0 {@link MessageContent}.
  */
 @Entity
-@Table(name = "Request")
+@Table(name = "Message")
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-public class Request {
+public class Message {
 
-    /**
-     * This ID prevents the application from collision with external IDs, because the partner
-     * creates the request when performing a Request API call.
-     */
     @Id
     @GeneratedValue
-    private UUID internalRequestUuid;
+    /**
+     * Technical identifier for a Message.
+     */
+    private UUID uuid;
 
     /**
-     * State of the request.
-     *
-     * @see DT_RequestStateEnum
+     * Steering information of a {@link Request} or {@link Response} api message.
      */
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "message_header_uuid")
     @NotNull
-    private DT_RequestStateEnum state;
+    private MessageHeader header;
 
     /**
-     * Actual content of the request (or response) message.
+     * List of actual content of the payload.
+     * <p>
+     * May contain also errors.
      */
-    @OneToMany
-    @JoinColumn(name = "message_content_id")
-    @ToString.Exclude
-    private List<MessageContent> messageContents;
-
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "message_content_uuid")
+    @NotNull
+    private List<MessageContent> payload = new ArrayList<>();
 }

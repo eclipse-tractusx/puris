@@ -18,7 +18,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain;
+package org.eclipse.tractusx.puris.backend.common.api.domain.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -26,35 +26,45 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
+
+import java.util.UUID;
 
 /**
- * Implementation of a {@link MessageContent} providing generic error messages.
+ * This Response represents the message received via a Response API.
+ * <p>
+ * This Response may not be confused with an HTTP response.
+ * Both, the Response and the Request, are called (api) request.
  */
 @Entity
-@Table(name = "MessageContentError")
-@DiscriminatorValue("error")
+@Table(name = "Response")
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-public class MessageContentError extends MessageContent {
+public class Response {
 
     /**
-     * identifies a business object of a specific api that refers to the error.
+     * This ID prevents the application from collision with external IDs, because the partner
+     * creates the request when performing a Request API call.
      */
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "reference_identification_uuid")
-    private ReferenceIdentification referenceIdentification;
+    @Id
+    @GeneratedValue
+    private UUID internalRequestUuid;
 
     /**
-     * error code specifying the error.
-     */
-    @NotNull
-    private String error;
-
-    /**
-     * the actual error message providing further detail.
+     * State of the request.
+     *
+     * @See DT_RequestStateEnum
      */
     @NotNull
-    private String message;
+    private DT_RequestStateEnum state;
+
+    @OneToOne
+    @JoinColumn(name = "message_uuid")
+    @ToString.Exclude
+    /**
+     * Actual content of the request (or response) message.
+     */
+    private Message message;
 }

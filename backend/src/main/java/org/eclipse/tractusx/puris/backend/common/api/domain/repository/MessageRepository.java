@@ -18,32 +18,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain;
+package org.eclipse.tractusx.puris.backend.common.api.domain.repository;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
 /**
- * Class representing either an api specific content or an error.
+ * Repository to access Messages
  */
-@Entity
-@Table(name = "MessageContent")
-@DiscriminatorColumn(name = "content_type")
-@Getter
-@Setter
-@ToString
-@NoArgsConstructor
-public abstract class MessageContent {
+public interface MessageRepository extends JpaRepository<Request, UUID> {
 
-    @Id
-    @GeneratedValue
-    /**
-     * Technical identifier for a Message Content.
-     */
-    private UUID uuid;
 }

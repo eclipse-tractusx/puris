@@ -18,7 +18,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain;
+package org.eclipse.tractusx.puris.backend.common.api.domain.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,18 +29,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.eclipse.tractusx.puris.backend.common.api.domain.datatype.DT_UseCaseEnum;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 
 import java.util.Date;
 import java.util.UUID;
 
 
 /**
- * The MessageHeader is used as a Payload of both, the {@link Request} and {@link Response},
- * together with the actual Payload.
+ * The MessageHeaderRepository is used as a Message of both, the {@link Request} and {@link Response},
+ * together with the actual Message.
  */
 @Entity
-@Table(name = "MessageHeader")
+@Table(name = "MessageHeaderRepository")
 @Getter
 @Setter
 @ToString
