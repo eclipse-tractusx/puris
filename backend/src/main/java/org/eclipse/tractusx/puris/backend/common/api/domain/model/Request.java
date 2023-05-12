@@ -20,15 +20,14 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.domain.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
-
-import java.util.UUID;
 
 /**
  * This Request represents the message received via a Request API.
@@ -42,15 +41,7 @@ import java.util.UUID;
 @Setter
 @ToString
 @NoArgsConstructor
-public class Request {
-
-    /**
-     * This ID prevents the application from collision with external IDs, because the partner
-     * creates the request when performing a Request API call.
-     */
-    @Id
-    @GeneratedValue
-    private UUID internalRequestUuid;
+public class Request extends Message {
 
     /**
      * State of the request.
@@ -59,13 +50,5 @@ public class Request {
      */
     @NotNull
     private DT_RequestStateEnum state;
-
-    /**
-     * Actual content of the request (or response) message.
-     */
-    @OneToOne
-    @JoinColumn(name = "message_uuid")
-    @ToString.Exclude
-    private Message message;
 
 }

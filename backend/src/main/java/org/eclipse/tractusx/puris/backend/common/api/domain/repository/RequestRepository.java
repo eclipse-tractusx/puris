@@ -36,5 +36,5 @@ public interface RequestRepository extends JpaRepository<Request, UUID> {
      * @param headerRequestUuid uuid set by the sending partner in the header
      * @return Request
      */
-    public Request findRequestByPayload_Header_RequestId(UUID headerRequestUuid);
+    public Request findRequestByHeader_RequestId(UUID headerRequestUuid);
 }

@@ -27,8 +27,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 
-import java.util.UUID;
-
 /**
  * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.Request}
  */
@@ -36,15 +34,7 @@ import java.util.UUID;
 @Setter
 @ToString
 @NoArgsConstructor
-public class RequestDto {
-
-    /**
-     * This ID prevents the application from collision with external IDs, because the partner
-     * creates the request when performing a Request API call.
-     * <p>
-     * Set only for existing {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.Request}
-     */
-    private UUID internalRequestUuid;
+public class RequestDto extends MessageDto {
 
     /**
      * State of the request.
@@ -55,9 +45,14 @@ public class RequestDto {
     private DT_RequestStateEnum state;
 
     /**
-     * Actual content of the request (or response) message.
+     * Create a RequestDto from message
+     *
+     * @param state   state to set
+     * @param message message to set
      */
-    @NotNull
-    private MessageDto message;
-
+    public RequestDto(DT_RequestStateEnum state, MessageDto message) {
+        this.state = state;
+        this.setPayload(message.getPayload());
+        this.setHeader(message.getHeader());
+    }
 }

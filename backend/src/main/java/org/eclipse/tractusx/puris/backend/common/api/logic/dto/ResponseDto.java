@@ -18,23 +18,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.logic.service;
+package org.eclipse.tractusx.puris.backend.common.api.logic.dto;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Message;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
- * Service receives performs the tasks associated with the Response API.
+ * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.Request}
  */
-public interface ResponseApiService {
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+public class ResponseDto extends MessageDto {
 
-    /**
-     * Consume the response
-     * <p>
-     * Commonly this involves:
-     * <li>validate the data</li>
-     * <li>store the data</li>
-     *
-     * @param message to consume
-     */
-    public void consumeResponse(Message message);
 }
