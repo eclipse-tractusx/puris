@@ -20,21 +20,16 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.logic.dto;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ReferenceIdentification;
 
 /**
- * Implementation of a {@link MessageContent} providing generic error messages.
+ * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContentError}
  */
-@Entity
-@Table(name = "MessageContentError")
-@DiscriminatorValue("ERROR")
 @Getter
 @Setter
 @ToString
@@ -44,9 +39,7 @@ public class MessageContentErrorDto extends MessageContent {
     /**
      * identifies a business object of a specific api that refers to the error.
      */
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "reference_identification_uuid")
-    private ReferenceIdentification referenceIdentification;
+    private ReferenceIdentificationDto referenceIdentification;
 
     /**
      * error code specifying the error.

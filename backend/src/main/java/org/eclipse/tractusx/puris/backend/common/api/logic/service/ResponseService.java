@@ -20,59 +20,59 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.logic.service;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Response;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 /**
- * Service providing the interface to the {@link Request}
+ * Service providing the interface to the {@link Response}
  */
 @Service
-public interface RequestService {
+public interface ResponseService {
 
     /**
-     * create a {@link Request} in state REQUESTED.
+     * create a {@link Response} in state REQUESTED.
      *
-     * @param request request to persist
+     * @param response response to persist
      * @return created entity
      */
-    public Request createRequest(Request request);
+    public Response createResponse(Response response);
 
     /**
-     * update existing {@link Request}
+     * update existing {@link Response}
      * <p>
      * Response must already have been persisted before (has internalUuid).
      *
-     * @param request existing request incl. updates
+     * @param response existing response incl. updates
      * @return updated entity or null, if response has not yet been persisted.
      */
-    public Request updateRequest(Request request);
+    public Response updateRequest(Response response);
 
     /**
-     * convenience method to only update the state of a {@link Request}
+     * convenience method to only update the state of a {@link Response}
      *
-     * @param request existing response to update the state of
-     * @param state   state to set
+     * @param response existing response to update the state of
+     * @param state    state to set
      * @return updated entity or null, if response has not yet been persisted.
      */
-    public Request updateState(Request request, DT_RequestStateEnum state);
+    public Response updateState(Response response, DT_RequestStateEnum state);
 
     /**
-     * find {@link Request} by internal uuid
+     * find {@link Response} by internal uuid
      *
      * @param requestInternalUuid internalUuid of the response
      * @return found response or null, if response does not exist
      */
-    public Request findByInternalUuid(UUID requestInternalUuid);
+    public Response findByInternalUuid(UUID requestInternalUuid);
 
     /**
-     * find {@link Request} by the header's uuid (set by sender)
+     * find {@link Response} by the header's uuid (set by sender)
      *
      * @param headerUuid requestUuid set by the sender in the header
      * @return found response or null if response does not exist
      */
-    public Request findRequestByHeaderUuid(UUID headerUuid);
+    public Response findRequestByHeaderUuid(UUID headerUuid);
 
 }

@@ -27,10 +27,10 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 /**
- * Service providing the interface to the {@link Response}
+ * Service providing the interface to the {@link Request}
  */
 @Service
-public interface ResponseService {
+public interface RequestService {
 
     /**
      * create a {@link Request} in state REQUESTED.

@@ -20,7 +20,6 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.logic.dto;
 
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,21 +28,18 @@ import lombok.ToString;
 import java.util.UUID;
 
 /**
- * Class representing either an api specific content or an error.
+ * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent}.
  */
-@Entity
-@Table(name = "MessageContent")
-@DiscriminatorColumn(name = "content_type")
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
 public abstract class MessageContentDto {
 
-    @Id
-    @GeneratedValue
     /**
      * Technical identifier for a Message Content.
+     * <p>
+     * Only set for existing entities.
      */
     private UUID uuid;
 }

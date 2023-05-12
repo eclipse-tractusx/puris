@@ -18,53 +18,47 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain.model;
+package org.eclipse.tractusx.puris.backend.common.api.logic.dto;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Response;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * The Message always consists of steering information ({@link MessageHeader}) and an actual
- * payload consisting of n >= 0 {@link MessageContent}.
+ * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.Message}
  */
-@Entity
-@Table(name = "Message")
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-public class Message {
+public class MessageDto {
 
-    @Id
-    @GeneratedValue
     /**
-     * Technical identifier for a Message.
+     * Technical identifier for a {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.Message}.
+     * <p>
+     * Only set for existing entities.
      */
     private UUID uuid;
 
     /**
      * Steering information of a {@link Request} or {@link Response} api message.
      */
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "message_header_uuid")
     @NotNull
-    private MessageHeader header;
+    private MessageHeaderDto header;
 
     /**
      * List of actual content of the payload.
      * <p>
      * May contain also errors.
      */
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "message_content_uuid")
     @NotNull
-    private List<MessageContent> payload = new ArrayList<>();
+    private List<MessageContentDto> payload = new ArrayList<>();
 }

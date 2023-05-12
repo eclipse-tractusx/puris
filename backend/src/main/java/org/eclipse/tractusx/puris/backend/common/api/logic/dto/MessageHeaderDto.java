@@ -20,17 +20,11 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.logic.dto;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Response;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 
 import java.util.Date;
@@ -38,22 +32,19 @@ import java.util.UUID;
 
 
 /**
- * The MessageHeaderRepository is used as a Message of both, the {@link Request} and {@link Response},
- * together with the actual Message.
+ * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader}
  */
-@Entity
-@Table(name = "MessageHeaderRepository")
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
 public class MessageHeaderDto {
 
-    @Id
-    @GeneratedValue
     /**
      * This uuid  prevents the application from collision with external IDs, because the partner
      * creates the request when performing a Request API call.
+     * <p>
+     * Only set for existing entities.
      */
     private UUID uuid;
 

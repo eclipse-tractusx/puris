@@ -20,21 +20,17 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.logic.dto;
 
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent;
 
 import java.util.UUID;
 
 /**
- * Allows different Identification Patterns for the api {@link MessageContent}
+ * Dto for
+ * {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.ReferenceIdentification}
  */
-@Entity
-@Table(name = "ReferenceIdentification")
-@DiscriminatorColumn(name = "reference_identification_type")
 @Getter
 @Setter
 @ToString
@@ -43,9 +39,11 @@ public abstract class ReferenceIdentificationDto {
 
     /**
      * Technical identifier for a Reference Identification.
+     * <p>
+     * Only set for existing entities.
      */
-    @Id
-    @GeneratedValue
     private UUID uuid;
+
+    abstract String getLeadingReference();
 
 }

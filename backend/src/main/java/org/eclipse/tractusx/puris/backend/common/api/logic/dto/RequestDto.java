@@ -18,9 +18,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain.model;
+package org.eclipse.tractusx.puris.backend.common.api.logic.dto;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,25 +30,20 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_Re
 import java.util.UUID;
 
 /**
- * This Request represents the message received via a Request API.
- * <p>
- * This Request may not be confused with an HTTP request.
- * Both, the Response and the Request, are called (api) request.
+ * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.Request}
  */
-@Entity
-@Table(name = "Request")
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-public class Request {
+public class RequestDto {
 
     /**
      * This ID prevents the application from collision with external IDs, because the partner
      * creates the request when performing a Request API call.
+     * <p>
+     * Set only for existing {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.Request}
      */
-    @Id
-    @GeneratedValue
     private UUID internalRequestUuid;
 
     /**
@@ -63,9 +57,7 @@ public class Request {
     /**
      * Actual content of the request (or response) message.
      */
-    @OneToOne
-    @JoinColumn(name = "message_uuid")
-    @ToString.Exclude
-    private Message message;
+    @NotNull
+    private MessageDto message;
 
 }
