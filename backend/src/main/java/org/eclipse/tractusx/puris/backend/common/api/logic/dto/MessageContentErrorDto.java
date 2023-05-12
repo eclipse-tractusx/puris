@@ -25,7 +25,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent;
 
 /**
  * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContentError}
@@ -34,7 +33,7 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent
 @Setter
 @ToString
 @NoArgsConstructor
-public class MessageContentErrorDto extends MessageContent {
+public class MessageContentErrorDto extends MessageContentDto {
 
     /**
      * identifies a business object of a specific api that refers to the error.
