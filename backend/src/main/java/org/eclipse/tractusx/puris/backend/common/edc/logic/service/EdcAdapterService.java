@@ -18,12 +18,15 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.service;
+package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.squareup.okhttp.*;
+import org.eclipse.tractusx.puris.backend.PurisApplication;
 import org.eclipse.tractusx.puris.backend.model.repo.OrderRepository;
 import org.eclipse.tractusx.puris.backend.util.EDCRequestBodyBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -36,7 +39,7 @@ import java.net.URL;
  * The EDC connection is configured using the application.properties file.
  */
 @Service
-public class EdcAdapter {
+public class EdcAdapterService {
     private static final OkHttpClient CLIENT = new OkHttpClient();
 
     @Autowired
@@ -60,6 +63,14 @@ public class EdcAdapter {
     @Value("${minikube.ip}")
     private String minikubeIp;
 
+    @Value("${request.serverendpoint}")
+    private String requestServerEndpointURL;
+
+    @Value("${response.serverendpoint}")
+    private String responseServerEndpointURL;
+
+    private static final Logger log = LoggerFactory.getLogger(PurisApplication.class);
+
     /**
      * Publish an order at own EDC.
      *
@@ -81,6 +92,27 @@ public class EdcAdapter {
         }
         return false;
     }
+
+    public boolean publishRequestAndResponseAssetAtEDC(String serverOwnerId) throws IOException {
+
+        String[] assetIds = {"asset.properties.asset:request-api." + serverOwnerId,
+                "asset.properties.asset:response-api." + serverOwnerId};
+        String[] serverURLs = {requestServerEndpointURL, responseServerEndpointURL};
+        boolean success = true;
+        for (int i = 0; i < 2; i++) {
+            String assetId = assetIds[i];
+            String endpointURL = serverURLs[i];
+            var assetBody = EDCRequestBodyBuilder.buildAssetRequestBody(endpointURL, assetId);
+            var policyBody = EDCRequestBodyBuilder.buildPolicyRequestBody(assetId);
+            var contractBody = EDCRequestBodyBuilder.buildContractRequestBody(assetId);
+            success = success && sendEdcRequest(assetBody, "/data/assets").isSuccessful();
+            success = success && sendEdcRequest(policyBody, "/data/policydefinitions").isSuccessful();
+            success = success && sendEdcRequest(contractBody, "/data/contractdefinitions").isSuccessful();
+            log.info(endpointURL);
+        }
+        return success;
+    }
+
 
     /**
      * Get catalog from an EDC.
@@ -132,7 +164,7 @@ public class EdcAdapter {
      * Start a negotitation with another EDC.
      *
      * @param connectorAddress ids url of the negotiation counterparty.
-     * @param orderId id of the negotiations target asset.
+     * @param orderId          id of the negotiations target asset.
      * @return response body received from the EDC.
      * @throws IOException if the connection to the EDC failed.
      */
@@ -145,10 +177,10 @@ public class EdcAdapter {
     /**
      * Start a data transfer with another EDC.
      *
-     * @param transferId id created for the transferprocess.
+     * @param transferId       id created for the transferprocess.
      * @param connectorAddress ids url of the transfer counterparty.
-     * @param contractId id of the negotiated contract.
-     * @param orderId id of the transfers target asset.
+     * @param contractId       id of the negotiated contract.
+     * @param orderId          id of the transfers target asset.
      * @return response body received from the EDC.
      * @throws IOException if the connection to the EDC failed.
      */
@@ -190,7 +222,7 @@ public class EdcAdapter {
     /**
      * Send a GET request to the own EDC.
      *
-     * @param resourceId (optional) id of the resource to request, will be left empty if null.
+     * @param resourceId   (optional) id of the resource to request, will be left empty if null.
      * @param pathSegments varargs for the path segments of the request
      *                     (e.g "data", "assets" will be turned to /data/assets).
      * @return response body received from the EDC.
@@ -201,10 +233,10 @@ public class EdcAdapter {
                 .scheme("http")
                 .host(edcHost)
                 .port(dataPort);
-        for(var seg : pathSegments) {
+        for (var seg : pathSegments) {
             urlBuilder.addPathSegment(seg);
         }
-        if(resourceId != null) {
+        if (resourceId != null) {
             urlBuilder.addPathSegment(resourceId);
         }
         var url = urlBuilder.build();
@@ -222,7 +254,7 @@ public class EdcAdapter {
      * Util method for building a http POST request to the own EDC.
      *
      * @param requestBody requestBody to be sent to the EDC.
-     * @param urlSuffix path to POST data to
+     * @param urlSuffix   path to POST data to
      * @return response received from the EDC.
      * @throws IOException if the connection to the EDC failed.
      */

@@ -18,9 +18,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.controller;
+package org.eclipse.tractusx.puris.backend.common.edc.controller;
 
-import org.eclipse.tractusx.puris.backend.service.EdcAdapter;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +35,7 @@ import java.net.URL;
 @RequestMapping("edc")
 public class EdcController {
 
-    @Autowired private EdcAdapter edcAdapter;
+    @Autowired private EdcAdapterService edcAdapter;
 
     /**
      * Publish an order at the edc.
