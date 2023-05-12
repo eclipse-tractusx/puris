@@ -65,7 +65,7 @@ public abstract class ResponseApiController {
      * @param messageDto request to be mapped
      */
     @PostMapping
-    public ResponseEntity postResponse(@RequestBody MessageDto messageDto) {
+    protected ResponseEntity postResponse(@RequestBody MessageDto messageDto) {
 
         UUID requestId = messageDto.getHeader().getRequestId();
 
