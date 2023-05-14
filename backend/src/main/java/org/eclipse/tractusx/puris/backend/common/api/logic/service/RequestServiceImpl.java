@@ -25,10 +25,12 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.repository.RequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
 public class RequestServiceImpl implements RequestService {
     @Autowired
     private RequestRepository requestRepository;
