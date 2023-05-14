@@ -20,7 +20,7 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.logic.service;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Message;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.ResponseDto;
 
 /**
  * Service receives performs the tasks associated with the Response API.
@@ -36,5 +36,5 @@ public interface ResponseApiService {
      *
      * @param message to consume
      */
-    public void consumeResponse(Message message);
+    public void consumeResponse(ResponseDto responseDto);
 }

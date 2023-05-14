@@ -21,7 +21,7 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Message;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.ResponseDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiService;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.springframework.stereotype.Component;
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
 public class ProductStockResponseApiServiceImpl implements ResponseApiService {
 
     @Override
-    public void consumeResponse(Message message) {
+    public void consumeResponse(ResponseDto responseDto) {
         throw new NotYetImplementedException("Implement Request Flow for " +
                 "ProductStockRequestApiService");
     }

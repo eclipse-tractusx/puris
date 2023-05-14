@@ -22,7 +22,6 @@ package org.eclipse.tractusx.puris.backend.common.api.controller;
 
 import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Response;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.ResponseDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfullRequestDto;
@@ -78,7 +77,7 @@ public abstract class ResponseApiController {
         requestFound.setState(DT_RequestStateEnum.COMPLETED);
         requestFound = requestService.createRequest(requestFound);
 
-        responseApiService.consumeResponse(modelMapper.map(responseDto, Response.class));
+        responseApiService.consumeResponse(responseDto);
 
         // if the request has been correctly taken over, return 201
         return new ResponseEntity(new SuccessfullRequestDto(requestId), HttpStatus.CREATED);
