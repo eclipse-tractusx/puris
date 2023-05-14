@@ -21,15 +21,25 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentErrorDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.ResponseDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiService;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
+import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockSammDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStock;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -40,6 +50,7 @@ import java.util.UUID;
  * API specification.
  */
 @Component
+@Slf4j
 public class ProductStockResponseApiServiceImpl implements ResponseApiService {
 
     @Autowired
@@ -48,17 +59,41 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
     @Autowired
     private PartnerProductStockService partnerProductStockService;
 
+    @Autowired
+    private ProductStockSammMapper productStockSammMapper;
+
     @Override
     public void consumeResponse(ResponseDto responseDto) {
 
         Request correspondingRequest = findCorrespondingRequest(responseDto);
 
-        // check whether a new PartnerProductStock must be created
-        // or whether an update is sufficient.
+        for(MessageContentDto messageContentDto: responseDto.getPayload()){
 
-        // Create or update
+            if (messageContentDto instanceof ProductStockSammDto){
 
-        // Update status
+                ProductStockSammDto sammDto = (ProductStockSammDto) messageContentDto;
+
+                // TODO: fix SAMM mapping
+                // productStockSammMapper.fromSamm(sammDto);
+
+                // check whether a new PartnerProductStock must be created
+                // or whether an update is sufficient.
+                List<PartnerProductStock> existingPartnerProductStocks =
+                        partnerProductStockService.findAllByMaterialUuidAndPartnerUuid(responseDto.get)
+
+
+                // Create or update
+                if (existingPartnerProductStocks.isEmpty()){
+                    //partnerProductStockService.create();
+                }
+            } else if (messageContentDto instanceof MessageContentErrorDto){
+                log.error(String.format("Could not receive information: %s", messageContentDto));
+            }
+            throw new IllegalStateException(String.format("Message Content is unknown: %s", messageContentDto));
+
+        }
+
+        // Update status - also only MessageContentErrorDtos would be completed
         requestService.updateState(correspondingRequest, DT_RequestStateEnum.COMPLETED);
     }
 

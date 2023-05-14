@@ -23,4 +23,6 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.ResponseDto;
 
 public class ProductStockResponseDto extends ResponseDto {
+
+
 }
