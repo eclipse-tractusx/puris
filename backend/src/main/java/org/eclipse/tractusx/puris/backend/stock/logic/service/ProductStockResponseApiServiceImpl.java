@@ -21,10 +21,16 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
+import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.ResponseDto;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiService;
-import org.hibernate.cfg.NotYetImplementedException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 /**
  * Service implements the handling of a response for Product Stock
@@ -36,10 +42,36 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProductStockResponseApiServiceImpl implements ResponseApiService {
 
+    @Autowired
+    private RequestService requestService;
+
+    @Autowired
+    private PartnerProductStockService partnerProductStockService;
+
     @Override
     public void consumeResponse(ResponseDto responseDto) {
-        throw new NotYetImplementedException("Implement Request Flow for " +
-                "ProductStockRequestApiService");
+
+        Request correspondingRequest = findCorrespondingRequest(responseDto);
+
+        // check whether a new PartnerProductStock must be created
+        // or whether an update is sufficient.
+
+        // Create or update
+
+        // Update status
+        requestService.updateState(correspondingRequest, DT_RequestStateEnum.COMPLETED);
+    }
+
+    private Request findCorrespondingRequest(ResponseDto responseDto) {
+        UUID requestId = responseDto.getHeader().getRequestId();
+
+        Request requestFound =
+                requestService.findRequestByHeaderUuid(requestId);
+
+        if (requestFound == null) {
+            throw new RequestIdNotFoundException(requestId);
+        } else return requestFound;
+
     }
 
 }
