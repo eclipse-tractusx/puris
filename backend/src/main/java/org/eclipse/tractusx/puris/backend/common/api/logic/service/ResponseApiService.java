@@ -34,7 +34,7 @@ public interface ResponseApiService {
      * <li>validate the data</li>
      * <li>store the data</li>
      *
-     * @param message to consume
+     * @param responseDto response to consume
      */
     public void consumeResponse(ResponseDto responseDto);
 }
