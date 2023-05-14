@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,37 +19,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.logic.dto;
+package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 
-import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
 
-/**
- * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContentError}
- */
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
-public class MessageContentErrorDto extends MessageContentDto {
+@AllArgsConstructor
+public class ProductStockSammDto extends MessageContentDto {
 
-    /**
-     * identifies a business object of a specific api that refers to the error.
-     */
-    private String materialNumberCustomer;
-
-    /**
-     * error code specifying the error.
-     */
-    @NotNull
-    private String error;
-
-    /**
-     * the actual error message providing further detail.
-     */
-    @NotNull
-    private String message;
+    private String name;
 }

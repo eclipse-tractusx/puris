@@ -20,6 +20,7 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.logic.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,6 +47,7 @@ public class MessageHeaderDto {
      * <p>
      * Only set for existing entities.
      */
+    @JsonIgnore
     private UUID uuid;
 
     /**

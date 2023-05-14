@@ -20,12 +20,18 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.logic.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockSammDto;
 
 import java.util.UUID;
+
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.DEDUCTION;
 
 /**
  * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent}.
@@ -34,6 +40,9 @@ import java.util.UUID;
 @Setter
 @ToString
 @NoArgsConstructor
+@JsonTypeInfo(use = DEDUCTION) // Intended usage
+@JsonSubTypes({@JsonSubTypes.Type(MessageContentErrorDto.class),
+        @JsonSubTypes.Type(ProductStockSammDto.class)})
 public abstract class MessageContentDto {
 
     /**
@@ -41,5 +50,6 @@ public abstract class MessageContentDto {
      * <p>
      * Only set for existing entities.
      */
+    @JsonIgnore
     private UUID uuid;
 }
