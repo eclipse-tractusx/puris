@@ -21,6 +21,7 @@
  */
 package org.eclipse.tractusx.puris.backend;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
@@ -47,11 +48,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class CustomerCommandLineRunner implements CommandLineRunner {
+@Slf4j
+public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private ModelMapper modelMapper;
-
 
     @Autowired
     private MaterialService materialService;
@@ -67,8 +68,6 @@ public class CustomerCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private PartnerProductStockService partnerProductStockService;
-
-    private static final Logger log = LoggerFactory.getLogger(PurisApplication.class);
 
     @Override
     public void run(String... args) throws Exception {
@@ -222,6 +221,5 @@ public class CustomerCommandLineRunner implements CommandLineRunner {
                 PartnerProductStock.class);
         partnerProductStockEntity = partnerProductStockService.create(partnerProductStockEntity);
         log.info(String.format("Created partnerProductStock: %s", partnerProductStockEntity));
-
     }
 }
