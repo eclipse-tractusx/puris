@@ -18,10 +18,10 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.service;
+package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
-import org.eclipse.tractusx.puris.backend.model.ExternalConnector;
-import org.eclipse.tractusx.puris.backend.model.repo.ExternalConnectorRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.ExternalConnector;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ExternalConnectorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,10 +36,11 @@ public class ExternalConnectorService {
 
     private final ExternalConnectorRepository externalConnectorRepository;
 
-    private final EdcAdapter edcAdapter;
+    private final EdcAdapterService edcAdapter;
 
     @Autowired
-    public ExternalConnectorService(ExternalConnectorRepository externalConnectorRepository, EdcAdapter edcAdapter) {
+    public ExternalConnectorService(ExternalConnectorRepository externalConnectorRepository,
+                                    EdcAdapterService edcAdapter) {
         this.externalConnectorRepository = externalConnectorRepository;
         this.edcAdapter = edcAdapter;
     }

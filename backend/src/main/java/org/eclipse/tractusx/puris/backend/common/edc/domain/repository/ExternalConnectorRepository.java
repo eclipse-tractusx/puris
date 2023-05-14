@@ -18,31 +18,15 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.model;
+package org.eclipse.tractusx.puris.backend.common.edc.domain.repository;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import jakarta.persistence.Entity;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.ExternalConnector;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 /**
- * External Connector object, will be used for dropdown selection in frontend.
+ * JPA Repository for {@link ExternalConnector} entities.
  */
-@Entity
-@Getter
-@Setter
-@NoArgsConstructor
-public class ExternalConnector extends JpaBaseEntity {
-
-    /**
-     * Display name of the connector.
-     */
-    private String name;
-
-    /**
-     * URL of the connector.
-     */
-    private String url;
-
+@Repository
+public interface ExternalConnectorRepository extends JpaRepository<ExternalConnector, Long> {
 }

@@ -22,8 +22,8 @@ package org.eclipse.tractusx.puris.backend.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.tractusx.puris.backend.model.ExternalConnector;
-import org.eclipse.tractusx.puris.backend.service.ExternalConnectorService;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.ExternalConnector;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.ExternalConnectorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
