@@ -33,8 +33,7 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiSe
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockSammDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStock;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -62,34 +61,59 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
     @Autowired
     private ProductStockSammMapper productStockSammMapper;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     @Override
     public void consumeResponse(ResponseDto responseDto) {
 
         Request correspondingRequest = findCorrespondingRequest(responseDto);
 
-        for(MessageContentDto messageContentDto: responseDto.getPayload()){
+        for (MessageContentDto messageContentDto : responseDto.getPayload()) {
 
-            if (messageContentDto instanceof ProductStockSammDto){
+            if (messageContentDto instanceof ProductStockSammDto) {
 
                 ProductStockSammDto sammDto = (ProductStockSammDto) messageContentDto;
-
-                // TODO: fix SAMM mapping
-                // productStockSammMapper.fromSamm(sammDto);
+                PartnerProductStockDto partnerProductStockDto =
+                        productStockSammMapper.fromSamm(sammDto);
 
                 // check whether a new PartnerProductStock must be created
                 // or whether an update is sufficient.
                 List<PartnerProductStock> existingPartnerProductStocks =
-                        partnerProductStockService.findAllByMaterialUuidAndPartnerUuid(responseDto.get)
+                        partnerProductStockService.findAllByMaterialUuidAndPartnerUuid(
+                                partnerProductStockDto.getMaterial().getUuid(),
+                                partnerProductStockDto.getSupplierPartner().getUuid()
+                        );
 
+                // currently we only accept a one to one mapping of partner - material - stock -site
+                // therefore the can only be one PartnerProductStock
+                // if > 0 -> IllegalState
+                if (existingPartnerProductStocks.size() > 1) {
+                    throw new IllegalStateException(String.format("There exist %d " +
+                                    "PartnerProductStocks for material uuid %s and supplier partner uuid " +
+                                    "%s", existingPartnerProductStocks.size(),
+                            partnerProductStockDto.getMaterial().getUuid(),
+                            partnerProductStockDto.getSupplierPartner().getUuid()));
+                }
 
                 // Create or update
-                if (existingPartnerProductStocks.isEmpty()){
-                    //partnerProductStockService.create();
+                if (existingPartnerProductStocks.isEmpty()) {
+                    PartnerProductStock createdPartnerProductStock =
+                            partnerProductStockService.create(modelMapper.map(partnerProductStockDto,
+                                    PartnerProductStock.class));
+                    log.info(String.format("Created Partner ProductStock from SAMM: %s",
+                            createdPartnerProductStock));
+                } else {
+                    PartnerProductStock updatedPartnerProductStock =
+                            partnerProductStockService.update(existingPartnerProductStocks.get(0));
+                    log.info(String.format("Updated Partner ProductStock from SAMM: %s",
+                            updatedPartnerProductStock));
                 }
-            } else if (messageContentDto instanceof MessageContentErrorDto){
+            } else if (messageContentDto instanceof MessageContentErrorDto) {
                 log.error(String.format("Could not receive information: %s", messageContentDto));
-            }
-            throw new IllegalStateException(String.format("Message Content is unknown: %s", messageContentDto));
+            } else
+                throw new IllegalStateException(String.format("Message Content is unknown: %s",
+                        messageContentDto));
 
         }
 

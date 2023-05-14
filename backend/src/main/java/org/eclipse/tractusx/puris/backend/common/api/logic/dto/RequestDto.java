@@ -27,6 +27,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 
+import java.util.List;
+
 /**
  * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.Request}
  */
@@ -50,9 +52,17 @@ public class RequestDto extends MessageDto {
      * @param state   state to set
      * @param message message to set
      */
-    public RequestDto(DT_RequestStateEnum state, MessageDto message) {
+    /**
+     * Create a RequestDto manually
+     *
+     * @param state            state of the request
+     * @param messageHeaderDto messageHeader of the request
+     * @param payload          actual payload of the request
+     */
+    public RequestDto(DT_RequestStateEnum state,
+                      MessageHeaderDto messageHeaderDto, List<MessageContentDto> payload) {
         this.state = state;
-        this.setPayload(message.getPayload());
-        this.setHeader(message.getHeader());
+        this.setPayload(payload);
+        this.setHeader(messageHeaderDto);
     }
 }

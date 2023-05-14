@@ -38,7 +38,7 @@ import java.util.UUID;
 @Setter
 @ToString
 @NoArgsConstructor
-public abstract class MessageContent {
+public class MessageContent {
 
     @Id
     @GeneratedValue
