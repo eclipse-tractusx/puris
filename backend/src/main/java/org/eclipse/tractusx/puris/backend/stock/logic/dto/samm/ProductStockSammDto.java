@@ -27,6 +27,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -39,7 +40,7 @@ import java.util.Optional;
  */
 @Getter
 @Setter
-public class ProductStock {
+public class ProductStockSammDto extends MessageContentDto {
 
     @NotNull
     private Collection<Position> positions;
@@ -53,10 +54,10 @@ public class ProductStock {
     private Optional<String> materialNumberSupplier;
 
     @JsonCreator
-    public ProductStock(@JsonProperty(value = "positions") Collection<Position> positions,
-                        @JsonProperty(value = "materialNumberCustomer") String materialNumberCustomer,
-                        @JsonProperty(value = "materialNumberCatenaX") Optional<String> materialNumberCatenaX,
-                        @JsonProperty(value = "materialNumberSupplier") Optional<String> materialNumberSupplier) {
+    public ProductStockSammDto(@JsonProperty(value = "positions") Collection<Position> positions,
+                               @JsonProperty(value = "materialNumberCustomer") String materialNumberCustomer,
+                               @JsonProperty(value = "materialNumberCatenaX") Optional<String> materialNumberCatenaX,
+                               @JsonProperty(value = "materialNumberSupplier") Optional<String> materialNumberSupplier) {
         super(
 
         );
@@ -111,7 +112,7 @@ public class ProductStock {
             return false;
         }
 
-        final ProductStock that = (ProductStock) o;
+        final ProductStockSammDto that = (ProductStockSammDto) o;
         return Objects.equals(positions, that.positions)
                 && Objects.equals(materialNumberCustomer, that.materialNumberCustomer)
                 && Objects.equals(materialNumberCatenaX, that.materialNumberCatenaX)

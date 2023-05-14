@@ -56,7 +56,7 @@ public class ProductStockSammMapper {
     @Autowired
     private ModelMapper modelMapper;
 
-    public static ProductStock toSamm(ProductStockDto productStockDto) {
+    public static ProductStockSammDto toSamm(ProductStockDto productStockDto) {
 
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(productStockDto.getLastUpdatedOn());
@@ -86,7 +86,7 @@ public class ProductStockSammMapper {
         List<Position> positions = new ArrayList<>();
         positions.add(position);
 
-        return new ProductStock(
+        return new ProductStockSammDto(
                 positions,
                 productStockDto.getMaterial().getMaterialNumberCustomer(),
                 Optional.ofNullable(productStockDto.getMaterial().getMaterialNumberCx()),
@@ -95,7 +95,7 @@ public class ProductStockSammMapper {
     }
 
 
-    public PartnerProductStockDto fromSamm(ProductStock samm) {
+    public PartnerProductStockDto fromSamm(ProductStockSammDto samm) {
         // application currently only supports:
         // - an AGGREGATED Partner stock
         // - one Site per Partner
