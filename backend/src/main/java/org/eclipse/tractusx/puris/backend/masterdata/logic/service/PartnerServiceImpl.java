@@ -66,4 +66,24 @@ public class PartnerServiceImpl implements PartnerService {
             return existingPartner.get();
         } else return null;
     }
+
+    @Override
+    public Partner findByBpnl(String bpnl) {
+        Optional<Partner> existingPartner =
+                partnerRepository.findFirstByBpnl(bpnl);
+
+        if (existingPartner.isPresent()) {
+            return existingPartner.get();
+        } else return null;
+    }
+
+    @Override
+    public Partner findByBpns(String bpns) {
+        Optional<Partner> existingPartner =
+                partnerRepository.findFirstBySiteBpns(bpns);
+
+        if (existingPartner.isPresent()) {
+            return existingPartner.get();
+        } else return null;
+    }
 }

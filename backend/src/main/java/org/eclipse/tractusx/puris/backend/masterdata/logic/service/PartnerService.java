@@ -38,4 +38,8 @@ public interface PartnerService {
 
     Partner update(Partner partner);
 
+    Partner findByBpnl(String bpnl);
+
+    Partner findByBpns(String bpns);
+
 }
