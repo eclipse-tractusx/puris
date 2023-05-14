@@ -23,6 +23,7 @@ package org.eclipse.tractusx.puris.backend.common.api.domain.repository;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -36,5 +37,6 @@ public interface RequestRepository extends JpaRepository<Request, UUID> {
      * @param headerRequestUuid uuid set by the sending partner in the header
      * @return Request
      */
-    public Request findRequestByHeader_RequestId(UUID headerRequestUuid);
+    public Optional<Request> findRequestByHeader_RequestId(UUID headerRequestUuid);
+
 }
