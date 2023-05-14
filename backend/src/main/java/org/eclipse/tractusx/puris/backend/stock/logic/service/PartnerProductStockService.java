@@ -37,4 +37,7 @@ public interface PartnerProductStockService {
     List<PartnerProductStock> findAllByMaterialUuid(UUID materialUuid);
 
     PartnerProductStock update(PartnerProductStock partnerProductStock);
+
+    List<PartnerProductStock> findAllByMaterialUuidAndPartnerUuid(UUID partnerUuid,
+                                                                  UUID materialUuid);
 }

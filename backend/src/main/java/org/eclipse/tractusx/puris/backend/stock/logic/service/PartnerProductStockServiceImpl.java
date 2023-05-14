@@ -58,8 +58,13 @@ public class PartnerProductStockServiceImpl implements PartnerProductStockServic
         Optional<PartnerProductStock> existingStock = partnerProductStockRepository.findById(partnerProductStock.getUuid());
 
         if (existingStock.isPresent() && existingStock.get().getType() == DT_StockTypeEnum.PRODUCT) {
-            return existingStock.get();
+            return partnerProductStockRepository.save(partnerProductStock);
         } else
             return null;
+    }
+
+    @Override
+    public List<PartnerProductStock> findAllByMaterialUuidAndPartnerUuid(UUID partnerUuid, UUID materialUuid) {
+        return partnerProductStockRepository.findAllByMaterial_UuidAndTypeAndSupplierPartner_Uuid(materialUuid, DT_StockTypeEnum.PRODUCT, materialUuid);
     }
 }
