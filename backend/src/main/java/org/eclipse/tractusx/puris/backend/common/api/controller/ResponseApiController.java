@@ -21,10 +21,10 @@
 package org.eclipse.tractusx.puris.backend.common.api.controller;
 
 import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Message;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Response;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageDto;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.ResponseDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfullRequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
@@ -33,8 +33,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.UUID;
@@ -44,17 +42,19 @@ import java.util.UUID;
  * <p>
  * Subclasses should implement the specifics, such as routes.
  */
-@Controller
 public abstract class ResponseApiController {
 
     @Autowired
     private RequestService requestService;
 
-    @Autowired
     private ResponseApiService responseApiService;
 
     @Autowired
     private ModelMapper modelMapper;
+
+    public ResponseApiController(ResponseApiService responseApiService) {
+        this.responseApiService = responseApiService;
+    }
 
     /**
      * Receive a request from a consuming partner
@@ -62,12 +62,11 @@ public abstract class ResponseApiController {
      * Uses the {@link RequestApiService#handleRequest(Request)} method to perform the actual
      * task asynchronously.
      *
-     * @param messageDto request to be mapped
+     * @param responseDto request to be mapped
      */
-    @PostMapping
-    protected ResponseEntity postResponse(@RequestBody MessageDto messageDto) {
+    public ResponseEntity postResponse(@RequestBody ResponseDto responseDto) {
 
-        UUID requestId = messageDto.getHeader().getRequestId();
+        UUID requestId = responseDto.getHeader().getRequestId();
 
         Request requestFound =
                 requestService.findRequestByHeaderUuid(requestId);
@@ -79,7 +78,7 @@ public abstract class ResponseApiController {
         requestFound.setState(DT_RequestStateEnum.COMPLETED);
         requestFound = requestService.createRequest(requestFound);
 
-        responseApiService.consumeResponse(modelMapper.map(messageDto, Message.class));
+        responseApiService.consumeResponse(modelMapper.map(responseDto, Response.class));
 
         // if the request has been correctly taken over, return 201
         return new ResponseEntity(new SuccessfullRequestDto(requestId), HttpStatus.CREATED);
