@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
 
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
@@ -138,9 +139,11 @@ public class EdcAdapterService {
                 EDCRequestBodyBuilder.buildPolicyRequestBody(assetId);
         JsonNode contractBody = EDCRequestBodyBuilder.buildContractRequestBody(assetId);
         success = success && sendEdcRequest(assetBody, "/data/assets").isSuccessful();
+        log.info(String.format("Creation of asset was successfull: %b", success));
         success = success && sendEdcRequest(policyBody, "/data/policydefinitions").isSuccessful();
+        log.info(String.format("Creation of policy was successfull: %b", success));
         success = success && sendEdcRequest(contractBody, "/data/contractdefinitions").isSuccessful();
-        log.info(String.format("Created Contract Definition for Asset %s",
+        log.info(String.format("Created Contract Definition (%b) for Asset %s", success,
                 objectMapper.writeValueAsString(createAssetDto)));
 
         return success;
@@ -166,6 +169,42 @@ public class EdcAdapterService {
                         .addEncodedQueryParameter("providerUrl", idsUrl)
                         .build()
                 )
+                .header("X-Api-Key", edcApiKey)
+                .header("Content-Type", "application/json")
+                .build();
+        var response = CLIENT.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            throw new IOException(response.body().string());
+        }
+        return response.body().string();
+    }
+
+    /**
+     * Get catalog from an EDC.
+     *
+     * @param idsUrl url of the EDC to get catalog from.
+     * @return catalog of the requested EDC.
+     * @throws IOException if the connection to the EDC failed.
+     */
+    public String getCatalog(String idsUrl, Map<String, String> filterProperties) throws IOException {
+
+        HttpUrl.Builder urlBuilder = new HttpUrl.Builder();
+        urlBuilder.scheme("http")
+                .host(edcHost)
+                .port(dataPort)
+                .addPathSegment("data")
+                .addPathSegment("catalog")
+                .addEncodedQueryParameter("providerUrl", idsUrl);
+
+        for (Map.Entry<String, String> entry : filterProperties.entrySet()) {
+            urlBuilder.addQueryParameter("filter", String.format("%s=%s", entry.getKey(),
+                    entry.getValue()));
+        }
+        log.info(String.format("URL built: %s", urlBuilder.build()));
+
+        var request = new Request.Builder()
+                .get()
+                .url(urlBuilder.build())
                 .header("X-Api-Key", edcApiKey)
                 .header("Content-Type", "application/json")
                 .build();
@@ -292,12 +331,14 @@ public class EdcAdapterService {
      * @throws IOException if the connection to the EDC failed.
      */
     private Response sendEdcRequest(JsonNode requestBody, String urlSuffix) throws IOException {
-        var request = new Request.Builder()
+        Request request = new Request.Builder()
                 .header("X-Api-Key", edcApiKey)
                 .header("Content-Type", "application/json")
                 .post(RequestBody.create(MediaType.parse("application/json"), requestBody.toString()))
                 .url("http://" + edcHost + ":" + dataPort + urlSuffix)
                 .build();
+
+        log.info(String.format("Request body of EDC Request: %s", requestBody));
         return CLIENT.newCall(request).execute();
     }
 
