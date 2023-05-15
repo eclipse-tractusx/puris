@@ -51,16 +51,19 @@ public abstract class RequestApiController {
     @Autowired
     private RequestService requestService;
 
-    @Autowired
     private RequestApiService requestApiService;
 
     @Autowired
     private ModelMapper modelMapper;
 
+    public RequestApiController(RequestApiService requestApiService) {
+        this.requestApiService = requestApiService;
+    }
+
     /**
      * Receive a request from a consuming partner
      * <p>
-     * Uses the {@link RequestApiService#handleRequest(Request)} method to perform the actual
+     * Uses the {@link RequestApiService#handleRequest(RequestDto)} method to perform the actual
      * task asynchronously.
      *
      * @param requestDto request to be mapped
@@ -82,9 +85,9 @@ public abstract class RequestApiController {
         requestEntity = requestService.createRequest(requestEntity);
 
         // handling the request and responding should be done asynchronously.
-        final Request threadRequest = requestEntity;
+        final RequestDto threadRequestDto = modelMapper.map(requestEntity, RequestDto.class);
         Thread respondAsyncThread = new Thread(() -> {
-            requestApiService.handleRequest(threadRequest);
+            requestApiService.handleRequest(threadRequestDto);
         });
         respondAsyncThread.start();
 

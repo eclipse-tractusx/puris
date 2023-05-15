@@ -21,7 +21,7 @@
 package org.eclipse.tractusx.puris.backend.common.api.logic.service;
 
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
 
 /**
  * Service receives performs the tasks associated with the Request API.
@@ -36,8 +36,8 @@ public interface RequestApiService {
      * <li>find the Response Api at partner via {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader}</li>
      * <li>send the Response to the Response Api</li>
      *
-     * @param request
+     * @param requestDto request received
      */
-    public void handleRequest(Request request);
+    public void handleRequest(RequestDto requestDto);
 
 }
