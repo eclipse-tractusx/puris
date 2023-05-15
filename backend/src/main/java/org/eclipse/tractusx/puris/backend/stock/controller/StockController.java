@@ -214,7 +214,7 @@ public class StockController {
 
     @GetMapping("customer")
     @ResponseBody
-    public List<PartnerDto> getCustomerPartnersOrderingMaterial(UUID materialUuid) {
+    public List<PartnerDto> getCustomerPartnersOrderingMaterial(@RequestParam UUID materialUuid) {
         List<PartnerDto> allCustomerPartners = partnerService.findAllCustomerPartnersForMaterialId(materialUuid).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());

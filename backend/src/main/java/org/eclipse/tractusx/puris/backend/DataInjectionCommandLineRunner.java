@@ -151,6 +151,14 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                         "persisted: %b",
                 productsFound.get(0).getOrderedByPartners()));
 
+        createdCentralControlUnitEntity =
+                materialService.update(modelMapper.map(centralControlUnitDto, Material.class));
+        log.info(String.format("Updated centralControlUnit %s",
+                createdCentralControlUnitEntity));
+        //TODO Many to Many mapping
+        //log.info(createdCentralControlUnitEntity.getOrderedByPartners().iterator().next()
+        // .toString());
+
         centralControlUnitEntity = materialService.findByUuid(centralControlUnitEntity.getUuid());
         centralControlUnitDto = modelMapper.map(centralControlUnitEntity, MaterialDto.class);
 

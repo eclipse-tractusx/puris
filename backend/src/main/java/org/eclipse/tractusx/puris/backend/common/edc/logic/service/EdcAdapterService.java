@@ -253,6 +253,11 @@ public class EdcAdapterService {
         return response.body().string();
     }
 
+    public String getNegotiationState(String connectorAddress, String negotiationId) throws IOException {
+        var response = sendEdcRequest("/data/contractnegotiations/" + negotiationId);
+        return response.body().string();
+    }
+
     /**
      * Start a data transfer with another EDC.
      *
@@ -346,6 +351,16 @@ public class EdcAdapterService {
                 .build();
 
         log.info(String.format("Request body of EDC Request: %s", requestBody));
+        return CLIENT.newCall(request).execute();
+    }
+
+    private Response sendEdcRequest(String urlSuffix) throws IOException {
+        Request request = new Request.Builder()
+                .header("X-Api-Key", edcApiKey)
+                .header("Content-Type", "application/json")
+                .url("http://" + edcHost + ":" + dataPort + urlSuffix)
+                .build();
+
         return CLIENT.newCall(request).execute();
     }
 

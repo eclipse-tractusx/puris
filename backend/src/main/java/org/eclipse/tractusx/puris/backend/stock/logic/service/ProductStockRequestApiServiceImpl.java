@@ -213,7 +213,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
                     productStock.setQuantity(quantity);
 
                 }
-                
+
                 resultProductStocks.add(productStockSammMapper.toSamm(modelMapper.map(productStock,
                         ProductStockDto.class)));
 
@@ -228,6 +228,59 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         JsonNode catalogNode = objectMapper.valueToTree(catalog);
         // we expect only one offer for us
         JsonNode contractOfferJson = catalogNode.get("contractoffers").get(0);
+
+        try {
+            String negotiationResponseString = edcAdapterService.startNegotiation(partnerIdsUrl,
+                    requestDto.getHeader().getRespondAssetId());
+            JsonNode negotiationResponse = objectMapper.valueToTree(negotiationResponseString);
+
+            String contractId = negotiationResponse.get("id").toString();
+            log.info(String.format("Contract Id: %s", contractId));
+
+            /*
+            String contractNegotiationId = negotiationResponse.get("contract_agreement_id").toString();
+            log.info(String.format("Contract Negotiation Id for Response (Request ID %s): %s",
+                    requestDto.getHeader().getRequestId(),
+                    contractNegotiationId));
+             */
+
+            boolean negotiationDone = false;
+            String negotiationStateResultString = null;
+            JsonNode negotiationStateResult = null;
+            do {
+                Thread.sleep(2000);
+                negotiationStateResultString = edcAdapterService.getNegotiationState(partnerIdsUrl,
+                        contractId);
+                negotiationStateResult = objectMapper.valueToTree(negotiationStateResultString);
+
+                if (negotiationStateResult.get("state").equals("CONFIRMED")) {
+                    negotiationDone = true;
+                } else if (negotiationStateResult.get("state").equals("ERROR")) {
+                    throw new RuntimeException(String.format("Negotiation Result: Error for " +
+                            "Negotiation ID %S", contractId));
+                }
+
+            } while (!negotiationDone);
+
+            String contractAgreementId = negotiationStateResult.get("contractAgreementId").toString();
+            log.info(String.format("Contract Agreement ID: %s", contractAgreementId));
+
+            String transferId = UUID.randomUUID().toString();
+            edcAdapterService.startTransfer(transferId, partnerIdsUrl, contractId,
+                    requestDto.getHeader().getRespondAssetId());
+
+            boolean edrReceived = false;
+            do {
+                String backendAnswer = edcAdapterService.getFromBackend(transferId);
+                log.info(String.format("Backend Application answer: %s"));
+                Thread.sleep(2000);
+            } while (!edrReceived);
+
+        } catch (IOException | InterruptedException e) {
+            log.error(e.getMessage());
+            requestService.updateState(correspondingRequest, DT_RequestStateEnum.ERROR);
+            throw new RuntimeException(e);
+        }
         // TODO: Does a request need a response-contract-agreement id so that I can determine the
         //  http proxy EndpointDataReference?
 
