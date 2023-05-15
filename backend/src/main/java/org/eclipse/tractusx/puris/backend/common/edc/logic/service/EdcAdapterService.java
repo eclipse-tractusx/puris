@@ -182,7 +182,8 @@ public class EdcAdapterService {
     /**
      * Get catalog from an EDC.
      *
-     * @param idsUrl url of the EDC to get catalog from.
+     * @param idsUrl           url of the EDC to get catalog from.
+     * @param filterProperties maps with key = asset property and value = filter value
      * @return catalog of the requested EDC.
      * @throws IOException if the connection to the EDC failed.
      */
