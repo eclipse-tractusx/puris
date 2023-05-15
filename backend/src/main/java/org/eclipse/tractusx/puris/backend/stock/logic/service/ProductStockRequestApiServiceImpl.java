@@ -21,22 +21,27 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiBusinessObjectEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_AssetTypeEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Service implements the handling of a request for Product Stock
@@ -46,6 +51,7 @@ import java.util.UUID;
  * according to the API speicfication.
  */
 @Component
+@Slf4j
 public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
     @Autowired
@@ -58,6 +64,9 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
     private ProductStockSammMapper productStockSammMapper;
 
     @Autowired
+    private EdcAdapterService edcAdapterService;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     @Override
@@ -68,7 +77,30 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         // as soon as we're working on it, we need to set the state to working.
         correspondingRequest = requestService.updateState(correspondingRequest, DT_RequestStateEnum.WORKING);
 
-        // TODO find Response API Assetq
+        // determine Asset for partners Response API
+        Map<String, String> filterProperties = new HashMap<>();
+        // use shortcut with headers.responseAssetId, if given
+        if (requestDto.getHeader().getRespondAssetId() != null) {
+            filterProperties.put("asset:prop:id", requestDto.getHeader().getRespondAssetId());
+        } else {
+            filterProperties.put("asset:prop:usecase", DT_UseCaseEnum.PURIS.name());
+            filterProperties.put("asset:prop:type", DT_AssetTypeEnum.API.name());
+            filterProperties.put("asset:prop:apibusinessobject", DT_ApiBusinessObjectEnum.productStock.name());
+            filterProperties.put("asset:prop:apimethod", DT_ApiMethodEnum.RESPONSE.name());
+        }
+        String partnerIdsUrl = requestDto.getHeader().getSenderEdc();
+        try {
+            String catalog = edcAdapterService.getCatalog(partnerIdsUrl, Optional.of(filterProperties));
+        } catch (IOException e) {
+            correspondingRequest = requestService.updateState(correspondingRequest,
+                    DT_RequestStateEnum.ERROR);
+            log.error(String.format("Catalog for %s for partner %s for request (external =%s ; " +
+                            "internal=%s) could not be reached.", partnerIdsUrl,
+                    requestDto.getHeader().getSender(), requestDto.getHeader().getRequestId(),
+                    requestDto.getUuid()));
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
+        }
 
         // contains either productStockSamms or messageContentError
         List<MessageContentDto> resultProductStocks = new ArrayList<>();
