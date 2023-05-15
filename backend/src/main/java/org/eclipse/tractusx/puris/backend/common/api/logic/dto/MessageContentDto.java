@@ -27,6 +27,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 
 import java.util.UUID;
@@ -42,7 +43,9 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.DEDUCTION;
 @NoArgsConstructor
 @JsonTypeInfo(use = DEDUCTION) // Intended usage
 @JsonSubTypes({@JsonSubTypes.Type(MessageContentErrorDto.class),
-        @JsonSubTypes.Type(ProductStockSammDto.class)})
+        @JsonSubTypes.Type(ProductStockSammDto.class),
+        @JsonSubTypes.Type(ProductStockRequestForMaterialDto.class)
+})
 public abstract class MessageContentDto {
 
     /**
