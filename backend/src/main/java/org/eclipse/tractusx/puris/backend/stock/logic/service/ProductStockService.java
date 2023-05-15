@@ -40,4 +40,6 @@ public interface ProductStockService {
 
     List<ProductStock> findAllByMaterialNumberCustomer(String materialNumberCustomer);
 
+    List<ProductStock> findAllByMaterialNumberCustomerAndAllocatedToCustomerBpnl(String materialNumberCustomer, String customerBpnl);
+
 }

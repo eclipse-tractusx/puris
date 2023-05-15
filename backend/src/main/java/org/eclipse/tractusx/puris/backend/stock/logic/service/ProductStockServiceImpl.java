@@ -60,7 +60,20 @@ public class ProductStockServiceImpl implements ProductStockService {
 
     @Override
     public List<ProductStock> findAllByMaterialNumberCustomer(String materialNumberCustomer) {
-        return productStockRepository.findAllByMaterial_MaterialNumberCustomerAndType(materialNumberCustomer, DT_StockTypeEnum.MATERIAL);
+        return productStockRepository.findAllByMaterial_MaterialNumberCustomerAndType(
+                materialNumberCustomer,
+                DT_StockTypeEnum.MATERIAL);
+    }
+
+    @Override
+    public List<ProductStock> findAllByMaterialNumberCustomerAndAllocatedToCustomerBpnl(
+            String materialNumberCustomer,
+            String customerBpnl) {
+        return productStockRepository
+                .findAllByMaterial_MaterialNumberCustomerAndTypeAndAllocatedToCustomerPartner_Bpnl(
+                        materialNumberCustomer,
+                        DT_StockTypeEnum.PRODUCT,
+                        customerBpnl);
     }
 
     @Override
