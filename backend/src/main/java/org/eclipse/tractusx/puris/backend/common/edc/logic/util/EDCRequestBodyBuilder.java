@@ -1,7 +1,12 @@
-package org.eclipse.tractusx.puris.backend.util;
+package org.eclipse.tractusx.puris.backend.common.edc.logic.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.*;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiBusinessObjectEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_DataAddressTypeEnum;
 
 /**
  * Static Utility Class for building EDC request body json objects.
@@ -14,7 +19,7 @@ public class EDCRequestBodyBuilder {
      * Build an EDC request body for the creation of an asset (using an order).
      *
      * @param orderUrl url where the published order can be received by the controlplane.
-     * @param orderId id of the created asset (currently has to match policy and contract id).
+     * @param orderId  id of the created asset (currently has to match policy and contract id).
      * @return JsonNode used as requestBody for asset creation.
      */
     public static JsonNode buildAssetRequestBody(String orderUrl, String orderId) {
@@ -84,7 +89,7 @@ public class EDCRequestBodyBuilder {
      * Build an EDC request body used for starting a negotiation.
      *
      * @param connectorAddress ids url of the negotiation counterparty.
-     * @param orderId id of the negotiations target asset.
+     * @param orderId          id of the negotiations target asset.
      * @return JsonNode used as requestBody for an EDC negotiation request.
      */
     public static JsonNode buildNegotiationRequestBody(String connectorAddress, String orderId) {
@@ -116,16 +121,16 @@ public class EDCRequestBodyBuilder {
     /**
      * Build an EDC request body used for starting a transfer.
      *
-     * @param transferId id created for the transferprocess.
+     * @param transferId       id created for the transferprocess.
      * @param connectorAddress ids url of the negotiation counterparty.
-     * @param contractId id of the negotiated contract.
-     * @param orderId id of the transfers target asset.
+     * @param contractId       id of the negotiated contract.
+     * @param orderId          id of the transfers target asset.
      * @return JsonNode used as requestBody for an EDC transfer request.
      */
     public static JsonNode buildTransferRequestBody(String transferId,
-                                              String connectorAddress,
-                                              String contractId,
-                                              String orderId) {
+                                                    String connectorAddress,
+                                                    String contractId,
+                                                    String orderId) {
         var transferNode = MAPPER.createObjectNode();
         transferNode.put("id", transferId);
         transferNode.put("connectorId", "foo");
@@ -137,6 +142,50 @@ public class EDCRequestBodyBuilder {
         destinationNode.put("type", "HttpProxy");
         transferNode.set("dataDestination", destinationNode);
         return transferNode;
+    }
+
+    /**
+     * Builds a CreateAssetDto for an API
+     *
+     * @param method     api method to create
+     * @param apiBaseUrl api baseUrl to get the data at
+     * @return assetDto for creation.
+     */
+    public static CreateAssetDto buildCreateAssetDtoForApi(DT_ApiMethodEnum method,
+                                                           String apiBaseUrl) {
+        AssetPropertiesDto apiAssetPropertiesDto = new AssetPropertiesDto();
+        if (method == DT_ApiMethodEnum.REQUEST) {
+            apiAssetPropertiesDto.setId("product-stock-request-api");
+            apiAssetPropertiesDto.setName("Product Stock Request API");
+            apiAssetPropertiesDto.setApiMethod(DT_ApiMethodEnum.REQUEST);
+        } else if (method == DT_ApiMethodEnum.RESPONSE) {
+
+            apiAssetPropertiesDto.setId("product-stock-response-api");
+            apiAssetPropertiesDto.setName("Product Stock Response API");
+            apiAssetPropertiesDto.setApiMethod(DT_ApiMethodEnum.RESPONSE);
+        }
+        apiAssetPropertiesDto.setContentType("appplication/json");
+        apiAssetPropertiesDto.setApiBusinessObject(DT_ApiBusinessObjectEnum.productStock);
+        apiAssetPropertiesDto.setUseCase(DT_UseCaseEnum.PURIS);
+
+        AssetDto apiAssetDto = new AssetDto();
+        apiAssetDto.setPropertiesDto(apiAssetPropertiesDto);
+
+        DataAddressPropertiesDto apiDataAddressPropertiesDto =
+                new DataAddressPropertiesDto();
+        apiDataAddressPropertiesDto.setBaseUrl(apiBaseUrl);
+        apiDataAddressPropertiesDto.setType(DT_DataAddressTypeEnum.HttpData);
+        apiDataAddressPropertiesDto.setProxyBody(true);
+        apiDataAddressPropertiesDto.setProxyMethod(true);
+
+        DataAddressDto apiDataAddressDto = new DataAddressDto();
+        apiDataAddressDto.setDataAddressPropertiesDto(apiDataAddressPropertiesDto);
+
+        CreateAssetDto createApiAssetDto = new CreateAssetDto();
+        createApiAssetDto.setAssetDto(apiAssetDto);
+        createApiAssetDto.setDataAddressDto(apiDataAddressDto);
+
+        return createApiAssetDto;
     }
 
 }

@@ -21,36 +21,16 @@
  */
 package org.eclipse.tractusx.puris.backend;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.CreateAssetDto;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.MaterialStockDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
-import org.modelmapper.ModelMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EDCRequestBodyBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 @Component
 @Slf4j
@@ -58,6 +38,18 @@ public class AssetCreatorCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private EdcAdapterService edcAdapterService;
+
+    @Value("${request.serverendpoint}")
+    private String requestApiBaseUrl;
+
+    @Value("${response.serverendpoint}")
+    private String responseApiBaseUrl;
+
+    private ObjectMapper objectMapper;
+
+    public AssetCreatorCommandLineRunner(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public void run(String... args) throws Exception {
@@ -67,15 +59,26 @@ public class AssetCreatorCommandLineRunner implements CommandLineRunner {
     }
 
     private void registerResponseAndRequestApiAsset() {
-        String partnerOneId = "partner1";
+
+        // Create Request Api Asset
+        CreateAssetDto createRequestApiAssetDto =
+                EDCRequestBodyBuilder.buildCreateAssetDtoForApi(DT_ApiMethodEnum.REQUEST,
+                        requestApiBaseUrl);
+
+        CreateAssetDto createResponseApiAssetDto =
+                EDCRequestBodyBuilder.buildCreateAssetDtoForApi(DT_ApiMethodEnum.RESPONSE,
+                        responseApiBaseUrl);
 
         try {
-            edcAdapterService.publishRequestAndResponseAssetAtEDC(partnerOneId);
+            edcAdapterService.publishAssetAtEDC(createResponseApiAssetDto);
+            edcAdapterService.publishAssetAtEDC(createRequestApiAssetDto);
             log.info("Published sample RequestAndResponseAssetData");
-        } catch(Exception e){
+        } catch (Exception e) {
             log.error("FAILED TO REGISTER REQUEST/RESPONSE ASSETS");
             log.error(e.getMessage());
         }
 
     }
+
+
 }
