@@ -29,6 +29,7 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentErrorDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
@@ -38,7 +39,10 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_Asset
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +50,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Service implements the handling of a request for Product Stock
@@ -65,6 +73,9 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
     private MaterialService materialService;
 
     @Autowired
+    private PartnerService partnerService;
+
+    @Autowired
     private ProductStockService productStockService;
 
     @Autowired
@@ -81,6 +92,13 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
     public ProductStockRequestApiServiceImpl(ObjectMapper objectMapper) {
         super();
         this.objectMapper = objectMapper;
+    }
+
+    public static <T> Predicate<T> distinctByKey(
+            Function<? super T, ?> keyExtractor) {
+
+        Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+        return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
     @Override
@@ -117,6 +135,8 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
             throw new RuntimeException(e);
         }
 
+        //Partner requestingPartner = partnerService.findByBpnl();
+
         // contains either productStockSamms or messageContentError
         List<MessageContentDto> resultProductStocks = new ArrayList<>();
 
@@ -126,47 +146,83 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
             if (messageContentDto instanceof ProductStockRequestForMaterialDto) {
 
-                ProductStockRequestForMaterialDto productStockRequestSamm =
+                ProductStockRequestForMaterialDto productStockRequestDto =
                         (ProductStockRequestForMaterialDto) messageContentDto;
                 // TODO determine data
                 // Check if product is known
                 Material existingMaterial =
-                        materialService.findProductByMaterialNumberCustomer(productStockRequestSamm.getMaterialNumberCustomer());
+                        materialService.findProductByMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
                 if (existingMaterial == null) {
                     // TODO MessageContentError: Material unknown
+                    MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
+                    messageContentErrorDto.setMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
+                    messageContentErrorDto.setError("PURIS-01");
+                    messageContentErrorDto.setMessage("Material is unknown.");
+                    resultProductStocks.add(messageContentErrorDto);
                     log.warn(String.format("No Material found for ID Customer %s in request %s",
-                            productStockRequestSamm.getMaterialNumberCustomer(),
+                            productStockRequestDto.getMaterialNumberCustomer(),
                             requestDto.getHeader().getRequestId()));
                 }
                 boolean ordersProducts =
                         existingMaterial.getOrderedByPartners()
-                                .stream().anyMatch(partner -> partner.getBpnl().equals(requestingPartnerBpnl));
+                                .stream().anyMatch(
+                                        partner -> partner.getBpnl().equals(requestingPartnerBpnl));
 
                 if (!ordersProducts) {
                     // TODO MessageContentError: Partner is not authorized
+                    MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
+                    messageContentErrorDto.setMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
+                    messageContentErrorDto.setError("PURIS-02");
+                    messageContentErrorDto.setMessage("Partner is not authorized.");
+                    resultProductStocks.add(messageContentErrorDto);
                     log.warn(String.format("Partner %s is not an ordering Partner of Material " +
                                     "found for ID Customer %s in request %s",
                             requestingPartnerBpnl,
-                            productStockRequestSamm.getMaterialNumberCustomer(),
+                            productStockRequestDto.getMaterialNumberCustomer(),
                             requestDto.getHeader().getRequestId()));
                 }
 
-                // TODO Determine ProductStock for Partner and material
-                //productStockService.findAllByMaterialNumberCustomer()
+                List<ProductStock> productStocks =
+                        productStockService
+                                .findAllByMaterialNumberCustomerAndAllocatedToCustomerBpnl(
+                                        productStockRequestDto.getMaterialNumberCustomer(),
+                                        requestingPartnerBpnl);
 
+                ProductStock productStock = null;
+                if (productStocks.size() == 0) {
+                    // TODO no partner product stock given
+                    continue;
+                } else productStock = productStocks.get(0);
 
-                // Note: We currently don´t have a further check on authorization of parts.
-                // TODO partner must have relationship "orders material"
+                //TODO: is this one allocated stock or multiple
+                if (productStocks.size() > 1) {
+                    List<ProductStock> distinctProductStocks =
+                            productStocks.stream()
+                                    .filter(distinctByKey(p -> p.getAtSiteBpnl()))
+                                    .collect(Collectors.toList());
+                    if (distinctProductStocks.size() > 1) {
+                        log.warn(String.format("More than one site is not yet supported per " +
+                                        "partner. Product Stocks for material ID %s and partner %s in " +
+                                        "request %s are accumulated",
+                                productStockRequestDto.getMaterialNumberCustomer(),
+                                requestingPartnerBpnl, requestDto.getHeader().getRequestId()));
+                    }
 
-                // TODO A) map to samm
+                    double quantity = productStocks.stream().
+                            mapToDouble(stock -> stock.getQuantity()).sum();
+                    productStock.setQuantity(quantity);
 
-                // TODO B) create error
+                }
+                
+                resultProductStocks.add(productStockSammMapper.toSamm(modelMapper.map(productStock,
+                        ProductStockDto.class)));
 
             } else
                 throw new IllegalStateException(String.format("Message Content is unknown: %s",
                         messageContentDto));
 
         }
+
 
         // TODO: Init Transfer
         JsonNode catalogNode = objectMapper.valueToTree(catalog);

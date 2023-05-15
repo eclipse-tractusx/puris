@@ -56,7 +56,7 @@ public class ProductStockSammMapper {
     @Autowired
     private ModelMapper modelMapper;
 
-    public static ProductStockSammDto toSamm(ProductStockDto productStockDto) {
+    public ProductStockSammDto toSamm(ProductStockDto productStockDto) {
 
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(productStockDto.getLastUpdatedOn());
