@@ -21,14 +21,15 @@
 package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.*;
-import org.eclipse.tractusx.puris.backend.PurisApplication;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.CreateAssetDto;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EDCRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.model.repo.OrderRepository;
-import org.eclipse.tractusx.puris.backend.util.EDCRequestBodyBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -39,6 +40,7 @@ import java.net.URL;
  * The EDC connection is configured using the application.properties file.
  */
 @Service
+@Slf4j
 public class EdcAdapterService {
     private static final OkHttpClient CLIENT = new OkHttpClient();
 
@@ -69,7 +71,11 @@ public class EdcAdapterService {
     @Value("${response.serverendpoint}")
     private String responseServerEndpointURL;
 
-    private static final Logger log = LoggerFactory.getLogger(PurisApplication.class);
+    private ObjectMapper objectMapper;
+
+    public EdcAdapterService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     /**
      * Publish an order at own EDC.
@@ -110,6 +116,33 @@ public class EdcAdapterService {
             success = success && sendEdcRequest(contractBody, "/data/contractdefinitions").isSuccessful();
             log.info(endpointURL);
         }
+        return success;
+    }
+
+    /**
+     * Publish an Asset (ContractDefinition) using an {@link CreateAssetDto} with a public policy.
+     *
+     * @param createAssetDto asset creation dto to use.
+     * @return true, if ContractDefinition has been created successfully
+     * @throws IOException   if REST calls for creation could not be sent
+     * @throws JSONException if createAssetDto could not be parsed into JsonNode
+     */
+    public boolean publishAssetAtEDC(CreateAssetDto createAssetDto) throws IOException,
+            JSONException {
+
+        String assetId = createAssetDto.getAssetDto().getPropertiesDto().getId();
+
+        boolean success = true;
+        JsonNode assetBody = objectMapper.valueToTree(createAssetDto);
+        JsonNode policyBody =
+                EDCRequestBodyBuilder.buildPolicyRequestBody(assetId);
+        JsonNode contractBody = EDCRequestBodyBuilder.buildContractRequestBody(assetId);
+        success = success && sendEdcRequest(assetBody, "/data/assets").isSuccessful();
+        success = success && sendEdcRequest(policyBody, "/data/policydefinitions").isSuccessful();
+        success = success && sendEdcRequest(contractBody, "/data/contractdefinitions").isSuccessful();
+        log.info(String.format("Created Contract Definition for Asset %s",
+                objectMapper.writeValueAsString(createAssetDto)));
+
         return success;
     }
 
