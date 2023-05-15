@@ -36,6 +36,8 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiBu
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_AssetTypeEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
 import org.modelmapper.ModelMapper;
@@ -58,6 +60,9 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
     @Autowired
     private RequestService requestService;
+
+    @Autowired
+    private MaterialService materialService;
 
     @Autowired
     private ProductStockService productStockService;
@@ -115,11 +120,43 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         // contains either productStockSamms or messageContentError
         List<MessageContentDto> resultProductStocks = new ArrayList<>();
 
+        String requestingPartnerBpnl = requestDto.getHeader().getSender();
+
         for (MessageContentDto messageContentDto : requestDto.getPayload()) {
 
             if (messageContentDto instanceof ProductStockRequestForMaterialDto) {
 
+                ProductStockRequestForMaterialDto productStockRequestSamm =
+                        (ProductStockRequestForMaterialDto) messageContentDto;
                 // TODO determine data
+                // Check if product is known
+                Material existingMaterial =
+                        materialService.findProductByMaterialNumberCustomer(productStockRequestSamm.getMaterialNumberCustomer());
+                if (existingMaterial == null) {
+                    // TODO MessageContentError: Material unknown
+                    log.warn(String.format("No Material found for ID Customer %s in request %s",
+                            productStockRequestSamm.getMaterialNumberCustomer(),
+                            requestDto.getHeader().getRequestId()));
+                }
+                boolean ordersProducts =
+                        existingMaterial.getOrderedByPartners()
+                                .stream().anyMatch(partner -> partner.getBpnl().equals(requestingPartnerBpnl));
+
+                if (!ordersProducts) {
+                    // TODO MessageContentError: Partner is not authorized
+                    log.warn(String.format("Partner %s is not an ordering Partner of Material " +
+                                    "found for ID Customer %s in request %s",
+                            requestingPartnerBpnl,
+                            productStockRequestSamm.getMaterialNumberCustomer(),
+                            requestDto.getHeader().getRequestId()));
+                }
+
+                // TODO Determine ProductStock for Partner and material
+                //productStockService.findAllByMaterialNumberCustomer()
+
+
+                // Note: We currently don´t have a further check on authorization of parts.
+                // TODO partner must have relationship "orders material"
 
                 // TODO A) map to samm
 
@@ -133,6 +170,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
         // TODO: Init Transfer
         JsonNode catalogNode = objectMapper.valueToTree(catalog);
+        // we expect only one offer for us
         JsonNode contractOfferJson = catalogNode.get("contractoffers").get(0);
         // TODO: Does a request need a response-contract-agreement id so that I can determine the
         //  http proxy EndpointDataReference?
