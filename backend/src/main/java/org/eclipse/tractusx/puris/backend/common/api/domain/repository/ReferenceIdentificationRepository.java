@@ -20,14 +20,16 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.domain.repository;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.ReferenceIdentification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
 /**
  * Repository to access ReferenceIdentification
  */
-public interface ReferenceIdentificationRepository extends JpaRepository<Request, UUID> {
+@Repository
+public interface ReferenceIdentificationRepository extends JpaRepository<ReferenceIdentification, UUID> {
 
 }

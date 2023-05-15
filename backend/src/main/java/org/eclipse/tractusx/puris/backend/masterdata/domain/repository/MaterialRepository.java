@@ -23,18 +23,22 @@ package org.eclipse.tractusx.puris.backend.masterdata.domain.repository;
 
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public interface MaterialRepository extends JpaRepository<Material, UUID> {
 
-    List<Material> findAllByMaterialFlagIsTrue();
+    List<Material> findAllByMaterialFlagTrue();
 
-    List<Material> findAllByProductFlagIsTrue();
+    List<Material> findAllByProductFlagTrue();
 
-    Optional<Material> findByMaterialNumberCustomerAndMaterialFlagIsTrue(String materialNumberCustomer);
+    public List<Material> findByMaterialNumberCustomer(String materialNumberCustomer);
 
-    Optional<Material> findByMaterialNumberCustomerAndProductFlagIsTrue(String materialNumberCustomer);
+    public List<Material> findByMaterialNumberCustomerAndMaterialFlagTrue(String materialNumberCustomer);
+
+    public List<Material> findByMaterialNumberCustomerAndProductFlagTrue(String materialNumberCustomer);
+
 }

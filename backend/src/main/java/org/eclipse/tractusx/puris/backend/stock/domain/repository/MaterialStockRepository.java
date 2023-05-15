@@ -25,6 +25,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +39,7 @@ import java.util.UUID;
  * <p>
  * The Material of a MaterialStock commonly
  */
+@Repository
 public interface MaterialStockRepository extends JpaRepository<MaterialStock, UUID> {
 
     List<MaterialStock> findAllByType(DT_StockTypeEnum stockType);

@@ -25,9 +25,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "material")
@@ -41,31 +39,31 @@ public class Material {
     @GeneratedValue
     private UUID uuid;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "partner_supplies_product",
-            joinColumns = @JoinColumn(name = "material_uuid"),
-            inverseJoinColumns = @JoinColumn(name = "partner_uuid")
+            joinColumns = @JoinColumn(name = "material_uuid", referencedColumnName = "uuid"),
+            inverseJoinColumns = @JoinColumn(name = "partner_uuid", referencedColumnName = "uuid")
     )
     @ToString.Exclude
     @Setter(AccessLevel.NONE)
-    private Set<Partner> suppliedByPartners;
-    ;
+    private Set<Partner> suppliedByPartners = new HashSet<>();
+    ;;
 
-    @ManyToMany
+    @ManyToMany(targetEntity = Partner.class, fetch = FetchType.EAGER)
     @JoinTable(
             name = "partner_orders_product",
-            joinColumns = @JoinColumn(name = "material_uuid"),
-            inverseJoinColumns = @JoinColumn(name = "partner_uuid")
+            joinColumns = @JoinColumn(name = "material_uuid", referencedColumnName = "uuid"),
+            inverseJoinColumns = @JoinColumn(name = "partner_uuid", referencedColumnName = "uuid")
     )
     @ToString.Exclude
     @Setter(AccessLevel.NONE)
-    private Set<Partner> orderedByPartners;
+    private Set<Partner> orderedByPartners = new HashSet<>();
 
     @OneToMany(mappedBy = "uuid")
     @ToString.Exclude
     @Setter(AccessLevel.NONE)
-    private List<Stock> materialOnStocks;
+    private List<Stock> materialOnStocks = new ArrayList<>();
 
     /**
      * If true, then the Material is a material (input for production / something I buy).
@@ -89,4 +87,22 @@ public class Material {
 
     private String name;
 
+    public Material(boolean materialFlag, boolean productFlag, String materialNumberCustomer, String materialNumberSupplier, String materialNumberCx, String name) {
+        this.materialFlag = materialFlag;
+        this.productFlag = productFlag;
+        this.materialNumberCustomer = materialNumberCustomer;
+        this.materialNumberSupplier = materialNumberSupplier;
+        this.materialNumberCx = materialNumberCx;
+        this.name = name;
+    }
+
+    public void addPartnerToSuppliedByPartners(Partner supplierPartner) {
+        this.suppliedByPartners.add(supplierPartner);
+        supplierPartner.getSuppliesMaterials().add(this);
+    }
+
+    public void addPartnerToOrderedByParnters(Partner customerPartner) {
+        this.orderedByPartners.add(customerPartner);
+        customerPartner.getOrdersProducts().add(this);
+    }
 }

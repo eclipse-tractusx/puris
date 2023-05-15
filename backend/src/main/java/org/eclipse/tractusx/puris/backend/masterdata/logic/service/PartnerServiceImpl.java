@@ -54,7 +54,7 @@ public class PartnerServiceImpl implements PartnerService {
 
     @Override
     public List<Partner> findAllCustomerPartnersForMaterialId(UUID materialUuid) {
-        return partnerRepository.findAllByActsAsCustomerFlagIsTrueAndOrdersProducts_Uuid(materialUuid);
+        return partnerRepository.findAllByActsAsCustomerFlagTrueAndOrdersProducts_Uuid(materialUuid);
     }
 
     @Override

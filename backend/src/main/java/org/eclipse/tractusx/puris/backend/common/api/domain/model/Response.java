@@ -21,7 +21,6 @@
 package org.eclipse.tractusx.puris.backend.common.api.domain.model;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,7 +33,6 @@ import lombok.ToString;
  * Both, the Response and the Request, are called (api) request.
  */
 @Entity
-@Table(name = "Response")
 @Getter
 @Setter
 @ToString

@@ -21,14 +21,17 @@
 package org.eclipse.tractusx.puris.backend.common.api.domain.repository;
 
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Response;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
 /**
  * Repository to access Responses
  */
-public interface ResponseRepository extends JpaRepository<Request, UUID> {
+@Repository
+public interface ResponseRepository extends JpaRepository<Response, UUID> {
 
     /**
      * find the request by the requestUuuid from the message's header

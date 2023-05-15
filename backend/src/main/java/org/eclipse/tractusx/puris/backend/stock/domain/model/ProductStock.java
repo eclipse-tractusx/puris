@@ -27,13 +27,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
+
+import java.util.Date;
 
 @Entity
 @Getter
-@Setter
 @ToString(callSuper = true)
 @DiscriminatorValue("ProductStock")
 public class ProductStock extends Stock {
@@ -43,4 +45,25 @@ public class ProductStock extends Stock {
     @ToString.Exclude
     @NotNull
     private Partner allocatedToCustomerPartner;
+
+    public ProductStock(Material material, double quantity, String atSiteBpnl, Date lastUpdatedOn, Partner allocatedToCustomerPartner) {
+        super(material, quantity, atSiteBpnl, lastUpdatedOn);
+        super.setType(DT_StockTypeEnum.PRODUCT);
+        this.setAllocatedToCustomerPartner(allocatedToCustomerPartner);
+    }
+
+    public ProductStock(Material material, double quantity, String atSiteBpnl, Date lastUpdatedOn) {
+        super(material, quantity, atSiteBpnl, lastUpdatedOn);
+        super.setType(DT_StockTypeEnum.PRODUCT);
+    }
+
+    public ProductStock() {
+        super();
+    }
+
+    public void setAllocatedToCustomerPartner(Partner allocatedToCustomerPartner) {
+        this.allocatedToCustomerPartner = allocatedToCustomerPartner;
+        allocatedToCustomerPartner.getAllocatedProductStocksForCustomer().size();
+        allocatedToCustomerPartner.getAllocatedProductStocksForCustomer().add(this);
+    }
 }

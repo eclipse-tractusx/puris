@@ -20,14 +20,17 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.domain.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * This Request represents the message received via a Request API.
@@ -41,7 +44,7 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_Re
 @Setter
 @ToString
 @NoArgsConstructor
-public class Request extends Message {
+public class Request {
 
     /**
      * State of the request.
@@ -50,5 +53,31 @@ public class Request extends Message {
      */
     @NotNull
     private DT_RequestStateEnum state;
+
+    @Id
+    @GeneratedValue
+    /**
+     * Technical identifier for a Message.
+     */
+    private UUID uuid;
+
+    /**
+     * Steering information of a {@link Request} or {@link Response} api message.
+     */
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "message_header_uuid")
+    @NotNull
+    private MessageHeader header;
+
+    /**
+     * List of actual content of the payload.
+     * <p>
+     * May contain also errors.
+     */
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "message_content_uuid")
+    @NotNull
+    @ToString.Exclude
+    private List<MessageContent> payload = new ArrayList<>();
 
 }

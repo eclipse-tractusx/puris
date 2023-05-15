@@ -27,9 +27,7 @@ import lombok.*;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "partner")
@@ -51,25 +49,30 @@ public class Partner {
     private String bpnl;
     private String siteBpns;
 
-    @ManyToMany(mappedBy = "suppliedByPartners")
-    @ToString.Exclude
+    @ManyToMany(mappedBy = "suppliedByPartners", fetch = FetchType.EAGER)
     @Setter(AccessLevel.NONE)
-    private Set<Material> suppliesMaterials;
-    ;
+    private Set<Material> suppliesMaterials = new HashSet<>();
 
-    @ManyToMany(mappedBy = "orderedByPartners")
-    @ToString.Exclude
+    @ManyToMany(mappedBy = "orderedByPartners", fetch = FetchType.EAGER)
     @Setter(AccessLevel.NONE)
-    private Set<Material> ordersProducts;
-    ;
+    private Set<Material> ordersProducts = new HashSet<>();
 
-    @OneToMany(mappedBy = "uuid")
+    @OneToMany(mappedBy = "uuid", fetch = FetchType.LAZY)
     @ToString.Exclude
     @Setter(AccessLevel.NONE)
-    private List<ProductStock> allocatedProductStocksForCustomer;
+    private List<ProductStock> allocatedProductStocksForCustomer = new ArrayList<>();
 
     @OneToMany(mappedBy = "uuid")
     @ToString.Exclude
     @Setter(AccessLevel.NONE)
-    private List<PartnerProductStock> partnerProductStocks;
+    private List<PartnerProductStock> partnerProductStocks = new ArrayList<>();
+
+    public Partner(String name, boolean actsAsCustomerFlag, boolean actsAsSupplierFlag, String edcUrl, String bpnl, String siteBpns) {
+        this.name = name;
+        this.actsAsCustomerFlag = actsAsCustomerFlag;
+        this.actsAsSupplierFlag = actsAsSupplierFlag;
+        this.edcUrl = edcUrl;
+        this.bpnl = bpnl;
+        this.siteBpns = siteBpns;
+    }
 }

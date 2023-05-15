@@ -31,7 +31,6 @@ import lombok.ToString;
  * Implementation of a {@link MessageContent} providing generic error messages.
  */
 @Entity
-@Table(name = "MessageContentError")
 @DiscriminatorValue("ERROR")
 @Getter
 @Setter

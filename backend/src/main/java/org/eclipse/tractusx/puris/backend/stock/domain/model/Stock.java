@@ -24,6 +24,7 @@ package org.eclipse.tractusx.puris.backend.stock.domain.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
@@ -38,6 +39,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class Stock {
 
     @Id
@@ -63,4 +65,10 @@ public class Stock {
     @NotNull
     private Date lastUpdatedOn;
 
+    public Stock(Material material, double quantity, String atSiteBpnl, Date lastUpdatedOn) {
+        this.material = material;
+        this.quantity = quantity;
+        this.atSiteBpnl = atSiteBpnl;
+        this.lastUpdatedOn = lastUpdatedOn;
+    }
 }

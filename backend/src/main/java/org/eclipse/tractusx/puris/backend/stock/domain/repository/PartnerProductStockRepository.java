@@ -25,6 +25,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock
 import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +39,7 @@ import java.util.UUID;
  * <li>stock.allocatedToPartner == empty (no partners for yourself)</li>
  * <li>stock.material.orderedBy == set to a (specific) Partner with partner.actsAsCustomerFlag == true</li>
  */
+@Repository
 public interface PartnerProductStockRepository extends JpaRepository<PartnerProductStock, UUID> {
 
     List<PartnerProductStock> findAllByType(DT_StockTypeEnum stockType);

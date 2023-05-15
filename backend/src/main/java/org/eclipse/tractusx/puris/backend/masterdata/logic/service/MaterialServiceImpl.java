@@ -53,12 +53,12 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Override
     public List<Material> findAllMaterials() {
-        return materialRepository.findAllByMaterialFlagIsTrue();
+        return materialRepository.findAllByMaterialFlagTrue();
     }
 
     @Override
     public List<Material> findAllProducts() {
-        return materialRepository.findAllByProductFlagIsTrue();
+        return materialRepository.findAllByProductFlagTrue();
     }
 
     @Override
@@ -74,23 +74,25 @@ public class MaterialServiceImpl implements MaterialService {
     @Override
     public Material findMaterialByMaterialNumberCustomer(String materialNumberCustomer) {
 
-        Optional<Material> foundMaterial =
-                materialRepository.findByMaterialNumberCustomerAndMaterialFlagIsTrue(materialNumberCustomer);
+        List<Material> foundMaterial =
+                materialRepository.findByMaterialNumberCustomerAndMaterialFlagTrue(materialNumberCustomer);
 
-        if (!foundMaterial.isPresent()) {
+        if (foundMaterial.size() == 0) {
             return null;
         }
-        return foundMaterial.get();
+        return foundMaterial.get(0);
     }
 
     @Override
     public Material findProductByMaterialNumberCustomer(String materialNumberCustomer) {
-        Optional<Material> foundProduct =
-                materialRepository.findByMaterialNumberCustomerAndProductFlagIsTrue(materialNumberCustomer);
 
-        if (!foundProduct.isPresent()) {
+        List<Material> foundProduct =
+                materialRepository.findByMaterialNumberCustomerAndProductFlagTrue(materialNumberCustomer);
+
+        if (foundProduct.size() == 0) {
             return null;
         }
-        return foundProduct.get();
+        return foundProduct.get(0);
+
     }
 }

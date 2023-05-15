@@ -24,14 +24,26 @@ package org.eclipse.tractusx.puris.backend.stock.domain.model;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
+
+import java.util.Date;
 
 @Entity
 @DiscriminatorValue("MaterialStock")
 @Getter
 @Setter
 @ToString(callSuper = true)
+@NoArgsConstructor
 public class MaterialStock extends Stock {
+
+    public MaterialStock(Material material, double quantity, String atSiteBpnl,
+                         Date lastUpdatedOn) {
+        super(material, quantity, atSiteBpnl, lastUpdatedOn);
+        super.setType(DT_StockTypeEnum.MATERIAL);
+    }
 
 }

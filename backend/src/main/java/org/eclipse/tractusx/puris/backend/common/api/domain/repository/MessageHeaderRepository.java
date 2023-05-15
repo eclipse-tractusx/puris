@@ -20,7 +20,7 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.domain.repository;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
@@ -28,6 +28,8 @@ import java.util.UUID;
 /**
  * Repository to access MessageHeaders
  */
-public interface MessageHeaderRepository extends JpaRepository<Request, UUID> {
+public interface MessageHeaderRepository extends JpaRepository<MessageHeader, UUID> {
+
+    MessageHeader findByRequestId(UUID requestId);
 
 }

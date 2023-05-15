@@ -20,14 +20,16 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.domain.repository;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
 /**
  * Repository to access Messages
  */
-public interface MessageRepository extends JpaRepository<Request, UUID> {
+@Repository
+public interface MessageRepository extends JpaRepository<Message, UUID> {
 
 }
