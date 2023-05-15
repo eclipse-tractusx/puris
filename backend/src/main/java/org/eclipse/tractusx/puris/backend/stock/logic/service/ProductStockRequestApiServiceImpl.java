@@ -21,6 +21,8 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
@@ -69,6 +71,13 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
     @Autowired
     private ModelMapper modelMapper;
 
+    private ObjectMapper objectMapper;
+
+    public ProductStockRequestApiServiceImpl(ObjectMapper objectMapper) {
+        super();
+        this.objectMapper = objectMapper;
+    }
+
     @Override
     public void handleRequest(RequestDto requestDto) {
         //request has been created on post
@@ -89,8 +98,9 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
             filterProperties.put("asset:prop:apimethod", DT_ApiMethodEnum.RESPONSE.name());
         }
         String partnerIdsUrl = requestDto.getHeader().getSenderEdc();
+        String catalog = null;
         try {
-            String catalog = edcAdapterService.getCatalog(partnerIdsUrl, Optional.of(filterProperties));
+            catalog = edcAdapterService.getCatalog(partnerIdsUrl, Optional.of(filterProperties));
         } catch (IOException e) {
             correspondingRequest = requestService.updateState(correspondingRequest,
                     DT_RequestStateEnum.ERROR);
@@ -109,7 +119,6 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
             if (messageContentDto instanceof ProductStockRequestForMaterialDto) {
 
-
                 // TODO determine data
 
                 // TODO A) map to samm
@@ -123,7 +132,13 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         }
 
         // TODO: Init Transfer
+        JsonNode catalogNode = objectMapper.valueToTree(catalog);
+        JsonNode contractOfferJson = catalogNode.get("contractoffers").get(0);
+        // TODO: Does a request need a response-contract-agreement id so that I can determine the
+        //  http proxy EndpointDataReference?
+
         // TODO: async wait for answer of backend
+
         // TODO: send response
 
         // Update status - also only MessageContentErrorDtos would be completed
