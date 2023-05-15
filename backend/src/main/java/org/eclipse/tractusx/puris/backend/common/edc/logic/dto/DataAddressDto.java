@@ -20,7 +20,7 @@
  */
 package org.eclipse.tractusx.puris.backend.common.edc.logic.dto;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,7 +37,7 @@ public class DataAddressDto {
     /**
      * properties of data address
      */
-    @JsonAlias("baseUrl")
+    @JsonProperty("properties")
     @NotNull
     private DataAddressPropertiesDto dataAddressPropertiesDto;
 }

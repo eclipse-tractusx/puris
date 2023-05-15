@@ -20,7 +20,7 @@
  */
 package org.eclipse.tractusx.puris.backend.common.edc.logic.dto;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,14 +37,14 @@ public class CreateAssetDto {
     /**
      * asset to create
      */
-    @JsonAlias("asset")
+    @JsonProperty("asset")
     @NotNull
     private AssetDto assetDto;
 
     /**
      * dataAddress where to get the asset from
      */
-    @JsonAlias("dataAddress")
+    @JsonProperty("dataAddress")
     @NotNull
     private DataAddressDto dataAddressDto;
 

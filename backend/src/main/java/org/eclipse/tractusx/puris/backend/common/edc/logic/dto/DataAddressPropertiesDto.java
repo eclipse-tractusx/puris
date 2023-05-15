@@ -20,7 +20,7 @@
  */
 package org.eclipse.tractusx.puris.backend.common.edc.logic.dto;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,28 +38,28 @@ public class DataAddressPropertiesDto {
     /**
      * address where to get the asset from
      */
-    @JsonAlias("baseUrl")
+    @JsonProperty("baseUrl")
     @NotNull
     private String baseUrl;
 
     /**
      * Allows to set other Http methods like POST, PUT, DELETE for Http Proxy
      */
-    @JsonAlias("proxyMethod")
+    @JsonProperty("proxyMethod")
     @NotNull
     private boolean proxyMethod;
 
     /**
      * Allows to proxy the body through Http Proxy for e.g. an API call.
      */
-    @JsonAlias("proxyBody")
+    @JsonProperty("proxyBody")
     @NotNull
     private boolean proxyBody;
 
     /**
      * Defines the type of data asset e.g. HttpData
      */
-    @JsonAlias("type")
+    @JsonProperty("type")
     @NotNull
     private DT_DataAddressTypeEnum type;
 }

@@ -20,7 +20,7 @@
  */
 package org.eclipse.tractusx.puris.backend.common.edc.logic.dto;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,31 +41,31 @@ public class AssetPropertiesDto {
     /**
      * id of the asset
      */
-    @JsonAlias("asset:prop:id")
+    @JsonProperty("asset:prop:id")
     @NotNull
     private String id;
 
-    @JsonAlias("asset:prop:name")
+    @JsonProperty("asset:prop:name")
     @NotNull
     private String name;
 
-    @JsonAlias("asset:prop:contenttype")
+    @JsonProperty("asset:prop:contenttype")
     @NotNull
     private String contentType;
 
-    @JsonAlias("asset:prop:usecase")
+    @JsonProperty("asset:prop:usecase")
     @NotNull
     private DT_UseCaseEnum useCase;
 
-    @JsonAlias("asset:prop:type")
+    @JsonProperty("asset:prop:type")
     @NotNull
     private DT_AssetTypeEnum type;
 
-    @JsonAlias("asset:prop:apibusinessobject")
+    @JsonProperty("asset:prop:apibusinessobject")
     @NotNull
     private DT_ApiBusinessObjectEnum apiBusinessObject;
 
-    @JsonAlias("asset:prop:apimethod")
+    @JsonProperty("asset:prop:apimethod")
     @NotNull
     private DT_ApiMethodEnum apiMethod;
 }
