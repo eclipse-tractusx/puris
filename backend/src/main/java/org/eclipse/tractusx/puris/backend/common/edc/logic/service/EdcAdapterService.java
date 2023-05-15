@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
@@ -187,7 +188,7 @@ public class EdcAdapterService {
      * @return catalog of the requested EDC.
      * @throws IOException if the connection to the EDC failed.
      */
-    public String getCatalog(String idsUrl, Map<String, String> filterProperties) throws IOException {
+    public String getCatalog(String idsUrl, Optional<Map<String, String>> filterProperties) throws IOException {
 
         HttpUrl.Builder urlBuilder = new HttpUrl.Builder();
         urlBuilder.scheme("http")
@@ -197,15 +198,22 @@ public class EdcAdapterService {
                 .addPathSegment("catalog")
                 .addEncodedQueryParameter("providerUrl", idsUrl);
 
-        for (Map.Entry<String, String> entry : filterProperties.entrySet()) {
-            urlBuilder.addQueryParameter("filter", String.format("%s=%s", entry.getKey(),
-                    entry.getValue()));
+        HttpUrl httpUrl = urlBuilder.build();
+
+        // workaround EDC 0.3 takes filter=key=value, but HttpUrlBuilder encodes = to %3D
+        // which is not recognized
+        if (filterProperties.isPresent() && filterProperties.get().size() >= 1) {
+            String url = urlBuilder.build().toString();
+
+            for (Map.Entry<String, String> entry : filterProperties.get().entrySet()) {
+                url = url + String.format("&filter=%s=%s", entry.getKey(), entry.getValue());
+            }
+            httpUrl = HttpUrl.parse(url);
         }
-        log.info(String.format("URL built: %s", urlBuilder.build()));
 
         var request = new Request.Builder()
                 .get()
-                .url(urlBuilder.build())
+                .url(httpUrl)
                 .header("X-Api-Key", edcApiKey)
                 .header("Content-Type", "application/json")
                 .build();
