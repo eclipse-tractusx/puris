@@ -64,6 +64,9 @@ export default {
   },
   data() {
     return {
+      backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
+      endpointPartnerProductStocks: import.meta.env.VITE_ENDPOINT_PARTNER_PRODUCT_STOCKS,
+      endpointUpdatePartnerProductStock: import.meta.env.VITE_ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK,
       availableMaterialsOrProducts: [],
     };
   },
@@ -82,19 +85,19 @@ export default {
   },
   methods: {
     getAvailableMaterials(materialId) {
-      fetch('http://localhost:8081/catena/stockView/partner-product-stocks')
+      fetch(this.backendURL + this.endpointPartnerProductStocks)
         .then(res => res.json())
         .then(data => this.availableMaterialsOrProducts = data)
         .catch(err => console.log(err));
     },
     getAvailableProducts(productId) {
-      fetch('http://localhost:8081/catena/stockView/partner-product-stocks')
+      fetch(this.backendURL + this.endpointPartnerProductStocks)
         .then(res => res.json())
         .then(data => this.availableMaterialsOrProducts = data)
         .catch(err => console.log(err));
     },
     updateMaterialOrProduct() {
-      fetch('http://localhost:8081/catena/stockView/update-partner-product-stock?materialUuid='+this.materialUuid)
+      fetch(this.backendURL + this.endpointUpdatePartnerProductStock + this.materialUuid)
         .then(res => res.json())
         .then(data => console.log(data))
         .catch(err => console.log(err));

@@ -137,6 +137,12 @@ export default {
 
   data() {
     return {
+      backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
+      endpointMaterials: import.meta.env.VITE_ENDPOINT_MATERIALS,
+      endpointProducts: import.meta.env.VITE_ENDPOINT_PRODUCTS,
+      endpointMaterialStocks: import.meta.env.VITE_ENDPOINT_MATERIAL_STOCKS,
+      endpointProductStocks: import.meta.env.VITE_ENDPOINT_PRODUCT_STOCKS,
+      endpointCustomer: import.meta.env.VITE_ENDPOINT_CUSTOMER,
       bdMaterials: [],
       bdProducts: [],
       bdMaterialStocks: [],
@@ -154,98 +160,25 @@ export default {
         bpns: "BPNS12345678910ZZZ",
         name: "Wolfsburg Hauptwertk",
       },
-      materials: [
-        {
-          id: "M4711",
-          name: "Central Control Unit",
-          unitOfMeasure: "Parts",
-        },
-        {
-          id: "M4712",
-          name: "Steering Wheel",
-          unitOfMeasure: "Parts",
-        },
-        {
-          id: "M4713",
-          name: "Wheel",
-          unitOfMeasure: "Parts",
-        },
-      ],
-      customers: [
-        {
-          name: "Test Customer #1",
-          actsAsCustomerFlag: true,
-          actsAsSupplierFlag: false,
-          edcUrl: "TODO",
-          bpnl: "BPNL4444444444XX",
-          siteBpns: "BPNS4444444444XX",
-        },
-        {
-          name: "Test Customer #2",
-          actsAsCustomerFlag: true,
-          actsAsSupplierFlag: false,
-          edcUrl: "TODO",
-          bpnl: "BPNL4444444442XX",
-          siteBpns: "BPNS4444444442XX",
-        },
-        {
-          name: "Test Customer #3",
-          actsAsCustomerFlag: true,
-          actsAsSupplierFlag: false,
-          edcUrl: "TODO",
-          bpnl: "BPNL4444444443XX",
-          siteBpns: "BPNS4444444443XX",
-        },
-      ],
-      products: [
-        {
-          id: "P4711",
-          name: "VW Golf",
-          unitOfMeasure: "Parts",
-        },
-      ],
-      materialStocks: [
-        {
-          id: "M4711",
-          name: "Central Control Unit",
-          quantity: "50",
-          unitOfMeasure: "Parts",
-        },
-        {
-          id: "M4712",
-          name: "Steering Wheel",
-          quantity: "50",
-          unitOfMeasure: "Parts",
-        },
-        {
-          id: "M4713",
-          name: "Wheel",
-          quantity: "200",
-          unitOfMeasure: "Parts",
-        },
-      ],
-      productStocks: [],
     };
   },
   mounted() {
-    const backendAddress = 'http://localhost:8081/catena/';
-
-    fetch(backendAddress + 'stockView/materials')
+    fetch(this.backendURL + this.endpointMaterials)
       .then(res => res.json())
       .then(data => this.bdMaterials = data)
       .catch(err => console.log(err));
 
-    fetch(backendAddress + 'stockView/products')
+    fetch(this.backendURL + this.endpointProducts)
       .then(res => res.json())
       .then(data => this.bdProducts = data)
       .catch(err => console.log(err));
 
-    fetch(backendAddress + 'stockView/material-stocks')
+    fetch(this.backendURL + this.endpointMaterialStocks)
       .then(res => res.json())
       .then(data => this.bdMaterialStocks = data)
       .catch(err => console.log(err));
 
-    fetch(backendAddress + 'stockView/product-stocks')
+    fetch(this.backendURL + this.endpointProductStocks)
       .then(res => res.json())
       .then(data => this.bdProductStocks = data)
       .catch(err => console.log(err));
@@ -261,7 +194,7 @@ export default {
           var material = existingMaterialStock[0];
           material.quantity = changedStock.quantity;
 
-          this.putData('http://localhost:8081/catena/stockView/material-stocks', material);
+          this.putData(this.backendURL + this.endpointMaterialStocks, material);
         } else {
           var existingMaterial = this.materials.filter(
               (m) => m.materialId === changedStock.materialId
@@ -283,7 +216,7 @@ export default {
           var product = existingProductStock[0];
           product.quantity = changedStock.quantity;
 
-          this.putData('http://localhost:8081/catena/stockView/product-stocks', product);
+          this.putData(this.backendURL + this.endpointProductStocks, product);
         } else {
           /*var existingProduct = this.products.filter(
               (p) => p.id === changedStock.productId
@@ -300,7 +233,7 @@ export default {
           product.quantity = changedStock.quantity;
           product.allocatedToCustomerPartner = [];
 
-          this.postData('http://localhost:8081/catena/stockView/product-stocks', product);
+          this.postData(this.backendURL + this.endpointProductStocks, product);
         }
       }
     },
@@ -324,7 +257,7 @@ export default {
         .catch(err => console.log(err));
     },
     onProductChange(event) {
-      fetch('http://localhost:8081/catena/stockView/customer?materialUuid='+event.target.value)
+      fetch(this.backendURL + this.endpointCustomer + event.target.value)
         .then(res => res.json())
         .then(data => this.bdCustomers = data)
         .catch(err => console.log(err));
