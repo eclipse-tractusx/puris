@@ -21,15 +21,18 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.RequestBody;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentErrorDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiBusinessObjectEnum;
@@ -45,8 +48,10 @@ import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -63,6 +68,8 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class ProductStockRequestApiServiceImpl implements RequestApiService {
+
+    private static final OkHttpClient CLIENT = new OkHttpClient();
 
     @Autowired
     private RequestService requestService;
@@ -86,6 +93,15 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
     private ModelMapper modelMapper;
 
     private ObjectMapper objectMapper;
+
+    @Value("${edc.idsUrl}")
+    private String ownEdcIdsUrl;
+
+    @Value("${partner.bpnl}")
+    private String partnerBpnl;
+
+    @Value("${partner.bpns}")
+    private String partnerBpns;
 
     public ProductStockRequestApiServiceImpl(ObjectMapper objectMapper) {
         super();
@@ -217,14 +233,56 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
             filterProperties.put("asset:prop:apimethod", DT_ApiMethodEnum.RESPONSE.name());
         }
 
-        edcAdapterService.initializeProxyCall(partnerIdsUrl,
+        String edr = edcAdapterService.initializeProxyCall(partnerIdsUrl,
                 requestDto.getHeader().getRespondAssetId(), requestingPartnerBpnl, filterProperties);
+
+        ObjectNode edrNode = null;
+        try {
+            edrNode = objectMapper.readValue(edr, ObjectNode.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
         // TODO perform proxy call for response
 
+        // prepare interface object
+        MessageHeaderDto messageHeaderDto = new MessageHeaderDto();
+        messageHeaderDto.setRequestId(requestDto.getHeader().getRequestId());
+        //messageHeaderDto.setRespondAssetId("product-stock-response-api");
+        messageHeaderDto.setContractAgreementId("some cid");
+        messageHeaderDto.setSender(partnerBpnl);
+        messageHeaderDto.setSenderEdc(ownEdcIdsUrl);
+        // set receiver per partner
+        messageHeaderDto.setReceiver("http://sokrates-controlplane:8084/api/v1/ids"); //Fallback
+        messageHeaderDto.setReceiver(requestDto.getHeader().getSenderEdc());
+        messageHeaderDto.setUseCase(DT_UseCaseEnum.PURIS);
+        messageHeaderDto.setCreationDate(new Date());
+
+        ResponseDto responseDto = new ResponseDto();
+        responseDto.setHeader(messageHeaderDto);
+        responseDto.setPayload(resultProductStocks);
+
+        // TODO extract from edr
+        String authToken = null;
+        String authMethod = null;
+        String requestUrl = null;
+        com.squareup.okhttp.Request request = new com.squareup.okhttp.Request.Builder()
+                .header("Content-Type", "application/json")
+                .post(RequestBody.create(MediaType.parse("application/json"),
+                        objectMapper.valueToTree(responseDto).toString()))
+                .url(requestUrl)
+                .build();
+
+        log.info(String.format("Request body of EDC Request: %s", objectMapper.valueToTree(responseDto).toString()));
+        try {
+            CLIENT.newCall(request).execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         // Update status - also only MessageContentErrorDtos would be completed
         // quickfix: don´t persist request
-        requestDto.setState(DT_RequestStateEnum.ERROR);
+        //requestDto.setState(DT_RequestStateEnum.ERROR);
             /*
         requestService.updateState(correspondingRequest, DT_RequestStateEnum.COMPLETED);
 
