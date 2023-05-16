@@ -22,6 +22,9 @@
 package org.eclipse.tractusx.puris.backend.stock.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
@@ -31,14 +34,13 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.MaterialStockDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -70,6 +72,15 @@ public class StockController {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Value("${edc.idsUrl}")
+    private String ownEdcIdsUrl;
+
+    @Value("${partner.bpnl}")
+    private String partnerBpnl;
+
+    @Value("${partner.bpns}")
+    private String partnerBpns;
 
     @GetMapping("materials")
     @ResponseBody
@@ -238,9 +249,49 @@ public class StockController {
     @ResponseBody
     public List<PartnerDto> triggerPartnerProductStockUpdateForMaterial(@RequestParam UUID materialUuid) {
 
-        List<PartnerDto> allSupplierPartners = partnerService.findAllSupplierPartnersForMaterialId(materialUuid).stream()
+        Material materialEntity = materialService.findByUuid(materialUuid);
+
+        List<Partner> allSupplierPartnerEntities =
+                partnerService.findAllSupplierPartnersForMaterialId(materialUuid);
+
+
+        List<ProductStockRequestForMaterialDto> messageContentDtos = new ArrayList<>();
+
+        // Message Content for all requests
+        ProductStockRequestForMaterialDto materialDto = new ProductStockRequestForMaterialDto(
+                materialEntity.getMaterialNumberCustomer(),
+                materialEntity.getMaterialNumberSupplier(),
+                materialEntity.getMaterialNumberCx()
+        );
+        messageContentDtos.add(materialDto);
+
+        for (Partner supplierPartner : allSupplierPartnerEntities) {
+
+            MessageHeaderDto messageHeaderDto = new MessageHeaderDto();
+            messageHeaderDto.setRequestId(UUID.randomUUID());
+            messageHeaderDto.setRespondAssetId("product-stock-response-api");
+            messageHeaderDto.setContractAgreementId("some cid");
+            messageHeaderDto.setSender(partnerBpnl);
+            messageHeaderDto.setSenderEdc(ownEdcIdsUrl);
+            // set receiver per partner
+            messageHeaderDto.setReceiver("http://sokrates-controlplane:8084/api/v1/ids");
+            messageHeaderDto.setUseCase(DT_UseCaseEnum.PURIS);
+            messageHeaderDto.setCreationDate(new Date());
+
+            ProductStockRequestDto requestDto = new ProductStockRequestDto(
+                    DT_RequestStateEnum.REQUESTED,
+                    messageHeaderDto,
+                    messageContentDtos
+            );
+
+            // TODO determine Request API
+            // Send request with one material
+        }
+
+        List<PartnerDto> allSupplierPartners = allSupplierPartnerEntities.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+
 
         return allSupplierPartners;
     }
