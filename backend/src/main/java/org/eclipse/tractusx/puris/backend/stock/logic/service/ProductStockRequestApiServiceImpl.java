@@ -21,9 +21,7 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
@@ -49,7 +47,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -117,17 +114,6 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         log.info(String.format("found correspondingRequest %s", correspondingRequest));
         correspondingRequest = requestService.updateState(correspondingRequest, DT_RequestStateEnum.WORKING);
         */
-        // determine Asset for partners Response API
-        Map<String, String> filterProperties = new HashMap<>();
-        // use shortcut with headers.responseAssetId, if given
-        if (requestDto.getHeader().getRespondAssetId() != null) {
-            filterProperties.put("asset:prop:id", requestDto.getHeader().getRespondAssetId());
-        } else {
-            filterProperties.put("asset:prop:usecase", DT_UseCaseEnum.PURIS.name());
-            filterProperties.put("asset:prop:type", DT_AssetTypeEnum.API.name());
-            filterProperties.put("asset:prop:apibusinessobject", DT_ApiBusinessObjectEnum.productStock.name());
-            filterProperties.put("asset:prop:apimethod", DT_ApiMethodEnum.RESPONSE.name());
-        }
         String partnerIdsUrl = requestDto.getHeader().getSenderEdc();
         //Partner requestingPartner = partnerService.findByBpnl();
 
@@ -219,142 +205,22 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
             */
         }
 
-
-        // TODO: Init Transfer
-        // EDC 0.1.2 hardwire catalog
-        String catalog = null;
-        ObjectNode catalogNode = null;
-        try {
-            catalog = edcAdapterService.getCatalog(partnerIdsUrl, Optional.of(filterProperties));
-            catalogNode = objectMapper.readValue(catalog, ObjectNode.class);
-
-            log.info(String.format("Got catalog for idsUrl %s with filters %s: %s", partnerIdsUrl
-                    , filterProperties, catalog));
-        } catch (IOException e) {
-            // quickfix: don´t persist request
-            requestDto.setState(DT_RequestStateEnum.ERROR);
-
-            //correspondingRequest = requestService.updateState(correspondingRequest,
-            //        DT_RequestStateEnum.ERROR);
-
-            log.error(String.format("Catalog for %s for partner %s for request (external =%s ; " +
-                            "internal=%s) could not be reached.", partnerIdsUrl,
-                    requestDto.getHeader().getSender(), requestDto.getHeader().getRequestId(),
-                    requestDto.getUuid()));
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
+        // determine Asset for partners Response API
+        Map<String, String> filterProperties = new HashMap<>();
+        // use shortcut with headers.responseAssetId, if given
+        if (requestDto.getHeader().getRespondAssetId() != null) {
+            filterProperties.put("asset:prop:id", requestDto.getHeader().getRespondAssetId());
+        } else {
+            filterProperties.put("asset:prop:usecase", DT_UseCaseEnum.PURIS.name());
+            filterProperties.put("asset:prop:type", DT_AssetTypeEnum.API.name());
+            filterProperties.put("asset:prop:apibusinessobject", DT_ApiBusinessObjectEnum.productStock.name());
+            filterProperties.put("asset:prop:apimethod", DT_ApiMethodEnum.RESPONSE.name());
         }
 
-        // we expect only one offer for us
-        log.info(String.format("Received catalog: %s", catalog));
-        log.info(String.format("Catalog: %s", catalogNode.get("contractOffers").toString()));
-        JsonNode contractOfferJson = catalogNode.get("contractOffers").get(0);
-        String contractDefinitionId = contractOfferJson.get("id").asText();
+        edcAdapterService.initializeProxyCall(partnerIdsUrl,
+                requestDto.getHeader().getRespondAssetId(), requestingPartnerBpnl, filterProperties);
 
-        try {
-            String negotiationResponseString =
-                    edcAdapterService.startNegotiation(partnerIdsUrl + "/data",
-                            contractDefinitionId,
-                            requestDto.getHeader().getRespondAssetId());
-
-            ObjectNode negotiationResponse = objectMapper.readValue(negotiationResponseString, ObjectNode.class);
-            log.info(String.format("Negotiation Response answer: %s",
-                    negotiationResponse.toString()));
-
-            String contractId = negotiationResponse.get("id").asText();
-            log.info(String.format("Contract Id: %s", contractId));
-
-
-            /*
-            String contractNegotiationId = negotiationResponse.get("contract_agreement_id").toString();
-            log.info(String.format("Contract Negotiation Id for Response (Request ID %s): %s",
-                    requestDto.getHeader().getRequestId(),
-                    contractNegotiationId));
-             */
-
-            boolean negotiationDone = false;
-            String negotiationStateResultString = null;
-            ObjectNode negotiationStateResult = null;
-            do {
-                Thread.sleep(2000);
-                negotiationStateResultString = edcAdapterService.getNegotiationState(contractId);
-                negotiationStateResult = objectMapper.readValue(negotiationStateResultString, ObjectNode.class);
-
-                log.info(String.format("Negotiation State answer: %s",
-                        negotiationStateResult.toString()));
-
-                if (negotiationStateResult.get("state").asText().equals("CONFIRMED")) {
-                    negotiationDone = true;
-                } else if (negotiationStateResult.get("state").asText().equals("ERROR")) {
-                    throw new RuntimeException(String.format("Negotiation Result: Error for " +
-                            "Negotiation ID %S", contractId));
-                } else if (negotiationStateResult.get("state").asText().equals("DECLINED")) {
-                    throw new RuntimeException(String.format("Negotiation Result: DECLINED for " +
-                            "Negotiation ID %S", contractId));
-                }
-
-            } while (!negotiationDone);
-
-            String contractAgreementId = negotiationStateResult.get("contractAgreementId").asText();
-            log.info(String.format("Contract Agreement ID: %s", contractAgreementId));
-
-            String transferId = UUID.randomUUID().toString();
-            String transferResultString = edcAdapterService.startTransfer(transferId,
-                    partnerIdsUrl + "/data",
-                    contractId,
-                    requestDto.getHeader().getRespondAssetId());
-
-            ObjectNode transferResult = objectMapper.readValue(transferResultString, ObjectNode.class);
-            log.info(String.format("Init Transfer answer: %s",
-                    transferResult.toString()));
-
-            String transferResponseId = transferResult.get("id").asText();
-            log.info(String.format("Transfer ID created by me = %s ; transferResponseId = %s",
-                    transferId, transferResponseId));
-
-            boolean transferCompleted = false;
-            do {
-                log.info(String.format("Check State of transfer"));
-                String transferAnswer = edcAdapterService.getTransferState(transferResponseId);
-                log.info(transferAnswer);
-                ObjectNode transferState = objectMapper.readValue(transferAnswer,
-                        ObjectNode.class);
-                // quickfix. String concatenation needed fo impl. cast
-                String state = transferState.get("state").asText();
-                log.info(String.format("Current State: %s", state));
-
-                if (state.equals("COMPLETED")) {
-                    transferCompleted = true;
-                } else if (state.equals("ERROR")) {
-                    throw new RuntimeException("Transfer failed");
-                }
-                Thread.sleep(2000);
-            } while (!transferCompleted);
-
-
-            boolean edrReceived = false;
-            do {
-                log.info(String.format("Query Backend Application"));
-                String backendAnswer = edcAdapterService.getFromBackend(transferResponseId);
-                log.info(String.format("Backend Application answer: %s", backendAnswer));
-                Thread.sleep(2000);
-            } while (!edrReceived);
-
-        } catch (IOException | InterruptedException e) {
-            log.error(e.getMessage());
-            // quickfix: don´t persist request
-            requestDto.setState(DT_RequestStateEnum.ERROR);
-            /*
-            requestService.updateState(correspondingRequest, DT_RequestStateEnum.ERROR);
-             */
-            throw new RuntimeException(e);
-        }
-        // TODO: Does a request need a response-contract-agreement id so that I can determine the
-        //  http proxy EndpointDataReference?
-
-        // TODO: async wait for answer of backend
-
-        // TODO: send response
+        // TODO perform proxy call for response
 
         // Update status - also only MessageContentErrorDtos would be completed
         // quickfix: don´t persist request

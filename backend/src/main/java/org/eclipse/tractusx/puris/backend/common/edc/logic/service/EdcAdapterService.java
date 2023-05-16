@@ -22,6 +22,7 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.squareup.okhttp.*;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.CreateAssetDto;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
@@ -384,6 +386,132 @@ public class EdcAdapterService {
         log.info(String.format("Send Request to url: %s", request.urlString()));
 
         return CLIENT.newCall(request).execute();
+    }
+
+    public String initializeProxyCall(String partnerIdsUrl,
+                                      String partnersAssetId, String partnerBpnl, Map<String,
+            String> filterProperties) {
+
+        String catalog = null;
+        ObjectNode catalogNode = null;
+        try {
+            catalog = getCatalog(partnerIdsUrl, Optional.of(filterProperties));
+            catalogNode = objectMapper.readValue(catalog, ObjectNode.class);
+
+            log.info(String.format("Got catalog for idsUrl %s with filters %s: %s", partnerIdsUrl
+                    , filterProperties, catalog));
+        } catch (IOException e) {
+            // quickfix: don´t persist request
+            //requestDto.setState(DT_RequestStateEnum.ERROR);
+
+            //correspondingRequest = requestService.updateState(correspondingRequest,
+            //        DT_RequestStateEnum.ERROR);
+
+            log.error(String.format("Catalog for %s for partner %s for request could not be reached.", partnerIdsUrl,
+                    partnerBpnl));
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+        // we expect only one offer for us
+        log.info(String.format("Received catalog: %s", catalog));
+        log.info(String.format("Catalog: %s", catalogNode.get("contractOffers").toString()));
+        JsonNode contractOfferJson = catalogNode.get("contractOffers").get(0);
+        String contractDefinitionId = contractOfferJson.get("id").asText();
+
+        try {
+            String negotiationResponseString =
+                    startNegotiation(partnerIdsUrl + "/data",
+                            contractDefinitionId,
+                            partnersAssetId);
+
+            ObjectNode negotiationResponse = objectMapper.readValue(negotiationResponseString, ObjectNode.class);
+            log.info(String.format("Negotiation Response answer: %s",
+                    negotiationResponse.toString()));
+
+            String contractId = negotiationResponse.get("id").asText();
+            log.info(String.format("Contract Id: %s", contractId));
+
+
+            boolean negotiationDone = false;
+            String negotiationStateResultString = null;
+            ObjectNode negotiationStateResult = null;
+            do {
+                Thread.sleep(2000);
+                negotiationStateResultString = getNegotiationState(contractId);
+                negotiationStateResult = objectMapper.readValue(negotiationStateResultString, ObjectNode.class);
+
+                log.info(String.format("Negotiation State answer: %s",
+                        negotiationStateResult.toString()));
+
+                if (negotiationStateResult.get("state").asText().equals("CONFIRMED")) {
+                    negotiationDone = true;
+                } else if (negotiationStateResult.get("state").asText().equals("ERROR")) {
+                    throw new RuntimeException(String.format("Negotiation Result: Error for " +
+                            "Negotiation ID %S", contractId));
+                } else if (negotiationStateResult.get("state").asText().equals("DECLINED")) {
+                    throw new RuntimeException(String.format("Negotiation Result: DECLINED for " +
+                            "Negotiation ID %S", contractId));
+                }
+
+            } while (!negotiationDone);
+
+            String contractAgreementId = negotiationStateResult.get("contractAgreementId").asText();
+            log.info(String.format("Contract Agreement ID: %s", contractAgreementId));
+
+            String transferId = UUID.randomUUID().toString();
+            String transferResultString = startTransfer(transferId,
+                    partnerIdsUrl + "/data",
+                    contractId,
+                    partnersAssetId);
+
+            ObjectNode transferResult = objectMapper.readValue(transferResultString, ObjectNode.class);
+            log.info(String.format("Init Transfer answer: %s",
+                    transferResult.toString()));
+
+            String transferResponseId = transferResult.get("id").asText();
+            log.info(String.format("Transfer ID created by me = %s ; transferResponseId = %s",
+                    transferId, transferResponseId));
+
+            boolean transferCompleted = false;
+            do {
+                log.info(String.format("Check State of transfer"));
+                String transferAnswer = getTransferState(transferResponseId);
+                log.info(transferAnswer);
+                ObjectNode transferState = objectMapper.readValue(transferAnswer,
+                        ObjectNode.class);
+                // quickfix. String concatenation needed fo impl. cast
+                String state = transferState.get("state").asText();
+                log.info(String.format("Current State: %s", state));
+
+                if (state.equals("COMPLETED")) {
+                    transferCompleted = true;
+                } else if (state.equals("ERROR")) {
+                    throw new RuntimeException("Transfer failed");
+                }
+                Thread.sleep(5000);
+            } while (!transferCompleted);
+
+
+            boolean edrReceived = false;
+            String edr = null;
+            do {
+                log.info(String.format("Query Backend Application"));
+                edr = getFromBackend(transferResponseId);
+                log.info(String.format("Backend Application answer: %s", edr));
+                Thread.sleep(2000);
+            } while (!edrReceived);
+
+            return edr;
+        } catch (IOException | InterruptedException e) {
+            log.error(e.getMessage());
+            // quickfix: don´t persist request
+            //requestDto.setState(DT_RequestStateEnum.ERROR);
+            /*
+            requestService.updateState(correspondingRequest, DT_RequestStateEnum.ERROR);
+             */
+            throw new RuntimeException(e);
+        }
     }
 
 }
