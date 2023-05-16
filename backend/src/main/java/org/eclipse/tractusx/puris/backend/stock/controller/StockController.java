@@ -82,6 +82,7 @@ public class StockController {
     @Value("${partner.bpns}")
     private String partnerBpns;
 
+    @CrossOrigin
     @GetMapping("materials")
     @ResponseBody
     public List<MaterialDto> getMaterials() {
@@ -100,6 +101,7 @@ public class StockController {
         return modelMapper.map(entity, MaterialDto.class);
     }
 
+    @CrossOrigin
     @GetMapping("products")
     @ResponseBody
     public List<MaterialDto> getProducts() {
@@ -111,6 +113,7 @@ public class StockController {
         return allProducts;
     }
 
+    @CrossOrigin
     @GetMapping("product-stocks")
     @ResponseBody
     public List<ProductStockDto> getProductStocks() {
@@ -130,6 +133,7 @@ public class StockController {
         return result;
     }
 
+    @CrossOrigin
     @PostMapping("product-stocks")
     @ResponseBody
     public ProductStockDto createProductStocks(@RequestBody ProductStockDto productStockDto) {
@@ -144,6 +148,7 @@ public class StockController {
         return productStockToReturn;
     }
 
+    @CrossOrigin
     @PutMapping("product-stocks")
     @ResponseBody
     public ProductStockDto updateProductStocks(@RequestBody ProductStockDto productStockDto) {
@@ -170,6 +175,7 @@ public class StockController {
         return modelMapper.map(dto, ProductStock.class);
     }
 
+    @CrossOrigin
     @GetMapping("material-stocks")
     @ResponseBody
     public List<MaterialStockDto> getMaterialStocks() {
@@ -180,6 +186,7 @@ public class StockController {
         return allMaterialStocks;
     }
 
+    @CrossOrigin
     @PostMapping("material-stocks")
     @ResponseBody
     public MaterialStockDto createMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
@@ -187,13 +194,14 @@ public class StockController {
         MaterialStock materialStockToCreate = convertToEntity(materialStockDto);
         materialStockToCreate.setLastUpdatedOn(new Date());
 
-        MaterialStock createdMterialStock = materialStockService.create(materialStockToCreate);
+        MaterialStock createdMaterialStock = materialStockService.create(materialStockToCreate);
 
-        MaterialStockDto materialStockToReturn = convertToDto(createdMterialStock);
+        MaterialStockDto materialStockToReturn = convertToDto(createdMaterialStock);
 
         return materialStockToReturn;
     }
 
+    @CrossOrigin
     @PutMapping("material-stocks")
     @ResponseBody
     public MaterialStockDto updateMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
@@ -221,6 +229,7 @@ public class StockController {
         return modelMapper.map(dto, MaterialStock.class);
     }
 
+    @CrossOrigin
     @GetMapping("partner-product-stocks")
     @ResponseBody
     public List<PartnerProductStockDto> getPartnerProductStocks() {
@@ -235,6 +244,7 @@ public class StockController {
         return modelMapper.map(entity, PartnerProductStockDto.class);
     }
 
+    @CrossOrigin
     @GetMapping("customer")
     @ResponseBody
     public List<PartnerDto> getCustomerPartnersOrderingMaterial(@RequestParam UUID materialUuid) {
@@ -245,6 +255,7 @@ public class StockController {
         return allCustomerPartners;
     }
 
+    @CrossOrigin
     @GetMapping("update-partner-product-stock")
     @ResponseBody
     public List<PartnerDto> triggerPartnerProductStockUpdateForMaterial(@RequestParam UUID materialUuid) {
