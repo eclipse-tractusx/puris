@@ -25,6 +25,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiBusinessObjectEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_AssetTypeEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
@@ -43,10 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -72,6 +73,9 @@ public class StockController {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private EdcAdapterService edcAdapterService;
 
     @Value("${edc.idsUrl}")
     private String ownEdcIdsUrl;
@@ -286,6 +290,7 @@ public class StockController {
             messageHeaderDto.setSenderEdc(ownEdcIdsUrl);
             // set receiver per partner
             messageHeaderDto.setReceiver("http://sokrates-controlplane:8084/api/v1/ids");
+            messageHeaderDto.setReceiver(supplierPartner.getEdcUrl());
             messageHeaderDto.setUseCase(DT_UseCaseEnum.PURIS);
             messageHeaderDto.setCreationDate(new Date());
 
@@ -295,7 +300,23 @@ public class StockController {
                     messageContentDtos
             );
 
+            Map<String, String> filterProperties = new HashMap<>();
+            if (requestDto.getHeader().getRespondAssetId() != null) {
+                filterProperties.put("asset:prop:id", requestDto.getHeader().getRespondAssetId());
+            } else {
+                filterProperties.put("asset:prop:usecase", DT_UseCaseEnum.PURIS.name());
+                filterProperties.put("asset:prop:type", DT_AssetTypeEnum.API.name());
+                filterProperties.put("asset:prop:apibusinessobject", DT_ApiBusinessObjectEnum.productStock.name());
+                filterProperties.put("asset:prop:apimethod", DT_ApiMethodEnum.RESPONSE.name());
+            }
+
             // TODO determine Request API
+            String edr = edcAdapterService.initializeProxyCall(
+                    supplierPartner.getEdcUrl(),
+                    messageHeaderDto.getRespondAssetId(),
+                    filterProperties
+
+            );
             // Send request with one material
         }
 

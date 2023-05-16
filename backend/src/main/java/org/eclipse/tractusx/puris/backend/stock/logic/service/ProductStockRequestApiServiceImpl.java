@@ -234,7 +234,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         }
 
         String edr = edcAdapterService.initializeProxyCall(partnerIdsUrl,
-                requestDto.getHeader().getRespondAssetId(), requestingPartnerBpnl, filterProperties);
+                requestDto.getHeader().getRespondAssetId(), filterProperties);
 
         ObjectNode edrNode = null;
         try {
@@ -242,8 +242,6 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-
-        // TODO perform proxy call for response
 
         // prepare interface object
         MessageHeaderDto messageHeaderDto = new MessageHeaderDto();
