@@ -20,6 +20,7 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdAlreadyUsedException;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
@@ -27,6 +28,7 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfullRequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,6 +45,7 @@ import java.util.UUID;
  * Subclasses should implement the specifics, such as routes.
  */
 @Controller
+@Slf4j
 public abstract class RequestApiController {
 
     /**
@@ -66,12 +69,14 @@ public abstract class RequestApiController {
      * Uses the {@link RequestApiService#handleRequest(RequestDto)} method to perform the actual
      * task asynchronously.
      *
-     * @param requestDto request to be mapped
+     * @param productStockRequestDto request to be mapped
      */
     @PostMapping
-    protected ResponseEntity postRequest(@RequestBody RequestDto requestDto) {
+    protected ResponseEntity postRequest(@RequestBody ProductStockRequestDto productStockRequestDto) {
 
-        UUID requestId = requestDto.getHeader().getRequestId();
+        log.info(String.format("RequestApiController.postReqest.requestDto: %s", productStockRequestDto));
+
+        UUID requestId = productStockRequestDto.getHeader().getRequestId();
 
         Request requestFound =
                 requestService.findRequestByHeaderUuid(requestId);
@@ -80,12 +85,42 @@ public abstract class RequestApiController {
             throw new RequestIdAlreadyUsedException(requestId);
         }
 
-        Request requestEntity = modelMapper.map(requestDto, Request.class);
+        // quickfix: don´t persist request
+        productStockRequestDto.setState(DT_RequestStateEnum.RECEIPT);
+        /*
+        Request requestEntity = modelMapper.map(productStockRequestDto, Request.class);
         requestEntity.setState(DT_RequestStateEnum.RECEIPT);
-        requestEntity = requestService.createRequest(requestEntity);
 
+        List<MessageContent> payload = new ArrayList<>();
+
+        for (ProductStockRequestForMaterialDto dto : productStockRequestDto.getPayload()) {
+            // quickfix: create message contents per hand
+            ProductStockRequestForMaterial requestForMaterial = new ProductStockRequestForMaterial(
+                    dto.getMaterialNumberCustomer(),
+                    dto.getMaterialNumberSupplier(),
+                    dto.getMaterialNumberCatenaX()
+            );
+            payload.add(requestForMaterial);
+        }
+        requestEntity.setPayload(payload);
+
+        requestEntity = requestService.createRequest(requestEntity);
+        log.info(String.format("Created Request %s", requestEntity));
+
+        Request foundRequest = requestService.findByInternalUuid(requestEntity.getUuid());
+        log.info(String.format("Found Request %s", foundRequest));
+
+        RequestDto requestDto = modelMapper.map(foundRequest, RequestDto.class);
+        log.info(String.format("RequestDTO %s", productStockRequestDto));
+        */
         // handling the request and responding should be done asynchronously.
-        final RequestDto threadRequestDto = modelMapper.map(requestEntity, RequestDto.class);
+        final RequestDto threadRequestDto = new RequestDto(
+                productStockRequestDto.getState(),
+                productStockRequestDto.getUuid(),
+                productStockRequestDto.getHeader(),
+                productStockRequestDto.getPayload()
+        );
+        //modelMapper.map(requestEntity, RequestDto.class);
         Thread respondAsyncThread = new Thread(() -> {
             requestApiService.handleRequest(threadRequestDto);
         });

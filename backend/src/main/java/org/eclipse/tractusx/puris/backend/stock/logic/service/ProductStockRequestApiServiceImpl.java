@@ -23,6 +23,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
@@ -103,12 +104,19 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
     @Override
     public void handleRequest(RequestDto requestDto) {
+
+        log.info(String.format("param requestDto %s", requestDto));
+
+        // quickfix: don´t persist request
+        requestDto.setState(DT_RequestStateEnum.WORKING);
+        /*
         //request has been created on post
-        Request correspondingRequest = findCorrespondingRequest(requestDto);
+        Request correspondingRequest = requestService.findByInternalUuid(requestDto.getUuid());
 
         // as soon as we're working on it, we need to set the state to working.
+        log.info(String.format("found correspondingRequest %s", correspondingRequest));
         correspondingRequest = requestService.updateState(correspondingRequest, DT_RequestStateEnum.WORKING);
-
+        */
         // determine Asset for partners Response API
         Map<String, String> filterProperties = new HashMap<>();
         // use shortcut with headers.responseAssetId, if given
@@ -121,12 +129,114 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
             filterProperties.put("asset:prop:apimethod", DT_ApiMethodEnum.RESPONSE.name());
         }
         String partnerIdsUrl = requestDto.getHeader().getSenderEdc();
+        //Partner requestingPartner = partnerService.findByBpnl();
+
+        // contains either productStockSamms or messageContentError
+        List<MessageContentDto> resultProductStocks = new ArrayList<>();
+
+        String requestingPartnerBpnl = requestDto.getHeader().getSender();
+
+        for (ProductStockRequestForMaterialDto productStockRequestDto : requestDto.getPayload()) {
+
+            //if (messageContentDto instanceof ProductStockRequestForMaterialDto) {
+
+            //ProductStockRequestForMaterialDto productStockRequestDto =
+            //        (ProductStockRequestForMaterialDto) messageContentDto;
+
+            // TODO determine data
+            // Check if product is known
+            Material existingMaterial =
+                    materialService.findProductByMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
+            if (existingMaterial == null) {
+                // TODO MessageContentError: Material unknown
+                MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
+                messageContentErrorDto.setMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
+                messageContentErrorDto.setError("PURIS-01");
+                messageContentErrorDto.setMessage("Material is unknown.");
+                resultProductStocks.add(messageContentErrorDto);
+                log.warn(String.format("No Material found for ID Customer %s in request %s",
+                        productStockRequestDto.getMaterialNumberCustomer(),
+                        requestDto.getHeader().getRequestId()));
+                //continue;
+            }
+            boolean ordersProducts =
+                    existingMaterial.getOrderedByPartners()
+                            .stream().anyMatch(
+                                    partner -> partner.getBpnl().equals(requestingPartnerBpnl));
+
+            if (!ordersProducts) {
+                // TODO MessageContentError: Partner is not authorized
+                MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
+                messageContentErrorDto.setMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
+                messageContentErrorDto.setError("PURIS-02");
+                messageContentErrorDto.setMessage("Partner is not authorized.");
+                resultProductStocks.add(messageContentErrorDto);
+                log.warn(String.format("Partner %s is not an ordering Partner of Material " +
+                                "found for ID Customer %s in request %s",
+                        requestingPartnerBpnl,
+                        productStockRequestDto.getMaterialNumberCustomer(),
+                        requestDto.getHeader().getRequestId()));
+            }
+
+            List<ProductStock> productStocks =
+                    productStockService
+                            .findAllByMaterialNumberCustomerAndAllocatedToCustomerBpnl(
+                                    productStockRequestDto.getMaterialNumberCustomer(),
+                                    requestingPartnerBpnl);
+
+            ProductStock productStock = null;
+            if (productStocks.size() == 0) {
+                // TODO no partner product stock given
+                continue;
+            } else productStock = productStocks.get(0);
+
+            //TODO: is this one allocated stock or multiple
+            if (productStocks.size() > 1) {
+                List<ProductStock> distinctProductStocks =
+                        productStocks.stream()
+                                .filter(distinctByKey(p -> p.getAtSiteBpnl()))
+                                .collect(Collectors.toList());
+                if (distinctProductStocks.size() > 1) {
+                    log.warn(String.format("More than one site is not yet supported per " +
+                                    "partner. Product Stocks for material ID %s and partner %s in " +
+                                    "request %s are accumulated",
+                            productStockRequestDto.getMaterialNumberCustomer(),
+                            requestingPartnerBpnl, requestDto.getHeader().getRequestId()));
+                }
+
+                double quantity = productStocks.stream().
+                        mapToDouble(stock -> stock.getQuantity()).sum();
+                productStock.setQuantity(quantity);
+
+            }
+
+            resultProductStocks.add(productStockSammMapper.toSamm(modelMapper.map(productStock,
+                    ProductStockDto.class)));
+            /*
+            } else
+                throw new IllegalStateException(String.format("Message Content is unknown: %s",
+                        messageContentDto));
+            */
+        }
+
+
+        // TODO: Init Transfer
+        // EDC 0.1.2 hardwire catalog
         String catalog = null;
+        ObjectNode catalogNode = null;
         try {
             catalog = edcAdapterService.getCatalog(partnerIdsUrl, Optional.of(filterProperties));
+            catalogNode = objectMapper.readValue(catalog, ObjectNode.class);
+
+            log.info(String.format("Got catalog for idsUrl %s with filters %s: %s", partnerIdsUrl
+                    , filterProperties, catalog));
         } catch (IOException e) {
-            correspondingRequest = requestService.updateState(correspondingRequest,
-                    DT_RequestStateEnum.ERROR);
+            // quickfix: don´t persist request
+            requestDto.setState(DT_RequestStateEnum.ERROR);
+
+            //correspondingRequest = requestService.updateState(correspondingRequest,
+            //        DT_RequestStateEnum.ERROR);
+
             log.error(String.format("Catalog for %s for partner %s for request (external =%s ; " +
                             "internal=%s) could not be reached.", partnerIdsUrl,
                     requestDto.getHeader().getSender(), requestDto.getHeader().getRequestId(),
@@ -135,107 +245,25 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
             throw new RuntimeException(e);
         }
 
-        //Partner requestingPartner = partnerService.findByBpnl();
-
-        // contains either productStockSamms or messageContentError
-        List<MessageContentDto> resultProductStocks = new ArrayList<>();
-
-        String requestingPartnerBpnl = requestDto.getHeader().getSender();
-
-        for (MessageContentDto messageContentDto : requestDto.getPayload()) {
-
-            if (messageContentDto instanceof ProductStockRequestForMaterialDto) {
-
-                ProductStockRequestForMaterialDto productStockRequestDto =
-                        (ProductStockRequestForMaterialDto) messageContentDto;
-                // TODO determine data
-                // Check if product is known
-                Material existingMaterial =
-                        materialService.findProductByMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
-                if (existingMaterial == null) {
-                    // TODO MessageContentError: Material unknown
-                    MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
-                    messageContentErrorDto.setMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
-                    messageContentErrorDto.setError("PURIS-01");
-                    messageContentErrorDto.setMessage("Material is unknown.");
-                    resultProductStocks.add(messageContentErrorDto);
-                    log.warn(String.format("No Material found for ID Customer %s in request %s",
-                            productStockRequestDto.getMaterialNumberCustomer(),
-                            requestDto.getHeader().getRequestId()));
-                }
-                boolean ordersProducts =
-                        existingMaterial.getOrderedByPartners()
-                                .stream().anyMatch(
-                                        partner -> partner.getBpnl().equals(requestingPartnerBpnl));
-
-                if (!ordersProducts) {
-                    // TODO MessageContentError: Partner is not authorized
-                    MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
-                    messageContentErrorDto.setMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
-                    messageContentErrorDto.setError("PURIS-02");
-                    messageContentErrorDto.setMessage("Partner is not authorized.");
-                    resultProductStocks.add(messageContentErrorDto);
-                    log.warn(String.format("Partner %s is not an ordering Partner of Material " +
-                                    "found for ID Customer %s in request %s",
-                            requestingPartnerBpnl,
-                            productStockRequestDto.getMaterialNumberCustomer(),
-                            requestDto.getHeader().getRequestId()));
-                }
-
-                List<ProductStock> productStocks =
-                        productStockService
-                                .findAllByMaterialNumberCustomerAndAllocatedToCustomerBpnl(
-                                        productStockRequestDto.getMaterialNumberCustomer(),
-                                        requestingPartnerBpnl);
-
-                ProductStock productStock = null;
-                if (productStocks.size() == 0) {
-                    // TODO no partner product stock given
-                    continue;
-                } else productStock = productStocks.get(0);
-
-                //TODO: is this one allocated stock or multiple
-                if (productStocks.size() > 1) {
-                    List<ProductStock> distinctProductStocks =
-                            productStocks.stream()
-                                    .filter(distinctByKey(p -> p.getAtSiteBpnl()))
-                                    .collect(Collectors.toList());
-                    if (distinctProductStocks.size() > 1) {
-                        log.warn(String.format("More than one site is not yet supported per " +
-                                        "partner. Product Stocks for material ID %s and partner %s in " +
-                                        "request %s are accumulated",
-                                productStockRequestDto.getMaterialNumberCustomer(),
-                                requestingPartnerBpnl, requestDto.getHeader().getRequestId()));
-                    }
-
-                    double quantity = productStocks.stream().
-                            mapToDouble(stock -> stock.getQuantity()).sum();
-                    productStock.setQuantity(quantity);
-
-                }
-
-                resultProductStocks.add(productStockSammMapper.toSamm(modelMapper.map(productStock,
-                        ProductStockDto.class)));
-
-            } else
-                throw new IllegalStateException(String.format("Message Content is unknown: %s",
-                        messageContentDto));
-
-        }
-
-
-        // TODO: Init Transfer
-        JsonNode catalogNode = objectMapper.valueToTree(catalog);
         // we expect only one offer for us
-        JsonNode contractOfferJson = catalogNode.get("contractoffers").get(0);
+        log.info(String.format("Received catalog: %s", catalog));
+        log.info(String.format("Catalog: %s", catalogNode.get("contractOffers").toString()));
+        JsonNode contractOfferJson = catalogNode.get("contractOffers").get(0);
+        String contractDefinitionId = contractOfferJson.get("id").asText();
 
         try {
-            String negotiationResponseString = edcAdapterService.startNegotiation(partnerIdsUrl,
-                    requestDto.getHeader().getRespondAssetId());
-            JsonNode negotiationResponse = objectMapper.valueToTree(negotiationResponseString);
+            String negotiationResponseString =
+                    edcAdapterService.startNegotiation(partnerIdsUrl + "/data",
+                            contractDefinitionId,
+                            requestDto.getHeader().getRespondAssetId());
 
-            String contractId = negotiationResponse.get("id").toString();
+            ObjectNode negotiationResponse = objectMapper.readValue(negotiationResponseString, ObjectNode.class);
+            log.info(String.format("Negotiation Response answer: %s",
+                    negotiationResponse.toString()));
+
+            String contractId = negotiationResponse.get("id").asText();
             log.info(String.format("Contract Id: %s", contractId));
+
 
             /*
             String contractNegotiationId = negotiationResponse.get("contract_agreement_id").toString();
@@ -246,39 +274,79 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
             boolean negotiationDone = false;
             String negotiationStateResultString = null;
-            JsonNode negotiationStateResult = null;
+            ObjectNode negotiationStateResult = null;
             do {
                 Thread.sleep(2000);
-                negotiationStateResultString = edcAdapterService.getNegotiationState(partnerIdsUrl,
-                        contractId);
-                negotiationStateResult = objectMapper.valueToTree(negotiationStateResultString);
+                negotiationStateResultString = edcAdapterService.getNegotiationState(contractId);
+                negotiationStateResult = objectMapper.readValue(negotiationStateResultString, ObjectNode.class);
 
-                if (negotiationStateResult.get("state").equals("CONFIRMED")) {
+                log.info(String.format("Negotiation State answer: %s",
+                        negotiationStateResult.toString()));
+
+                if (negotiationStateResult.get("state").asText().equals("CONFIRMED")) {
                     negotiationDone = true;
-                } else if (negotiationStateResult.get("state").equals("ERROR")) {
+                } else if (negotiationStateResult.get("state").asText().equals("ERROR")) {
                     throw new RuntimeException(String.format("Negotiation Result: Error for " +
+                            "Negotiation ID %S", contractId));
+                } else if (negotiationStateResult.get("state").asText().equals("DECLINED")) {
+                    throw new RuntimeException(String.format("Negotiation Result: DECLINED for " +
                             "Negotiation ID %S", contractId));
                 }
 
             } while (!negotiationDone);
 
-            String contractAgreementId = negotiationStateResult.get("contractAgreementId").toString();
+            String contractAgreementId = negotiationStateResult.get("contractAgreementId").asText();
             log.info(String.format("Contract Agreement ID: %s", contractAgreementId));
 
             String transferId = UUID.randomUUID().toString();
-            edcAdapterService.startTransfer(transferId, partnerIdsUrl, contractId,
+            String transferResultString = edcAdapterService.startTransfer(transferId,
+                    partnerIdsUrl + "/data",
+                    contractId,
                     requestDto.getHeader().getRespondAssetId());
+
+            ObjectNode transferResult = objectMapper.readValue(transferResultString, ObjectNode.class);
+            log.info(String.format("Init Transfer answer: %s",
+                    transferResult.toString()));
+
+            String transferResponseId = transferResult.get("id").asText();
+            log.info(String.format("Transfer ID created by me = %s ; transferResponseId = %s",
+                    transferId, transferResponseId));
+
+            boolean transferCompleted = false;
+            do {
+                log.info(String.format("Check State of transfer"));
+                String transferAnswer = edcAdapterService.getTransferState(transferResponseId);
+                log.info(transferAnswer);
+                ObjectNode transferState = objectMapper.readValue(transferAnswer,
+                        ObjectNode.class);
+                // quickfix. String concatenation needed fo impl. cast
+                String state = transferState.get("state").asText();
+                log.info(String.format("Current State: %s", state));
+
+                if (state.equals("COMPLETED")) {
+                    transferCompleted = true;
+                } else if (state.equals("ERROR")) {
+                    throw new RuntimeException("Transfer failed");
+                }
+                Thread.sleep(2000);
+            } while (!transferCompleted);
+
 
             boolean edrReceived = false;
             do {
-                String backendAnswer = edcAdapterService.getFromBackend(transferId);
-                log.info(String.format("Backend Application answer: %s"));
+                log.info(String.format("Query Backend Application"));
+                String backendAnswer = edcAdapterService.getFromBackend(transferResponseId);
+                log.info(String.format("Backend Application answer: %s", backendAnswer));
                 Thread.sleep(2000);
             } while (!edrReceived);
 
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage());
+            // quickfix: don´t persist request
+            requestDto.setState(DT_RequestStateEnum.ERROR);
+            /*
             requestService.updateState(correspondingRequest, DT_RequestStateEnum.ERROR);
+             */
             throw new RuntimeException(e);
         }
         // TODO: Does a request need a response-contract-agreement id so that I can determine the
@@ -289,11 +357,18 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         // TODO: send response
 
         // Update status - also only MessageContentErrorDtos would be completed
+        // quickfix: don´t persist request
+        requestDto.setState(DT_RequestStateEnum.ERROR);
+            /*
         requestService.updateState(correspondingRequest, DT_RequestStateEnum.COMPLETED);
+
+             */
     }
 
     private Request findCorrespondingRequest(RequestDto requestDto) {
         UUID requestId = requestDto.getHeader().getRequestId();
+        log.info(String.format("Find corresponding request with header id %s",
+                requestDto.getHeader().getRequestId()));
 
         Request requestFound =
                 requestService.findRequestByHeaderUuid(requestId);

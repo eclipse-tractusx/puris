@@ -19,22 +19,27 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.logic.dto;
+package org.eclipse.tractusx.puris.backend.stock.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent;
 
 /**
  * One object that is received as a response.
  */
+@Entity
+@DiscriminatorValue("ProductStockRequestForMaterial")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class ProductStockRequestForMaterialDto {
+public class ProductStockRequestForMaterial extends MessageContent {
 
     @NotNull
     @JsonProperty("materialNumberCustomer")

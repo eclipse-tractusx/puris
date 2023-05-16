@@ -70,7 +70,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public Request findRequestByHeaderUuid(UUID headerUuid) {
-        Optional<Request> existingRequest = requestRepository.findRequestByHeader_RequestId(headerUuid);
+        Optional<Request> existingRequest = requestRepository.findFirstByHeader_RequestId(headerUuid);
 
         if (existingRequest.isPresent()) {
             return existingRequest.get();

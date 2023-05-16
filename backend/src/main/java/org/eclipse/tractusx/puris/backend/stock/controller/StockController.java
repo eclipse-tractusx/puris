@@ -21,6 +21,7 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
@@ -40,6 +41,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -47,6 +49,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("stockView")
+@Slf4j
 public class StockController {
 
     @Autowired
@@ -100,11 +103,20 @@ public class StockController {
     @GetMapping("product-stocks")
     @ResponseBody
     public List<ProductStockDto> getProductStocks() {
+        List<ProductStock> productStocks = productStockService.findAll();
+        log.info(String.format("First productStock: %s", productStocks.get(0)));
+        ProductStockDto productStockDto = convertToDto(productStocks.get(0));
+        log.info(String.format("First productStockDto: %s", productStockDto));
+
+        log.info(String.format("Found %d ProductStocks", productStocks.size()));
+        /*
         List<ProductStockDto> allProductStocks = productStockService.findAll().stream()
                 .map(this::convertToDto)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());*/
 
-        return allProductStocks;
+        List<ProductStockDto> result = new ArrayList<>();
+        result.add(productStockDto);
+        return result;
     }
 
     @PostMapping("product-stocks")

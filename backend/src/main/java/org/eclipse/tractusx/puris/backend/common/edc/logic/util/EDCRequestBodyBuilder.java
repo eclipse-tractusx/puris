@@ -96,6 +96,7 @@ public class EDCRequestBodyBuilder {
         var negotiationNode = MAPPER.createObjectNode();
         negotiationNode.put("connectorId", "foo");
         negotiationNode.put("connectorAddress", connectorAddress);
+        negotiationNode.put("protocol", "ids-multipart");
         var offerNode = MAPPER.createObjectNode();
         offerNode.put("offerId", orderId + ":foo");
         offerNode.put("assetId", orderId);
@@ -107,6 +108,36 @@ public class EDCRequestBodyBuilder {
         var permissionNode = MAPPER.createObjectNode();
         permissionNode.put("edctype", "dataspaceconnector:permission");
         permissionNode.put("target", orderId);
+        permissionNode.set("constraints", MAPPER.createArrayNode());
+        var actionNode = MAPPER.createObjectNode();
+        actionNode.put("type", "USE");
+        permissionNode.set("action", actionNode);
+        permissionArray.add(permissionNode);
+        policyNode.set("permissions", permissionArray);
+        offerNode.set("policy", policyNode);
+        negotiationNode.set("offer", offerNode);
+        return negotiationNode;
+    }
+
+    public static JsonNode buildNegotiationRequestBody(String connectorAddress,
+                                                       String contractDefinitionId,
+                                                       String assetId) {
+        var negotiationNode = MAPPER.createObjectNode();
+        negotiationNode.put("connectorId", "foo");
+        negotiationNode.put("connectorAddress", connectorAddress);
+        negotiationNode.put("protocol", "ids-multipart");
+        var offerNode = MAPPER.createObjectNode();
+        offerNode.put("offerId", contractDefinitionId);
+        offerNode.put("assetId", assetId);
+        var policyNode = MAPPER.createObjectNode();
+        var permissionsArray = MAPPER.createArrayNode();
+        policyNode.put("uid", assetId);
+        policyNode.set("prohibiitons", MAPPER.createArrayNode());
+        policyNode.set("obligations", MAPPER.createArrayNode());
+        var permissionArray = MAPPER.createArrayNode();
+        var permissionNode = MAPPER.createObjectNode();
+        permissionNode.put("edctype", "dataspaceconnector:permission");
+        permissionNode.put("target", assetId);
         permissionNode.set("constraints", MAPPER.createArrayNode());
         var actionNode = MAPPER.createObjectNode();
         actionNode.put("type", "USE");

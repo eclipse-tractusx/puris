@@ -51,7 +51,7 @@ public class ProductStockSammDto extends MessageContentDto {
     @Pattern(regexp = "(^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)")
     private Optional<String> materialNumberCatenaX;
 
-    private Optional<String> materialNumberSupplier;
+    //private Optional<String> materialNumberSupplier;
 
     @JsonCreator
     public ProductStockSammDto(@JsonProperty(value = "positions") Collection<Position> positions,
@@ -64,43 +64,7 @@ public class ProductStockSammDto extends MessageContentDto {
         this.positions = positions;
         this.materialNumberCustomer = materialNumberCustomer;
         this.materialNumberCatenaX = materialNumberCatenaX;
-        this.materialNumberSupplier = materialNumberSupplier;
-    }
-
-    /**
-     * Returns Positions
-     *
-     * @return {@link #positions}
-     */
-    public Collection<Position> getPositions() {
-        return this.positions;
-    }
-
-    /**
-     * Returns Customer Material Number
-     *
-     * @return {@link #materialNumberCustomer}
-     */
-    public String getMaterialNumberCustomer() {
-        return this.materialNumberCustomer;
-    }
-
-    /**
-     * Returns Material UUID Used in Catena-X
-     *
-     * @return {@link #materialNumberCatenaX}
-     */
-    public Optional<String> getMaterialNumberCatenaX() {
-        return this.materialNumberCatenaX;
-    }
-
-    /**
-     * Returns Supplier Material Number
-     *
-     * @return {@link #materialNumberSupplier}
-     */
-    public Optional<String> getMaterialNumberSupplier() {
-        return this.materialNumberSupplier;
+        //this.materialNumberSupplier = materialNumberSupplier;
     }
 
     @Override
@@ -115,12 +79,13 @@ public class ProductStockSammDto extends MessageContentDto {
         final ProductStockSammDto that = (ProductStockSammDto) o;
         return Objects.equals(positions, that.positions)
                 && Objects.equals(materialNumberCustomer, that.materialNumberCustomer)
-                && Objects.equals(materialNumberCatenaX, that.materialNumberCatenaX)
-                && Objects.equals(materialNumberSupplier, that.materialNumberSupplier);
+                && Objects.equals(materialNumberCatenaX, that.materialNumberCatenaX);
+        //&& Objects.equals(materialNumberSupplier, that.materialNumberSupplier);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(positions, materialNumberCustomer, materialNumberCatenaX, materialNumberSupplier);
+        return Objects.hash(positions, materialNumberCustomer, materialNumberCatenaX);//,
+        // materialNumberSupplier);
     }
 }
