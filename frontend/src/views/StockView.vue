@@ -59,8 +59,8 @@
               v-model="this.changedStock.materialId"
               :disabled="this.changedStock.type === 'Product'"
           >
-            <option v-for="material in this.materials" :value="material.id">
-              {{ material.id }} ({{ material.name }})
+            <option v-for="material in this.bdMaterials" :value="material.materialNumberCustomer">
+              {{ material.materialNumberCustomer }} ({{ material.name }})
             </option>
           </select>
         </div>
@@ -71,9 +71,10 @@
               id="productSelect"
               v-model="this.changedStock.productId"
               :disabled="this.changedStock.type === 'Material'"
+              @change="onProductChange($event)"
           >
-            <option v-for="product in this.products" :value="product.id">
-              {{ product.id }} ({{ product.name }})
+            <option v-for="product in this.bdProducts" :value="product.uuid">
+              {{ product.materialNumberCustomer }} ({{ product.name }})
             </option>
           </select>
         </div>
@@ -85,7 +86,7 @@
             v-model="this.changedStock.allocatedToCustomer"
             :disabled="this.changedStock.type === 'Material'"
           >
-            <option v-for="customer in this.customers" :value="customer.bpnl">
+            <option v-for="customer in this.bdCustomers" :value="customer.bpnl">
               {{ customer.name }}
             </option>
           </select>
@@ -114,12 +115,12 @@
       <div id="materialAndProductStockTables" class="flex flex-col space-y-2 max-w-max">
         <StockTableSFC
             title="Material Stocks"
-            :stocks="this.materialStocks"
+            :stocks="this.bdMaterialStocks"
             :partnerRole="'supplier'"
         />
         <StockTableSFC
             title="Product Stocks"
-            :stocks="this.productStocks"
+            :stocks="this.bdProductStocks"
             :partnerRole="'customer'"
         />
       </div>
@@ -136,6 +137,11 @@ export default {
 
   data() {
     return {
+      bdMaterials: [],
+      bdProducts: [],
+      bdMaterialStocks: [],
+      bdProductStocks: [],
+      bdCustomers: [],
       changedStock: {
         materialId: "",
         productId: "",
@@ -221,16 +227,41 @@ export default {
       productStocks: [],
     };
   },
+  mounted() {
+    const backendAddress = 'http://localhost:8081/catena/';
+
+    fetch(backendAddress + 'stockView/materials')
+      .then(res => res.json())
+      .then(data => this.bdMaterials = data)
+      .catch(err => console.log(err));
+
+    fetch(backendAddress + 'stockView/products')
+      .then(res => res.json())
+      .then(data => this.bdProducts = data)
+      .catch(err => console.log(err));
+
+    fetch(backendAddress + 'stockView/material-stocks')
+      .then(res => res.json())
+      .then(data => this.bdMaterialStocks = data)
+      .catch(err => console.log(err));
+
+    fetch(backendAddress + 'stockView/product-stocks')
+      .then(res => res.json())
+      .then(data => this.bdProductStocks = data)
+      .catch(err => console.log(err));
+  },
   methods: {
     addOrUpdateStock(changedStock) {
       if (changedStock.type === "Material") {
-        var existingMaterialStock = this.materialStocks.filter(
-            (stock) => stock.id === changedStock.materialId
+        var existingMaterialStock = this.bdMaterialStocks.filter(
+            (stock) => stock.material.materialNumberCustomer === changedStock.materialId
         );
 
         if (existingMaterialStock.length === 1) {
           var material = existingMaterialStock[0];
           material.quantity = changedStock.quantity;
+
+          this.putData('http://localhost:8081/catena/stockView/material-stocks', material);
         } else {
           var existingMaterial = this.materials.filter(
               (m) => m.materialId === changedStock.materialId
@@ -244,15 +275,17 @@ export default {
           this.materialStocks.push(newStock);
         }
       } else if (changedStock.type === "Product") {
-        var existingProductStock = this.productStocks.filter(
-            (stock) => stock.id === changedStock.productId
+        var existingProductStock = this.bdProductStocks.filter(
+            (stock) => stock.material.uuid === changedStock.productId
         );
 
-        if (existingProductStock.length === 1) {
+        if (existingProductStock.length === 1) {// && existingProductStock[0].allocatedToCustomerPartner.bpnl == this.changedStock.allocatedToCustomer) {
           var product = existingProductStock[0];
           product.quantity = changedStock.quantity;
+
+          this.putData('http://localhost:8081/catena/stockView/product-stocks', product);
         } else {
-          var existingProduct = this.products.filter(
+          /*var existingProduct = this.products.filter(
               (p) => p.id === changedStock.productId
           )[0];
           newStock = {
@@ -261,7 +294,13 @@ export default {
             quantity: changedStock.quantity,
             unitOfMeasure: existingProduct.unitOfMeasure,
           };
-          this.productStocks.push(newStock);
+          this.productStocks.push(newStock);*/
+          var product = JSON.parse(JSON.stringify(existingProductStock[0]));
+          product.uuid = "";
+          product.quantity = changedStock.quantity;
+          product.allocatedToCustomerPartner = [];
+
+          this.postData('http://localhost:8081/catena/stockView/product-stocks', product);
         }
       }
     },
@@ -272,7 +311,25 @@ export default {
         changedStock.materialId = "";
       }
     },
-  },
+    putData(address, data) {
+      fetch(address, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        .then(res => res.json())
+        .then(data => console.log(data))
+        .catch(err => console.log(err));
+    },
+    postData(address, data) {
+      fetch(address, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        .then(res => res.json())
+        .then(data => console.log(data))
+        .catch(err => console.log(err));
+    },
+    onProductChange(event) {
+      fetch('http://localhost:8081/catena/stockView/customer?materialUuid='+event.target.value)
+        .then(res => res.json())
+        .then(data => this.bdCustomers = data)
+        .catch(err => console.log(err));
+    }
+  }
 };
 </script>
 

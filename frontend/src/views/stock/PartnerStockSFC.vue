@@ -43,11 +43,11 @@
       </tr>
       <tr
           v-for="stock in availableMaterialsOrProducts"
-          :key="stock.partnerBpnl"
+          :key="stock.supplierPartner.bpnl"
       >
-        <td>{{ stock.partnerName }} ({{ stock.partnerBpnl }})</td>
-        <td>{{ stock.quantity.number }} {{ stock.quantity.unitOfMeasure }}</td>
-        <td>{{ stock.lastUpdatedOn }}</td>
+        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.supplierPartner.name }} ({{ stock.supplierPartner.bpnl }})</td>
+        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.quantity }} pieces</td>
+        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.lastUpdatedOn }}</td>
       </tr>
     </table>
   </div>
@@ -59,6 +59,7 @@ export default {
 
   props: {
     selectedMaterialOrProductId: {type: String, required: true},
+    materialUuid: {type: String, required: true},
     partnerRole: {type: String, required: true},
   },
   data() {
@@ -69,11 +70,11 @@ export default {
   created() {
     if (this.selectedMaterialOrProductId !== "") {
       if (this.partnerRole === "supplier") {
-        this.availableMaterialsOrProducts = this.getAvailableMaterials(
+        this.getAvailableMaterials(
             this.selectedMaterialOrProductId
         );
       } else if (this.partnerRole === "customer") {
-        this.availableMaterialsOrProducts = this.getAvailableProducts(
+        this.getAvailableProducts(
             this.selectedMaterialOrProductId
         );
       }
@@ -81,81 +82,22 @@ export default {
   },
   methods: {
     getAvailableMaterials(materialId) {
-      if (materialId === null) {
-        return [];
-      }
-      if (materialId === "M4711") {
-        return [
-          {
-            partnerBpnl: "BPNS123456789ZZ",
-            partnerName: "Test Supplier 1",
-            quantity: {
-              number: 20,
-              unitOfMeasure: "pcs",
-            },
-            lastUpdatedOn: "2023-03-04, 15:15",
-          },
-        ];
-      } else if (materialId === "M4712") {
-        return [
-          {
-            partnerBpnl: "BPNS123466789ZZ",
-            partnerName: "Test Supplier 2",
-            quantity: {
-              number: 50,
-              unitOfMeasure: "pcs",
-            },
-            lastUpdatedOn: "2023-03-04, 15:15",
-          },
-          {
-            partnerBpnl: "BPNS123666789ZZ",
-            partnerName: "Test Supplier 3",
-            quantity: {
-              number: 10,
-              unitOfMeasure: "pcs",
-            },
-            lastUpdatedOn: "2023-03-04, 15:15",
-          },
-        ];
-      } else if (materialId === "M4713") {
-        return [];
-      }
+      fetch('http://localhost:8081/catena/stockView/partner-product-stocks')
+        .then(res => res.json())
+        .then(data => this.availableMaterialsOrProducts = data)
+        .catch(err => console.log(err));
     },
     getAvailableProducts(productId) {
-      if (productId === null) {
-        return [];
-      }
-      if (productId === "P4711") {
-        return [
-          {
-            partnerBpnl: "BPNS123456799ZZ",
-            partnerName: "Test Customer 1",
-            quantity: {
-              number: 20,
-              unitOfMeasure: "pcs",
-            },
-            lastUpdatedOn: "2023-03-04, 15:15",
-          },
-        ];
-      }
+      fetch('http://localhost:8081/catena/stockView/partner-product-stocks')
+        .then(res => res.json())
+        .then(data => this.availableMaterialsOrProducts = data)
+        .catch(err => console.log(err));
     },
     updateMaterialOrProduct() {
-      var options = {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      }
-      var currentDate = new Date();
-      var currentDateString = currentDate.toLocaleString("de-DE", options);
-
-      // Note: Reactivity needs proxy
-      for (let i = 0; i < this.availableMaterialsOrProducts.length; i++) {
-        this.availableMaterialsOrProducts[i].lastUpdatedOn = currentDateString;
-      }
-
-
+      fetch('http://localhost:8081/catena/stockView/update-partner-product-stock?materialUuid='+this.materialUuid)
+        .then(res => res.json())
+        .then(data => console.log(data))
+        .catch(err => console.log(err));
     }
   },
 };
