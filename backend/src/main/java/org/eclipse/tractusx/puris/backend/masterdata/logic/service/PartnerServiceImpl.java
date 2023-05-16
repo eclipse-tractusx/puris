@@ -58,6 +58,11 @@ public class PartnerServiceImpl implements PartnerService {
     }
 
     @Override
+    public List<Partner> findAllSupplierPartnersForMaterialId(UUID materialUuid) {
+        return partnerRepository.findAllByActsAsSupplierFlagTrueAndSuppliesMaterials_Uuid(materialUuid);
+    }
+
+    @Override
     public Partner update(Partner partner) {
         Optional<Partner> existingPartner =
                 partnerRepository.findById(partner.getUuid());

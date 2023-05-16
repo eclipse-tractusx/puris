@@ -36,6 +36,8 @@ public interface PartnerRepository extends JpaRepository<Partner, UUID> {
 
     List<Partner> findAllByActsAsCustomerFlagTrueAndOrdersProducts_Uuid(UUID materialUuid);
 
+    List<Partner> findAllByActsAsSupplierFlagTrueAndSuppliesMaterials_Uuid(UUID materialUuid);
+
     List<Partner> findAllByActsAsSupplierFlagTrue();
 
     Optional<Partner> findFirstByBpnl(String bpnl);

@@ -234,6 +234,17 @@ public class StockController {
         return allCustomerPartners;
     }
 
+    @GetMapping("update-partner-product-stock")
+    @ResponseBody
+    public List<PartnerDto> triggerPartnerProductStockUpdateForMaterial(@RequestParam UUID materialUuid) {
+
+        List<PartnerDto> allSupplierPartners = partnerService.findAllSupplierPartnersForMaterialId(materialUuid).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+
+        return allSupplierPartners;
+    }
+
     private PartnerDto convertToDto(Partner entity) {
         return modelMapper.map(entity, PartnerDto.class);
     }

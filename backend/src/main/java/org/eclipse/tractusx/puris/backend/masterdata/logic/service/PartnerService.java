@@ -36,6 +36,8 @@ public interface PartnerService {
 
     List<Partner> findAllCustomerPartnersForMaterialId(UUID materialUuid);
 
+    List<Partner> findAllSupplierPartnersForMaterialId(UUID materialUUID);
+
     Partner update(Partner partner);
 
     Partner findByBpnl(String bpnl);
