@@ -29,7 +29,6 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EDCRequestBodyBu
 import org.eclipse.tractusx.puris.backend.model.repo.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -129,8 +128,7 @@ public class EdcAdapterService {
      * @throws IOException   if REST calls for creation could not be sent
      * @throws JSONException if createAssetDto could not be parsed into JsonNode
      */
-    public boolean publishAssetAtEDC(CreateAssetDto createAssetDto) throws IOException,
-            JSONException {
+    public boolean publishAssetAtEDC(CreateAssetDto createAssetDto) throws IOException {
 
         String assetId = createAssetDto.getAssetDto().getPropertiesDto().getId();
 
