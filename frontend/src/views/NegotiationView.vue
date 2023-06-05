@@ -39,6 +39,7 @@ export default {
     startTransfer(orderId, url) {
       const idArray = orderId.split(":");
       const edcEncoded = encodeURIComponent(url);
+      let vm = this;
       fetch(
         vm.baseUrl +
           "/edc/startTransfer?orderId=" +
