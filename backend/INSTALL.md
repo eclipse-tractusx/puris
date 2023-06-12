@@ -8,6 +8,11 @@
     - (Java) Use `mvn install` to build the project and run the generated `.jar` file
     - (Docker) Run `docker build .` and `docker run -d -p 8081:8081 CONTAINERID`
     - (Kubernetes) Run `helm install puris-backend`
+4a. Run the application with role specific settings:
+    - Use `mvn spring-boot:run -Dspring-boot.run.arguments=--spring.profiles.active=customer` to start with customer setup
+    or
+    - Use `mvn spring-boot:run -Dspring-boot.run.arguments=--spring.profiles.active=supplier`to start with supplier setup
+
 5. Done! The Swagger UI should be available at 
     - (Java & Docker) `http://YOURIP:8081/catena/swagger-ui/index.html`
     - (Kubernetes) `http://CLUSTERIP:30001/catena/swagger-ui/index.html`
