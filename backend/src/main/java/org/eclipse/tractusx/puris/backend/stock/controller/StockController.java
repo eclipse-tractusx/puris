@@ -262,12 +262,12 @@ public class StockController {
     @CrossOrigin
     @GetMapping("update-partner-product-stock")
     @ResponseBody
-    public List<PartnerDto> triggerPartnerProductStockUpdateForMaterial(@RequestParam UUID materialUuid) {
+    public List<PartnerDto> triggerPartnerProductStockUpdateForMaterial(@RequestParam String ownMaterialNumber) {
 
-        Material materialEntity = materialService.findByUuid(materialUuid);
+        Material materialEntity = materialService.findMaterialByMaterialNumberCustomer(ownMaterialNumber);
 
         List<Partner> allSupplierPartnerEntities =
-                partnerService.findAllSupplierPartnersForMaterialId(materialUuid);
+                partnerService.findAllSupplierPartnersForMaterialId(materialEntity.getUuid());
 
 
         List<ProductStockRequestForMaterialDto> messageContentDtos = new ArrayList<>();

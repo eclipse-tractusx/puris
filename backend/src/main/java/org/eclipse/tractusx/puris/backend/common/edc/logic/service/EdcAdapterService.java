@@ -428,8 +428,8 @@ public class EdcAdapterService {
             log.info(String.format("Negotiation Response answer: %s",
                     negotiationResponse.toString()));
 
-            String contractId = negotiationResponse.get("id").asText();
-            log.info(String.format("Contract Id: %s", contractId));
+            String negotiationId = negotiationResponse.get("id").asText();
+            log.info(String.format("Contract Id: %s", negotiationId));
 
 
             boolean negotiationDone = false;
@@ -437,7 +437,7 @@ public class EdcAdapterService {
             ObjectNode negotiationStateResult = null;
             do {
                 Thread.sleep(2000);
-                negotiationStateResultString = getNegotiationState(contractId);
+                negotiationStateResultString = getNegotiationState(negotiationId);
                 negotiationStateResult = objectMapper.readValue(negotiationStateResultString, ObjectNode.class);
 
                 log.info(String.format("Negotiation State answer: %s",
@@ -447,10 +447,10 @@ public class EdcAdapterService {
                     negotiationDone = true;
                 } else if (negotiationStateResult.get("state").asText().equals("ERROR")) {
                     throw new RuntimeException(String.format("Negotiation Result: Error for " +
-                            "Negotiation ID %S", contractId));
+                            "Negotiation ID %S", negotiationId));
                 } else if (negotiationStateResult.get("state").asText().equals("DECLINED")) {
                     throw new RuntimeException(String.format("Negotiation Result: DECLINED for " +
-                            "Negotiation ID %S", contractId));
+                            "Negotiation ID %S", negotiationId));
                 }
 
             } while (!negotiationDone);
@@ -461,7 +461,7 @@ public class EdcAdapterService {
             String transferId = UUID.randomUUID().toString();
             String transferResultString = startTransfer(transferId,
                     partnerIdsUrl + "/data",
-                    contractId,
+                    contractAgreementId,
                     partnersAssetId);
 
             ObjectNode transferResult = objectMapper.readValue(transferResultString, ObjectNode.class);
