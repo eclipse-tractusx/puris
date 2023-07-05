@@ -97,8 +97,8 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
     @Value("${edc.idsUrl}")
     private String ownEdcIdsUrl;
 
-    @Value("${partner.bpnl}")
-    private String partnerBpnl;
+    // @Value("${partner.bpnl}")
+    // private String partnerBpnl;
 
     @Value("${partner.bpns}")
     private String partnerBpns;
@@ -160,12 +160,14 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
                         productStockRequestDto.getMaterialNumberCustomer(),
                         requestDto.getHeader().getRequestId()));
                 //continue;
+            } else {
+                log.info("Found requested Material: " + existingMaterial.getMaterialNumberCustomer());
             }
             boolean ordersProducts =
                     existingMaterial.getOrderedByPartners()
                             .stream().anyMatch(
                                     partner -> partner.getBpnl().equals(requestingPartnerBpnl));
-
+            log.info("Requesting entity orders this Material? " + ordersProducts);
             if (!ordersProducts) {
                 // TODO MessageContentError: Partner is not authorized
                 MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
@@ -185,6 +187,8 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
                             .findAllByMaterialNumberCustomerAndAllocatedToCustomerBpnl(
                                     productStockRequestDto.getMaterialNumberCustomer(),
                                     requestingPartnerBpnl);
+
+            log.info("Found Stocks for this Partner? " + productStocks.size());
 
             ProductStock productStock = null;
             if (productStocks.size() == 0) {
@@ -248,7 +252,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         messageHeaderDto.setRequestId(requestDto.getHeader().getRequestId());
         //messageHeaderDto.setRespondAssetId("product-stock-response-api");
         messageHeaderDto.setContractAgreementId("some cid");
-        messageHeaderDto.setSender(partnerBpnl);
+        messageHeaderDto.setSender("BPNL1234567890ZZ"); // PLATO's BPNL
         messageHeaderDto.setSenderEdc(ownEdcIdsUrl);
         // set receiver per partner
         messageHeaderDto.setReceiver("http://sokrates-controlplane:8084/api/v1/ids"); //Fallback

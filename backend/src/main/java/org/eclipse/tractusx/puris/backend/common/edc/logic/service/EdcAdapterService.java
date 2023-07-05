@@ -65,6 +65,9 @@ public class EdcAdapterService {
     @Value("${server.port}")
     private String serverPort;
 
+    @Value("${edc.dataplane.public.port}")
+    private String dataplanePort;
+
     @Value("${minikube.ip}")
     private String minikubeIp;
 
@@ -75,6 +78,9 @@ public class EdcAdapterService {
     private String responseServerEndpointURL;
 
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private EDCRequestBodyBuilder edcRequestBodyBuilder;
 
     public EdcAdapterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -91,9 +97,9 @@ public class EdcAdapterService {
         var order = orderRepository.findByOrderId(orderId);
         if (order.isPresent()) {
             var orderUrl = "http://" + minikubeIp + ":" + serverPort + "/catena/orders/order/id/" + orderId;
-            var assetBody = EDCRequestBodyBuilder.buildAssetRequestBody(orderUrl, orderId);
-            var policyBody = EDCRequestBodyBuilder.buildPolicyRequestBody(orderId);
-            var contractBody = EDCRequestBodyBuilder.buildContractRequestBody(orderId);
+            var assetBody = edcRequestBodyBuilder.buildAssetRequestBody(orderUrl, orderId);
+            var policyBody = edcRequestBodyBuilder.buildPolicyRequestBody(orderId);
+            var contractBody = edcRequestBodyBuilder.buildContractRequestBody(orderId);
             var success = sendEdcRequest(assetBody, "/data/assets").isSuccessful();
             success &= sendEdcRequest(policyBody, "/data/policydefinitions").isSuccessful();
             success &= sendEdcRequest(contractBody, "/data/contractdefinitions").isSuccessful();
@@ -111,9 +117,9 @@ public class EdcAdapterService {
         for (int i = 0; i < 2; i++) {
             String assetId = assetIds[i];
             String endpointURL = serverURLs[i];
-            var assetBody = EDCRequestBodyBuilder.buildAssetRequestBody(endpointURL, assetId);
-            var policyBody = EDCRequestBodyBuilder.buildPolicyRequestBody(assetId);
-            var contractBody = EDCRequestBodyBuilder.buildContractRequestBody(assetId);
+            var assetBody = edcRequestBodyBuilder.buildAssetRequestBody(endpointURL, assetId);
+            var policyBody = edcRequestBodyBuilder.buildPolicyRequestBody(assetId);
+            var contractBody = edcRequestBodyBuilder.buildContractRequestBody(assetId);
             success = success && sendEdcRequest(assetBody, "/data/assets").isSuccessful();
             success = success && sendEdcRequest(policyBody, "/data/policydefinitions").isSuccessful();
             success = success && sendEdcRequest(contractBody, "/data/contractdefinitions").isSuccessful();
@@ -137,9 +143,9 @@ public class EdcAdapterService {
         boolean success = true;
         JsonNode assetBody = objectMapper.valueToTree(createAssetDto);
         JsonNode policyBody =
-                EDCRequestBodyBuilder.buildPolicyRequestBody(assetId);
+                edcRequestBodyBuilder.buildPolicyRequestBody(assetId);
         log.info(String.format("Policy Body: %s", policyBody.asText()));
-        JsonNode contractBody = EDCRequestBodyBuilder.buildContractRequestBody(assetId);
+        JsonNode contractBody = edcRequestBodyBuilder.buildContractRequestBody(assetId);
         log.info(String.format("Contract Body: %s", contractBody.asText()));
 
         success = success && sendEdcRequest(assetBody, "/data/assets").isSuccessful();
@@ -255,7 +261,7 @@ public class EdcAdapterService {
      * @throws IOException if the connection to the EDC failed.
      */
     public String startNegotiation(String connectorAddress, String orderId) throws IOException {
-        var negotiationRequestBody = EDCRequestBodyBuilder.buildNegotiationRequestBody(connectorAddress, orderId);
+        var negotiationRequestBody = edcRequestBodyBuilder.buildNegotiationRequestBody(connectorAddress, orderId);
         var response = sendEdcRequest(negotiationRequestBody, "/data/contractnegotiations");
 
         return response.body().string();
@@ -264,7 +270,7 @@ public class EdcAdapterService {
     public String startNegotiation(String connectorAddress,
                                    String contractDefinitionId, String assetId) throws IOException {
         var negotiationRequestBody =
-                EDCRequestBodyBuilder.buildNegotiationRequestBody(connectorAddress,
+                edcRequestBodyBuilder.buildNegotiationRequestBody(connectorAddress,
                         contractDefinitionId, assetId);
         var response = sendEdcRequest(negotiationRequestBody, "/data/contractnegotiations");
 
@@ -290,7 +296,8 @@ public class EdcAdapterService {
                                 String connectorAddress,
                                 String contractId,
                                 String orderId) throws IOException {
-        var transferNode = EDCRequestBodyBuilder.buildTransferRequestBody(transferId, connectorAddress, contractId, orderId);
+        var transferNode = edcRequestBodyBuilder.buildTransferRequestBody(transferId, connectorAddress, contractId, orderId);
+        log.info("TransferRequestBody:\n" + transferNode.toPrettyString());
         var response = sendEdcRequest(transferNode, "/data/transferprocess");
         return response.body().string();
     }
@@ -386,6 +393,22 @@ public class EdcAdapterService {
         log.info(String.format("Send Request to url: %s", request.urlString()));
 
         return CLIENT.newCall(request).execute();
+    }
+
+    public Response sendDataPullRequest(String url, String authCode, String requestBodyString){
+        try {
+            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), requestBodyString);
+            Request request = new Request.Builder()
+                            .url(url)
+                            .header("Authorization", authCode)
+                            .post(requestBody)
+                            .build();
+            return CLIENT.newCall(request).execute();
+        } catch (Exception e){
+            log.error(url, e);
+            throw new RuntimeException(e);
+        }
+        
     }
 
     public String initializeProxyCall(String partnerIdsUrl,

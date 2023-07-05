@@ -80,11 +80,11 @@ public class StockController {
     @Value("${edc.idsUrl}")
     private String ownEdcIdsUrl;
 
-    @Value("${partner.bpnl}")
-    private String partnerBpnl;
+    // @Value("${partner.bpnl}")
+    // private String partnerBpnl;
 
-    @Value("${partner.bpns}")
-    private String partnerBpns;
+    // @Value("${partner.bpns}")
+    // private String partnerBpns;
 
     @CrossOrigin
     @GetMapping("materials")
@@ -286,7 +286,7 @@ public class StockController {
             messageHeaderDto.setRequestId(UUID.randomUUID());
             messageHeaderDto.setRespondAssetId("product-stock-response-api");
             messageHeaderDto.setContractAgreementId("some cid");
-            messageHeaderDto.setSender(partnerBpnl);
+            messageHeaderDto.setSender("BPNL1234567890ZZ"); // PLATO's BPNL
             messageHeaderDto.setSenderEdc(ownEdcIdsUrl);
             // set receiver per partner
             messageHeaderDto.setReceiver("http://sokrates-controlplane:8084/api/v1/ids");

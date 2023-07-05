@@ -47,6 +47,9 @@ public class AssetCreatorCommandLineRunner implements CommandLineRunner {
 
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private EDCRequestBodyBuilder edcRequestBodyBuilder;
+
     public AssetCreatorCommandLineRunner(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
@@ -62,11 +65,11 @@ public class AssetCreatorCommandLineRunner implements CommandLineRunner {
 
         // Create Request Api Asset
         CreateAssetDto createRequestApiAssetDto =
-                EDCRequestBodyBuilder.buildCreateAssetDtoForApi(DT_ApiMethodEnum.REQUEST,
+                edcRequestBodyBuilder.buildCreateAssetDtoForApi(DT_ApiMethodEnum.REQUEST,
                         requestApiBaseUrl);
 
         CreateAssetDto createResponseApiAssetDto =
-                EDCRequestBodyBuilder.buildCreateAssetDtoForApi(DT_ApiMethodEnum.RESPONSE,
+                edcRequestBodyBuilder.buildCreateAssetDtoForApi(DT_ApiMethodEnum.RESPONSE,
                         responseApiBaseUrl);
 
         try {
