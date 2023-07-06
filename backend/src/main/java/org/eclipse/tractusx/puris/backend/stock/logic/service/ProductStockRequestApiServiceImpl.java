@@ -94,6 +94,12 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
     private ObjectMapper objectMapper;
 
+    @Value("${edc.dataplane.public.port}")
+    String dataPlanePort;
+
+    @Value("${edc.controlplane.host}")
+    String dataPlaneHost;
+
     @Value("${edc.idsUrl}")
     private String ownEdcIdsUrl;
 
@@ -240,13 +246,6 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         String edr = edcAdapterService.initializeProxyCall(partnerIdsUrl,
                 requestDto.getHeader().getRespondAssetId(), filterProperties);
 
-        ObjectNode edrNode = null;
-        try {
-            edrNode = objectMapper.readValue(edr, ObjectNode.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
         // prepare interface object
         MessageHeaderDto messageHeaderDto = new MessageHeaderDto();
         messageHeaderDto.setRequestId(requestDto.getHeader().getRequestId());
@@ -264,12 +263,10 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         responseDto.setHeader(messageHeaderDto);
         responseDto.setPayload(resultProductStocks);
 
-        // TODO extract from edr
-        String authToken = null;
-        String authMethod = null;
-        String requestUrl = null;
+        String requestUrl = "http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public";
         com.squareup.okhttp.Request request = new com.squareup.okhttp.Request.Builder()
                 .header("Content-Type", "application/json")
+                .header("Authorization", edr)
                 .post(RequestBody.create(MediaType.parse("application/json"),
                         objectMapper.valueToTree(responseDto).toString()))
                 .url(requestUrl)

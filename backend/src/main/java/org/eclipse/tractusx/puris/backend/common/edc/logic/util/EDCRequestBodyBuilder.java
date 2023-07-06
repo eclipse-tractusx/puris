@@ -178,7 +178,7 @@ public class EDCRequestBodyBuilder {
         transferNode.put("id", transferId);
         transferNode.put("connectorId", "foo");
         transferNode.put("connectorAddress", connectorAddress);
-        transferNode.put("contractId", orderId + ":" + contractId);
+        transferNode.put("contractId", contractId);
         transferNode.put("assetId", orderId);
         transferNode.put("managedResources", "false");
         var destinationNode = MAPPER.createObjectNode();
@@ -187,26 +187,20 @@ public class EDCRequestBodyBuilder {
         destinationNode.set("properties", propertiesNode);
         transferNode.set("dataDestination", destinationNode);
         var transferTypeNode = MAPPER.createObjectNode();
-        transferTypeNode.put("contentType", "application/octet");
+        transferTypeNode.put("contentType", "application/octet-stream");
         transferTypeNode.put("isFinite", true);
         transferNode.set("transferType", transferTypeNode);
         transferNode.put("managedResources", false);
         propertiesNode = MAPPER.createObjectNode();
 
         String receiverHttpEndpoint = null;
-        log.info("ORDER ID " + orderId);
-        log.info("contains response: " + orderId.contains("response"));
-        log.info("contains request: " + orderId.contains("request"));
-        String port = myServerPort;
-        log.info("PORT " + port);
         if(orderId.contains("response")) {
-            receiverHttpEndpoint = "http://host.minikube.internal:" + port + "/catena/responseapipull";
+            receiverHttpEndpoint = "http://host.minikube.internal:" + myServerPort + "/catena/responseapipull";
         } else if (orderId.contains("request")){
-            receiverHttpEndpoint = "http://host.minikube.internal:" + port + "/catena/requestapipull";
+            receiverHttpEndpoint = "http://host.minikube.internal:" + myServerPort + "/catena/requestapipull";
         }
         propertiesNode.put("receiver.http.endpoint", receiverHttpEndpoint);
         transferNode.set("properties", propertiesNode);
-
 
         return transferNode;
     }

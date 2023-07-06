@@ -28,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.CreateAssetDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EDCRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.model.repo.OrderRepository;
+import org.eclipse.tractusx.puris.backend.stock.controller.DataPullController;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.DatapullAuthCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -81,6 +83,9 @@ public class EdcAdapterService {
 
     @Autowired
     private EDCRequestBodyBuilder edcRequestBodyBuilder;
+
+    @Autowired
+    private DatapullAuthCodeService datapullAuthCodeService;
 
     public EdcAdapterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -372,7 +377,7 @@ public class EdcAdapterService {
      * @return response received from the EDC.
      * @throws IOException if the connection to the EDC failed.
      */
-    private Response sendEdcRequest(JsonNode requestBody, String urlSuffix) throws IOException {
+    public Response sendEdcRequest(JsonNode requestBody, String urlSuffix) throws IOException {
         Request request = new Request.Builder()
                 .header("X-Api-Key", edcApiKey)
                 .header("Content-Type", "application/json")
@@ -384,7 +389,7 @@ public class EdcAdapterService {
         return CLIENT.newCall(request).execute();
     }
 
-    private Response sendEdcRequest(String urlSuffix) throws IOException {
+    public Response sendEdcRequest(String urlSuffix) throws IOException {
         Request request = new Request.Builder()
                 .header("X-Api-Key", edcApiKey)
                 .header("Content-Type", "application/json")
@@ -411,6 +416,13 @@ public class EdcAdapterService {
         
     }
 
+    /**
+     * 
+     * @param partnerIdsUrl
+     * @param partnersAssetId
+     * @param filterProperties
+     * @return the authCode of a consumer pull request
+     */
     public String initializeProxyCall(String partnerIdsUrl,
                                       String partnersAssetId, Map<String,
             String> filterProperties) {
@@ -515,15 +527,18 @@ public class EdcAdapterService {
             } while (!transferCompleted);
 
 
-            boolean edrReceived = false;
             String edr = null;
-            do {
-                log.info(String.format("Query Backend Application"));
-                edr = getFromBackend(transferResponseId);
-                log.info(String.format("Backend Application answer: %s", edr));
-                Thread.sleep(2000);
-            } while (!edrReceived);
-
+            for (int i = 0 ; i < 4; i++) {
+                Thread.sleep(500);
+                log.info(String.format("Query Response Endpoint"));
+                var searchResult = datapullAuthCodeService.findByTransferId(transferId);
+                if (searchResult.isPresent()) {
+                    edr = datapullAuthCodeService.findByTransferId(transferId).get().getAuthCode();
+                    break;
+                }
+            } 
+            
+            log.info(String.format("Backend Application answer: %s", edr));
             return edr;
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage());
