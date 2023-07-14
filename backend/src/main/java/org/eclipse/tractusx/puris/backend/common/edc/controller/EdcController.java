@@ -83,9 +83,10 @@ public class EdcController {
      */
     @GetMapping("/startNegotiation")
     @CrossOrigin
-    public ResponseEntity<String> startNegotiation(@RequestParam String orderId, @RequestParam String connectorAddress) {
+    public ResponseEntity<String> startNegotiation(@RequestParam String orderId, @RequestParam String connectorAddress, 
+            @RequestParam String contractDefinitionId) {
         try {
-            var result = edcAdapter.startNegotiation(connectorAddress, orderId);
+            var result = edcAdapter.startNegotiation(connectorAddress, contractDefinitionId, orderId);
             return ResponseEntity.ok(result);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
@@ -178,23 +179,6 @@ public class EdcController {
     public ResponseEntity<String> getTransfers(@RequestParam(required = false) String transferId) {
         try {
             var result = edcAdapter.getFromEdc(transferId, "data", "transferprocess");
-            return ResponseEntity.ok(result);
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
-    }
-
-    /**
-     * Get received data from EDC backend application for a specific transfer.
-     *
-     * @param transferId id of the transfer to get data for.
-     * @return response from backend application.
-     */
-    @GetMapping("/backend")
-    @CrossOrigin
-    public ResponseEntity<String> getFromBackend(@RequestParam String transferId) {
-        try {
-            var result = edcAdapter.getFromBackend(transferId);
             return ResponseEntity.ok(result);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(e.getMessage());

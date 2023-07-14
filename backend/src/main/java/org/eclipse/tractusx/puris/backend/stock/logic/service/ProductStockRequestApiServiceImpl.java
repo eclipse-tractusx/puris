@@ -21,9 +21,7 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.RequestBody;
@@ -35,9 +33,6 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_Us
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiBusinessObjectEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_AssetTypeEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -63,7 +58,7 @@ import java.util.stream.Collectors;
  * <p>
  * That means that one need to lookup
  * {@link org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock} and return it
- * according to the API speicfication.
+ * according to the API specification.
  */
 @Component
 @Slf4j
@@ -78,9 +73,6 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
     private MaterialService materialService;
 
     @Autowired
-    private PartnerService partnerService;
-
-    @Autowired
     private ProductStockService productStockService;
 
     @Autowired
@@ -92,6 +84,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
     private ObjectMapper objectMapper;
 
     @Value("${edc.dataplane.public.port}")
@@ -103,16 +96,10 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
     @Value("${edc.idsUrl}")
     private String ownEdcIdsUrl;
 
-    // @Value("${partner.bpnl}")
-    // private String partnerBpnl;
+    @Value("${own.bpnl}")
+    private String ownBPNL;
 
-    @Value("${partner.bpns}")
-    private String partnerBpns;
 
-    public ProductStockRequestApiServiceImpl(ObjectMapper objectMapper) {
-        super();
-        this.objectMapper = objectMapper;
-    }
 
     public static <T> Predicate<T> distinctByKey(
             Function<? super T, ?> keyExtractor) {
@@ -165,7 +152,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
                 log.warn(String.format("No Material found for ID Customer %s in request %s",
                         productStockRequestDto.getMaterialNumberCustomer(),
                         requestDto.getHeader().getRequestId()));
-                //continue;
+                continue;
             } else {
                 log.info("Found requested Material: " + existingMaterial.getMaterialNumberCustomer());
             }
@@ -186,6 +173,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
                         requestingPartnerBpnl,
                         productStockRequestDto.getMaterialNumberCustomer(),
                         requestDto.getHeader().getRequestId()));
+                continue;
             }
 
             List<ProductStock> productStocks =
@@ -193,8 +181,6 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
                             .findAllByMaterialNumberCustomerAndAllocatedToCustomerBpnl(
                                     productStockRequestDto.getMaterialNumberCustomer(),
                                     requestingPartnerBpnl);
-
-            log.info("Found Stocks for this Partner? " + productStocks.size());
 
             ProductStock productStock = null;
             if (productStocks.size() == 0) {
@@ -231,30 +217,21 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
             */
         }
 
-        // determine Asset for partners Response API
-        Map<String, String> filterProperties = new HashMap<>();
-        // use shortcut with headers.responseAssetId, if given
-        if (requestDto.getHeader().getRespondAssetId() != null) {
-            filterProperties.put("asset:prop:id", requestDto.getHeader().getRespondAssetId());
-        } else {
-            filterProperties.put("asset:prop:usecase", DT_UseCaseEnum.PURIS.name());
-            filterProperties.put("asset:prop:type", DT_AssetTypeEnum.API.name());
-            filterProperties.put("asset:prop:apibusinessobject", DT_ApiBusinessObjectEnum.productStock.name());
-            filterProperties.put("asset:prop:apimethod", DT_ApiMethodEnum.RESPONSE.name());
+
+        var data = edcAdapterService.getContractForResponseApi(partnerIdsUrl);
+        if(data == null) {
+            log.error("Failed to contract response api from " + partnerIdsUrl);
+            return;
         }
-
-        String edr = edcAdapterService.initializeProxyCall(partnerIdsUrl,
-                requestDto.getHeader().getRespondAssetId(), filterProperties);
-
+        String authCode = data[0];
+        String contractId = data[1];
         // prepare interface object
         MessageHeaderDto messageHeaderDto = new MessageHeaderDto();
         messageHeaderDto.setRequestId(requestDto.getHeader().getRequestId());
-        //messageHeaderDto.setRespondAssetId("product-stock-response-api");
-        messageHeaderDto.setContractAgreementId("some cid");
-        messageHeaderDto.setSender("BPNL1234567890ZZ"); // PLATO's BPNL
+        messageHeaderDto.setContractAgreementId(contractId);
+        messageHeaderDto.setSender(ownBPNL); 
         messageHeaderDto.setSenderEdc(ownEdcIdsUrl);
         // set receiver per partner
-        messageHeaderDto.setReceiver("http://sokrates-controlplane:8084/api/v1/ids"); //Fallback
         messageHeaderDto.setReceiver(requestDto.getHeader().getSenderEdc());
         messageHeaderDto.setUseCase(DT_UseCaseEnum.PURIS);
         messageHeaderDto.setCreationDate(new Date());
@@ -263,20 +240,13 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         responseDto.setHeader(messageHeaderDto);
         responseDto.setPayload(resultProductStocks);
 
-        String requestUrl = "http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public";
-        com.squareup.okhttp.Request request = new com.squareup.okhttp.Request.Builder()
-                .header("Content-Type", "application/json")
-                .header("Authorization", edr)
-                .post(RequestBody.create(MediaType.parse("application/json"),
-                        objectMapper.valueToTree(responseDto).toString()))
-                .url(requestUrl)
-                .build();
-
-        log.info(String.format("Request body of EDC Request: %s", objectMapper.valueToTree(responseDto).toString()));
         try {
-            CLIENT.newCall(request).execute();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            String requestBody = objectMapper.writeValueAsString(responseDto);
+            var response = edcAdapterService.sendDataPullRequest(
+                    "http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public", authCode, requestBody);
+            log.info(response.body().string());
+        } catch (Exception e) {
+            log.error("failed to generate body", e);
         }
 
         // Update status - also only MessageContentErrorDtos would be completed

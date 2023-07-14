@@ -22,12 +22,11 @@
 package org.eclipse.tractusx.puris.backend.stock.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiBusinessObjectEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_AssetTypeEnum;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -47,6 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,6 +55,12 @@ import java.util.stream.Collectors;
 @RequestMapping("stockView")
 @Slf4j
 public class StockController {
+
+    @Value("${edc.dataplane.public.port}")
+    private String dataPlanePort;
+
+    @Value("${edc.controlplane.host}")
+    private String dataPlaneHost;
 
     @Autowired
     private ProductStockService productStockService;
@@ -70,9 +77,14 @@ public class StockController {
     @Autowired
     private PartnerService partnerService;
 
+    @Autowired
+    private RequestService requestService;
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private EdcAdapterService edcAdapterService;
@@ -80,11 +92,12 @@ public class StockController {
     @Value("${edc.idsUrl}")
     private String ownEdcIdsUrl;
 
-    // @Value("${partner.bpnl}")
-    // private String partnerBpnl;
+    @Value("${own.bpns}")
+    private String ownBpns;
 
-    // @Value("${partner.bpns}")
-    // private String partnerBpns;
+    @Value("${own.bpnl}")
+    private String ownBpnl;
+
 
     @CrossOrigin
     @GetMapping("materials")
@@ -275,21 +288,27 @@ public class StockController {
         // Message Content for all requests
         ProductStockRequestForMaterialDto materialDto = new ProductStockRequestForMaterialDto(
                 materialEntity.getMaterialNumberCustomer(),
-                materialEntity.getMaterialNumberSupplier(),
-                materialEntity.getMaterialNumberCx()
+                materialEntity.getMaterialNumberCx(),
+                materialEntity.getMaterialNumberSupplier()
         );
         messageContentDtos.add(materialDto);
 
         for (Partner supplierPartner : allSupplierPartnerEntities) {
 
+            String [] data = edcAdapterService.getContractForRequestApi(supplierPartner.getEdcUrl());
+            if(data == null) {
+                log.error("failed to obtain request api from " + supplierPartner.getEdcUrl());
+                continue;
+            }
+            String authCode = data[0];
+            String cid = data[1];
             MessageHeaderDto messageHeaderDto = new MessageHeaderDto();
             messageHeaderDto.setRequestId(UUID.randomUUID());
             messageHeaderDto.setRespondAssetId("product-stock-response-api");
-            messageHeaderDto.setContractAgreementId("some cid");
-            messageHeaderDto.setSender("BPNL1234567890ZZ"); // PLATO's BPNL
+            messageHeaderDto.setContractAgreementId(cid);
+            messageHeaderDto.setSender(ownBpnl); 
             messageHeaderDto.setSenderEdc(ownEdcIdsUrl);
             // set receiver per partner
-            messageHeaderDto.setReceiver("http://sokrates-controlplane:8084/api/v1/ids");
             messageHeaderDto.setReceiver(supplierPartner.getEdcUrl());
             messageHeaderDto.setUseCase(DT_UseCaseEnum.PURIS);
             messageHeaderDto.setCreationDate(new Date());
@@ -300,24 +319,19 @@ public class StockController {
                     messageContentDtos
             );
 
-            Map<String, String> filterProperties = new HashMap<>();
-            if (requestDto.getHeader().getRespondAssetId() != null) {
-                filterProperties.put("asset:prop:id", requestDto.getHeader().getRespondAssetId());
-            } else {
-                filterProperties.put("asset:prop:usecase", DT_UseCaseEnum.PURIS.name());
-                filterProperties.put("asset:prop:type", DT_AssetTypeEnum.API.name());
-                filterProperties.put("asset:prop:apibusinessobject", DT_ApiBusinessObjectEnum.productStock.name());
-                filterProperties.put("asset:prop:apimethod", DT_ApiMethodEnum.RESPONSE.name());
+            
+            Request request = modelMapper.map(requestDto, Request.class);
+            request = requestService.createRequest(request);
+            var test = requestService.findRequestByHeaderUuid(requestDto.getHeader().getRequestId());
+            log.debug("Stored in Database " + (test != null) + " " + requestDto.getHeader().getRequestId());
+
+            try {
+                String requestBody = objectMapper.writeValueAsString(requestDto);
+                var response = edcAdapterService.sendDataPullRequest("http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public", authCode, requestBody);
+                log.debug(response.body().string());
+            } catch (Exception e) {
+                log.error("failed to send data pull request to " + supplierPartner.getEdcUrl(), e);
             }
-
-            // TODO determine Request API
-            String edr = edcAdapterService.initializeProxyCall(
-                    supplierPartner.getEdcUrl(),
-                    messageHeaderDto.getRespondAssetId(),
-                    filterProperties
-
-            );
-            // Send request with one material
         }
 
         List<PartnerDto> allSupplierPartners = allSupplierPartnerEntities.stream()

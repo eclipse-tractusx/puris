@@ -2,28 +2,26 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.extern.slf4j.Slf4j;
-
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiBusinessObjectEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_DataAddressTypeEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 /**
- * Static Utility Class for building EDC request body json objects.
+ * Utility Component for building EDC request body json objects.
  */
-@Slf4j
-@Service
+@Component
 public class EDCRequestBodyBuilder {
 
-    @Value("${server.port}")
-    String myServerPort;
+    @Value("${authCodes.serverendpoint}")
+    private String authCodesServerEndpoint;
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    @Autowired
+    private ObjectMapper MAPPER;
 
     /**
      * Build an EDC request body for the creation of an asset (using an order).
@@ -97,38 +95,11 @@ public class EDCRequestBodyBuilder {
 
     /**
      * Build an EDC request body used for starting a negotiation.
-     *
-     * @param connectorAddress ids url of the negotiation counterparty.
-     * @param orderId          id of the negotiations target asset.
+     * @param connectorAddress      ids url of the negotiation counterparty.
+     * @param contractDefinitionId  id of a contract offer given by the counterparty.
+     * @param assetId               id of the negotiations target asset.
      * @return JsonNode used as requestBody for an EDC negotiation request.
      */
-    public JsonNode buildNegotiationRequestBody(String connectorAddress, String orderId) {
-        var negotiationNode = MAPPER.createObjectNode();
-        negotiationNode.put("connectorId", "foo");
-        negotiationNode.put("connectorAddress", connectorAddress);
-        negotiationNode.put("protocol", "ids-multipart");
-        var offerNode = MAPPER.createObjectNode();
-        offerNode.put("offerId", orderId + ":foo");
-        offerNode.put("assetId", orderId);
-        var policyNode = MAPPER.createObjectNode();
-        policyNode.put("uid", orderId);
-        policyNode.set("prohibiitons", MAPPER.createArrayNode());
-        policyNode.set("obligations", MAPPER.createArrayNode());
-        var permissionArray = MAPPER.createArrayNode();
-        var permissionNode = MAPPER.createObjectNode();
-        permissionNode.put("edctype", "dataspaceconnector:permission");
-        permissionNode.put("target", orderId);
-        permissionNode.set("constraints", MAPPER.createArrayNode());
-        var actionNode = MAPPER.createObjectNode();
-        actionNode.put("type", "USE");
-        permissionNode.set("action", actionNode);
-        permissionArray.add(permissionNode);
-        policyNode.set("permissions", permissionArray);
-        offerNode.set("policy", policyNode);
-        negotiationNode.set("offer", offerNode);
-        return negotiationNode;
-    }
-
     public JsonNode buildNegotiationRequestBody(String connectorAddress,
                                                        String contractDefinitionId,
                                                        String assetId) {
@@ -140,7 +111,6 @@ public class EDCRequestBodyBuilder {
         offerNode.put("offerId", contractDefinitionId);
         offerNode.put("assetId", assetId);
         var policyNode = MAPPER.createObjectNode();
-        var permissionsArray = MAPPER.createArrayNode();
         policyNode.put("uid", assetId);
         policyNode.set("prohibiitons", MAPPER.createArrayNode());
         policyNode.set("obligations", MAPPER.createArrayNode());
@@ -192,14 +162,7 @@ public class EDCRequestBodyBuilder {
         transferNode.set("transferType", transferTypeNode);
         transferNode.put("managedResources", false);
         propertiesNode = MAPPER.createObjectNode();
-
-        String receiverHttpEndpoint = null;
-        if(orderId.contains("response")) {
-            receiverHttpEndpoint = "http://host.minikube.internal:" + myServerPort + "/catena/responseapipull";
-        } else if (orderId.contains("request")){
-            receiverHttpEndpoint = "http://host.minikube.internal:" + myServerPort + "/catena/requestapipull";
-        }
-        propertiesNode.put("receiver.http.endpoint", receiverHttpEndpoint);
+        propertiesNode.put("receiver.http.endpoint", authCodesServerEndpoint);
         transferNode.set("properties", propertiesNode);
 
         return transferNode;

@@ -37,6 +37,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.UUID;
 
 /**
@@ -58,6 +60,9 @@ public abstract class RequestApiController {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public RequestApiController(RequestApiService requestApiService) {
         this.requestApiService = requestApiService;

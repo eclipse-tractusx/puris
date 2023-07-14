@@ -24,7 +24,6 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 import org.eclipse.tractusx.puris.backend.common.api.controller.ResponseApiController;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockResponseDto;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,7 +47,7 @@ public class ProductStockResponseApiController extends ResponseApiController {
     @PostMapping("response")
     public ResponseEntity postResponse(@RequestBody ProductStockResponseDto productStockResponseDto) {
         log.info("product-stock/response called");
-        log.info(productStockResponseDto.toString());
+        
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             var jsonString = objectMapper.writeValueAsString(productStockResponseDto);

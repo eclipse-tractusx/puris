@@ -28,14 +28,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.CreateAssetDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EDCRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.model.repo.OrderRepository;
-import org.eclipse.tractusx.puris.backend.stock.controller.DataPullController;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.DatapullAuthCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+
 import java.io.IOException;
-import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -85,7 +84,7 @@ public class EdcAdapterService {
     private EDCRequestBodyBuilder edcRequestBodyBuilder;
 
     @Autowired
-    private DatapullAuthCodeService datapullAuthCodeService;
+    private AuthCodeService authCodeService;
 
     public EdcAdapterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -111,26 +110,6 @@ public class EdcAdapterService {
             return success;
         }
         return false;
-    }
-
-    public boolean publishRequestAndResponseAssetAtEDC(String serverOwnerId) throws IOException {
-
-        String[] assetIds = {"asset.properties.asset:request-api." + serverOwnerId,
-                "asset.properties.asset:response-api." + serverOwnerId};
-        String[] serverURLs = {requestServerEndpointURL, responseServerEndpointURL};
-        boolean success = true;
-        for (int i = 0; i < 2; i++) {
-            String assetId = assetIds[i];
-            String endpointURL = serverURLs[i];
-            var assetBody = edcRequestBodyBuilder.buildAssetRequestBody(endpointURL, assetId);
-            var policyBody = edcRequestBodyBuilder.buildPolicyRequestBody(assetId);
-            var contractBody = edcRequestBodyBuilder.buildContractRequestBody(assetId);
-            success = success && sendEdcRequest(assetBody, "/data/assets").isSuccessful();
-            success = success && sendEdcRequest(policyBody, "/data/policydefinitions").isSuccessful();
-            success = success && sendEdcRequest(contractBody, "/data/contractdefinitions").isSuccessful();
-            log.info(endpointURL);
-        }
-        return success;
     }
 
     /**
@@ -173,25 +152,7 @@ public class EdcAdapterService {
      * @throws IOException if the connection to the EDC failed.
      */
     public String getCatalog(String idsUrl) throws IOException {
-        var request = new Request.Builder()
-                .get()
-                .url(new HttpUrl.Builder()
-                        .scheme("http")
-                        .host(edcHost)
-                        .port(dataPort)
-                        .addPathSegment("data")
-                        .addPathSegment("catalog")
-                        .addEncodedQueryParameter("providerUrl", idsUrl)
-                        .build()
-                )
-                .header("X-Api-Key", edcApiKey)
-                .header("Content-Type", "application/json")
-                .build();
-        var response = CLIENT.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            throw new IOException(response.body().string());
-        }
-        return response.body().string();
+        return getCatalog(idsUrl, Optional.empty());
     }
 
     /**
@@ -224,7 +185,7 @@ public class EdcAdapterService {
             }
             httpUrl = HttpUrl.parse(url);
         }
-        log.info(String.format("catalog request url: %s", httpUrl));
+        log.debug(String.format("catalog request url: %s", httpUrl));
 
         var request = new Request.Builder()
                 .get()
@@ -236,39 +197,6 @@ public class EdcAdapterService {
         if (!response.isSuccessful()) {
             throw new IOException(response.body().string());
         }
-        return response.body().string();
-    }
-
-    /**
-     * Get received data from a transfer from edc backend application.
-     *
-     * @param transferId id of the transfer.
-     * @return received data from transfer.
-     * @throws IOException if the connection to the backend application failed.
-     */
-    public String getFromBackend(String transferId) throws IOException {
-        var request = new Request.Builder()
-                .get()
-                .url(new URL(String.format("%s/%s", backendUrl, transferId)))
-                .header("Accept", "application/octet-stream")
-                .build();
-        log.info(String.format("BackendUrl: %s", request.urlString()));
-        var response = CLIENT.newCall(request).execute();
-        return response.body().string();
-    }
-
-    /**
-     * Start a negotitation with another EDC.
-     *
-     * @param connectorAddress ids url of the negotiation counterparty.
-     * @param orderId          id of the negotiations target asset.
-     * @return response body received from the EDC.
-     * @throws IOException if the connection to the EDC failed.
-     */
-    public String startNegotiation(String connectorAddress, String orderId) throws IOException {
-        var negotiationRequestBody = edcRequestBodyBuilder.buildNegotiationRequestBody(connectorAddress, orderId);
-        var response = sendEdcRequest(negotiationRequestBody, "/data/contractnegotiations");
-
         return response.body().string();
     }
 
@@ -302,7 +230,7 @@ public class EdcAdapterService {
                                 String contractId,
                                 String orderId) throws IOException {
         var transferNode = edcRequestBodyBuilder.buildTransferRequestBody(transferId, connectorAddress, contractId, orderId);
-        log.info("TransferRequestBody:\n" + transferNode.toPrettyString());
+        log.debug("TransferRequestBody:\n" + transferNode.toPrettyString());
         var response = sendEdcRequest(transferNode, "/data/transferprocess");
         return response.body().string();
     }
@@ -385,7 +313,7 @@ public class EdcAdapterService {
                 .url("http://" + edcHost + ":" + dataPort + urlSuffix)
                 .build();
 
-        log.info(String.format("Request body of EDC Request: %s", requestBody));
+        log.debug(String.format("Request body of EDC Request: %s", requestBody));
         return CLIENT.newCall(request).execute();
     }
 
@@ -395,7 +323,7 @@ public class EdcAdapterService {
                 .header("Content-Type", "application/json")
                 .url("http://" + edcHost + ":" + dataPort + urlSuffix)
                 .build();
-        log.info(String.format("Send Request to url: %s", request.urlString()));
+        log.debug(String.format("Send Request to url: %s", request.urlString()));
 
         return CLIENT.newCall(request).execute();
     }
@@ -417,138 +345,97 @@ public class EdcAdapterService {
     }
 
     /**
+     * Tries to negotiate for the request api of the given partner, including the retrieval of the
+     * authCode for a request. It will return a String array of length 2. The authCode is stored under 
+     * index 0, the contractId under index 1. 
      * 
      * @param partnerIdsUrl
-     * @param partnersAssetId
-     * @param filterProperties
-     * @return the authCode of a consumer pull request
+     * @return a String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
-    public String initializeProxyCall(String partnerIdsUrl,
-                                      String partnersAssetId, Map<String,
-            String> filterProperties) {
+    public String[] getContractForRequestApi(String partnerIdsUrl) {
+        return getContractForRequestOrResponseApiApi(partnerIdsUrl, "product-stock-request-api");
+    }
 
-        String catalog = null;
-        ObjectNode catalogNode = null;
+    /**
+     * Tries to negotiate for the response api of the given partner, including the retrieval of the
+     * authCode for a request. It will return a String array of length 2. The authCode is stored under 
+     * index 0, the contractId under index 1. 
+     * @param partnerIdsUrl
+     * @return a String array or null, if negotiation or transfer have failed or the authCode did not arrive
+     */
+    public String[] getContractForResponseApi(String partnerIdsUrl) {
+        return getContractForRequestOrResponseApiApi(partnerIdsUrl, "product-stock-response-api");
+    }
+
+    /**
+     * Tries to negotiate for the given api of the partner specified by the parameter
+     * and also tries to initiate the transfer of the authCode token to the given endpoint. 
+     * It will return a String array of length 2. The authCode is stored under index 0, the 
+     * contractId under index 1. 
+     * @param partnerIdsUrl counterparty's idsUrl
+     * @param assetApi      id of the target asset
+     * @return   a String array or null, if negotiation or transfer have failed or the authCode did not arrive
+     */
+    public String[] getContractForRequestOrResponseApiApi(String partnerIdsUrl, String assetApi) {
         try {
-            catalog = getCatalog(partnerIdsUrl, Optional.of(filterProperties));
-            catalogNode = objectMapper.readValue(catalog, ObjectNode.class);
+            HashMap<String, String> filter = new HashMap<>();
+            filter.put("asset:prop:id", assetApi);
+            String catalog = getCatalog(partnerIdsUrl, Optional.of(filter));
+            JsonNode objectNode = objectMapper.readValue(catalog, ObjectNode.class);
+            JsonNode contractOffer = objectNode.get("contractOffers").get(0);
+            String contractDefinitionId = contractOffer.get("id").asText();
+            String negotiationResponseString = startNegotiation(partnerIdsUrl + "/data", contractDefinitionId, assetApi);
+            String negotiationId = objectMapper.readTree(negotiationResponseString).get("id").asText();
 
-            log.info(String.format("Got catalog for idsUrl %s with filters %s: %s", partnerIdsUrl
-                    , filterProperties, catalog));
-        } catch (IOException e) {
-            // quickfix: don´t persist request
-            //requestDto.setState(DT_RequestStateEnum.ERROR);
-
-            //correspondingRequest = requestService.updateState(correspondingRequest,
-            //        DT_RequestStateEnum.ERROR);
-
-            log.error(String.format("Catalog for %s could not be reached.", partnerIdsUrl));
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-
-        // we expect only one offer for us
-        log.info(String.format("Received catalog: %s", catalog));
-        log.info(String.format("Catalog: %s", catalogNode.get("contractOffers").toString()));
-        JsonNode contractOfferJson = catalogNode.get("contractOffers").get(0);
-        String contractDefinitionId = contractOfferJson.get("id").asText();
-
-        try {
-            String negotiationResponseString =
-                    startNegotiation(partnerIdsUrl + "/data",
-                            contractDefinitionId,
-                            partnersAssetId);
-
-            ObjectNode negotiationResponse = objectMapper.readValue(negotiationResponseString, ObjectNode.class);
-            log.info(String.format("Negotiation Response answer: %s",
-                    negotiationResponse.toString()));
-
-            String negotiationId = negotiationResponse.get("id").asText();
-            log.info(String.format("Contract Id: %s", negotiationId));
-
-
-            boolean negotiationDone = false;
-            String negotiationStateResultString = null;
-            ObjectNode negotiationStateResult = null;
-            do {
-                Thread.sleep(2000);
-                negotiationStateResultString = getNegotiationState(negotiationId);
-                negotiationStateResult = objectMapper.readValue(negotiationStateResultString, ObjectNode.class);
-
-                log.info(String.format("Negotiation State answer: %s",
-                        negotiationStateResult.toString()));
-
-                if (negotiationStateResult.get("state").asText().equals("CONFIRMED")) {
-                    negotiationDone = true;
-                } else if (negotiationStateResult.get("state").asText().equals("ERROR")) {
-                    throw new RuntimeException(String.format("Negotiation Result: Error for " +
-                            "Negotiation ID %S", negotiationId));
-                } else if (negotiationStateResult.get("state").asText().equals("DECLINED")) {
-                    throw new RuntimeException(String.format("Negotiation Result: DECLINED for " +
-                            "Negotiation ID %S", negotiationId));
-                }
-
-            } while (!negotiationDone);
-
-            String contractAgreementId = negotiationStateResult.get("contractAgreementId").asText();
-            log.info(String.format("Contract Agreement ID: %s", contractAgreementId));
-
-            String transferId = UUID.randomUUID().toString();
-            String transferResultString = startTransfer(transferId,
-                    partnerIdsUrl + "/data",
-                    contractAgreementId,
-                    partnersAssetId);
-
-            ObjectNode transferResult = objectMapper.readValue(transferResultString, ObjectNode.class);
-            log.info(String.format("Init Transfer answer: %s",
-                    transferResult.toString()));
-
-            String transferResponseId = transferResult.get("id").asText();
-            log.info(String.format("Transfer ID created by me = %s ; transferResponseId = %s",
-                    transferId, transferResponseId));
-
-            boolean transferCompleted = false;
-            do {
-                log.info(String.format("Check State of transfer"));
-                String transferAnswer = getTransferState(transferResponseId);
-                log.info(transferAnswer);
-                ObjectNode transferState = objectMapper.readValue(transferAnswer,
-                        ObjectNode.class);
-                // quickfix. String concatenation needed fo impl. cast
-                String state = transferState.get("state").asText();
-                log.info(String.format("Current State: %s", state));
-
-                if (state.equals("COMPLETED")) {
-                    transferCompleted = true;
-                } else if (state.equals("ERROR")) {
-                    throw new RuntimeException("Transfer failed");
-                }
-                Thread.sleep(5000);
-            } while (!transferCompleted);
-
-
-            String edr = null;
-            for (int i = 0 ; i < 4; i++) {
-                Thread.sleep(500);
-                log.info(String.format("Query Response Endpoint"));
-                var searchResult = datapullAuthCodeService.findByTransferId(transferId);
-                if (searchResult.isPresent()) {
-                    edr = datapullAuthCodeService.findByTransferId(transferId).get().getAuthCode();
+            // await confirmation of contract and contractId
+            String contractId = null;
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                var negotiationState = getNegotiationState(negotiationId);
+                var responseObject = objectMapper.readTree(negotiationState);
+                if ("CONFIRMED".equals(responseObject.get("state").asText())) {
+                    contractId = responseObject.get("contractAgreementId").asText();
                     break;
                 }
-            } 
-            
-            log.info(String.format("Backend Application answer: %s", edr));
-            return edr;
-        } catch (IOException | InterruptedException e) {
-            log.error(e.getMessage());
-            // quickfix: don´t persist request
-            //requestDto.setState(DT_RequestStateEnum.ERROR);
-            /*
-            requestService.updateState(correspondingRequest, DT_RequestStateEnum.ERROR);
-             */
-            throw new RuntimeException(e);
+            }
+            if (contractId == null) {
+                var negotiationState = getNegotiationState(negotiationId);
+                log.warn("no contract id, last negotiation state: " + negotiationState);
+                log.warn("Failed to obtain " + assetApi + " from " + partnerIdsUrl);
+                return null;
+            }
+
+            // Initiate transfer of authCode
+            String randomTransferID = UUID.randomUUID().toString();
+            String transferResponse = startTransfer(randomTransferID, partnerIdsUrl + "/data", contractId, assetApi);
+            String transferId = objectMapper.readTree(transferResponse).get("id").asText();
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                transferResponse = getTransferState(transferId);
+                var transferResponseObject = objectMapper.readTree(transferResponse);
+                if ("COMPLETED".equals(transferResponseObject.get("state").asText())) {
+                    break;
+                }
+            }
+
+            // await arrival of authCode ...
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                String authCode = authCodeService.findByTransferId(randomTransferID);
+                if (authCode != null) {
+                    log.info("Successfully negotiated for " + assetApi + " with " + partnerIdsUrl);
+                    return new String [] {authCode, contractId};
+                }
+            }
+            log.warn("did not receive authCode");
+            log.warn("Failed to obtain " + assetApi + " from " + partnerIdsUrl);
+            return null;
+        } catch (Exception e){
+            log.warn("ERROR");
+            log.error("Failed to obtain " + assetApi + " from " + partnerIdsUrl, e);
+            return null;
         }
+
     }
 
 }
