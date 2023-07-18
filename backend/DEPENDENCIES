@@ -4,7 +4,7 @@ maven/mavencentral/com.fasterxml.jackson.core/jackson-annotations/2.14.3, Apache
 maven/mavencentral/com.fasterxml.jackson.core/jackson-core/2.14.3, Apache-2.0 AND MIT, approved, #4303
 maven/mavencentral/com.fasterxml.jackson.core/jackson-databind/2.14.3, Apache-2.0, approved, #4105
 maven/mavencentral/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml/2.14.3, Apache-2.0, approved, #5933
-maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/2.14.2, Apache-2.0, approved, clearlydefined
+maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/2.14.2, Apache-2.0, approved, #8597
 maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/2.14.3, Apache-2.0, approved, #4699
 maven/mavencentral/com.fasterxml.jackson.module/jackson-module-parameter-names/2.14.3, Apache-2.0, approved, #5938
 maven/mavencentral/com.fasterxml/classmate/1.5.1, Apache-2.0, approved, clearlydefined
@@ -31,7 +31,7 @@ maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-websocket/10.1.8, Apache
 maven/mavencentral/org.aspectj/aspectjweaver/1.9.19, EPL-1.0, approved, tools.aspectj
 maven/mavencentral/org.hibernate.orm/hibernate-core/6.1.7.Final, LGPL-2.1-or-later AND (Apache-2.0 AND LGPL-2.1-only) AND (CC-PDDC AND LGPL-2.1-only) AND (EPL-2.0 OR BSD-3-Clause), approved, #5939
 maven/mavencentral/org.hibernate.validator/hibernate-validator/8.0.0.Final, Apache-2.0, approved, clearlydefined
-maven/mavencentral/org.jboss.logging/jboss-logging/3.5.0.Final, Apache-2.0, approved, clearlydefined
+maven/mavencentral/org.jboss.logging/jboss-logging/3.5.0.Final, Apache-2.0, approved, #9471
 maven/mavencentral/org.modelmapper/modelmapper/3.1.1, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.projectlombok/lombok/1.18.26, MIT AND LicenseRef-Public-Domain, approved, CQ23907
 maven/mavencentral/org.slf4j/jul-to-slf4j/2.0.7, MIT, approved, #7698
