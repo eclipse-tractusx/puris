@@ -20,7 +20,8 @@
  */
 package org.eclipse.tractusx.puris.backend.common.edc.controller;
 
-import org.eclipse.tractusx.puris.backend.common.edc.logic.service.AuthCodeService;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EndpointDataReferenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,15 +31,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class contains the endpoints for receiving the authCodes from
+ * This class contains the endpoint for receiving the authCodes from
  * the counterparty's dataplane. 
  */
 @RestController
 @Slf4j
-public class AuthCodesController {
+public class EndpointDataReferenceReceiver {
 
     @Autowired
-    private AuthCodeService authCodeService;
+    private EndpointDataReferenceService edcService;
 
     /**
      * This endpoint awaits incoming authCodes from external
@@ -46,16 +47,18 @@ public class AuthCodesController {
      * @param body
      * @return
      */
-    @PostMapping("/authCodes")
+    @PostMapping("/edrendpoint")
     private ResponseEntity<String> authCodeReceivingEndpoint(@RequestBody JsonNode body) {
-                    log.debug("authCodes endpoint received data:\n" + body.toPrettyString());
+        log.debug("Received edr data:\n" + body.toPrettyString());
         String transferId = body.get("id").asText(); 
+        String authKey = body.get("authKey").asText();
         String authCode = body.get("authCode").asText();
+        String endpoint = body.get("endpoint").asText();
         if (transferId == null || authCode == null) {
             log.warn("authCodes endpoint received invalid message:\n" + body.toPrettyString());
             return ResponseEntity.status(400).build();
         }
-        authCodeService.save(transferId, authCode);
+        edcService.save(transferId, new EDR_Dto(authKey, authCode, endpoint));
         log.debug("authCodes endpoint stored authCode for " + transferId);
         return ResponseEntity.status(200).build();
     }

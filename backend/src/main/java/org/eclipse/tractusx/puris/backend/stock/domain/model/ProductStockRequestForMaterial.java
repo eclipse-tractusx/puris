@@ -30,7 +30,8 @@ import lombok.*;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent;
 
 /**
- * One object that is received as a response.
+ * Payload specifying a material for which a customer wants to get product stock
+ * information for.
  */
 @Entity
 @DiscriminatorValue("ProductStockRequestForMaterial")

@@ -22,11 +22,7 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.RequestBody;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
@@ -36,7 +32,6 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestServic
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
@@ -46,7 +41,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -63,8 +57,6 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class ProductStockRequestApiServiceImpl implements RequestApiService {
-
-    private static final OkHttpClient CLIENT = new OkHttpClient();
 
     @Autowired
     private RequestService requestService;
@@ -99,6 +91,9 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
     @Value("${own.bpnl}")
     private String ownBPNL;
 
+    @Value("${edc.applydataplaneworkaround}")
+    private boolean applyDataplaneWorkaround;
+
 
 
     public static <T> Predicate<T> distinctByKey(
@@ -112,38 +107,23 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
     public void handleRequest(RequestDto requestDto) {
 
         log.info(String.format("param requestDto %s", requestDto));
-
-        // quickfix: don´t persist request
         requestDto.setState(DT_RequestStateEnum.WORKING);
-        /*
-        //request has been created on post
-        Request correspondingRequest = requestService.findByInternalUuid(requestDto.getUuid());
 
-        // as soon as we're working on it, we need to set the state to working.
-        log.info(String.format("found correspondingRequest %s", correspondingRequest));
-        correspondingRequest = requestService.updateState(correspondingRequest, DT_RequestStateEnum.WORKING);
-        */
+        Request requestEntity = requestService.findRequestByHeaderUuid(requestDto.getHeader().getRequestId());
+        requestEntity = requestService.updateState(requestEntity, DT_RequestStateEnum.WORKING);
+
         String partnerIdsUrl = requestDto.getHeader().getSenderEdc();
-        //Partner requestingPartner = partnerService.findByBpnl();
 
-        // contains either productStockSamms or messageContentError
         List<MessageContentDto> resultProductStocks = new ArrayList<>();
 
         String requestingPartnerBpnl = requestDto.getHeader().getSender();
 
         for (ProductStockRequestForMaterialDto productStockRequestDto : requestDto.getPayload()) {
 
-            //if (messageContentDto instanceof ProductStockRequestForMaterialDto) {
-
-            //ProductStockRequestForMaterialDto productStockRequestDto =
-            //        (ProductStockRequestForMaterialDto) messageContentDto;
-
-            // TODO determine data
             // Check if product is known
             Material existingMaterial =
                     materialService.findProductByMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
             if (existingMaterial == null) {
-                // TODO MessageContentError: Material unknown
                 MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
                 messageContentErrorDto.setMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
                 messageContentErrorDto.setError("PURIS-01");
@@ -162,7 +142,6 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
                                     partner -> partner.getBpnl().equals(requestingPartnerBpnl));
             log.info("Requesting entity orders this Material? " + ordersProducts);
             if (!ordersProducts) {
-                // TODO MessageContentError: Partner is not authorized
                 MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
                 messageContentErrorDto.setMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
                 messageContentErrorDto.setError("PURIS-02");
@@ -184,11 +163,17 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
             ProductStock productStock = null;
             if (productStocks.size() == 0) {
-                // TODO no partner product stock given
+                MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
+                messageContentErrorDto.setMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
+                messageContentErrorDto.setError("PURIS-03");
+                messageContentErrorDto.setMessage("No Product Stock found.");
+                resultProductStocks.add(messageContentErrorDto);
+                log.warn("No Product Stocks of Material " + productStockRequestDto.getMaterialNumberCustomer() 
+                + " found for " + requestDto.getHeader().getSender());
                 continue;
             } else productStock = productStocks.get(0);
 
-            //TODO: is this one allocated stock or multiple
+
             if (productStocks.size() > 1) {
                 List<ProductStock> distinctProductStocks =
                         productStocks.stream()
@@ -210,21 +195,20 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
             resultProductStocks.add(productStockSammMapper.toSamm(modelMapper.map(productStock,
                     ProductStockDto.class)));
-            /*
-            } else
-                throw new IllegalStateException(String.format("Message Content is unknown: %s",
-                        messageContentDto));
-            */
         }
 
 
         var data = edcAdapterService.getContractForResponseApi(partnerIdsUrl);
         if(data == null) {
             log.error("Failed to contract response api from " + partnerIdsUrl);
+            requestEntity = requestService.updateState(requestEntity, DT_RequestStateEnum.ERROR);
+            log.info("Request status: \n" + requestEntity.toString());
             return;
         }
-        String authCode = data[0];
-        String contractId = data[1];
+        String authKey = data[0];
+        String authCode = data[1];
+        String endpoint = data[2];
+        String contractId = data[3];
         // prepare interface object
         MessageHeaderDto messageHeaderDto = new MessageHeaderDto();
         messageHeaderDto.setRequestId(requestDto.getHeader().getRequestId());
@@ -240,35 +224,23 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         responseDto.setHeader(messageHeaderDto);
         responseDto.setPayload(resultProductStocks);
 
+        if (applyDataplaneWorkaround) {
+            log.info("Applying Dataplane Address Workaround");
+            endpoint = "http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public";
+        }
         try {
             String requestBody = objectMapper.writeValueAsString(responseDto);
             var response = edcAdapterService.sendDataPullRequest(
-                    "http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public", authCode, requestBody);
+                    endpoint, authKey, authCode, requestBody);
             log.info(response.body().string());
+            response.body().close();
+            requestEntity = requestService.updateState(requestEntity, DT_RequestStateEnum.COMPLETED);
         } catch (Exception e) {
-            log.error("failed to generate body", e);
+            log.error("Failed to send response to " + responseDto.getHeader().getReceiver(), e);
+            requestEntity = requestService.updateState(requestEntity, DT_RequestStateEnum.ERROR);
+        } finally {
+            log.info("Request status: \n" + requestEntity.toString());
         }
-
-        // Update status - also only MessageContentErrorDtos would be completed
-        // quickfix: don´t persist request
-        //requestDto.setState(DT_RequestStateEnum.ERROR);
-            /*
-        requestService.updateState(correspondingRequest, DT_RequestStateEnum.COMPLETED);
-
-             */
-    }
-
-    private Request findCorrespondingRequest(RequestDto requestDto) {
-        UUID requestId = requestDto.getHeader().getRequestId();
-        log.info(String.format("Find corresponding request with header id %s",
-                requestDto.getHeader().getRequestId()));
-
-        Request requestFound =
-                requestService.findRequestByHeaderUuid(requestId);
-
-        if (requestFound == null) {
-            throw new RequestIdNotFoundException(requestId);
-        } else return null;
 
     }
 }

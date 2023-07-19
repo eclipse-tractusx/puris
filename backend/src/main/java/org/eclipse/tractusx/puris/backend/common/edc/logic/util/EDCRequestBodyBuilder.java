@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class EDCRequestBodyBuilder {
 
-    @Value("${authCodes.serverendpoint}")
-    private String authCodesServerEndpoint;
+    @Value("${edr.endpoint}")
+    private String endpointDataReferenceEndpoint;
 
     @Autowired
     private ObjectMapper MAPPER;
@@ -162,7 +162,7 @@ public class EDCRequestBodyBuilder {
         transferNode.set("transferType", transferTypeNode);
         transferNode.put("managedResources", false);
         propertiesNode = MAPPER.createObjectNode();
-        propertiesNode.put("receiver.http.endpoint", authCodesServerEndpoint);
+        propertiesNode.put("receiver.http.endpoint", endpointDataReferenceEndpoint);
         transferNode.set("properties", propertiesNode);
 
         return transferNode;

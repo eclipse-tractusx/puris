@@ -62,6 +62,9 @@ public class StockController {
     @Value("${edc.controlplane.host}")
     private String dataPlaneHost;
 
+    @Value("${edc.applydataplaneworkaround}")
+    private boolean applyDataplaneWorkaround;
+
     @Autowired
     private ProductStockService productStockService;
 
@@ -300,8 +303,15 @@ public class StockController {
                 log.error("failed to obtain request api from " + supplierPartner.getEdcUrl());
                 continue;
             }
-            String authCode = data[0];
-            String cid = data[1];
+            String authKey = data[0];
+            String authCode = data[1];
+            String endpoint = data[2];
+            if (applyDataplaneWorkaround) {
+                log.info("Applying Dataplane Address Workaround");
+                endpoint = "http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public";
+            }
+
+            String cid = data[3];
             MessageHeaderDto messageHeaderDto = new MessageHeaderDto();
             messageHeaderDto.setRequestId(UUID.randomUUID());
             messageHeaderDto.setRespondAssetId("product-stock-response-api");
@@ -327,10 +337,11 @@ public class StockController {
 
             try {
                 String requestBody = objectMapper.writeValueAsString(requestDto);
-                var response = edcAdapterService.sendDataPullRequest("http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public", authCode, requestBody);
+                var response = edcAdapterService.sendDataPullRequest(endpoint, authKey, authCode, requestBody);
                 log.debug(response.body().string());
+                response.body().close();
             } catch (Exception e) {
-                log.error("failed to send data pull request to " + supplierPartner.getEdcUrl(), e);
+                log.error("Failed to send data pull request to " + supplierPartner.getEdcUrl(), e);
             }
         }
 

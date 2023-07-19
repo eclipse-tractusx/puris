@@ -31,6 +31,7 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiSe
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import lombok.extern.slf4j.Slf4j;
@@ -49,9 +50,6 @@ public abstract class ResponseApiController {
 
     private ResponseApiService responseApiService;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
     public ResponseApiController(ResponseApiService responseApiService) {
         this.responseApiService = responseApiService;
     }
@@ -64,7 +62,7 @@ public abstract class ResponseApiController {
      *
      * @param responseDto request to be mapped
      */
-    public ResponseEntity postResponse(@RequestBody ResponseDto responseDto) {
+    public ResponseEntity<SuccessfullRequestDto> postResponse(@RequestBody ResponseDto responseDto) {
 
         UUID requestId = responseDto.getHeader().getRequestId();
 
@@ -83,6 +81,6 @@ public abstract class ResponseApiController {
         responseApiService.consumeResponse(responseDto);
 
         // if the request has been correctly taken over, return 201
-        return new ResponseEntity(new SuccessfullRequestDto(requestId), HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatusCode.valueOf(201)).body(new SuccessfullRequestDto(requestId));
     }
 }

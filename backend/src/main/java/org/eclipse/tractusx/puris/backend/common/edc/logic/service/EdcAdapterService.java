@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.squareup.okhttp.*;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.CreateAssetDto;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EDCRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.model.repo.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +85,7 @@ public class EdcAdapterService {
     private EDCRequestBodyBuilder edcRequestBodyBuilder;
 
     @Autowired
-    private AuthCodeService authCodeService;
+    private EndpointDataReferenceService edrService;
 
     public EdcAdapterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -104,9 +105,16 @@ public class EdcAdapterService {
             var assetBody = edcRequestBodyBuilder.buildAssetRequestBody(orderUrl, orderId);
             var policyBody = edcRequestBodyBuilder.buildPolicyRequestBody(orderId);
             var contractBody = edcRequestBodyBuilder.buildContractRequestBody(orderId);
-            var success = sendEdcRequest(assetBody, "/data/assets").isSuccessful();
-            success &= sendEdcRequest(policyBody, "/data/policydefinitions").isSuccessful();
-            success &= sendEdcRequest(contractBody, "/data/contractdefinitions").isSuccessful();
+
+            var response = sendEdcRequest(assetBody, "/data/assets");
+            var success = response.isSuccessful();
+            response.body().close();
+            response = sendEdcRequest(policyBody, "/data/policydefinitions");
+            success &= response.isSuccessful();
+            response.body().close();
+            response = sendEdcRequest(contractBody, "/data/contractdefinitions");
+            success &= response.isSuccessful();
+            response.body().close();
             return success;
         }
         return false;
@@ -131,15 +139,19 @@ public class EdcAdapterService {
         log.info(String.format("Policy Body: %s", policyBody.asText()));
         JsonNode contractBody = edcRequestBodyBuilder.buildContractRequestBody(assetId);
         log.info(String.format("Contract Body: %s", contractBody.asText()));
-
-        success = success && sendEdcRequest(assetBody, "/data/assets").isSuccessful();
+        var response = sendEdcRequest(assetBody, "/data/assets");
+        success &= response.isSuccessful();
         log.info(String.format("Creation of asset was successfull: %b", success));
-        success = success && sendEdcRequest(policyBody, "/data/policydefinitions").isSuccessful();
-        log.info(String.format("Creation of policy was successfull: %b", success));
-        success = success && sendEdcRequest(contractBody, "/data/contractdefinitions").isSuccessful();
-        log.info(String.format("Created Contract Definition (%b) for Asset %s", success,
+        response.body().close();
+        response = sendEdcRequest(policyBody, "/data/policydefinitions");
+        log.info(String.format("Creation of policy was successfull: %b", response.isSuccessful()));
+        success &= response.isSuccessful();
+        response.body().close();
+        response = sendEdcRequest(contractBody, "/data/contractdefinitions");
+        success &= response.isSuccessful();
+        log.info(String.format("Created Contract Definition (%b) for Asset %s", response.isSuccessful(),
                 objectMapper.writeValueAsString(createAssetDto)));
-
+        response.body().close();
         return success;
     }
 
@@ -194,25 +206,49 @@ public class EdcAdapterService {
                 .header("Content-Type", "application/json")
                 .build();
         var response = CLIENT.newCall(request).execute();
+        String stringData = response.body().string();
         if (!response.isSuccessful()) {
-            throw new IOException(response.body().string());
+            throw new IOException(stringData);
         }
-        return response.body().string();
+        response.body().close();
+        return stringData;
     }
 
+    /**
+     * Orders your own EDC Connector Controlplane to negotiate a contract with 
+     * the owner of the given connector address for an asset (specified by the 
+     * assetId) under conditions as stated in the contract defintion with the 
+     * given contractDefinitionId
+     * @param connectorAddress
+     * @param contractDefinitionId
+     * @param assetId
+     * @return the response body as String
+     * @throws IOException
+     */
     public String startNegotiation(String connectorAddress,
                                    String contractDefinitionId, String assetId) throws IOException {
         var negotiationRequestBody =
                 edcRequestBodyBuilder.buildNegotiationRequestBody(connectorAddress,
                         contractDefinitionId, assetId);
         var response = sendEdcRequest(negotiationRequestBody, "/data/contractnegotiations");
-
-        return response.body().string();
+        String stringData = response.body().string();
+        response.body().close();
+        return stringData;
     }
 
+    /**
+     * Sends a request to the own EDC Connector Controlplane in order to receive
+     * the current status of the previously initiated contractNegotiations as 
+     * specified by the parameter. 
+     * @param negotiationId
+     * @return the response body as String
+     * @throws IOException
+     */
     public String getNegotiationState(String negotiationId) throws IOException {
         var response = sendEdcRequest("/data/contractnegotiations/" + negotiationId);
-        return response.body().string();
+        String stringData = response.body().string();
+        response.body().close();
+        return stringData;
     }
 
     /**
@@ -232,12 +268,24 @@ public class EdcAdapterService {
         var transferNode = edcRequestBodyBuilder.buildTransferRequestBody(transferId, connectorAddress, contractId, orderId);
         log.debug("TransferRequestBody:\n" + transferNode.toPrettyString());
         var response = sendEdcRequest(transferNode, "/data/transferprocess");
-        return response.body().string();
+        String stringData = response.body().string();
+        response.body().close();
+        return stringData;
     }
 
+    /**
+     * Sends a request to the own EDC Connector Controlplane in order to receive
+     * the current status of the previously initiated transfer as specified by 
+     * the parameter. 
+     * @param transferId
+     * @return
+     * @throws IOException
+     */
     public String getTransferState(String transferId) throws IOException {
         var response = sendEdcRequest("/data/transferprocess/" + transferId);
-        return response.body().string();
+        String stringData = response.body().string();
+        response.body().close();
+        return stringData;
     }
 
     /**
@@ -263,7 +311,9 @@ public class EdcAdapterService {
                 .delete()
                 .build();
         var response = CLIENT.newCall(request).execute();
-        return response.body().string();
+        String stringData = response.body().string();
+        response.body().close();
+        return stringData;
     }
 
     /**
@@ -294,16 +344,20 @@ public class EdcAdapterService {
                 .header("Content-Type", "application/json")
                 .build();
         var response = CLIENT.newCall(request).execute();
-        return response.body().string();
+        String stringData = response.body().string();
+        response.body().close();
+        return stringData;
     }
 
     /**
      * Util method for building a http POST request to the own EDC.
+     * Any caller of this method has the responsibility to close 
+     * the returned Response object after using it. 
      *
-     * @param requestBody requestBody to be sent to the EDC.
-     * @param urlSuffix   path to POST data to
-     * @return response received from the EDC.
-     * @throws IOException if the connection to the EDC failed.
+     * @param requestBody   requestBody to be sent to the EDC.
+     * @param urlSuffix     path to POST data to
+     * @return              response received from the EDC.
+     * @throws IOException  if the connection to the EDC failed.
      */
     public Response sendEdcRequest(JsonNode requestBody, String urlSuffix) throws IOException {
         Request request = new Request.Builder()
@@ -317,6 +371,15 @@ public class EdcAdapterService {
         return CLIENT.newCall(request).execute();
     }
 
+    /**
+     * Util method for building a http GET request to the own EDC.
+     * Any caller of this method has the responsibility to close 
+     * the returned Response object after using it. 
+     * 
+     * @param urlSuffix     path to send GET request to
+     * @return              response received from the EDC.
+     * @throws IOException  if the connection to the EDC failed.
+     */
     public Response sendEdcRequest(String urlSuffix) throws IOException {
         Request request = new Request.Builder()
                 .header("X-Api-Key", edcApiKey)
@@ -328,12 +391,22 @@ public class EdcAdapterService {
         return CLIENT.newCall(request).execute();
     }
 
-    public Response sendDataPullRequest(String url, String authCode, String requestBodyString){
+    /**
+     * Util method for sending a post request to your own dataplane 
+     * in order to initiate a consumer pull request. 
+     * 
+     * @param url the URL of an endpoint you received to perform a pull request
+     * @param authKey authKey to be used in the HTTP request header
+     * @param authCode authCode to be used in the HTTP request header
+     * @param requestBodyString the request body in JSON format as String
+     * @return
+     */
+    public Response sendDataPullRequest(String url, String authKey, String authCode, String requestBodyString){
         try {
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), requestBodyString);
             Request request = new Request.Builder()
                             .url(url)
-                            .header("Authorization", authCode)
+                            .header(authKey, authCode)
                             .post(requestBody)
                             .build();
             return CLIENT.newCall(request).execute();
@@ -346,8 +419,9 @@ public class EdcAdapterService {
 
     /**
      * Tries to negotiate for the request api of the given partner, including the retrieval of the
-     * authCode for a request. It will return a String array of length 2. The authCode is stored under 
-     * index 0, the contractId under index 1. 
+     * authCode for a request. 
+     * It will return a String array of length 5. The authKey is stored under index 0, the 
+     * authCode under index 1, the endpoint under index 2 and the contractId under index 3. 
      * 
      * @param partnerIdsUrl
      * @return a String array or null, if negotiation or transfer have failed or the authCode did not arrive
@@ -358,8 +432,9 @@ public class EdcAdapterService {
 
     /**
      * Tries to negotiate for the response api of the given partner, including the retrieval of the
-     * authCode for a request. It will return a String array of length 2. The authCode is stored under 
-     * index 0, the contractId under index 1. 
+     * authCode for a request. 
+     * It will return a String array of length 5. The authKey is stored under index 0, the 
+     * authCode under index 1, the endpoint under index 2 and the contractId under index 3. 
      * @param partnerIdsUrl
      * @return a String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
@@ -369,9 +444,10 @@ public class EdcAdapterService {
 
     /**
      * Tries to negotiate for the given api of the partner specified by the parameter
-     * and also tries to initiate the transfer of the authCode token to the given endpoint. 
-     * It will return a String array of length 2. The authCode is stored under index 0, the 
-     * contractId under index 1. 
+     * and also tries to initiate the transfer of the edr token to the given endpoint. 
+     * 
+     * It will return a String array of length 5. The authKey is stored under index 0, the 
+     * authCode under index 1, the endpoint under index 2 and the contractId under index 3. 
      * @param partnerIdsUrl counterparty's idsUrl
      * @param assetApi      id of the target asset
      * @return   a String array or null, if negotiation or transfer have failed or the authCode did not arrive
@@ -387,7 +463,7 @@ public class EdcAdapterService {
             String negotiationResponseString = startNegotiation(partnerIdsUrl + "/data", contractDefinitionId, assetApi);
             String negotiationId = objectMapper.readTree(negotiationResponseString).get("id").asText();
 
-            // await confirmation of contract and contractId
+            // Await confirmation of contract and contractId
             String contractId = null;
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
@@ -405,7 +481,7 @@ public class EdcAdapterService {
                 return null;
             }
 
-            // Initiate transfer of authCode
+            // Initiate transfer of edr
             String randomTransferID = UUID.randomUUID().toString();
             String transferResponse = startTransfer(randomTransferID, partnerIdsUrl + "/data", contractId, assetApi);
             String transferId = objectMapper.readTree(transferResponse).get("id").asText();
@@ -418,13 +494,13 @@ public class EdcAdapterService {
                 }
             }
 
-            // await arrival of authCode ...
+            // Await arrival of edr
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
-                String authCode = authCodeService.findByTransferId(randomTransferID);
-                if (authCode != null) {
+                EDR_Dto edr_Dto = edrService.findByTransferId(randomTransferID);
+                if (edr_Dto != null) {
                     log.info("Successfully negotiated for " + assetApi + " with " + partnerIdsUrl);
-                    return new String [] {authCode, contractId};
+                    return new String [] {edr_Dto.getAuthKey(),edr_Dto.getAuthCode(), edr_Dto.getEndpoint(), contractId};
                 }
             }
             log.warn("did not receive authCode");
