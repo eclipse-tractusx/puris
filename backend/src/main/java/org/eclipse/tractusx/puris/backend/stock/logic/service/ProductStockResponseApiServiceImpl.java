@@ -81,8 +81,8 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
                 // or whether an update is sufficient.
                 List<PartnerProductStock> existingPartnerProductStocks =
                         partnerProductStockService.findAllByMaterialUuidAndPartnerUuid(
-                                partnerProductStockDto.getMaterial().getUuid(),
-                                partnerProductStockDto.getSupplierPartner().getUuid()
+                                partnerProductStockDto.getSupplierPartner().getUuid(),
+                                partnerProductStockDto.getMaterial().getUuid()
                         );
 
                 // currently we only accept a one to one mapping of partner - material - stock -site
