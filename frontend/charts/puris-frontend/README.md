@@ -4,12 +4,12 @@
 
 A Helm chart for Kubernetes deployment of the PURIS Frontend
 
-**Homepage:** <https://github.com/eclipse-tractusx/puris-frontend>
+**Homepage:** <https://github.com/eclipse-tractusx/puris>
 
 ## Prerequisites
 - Kubernetes 1.19+
 - Helm 3.2.0+
-- Running [PURIS backend](https://github.com/eclipse-tractusx/puris-backend)
+- Running [PURIS backend](https://github.com/eclipse-tractusx/puris)
 
 ## TL;DR
 ```shell
@@ -18,7 +18,7 @@ $ helm install puris-frontend --namespace puris --create-namespace .
 
 ## Source Code
 
-* <https://github.com/eclipse-tractusx/puris-frontend>
+* <https://github.com/eclipse-tractusx/puris>
 
 ## Values
 

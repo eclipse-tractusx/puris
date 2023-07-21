@@ -52,7 +52,7 @@ podAnnotations: {}
 podSecurityContext: {}
 # fsGroup: 2000
 
-# Following Catena-X Helm Best Practices @url: https://catenax-ng.github.io/docs/kubernetes-basics/helm
+# Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
 # @url: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 # -- Security configurations
 securityContext: {}
@@ -83,7 +83,7 @@ ingress:
   # -- TLS certificates for the Ingress controller
   tls: []
 
-# Following Catena-X Helm Best Practices @url: https://catenax-ng.github.io/docs/kubernetes-basics/helm
+# Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
 # @url: https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-resource-requests-and-limits
 resources:
   # -- Maximum resource limits of CPU und memory
@@ -112,7 +112,7 @@ nodeSelector: {}
 # -- Constrains for tolerations
 tolerations: []
 
-# Following Catena-X Helm Best Practices @url: https://catenax-ng.github.io/docs/kubernetes-basics/helm
+# Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
 # @url: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 affinity:
   podAntiAffinity:
@@ -128,7 +128,7 @@ affinity:
           # -- Topology key of the Kubernetes cluster
           topologyKey: kubernetes.io/hostname
 
-# Following Catena-X Helm Best Practices @url: https://catenax-ng.github.io/docs/kubernetes-basics/helm
+# Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
 # @url: https://github.com/helm/charts/blob/master/stable/nginx-ingress/values.yaml#L210
 # -- Checks whether a pod is alive or not
 livenessProbe:

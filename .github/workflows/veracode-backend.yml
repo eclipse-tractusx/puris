@@ -50,7 +50,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build project
-        run: mvn -pl backend --batch-mode -DskipTests package
+        run: cd backend && mvn --batch-mode -DskipTests package
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.6

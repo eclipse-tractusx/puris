@@ -23,9 +23,9 @@ apiVersion: v2
 name: puris-frontend
 description: A Helm chart for Kubernetes deployment of the PURIS Frontend
 type: application
-home: https://github.com/eclipse-tractusx/puris-frontend
+home: https://github.com/eclipse-tractusx/puris
 sources:
-  - https://github.com/eclipse-tractusx/puris-frontend
+  - https://github.com/eclipse-tractusx/puris
 dependencies: []
 maintainers: []
 
