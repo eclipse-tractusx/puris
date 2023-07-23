@@ -30,7 +30,6 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_Us
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -135,7 +134,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         // customer + material
         Partner nonScenarioCustomer = createAndGetNonScenarioCustomer();
         Material centralControlUnitEntity = getNewCentralControlUnitMaterial();
-        centralControlUnitEntity.addPartnerToOrderedByParnters(nonScenarioCustomer);
+        centralControlUnitEntity.addPartnerToOrderedByPartners(nonScenarioCustomer);
         centralControlUnitEntity = materialService.create(centralControlUnitEntity);
         log.info(String.format("Created Product: %s", centralControlUnitEntity));
         List<Material> productsFound = materialService.findAllProducts();
@@ -207,7 +206,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private void setupSupplierRole() {
         Partner customerPartner = createAndGetCustomerPartner();
         Material semiconductorMaterial = getNewSemiconductorMaterial();
-        semiconductorMaterial.addPartnerToOrderedByParnters(customerPartner);
+        semiconductorMaterial.addPartnerToOrderedByPartners(customerPartner);
         semiconductorMaterial = materialService.create(semiconductorMaterial);
         log.info(String.format("Created product: %s", semiconductorMaterial));
 

@@ -21,6 +21,9 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ProductStockRepository;
@@ -32,13 +35,37 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class ProductStockServiceImpl implements ProductStockService {
 
     @Autowired
     ProductStockRepository productStockRepository;
 
+    @Autowired
+    MaterialRepository materialRepository;
+
+
     @Override
     public ProductStock create(ProductStock productStock) {
+
+        // validate, if material is missing
+        if (productStock.getMaterial() == null || productStock.getMaterial().getUuid() == null){
+            log.error("Can't create product stock due to missing material or material uuid");
+            return null;
+        }
+        Optional<Material> existingMaterial = materialRepository.findById(productStock.getMaterial().getUuid());
+
+        if (!existingMaterial.isPresent()) {
+            log.error(String.format("Material for uuid %s not found", productStock.getMaterial().getUuid()));
+            return null;
+        }
+
+        // validate if partner allocation is missing
+        if (productStock.getAllocatedToCustomerPartner() == null){
+            log.error("Can't create product stock due to missing allocation to a partner");
+            return null;
+        }
+
         return productStockRepository.save(productStock);
     }
 
@@ -62,7 +89,7 @@ public class ProductStockServiceImpl implements ProductStockService {
     public List<ProductStock> findAllByMaterialNumberCustomer(String materialNumberCustomer) {
         return productStockRepository.findAllByMaterial_MaterialNumberCustomerAndType(
                 materialNumberCustomer,
-                DT_StockTypeEnum.MATERIAL);
+                DT_StockTypeEnum.PRODUCT);
     }
 
     @Override

@@ -101,7 +101,7 @@ public class Material {
         supplierPartner.getSuppliesMaterials().add(this);
     }
 
-    public void addPartnerToOrderedByParnters(Partner customerPartner) {
+    public void addPartnerToOrderedByPartners(Partner customerPartner) {
         this.orderedByPartners.add(customerPartner);
         customerPartner.getOrdersProducts().add(this);
     }

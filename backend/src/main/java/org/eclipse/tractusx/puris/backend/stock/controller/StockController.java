@@ -21,6 +21,8 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.squareup.okhttp.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
@@ -46,10 +48,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.squareup.okhttp.Response;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -138,20 +140,12 @@ public class StockController {
     @GetMapping("product-stocks")
     @ResponseBody
     public List<ProductStockDto> getProductStocks() {
-        List<ProductStock> productStocks = productStockService.findAll();
-        log.info(String.format("First productStock: %s", productStocks.get(0)));
-        ProductStockDto productStockDto = convertToDto(productStocks.get(0));
-        log.info(String.format("First productStockDto: %s", productStockDto));
 
-        log.info(String.format("Found %d ProductStocks", productStocks.size()));
-        /*
         List<ProductStockDto> allProductStocks = productStockService.findAll().stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());*/
+            .map(this::convertToDto)
+            .collect(Collectors.toList());
 
-        List<ProductStockDto> result = new ArrayList<>();
-        result.add(productStockDto);
-        return result;
+        return allProductStocks;
     }
 
     @CrossOrigin
@@ -160,9 +154,13 @@ public class StockController {
     public ProductStockDto createProductStocks(@RequestBody ProductStockDto productStockDto) {
 
         ProductStock productStockToCreate = convertToEntity(productStockDto);
+
         productStockToCreate.setLastUpdatedOn(new Date());
 
         ProductStock createdProductStock = productStockService.create(productStockToCreate);
+        if (createdProductStock == null){
+            return null;
+        }
 
         ProductStockDto productStockToReturn = convertToDto(createdProductStock);
 
@@ -226,7 +224,6 @@ public class StockController {
     @PutMapping("material-stocks")
     @ResponseBody
     public MaterialStockDto updateMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
-
         MaterialStock existingMaterialStock = materialStockService.findByUuid(materialStockDto.getUuid());
         if (existingMaterialStock.getUuid() == null) {
             return null;

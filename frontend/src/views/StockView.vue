@@ -59,7 +59,7 @@
               v-model="this.changedStock.materialId"
               :disabled="this.changedStock.type === 'Product'"
           >
-            <option v-for="material in this.bdMaterials" :value="material.materialNumberCustomer">
+            <option v-for="material in this.bdMaterials" :value="material.uuid">
               {{ material.materialNumberCustomer }} ({{ material.name }})
             </option>
           </select>
@@ -86,7 +86,7 @@
             v-model="this.changedStock.allocatedToCustomer"
             :disabled="this.changedStock.type === 'Material'"
           >
-            <option v-for="customer in this.bdCustomers" :value="customer.bpnl">
+            <option v-for="customer in this.bdCustomers" :value="customer.uuid">
               {{ customer.name }}
             </option>
           </select>
@@ -173,67 +173,83 @@ export default {
       .then(data => this.bdProducts = data)
       .catch(err => console.log(err));
 
-    fetch(this.backendURL + this.endpointMaterialStocks)
-      .then(res => res.json())
-      .then(data => this.bdMaterialStocks = data)
-      .catch(err => console.log(err));
+    this.fetchMaterialStocks();
 
-    fetch(this.backendURL + this.endpointProductStocks)
-      .then(res => res.json())
-      .then(data => this.bdProductStocks = data)
-      .catch(err => console.log(err));
+    this.fetchProductStocks();
   },
   methods: {
     addOrUpdateStock(changedStock) {
       if (changedStock.type === "Material") {
         var existingMaterialStock = this.bdMaterialStocks.filter(
-            (stock) => stock.material.materialNumberCustomer === changedStock.materialId
+            (stock) => (stock.material.uuid === changedStock.materialId)
         );
 
-        if (existingMaterialStock.length === 1) {
-          var material = existingMaterialStock[0];
-          material.quantity = changedStock.quantity;
+        if (existingMaterialStock.length === 1) { // Update existing material stock
+          var existingMaterialStock = existingMaterialStock[0];
+          existingMaterialStock.quantity = changedStock.quantity;
 
-          this.putData(this.backendURL + this.endpointMaterialStocks, material);
-        } else {
-          var existingMaterial = this.materials.filter(
-              (m) => m.materialId === changedStock.materialId
-          )[0];
-          var newStock = {
-            id: changedStock.materialId,
-            name: existingMaterial.name,
-            quantity: changedStock.quantity,
-            unitOfMeasure: existingMaterial.unitOfMeasure,
-          };
-          this.materialStocks.push(newStock);
+          this.putData(this.backendURL + this.endpointMaterialStocks, existingMaterialStock);
+          this.fetchMaterialStocks();
+        } else { // Create new material stock
+            // 1. Determine product
+            var existingMaterial = this.bdMaterials.filter(
+                (m) => m.uuid === changedStock.materialId
+            )[0];
+
+            // 2. Create Stock
+            var newStock = {
+                uuid: "",
+                material: existingMaterial,
+                quantity: changedStock.quantity,
+                unitOfMeasure: existingMaterial.unitOfMeasure,
+                allocatedToCustomerPartner: existingCustomer,
+                type: "MATERIAL",
+                atSiteBpnl: this.site.bpns
+            };
+
+            var newMaterialStock = JSON.parse(JSON.stringify(newStock));
+
+            this.postData(this.backendURL + this.endpointMaterialStocks, newMaterialStock);
+            this.fetchMaterialStocks();
         }
       } else if (changedStock.type === "Product") {
-        var existingProductStock = this.bdProductStocks.filter(
-            (stock) => stock.material.uuid === changedStock.productId
+        var existingProductStocks = this.bdProductStocks.filter(
+            (stock) => (stock.material.uuid === changedStock.productId) &&
+                (stock.allocatedToCustomerPartner.uuid === changedStock.allocatedToCustomer)
         );
 
-        if (existingProductStock.length === 1) {// && existingProductStock[0].allocatedToCustomerPartner.bpnl == this.changedStock.allocatedToCustomer) {
-          var product = existingProductStock[0];
-          product.quantity = changedStock.quantity;
+        if (existingProductStocks.length === 1) { // Update existing product stock
+          var existingProductStock = existingProductStocks[0];
+            existingProductStock.quantity = changedStock.quantity;
 
-          this.putData(this.backendURL + this.endpointProductStocks, product);
-        } else {
-          /*var existingProduct = this.products.filter(
-              (p) => p.id === changedStock.productId
+          this.putData(this.backendURL + this.endpointProductStocks, existingProductStock);
+          this.fetchProductStocks();
+        } else { // Create new product stock
+          // 1. Determine product
+            var existingProduct = this.bdProducts.filter(
+              (p) => p.uuid === changedStock.productId
           )[0];
-          newStock = {
-            id: changedStock.productId,
-            name: existingProduct.name,
-            quantity: changedStock.quantity,
-            unitOfMeasure: existingProduct.unitOfMeasure,
-          };
-          this.productStocks.push(newStock);*/
-          var product = JSON.parse(JSON.stringify(existingProductStock[0]));
-          product.uuid = "";
-          product.quantity = changedStock.quantity;
-          product.allocatedToCustomerPartner = [];
 
-          this.postData(this.backendURL + this.endpointProductStocks, product);
+          // 2. Determine partner
+            var existingCustomer = this.bdCustomers.filter(
+                (c) => c.uuid === changedStock.allocatedToCustomer
+            )[0];
+
+          // 3. Create Stock
+          newStock = {
+              uuid: "",
+              material: existingProduct,
+              quantity: changedStock.quantity,
+              unitOfMeasure: existingProduct.unitOfMeasure,
+              allocatedToCustomerPartner: existingCustomer,
+              type: "PRODUCT",
+              atSiteBpnl: this.site.bpns
+          };
+
+          var newProductStock = JSON.parse(JSON.stringify(newStock));
+
+          this.postData(this.backendURL + this.endpointProductStocks, newProductStock);
+          this.fetchProductStocks();
         }
       }
     },
@@ -243,6 +259,18 @@ export default {
       } else if (changedStock.type === "Product") {
         changedStock.materialId = "";
       }
+    },
+    fetchMaterialStocks(){
+        fetch(this.backendURL + this.endpointMaterialStocks)
+            .then(res => res.json())
+            .then(data => this.bdMaterialStocks = data)
+            .catch(err => console.log(err));
+    },
+    fetchProductStocks(){
+        fetch(this.backendURL + this.endpointProductStocks)
+            .then(res => res.json())
+            .then(data => this.bdProductStocks = data)
+            .catch(err => console.log(err));
     },
     putData(address, data) {
       fetch(address, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
