@@ -136,9 +136,10 @@ public class EdcAdapterService {
         JsonNode assetBody = objectMapper.valueToTree(createAssetDto);
         JsonNode policyBody =
                 edcRequestBodyBuilder.buildPolicyRequestBody(assetId);
-        log.info(String.format("Policy Body: %s", policyBody.asText()));
+        log.info(String.format("Policy Body: \n%s", policyBody.toPrettyString()));
         JsonNode contractBody = edcRequestBodyBuilder.buildContractRequestBody(assetId);
-        log.info(String.format("Contract Body: %s", contractBody.asText()));
+        log.info(String.format("Contract Body: \n%s", contractBody.toPrettyString()));
+        log.info(String.format("Asset Body: \n%s", assetBody.toPrettyString()));
         var response = sendEdcRequest(assetBody, "/data/assets");
         success &= response.isSuccessful();
         log.info(String.format("Creation of asset was successfull: %b", success));

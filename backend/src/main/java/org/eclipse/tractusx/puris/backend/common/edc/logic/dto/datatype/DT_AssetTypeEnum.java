@@ -27,5 +27,5 @@ public enum DT_AssetTypeEnum {
     /**
      * Data asset is an API interface to use.
      */
-    API
+    api
 }

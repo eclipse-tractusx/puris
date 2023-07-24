@@ -27,5 +27,13 @@ public enum DT_ApiBusinessObjectEnum {
     /**
      * Business object is a product stock
      */
-    productStock
+    PRODUCT_STOCK("product-stock");
+
+    private DT_ApiBusinessObjectEnum(String propertiesDescription) {
+        this.PROPERTIES_DESCRIPTION = propertiesDescription;
+    }
+    /**
+     * The String representation to be used in the asset properties.
+     */
+    public final String PROPERTIES_DESCRIPTION;
 }

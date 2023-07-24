@@ -3,9 +3,11 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiBusinessObjectEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_AssetTypeEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_DataAddressTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +21,9 @@ public class EDCRequestBodyBuilder {
 
     @Value("${edr.endpoint}")
     private String endpointDataReferenceEndpoint;
+
+    @Autowired
+    private VariablesService variablesService;
 
     @Autowired
     private ObjectMapper MAPPER;
@@ -178,19 +183,14 @@ public class EDCRequestBodyBuilder {
     public CreateAssetDto buildCreateAssetDtoForApi(DT_ApiMethodEnum method,
                                                            String apiBaseUrl) {
         AssetPropertiesDto apiAssetPropertiesDto = new AssetPropertiesDto();
-        if (method == DT_ApiMethodEnum.REQUEST) {
-            apiAssetPropertiesDto.setId("product-stock-request-api");
-            apiAssetPropertiesDto.setName("Product Stock Request API");
-            apiAssetPropertiesDto.setApiMethod(DT_ApiMethodEnum.REQUEST);
-        } else if (method == DT_ApiMethodEnum.RESPONSE) {
-
-            apiAssetPropertiesDto.setId("product-stock-response-api");
-            apiAssetPropertiesDto.setName("Product Stock Response API");
-            apiAssetPropertiesDto.setApiMethod(DT_ApiMethodEnum.RESPONSE);
-        }
+        apiAssetPropertiesDto.setApiBusinessObject(DT_ApiBusinessObjectEnum.PRODUCT_STOCK.PROPERTIES_DESCRIPTION);
+        apiAssetPropertiesDto.setApiPurpose(method.PURPOSE);
         apiAssetPropertiesDto.setContentType("appplication/json");
-        apiAssetPropertiesDto.setApiBusinessObject(DT_ApiBusinessObjectEnum.productStock);
+        apiAssetPropertiesDto.setId(method.ID);
+        apiAssetPropertiesDto.setName(method.NAME);
+        apiAssetPropertiesDto.setType(DT_AssetTypeEnum.api);
         apiAssetPropertiesDto.setUseCase(DT_UseCaseEnum.PURIS);
+        apiAssetPropertiesDto.setVersion(variablesService.getPurisApiVersion());
 
         AssetDto apiAssetDto = new AssetDto();
         apiAssetDto.setPropertiesDto(apiAssetPropertiesDto);

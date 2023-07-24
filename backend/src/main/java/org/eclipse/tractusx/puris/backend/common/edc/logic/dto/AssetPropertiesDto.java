@@ -26,8 +26,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiBusinessObjectEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_AssetTypeEnum;
 
 /**
@@ -39,33 +37,59 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_Asset
 public class AssetPropertiesDto {
 
     /**
-     * id of the asset
+     * The id of the asset
      */
     @JsonProperty("asset:prop:id")
     @NotNull
     private String id;
 
+    /**
+     * The name of the asset
+     */
     @JsonProperty("asset:prop:name")
     @NotNull
     private String name;
 
+    /**
+     * Mimetype of the payload to be sent
+     */
     @JsonProperty("asset:prop:contenttype")
     @NotNull
     private String contentType;
 
+    /**
+     * The use case this asset is assigned to
+     */
     @JsonProperty("asset:prop:usecase")
     @NotNull
     private DT_UseCaseEnum useCase;
 
+    /**
+     * The type of the asset
+     */
     @JsonProperty("asset:prop:type")
     @NotNull
     private DT_AssetTypeEnum type;
 
+    /**
+     * Defines the business objects supported by the api
+     */
     @JsonProperty("asset:prop:apibusinessobject")
     @NotNull
-    private DT_ApiBusinessObjectEnum apiBusinessObject;
+    private String apiBusinessObject;
 
-    @JsonProperty("asset:prop:apimethod")
+    /**
+     * Defines the purpose of the api
+     */
+    @JsonProperty("asset:prop:apipurpose")
+    private String apiPurpose;
+
+    /**
+     * The version of the standard defining the
+     * implemented API. 
+     */
+    @JsonProperty("asset:prop:version")
     @NotNull
-    private DT_ApiMethodEnum apiMethod;
+    private String version;
+
 }
