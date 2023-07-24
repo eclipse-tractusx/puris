@@ -25,10 +25,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.squareup.okhttp.*;
 import lombok.extern.slf4j.Slf4j;
+
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.CreateAssetDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EDCRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.model.repo.OrderRepository;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,6 +55,9 @@ public class EdcAdapterService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired 
+    VariablesService variablesService;
 
     @Value("${edc.controlplane.host}")
     private String edcHost;
@@ -213,6 +220,37 @@ public class EdcAdapterService {
         }
         response.body().close();
         return stringData;
+    }
+
+    /**
+     * Get a catalog from EDC. This method accepts a set of key/value 
+     * pairs which are to be applied on the asset.properties level of
+     * the catalog. 
+     * @param idsUrl url of the EDC to get catalog from.
+     * @param propertyObjectFilter the filter to be applied
+     * @return the catalog as JsonNode
+     * @throws IOException
+     */
+    public JsonNode getCatalogFilteredByAssetPropertyObjectFilter(String idsUrl, Map<String,String> propertyObjectFilter) throws IOException {
+        var catalogObject = objectMapper.readTree(getCatalog(idsUrl));
+        var outputNode = objectMapper.createObjectNode();
+        outputNode.put("id", catalogObject.get("id").asText());
+        var contractOffersArray = objectMapper.createArrayNode();
+        outputNode.set("contractOffers", contractOffersArray);
+        List<ObjectNode> catalogItems = objectMapper.readerForListOf(ObjectNode.class).readValue(catalogObject.get("contractOffers"));
+        for (var catalogItem : catalogItems) {
+            var properties = catalogItem.get("asset").get("properties");
+            boolean testPassed = true;
+            for(var entry : propertyObjectFilter.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                testPassed = testPassed && properties.get(key) != null && value.equals(properties.get(key).asText());
+            }
+            if (testPassed) {
+                contractOffersArray.add(catalogItem);
+            }
+        }
+        return outputNode;
     }
 
     /**
@@ -428,7 +466,12 @@ public class EdcAdapterService {
      * @return a String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
     public String[] getContractForRequestApi(String partnerIdsUrl) {
-        return getContractForRequestOrResponseApiApi(partnerIdsUrl, "product-stock-request-api");
+        HashMap<String, String> filter = new HashMap<>();
+        filter.put("asset:prop:type", "api");
+        filter.put("asset:prop:apibusinessobject", "product-stock");
+        filter.put("asset:prop:apipurpose", "request");
+        filter.put("asset:prop:version", variablesService.getPurisApiVersion());
+        return getContractForRequestOrResponseApiApi(partnerIdsUrl,  filter);
     }
 
     /**
@@ -440,7 +483,12 @@ public class EdcAdapterService {
      * @return a String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
     public String[] getContractForResponseApi(String partnerIdsUrl) {
-        return getContractForRequestOrResponseApiApi(partnerIdsUrl, "product-stock-response-api");
+        HashMap<String, String> filter = new HashMap<>();
+        filter.put("asset:prop:type", "api");
+        filter.put("asset:prop:apibusinessobject", "product-stock");
+        filter.put("asset:prop:apipurpose", "response");
+        filter.put("asset:prop:version", variablesService.getPurisApiVersion());
+        return getContractForRequestOrResponseApiApi(partnerIdsUrl, filter);
     }
 
     /**
@@ -453,13 +501,12 @@ public class EdcAdapterService {
      * @param assetApi      id of the target asset
      * @return   a String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
-    public String[] getContractForRequestOrResponseApiApi(String partnerIdsUrl, String assetApi) {
+    public String[] getContractForRequestOrResponseApiApi(String partnerIdsUrl, Map<String, String> filter) {
         try {
-            HashMap<String, String> filter = new HashMap<>();
-            filter.put("asset:prop:id", assetApi);
-            String catalog = getCatalog(partnerIdsUrl, Optional.of(filter));
-            JsonNode objectNode = objectMapper.readValue(catalog, ObjectNode.class);
+            // String catalog = getCatalog(partnerIdsUrl, Optional.of(filter));
+            JsonNode objectNode = getCatalogFilteredByAssetPropertyObjectFilter(partnerIdsUrl, filter);
             JsonNode contractOffer = objectNode.get("contractOffers").get(0);
+            String assetApi = contractOffer.get("asset").get("id").asText();
             String contractDefinitionId = contractOffer.get("id").asText();
             String negotiationResponseString = startNegotiation(partnerIdsUrl + "/data", contractDefinitionId, assetApi);
             String negotiationId = objectMapper.readTree(negotiationResponseString).get("id").asText();
@@ -509,7 +556,7 @@ public class EdcAdapterService {
             return null;
         } catch (Exception e){
             log.warn("ERROR");
-            log.error("Failed to obtain " + assetApi + " from " + partnerIdsUrl, e);
+            log.error("Failed to obtain api from " + partnerIdsUrl, e);
             return null;
         }
 
