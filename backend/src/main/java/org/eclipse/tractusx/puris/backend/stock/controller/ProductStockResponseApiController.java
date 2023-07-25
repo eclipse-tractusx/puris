@@ -75,10 +75,14 @@ public class ProductStockResponseApiController {
             return ResponseEntity.status(HttpStatusCode.valueOf(422)).build();
         }
         
+        if (productStockResponseDto.getHeader() == null || productStockResponseDto.getHeader().getRequestId() == null) {
+            log.error("No RequestId provided!");
+            return ResponseEntity.status(422).build();
+        }
+
         UUID requestId = productStockResponseDto.getHeader().getRequestId();
 
-        Request requestFound =
-                requestService.findRequestByHeaderUuid(requestId);
+        Request requestFound = requestService.findRequestByHeaderUuid(requestId);
         if (requestFound == null) {
             log.error("Request id " +requestId +  " not found");
             return ResponseEntity.status(422).build();
