@@ -36,6 +36,7 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfullReques
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockResponseDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
@@ -44,6 +45,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,15 +60,30 @@ public class ProductStockRequestApiController {
     ModelMapper modelMapper;
 
     @Autowired
+    ObjectMapper objectMapper;
+
+    @Autowired
     RequestService requestService;
 
     @Autowired
     RequestApiService requestApiService;
 
     @PostMapping("request")
-    public ResponseEntity<SuccessfullRequestDto> postRequest(@RequestBody ProductStockRequestDto productStockRequestDto) {
-        
-        log.info(String.format("RequestApiController.postReqest.requestDto: %s", productStockRequestDto));
+    public ResponseEntity<Object> postRequest(@RequestBody JsonNode requestBody) {
+        log.info("product-stock/request called: \n" + requestBody.toPrettyString());
+
+        ProductStockRequestDto productStockRequestDto = null;
+        try {
+            productStockRequestDto = objectMapper.treeToValue(requestBody, ProductStockRequestDto.class);
+        } catch (Exception e) {
+            log.error("Failed to deserialize body of incoming message", e);
+            return ResponseEntity.status(HttpStatusCode.valueOf(422)).build();
+        }
+
+        if (productStockRequestDto.getHeader() == null || productStockRequestDto.getHeader().getRequestId() == null) {
+            log.error("No RequestId provided!");
+            return ResponseEntity.status(422).build();
+        }
 
         UUID requestId = productStockRequestDto.getHeader().getRequestId();
 
@@ -105,8 +124,8 @@ public class ProductStockRequestApiController {
         });
         respondAsyncThread.start();
 
-        // if the request has been correctly taken over, return 201
-        return ResponseEntity.status(HttpStatusCode.valueOf(201)).body(new SuccessfullRequestDto(requestId));
+        // if the request has been correctly taken over, return 200
+        return ResponseEntity.status(HttpStatusCode.valueOf(200)).body(new SuccessfullRequestDto(requestId));
         
     }
 
