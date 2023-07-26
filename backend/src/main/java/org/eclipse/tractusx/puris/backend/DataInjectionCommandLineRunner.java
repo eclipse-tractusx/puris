@@ -356,11 +356,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 messageContentDtos
         );
 
-        var data = modelMapper.map(requestDto, Request.class);
-        log.info("REQUEST: \n" + data);
-        Request createdRequest = requestService.createRequest(data);
-//        Request createdRequest = requestService.createRequest(modelMapper.map(requestDto,
-//                Request.class));
-//        log.info(String.format("Created Request: %s", createdRequest));
+        Request createdRequest = requestService.createRequest(modelMapper.map(requestDto,
+                Request.class));
+        log.info(String.format("Created Request: %s", createdRequest));
     }
 }
