@@ -311,7 +311,13 @@ public class StockController {
 
             String cid = data[3];
             MessageHeaderDto messageHeaderDto = new MessageHeaderDto();
-            messageHeaderDto.setRequestId(UUID.randomUUID());
+            UUID randomUuid = UUID.randomUUID();
+
+            // Avoid randomly choosing a UUID that was already used by this customer.
+            while (requestService.findRequestByHeaderUuid(randomUuid) != null) {
+                randomUuid = UUID.randomUUID();
+            }
+            messageHeaderDto.setRequestId(randomUuid);
             messageHeaderDto.setRespondAssetId("product-stock-response-api");
             messageHeaderDto.setContractAgreementId(cid);
             messageHeaderDto.setSender(ownBpnl); 
