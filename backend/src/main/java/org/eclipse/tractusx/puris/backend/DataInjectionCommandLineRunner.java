@@ -22,6 +22,7 @@
 package org.eclipse.tractusx.puris.backend;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
@@ -38,7 +39,9 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
+import org.eclipse.tractusx.puris.backend.stock.logic.adapter.RequestMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
@@ -88,6 +91,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     @Value("${puris.demonstrator.role}")
     private String demoRole;
 
+    @Autowired
+    private RequestMarshallingService requestMarshallingService;
 
     private ObjectMapper objectMapper;
 
@@ -349,15 +354,28 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         messageContentDto.setMaterialNumberCustomer("CU-MNR");
         messageContentDto.setMaterialNumberSupplier("SU-MNR");
         messageContentDtos.add(messageContentDto);
+        messageContentDto = new ProductStockRequestForMaterialDto();
+        messageContentDto.setMaterialNumberCatenaX("OtherCX-MNR");
+        messageContentDto.setMaterialNumberCustomer("OtherCU-MNR");
+        messageContentDto.setMaterialNumberSupplier("OtherSU-MNR");
+        messageContentDtos.add(messageContentDto);
 
         RequestDto requestDto = new RequestDto(
                 DT_RequestStateEnum.RECEIPT,
                 messageHeaderDto,
                 messageContentDtos
         );
-
         Request createdRequest = requestService.createRequest(modelMapper.map(requestDto,
-                Request.class));
+            Request.class));
         log.info(String.format("Created Request: %s", createdRequest));
+        log.info(createdRequest.getPayload().get(0).getClass().toString());
+
+        log.info("Testing RequestMarshallingService:");
+        String transformationTest = requestMarshallingService.transformRequest(requestDto);
+        log.info("transformed request to be sent:\n" + transformationTest);
+
+        ProductStockRequestDto productStockRequestDto = requestMarshallingService.transformToProductStockRequestDto(transformationTest);
+        log.info("unmarshalled the same request as productStockRequestDto: \n" + productStockRequestDto.toString());
+
     }
 }

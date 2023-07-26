@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequestForMaterial;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +74,6 @@ public class Request {
      * May contain also errors.
      */
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MessageContent> payload = new ArrayList<>();
+    private List<ProductStockRequestForMaterial> payload = new ArrayList<>();
 
 }

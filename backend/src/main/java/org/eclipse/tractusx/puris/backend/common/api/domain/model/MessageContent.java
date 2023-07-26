@@ -21,10 +21,7 @@
 package org.eclipse.tractusx.puris.backend.common.api.domain.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -37,6 +34,7 @@ import java.util.UUID;
 @Setter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
 public class MessageContent {
 
     @Id
@@ -44,5 +42,5 @@ public class MessageContent {
     /**
      * Technical identifier for a Message Content.
      */
-    private UUID uuid;
+    protected UUID uuid;
 }
