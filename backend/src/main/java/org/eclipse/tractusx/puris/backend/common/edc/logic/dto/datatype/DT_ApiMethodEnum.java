@@ -27,20 +27,19 @@ public enum DT_ApiMethodEnum {
     /**
      * API is used to perform a request (Request API).
      */
-    REQUEST("product-stock-request-api", "Product Stock Request Api", "request"),
+    REQUEST("Asset to request product-stock information", "request"),
 
     /**
      * API is used to respond to a request (Response API).
      */
-    RESPONSE("product-stock-response-api", "Product Stock Response Api", "response"); 
+    RESPONSE("Asset to receive product-stock information", "response");
 
-    private DT_ApiMethodEnum(String id, String name, String purpose) {
-        this.ID = id;
+    private DT_ApiMethodEnum(String name, String purpose) {
         this.NAME = name;
         this.PURPOSE = purpose;
     }
 
-    public final String ID;
+
     public final String NAME;
     public final String PURPOSE;
 }

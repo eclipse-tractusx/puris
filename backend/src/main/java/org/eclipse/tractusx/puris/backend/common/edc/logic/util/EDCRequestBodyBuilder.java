@@ -186,7 +186,7 @@ public class EDCRequestBodyBuilder {
         apiAssetPropertiesDto.setApiBusinessObject(DT_ApiBusinessObjectEnum.PRODUCT_STOCK.PROPERTIES_DESCRIPTION);
         apiAssetPropertiesDto.setApiPurpose(method.PURPOSE);
         apiAssetPropertiesDto.setContentType("appplication/json");
-        apiAssetPropertiesDto.setId(method.ID);
+        apiAssetPropertiesDto.setId(variablesService.getApiAssetId(method));
         apiAssetPropertiesDto.setName(method.NAME);
         apiAssetPropertiesDto.setType(DT_AssetTypeEnum.api);
         apiAssetPropertiesDto.setUseCase(DT_UseCaseEnum.PURIS);
