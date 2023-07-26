@@ -61,8 +61,9 @@ public class Message {
      * <p>
      * May contain also errors.
      */
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "message_content_uuid")
-    @NotNull
+    // @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    // @JoinColumn(name = "message_content_uuid")
+    // @NotNull
+    @ElementCollection
     private List<MessageContent> payload = new ArrayList<>();
 }

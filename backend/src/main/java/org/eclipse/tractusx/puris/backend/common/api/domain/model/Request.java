@@ -73,9 +73,6 @@ public class Request {
      * May contain also errors.
      */
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "message_content_uuid")
-    @NotNull
-    @ToString.Exclude
     private List<MessageContent> payload = new ArrayList<>();
 
 }

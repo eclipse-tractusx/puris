@@ -31,7 +31,7 @@ import lombok.ToString;
  * Implementation of a {@link MessageContent} providing generic error messages.
  */
 @Entity
-@DiscriminatorValue("ERROR")
+// @DiscriminatorValue("ERROR")
 @Getter
 @Setter
 @ToString
@@ -39,21 +39,16 @@ import lombok.ToString;
 public class MessageContentError extends MessageContent {
 
     /**
-     * identifies a business object of a specific api that refers to the error.
-     */
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "reference_identification_uuid")
-    private ReferenceIdentification referenceIdentification;
-
-    /**
      * error code specifying the error.
      */
     @NotNull
+    @Column
     private String error;
 
     /**
      * the actual error message providing further detail.
      */
     @NotNull
+    @Column
     private String message;
 }

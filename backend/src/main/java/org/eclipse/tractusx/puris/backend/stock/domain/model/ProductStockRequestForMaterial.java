@@ -22,6 +22,8 @@
 package org.eclipse.tractusx.puris.backend.stock.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotNull;
@@ -34,7 +36,7 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent
  * information for.
  */
 @Entity
-@DiscriminatorValue("ProductStockRequestForMaterial")
+// @DiscriminatorValue("ProductStockRequestForMaterial")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -42,16 +44,17 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent
 @ToString
 public class ProductStockRequestForMaterial extends MessageContent {
 
+    @Column
     @NotNull
     @JsonProperty("materialNumberCustomer")
     private String materialNumberCustomer;
 
+    @Column
     @Pattern(regexp = "(^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)")
-
     @JsonProperty("materialNumberCatenaX")
     private String materialNumberCatenaX;
 
-
+    @Column
     @JsonProperty("materialNumberSupplier")
     private String materialNumberSupplier;
 }

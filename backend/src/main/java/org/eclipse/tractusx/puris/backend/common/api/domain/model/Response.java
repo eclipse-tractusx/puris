@@ -20,11 +20,16 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.domain.model;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * This Response represents the message received via a Response API.
@@ -37,6 +42,27 @@ import lombok.ToString;
 @Setter
 @ToString
 @NoArgsConstructor
-public class Response extends Message {
+public class Response {
+
+    @Id
+    @GeneratedValue
+    /**
+     * Technical identifier for a Message.
+     */
+    private UUID uuid;
+
+    /**
+     * Steering information of a {@link Request} or {@link Response} api message.
+     */
+    @Embedded
+    private MessageHeader header;
+
+    /**
+     * List of actual content of the payload.
+     * <p>
+     * May contain also errors.
+     */
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MessageContent> payload = new ArrayList<>();
 
 }

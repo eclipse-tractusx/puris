@@ -345,6 +345,9 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         List<ProductStockRequestForMaterialDto> messageContentDtos = new ArrayList<>();
 
         ProductStockRequestForMaterialDto messageContentDto = new ProductStockRequestForMaterialDto();
+        messageContentDto.setMaterialNumberCatenaX("CX-MNR");
+        messageContentDto.setMaterialNumberCustomer("CU-MNR");
+        messageContentDto.setMaterialNumberSupplier("SU-MNR");
         messageContentDtos.add(messageContentDto);
 
         RequestDto requestDto = new RequestDto(
@@ -353,8 +356,11 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 messageContentDtos
         );
 
-        Request createdRequest = requestService.createRequest(modelMapper.map(requestDto,
-                Request.class));
-        log.info(String.format("Created Request: %s", createdRequest));
+        var data = modelMapper.map(requestDto, Request.class);
+        log.info("REQUEST: \n" + data);
+        Request createdRequest = requestService.createRequest(data);
+//        Request createdRequest = requestService.createRequest(modelMapper.map(requestDto,
+//                Request.class));
+//        log.info(String.format("Created Request: %s", createdRequest));
     }
 }

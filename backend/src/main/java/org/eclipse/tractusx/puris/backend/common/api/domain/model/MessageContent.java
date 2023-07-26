@@ -32,8 +32,7 @@ import java.util.UUID;
  * Class representing either an api specific content or an error.
  */
 @Entity
-@Table(name = "MessageContent")
-@DiscriminatorColumn(name = "content_type")
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Getter
 @Setter
 @ToString
