@@ -39,6 +39,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
+import org.eclipse.tractusx.puris.backend.stock.logic.adapter.RequestMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
@@ -94,6 +95,9 @@ public class StockController {
 
     @Autowired
     private EdcAdapterService edcAdapterService;
+
+    @Autowired
+    private RequestMarshallingService requestMarshallingService;
 
     @Value("${edc.idsUrl}")
     private String ownEdcIdsUrl;
@@ -342,7 +346,7 @@ public class StockController {
             log.debug("Stored in Database " + (test != null) + " " + requestDto.getHeader().getRequestId());
             Response response = null;
             try {
-                String requestBody = objectMapper.writeValueAsString(requestDto);
+                String requestBody = requestMarshallingService.transformRequest(requestDto);
                 response = edcAdapterService.sendDataPullRequest(endpoint, authKey, authCode, requestBody);
                 log.debug(response.body().string());
                 if(response.code() < 400) {

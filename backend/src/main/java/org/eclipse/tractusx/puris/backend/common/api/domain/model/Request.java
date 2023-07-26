@@ -70,8 +70,6 @@ public class Request {
 
     /**
      * List of actual content of the payload.
-     * <p>
-     * May contain also errors.
      */
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductStockRequestForMaterial> payload = new ArrayList<>();

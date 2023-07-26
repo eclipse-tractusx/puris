@@ -35,7 +35,10 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfullRequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequestForMaterial;
+import org.eclipse.tractusx.puris.backend.stock.logic.adapter.RequestMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockResponseDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,13 +71,16 @@ public class ProductStockRequestApiController {
     @Autowired
     RequestApiService requestApiService;
 
+    @Autowired
+    RequestMarshallingService requestMarshallingService;
+
     @PostMapping("request")
-    public ResponseEntity<Object> postRequest(@RequestBody JsonNode requestBody) {
-        log.info("product-stock/request called: \n" + requestBody.toPrettyString());
+    public ResponseEntity<Object> postRequest(@RequestBody String requestBody) {
+        log.info("product-stock/request called: \n" + requestBody);
 
         ProductStockRequestDto productStockRequestDto = null;
         try {
-            productStockRequestDto = objectMapper.treeToValue(requestBody, ProductStockRequestDto.class);
+            productStockRequestDto = requestMarshallingService.transformToProductStockRequestDto(requestBody);
         } catch (Exception e) {
             log.error("Failed to deserialize body of incoming message", e);
             return ResponseEntity.status(HttpStatusCode.valueOf(422)).build();
@@ -99,9 +105,9 @@ public class ProductStockRequestApiController {
         try {
             Request newRequestEntity = new Request();
             newRequestEntity.setHeader(modelMapper.map(productStockRequestDto.getHeader(), MessageHeader.class));
-            List<MessageContent> payload = new ArrayList<>();
+            List<ProductStockRequestForMaterial> payload = new ArrayList<>();
             for (var payloadItem : productStockRequestDto.getPayload()) {
-                payload.add(modelMapper.map(payloadItem, MessageContent.class));
+                payload.add(modelMapper.map(payloadItem, ProductStockRequestForMaterial.class));
             }
             newRequestEntity.setPayload(payload);
             newRequestEntity.setState(productStockRequestDto.getState());

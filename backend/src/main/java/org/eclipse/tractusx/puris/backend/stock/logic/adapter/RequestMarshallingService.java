@@ -7,6 +7,7 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,9 @@ public class RequestMarshallingService {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Autowired
+    ModelMapper modelMapper;
+
     /**
      * This method transforms a RequestDto into a String object that
      * contains a JSON in accordance with the api definition that can be sent
@@ -30,7 +34,7 @@ public class RequestMarshallingService {
      * @param requestDto a request you want to send
      * @return a String carrying the information from the input object
      */
-    public String transformRequest(RequestDto requestDto) {
+    public String transformRequest(ProductStockRequestDto requestDto) {
         var objectNode = objectMapper.createObjectNode();
         objectNode.set("header", objectMapper.convertValue(requestDto.getHeader(), JsonNode.class));
         var productStockArray = objectMapper.createArrayNode();
@@ -41,6 +45,10 @@ public class RequestMarshallingService {
         contentObject.put("productStock", productStockArray);
         objectNode.put("content", contentObject);
         return objectNode.toString();
+    }
+
+    public String transformRequest(RequestDto productStockRequestDto) {
+        return transformRequest(modelMapper.map(productStockRequestDto, ProductStockRequestDto.class));
     }
 
     /**
@@ -54,9 +62,7 @@ public class RequestMarshallingService {
             JsonNode jsonNode = objectMapper.readValue(jsonData, JsonNode.class);
             ProductStockRequestDto productStockRequestDto = new ProductStockRequestDto();
             productStockRequestDto.setHeader(objectMapper.convertValue(jsonNode.get("header"), MessageHeaderDto.class));
-            log.info("Header created");
             for (var item : jsonNode.get("content").get("productStock") ) {
-                log.info("transforming item: \n" + item.toPrettyString());
                 ProductStockRequestForMaterialDto itemDto = objectMapper.readValue(item.toString(), ProductStockRequestForMaterialDto.class);
                 productStockRequestDto.getPayload().add(itemDto);
             }

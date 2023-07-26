@@ -313,7 +313,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 true,
                 "MNR-7307-AU340474.002",
                 "MNR-8101-ID146955.001",
-                "",
+                null,
                 "semiconductor"
         );
     }
@@ -329,7 +329,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 true,
                 "MNR-4177-C",
                 "MNR-4177-S",
-                "0",
+                null,
                 "central control unit"
         );
     }
@@ -350,12 +350,10 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         List<ProductStockRequestForMaterialDto> messageContentDtos = new ArrayList<>();
 
         ProductStockRequestForMaterialDto messageContentDto = new ProductStockRequestForMaterialDto();
-        messageContentDto.setMaterialNumberCatenaX("CX-MNR");
         messageContentDto.setMaterialNumberCustomer("CU-MNR");
         messageContentDto.setMaterialNumberSupplier("SU-MNR");
         messageContentDtos.add(messageContentDto);
         messageContentDto = new ProductStockRequestForMaterialDto();
-        messageContentDto.setMaterialNumberCatenaX("OtherCX-MNR");
         messageContentDto.setMaterialNumberCustomer("OtherCU-MNR");
         messageContentDto.setMaterialNumberSupplier("OtherSU-MNR");
         messageContentDtos.add(messageContentDto);
@@ -372,7 +370,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         log.info("Testing RequestMarshallingService:");
         String transformationTest = requestMarshallingService.transformRequest(requestDto);
-        log.info("transformed request to be sent:\n" + transformationTest);
+        log.info("marshalled request to be sent:\n" + transformationTest);
 
         ProductStockRequestDto productStockRequestDto = requestMarshallingService.transformToProductStockRequestDto(transformationTest);
         log.info("unmarshalled the same request as productStockRequestDto: \n" + productStockRequestDto.toString());
