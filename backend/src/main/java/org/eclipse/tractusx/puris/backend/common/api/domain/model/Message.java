@@ -51,7 +51,7 @@ public class Message {
     private UUID uuid;
 
     /**
-     * Steering information of a {@link Request} or {@link Response} api message.
+     * Steering information of a {@link ProductStockRequest} or {@link Response} api message.
      */
     @Embedded
     protected MessageHeader header;
@@ -61,9 +61,8 @@ public class Message {
      * <p>
      * May contain also errors.
      */
-    // @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    // @JoinColumn(name = "message_content_uuid")
-    // @NotNull
-    @ElementCollection
-    private List<MessageContent> payload = new ArrayList<>();
+     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+     @JoinColumn(name = "message_content_uuid")
+     @NotNull
+     private List<MessageContent> payload = new ArrayList<>();
 }

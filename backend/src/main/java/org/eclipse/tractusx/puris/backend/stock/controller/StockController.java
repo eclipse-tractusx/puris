@@ -24,7 +24,7 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
@@ -338,10 +338,10 @@ public class StockController {
             );
 
             
-            Request request = modelMapper.map(requestDto, Request.class);
-            request.setState(DT_RequestStateEnum.WORKING);
+            ProductStockRequest productStockRequest = modelMapper.map(requestDto, ProductStockRequest.class);
+            productStockRequest.setState(DT_RequestStateEnum.WORKING);
             log.debug("Setting request state to " + DT_RequestStateEnum.WORKING);
-            request = requestService.createRequest(request);
+            productStockRequest = requestService.createRequest(productStockRequest);
             var test = requestService.findRequestByHeaderUuid(requestDto.getHeader().getRequestId());
             log.debug("Stored in Database " + (test != null) + " " + requestDto.getHeader().getRequestId());
             Response response = null;
@@ -350,18 +350,18 @@ public class StockController {
                 response = edcAdapterService.sendDataPullRequest(endpoint, authKey, authCode, requestBody);
                 log.debug(response.body().string());
                 if(response.code() < 400) {
-                    request = requestService.updateState(request, DT_RequestStateEnum.REQUESTED);
+                    productStockRequest = requestService.updateState(productStockRequest, DT_RequestStateEnum.REQUESTED);
                     log.debug("Sent request and received HTTP Status code " + response.code());
                     log.debug("Setting request state to " + DT_RequestStateEnum.REQUESTED);
                 } else {
-                    log.warn("Receviced HTTP Status Code " + response.code() + " for request " + request.getHeader().getRequestId() 
-                    + " from " + request.getHeader().getReceiver());
-                    request = requestService.updateState(request, DT_RequestStateEnum.ERROR);
+                    log.warn("Receviced HTTP Status Code " + response.code() + " for request " + productStockRequest.getHeader().getRequestId()
+                    + " from " + productStockRequest.getHeader().getReceiver());
+                    productStockRequest = requestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
                 }
                 
             } catch (Exception e) {
                 log.error("Failed to send data pull request to " + supplierPartner.getEdcUrl(), e);
-                request = requestService.updateState(request, DT_RequestStateEnum.ERROR);
+                productStockRequest = requestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
             } finally {
                 try {
                     if(response != null) {

@@ -20,59 +20,59 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.logic.service;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 /**
- * Service providing the interface to the {@link Request}
+ * Service providing the interface to the {@link ProductStockRequest}
  */
 @Service
 public interface RequestService {
 
     /**
-     * create a {@link Request} in state REQUESTED.
+     * create a {@link ProductStockRequest} in state REQUESTED.
      *
-     * @param request request to persist
+     * @param productStockRequest request to persist
      * @return created entity
      */
-    public Request createRequest(Request request);
+    public ProductStockRequest createRequest(ProductStockRequest productStockRequest);
 
     /**
-     * update existing {@link Request}
+     * update existing {@link ProductStockRequest}
      * <p>
      * Request must already have been persisted before (has internalUuid).
      *
-     * @param request existing request incl. updates
+     * @param productStockRequest existing request incl. updates
      * @return updated entity or null, if request has not yet been persisted.
      */
-    public Request updateRequest(Request request);
+    public ProductStockRequest updateRequest(ProductStockRequest productStockRequest);
 
     /**
-     * convenience method to only update the state of a {@link Request}
+     * convenience method to only update the state of a {@link ProductStockRequest}
      *
-     * @param request existing request to update the state of
+     * @param productStockRequest existing request to update the state of
      * @param state   state to set
      * @return updated entity or null, if request has not yet been persisted.
      */
-    public Request updateState(Request request, DT_RequestStateEnum state);
+    public ProductStockRequest updateState(ProductStockRequest productStockRequest, DT_RequestStateEnum state);
 
     /**
-     * find {@link Request} by internal uuid
+     * find {@link ProductStockRequest} by internal uuid
      *
      * @param requestInternalUuid internalUuid of the request
      * @return found request or null, if request does not exist
      */
-    public Request findByInternalUuid(UUID requestInternalUuid);
+    public ProductStockRequest findByInternalUuid(UUID requestInternalUuid);
 
     /**
-     * find {@link Request} by the header's uuid (set by sender)
+     * find {@link ProductStockRequest} by the header's uuid (set by sender)
      *
      * @param headerUuid requestUuid set by the sender in the header
      * @return found request or null if request does not exist
      */
-    public Request findRequestByHeaderUuid(UUID headerUuid);
+    public ProductStockRequest findRequestByHeaderUuid(UUID headerUuid);
 
 }

@@ -21,7 +21,7 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.logic.service;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.repository.RequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +36,13 @@ public class RequestServiceImpl implements RequestService {
     private RequestRepository requestRepository;
 
     @Override
-    public Request createRequest(Request request) {
-        return requestRepository.save(request);
+    public ProductStockRequest createRequest(ProductStockRequest productStockRequest) {
+        return requestRepository.save(productStockRequest);
     }
 
     @Override
-    public Request updateRequest(Request request) {
-        Optional<Request> existingRequest = requestRepository.findById(request.getUuid());
+    public ProductStockRequest updateRequest(ProductStockRequest productStockRequest) {
+        Optional<ProductStockRequest> existingRequest = requestRepository.findById(productStockRequest.getUuid());
 
         if (existingRequest.isPresent()) {
             return requestRepository.save(existingRequest.get());
@@ -50,8 +50,8 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public Request updateState(Request request, DT_RequestStateEnum state) {
-        Optional<Request> existingRequest = requestRepository.findById(request.getUuid());
+    public ProductStockRequest updateState(ProductStockRequest productStockRequest, DT_RequestStateEnum state) {
+        Optional<ProductStockRequest> existingRequest = requestRepository.findById(productStockRequest.getUuid());
 
         if (existingRequest.isPresent()) {
             existingRequest.get().setState(state);
@@ -60,8 +60,8 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public Request findByInternalUuid(UUID requestInternalUuid) {
-        Optional<Request> existingRequest = requestRepository.findById(requestInternalUuid);
+    public ProductStockRequest findByInternalUuid(UUID requestInternalUuid) {
+        Optional<ProductStockRequest> existingRequest = requestRepository.findById(requestInternalUuid);
 
         if (existingRequest.isPresent()) {
             return existingRequest.get();
@@ -69,8 +69,8 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public Request findRequestByHeaderUuid(UUID headerUuid) {
-        Optional<Request> existingRequest = requestRepository.findFirstByHeader_RequestId(headerUuid);
+    public ProductStockRequest findRequestByHeaderUuid(UUID headerUuid) {
+        Optional<ProductStockRequest> existingRequest = requestRepository.findFirstByHeader_RequestId(headerUuid);
 
         if (existingRequest.isPresent()) {
             return existingRequest.get();

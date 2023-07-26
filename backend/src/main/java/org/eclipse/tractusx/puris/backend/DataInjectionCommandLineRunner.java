@@ -22,10 +22,9 @@
 package org.eclipse.tractusx.puris.backend;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
@@ -363,10 +362,10 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 messageHeaderDto,
                 messageContentDtos
         );
-        Request createdRequest = requestService.createRequest(modelMapper.map(requestDto,
-            Request.class));
-        log.info(String.format("Created Request: %s", createdRequest));
-        log.info(createdRequest.getPayload().get(0).getClass().toString());
+        ProductStockRequest createdProductStockRequest = requestService.createRequest(modelMapper.map(requestDto,
+            ProductStockRequest.class));
+        log.info(String.format("Created Request: %s", createdProductStockRequest));
+        log.info(createdProductStockRequest.getPayload().get(0).getClass().toString());
 
         log.info("Testing RequestMarshallingService:");
         String transformationTest = requestMarshallingService.transformRequest(requestDto);

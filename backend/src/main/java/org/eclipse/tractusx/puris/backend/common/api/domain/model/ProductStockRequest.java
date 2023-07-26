@@ -40,12 +40,11 @@ import java.util.UUID;
  * Both, the Response and the Request, are called (api) request.
  */
 @Entity
-@Table(name = "Request")
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-public class Request {
+public class ProductStockRequest {
 
     /**
      * State of the request.
@@ -63,7 +62,7 @@ public class Request {
     private UUID uuid;
 
     /**
-     * Steering information of a {@link Request} or {@link Response} api message.
+     * Steering information of a {@link ProductStockRequest} or {@link Response} api message.
      */
     @Embedded
     private MessageHeader header;

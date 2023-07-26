@@ -23,7 +23,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentErrorDto;
@@ -67,7 +67,7 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
     @Override
     public void consumeResponse(ResponseDto responseDto) {
 
-        Request correspondingRequest = findCorrespondingRequest(responseDto);
+        ProductStockRequest correspondingProductStockRequest = findCorrespondingRequest(responseDto);
 
         for (MessageContentDto messageContentDto : responseDto.getPayload()) {
 
@@ -118,18 +118,18 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
         }
 
         // Update status - also only MessageContentErrorDtos would be completed
-        requestService.updateState(correspondingRequest, DT_RequestStateEnum.COMPLETED);
+        requestService.updateState(correspondingProductStockRequest, DT_RequestStateEnum.COMPLETED);
     }
 
-    private Request findCorrespondingRequest(ResponseDto responseDto) {
+    private ProductStockRequest findCorrespondingRequest(ResponseDto responseDto) {
         UUID requestId = responseDto.getHeader().getRequestId();
 
-        Request requestFound =
+        ProductStockRequest productStockRequestFound =
                 requestService.findRequestByHeaderUuid(requestId);
 
-        if (requestFound == null) {
+        if (productStockRequestFound == null) {
             throw new RequestIdNotFoundException(requestId);
-        } else return requestFound;
+        } else return productStockRequestFound;
 
     }
 

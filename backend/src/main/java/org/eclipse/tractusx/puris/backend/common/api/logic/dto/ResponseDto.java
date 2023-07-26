@@ -26,7 +26,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.Request}
+ * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.Response}
  */
 @Getter
 @Setter

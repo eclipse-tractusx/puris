@@ -23,7 +23,7 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 
 import java.util.UUID;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfullRequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
@@ -82,15 +82,15 @@ public class ProductStockResponseApiController {
 
         UUID requestId = productStockResponseDto.getHeader().getRequestId();
 
-        Request requestFound = requestService.findRequestByHeaderUuid(requestId);
-        if (requestFound == null) {
+        ProductStockRequest productStockRequestFound = requestService.findRequestByHeaderUuid(requestId);
+        if (productStockRequestFound == null) {
             log.error("Request id " +requestId +  " not found");
             return ResponseEntity.status(422).build();
         } else {
             log.info("Got response for request Id " + requestId);
         }
 
-        requestFound = requestService.updateState(requestFound, DT_RequestStateEnum.COMPLETED);
+        productStockRequestFound = requestService.updateState(productStockRequestFound, DT_RequestStateEnum.COMPLETED);
         responseApiService.consumeResponse(productStockResponseDto);
 
         // if the request has been correctly taken over, return 202

@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Response;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Dto for {@link org.eclipse.tractusx.puris.backend.common.api.domain.model.Request}
+ * Dto for {@link ProductStockRequest}
  */
 @Getter
 @Setter
@@ -60,7 +60,7 @@ public class RequestDto {
     private UUID uuid;
 
     /**
-     * Steering information of a {@link Request} or {@link Response} api message.
+     * Steering information of a {@link ProductStockRequest} or {@link Response} api message.
      */
     @NotNull
     @JsonProperty("headers")

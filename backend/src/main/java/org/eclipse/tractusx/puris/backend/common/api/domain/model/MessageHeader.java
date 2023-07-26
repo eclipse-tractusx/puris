@@ -33,7 +33,7 @@ import java.util.UUID;
 
 
 /**
- * The MessageHeaderRepository is used as a Message of both, the {@link Request} and {@link Response},
+ * The MessageHeaderRepository is used as a Message of both, the {@link ProductStockRequest} and {@link Response},
  * together with the actual Message.
  */
 @Embeddable

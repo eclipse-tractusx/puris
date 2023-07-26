@@ -21,7 +21,6 @@
 package org.eclipse.tractusx.puris.backend.common.api.domain.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -52,7 +51,7 @@ public class Response {
     private UUID uuid;
 
     /**
-     * Steering information of a {@link Request} or {@link Response} api message.
+     * Steering information of a {@link ProductStockRequest} or {@link Response} api message.
      */
     @Embedded
     private MessageHeader header;

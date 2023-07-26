@@ -20,12 +20,12 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.Response;
 
 /**
  * Enum to track the status of
- * {@link Request} and
+ * {@link ProductStockRequest} and
  * {@link Response}.
  */
 public enum DT_RequestStateEnum {

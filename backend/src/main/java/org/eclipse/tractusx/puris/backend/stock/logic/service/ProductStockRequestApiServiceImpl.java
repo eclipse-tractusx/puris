@@ -23,7 +23,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.Request;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.*;
@@ -109,8 +109,8 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         log.info(String.format("param requestDto %s", requestDto));
         requestDto.setState(DT_RequestStateEnum.WORKING);
 
-        Request requestEntity = requestService.findRequestByHeaderUuid(requestDto.getHeader().getRequestId());
-        requestEntity = requestService.updateState(requestEntity, DT_RequestStateEnum.WORKING);
+        ProductStockRequest productStockRequestEntity = requestService.findRequestByHeaderUuid(requestDto.getHeader().getRequestId());
+        productStockRequestEntity = requestService.updateState(productStockRequestEntity, DT_RequestStateEnum.WORKING);
 
         String partnerIdsUrl = requestDto.getHeader().getSenderEdc();
 
@@ -201,8 +201,8 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         var data = edcAdapterService.getContractForResponseApi(partnerIdsUrl);
         if(data == null) {
             log.error("Failed to contract response api from " + partnerIdsUrl);
-            requestEntity = requestService.updateState(requestEntity, DT_RequestStateEnum.ERROR);
-            log.info("Request status: \n" + requestEntity.toString());
+            productStockRequestEntity = requestService.updateState(productStockRequestEntity, DT_RequestStateEnum.ERROR);
+            log.info("Request status: \n" + productStockRequestEntity.toString());
             return;
         }
         String authKey = data[0];
@@ -234,12 +234,12 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
                     endpoint, authKey, authCode, requestBody);
             log.info(response.body().string());
             response.body().close();
-            requestEntity = requestService.updateState(requestEntity, DT_RequestStateEnum.COMPLETED);
+            productStockRequestEntity = requestService.updateState(productStockRequestEntity, DT_RequestStateEnum.COMPLETED);
         } catch (Exception e) {
             log.error("Failed to send response to " + responseDto.getHeader().getReceiver(), e);
-            requestEntity = requestService.updateState(requestEntity, DT_RequestStateEnum.ERROR);
+            productStockRequestEntity = requestService.updateState(productStockRequestEntity, DT_RequestStateEnum.ERROR);
         } finally {
-            log.info("Request status: \n" + requestEntity.toString());
+            log.info("Request status: \n" + productStockRequestEntity.toString());
         }
 
     }
