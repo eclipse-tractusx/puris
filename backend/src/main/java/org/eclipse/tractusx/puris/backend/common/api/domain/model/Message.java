@@ -53,10 +53,8 @@ public class Message {
     /**
      * Steering information of a {@link Request} or {@link Response} api message.
      */
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "message_header_uuid")
-    @NotNull
-    private MessageHeader header;
+    @Embedded
+    protected MessageHeader header;
 
     /**
      * List of actual content of the payload.

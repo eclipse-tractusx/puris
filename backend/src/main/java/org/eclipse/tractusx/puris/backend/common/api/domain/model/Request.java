@@ -64,9 +64,7 @@ public class Request {
     /**
      * Steering information of a {@link Request} or {@link Response} api message.
      */
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "message_header_uuid")
-    @NotNull
+    @Embedded
     private MessageHeader header;
 
     /**
