@@ -216,7 +216,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         messageHeaderDto.setSender(ownBPNL); 
         messageHeaderDto.setSenderEdc(ownEdcIdsUrl);
         // set receiver per partner
-        messageHeaderDto.setReceiver(requestDto.getHeader().getSenderEdc());
+        messageHeaderDto.setReceiver(requestDto.getHeader().getSender());
         messageHeaderDto.setUseCase(DT_UseCaseEnum.PURIS);
         messageHeaderDto.setCreationDate(new Date());
 

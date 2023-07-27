@@ -327,7 +327,7 @@ public class StockController {
             messageHeaderDto.setSender(ownBpnl); 
             messageHeaderDto.setSenderEdc(ownEdcIdsUrl);
             // set receiver per partner
-            messageHeaderDto.setReceiver(supplierPartner.getEdcUrl());
+            messageHeaderDto.setReceiver(supplierPartner.getBpnl());
             messageHeaderDto.setUseCase(DT_UseCaseEnum.PURIS);
             messageHeaderDto.setCreationDate(new Date());
 

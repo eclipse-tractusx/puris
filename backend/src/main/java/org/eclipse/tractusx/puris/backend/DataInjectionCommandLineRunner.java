@@ -340,7 +340,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         messageHeaderDto.setContractAgreementId("some cid");
         messageHeaderDto.setSender("BPNL1234567890ZZ");
         messageHeaderDto.setSenderEdc("http://plato-controlplane:8084/api/v1/ids");
-        messageHeaderDto.setReceiver("http://sokrates-controlplane:8084/api/v1/ids");
+        messageHeaderDto.setReceiver("BPNL4444444444XX");
         messageHeaderDto.setUseCase(DT_UseCaseEnum.PURIS);
         messageHeaderDto.setCreationDate(new Date());
 
