@@ -29,7 +29,7 @@ import java.util.UUID;
 /**
  * Repository to access Requests
  */
-public interface RequestRepository extends JpaRepository<ProductStockRequest, UUID> {
+public interface ProductStockRequestRepository extends JpaRepository<ProductStockRequest, UUID> {
 
     /**
      * find the request by the requestUuid from the message's header

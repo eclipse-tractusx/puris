@@ -23,7 +23,7 @@ package org.eclipse.tractusx.puris.backend.common.api.logic.service;
 
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
-import org.eclipse.tractusx.puris.backend.common.api.domain.repository.RequestRepository;
+import org.eclipse.tractusx.puris.backend.common.api.domain.repository.ProductStockRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,35 +33,35 @@ import java.util.UUID;
 @Service
 public class RequestServiceImpl implements RequestService {
     @Autowired
-    private RequestRepository requestRepository;
+    private ProductStockRequestRepository productStockRequestRepository;
 
     @Override
     public ProductStockRequest createRequest(ProductStockRequest productStockRequest) {
-        return requestRepository.save(productStockRequest);
+        return productStockRequestRepository.save(productStockRequest);
     }
 
     @Override
     public ProductStockRequest updateRequest(ProductStockRequest productStockRequest) {
-        Optional<ProductStockRequest> existingRequest = requestRepository.findById(productStockRequest.getUuid());
+        Optional<ProductStockRequest> existingRequest = productStockRequestRepository.findById(productStockRequest.getUuid());
 
         if (existingRequest.isPresent()) {
-            return requestRepository.save(existingRequest.get());
+            return productStockRequestRepository.save(existingRequest.get());
         } else return null;
     }
 
     @Override
     public ProductStockRequest updateState(ProductStockRequest productStockRequest, DT_RequestStateEnum state) {
-        Optional<ProductStockRequest> existingRequest = requestRepository.findById(productStockRequest.getUuid());
+        Optional<ProductStockRequest> existingRequest = productStockRequestRepository.findById(productStockRequest.getUuid());
 
         if (existingRequest.isPresent()) {
             existingRequest.get().setState(state);
-            return requestRepository.save(existingRequest.get());
+            return productStockRequestRepository.save(existingRequest.get());
         } else return null;
     }
 
     @Override
     public ProductStockRequest findByInternalUuid(UUID requestInternalUuid) {
-        Optional<ProductStockRequest> existingRequest = requestRepository.findById(requestInternalUuid);
+        Optional<ProductStockRequest> existingRequest = productStockRequestRepository.findById(requestInternalUuid);
 
         if (existingRequest.isPresent()) {
             return existingRequest.get();
@@ -70,7 +70,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public ProductStockRequest findRequestByHeaderUuid(UUID headerUuid) {
-        Optional<ProductStockRequest> existingRequest = requestRepository.findFirstByHeader_RequestId(headerUuid);
+        Optional<ProductStockRequest> existingRequest = productStockRequestRepository.findFirstByHeader_RequestId(headerUuid);
 
         if (existingRequest.isPresent()) {
             return existingRequest.get();
