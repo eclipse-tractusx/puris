@@ -70,7 +70,7 @@ public class ProductStockRequest {
     /**
      * List of actual content of the payload.
      */
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @ElementCollection
     private List<ProductStockRequestForMaterial> payload = new ArrayList<>();
 
 }

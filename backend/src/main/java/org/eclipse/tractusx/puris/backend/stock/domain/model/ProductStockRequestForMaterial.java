@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -35,25 +36,22 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent
  * Payload specifying a material for which a customer wants to get product stock
  * information for.
  */
-@Entity
+@Embeddable
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(callSuper = true)
-public class ProductStockRequestForMaterial extends MessageContent {
+public class ProductStockRequestForMaterial {
 
-    @Column
     @NotNull
     @JsonProperty("materialNumberCustomer")
     private String materialNumberCustomer;
 
-    @Column
     @Pattern(regexp = "(^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)")
     @JsonProperty("materialNumberCatenaX")
     private String materialNumberCatenaX;
 
-    @Column
     @JsonProperty("materialNumberSupplier")
     private String materialNumberSupplier;
 }
