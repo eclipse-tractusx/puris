@@ -62,7 +62,7 @@ public class ProductStockRequest {
     private UUID uuid;
 
     /**
-     * Steering information of a {@link ProductStockRequest} or {@link Response} api message.
+     * Steering information of a {@link ProductStockRequest} api message.
      */
     @Embedded
     private MessageHeader header;

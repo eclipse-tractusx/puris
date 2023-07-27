@@ -41,7 +41,7 @@ import java.util.UUID;
 @Setter
 @ToString
 @NoArgsConstructor
-public class Response {
+public class ProductStockResponse {
 
     @Id
     @GeneratedValue
@@ -51,7 +51,7 @@ public class Response {
     private UUID uuid;
 
     /**
-     * Steering information of a {@link ProductStockRequest} or {@link Response} api message.
+     * Steering information {@link ProductStockResponse} api message.
      */
     @Embedded
     private MessageHeader header;

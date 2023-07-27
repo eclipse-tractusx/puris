@@ -51,7 +51,7 @@ public class Message {
     private UUID uuid;
 
     /**
-     * Steering information of a {@link ProductStockRequest} or {@link Response} api message.
+     * Steering information of a {@link ProductStockRequest} or {@link ProductStockResponse} api message.
      */
     @Embedded
     protected MessageHeader header;
