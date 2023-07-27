@@ -24,6 +24,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto.samm;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import lombok.ToString;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -32,6 +33,7 @@ import java.util.Optional;
  * Generated class for Reference to Order Position. Encapsulates the references
  * to identify a position within an order.
  */
+@ToString
 public class OrderPositionReference {
     private Optional<String> supplierOrderId;
 

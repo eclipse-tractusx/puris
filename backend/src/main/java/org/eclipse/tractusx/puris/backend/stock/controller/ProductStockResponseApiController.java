@@ -28,6 +28,7 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_Re
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfullRequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiService;
+import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockResponseDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,9 @@ public class ProductStockResponseApiController {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Autowired
+    ApiMarshallingService apiMarshallingService;
+
     private ResponseApiService responseApiService;
 
     public ProductStockResponseApiController(ResponseApiService responseApiService) {
@@ -65,11 +69,11 @@ public class ProductStockResponseApiController {
 
 
     @PostMapping("response")
-    public ResponseEntity<Object> postResponse(@RequestBody JsonNode requestBody) {
-        log.info("product-stock/response called: \n" + requestBody.toPrettyString());
+    public ResponseEntity<Object> postResponse(@RequestBody String body) {
         ProductStockResponseDto productStockResponseDto = null;
         try {
-            productStockResponseDto = objectMapper.treeToValue(requestBody, ProductStockResponseDto.class);
+            productStockResponseDto = apiMarshallingService.transformToProductStockResponseDto(body);
+            log.info(objectMapper.readTree(objectMapper.writeValueAsString(productStockResponseDto)).toPrettyString());
         } catch (Exception e) {
             log.error("Failed to deserialize body of incoming message", e);
             return ResponseEntity.status(HttpStatusCode.valueOf(422)).build();

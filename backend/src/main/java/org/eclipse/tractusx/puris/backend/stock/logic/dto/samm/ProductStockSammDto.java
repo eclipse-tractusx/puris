@@ -28,6 +28,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
 
 import java.util.Collection;
@@ -42,6 +43,7 @@ import java.util.Optional;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = false)
+@ToString
 public class ProductStockSammDto extends MessageContentDto {
 
     @NotNull

@@ -27,8 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentErrorDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -37,11 +37,12 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
+import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.adapter.RequestMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockResponseDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
@@ -91,7 +92,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private String demoRole;
 
     @Autowired
-    private RequestMarshallingService requestMarshallingService;
+    private ApiMarshallingService apiMarshallingService;
 
     private ObjectMapper objectMapper;
 
@@ -357,7 +358,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         messageContentDto.setMaterialNumberSupplier("OtherSU-MNR");
         messageContentDtos.add(messageContentDto);
 
-        RequestDto requestDto = new RequestDto(
+        ProductStockRequestDto requestDto = new ProductStockRequestDto(
                 DT_RequestStateEnum.RECEIPT,
                 messageHeaderDto,
                 messageContentDtos
@@ -367,12 +368,66 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info(String.format("Created Request: %s", createdProductStockRequest));
         log.info(createdProductStockRequest.getPayload().get(0).getClass().toString());
 
-        log.info("Testing RequestMarshallingService:");
-        String transformationTest = requestMarshallingService.transformRequest(requestDto);
+        log.info("Testing ApiMarshallingService:");
+        String transformationTest = apiMarshallingService.transformProductStockRequest(requestDto);
         log.info("marshalled request to be sent:\n" + transformationTest);
 
-        ProductStockRequestDto productStockRequestDto = requestMarshallingService.transformToProductStockRequestDto(transformationTest);
+        ProductStockRequestDto productStockRequestDto = apiMarshallingService.transformToProductStockRequestDto(transformationTest);
         log.info("unmarshalled the same request as productStockRequestDto: \n" + productStockRequestDto.toString());
+
+        String sampleResponse = "{\n" +
+            "  \"header\" : {\n" +
+            "    \"requestId\" : \"37be1c8e-e2c3-4fbc-848f-9ee576cecc9f\",\n" +
+            "    \"respondAssetId\" : null,\n" +
+            "    \"creationDate\" : \"2023-07-27T10:56:43.116+00:00\",\n" +
+            "    \"senderEdc\" : \"http://plato-controlplane:8084/api/v1/ids\",\n" +
+            "    \"sender\" : \"BPNL1234567890ZZ\",\n" +
+            "    \"receiver\" : \"BPNL4444444444XX\",\n" +
+            "    \"useCase\" : \"PURIS\",\n" +
+            "    \"contractAgreementId\" : \"product-stock-response-api:c51b78d3-06fa-4539-8d3a-2a0fb19780ba\"\n" +
+            "  },\n" +
+            "  \"content\" : {\n" +
+            "    \"productStock\" : [ {\n" +
+            "      \"positions\" : [ {\n" +
+            "        \"orderPositionReference\" : null,\n" +
+            "        \"lastUpdatedOnDateTime\" : 1690455395379,\n" +
+            "        \"allocatedStocks\" : [ {\n" +
+            "          \"quantityOnAllocatedStock\" : {\n" +
+            "            \"quantityNumber\" : 20.0,\n" +
+            "            \"measurementUnit\" : \"unit:piece\"\n" +
+            "          },\n" +
+            "          \"supplierStockLocationId\" : {\n" +
+            "            \"locationIdType\" : \"BPNS\",\n" +
+            "            \"locationId\" : \"BPNS1234567890ZZ\"\n" +
+            "          }\n" +
+            "        } ]\n" +
+            "      } ],\n" +
+            "      \"materialNumberCustomer\" : \"MNR-7307-AU340474.002\",\n" +
+            "      \"materialNumberCatenaX\" : {\n" +
+            "        \"empty\" : true,\n" +
+            "        \"present\" : false\n" +
+            "      },\n" +
+            "      \"materialNumberSupplier\" : {\n" +
+            "        \"empty\" : false,\n" +
+            "        \"present\" : true\n" +
+            "      }\n" +
+            "    } ]\n" +
+            "  }\n" +
+            "}\n";
+        ProductStockResponseDto productStockResponseDto = apiMarshallingService.transformToProductStockResponseDto(sampleResponse);
+        // insert a MessageContentErrorDto
+        MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
+        messageContentErrorDto.setMaterialNumberCustomer("Sample MaterialNumber");
+        messageContentErrorDto.setError("Sample Error");
+        messageContentErrorDto.setMessage("Sample Error Message");
+        productStockResponseDto.getPayload().add(messageContentErrorDto);
+        log.info(productStockResponseDto.toString());
+        String productStockResponseString = apiMarshallingService.transformProductStockResponse(productStockResponseDto);
+        log.info("marshalled sample response: \n" + productStockResponseString);
+        productStockResponseDto = apiMarshallingService.transformToProductStockResponseDto(productStockResponseString);
+        log.info("unmarshalled header: \n" + productStockResponseDto.getHeader());
+        log.info("unmarshalled content: \n" + productStockResponseDto.getPayload());
+
 
     }
 }

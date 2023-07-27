@@ -35,7 +35,7 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfullReques
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequestForMaterial;
-import org.eclipse.tractusx.puris.backend.stock.logic.adapter.RequestMarshallingService;
+import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +68,7 @@ public class ProductStockRequestApiController {
     RequestApiService requestApiService;
 
     @Autowired
-    RequestMarshallingService requestMarshallingService;
+    ApiMarshallingService apiMarshallingService;
 
     @PostMapping("request")
     public ResponseEntity<Object> postRequest(@RequestBody String requestBody) {
@@ -76,7 +76,7 @@ public class ProductStockRequestApiController {
 
         ProductStockRequestDto productStockRequestDto = null;
         try {
-            productStockRequestDto = requestMarshallingService.transformToProductStockRequestDto(requestBody);
+            productStockRequestDto = apiMarshallingService.transformToProductStockRequestDto(requestBody);
         } catch (Exception e) {
             log.error("Failed to deserialize body of incoming message", e);
             return ResponseEntity.status(HttpStatusCode.valueOf(422)).build();

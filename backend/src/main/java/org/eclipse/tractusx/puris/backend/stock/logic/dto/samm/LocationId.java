@@ -24,6 +24,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto.samm;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import lombok.ToString;
 
 import java.util.Objects;
 
@@ -32,6 +33,7 @@ import java.util.Objects;
  * kinds of identifiers. Within Catena-X, a location can either be described by
  * a BPNS or BPNA.
  */
+@ToString
 public class LocationId {
 
     @NotNull

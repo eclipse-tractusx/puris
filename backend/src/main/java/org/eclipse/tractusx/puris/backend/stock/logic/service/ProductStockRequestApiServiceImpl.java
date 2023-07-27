@@ -21,7 +21,6 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
@@ -33,9 +32,11 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterSer
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
+import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockResponseDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -77,7 +78,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
     private ModelMapper modelMapper;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private ApiMarshallingService apiMarshallingService;
 
     @Value("${edc.dataplane.public.port}")
     String dataPlanePort;
@@ -220,7 +221,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         messageHeaderDto.setUseCase(DT_UseCaseEnum.PURIS);
         messageHeaderDto.setCreationDate(new Date());
 
-        ResponseDto responseDto = new ResponseDto();
+        ProductStockResponseDto responseDto = new ProductStockResponseDto();
         responseDto.setHeader(messageHeaderDto);
         responseDto.setPayload(resultProductStocks);
 
@@ -229,7 +230,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
             endpoint = "http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public";
         }
         try {
-            String requestBody = objectMapper.writeValueAsString(responseDto);
+            String requestBody = apiMarshallingService.transformProductStockResponse(responseDto);
             var response = edcAdapterService.sendDataPullRequest(
                     endpoint, authKey, authCode, requestBody);
             log.info(response.body().string());

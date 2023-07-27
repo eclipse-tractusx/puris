@@ -24,6 +24,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto.samm;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import lombok.ToString;
 
 import java.util.Objects;
 
@@ -31,6 +32,7 @@ import java.util.Objects;
  * Generated class for Quantity. Comprises the number of objects and the unit of
  * measurement for the respective child objects
  */
+@ToString
 public class Quantity {
 
     @NotNull

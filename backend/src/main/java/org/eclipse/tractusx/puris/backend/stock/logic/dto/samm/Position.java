@@ -24,6 +24,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto.samm;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import lombok.ToString;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Collection;
@@ -34,6 +35,7 @@ import java.util.Optional;
  * Generated class for Position. The Position can be located at several stocks.
  * A position may be anonymous or may reference an position within an order.
  */
+@ToString
 public class Position {
     private Optional<OrderPositionReference> orderPositionReference;
 

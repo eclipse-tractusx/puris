@@ -24,6 +24,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto.samm;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import lombok.ToString;
 
 import java.util.Objects;
 
@@ -35,6 +36,7 @@ import java.util.Objects;
  * belonging to this stock are not available for other positions or customers.
  * This stock consists only of the good parts.
  */
+@ToString
 public class AllocatedStock {
 
     @NotNull
