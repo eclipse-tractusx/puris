@@ -22,18 +22,19 @@
 package org.eclipse.tractusx.puris.backend.stock.controller;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdAlreadyUsedException;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfullRequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequestForMaterial;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestDto;
@@ -41,14 +42,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -66,6 +64,9 @@ public class ProductStockRequestApiController {
 
     @Autowired
     RequestApiService requestApiService;
+
+    @Autowired
+    EdcAdapterService edcAdapterService;
 
     @Autowired
     ApiMarshallingService apiMarshallingService;
@@ -130,5 +131,21 @@ public class ProductStockRequestApiController {
         return ResponseEntity.status(HttpStatusCode.valueOf(200)).body(new SuccessfullRequestDto(requestId));
         
     }
+
+    @GetMapping("request")
+    public ResponseEntity<Object> getRequest(@RequestBody JsonNode body) {
+        try {
+            MessageHeaderDto header = objectMapper.convertValue(body.get("header"), MessageHeaderDto.class);
+            var request = requestService.findRequestByHeaderUuid(header.getRequestId());
+            var requestStatus = request.getState();
+            var jsonResponseBody = objectMapper.createObjectNode();
+            jsonResponseBody.put("requestId", header.getRequestId().toString());
+            jsonResponseBody.put("requestState", requestStatus.STATUSTEXT);
+            return ResponseEntity.status(200).body(jsonResponseBody);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).build();
+        }
+    }
+
 
 }

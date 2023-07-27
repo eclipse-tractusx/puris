@@ -133,7 +133,6 @@ public class EdcAdapterService {
      * @param createAssetDto asset creation dto to use.
      * @return true, if ContractDefinition has been created successfully
      * @throws IOException   if REST calls for creation could not be sent
-     * @throws JSONException if createAssetDto could not be parsed into JsonNode
      */
     public boolean publishAssetAtEDC(CreateAssetDto createAssetDto) throws IOException {
 
@@ -432,13 +431,15 @@ public class EdcAdapterService {
 
     /**
      * Util method for sending a post request to your own dataplane 
-     * in order to initiate a consumer pull request. 
+     * in order to initiate a consumer pull request.
+     * Any caller of this method has the responsibility to close
+     * the returned Response object after using it.
      * 
      * @param url the URL of an endpoint you received to perform a pull request
      * @param authKey authKey to be used in the HTTP request header
      * @param authCode authCode to be used in the HTTP request header
      * @param requestBodyString the request body in JSON format as String
-     * @return
+     * @return the response from your dataplane
      */
     public Response sendDataPullRequest(String url, String authKey, String authCode, String requestBodyString){
         try {
@@ -449,8 +450,8 @@ public class EdcAdapterService {
                             .post(requestBody)
                             .build();
             return CLIENT.newCall(request).execute();
-        } catch (Exception e){
-            log.error(url, e);
+        } catch (Exception e) {
+            log.error("Failed to send Data Pull request to " + url, e);
             throw new RuntimeException(e);
         }
         
@@ -498,7 +499,7 @@ public class EdcAdapterService {
      * It will return a String array of length 5. The authKey is stored under index 0, the 
      * authCode under index 1, the endpoint under index 2 and the contractId under index 3. 
      * @param partnerIdsUrl counterparty's idsUrl
-     * @param assetApi      id of the target asset
+     * @param filter        the filter to be applied on the level of the asset's properties object.
      * @return   a String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
     public String[] getContractForRequestOrResponseApiApi(String partnerIdsUrl, Map<String, String> filter) {

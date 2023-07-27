@@ -32,26 +32,31 @@ public enum DT_RequestStateEnum {
     /**
      * The consumer requested something.
      */
-    REQUESTED,
+    REQUESTED("Requested"),
 
     /**
      * The provider receipt the request of the consumer.
      */
-    RECEIPT,
+    RECEIPT("Received"),
 
     /**
      * The provider works on fulfilling the requested service or data.
      */
-    WORKING,
+    WORKING("Working"),
 
     /**
      * The provider fulfilled the service and sent the data to the consumer.
      */
-    COMPLETED,
+    COMPLETED("Completed"),
 
     /**
      * An error occured between the start and completion of a request.
      */
-    ERROR
+    ERROR("Error");
+
+    final public String STATUSTEXT;
+    private DT_RequestStateEnum(String statustext) {
+        this.STATUSTEXT = statustext;
+    }
 
 }

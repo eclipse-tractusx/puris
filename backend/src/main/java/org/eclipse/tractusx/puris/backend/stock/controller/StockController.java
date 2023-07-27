@@ -29,6 +29,7 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_Re
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -98,6 +99,9 @@ public class StockController {
 
     @Autowired
     private ApiMarshallingService apiMarshallingService;
+
+    @Autowired
+    private VariablesService variablesService;
 
     @Value("${edc.idsUrl}")
     private String ownEdcIdsUrl;
@@ -322,7 +326,7 @@ public class StockController {
                 randomUuid = UUID.randomUUID();
             }
             messageHeaderDto.setRequestId(randomUuid);
-            messageHeaderDto.setRespondAssetId("product-stock-response-api");
+            messageHeaderDto.setRespondAssetId(variablesService.getResponseApiAssetId());
             messageHeaderDto.setContractAgreementId(cid);
             messageHeaderDto.setSender(ownBpnl); 
             messageHeaderDto.setSenderEdc(ownEdcIdsUrl);
