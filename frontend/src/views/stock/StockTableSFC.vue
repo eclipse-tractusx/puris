@@ -74,6 +74,7 @@ export default {
     return {
       selectedStockId: "",
       selectedStockUuid: "",
+      materialNumberCustomer : ""
     };
   },
   methods: {
