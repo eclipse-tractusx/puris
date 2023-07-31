@@ -30,7 +30,9 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiSer
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
@@ -64,6 +66,9 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
     @Autowired
     private MaterialService materialService;
+
+    @Autowired
+    private PartnerService partnerService;
 
     @Autowired
     private ProductStockService productStockService;
@@ -113,17 +118,37 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         ProductStockRequest productStockRequestEntity = requestService.findRequestByHeaderUuid(requestDto.getHeader().getRequestId());
         productStockRequestEntity = requestService.updateState(productStockRequestEntity, DT_RequestStateEnum.WORKING);
 
-        String partnerIdsUrl = requestDto.getHeader().getSenderEdc();
+        String requestingPartnerBpnl = requestDto.getHeader().getSender();
+        Partner requestingPartner =  partnerService.findByBpnl(requestingPartnerBpnl);
+
+        String partnerIdsUrl = requestingPartner.getEdcUrl();
+
+        if (requestDto.getHeader().getSenderEdc() != null && !partnerIdsUrl.equals(requestDto.getHeader().getSenderEdc())) {
+            log.warn("Partner " + requestingPartner.getName() + " is using unknown idsUrl: " + requestDto.getHeader().getSenderEdc());
+            log.warn("Request will not be processed");
+            requestService.updateState(productStockRequestEntity, DT_RequestStateEnum.ERROR);
+            return;
+        }
 
         List<MessageContentDto> resultProductStocks = new ArrayList<>();
 
-        String requestingPartnerBpnl = requestDto.getHeader().getSender();
 
         for (ProductStockRequestForMaterialDto productStockRequestDto : requestDto.getPayload()) {
 
             // Check if product is known
-            Material existingMaterial =
-                    materialService.findProductByMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
+            Material existingMaterial = null;
+            if (productStockRequestDto.getMaterialNumberCatenaX() != null) {
+                // Identify material via cx number, if possible
+                existingMaterial = materialService
+                    .findByMaterialNumberCx(productStockRequestDto.getMaterialNumberCatenaX());
+            }
+
+            if (existingMaterial == null) {
+                // if material could not be found via cx number, try to use materialNumberCustomer
+                existingMaterial = materialService
+                    .findProductByMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
+            }
+
             if (existingMaterial == null) {
                 MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
                 messageContentErrorDto.setMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());

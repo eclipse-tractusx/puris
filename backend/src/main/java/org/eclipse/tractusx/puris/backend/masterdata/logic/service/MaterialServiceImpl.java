@@ -21,6 +21,7 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class MaterialServiceImpl implements MaterialService {
 
     @Autowired
@@ -72,6 +74,19 @@ public class MaterialServiceImpl implements MaterialService {
     }
 
     @Override
+    public Material findByMaterialNumberCx(String materialNumberCx) {
+        List<Material> foundMaterial = materialRepository.findByMaterialNumberCx(materialNumberCx);
+        if (foundMaterial.isEmpty()) {
+            return null;
+        }
+        if (foundMaterial.size() > 1) {
+            log.warn("Found more than one result for materialNumberCx " + materialNumberCx);
+        }
+        return foundMaterial.get(0);
+
+    }
+
+    @Override
     public Material findMaterialByMaterialNumberCustomer(String materialNumberCustomer) {
 
         List<Material> foundMaterial =
@@ -79,6 +94,9 @@ public class MaterialServiceImpl implements MaterialService {
 
         if (foundMaterial.size() == 0) {
             return null;
+        }
+        if (foundMaterial.size() > 1) {
+            log.warn("Found more than one result for materialNumberCx " + materialNumberCustomer);
         }
         return foundMaterial.get(0);
     }
@@ -91,6 +109,9 @@ public class MaterialServiceImpl implements MaterialService {
 
         if (foundProduct.size() == 0) {
             return null;
+        }
+        if (foundProduct.size() > 1) {
+            log.warn("Found more than one result for materialNumberCx " + materialNumberCustomer);
         }
         return foundProduct.get(0);
 

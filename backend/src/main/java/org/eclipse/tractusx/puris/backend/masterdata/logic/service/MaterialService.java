@@ -40,6 +40,8 @@ public interface MaterialService {
 
     Material findByUuid(UUID materialUuid);
 
+    Material findByMaterialNumberCx(String materialNumberCx);
+
     Material findMaterialByMaterialNumberCustomer(String materialNumberCustomer);
 
     Material findProductByMaterialNumberCustomer(String materialNumberCustomer);

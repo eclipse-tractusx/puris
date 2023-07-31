@@ -37,6 +37,8 @@ public interface MaterialRepository extends JpaRepository<Material, UUID> {
 
     public List<Material> findByMaterialNumberCustomer(String materialNumberCustomer);
 
+    public List<Material> findByMaterialNumberCx(String materialNumberCx);
+
     public List<Material> findByMaterialNumberCustomerAndMaterialFlagTrue(String materialNumberCustomer);
 
     public List<Material> findByMaterialNumberCustomerAndProductFlagTrue(String materialNumberCustomer);

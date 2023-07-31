@@ -95,7 +95,8 @@ public class ProductStockRequestApiController {
                 
 
         if (productStockRequestFound != null) {
-            throw new RequestIdAlreadyUsedException(requestId);
+            log.error("RequestId already in use");
+            return ResponseEntity.status(422).build();
         }
 
         productStockRequestDto.setState(DT_RequestStateEnum.RECEIPT);
