@@ -97,7 +97,7 @@ export default {
         .catch(err => console.log(err));
     },
     updateMaterialOrProduct() {
-      fetch(this.backendURL + this.endpointUpdatePartnerProductStock + this.materialUuid)
+      fetch(this.backendURL + this.endpointUpdatePartnerProductStock + this.selectedMaterialOrProductId)
         .then(res => res.json())
         .then(data => console.log(data))
         .catch(err => console.log(err));
