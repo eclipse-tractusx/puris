@@ -109,6 +109,10 @@ public class ApiMarshallingService {
             JsonNode jsonNode = objectMapper.readValue(jsonData, JsonNode.class);
             ProductStockResponseDto responseDto = new ProductStockResponseDto();
             responseDto.setHeader(objectMapper.convertValue(jsonNode.get("header"), MessageHeaderDto.class));
+            boolean malformedMessage = responseDto.getHeader().getRequestId() == null || responseDto.getHeader().getSender() == null;
+            if (malformedMessage) {
+                throw new RuntimeException("MALFORMED MESSAGE");
+            }
             for (var item : jsonNode.get("content").get("productStock")) {
                 try {
                     MessageContentErrorDto errorDto = objectMapper.readValue(item.toString(), MessageContentErrorDto.class);

@@ -127,8 +127,8 @@ public class ProductStockRequestApiController {
         });
         respondAsyncThread.start();
 
-        // if the request has been correctly taken over, return 200
-        return ResponseEntity.status(HttpStatusCode.valueOf(200)).body(new SuccessfullRequestDto(requestId));
+        // if the request has been correctly taken over, return 202
+        return ResponseEntity.status(HttpStatusCode.valueOf(202)).body(new SuccessfullRequestDto(requestId));
         
     }
 
