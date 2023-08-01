@@ -32,9 +32,11 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestServic
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
@@ -84,6 +86,9 @@ public class StockController {
 
     @Autowired
     private PartnerService partnerService;
+
+    @Autowired
+    private MaterialPartnerRelationService mprService;
 
     @Autowired
     private RequestService requestService;
@@ -273,11 +278,10 @@ public class StockController {
     @CrossOrigin
     @GetMapping("customer")
     @ResponseBody
-    public List<PartnerDto> getCustomerPartnersOrderingMaterial(@RequestParam UUID materialUuid) {
-        List<PartnerDto> allCustomerPartners = partnerService.findAllCustomerPartnersForMaterialId(materialUuid).stream()
+    public List<PartnerDto> getCustomerPartnersOrderingMaterial(@RequestParam String ownMaterialNumber) {
+        List<PartnerDto> allCustomerPartners = partnerService.findAllCustomerPartnersForMaterialId(ownMaterialNumber).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
-
         return allCustomerPartners;
     }
 
@@ -286,23 +290,30 @@ public class StockController {
     @ResponseBody
     public List<PartnerDto> triggerPartnerProductStockUpdateForMaterial(@RequestParam String ownMaterialNumber) {
 
-        Material materialEntity = materialService.findMaterialByMaterialNumberCustomer(ownMaterialNumber);
+        Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        log.info("Found material: " + (materialEntity != null));
+        log.info("All materials: " + materialService.findAllMaterials());
 
-        List<Partner> allSupplierPartnerEntities =
-                partnerService.findAllSupplierPartnersForMaterialId(materialEntity.getUuid());
-
+        List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
 
         List<ProductStockRequestForMaterialDto> messageContentDtos = new ArrayList<>();
 
-        // Message Content for all requests
-        ProductStockRequestForMaterialDto materialDto = new ProductStockRequestForMaterialDto(
-                materialEntity.getMaterialNumberCustomer(),
-                materialEntity.getMaterialNumberCx(),
-                materialEntity.getMaterialNumberSupplier()
-        );
-        messageContentDtos.add(materialDto);
 
         for (Partner supplierPartner : allSupplierPartnerEntities) {
+
+            MaterialPartnerRelation materialPartnerRelation = mprService.find(materialEntity, supplierPartner);
+
+            if (materialPartnerRelation == null) {
+                log.error("Missing material-partner-relation for " + materialEntity.getOwnMaterialNumber() + " and " + supplierPartner.getBpnl());
+                continue;
+            }
+
+            ProductStockRequestForMaterialDto materialDto = new ProductStockRequestForMaterialDto(
+                materialEntity.getOwnMaterialNumber(),
+                materialEntity.getMaterialNumberCx(),
+                materialPartnerRelation.getPartnerMaterialNumber()
+            );
+            messageContentDtos.add(materialDto);
 
             String [] data = edcAdapterService.getContractForRequestApi(supplierPartner.getEdcUrl());
             if(data == null) {

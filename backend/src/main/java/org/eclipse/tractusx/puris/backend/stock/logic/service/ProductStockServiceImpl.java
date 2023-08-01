@@ -23,16 +23,22 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ProductStockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -44,25 +50,36 @@ public class ProductStockServiceImpl implements ProductStockService {
     @Autowired
     MaterialRepository materialRepository;
 
+    @Autowired
+    MaterialPartnerRelationService mprService;
+
+    @Autowired
+    PartnerService partnerService;
+
 
     @Override
     public ProductStock create(ProductStock productStock) {
 
         // validate, if material is missing
-        if (productStock.getMaterial() == null || productStock.getMaterial().getUuid() == null){
+        if (productStock.getMaterial() == null || productStock.getMaterial().getOwnMaterialNumber() == null){
             log.error("Can't create product stock due to missing material or material uuid");
             return null;
         }
-        Optional<Material> existingMaterial = materialRepository.findById(productStock.getMaterial().getUuid());
+        Optional<Material> existingMaterial = materialRepository.findById(productStock.getMaterial().getOwnMaterialNumber());
 
         if (!existingMaterial.isPresent()) {
-            log.error(String.format("Material for uuid %s not found", productStock.getMaterial().getUuid()));
+            log.error(String.format("Material for uuid %s not found", productStock.getMaterial().getOwnMaterialNumber()));
             return null;
         }
 
         // validate if partner allocation is missing
         if (productStock.getAllocatedToCustomerPartner() == null){
             log.error("Can't create product stock due to missing allocation to a partner");
+            return null;
+        }
+
+        if (!mprService.partnerOrdersProduct(productStock.getMaterial(), productStock.getAllocatedToCustomerPartner())) {
+            log.error("Partner is not registered als customer for product " + productStock.getMaterial().getOwnMaterialNumber());
             return null;
         }
 
@@ -86,21 +103,29 @@ public class ProductStockServiceImpl implements ProductStockService {
     }
 
     @Override
-    public List<ProductStock> findAllByMaterialNumberCustomer(String materialNumberCustomer) {
-        return productStockRepository.findAllByMaterial_MaterialNumberCustomerAndType(
-                materialNumberCustomer,
-                DT_StockTypeEnum.PRODUCT);
+    public List<ProductStock> findAllByMaterialNumberCustomer(String materialNumberCustomer, Partner customerPartner) {
+        List<Material> materialsList = mprService.findAllByPartnerMaterialNumber(materialNumberCustomer);
+        ArrayList<ProductStock> output = new ArrayList<>();
+        for (var material : materialsList) {
+            output.addAll(productStockRepository.
+                findAllByMaterial_OwnMaterialNumberAndType(material.getOwnMaterialNumber(), DT_StockTypeEnum.PRODUCT)
+                .stream()
+                .filter(productStock -> productStock.getAllocatedToCustomerPartner().getUuid().equals(customerPartner.getUuid()))
+                .collect(Collectors.toList()));
+        }
+        return output;
+
     }
 
     @Override
     public List<ProductStock> findAllByMaterialNumberCustomerAndAllocatedToCustomerBpnl(
             String materialNumberCustomer,
             String customerBpnl) {
-        return productStockRepository
-                .findAllByMaterial_MaterialNumberCustomerAndTypeAndAllocatedToCustomerPartner_Bpnl(
-                        materialNumberCustomer,
-                        DT_StockTypeEnum.PRODUCT,
-                        customerBpnl);
+        Partner customerPartner  = partnerService.findByBpnl(customerBpnl);
+        if (customerPartner == null) {
+            return List.of();
+        }
+        return findAllByMaterialNumberCustomer(materialNumberCustomer, customerPartner);
     }
 
     @Override
@@ -109,7 +134,8 @@ public class ProductStockServiceImpl implements ProductStockService {
         Optional<ProductStock> existingStock = productStockRepository.findById(productStock.getUuid());
 
         if (existingStock.isPresent() && existingStock.get().getType() == DT_StockTypeEnum.PRODUCT) {
-            return existingStock.get();
+            productStock = productStockRepository.save(productStock);
+            return productStock;
         } else
             return null;
     }

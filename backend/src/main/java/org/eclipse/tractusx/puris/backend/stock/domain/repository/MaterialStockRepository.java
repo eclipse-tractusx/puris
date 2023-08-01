@@ -44,6 +44,7 @@ public interface MaterialStockRepository extends JpaRepository<MaterialStock, UU
 
     List<MaterialStock> findAllByType(DT_StockTypeEnum stockType);
 
-    List<MaterialStock> findAllByMaterial_MaterialNumberCustomerAndType(String materialNumberCustomer, DT_StockTypeEnum stockType);
+//    List<MaterialStock> findAllByMaterial_MaterialNumberCustomerAndType(String materialNumberCustomer, DT_StockTypeEnum stockType);
+    List<MaterialStock> findAllByMaterial_OwnMaterialNumberAndType(String ownMaterialNumber, DT_StockTypeEnum stockType);
 
 }

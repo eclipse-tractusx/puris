@@ -26,21 +26,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
 
 @Repository
-public interface MaterialRepository extends JpaRepository<Material, UUID> {
+public interface MaterialRepository extends JpaRepository<Material, String> {
 
     List<Material> findAllByMaterialFlagTrue();
 
     List<Material> findAllByProductFlagTrue();
 
-    public List<Material> findByMaterialNumberCustomer(String materialNumberCustomer);
-
     public List<Material> findByMaterialNumberCx(String materialNumberCx);
-
-    public List<Material> findByMaterialNumberCustomerAndMaterialFlagTrue(String materialNumberCustomer);
-
-    public List<Material> findByMaterialNumberCustomerAndProductFlagTrue(String materialNumberCustomer);
 
 }

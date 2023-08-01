@@ -21,7 +21,9 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.PartnerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,45 +33,65 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class PartnerServiceImpl implements PartnerService {
 
     @Autowired
     private PartnerRepository partnerRepository;
 
+    @Autowired
+    private MaterialRepository materialRepository;
+
+    @Autowired
+    private MaterialPartnerRelationService mprService;
+
 
     @Override
     public Partner create(Partner partner) {
-        return partnerRepository.save(partner);
+        if (partner.getUuid() == null) {
+            return partnerRepository.save(partner);
+        }
+
+        var searchResult = partnerRepository.findById(partner.getUuid());
+        if(searchResult.isEmpty()) {
+            return partnerRepository.save(partner);
+        }
+        log.error("Could not create Partner " + partner.getBpnl() + " because it already existed before");
+        return null;
     }
 
     @Override
     public Partner findByUuid(UUID partnerUuid) {
         Optional<Partner> foundPartner = partnerRepository.findById(partnerUuid);
-
-        if (!foundPartner.isPresent()) {
-            return null;
+        if (foundPartner.isPresent()) {
+            return foundPartner.get();
         }
-        return foundPartner.get();
+        return null;
     }
 
     @Override
-    public List<Partner> findAllCustomerPartnersForMaterialId(UUID materialUuid) {
-        return partnerRepository.findAllByActsAsCustomerFlagTrueAndOrdersProducts_Uuid(materialUuid);
+    public List<Partner> findAllCustomerPartnersForMaterialId(String ownMaterialNumber) {
+        return mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber);
     }
 
     @Override
-    public List<Partner> findAllSupplierPartnersForMaterialId(UUID materialUuid) {
-        return partnerRepository.findAllByActsAsSupplierFlagTrueAndSuppliesMaterials_Uuid(materialUuid);
+    public List<Partner> findAllSupplierPartnersForMaterialId(String ownMaterialNumber) {
+        var searchResult  = materialRepository.findById(ownMaterialNumber);
+        if (searchResult.isPresent()) {
+            return mprService.findAllSuppliersForMaterial(searchResult.get());
+        }
+        return List.of();
     }
 
     @Override
     public Partner update(Partner partner) {
         Optional<Partner> existingPartner =
                 partnerRepository.findById(partner.getUuid());
-
         if (existingPartner.isPresent()) {
-            return existingPartner.get();
-        } else return null;
+            return partnerRepository.save(partner);
+        }
+        log.error("Could not update Partner " + partner.getBpnl() + " because it didn't exist before");
+        return null;
     }
 
     @Override

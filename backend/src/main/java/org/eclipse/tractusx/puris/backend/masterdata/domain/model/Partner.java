@@ -22,7 +22,6 @@
 package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
@@ -41,38 +40,40 @@ public class Partner {
     @GeneratedValue
     private UUID uuid;
     private String name;
-    @NotNull
-    private boolean actsAsCustomerFlag;
-    @NotNull
-    private boolean actsAsSupplierFlag;
     private String edcUrl;
     private String bpnl;
     private String siteBpns;
 
-    @ManyToMany(mappedBy = "suppliedByPartners", fetch = FetchType.EAGER)
-    @Setter(AccessLevel.NONE)
-    private Set<Material> suppliesMaterials = new HashSet<>();
+    @OneToMany(mappedBy = "partner")
+    private Set<MaterialPartnerRelation> materialPartnerRelations;
 
-    @ManyToMany(mappedBy = "orderedByPartners", fetch = FetchType.EAGER)
-    @Setter(AccessLevel.NONE)
-    private Set<Material> ordersProducts = new HashSet<>();
-
-    @OneToMany(mappedBy = "uuid", fetch = FetchType.LAZY)
+    @OneToMany
     @ToString.Exclude
     @Setter(AccessLevel.NONE)
     private List<ProductStock> allocatedProductStocksForCustomer = new ArrayList<>();
 
-    @OneToMany(mappedBy = "uuid")
+    @OneToMany
     @ToString.Exclude
     @Setter(AccessLevel.NONE)
     private List<PartnerProductStock> partnerProductStocks = new ArrayList<>();
 
-    public Partner(String name, boolean actsAsCustomerFlag, boolean actsAsSupplierFlag, String edcUrl, String bpnl, String siteBpns) {
+    public Partner(String name, String edcUrl, String bpnl, String siteBpns) {
         this.name = name;
-        this.actsAsCustomerFlag = actsAsCustomerFlag;
-        this.actsAsSupplierFlag = actsAsSupplierFlag;
         this.edcUrl = edcUrl;
         this.bpnl = bpnl;
         this.siteBpns = siteBpns;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Partner)) return false;
+        Partner partner = (Partner) o;
+        return Objects.equals(uuid, partner.uuid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uuid);
     }
 }

@@ -31,6 +31,7 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestServic
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
@@ -66,6 +67,9 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
     @Autowired
     private MaterialService materialService;
+
+    @Autowired
+    private MaterialPartnerRelationService mprService;
 
     @Autowired
     private PartnerService partnerService;
@@ -121,6 +125,12 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         String requestingPartnerBpnl = requestDto.getHeader().getSender();
         Partner requestingPartner =  partnerService.findByBpnl(requestingPartnerBpnl);
 
+        if (requestingPartner == null) {
+            log.warn("Partner with BPNL " +requestingPartnerBpnl + " is unknown");
+            log.warn("Request will not be processed");
+            return;
+        }
+
         String partnerIdsUrl = requestingPartner.getEdcUrl();
 
         if (requestDto.getHeader().getSenderEdc() != null && !partnerIdsUrl.equals(requestDto.getHeader().getSenderEdc())) {
@@ -145,8 +155,18 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
             if (existingMaterial == null) {
                 // if material could not be found via cx number, try to use materialNumberCustomer
-                existingMaterial = materialService
-                    .findProductByMaterialNumberCustomer(productStockRequestDto.getMaterialNumberCustomer());
+                if (productStockRequestDto.getMaterialNumberCustomer() != null) {
+                    var searchResult = mprService.findAllByPartnerMaterialNumber(productStockRequestDto.getMaterialNumberCustomer());
+                    if (searchResult.size() == 1) {
+                        existingMaterial = searchResult.get(0);
+                    } else {
+                        // MaterialNumberCustomer is ambiguous or unknown
+                        // try to use MaterialNumberSupplier
+                        if (productStockRequestDto.getMaterialNumberSupplier() != null) {
+                            existingMaterial = materialService.findByOwnMaterialNumber(productStockRequestDto.getMaterialNumberSupplier());
+                        }
+                    }
+                }
             }
 
             if (existingMaterial == null) {
@@ -160,12 +180,11 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
                         requestDto.getHeader().getRequestId()));
                 continue;
             } else {
-                log.info("Found requested Material: " + existingMaterial.getMaterialNumberCustomer());
+                log.info("Found requested Material: " + existingMaterial.getOwnMaterialNumber());
             }
-            boolean ordersProducts =
-                    existingMaterial.getOrderedByPartners()
-                            .stream().anyMatch(
-                                    partner -> partner.getBpnl().equals(requestingPartnerBpnl));
+
+
+            boolean ordersProducts = mprService.partnerOrdersProduct(existingMaterial, requestingPartner);
             log.info("Requesting entity orders this Material? " + ordersProducts);
             if (!ordersProducts) {
                 MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
@@ -219,8 +238,9 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
             }
 
-            resultProductStocks.add(productStockSammMapper.toSamm(modelMapper.map(productStock,
-                    ProductStockDto.class)));
+            log.info("Assembled productStock:\n" + productStock);
+
+            resultProductStocks.add(productStockSammMapper.toSamm(productStock));
         }
 
 

@@ -31,7 +31,9 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentErr
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
@@ -73,6 +75,9 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private PartnerService partnerService;
 
     @Autowired
+    private MaterialPartnerRelationService mprService;
+
+    @Autowired
     private MaterialStockService materialStockService;
 
     @Autowired
@@ -95,6 +100,9 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private ApiMarshallingService apiMarshallingService;
 
     private ObjectMapper objectMapper;
+
+    private final String semiconductorMatNbrCustomer = "MNR-7307-AU340474.002";
+    private final String semiconductorMatNbrSupplier = "MNR-8101-ID146955.001";
 
     public DataInjectionCommandLineRunner(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -121,11 +129,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
      */
     private void setupCustomerRole() throws JsonProcessingException {
         Partner supplierPartner = createAndGetSupplierPartner();
-        Material semiconductorMaterial = getNewSemiconductorMaterial();
-        semiconductorMaterial.addPartnerToSuppliedByPartners(supplierPartner);
-        // adjust flags for customer role
-        semiconductorMaterial.setMaterialFlag(true);
-        semiconductorMaterial.setProductFlag(true);
+        Material semiconductorMaterial = getNewSemiconductorMaterialForCustomer();
 
         semiconductorMaterial = materialService.create(semiconductorMaterial);
         log.info(String.format("Created material: %s", semiconductorMaterial));
@@ -134,47 +138,60 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info(String.format("UUID of supplier partner: %s", supplierPartner.getUuid()));
         supplierPartner = partnerService.findByUuid(supplierPartner.getUuid());
         log.info(String.format("Found supplier partner: %s", supplierPartner));
-        log.info(String.format("Relationship to material: %s", supplierPartner.getSuppliesMaterials()));
+
+
+        MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
+            supplierPartner, semiconductorMatNbrSupplier, true, false);
+        mprService.create(semiconductorPartnerRelation);
+        semiconductorPartnerRelation = mprService.find(semiconductorMaterial, supplierPartner);
+        log.info("Found Relation: " + semiconductorPartnerRelation);
 
         // customer + material
         Partner nonScenarioCustomer = createAndGetNonScenarioCustomer();
         Material centralControlUnitEntity = getNewCentralControlUnitMaterial();
-        centralControlUnitEntity.addPartnerToOrderedByPartners(nonScenarioCustomer);
         centralControlUnitEntity = materialService.create(centralControlUnitEntity);
         log.info(String.format("Created Product: %s", centralControlUnitEntity));
+
+        MaterialPartnerRelation ccuPartnerRelation = new MaterialPartnerRelation(centralControlUnitEntity,
+            nonScenarioCustomer, "MNR-4177-C", false, true);
+        ccuPartnerRelation = mprService.create(ccuPartnerRelation);
+        log.info("Found Relation: " + ccuPartnerRelation);
+
+        log.info("All stored Relations: " + mprService.findAll());
+
         List<Material> productsFound = materialService.findAllProducts();
         log.info(String.format("Found Products: %s", productsFound));
 
-        centralControlUnitEntity =
-                materialService.findProductByMaterialNumberCustomer(centralControlUnitEntity.getMaterialNumberCustomer());
-        log.info(String.format("Found product by materialNumber customer: %s",
-                centralControlUnitEntity));
-        nonScenarioCustomer = partnerService.findByUuid(nonScenarioCustomer.getUuid());
-        log.info(String.format("Relationship to product: %s",
-                nonScenarioCustomer.getOrdersProducts()));
-
-        centralControlUnitEntity =
-                materialService.findProductByMaterialNumberCustomer(centralControlUnitEntity.getMaterialNumberCustomer());
-        log.info(String.format("Found product by materialNumber customer: %s",
-                centralControlUnitEntity));
-
-        Material existingMaterial =
-                materialService.findByUuid(semiconductorMaterial.getUuid());
-        log.info(String.format("Found existingMaterial by uuid: %s",
-                existingMaterial));
-
-        Material existingProduct =
-                materialService.findProductByMaterialNumberCustomer(centralControlUnitEntity.getMaterialNumberCustomer());
-        log.info(String.format("Found existingProduct by customer number: %s",
-                existingProduct));
-
-        List<Material> existingProducts =
-                materialService.findAllProducts();
-        log.info(String.format("Found existingProducts by product flag true: %s",
-                existingProducts));
-
-        log.info(String.format("Relationship centralControlUnitEntity -> orderedByPartners: %s",
-                centralControlUnitEntity.getOrderedByPartners().toString()));
+//        centralControlUnitEntity =
+//                materialService.findProductByMaterialNumberCustomer(centralControlUnitEntity.getMaterialNumberCustomer());
+//        log.info(String.format("Found product by materialNumber customer: %s",
+//                centralControlUnitEntity));
+//        nonScenarioCustomer = partnerService.findByUuid(nonScenarioCustomer.getUuid());
+//        log.info(String.format("Relationship to product: %s",
+//                nonScenarioCustomer.getOrdersProducts()));
+//
+//        centralControlUnitEntity =
+//                materialService.findProductByMaterialNumberCustomer(centralControlUnitEntity.getMaterialNumberCustomer());
+//        log.info(String.format("Found product by materialNumber customer: %s",
+//                centralControlUnitEntity));
+//
+//        Material existingMaterial =
+//                materialService.findByUuid(semiconductorMaterial.getUuid());
+//        log.info(String.format("Found existingMaterial by uuid: %s",
+//                existingMaterial));
+//
+//        Material existingProduct =
+//                materialService.findProductByMaterialNumberCustomer(centralControlUnitEntity.getMaterialNumberCustomer());
+//        log.info(String.format("Found existingProduct by customer number: %s",
+//                existingProduct));
+//
+//        List<Material> existingProducts =
+//                materialService.findAllProducts();
+//        log.info(String.format("Found existingProducts by product flag true: %s",
+//                existingProducts));
+//
+//        log.info(String.format("Relationship centralControlUnitEntity -> orderedByPartners: %s",
+//                centralControlUnitEntity.getOrderedByPartners().toString()));
 
         // Create Material Stock
         MaterialStock materialStockEntity = new MaterialStock(
@@ -185,12 +202,12 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         );
         materialStockEntity = materialStockService.create(materialStockEntity);
         log.info(String.format("Created materialStock: %s", materialStockEntity));
-        List<MaterialStock> foundMaterialStocks =
-                materialStockService.findAllByMaterialNumberCustomer(semiconductorMaterial.getMaterialNumberCustomer());
-        log.info(String.format("Found materialStock: %s", foundMaterialStocks));
+//        List<MaterialStock> foundMaterialStocks =
+//                materialStockService.findAllByMaterialNumberCustomer(semiconductorMaterial.getMaterialNumberCustomer());
+//        log.info(String.format("Found materialStock: %s", foundMaterialStocks));
 
         // Create PartnerProductStock
-        semiconductorMaterial = materialService.findByUuid(semiconductorMaterial.getUuid());
+        semiconductorMaterial = materialService.findByOwnMaterialNumber(semiconductorMaterial.getOwnMaterialNumber());
         PartnerProductStock partnerProductStockEntity = new PartnerProductStock(
                 semiconductorMaterial,
                 20,
@@ -198,27 +215,35 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 new Date(),
                 supplierPartner
         );
-        partnerProductStockEntity = partnerProductStockService.create(partnerProductStockEntity);
         log.info(String.format("Created partnerProductStock: %s", partnerProductStockEntity));
-        ProductStockDto productStockDto = modelMapper.map(partnerProductStockEntity,
-                ProductStockDto.class);
-        ProductStockSammDto productStockSammDto = productStockSammMapper.toSamm(productStockDto);
-        log.info(objectMapper.writeValueAsString(productStockSammDto));
+        partnerProductStockEntity = partnerProductStockService.create(partnerProductStockEntity);
+        ProductStockSammDto productStockSammDto = productStockSammMapper.toSamm(partnerProductStockEntity);
+        log.info("SAMM-DTO:\n" + objectMapper.writeValueAsString(productStockSammDto));
     }
     /**
      * Generates an initial set of data for a supplier within the demonstration context. 
      */
     private void setupSupplierRole() {
         Partner customerPartner = createAndGetCustomerPartner();
-        Material semiconductorMaterial = getNewSemiconductorMaterial();
-        semiconductorMaterial.addPartnerToOrderedByPartners(customerPartner);
+        Material semiconductorMaterial = getNewSemiconductorMaterialForSupplier();
+//        semiconductorMaterial.addPartnerToOrderedByPartners(customerPartner);
         semiconductorMaterial = materialService.create(semiconductorMaterial);
         log.info(String.format("Created product: %s", semiconductorMaterial));
+
+        MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
+            customerPartner, semiconductorMatNbrCustomer, false, true);
+        semiconductorPartnerRelation = mprService.create(semiconductorPartnerRelation);
+
+        log.info("Created Relation " + semiconductorPartnerRelation);
+
+        semiconductorPartnerRelation = mprService.find(semiconductorMaterial, customerPartner);
+
+        log.info("Found Relation " + semiconductorPartnerRelation);
 
         List<Material> materialsFound = materialService.findAllProducts();
         log.info(String.format("Found product: %s", materialsFound));
         log.info(String.format("Found customer partner: %s", customerPartner));
-        log.info(String.format("Relationship to material: %s", customerPartner.getOrdersProducts()));
+//        log.info(String.format("Relationship to material: %s", customerPartner.getOrdersProducts()));
 
         ProductStock productStockEntity = new ProductStock(
                 semiconductorMaterial,
@@ -229,13 +254,13 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         );
         productStockEntity = productStockService.create(productStockEntity);
         log.info(String.format("Created productStock: %s", productStockEntity.toString()));
-        List<ProductStock> foundProductStocks =
-                productStockService
-                        .findAllByMaterialNumberCustomerAndAllocatedToCustomerBpnl(
-                                semiconductorMaterial.getMaterialNumberCustomer(),
-                                customerPartner.getBpnl());
-        log.info(String.format("Found productStocks by material number and allocated to customer " +
-                "bpnl: %s", foundProductStocks));
+//        List<ProductStock> foundProductStocks =
+//                productStockService
+//                        .findAllByMaterialNumberCustomerAndAllocatedToCustomerBpnl(
+//                                semiconductorMaterial.getMaterialNumberCustomer(),
+//                                customerPartner.getBpnl());
+//        log.info(String.format("Found productStocks by material number and allocated to customer " +
+//                "bpnl: %s", foundProductStocks));
     }
 
 
@@ -247,8 +272,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Partner createAndGetCustomerPartner() {
         Partner customerPartnerEntity = new Partner(
                 "Scenario Customer",
-                true,
-                false,
                 "http://sokrates-controlplane:8084/api/v1/ids",
                 "BPNL4444444444XX",
                 "BPNS4444444444XX"
@@ -268,8 +291,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Partner createAndGetSupplierPartner() {
         Partner supplierPartnerEntity = new Partner(
                 "Scenario Supplier",
-                false,
-                true,
                 "http://plato-controlplane:8084/api/v1/ids",
                 "BPNL1234567890ZZ",
                 "BPNS1234567890ZZ"
@@ -289,8 +310,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Partner createAndGetNonScenarioCustomer() {
         Partner nonScenarioCustomer = new Partner(
                 "Non-Scenario Customer",
-                true,
-                false,
                 "(None Provided!)>",
                 "BPNL2222222222RR",
                 "BPNL2222222222RR"
@@ -302,20 +321,20 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         return nonScenarioCustomer;
     }
 
-    /**
-     * creates a new semiconductor Material object. 
-     * Note: this object is not yet stored to the database
-     * @return a reference to the newly created semiconductor material
-     */
-    private Material getNewSemiconductorMaterial() {
-        return new Material(
-                false,
-                true,
-                "MNR-7307-AU340474.002",
-                "MNR-8101-ID146955.001",
-                null,
-                "semiconductor"
-        );
+    private Material getNewSemiconductorMaterialForSupplier() {
+        Material material = new Material();
+        material.setOwnMaterialNumber(semiconductorMatNbrSupplier);
+        material.setProductFlag(true);
+        material.setName("semiconductor");
+        return material;
+    }
+
+    private Material getNewSemiconductorMaterialForCustomer() {
+        Material material = new Material();
+        material.setOwnMaterialNumber(semiconductorMatNbrCustomer);
+        material.setMaterialFlag(true);
+        material.setName("semiconductor");
+        return material;
     }
 
     /**
@@ -324,14 +343,11 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
      * @return a reference to the newly created central control unit material
      */
     private Material getNewCentralControlUnitMaterial() {
-        return new Material(
-                false,
-                true,
-                "MNR-4177-C",
-                "MNR-4177-S",
-                null,
-                "central control unit"
-        );
+        Material material = new Material();
+        material.setOwnMaterialNumber("MNR-4177-S");
+        material.setProductFlag(true);
+        material.setName("central control unit");
+        return material;
     }
 
     private void createRequest() throws JsonProcessingException {

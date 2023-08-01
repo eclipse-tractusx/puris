@@ -30,6 +30,8 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentErr
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.ResponseDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
@@ -59,6 +61,9 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
     private PartnerProductStockService partnerProductStockService;
 
     @Autowired
+    private PartnerService partnerService;
+
+    @Autowired
     private ProductStockSammMapper productStockSammMapper;
 
     @Autowired
@@ -68,22 +73,27 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
     public void consumeResponse(ResponseDto responseDto) {
 
         ProductStockRequest correspondingProductStockRequest = findCorrespondingRequest(responseDto);
-
+        if (correspondingProductStockRequest == null) {
+            log.error("Received Response without corresponding request");
+            return;
+        }
+        Partner partner = partnerService.findByBpnl(responseDto.getHeader().getSender());
         for (MessageContentDto messageContentDto : responseDto.getPayload()) {
 
             if (messageContentDto instanceof ProductStockSammDto) {
-
                 ProductStockSammDto sammDto = (ProductStockSammDto) messageContentDto;
                 PartnerProductStockDto partnerProductStockDto =
-                        productStockSammMapper.fromSamm(sammDto);
-
+                        productStockSammMapper.fromSamm(sammDto, partner);
                 // check whether a new PartnerProductStock must be created
                 // or whether an update is sufficient.
                 List<PartnerProductStock> existingPartnerProductStocks =
-                        partnerProductStockService.findAllByMaterialUuidAndPartnerUuid(
-                                partnerProductStockDto.getSupplierPartner().getUuid(),
-                                partnerProductStockDto.getMaterial().getUuid()
-                        );
+                    partnerProductStockService.findAllByOwnMaterialNumberAndPartnerUuid(
+                        partnerProductStockDto.getMaterial().getMaterialNumberCustomer(),
+                        partnerProductStockDto.getSupplierPartner().getUuid());
+//                        partnerProductStockService.findAllByMaterialUuidAndPartnerUuid(
+//                                partnerProductStockDto.getSupplierPartner().getUuid(),
+//                                partnerProductStockDto.getMaterial().getUuid()
+//                        );
 
                 // currently we only accept a one to one mapping of partner - material - stock -site
                 // therefore the can only be one PartnerProductStock
@@ -123,13 +133,7 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
 
     private ProductStockRequest findCorrespondingRequest(ResponseDto responseDto) {
         UUID requestId = responseDto.getHeader().getRequestId();
-
-        ProductStockRequest productStockRequestFound =
-                requestService.findRequestByHeaderUuid(requestId);
-
-        if (productStockRequestFound == null) {
-            throw new RequestIdNotFoundException(requestId);
-        } else return productStockRequestFound;
+        return requestService.findRequestByHeaderUuid(requestId);
 
     }
 
