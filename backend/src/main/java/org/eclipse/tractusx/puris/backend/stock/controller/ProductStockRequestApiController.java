@@ -30,7 +30,7 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRe
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfullRequestDto;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfulRequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
@@ -128,7 +128,7 @@ public class ProductStockRequestApiController {
         respondAsyncThread.start();
 
         // if the request has been correctly taken over, return 202
-        return ResponseEntity.status(HttpStatusCode.valueOf(202)).body(new SuccessfullRequestDto(requestId));
+        return ResponseEntity.status(HttpStatusCode.valueOf(202)).body(new SuccessfulRequestDto(requestId));
         
     }
 
