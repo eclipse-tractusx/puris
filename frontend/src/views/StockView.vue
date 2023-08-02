@@ -180,12 +180,12 @@ export default {
   methods: {
     addOrUpdateStock(changedStock) {
       if (changedStock.type === "Material") {
-        var existingMaterialStock = this.bdMaterialStocks.filter(
+        var existingMaterialStocks = this.bdMaterialStocks.filter(
             (stock) => (stock.material.uuid === changedStock.materialId)
         );
 
-        if (existingMaterialStock.length === 1) { // Update existing material stock
-          var existingMaterialStock = existingMaterialStock[0];
+        if (existingMaterialStocks.length === 1) { // Update existing material stock
+          var existingMaterialStock = existingMaterialStocks[0];
           existingMaterialStock.quantity = changedStock.quantity;
 
           this.putData(this.backendURL + this.endpointMaterialStocks, existingMaterialStock);
