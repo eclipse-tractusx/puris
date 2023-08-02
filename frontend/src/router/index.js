@@ -73,6 +73,11 @@ const router = createRouter({
       name: "stocks",
       component: () => import("../views/StockView.vue")
     },
+    {
+      path: "/supplierDashboard",
+      name: "supplierDashboard",
+      component: () => import("../views/SupplierDashboard.vue"),
+    },
   ],
 });
 
