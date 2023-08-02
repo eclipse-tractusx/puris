@@ -12,6 +12,10 @@ public interface MaterialPartnerRelationRepository extends JpaRepository<Materia
 
     List<MaterialPartnerRelation> findAllByPartner_Uuid(UUID partnerUuid);
 
+    List<MaterialPartnerRelation> findAllByPartner_UuidAndPartnerSuppliesMaterialIsTrue(UUID partnerUuid);
+
+    List<MaterialPartnerRelation> findAllByPartner_UuidAndPartnerBuysMaterialIsTrue(UUID partnerUuid);
+
     List<MaterialPartnerRelation> findAllByMaterial_OwnMaterialNumber(String ownMaterialNumber);
 
     List<MaterialPartnerRelation> findAllByMaterial_OwnMaterialNumberAndPartnerSuppliesMaterialIsTrue(String ownMaterialNumber);

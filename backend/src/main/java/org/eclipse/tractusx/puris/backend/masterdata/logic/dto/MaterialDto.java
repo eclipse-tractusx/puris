@@ -36,14 +36,6 @@ public class MaterialDto implements Serializable {
 
     private UUID uuid;
 
-//    @Setter(AccessLevel.NONE)
-//    private Set<PartnerDto> suppliedByPartners = new HashSet<>();
-//
-//    @Setter(AccessLevel.NONE)
-//    private Set<PartnerDto> orderedByPartners = new HashSet<>();
-//
-//    @Setter(AccessLevel.NONE)
-//    private List<StockDto> materialOnStocks = new ArrayList<>();
 
     /**
      * If true, then the Material is a material (input for production / something I buy).
@@ -77,14 +69,6 @@ public class MaterialDto implements Serializable {
         this.name = name;
     }
 
-//    public void addSuppliedByPartner(PartnerDto supplierPartner) {
-//        this.suppliedByPartners.add(supplierPartner);
-//        supplierPartner.getSuppliesMaterials().add(this);
-//    }
-//
-//    public void addOrderedByPartner(PartnerDto customerPartner) {
-//        this.orderedByPartners.add(customerPartner);
-//        customerPartner.getOrdersProducts().add(this);
-//    }
+
 
 }

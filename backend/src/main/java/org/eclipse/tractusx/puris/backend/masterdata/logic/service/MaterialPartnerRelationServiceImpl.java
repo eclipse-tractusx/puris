@@ -35,6 +35,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
      */
     @Override
     public MaterialPartnerRelation create(MaterialPartnerRelation materialPartnerRelation) {
+        flagConsistencyTest(materialPartnerRelation);
         var searchResult = find(materialPartnerRelation.getMaterial(), materialPartnerRelation.getPartner());
         if (searchResult == null) {
             return mprRepository.save(materialPartnerRelation);
@@ -50,12 +51,22 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
      */
     @Override
     public MaterialPartnerRelation update(MaterialPartnerRelation materialPartnerRelation) {
+        flagConsistencyTest(materialPartnerRelation);
         var foundEntity = mprRepository.findById(materialPartnerRelation.getKey());
         if (foundEntity.isPresent()) {
             return mprRepository.save(materialPartnerRelation);
         }
         log.error("Could not update MaterialPartnerRelation, " + materialPartnerRelation.getKey() + " didn't exist before");
         return null;
+    }
+
+    private void flagConsistencyTest(MaterialPartnerRelation materialPartnerRelation) {
+        Material material = materialPartnerRelation.getMaterial();
+        boolean test = material.isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial();
+        test = test || (material.isProductFlag() && materialPartnerRelation.isPartnerBuysMaterial());
+        if (!test) {
+            log.warn("Flags of " + materialPartnerRelation + " are not consistent with flags of " + material.getOwnMaterialNumber());
+        }
     }
 
     /**
@@ -67,6 +78,34 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     @Override
     public MaterialPartnerRelation find(Material material, Partner partner) {
         return find(material.getOwnMaterialNumber(), partner.getUuid());
+    }
+
+    /**
+     * Returns a list of all materials that the given partner supplies to you.
+     * @param partner the partner
+     * @return a list of material entities
+     */
+    @Override
+    public List<Material> findAllMaterialsThatPartnerSupplies(Partner partner) {
+        return mprRepository
+            .findAllByPartner_UuidAndPartnerSuppliesMaterialIsTrue(partner.getUuid())
+            .stream()
+            .map(mpr -> mpr.getMaterial())
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns a list of all products that the given partner buys from you.
+     * @param partner the partner
+     * @return a list of product entities
+     */
+    @Override
+    public List<Material> findAllProductsThatPartnerBuys(Partner partner) {
+        return mprRepository
+            .findAllByPartner_UuidAndPartnerBuysMaterialIsTrue(partner.getUuid())
+            .stream()
+            .map(mpr -> mpr.getMaterial())
+            .collect(Collectors.toList());
     }
 
     /**

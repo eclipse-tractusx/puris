@@ -16,6 +16,10 @@ public interface MaterialPartnerRelationService {
 
     MaterialPartnerRelation find(Material material, Partner partner);
 
+    List<Material> findAllMaterialsThatPartnerSupplies(Partner partner);
+
+    List<Material> findAllProductsThatPartnerBuys(Partner partner);
+
     List<MaterialPartnerRelation> findAll();
 
     Map<String, String> getBPNL_To_MaterialNumberMap(String ownMaterialNumber);

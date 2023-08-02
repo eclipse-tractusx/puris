@@ -41,7 +41,6 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockResponseDto;
@@ -159,39 +158,15 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         log.info("All stored Relations: " + mprService.findAll());
 
+        List<Partner> foundPartners = mprService.findAllCustomersForOwnMaterialNumber(centralControlUnitEntity.getOwnMaterialNumber());
+
+        log.info("Customer Partner for CCU: " + foundPartners);
+
         List<Material> productsFound = materialService.findAllProducts();
         log.info(String.format("Found Products: %s", productsFound));
 
-//        centralControlUnitEntity =
-//                materialService.findProductByMaterialNumberCustomer(centralControlUnitEntity.getMaterialNumberCustomer());
-//        log.info(String.format("Found product by materialNumber customer: %s",
-//                centralControlUnitEntity));
-//        nonScenarioCustomer = partnerService.findByUuid(nonScenarioCustomer.getUuid());
-//        log.info(String.format("Relationship to product: %s",
-//                nonScenarioCustomer.getOrdersProducts()));
-//
-//        centralControlUnitEntity =
-//                materialService.findProductByMaterialNumberCustomer(centralControlUnitEntity.getMaterialNumberCustomer());
-//        log.info(String.format("Found product by materialNumber customer: %s",
-//                centralControlUnitEntity));
-//
-//        Material existingMaterial =
-//                materialService.findByUuid(semiconductorMaterial.getUuid());
-//        log.info(String.format("Found existingMaterial by uuid: %s",
-//                existingMaterial));
-//
-//        Material existingProduct =
-//                materialService.findProductByMaterialNumberCustomer(centralControlUnitEntity.getMaterialNumberCustomer());
-//        log.info(String.format("Found existingProduct by customer number: %s",
-//                existingProduct));
-//
-//        List<Material> existingProducts =
-//                materialService.findAllProducts();
-//        log.info(String.format("Found existingProducts by product flag true: %s",
-//                existingProducts));
-//
-//        log.info(String.format("Relationship centralControlUnitEntity -> orderedByPartners: %s",
-//                centralControlUnitEntity.getOrderedByPartners().toString()));
+        productsFound = mprService.findAllProductsThatPartnerBuys(nonScenarioCustomer);
+        log.info("Products that customer buys: " + productsFound);
 
         // Create Material Stock
         MaterialStock materialStockEntity = new MaterialStock(
@@ -202,9 +177,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         );
         materialStockEntity = materialStockService.create(materialStockEntity);
         log.info(String.format("Created materialStock: %s", materialStockEntity));
-//        List<MaterialStock> foundMaterialStocks =
-//                materialStockService.findAllByMaterialNumberCustomer(semiconductorMaterial.getMaterialNumberCustomer());
-//        log.info(String.format("Found materialStock: %s", foundMaterialStocks));
+
 
         // Create PartnerProductStock
         semiconductorMaterial = materialService.findByOwnMaterialNumber(semiconductorMaterial.getOwnMaterialNumber());
@@ -226,7 +199,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private void setupSupplierRole() {
         Partner customerPartner = createAndGetCustomerPartner();
         Material semiconductorMaterial = getNewSemiconductorMaterialForSupplier();
-//        semiconductorMaterial.addPartnerToOrderedByPartners(customerPartner);
+
         semiconductorMaterial = materialService.create(semiconductorMaterial);
         log.info(String.format("Created product: %s", semiconductorMaterial));
 
@@ -242,8 +215,10 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         List<Material> materialsFound = materialService.findAllProducts();
         log.info(String.format("Found product: %s", materialsFound));
-        log.info(String.format("Found customer partner: %s", customerPartner));
-//        log.info(String.format("Relationship to material: %s", customerPartner.getOrdersProducts()));
+
+        List<Partner> customerPartners = mprService.findAllCustomersForOwnMaterialNumber(semiconductorMaterial.getOwnMaterialNumber());
+        log.info(String.format("Found customer partners for semiconductor: %s", customerPartners));
+
 
         ProductStock productStockEntity = new ProductStock(
                 semiconductorMaterial,
@@ -254,13 +229,11 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         );
         productStockEntity = productStockService.create(productStockEntity);
         log.info(String.format("Created productStock: %s", productStockEntity.toString()));
-//        List<ProductStock> foundProductStocks =
-//                productStockService
-//                        .findAllByMaterialNumberCustomerAndAllocatedToCustomerBpnl(
-//                                semiconductorMaterial.getMaterialNumberCustomer(),
-//                                customerPartner.getBpnl());
-//        log.info(String.format("Found productStocks by material number and allocated to customer " +
-//                "bpnl: %s", foundProductStocks));
+
+        List<ProductStock> foundProductStocks = productStockService.
+            findAllByMaterialNumberCustomer(semiconductorMatNbrCustomer, customerPartner);
+        log.info(String.format("Found productStocks by material number and allocated to customer " +
+                "bpnl: %s", foundProductStocks));
     }
 
 
