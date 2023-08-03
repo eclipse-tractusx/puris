@@ -24,7 +24,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockResponse;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
 
 /**
  * Dto for {@link ProductStockResponse}

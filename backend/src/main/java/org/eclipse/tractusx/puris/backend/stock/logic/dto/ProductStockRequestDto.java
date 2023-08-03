@@ -24,8 +24,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockResponse;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 

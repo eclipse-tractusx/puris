@@ -20,7 +20,8 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.domain.repository;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockResponse;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -30,12 +31,7 @@ import java.util.UUID;
  * Repository to access Responses
  */
 @Repository
-public interface ProductStockResponseRepository extends JpaRepository<ProductStockResponse, UUID> {
+public interface ProductStockResponseRepository extends JpaRepository<ProductStockRequest, UUID> {
 
-    /**
-     * find the request by the requestUuuid from the message's header
-     *
-     * @param headerRequestUuid uuid set by the sending partner in the header
-     * @return Request
-     */
+
 }

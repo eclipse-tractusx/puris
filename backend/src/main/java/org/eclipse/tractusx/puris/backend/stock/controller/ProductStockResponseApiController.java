@@ -23,13 +23,12 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 
 import java.util.UUID;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfulRequestDto;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiService;
-import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockResponseDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockResponseApiServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
@@ -58,32 +57,26 @@ public class ProductStockResponseApiController {
     ObjectMapper objectMapper;
 
     @Autowired
-    ApiMarshallingService apiMarshallingService;
-
-    private ResponseApiService responseApiService;
-
-    public ProductStockResponseApiController(ResponseApiService responseApiService) {
-        this.responseApiService = responseApiService;
-    }
+    ProductStockResponseApiServiceImpl productStockResponseApiService;
 
 
     @PostMapping("response")
     public ResponseEntity<Object> postResponse(@RequestBody String body) {
-        ProductStockResponseDto productStockResponseDto = null;
+        ProductStockResponse productStockResponse = null;
         try {
-            productStockResponseDto = apiMarshallingService.transformToProductStockResponseDto(body);
-            log.info(objectMapper.readTree(objectMapper.writeValueAsString(productStockResponseDto)).toPrettyString());
+            productStockResponse = objectMapper.readValue(body, ProductStockResponse.class);
+            log.info(objectMapper.readTree(objectMapper.writeValueAsString(productStockResponse)).toPrettyString());
         } catch (Exception e) {
             log.error("Failed to deserialize body of incoming message", e);
             return ResponseEntity.status(HttpStatusCode.valueOf(422)).build();
         }
         
-        if (productStockResponseDto.getHeader() == null || productStockResponseDto.getHeader().getRequestId() == null) {
+        if (productStockResponse.getHeader() == null || productStockResponse.getHeader().getRequestId() == null) {
             log.error("No RequestId provided!");
             return ResponseEntity.status(422).build();
         }
 
-        UUID requestId = productStockResponseDto.getHeader().getRequestId();
+        UUID requestId = productStockResponse.getHeader().getRequestId();
 
         ProductStockRequest productStockRequestFound = productStockRequestService.findRequestByHeaderUuid(requestId);
         if (productStockRequestFound == null) {
@@ -93,8 +86,8 @@ public class ProductStockResponseApiController {
             log.info("Got response for request Id " + requestId);
         }
 
-        productStockRequestFound = productStockRequestService.updateState(productStockRequestFound, DT_RequestStateEnum.COMPLETED);
-        responseApiService.consumeResponse(productStockResponseDto);
+        productStockRequestService.updateState(productStockRequestFound, DT_RequestStateEnum.COMPLETED);
+        productStockResponseApiService.consumeResponse(productStockResponse);
 
         // if the request has been correctly taken over, return 202
         return ResponseEntity.status(HttpStatusCode.valueOf(202)).body(new SuccessfulRequestDto(requestId));

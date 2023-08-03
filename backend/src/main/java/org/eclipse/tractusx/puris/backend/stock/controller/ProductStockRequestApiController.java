@@ -25,26 +25,19 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfulRequestDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestApiServiceImpl;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequestForMaterial;
-import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -62,32 +55,34 @@ public class ProductStockRequestApiController {
     ProductStockRequestService productStockRequestService;
 
     @Autowired
-    RequestApiService requestApiService;
+    ProductStockRequestApiServiceImpl requestApiService;
 
     @Autowired
     EdcAdapterService edcAdapterService;
-
-    @Autowired
-    ApiMarshallingService apiMarshallingService;
 
     @PostMapping("request")
     public ResponseEntity<Object> postRequest(@RequestBody String requestBody) {
         log.info("product-stock/request called: \n" + requestBody);
 
-        ProductStockRequestDto productStockRequestDto = null;
+        ProductStockRequest productStockRequest = null;
         try {
-            productStockRequestDto = apiMarshallingService.transformToProductStockRequestDto(requestBody);
+            productStockRequest = objectMapper.readValue(requestBody, ProductStockRequest.class);
         } catch (Exception e) {
-            log.error("Failed to deserialize body of incoming message", e);
-            return ResponseEntity.status(HttpStatusCode.valueOf(422)).build();
+            log.error("Malformed request received");
+            return ResponseEntity.status(400).build();
         }
 
-        if (productStockRequestDto.getHeader() == null || productStockRequestDto.getHeader().getRequestId() == null) {
+        if (productStockRequest.getHeader() == null || productStockRequest.getHeader().getRequestId() == null) {
             log.error("No RequestId provided!");
-            return ResponseEntity.status(422).build();
+            return ResponseEntity.status(400).build();
         }
 
-        UUID requestId = productStockRequestDto.getHeader().getRequestId();
+        if (productStockRequest.getHeader().getSender() == null) {
+            log.error("No sender attribute in header");
+            return ResponseEntity.status(400).build();
+        }
+
+        UUID requestId = productStockRequest.getHeader().getRequestId();
 
         ProductStockRequest productStockRequestFound =
                 productStockRequestService.findRequestByHeaderUuid(requestId);
@@ -98,32 +93,12 @@ public class ProductStockRequestApiController {
             return ResponseEntity.status(422).build();
         }
 
-        productStockRequestDto.setState(DT_RequestStateEnum.RECEIPT);
-        try {
-            ProductStockRequest newProductStockRequestEntity = new ProductStockRequest();
-            newProductStockRequestEntity.setHeader(modelMapper.map(productStockRequestDto.getHeader(), MessageHeader.class));
-            List<ProductStockRequestForMaterial> payload = new ArrayList<>();
-            for (var payloadItem : productStockRequestDto.getPayload()) {
-                payload.add(modelMapper.map(payloadItem, ProductStockRequestForMaterial.class));
-            }
-            newProductStockRequestEntity.setPayload(payload);
-            newProductStockRequestEntity.setState(productStockRequestDto.getState());
-            productStockRequestService.createRequest(newProductStockRequestEntity);
-            log.info("Persisted incoming request " + productStockRequestDto.getHeader().getRequestId());
-        } catch (Exception e) {
-            log.warn("Failed to persist incoming request " + productStockRequestDto.getHeader().getRequestId());
-        }
+        productStockRequest.setState(DT_RequestStateEnum.RECEIPT);
+        productStockRequestService.createRequest(productStockRequest);
 
-        // handling the request and responding should be done asynchronously.
-        final RequestDto threadRequestDto = new RequestDto(
-                productStockRequestDto.getState(),
-                productStockRequestDto.getUuid(),
-                productStockRequestDto.getHeader(),
-                productStockRequestDto.getPayload()
-        );
-
+        final ProductStockRequest requestForAsyncThread = productStockRequest;
         Thread respondAsyncThread = new Thread(() -> {
-            requestApiService.handleRequest(threadRequestDto);
+            requestApiService.handleRequest(requestForAsyncThread);
         });
         respondAsyncThread.start();
 

@@ -20,7 +20,7 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.domain.repository;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

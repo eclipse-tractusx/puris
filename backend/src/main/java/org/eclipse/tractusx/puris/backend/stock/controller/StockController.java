@@ -24,10 +24,10 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
@@ -39,10 +39,6 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
-import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
@@ -52,7 +48,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -101,9 +96,6 @@ public class StockController {
 
     @Autowired
     private EdcAdapterService edcAdapterService;
-
-    @Autowired
-    private ApiMarshallingService apiMarshallingService;
 
     @Autowired
     private VariablesService variablesService;
@@ -296,10 +288,9 @@ public class StockController {
 
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
 
-        List<ProductStockRequestForMaterialDto> messageContentDtos = new ArrayList<>();
-
-
         for (Partner supplierPartner : allSupplierPartnerEntities) {
+
+            ProductStockRequest productStockRequest = new ProductStockRequest();
 
             MaterialPartnerRelation materialPartnerRelation = mprService.find(materialEntity, supplierPartner);
 
@@ -308,12 +299,12 @@ public class StockController {
                 continue;
             }
 
-            ProductStockRequestForMaterialDto materialDto = new ProductStockRequestForMaterialDto(
+            ProductStockRequestForMaterial material = new ProductStockRequestForMaterial(
                 materialEntity.getOwnMaterialNumber(),
                 materialEntity.getMaterialNumberCx(),
                 materialPartnerRelation.getPartnerMaterialNumber()
             );
-            messageContentDtos.add(materialDto);
+            productStockRequest.getContent().getProductStock().add(material);
 
             String [] data = edcAdapterService.getContractForRequestApi(supplierPartner.getEdcUrl());
             if(data == null) {
@@ -329,45 +320,39 @@ public class StockController {
             }
 
             String cid = data[3];
-            MessageHeaderDto messageHeaderDto = new MessageHeaderDto();
+            MessageHeader messageHeader = new MessageHeader();
             UUID randomUuid = UUID.randomUUID();
 
             // Avoid randomly choosing a UUID that was already used by this customer.
             while (productStockRequestService.findRequestByHeaderUuid(randomUuid) != null) {
                 randomUuid = UUID.randomUUID();
             }
-            messageHeaderDto.setRequestId(randomUuid);
-            messageHeaderDto.setRespondAssetId(variablesService.getResponseApiAssetId());
-            messageHeaderDto.setContractAgreementId(cid);
-            messageHeaderDto.setSender(ownBpnl); 
-            messageHeaderDto.setSenderEdc(ownEdcIdsUrl);
+            messageHeader.setRequestId(randomUuid);
+            messageHeader.setRespondAssetId(variablesService.getResponseApiAssetId());
+            messageHeader.setContractAgreementId(cid);
+            messageHeader.setSender(ownBpnl);
+            messageHeader.setSenderEdc(ownEdcIdsUrl);
             // set receiver per partner
-            messageHeaderDto.setReceiver(supplierPartner.getBpnl());
-            messageHeaderDto.setUseCase(DT_UseCaseEnum.PURIS);
-            messageHeaderDto.setCreationDate(new Date());
+            messageHeader.setReceiver(supplierPartner.getBpnl());
+            messageHeader.setUseCase(DT_UseCaseEnum.PURIS);
+            messageHeader.setCreationDate(new Date());
 
-            ProductStockRequestDto requestDto = new ProductStockRequestDto(
-                    DT_RequestStateEnum.REQUESTED,
-                    messageHeaderDto,
-                    messageContentDtos
-            );
 
-            
-            ProductStockRequest productStockRequest = modelMapper.map(requestDto, ProductStockRequest.class);
+            productStockRequest.setHeader(messageHeader);
             productStockRequest.setState(DT_RequestStateEnum.WORKING);
-            log.debug("Setting request state to " + DT_RequestStateEnum.WORKING);
             productStockRequest = productStockRequestService.createRequest(productStockRequest);
-            var test = productStockRequestService.findRequestByHeaderUuid(requestDto.getHeader().getRequestId());
-            log.debug("Stored in Database " + (test != null) + " " + requestDto.getHeader().getRequestId());
+            var test = productStockRequestService.findRequestByHeaderUuid(productStockRequest.getHeader().getRequestId());
+            log.debug("Stored in Database " + (test != null) + " " + productStockRequest.getHeader().getRequestId());
             Response response = null;
             try {
-                String requestBody = apiMarshallingService.transformProductStockRequest(requestDto);
+                String requestBody = objectMapper.writeValueAsString(productStockRequest);
                 response = edcAdapterService.sendDataPullRequest(endpoint, authKey, authCode, requestBody);
                 log.debug(response.body().string());
                 if(response.code() < 400) {
                     productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.REQUESTED);
                     log.debug("Sent request and received HTTP Status code " + response.code());
                     log.debug("Setting request state to " + DT_RequestStateEnum.REQUESTED);
+                    productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.REQUESTED);
                 } else {
                     log.warn("Receviced HTTP Status Code " + response.code() + " for request " + productStockRequest.getHeader().getRequestId()
                     + " from " + productStockRequest.getHeader().getReceiver());

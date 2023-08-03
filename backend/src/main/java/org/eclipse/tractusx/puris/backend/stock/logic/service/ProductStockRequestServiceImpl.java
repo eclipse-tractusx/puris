@@ -21,7 +21,7 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ProductStockRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
