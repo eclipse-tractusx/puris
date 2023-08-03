@@ -28,19 +28,18 @@
                     <div>
                         <label for="dropdown-customer" class="text-xl">Customer: </label>
                     </div>
-                    <select  onload="addOptionToDropdown(dropdown-customer,dropdownCustomerData)" name="ddc" id="dropdown-customer" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
-                        <option value="Customer1">Customer 1</option>
-                        <option value="Customer2">Customer 2</option>
+                    <select v-model="dropdownCustomer" id="dropdown-customer" name="ddc" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                        <option disabled value="" selected hidden>Choose a customer</option>
+                        <option v-for="item in dropdownCustomerData" :value="item">{{item}}</option>
                     </select>
                 </div>
                 <div class="mt-2">
                     <div>
                         <label for="dropdown-material" class="text-xl ">Material: </label>
                     </div>
-                    <select onload="addOptionToDropdown(dropdown-material,dropdownMaterialData);" name="ddm" id="dropdown-material" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
-                        <option value="central-control-unit">Central Control Unit</option>
-                        <option value="steering-wheel">Steering Wheel</option>
-                        <option value="wheel">Wheel</option>
+                    <select v-model="dropdownMaterial" id="dropdown-material" name="ddm"  class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                        <option disabled value="" selected hidden>Choose a material</option>
+                        <option v-for="item in dropdownMaterialData" :value="item">{{item}}</option>
                     </select>
                     <button
                         class="mt-auto float-right bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -305,24 +304,25 @@
     </main>
 </template>
 
-<script setup>
-/*
-var dropdownCustomerData = ["Customer 1", "Customer 2"];
-var dropdownMaterialData = ["Central Control Unit", "Steering Wheel", "Wheel"];
+<script>
 
 export default{
   name: "SupplierDashboard",
 
-  props:{
-    dropdownCustomerData: "Customer 1", "Customer 2",
-    dropdownMaterialData: "Central Control Unit", "Steering Wheel" "Wheel"
-  },
   data() {
     return{
-
-    }
+        dropdownCustomer: "",
+        dropdownCustomerData: "",
+        dropdownMaterial: "",
+        dropdownMaterialData: "",
+    };
   },
-  methods: {
+    mounted() {
+        setTimeout(()=> this.dropdownCustomerData = ["Customer 1 ", "Customer 2"]),
+        setTimeout(()=> this.dropdownMaterialData = ["Central Control Unit","Steering Wheel","Wheel"])
+    },
+    methods: {
+      /*
     addOptionToDropdown(selectId, optionData) {
       for(const val of optionData){
         var option = document.createElement("option");
@@ -330,10 +330,12 @@ export default{
         option.text = val.charAt(0).toUpperCase() + val.slice(1);
         selectId.appendChild(option);
       }
+
     }
+     */
   }
 }
- */
+
 </script>
 
 <style scoped>
