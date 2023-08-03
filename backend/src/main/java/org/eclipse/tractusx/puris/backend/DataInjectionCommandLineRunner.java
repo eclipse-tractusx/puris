@@ -29,7 +29,7 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_Re
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentErrorDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -89,7 +89,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private ProductStockSammMapper productStockSammMapper;
 
     @Autowired
-    private RequestService requestService;
+    private ProductStockRequestService productStockRequestService;
 
 
     @Value("${puris.demonstrator.role}")
@@ -352,7 +352,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 messageHeaderDto,
                 messageContentDtos
         );
-        ProductStockRequest createdProductStockRequest = requestService.createRequest(modelMapper.map(requestDto,
+        ProductStockRequest createdProductStockRequest = productStockRequestService.createRequest(modelMapper.map(requestDto,
             ProductStockRequest.class));
         log.info(String.format("Created Request: %s", createdProductStockRequest));
         log.info(createdProductStockRequest.getPayload().get(0).getClass().toString());

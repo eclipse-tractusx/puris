@@ -18,7 +18,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain.repository;
+package org.eclipse.tractusx.puris.backend.stock.domain.repository;
 
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.springframework.data.jpa.repository.JpaRepository;

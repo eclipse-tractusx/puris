@@ -28,7 +28,7 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRe
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
@@ -91,7 +91,7 @@ public class StockController {
     private MaterialPartnerRelationService mprService;
 
     @Autowired
-    private RequestService requestService;
+    private ProductStockRequestService productStockRequestService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -333,7 +333,7 @@ public class StockController {
             UUID randomUuid = UUID.randomUUID();
 
             // Avoid randomly choosing a UUID that was already used by this customer.
-            while (requestService.findRequestByHeaderUuid(randomUuid) != null) {
+            while (productStockRequestService.findRequestByHeaderUuid(randomUuid) != null) {
                 randomUuid = UUID.randomUUID();
             }
             messageHeaderDto.setRequestId(randomUuid);
@@ -356,8 +356,8 @@ public class StockController {
             ProductStockRequest productStockRequest = modelMapper.map(requestDto, ProductStockRequest.class);
             productStockRequest.setState(DT_RequestStateEnum.WORKING);
             log.debug("Setting request state to " + DT_RequestStateEnum.WORKING);
-            productStockRequest = requestService.createRequest(productStockRequest);
-            var test = requestService.findRequestByHeaderUuid(requestDto.getHeader().getRequestId());
+            productStockRequest = productStockRequestService.createRequest(productStockRequest);
+            var test = productStockRequestService.findRequestByHeaderUuid(requestDto.getHeader().getRequestId());
             log.debug("Stored in Database " + (test != null) + " " + requestDto.getHeader().getRequestId());
             Response response = null;
             try {
@@ -365,18 +365,18 @@ public class StockController {
                 response = edcAdapterService.sendDataPullRequest(endpoint, authKey, authCode, requestBody);
                 log.debug(response.body().string());
                 if(response.code() < 400) {
-                    productStockRequest = requestService.updateState(productStockRequest, DT_RequestStateEnum.REQUESTED);
+                    productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.REQUESTED);
                     log.debug("Sent request and received HTTP Status code " + response.code());
                     log.debug("Setting request state to " + DT_RequestStateEnum.REQUESTED);
                 } else {
                     log.warn("Receviced HTTP Status Code " + response.code() + " for request " + productStockRequest.getHeader().getRequestId()
                     + " from " + productStockRequest.getHeader().getReceiver());
-                    productStockRequest = requestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
+                    productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
                 }
                 
             } catch (Exception e) {
                 log.error("Failed to send data pull request to " + supplierPartner.getEdcUrl(), e);
-                productStockRequest = requestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
+                productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
             } finally {
                 try {
                     if(response != null) {

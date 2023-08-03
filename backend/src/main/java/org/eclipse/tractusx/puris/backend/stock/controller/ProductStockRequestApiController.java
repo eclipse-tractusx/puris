@@ -32,7 +32,7 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.RequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfulRequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequestForMaterial;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
@@ -59,7 +59,7 @@ public class ProductStockRequestApiController {
     ObjectMapper objectMapper;
 
     @Autowired
-    RequestService requestService;
+    ProductStockRequestService productStockRequestService;
 
     @Autowired
     RequestApiService requestApiService;
@@ -90,7 +90,7 @@ public class ProductStockRequestApiController {
         UUID requestId = productStockRequestDto.getHeader().getRequestId();
 
         ProductStockRequest productStockRequestFound =
-                requestService.findRequestByHeaderUuid(requestId);
+                productStockRequestService.findRequestByHeaderUuid(requestId);
                 
 
         if (productStockRequestFound != null) {
@@ -108,7 +108,7 @@ public class ProductStockRequestApiController {
             }
             newProductStockRequestEntity.setPayload(payload);
             newProductStockRequestEntity.setState(productStockRequestDto.getState());
-            requestService.createRequest(newProductStockRequestEntity);
+            productStockRequestService.createRequest(newProductStockRequestEntity);
             log.info("Persisted incoming request " + productStockRequestDto.getHeader().getRequestId());
         } catch (Exception e) {
             log.warn("Failed to persist incoming request " + productStockRequestDto.getHeader().getRequestId());
@@ -136,7 +136,7 @@ public class ProductStockRequestApiController {
     public ResponseEntity<Object> getRequest(@RequestBody JsonNode body) {
         try {
             MessageHeaderDto header = objectMapper.convertValue(body.get("header"), MessageHeaderDto.class);
-            var request = requestService.findRequestByHeaderUuid(header.getRequestId());
+            var request = productStockRequestService.findRequestByHeaderUuid(header.getRequestId());
             var requestStatus = request.getState();
             var jsonResponseBody = objectMapper.createObjectNode();
             jsonResponseBody.put("requestId", header.getRequestId().toString());

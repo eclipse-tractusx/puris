@@ -27,7 +27,6 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_Re
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestApiService;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -37,7 +36,6 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockRequestForMaterialDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockResponseDto;
 import org.modelmapper.ModelMapper;
@@ -63,7 +61,7 @@ import java.util.stream.Collectors;
 public class ProductStockRequestApiServiceImpl implements RequestApiService {
 
     @Autowired
-    private RequestService requestService;
+    private ProductStockRequestService productStockRequestService;
 
     @Autowired
     private MaterialService materialService;
@@ -119,8 +117,8 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         log.info(String.format("param requestDto %s", requestDto));
         requestDto.setState(DT_RequestStateEnum.WORKING);
 
-        ProductStockRequest productStockRequestEntity = requestService.findRequestByHeaderUuid(requestDto.getHeader().getRequestId());
-        productStockRequestEntity = requestService.updateState(productStockRequestEntity, DT_RequestStateEnum.WORKING);
+        ProductStockRequest productStockRequestEntity = productStockRequestService.findRequestByHeaderUuid(requestDto.getHeader().getRequestId());
+        productStockRequestEntity = productStockRequestService.updateState(productStockRequestEntity, DT_RequestStateEnum.WORKING);
 
         String requestingPartnerBpnl = requestDto.getHeader().getSender();
         Partner requestingPartner =  partnerService.findByBpnl(requestingPartnerBpnl);
@@ -136,7 +134,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         if (requestDto.getHeader().getSenderEdc() != null && !partnerIdsUrl.equals(requestDto.getHeader().getSenderEdc())) {
             log.warn("Partner " + requestingPartner.getName() + " is using unknown idsUrl: " + requestDto.getHeader().getSenderEdc());
             log.warn("Request will not be processed");
-            requestService.updateState(productStockRequestEntity, DT_RequestStateEnum.ERROR);
+            productStockRequestService.updateState(productStockRequestEntity, DT_RequestStateEnum.ERROR);
             return;
         }
 
@@ -247,7 +245,7 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
         var data = edcAdapterService.getContractForResponseApi(partnerIdsUrl);
         if(data == null) {
             log.error("Failed to contract response api from " + partnerIdsUrl);
-            productStockRequestEntity = requestService.updateState(productStockRequestEntity, DT_RequestStateEnum.ERROR);
+            productStockRequestEntity = productStockRequestService.updateState(productStockRequestEntity, DT_RequestStateEnum.ERROR);
             log.info("Request status: \n" + productStockRequestEntity.toString());
             return;
         }
@@ -280,10 +278,10 @@ public class ProductStockRequestApiServiceImpl implements RequestApiService {
                     endpoint, authKey, authCode, requestBody);
             log.info(response.body().string());
             response.body().close();
-            productStockRequestEntity = requestService.updateState(productStockRequestEntity, DT_RequestStateEnum.COMPLETED);
+            productStockRequestEntity = productStockRequestService.updateState(productStockRequestEntity, DT_RequestStateEnum.COMPLETED);
         } catch (Exception e) {
             log.error("Failed to send response to " + responseDto.getHeader().getReceiver(), e);
-            productStockRequestEntity = requestService.updateState(productStockRequestEntity, DT_RequestStateEnum.ERROR);
+            productStockRequestEntity = productStockRequestService.updateState(productStockRequestEntity, DT_RequestStateEnum.ERROR);
         } finally {
             log.info("Request status: \n" + productStockRequestEntity.toString());
         }

@@ -22,13 +22,11 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentErrorDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.ResponseDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -55,7 +53,7 @@ import java.util.UUID;
 public class ProductStockResponseApiServiceImpl implements ResponseApiService {
 
     @Autowired
-    private RequestService requestService;
+    private ProductStockRequestService productStockRequestService;
 
     @Autowired
     private PartnerProductStockService partnerProductStockService;
@@ -128,12 +126,12 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
         }
 
         // Update status - also only MessageContentErrorDtos would be completed
-        requestService.updateState(correspondingProductStockRequest, DT_RequestStateEnum.COMPLETED);
+        productStockRequestService.updateState(correspondingProductStockRequest, DT_RequestStateEnum.COMPLETED);
     }
 
     private ProductStockRequest findCorrespondingRequest(ResponseDto responseDto) {
         UUID requestId = responseDto.getHeader().getRequestId();
-        return requestService.findRequestByHeaderUuid(requestId);
+        return productStockRequestService.findRequestByHeaderUuid(requestId);
 
     }
 
