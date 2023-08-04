@@ -284,7 +284,6 @@ public class StockController {
 
         Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         log.info("Found material: " + (materialEntity != null));
-        log.info("All materials: " + materialService.findAllMaterials());
 
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
 

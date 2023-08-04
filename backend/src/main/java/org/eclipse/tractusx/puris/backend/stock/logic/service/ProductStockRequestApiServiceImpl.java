@@ -148,24 +148,27 @@ public class ProductStockRequestApiServiceImpl {
                     if (searchResult.size() == 1) {
                         existingMaterial = searchResult.get(0);
                     } else {
-                        // MaterialNumberCustomer is ambiguous or unknown
-                        // try to use MaterialNumberSupplier
-                        if (productStockRequestForMaterial.getMaterialNumberSupplier() != null) {
-                            existingMaterial = materialService.findByOwnMaterialNumber(productStockRequestForMaterial.getMaterialNumberSupplier());
+                        if (productStockRequestForMaterial.getMaterialNumberCustomer() != null) {
+                            if (productStockRequestForMaterial.getMaterialNumberSupplier() == null
+                                || productStockRequestForMaterial.getMaterialNumberSupplier().equals(productStockRequestForMaterial.getMaterialNumberCustomer())) {
+                                // possible case: customer did not define his own material number
+                                // and is using the supplier's material number (see CX 0085) as his own material number.
+                                existingMaterial = materialService.findByOwnMaterialNumber(productStockRequestForMaterial.getMaterialNumberCustomer());
+                            } else {
+                                // MaterialNumberCustomer is ambiguous or unknown
+                                // try to use MaterialNumberSupplier
+                                if (productStockRequestForMaterial.getMaterialNumberSupplier() != null) {
+                                    existingMaterial = materialService.findByOwnMaterialNumber(productStockRequestForMaterial.getMaterialNumberSupplier());
+                                }
+                            }
                         }
                     }
                 }
             }
 
             if (existingMaterial == null) {
-                MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
-                messageContentErrorDto.setMaterialNumberCustomer(productStockRequestForMaterial.getMaterialNumberCustomer());
-                messageContentErrorDto.setError("PURIS-01");
-                messageContentErrorDto.setMessage("Material is unknown.");
-//                resultProductStocks.add(messageContentErrorDto);
-                log.warn(String.format("No Material found for ID Customer %s in request %s",
-                        productStockRequestForMaterial.getMaterialNumberCustomer(),
-                        productStockRequest.getHeader().getRequestId()));
+                log.warn("Material unknown");
+                // Material is unknown, error messages in this case currently not supported
                 continue;
             } else {
                 log.info("Found requested Material: " + existingMaterial.getOwnMaterialNumber());
@@ -175,11 +178,6 @@ public class ProductStockRequestApiServiceImpl {
             boolean ordersProducts = mprService.partnerOrdersProduct(existingMaterial, requestingPartner);
             log.info("Requesting entity orders this Material? " + ordersProducts);
             if (!ordersProducts) {
-                MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
-                messageContentErrorDto.setMaterialNumberCustomer(productStockRequestForMaterial.getMaterialNumberCustomer());
-                messageContentErrorDto.setError("PURIS-02");
-                messageContentErrorDto.setMessage("Partner is not authorized.");
-//                resultProductStocks.add(messageContentErrorDto);
                 log.warn(String.format("Partner %s is not an ordering Partner of Material " +
                                 "found for ID Customer %s in request %s",
                         requestingPartnerBpnl,
@@ -196,11 +194,6 @@ public class ProductStockRequestApiServiceImpl {
 
             ProductStock productStock = null;
             if (productStocks.size() == 0) {
-                MessageContentErrorDto messageContentErrorDto = new MessageContentErrorDto();
-                messageContentErrorDto.setMaterialNumberCustomer(productStockRequestForMaterial.getMaterialNumberCustomer());
-                messageContentErrorDto.setError("PURIS-03");
-                messageContentErrorDto.setMessage("No Product Stock found.");
-//                resultProductStocks.add(messageContentErrorDto);
                 log.warn("No Product Stocks of Material " + productStockRequestForMaterial.getMaterialNumberCustomer()
                 + " found for " + productStockRequest.getHeader().getSender());
                 continue;
