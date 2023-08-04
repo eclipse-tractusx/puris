@@ -24,10 +24,6 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentErrorDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.ResponseDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
@@ -40,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Service implements the handling of a response for Product Stock
@@ -108,20 +103,19 @@ public class ProductStockResponseApiServiceImpl {
                     log.info(String.format("Created Partner ProductStock from SAMM: %s",
                             createdPartnerProductStock));
                 } else {
+                    // update quantity only
+                    PartnerProductStock existingPartnerProductStock = existingPartnerProductStocks.get(0);
+                    existingPartnerProductStock.setQuantity(partnerProductStockDto.getQuantity());
+
                     PartnerProductStock updatedPartnerProductStock =
-                            partnerProductStockService.update(existingPartnerProductStocks.get(0));
+                            partnerProductStockService.update(existingPartnerProductStock);
                     log.info(String.format("Updated Partner ProductStock from SAMM: %s",
                             updatedPartnerProductStock));
                 }
         }
+
         // Update status - also only MessageContentErrorDtos would be completed
         productStockRequestService.updateState(correspondingProductStockRequest, DT_RequestStateEnum.COMPLETED);
-    }
-
-    private ProductStockRequest findCorrespondingRequest(ResponseDto responseDto) {
-        UUID requestId = responseDto.getHeader().getRequestId();
-        return productStockRequestService.findRequestByHeaderUuid(requestId);
-
     }
 
 }
