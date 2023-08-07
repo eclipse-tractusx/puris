@@ -23,6 +23,9 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.Response;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
@@ -34,7 +37,6 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterSer
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -106,10 +108,22 @@ public class StockController {
     @CrossOrigin
     @GetMapping("materials")
     @ResponseBody
-    public List<String> getMaterials() {
+    public List<FrontendMaterialDto> getMaterials() {
 
-        return materialService.findAllMaterials().stream().map(mat -> mat.getOwnMaterialNumber()).collect(Collectors.toList());
+        return materialService.findAllMaterials().stream().map(
+            mat ->
+                 new FrontendMaterialDto(mat.getOwnMaterialNumber(), mat.getName())
+            )
+            .collect(Collectors.toList());
 
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    static class FrontendMaterialDto {
+        String ownMaterialNumber;
+        String description;
     }
 
     @CrossOrigin
