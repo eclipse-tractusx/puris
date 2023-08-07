@@ -23,8 +23,11 @@ public class VariablesService {
     @Value("${response.apiassetid}")
     private String responseApiAssetId;
 
-    @Value("own.bpnl")
+    @Value("${own.bpnl}")
     private String ownBpnl;
+
+    @Value("${edc.idsUrl}")
+    private String ownEdcIdsUrl;
 
     /**
      * Returns the asset-id as defined in the properties file for the given api method

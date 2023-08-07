@@ -50,6 +50,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -100,45 +101,29 @@ public class StockController {
     @Autowired
     private VariablesService variablesService;
 
-    @Value("${edc.idsUrl}")
-    private String ownEdcIdsUrl;
-
-    @Value("${own.bpns}")
-    private String ownBpns;
-
-    @Value("${own.bpnl}")
-    private String ownBpnl;
 
 
     @CrossOrigin
     @GetMapping("materials")
     @ResponseBody
-    public List<MaterialDto> getMaterials() {
+    public List<String> getMaterials() {
 
-        List<MaterialDto> allMaterials = materialService.findAllMaterials().stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-
-        allMaterials.stream().forEach(m -> System.out.println(m));
-
-        return allMaterials;
+        return materialService.findAllMaterials().stream().map(mat -> mat.getOwnMaterialNumber()).collect(Collectors.toList());
 
     }
 
-    private MaterialDto convertToDto(Material entity) {
-        return modelMapper.map(entity, MaterialDto.class);
+    @CrossOrigin
+    @GetMapping("materialnumbers-mapping")
+    @ResponseBody
+    public Map<String, String> getMaterialNumbers(@RequestParam String ownMaterialNumber) {
+        return mprService.getBPNL_To_MaterialNumberMap(ownMaterialNumber);
     }
 
     @CrossOrigin
     @GetMapping("products")
     @ResponseBody
-    public List<MaterialDto> getProducts() {
-
-        List<MaterialDto> allProducts = materialService.findAllProducts().stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-
-        return allProducts;
+    public List<String> getProducts() {
+        return materialService.findAllProducts().stream().map(mat -> mat.getOwnMaterialNumber()).collect(Collectors.toList());
     }
 
     @CrossOrigin
@@ -237,7 +222,7 @@ public class StockController {
         existingMaterialStock.setQuantity(materialStockDto.getQuantity());
         existingMaterialStock.setLastUpdatedOn(new Date());
 
-        existingMaterialStock = materialStockService.create(existingMaterialStock);
+        existingMaterialStock = materialStockService.update(existingMaterialStock);
 
         MaterialStockDto productStockToReturn = convertToDto(existingMaterialStock);
 
@@ -294,7 +279,8 @@ public class StockController {
             MaterialPartnerRelation materialPartnerRelation = mprService.find(materialEntity, supplierPartner);
 
             if (materialPartnerRelation == null) {
-                log.error("Missing material-partner-relation for " + materialEntity.getOwnMaterialNumber() + " and " + supplierPartner.getBpnl());
+                log.error("Missing material-partner-relation for " + materialEntity.getOwnMaterialNumber()
+                    + " and " + supplierPartner.getBpnl());
                 continue;
             }
 
@@ -329,8 +315,8 @@ public class StockController {
             messageHeader.setRequestId(randomUuid);
             messageHeader.setRespondAssetId(variablesService.getResponseApiAssetId());
             messageHeader.setContractAgreementId(cid);
-            messageHeader.setSender(ownBpnl);
-            messageHeader.setSenderEdc(ownEdcIdsUrl);
+            messageHeader.setSender(variablesService.getOwnBpnl());
+            messageHeader.setSenderEdc(variablesService.getOwnEdcIdsUrl());
             // set receiver per partner
             messageHeader.setReceiver(supplierPartner.getBpnl());
             messageHeader.setUseCase(DT_UseCaseEnum.PURIS);
@@ -353,7 +339,7 @@ public class StockController {
                     log.debug("Setting request state to " + DT_RequestStateEnum.REQUESTED);
                     productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.REQUESTED);
                 } else {
-                    log.warn("Receviced HTTP Status Code " + response.code() + " for request " + productStockRequest.getHeader().getRequestId()
+                    log.warn("Received HTTP Status Code " + response.code() + " for request " + productStockRequest.getHeader().getRequestId()
                     + " from " + productStockRequest.getHeader().getReceiver());
                     productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
                 }
