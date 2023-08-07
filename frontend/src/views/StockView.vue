@@ -285,7 +285,6 @@ export default {
         .catch(err => console.log(err));
     },
     onProductChange(productId) {
-        console.log("PRODUCT ID: " + productId);
       fetch(this.backendURL + this.endpointCustomer + productId)
         .then(res => res.json())
         .then(data => this.bdCustomers = data)
