@@ -59,7 +59,6 @@ export default {
 
   props: {
     selectedMaterialOrProductId: {type: String, required: true},
-    materialUuid: {type: String, required: true},
     partnerRole: {type: String, required: true},
   },
   data() {
@@ -73,24 +72,20 @@ export default {
   created() {
     if (this.selectedMaterialOrProductId !== "") {
       if (this.partnerRole === "supplier") {
-        this.getAvailableMaterials(
-            this.selectedMaterialOrProductId
-        );
+        this.getAvailableMaterials();
       } else if (this.partnerRole === "customer") {
-        this.getAvailableProducts(
-            this.selectedMaterialOrProductId
-        );
+        this.getAvailableProducts();
       }
     }
   },
   methods: {
-    getAvailableMaterials(materialId) {
+    getAvailableMaterials() {
       fetch(this.backendURL + this.endpointPartnerProductStocks)
         .then(res => res.json())
         .then(data => this.availableMaterialsOrProducts = data)
         .catch(err => console.log(err));
     },
-    getAvailableProducts(productId) {
+    getAvailableProducts() {
       fetch(this.backendURL + this.endpointPartnerProductStocks)
         .then(res => res.json())
         .then(data => this.availableMaterialsOrProducts = data)

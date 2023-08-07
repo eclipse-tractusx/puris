@@ -23,15 +23,10 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.Response;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
@@ -41,9 +36,14 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.*;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.FrontendMaterialDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.MaterialStockDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,21 +109,10 @@ public class StockController {
     @GetMapping("materials")
     @ResponseBody
     public List<FrontendMaterialDto> getMaterials() {
-
-        return materialService.findAllMaterials().stream().map(
-            mat ->
-                 new FrontendMaterialDto(mat.getOwnMaterialNumber(), mat.getName())
-            )
+        return materialService.findAllMaterials()
+            .stream()
+            .map(mat -> new FrontendMaterialDto(mat.getOwnMaterialNumber(), mat.getName()))
             .collect(Collectors.toList());
-
-    }
-
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    static class FrontendMaterialDto {
-        String ownMaterialNumber;
-        String description;
     }
 
     @CrossOrigin
@@ -136,15 +125,17 @@ public class StockController {
     @CrossOrigin
     @GetMapping("products")
     @ResponseBody
-    public List<String> getProducts() {
-        return materialService.findAllProducts().stream().map(mat -> mat.getOwnMaterialNumber()).collect(Collectors.toList());
+    public List<FrontendMaterialDto> getProducts() {
+        return materialService.findAllProducts()
+            .stream()
+            .map(mat -> new FrontendMaterialDto(mat.getOwnMaterialNumber(), mat.getName()))
+            .collect(Collectors.toList());
     }
 
     @CrossOrigin
     @GetMapping("product-stocks")
     @ResponseBody
     public List<ProductStockDto> getProductStocks() {
-
         List<ProductStockDto> allProductStocks = productStockService.findAll().stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
@@ -165,6 +156,7 @@ public class StockController {
         if (createdProductStock == null){
             return null;
         }
+        log.info("Created product-stock: " + createdProductStock);
 
         ProductStockDto productStockToReturn = convertToDto(createdProductStock);
 
@@ -184,6 +176,7 @@ public class StockController {
         existingProductStock.setLastUpdatedOn(new Date());
 
         existingProductStock = productStockService.create(existingProductStock);
+        log.info("Updated product-stock: " + existingProductStock);
 
         ProductStockDto productStockToReturn = convertToDto(existingProductStock);
 
@@ -191,11 +184,19 @@ public class StockController {
     }
 
     private ProductStockDto convertToDto(ProductStock entity) {
-        return modelMapper.map(entity, ProductStockDto.class);
+        ProductStockDto dto = modelMapper.map(entity, ProductStockDto.class);
+        dto.getMaterial().setMaterialNumberSupplier(entity.getMaterial().getOwnMaterialNumber());
+        var materialPartnerRelation =
+            mprService.find(entity.getMaterial().getOwnMaterialNumber(), entity.getAllocatedToCustomerPartner().getUuid());
+        dto.getMaterial().setMaterialNumberCustomer(materialPartnerRelation.getPartnerMaterialNumber());
+        return dto;
     }
 
     private ProductStock convertToEntity(ProductStockDto dto) {
-        return modelMapper.map(dto, ProductStock.class);
+        ProductStock productStock = modelMapper.map(dto, ProductStock.class);
+        Material material = materialService.findByOwnMaterialNumber(dto.getMaterial().getMaterialNumberSupplier());
+        productStock.setMaterial(material);
+        return productStock;
     }
 
     @CrossOrigin
@@ -205,7 +206,7 @@ public class StockController {
         List<MaterialStockDto> allMaterialStocks = materialStockService.findAll().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
-
+        log.info(allMaterialStocks.toString());
         return allMaterialStocks;
     }
 
@@ -229,7 +230,8 @@ public class StockController {
     @ResponseBody
     public MaterialStockDto updateMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
         MaterialStock existingMaterialStock = materialStockService.findByUuid(materialStockDto.getUuid());
-        if (existingMaterialStock.getUuid() == null) {
+        if (existingMaterialStock == null || existingMaterialStock.getUuid() == null) {
+            log.warn("unable to find existing stock, exiting");
             return null;
         }
 
@@ -244,11 +246,16 @@ public class StockController {
     }
 
     private MaterialStockDto convertToDto(MaterialStock entity) {
-        return modelMapper.map(entity, MaterialStockDto.class);
+        MaterialStockDto dto = modelMapper.map(entity, MaterialStockDto.class);
+        dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
+        dto.getMaterial().setMaterialNumberCustomer(entity.getMaterial().getOwnMaterialNumber());
+        return dto;
     }
 
     private MaterialStock convertToEntity(MaterialStockDto dto) {
-        return modelMapper.map(dto, MaterialStock.class);
+        MaterialStock stock =  modelMapper.map(dto, MaterialStock.class);
+        stock.getMaterial().setOwnMaterialNumber(dto.getMaterial().getMaterialNumberCustomer());
+        return stock;
     }
 
     @CrossOrigin
@@ -263,7 +270,14 @@ public class StockController {
     }
 
     private PartnerProductStockDto convertToDto(PartnerProductStock entity) {
-        return modelMapper.map(entity, PartnerProductStockDto.class);
+        PartnerProductStockDto dto =  modelMapper.map(entity, PartnerProductStockDto.class);
+        dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
+        dto.getMaterial().setMaterialNumberCustomer(entity.getMaterial().getOwnMaterialNumber());
+        var materialPartnerRelation = mprService.find(entity.getMaterial().getOwnMaterialNumber(),
+                entity.getSupplierPartner().getUuid());
+        dto.getMaterial().setMaterialNumberSupplier(materialPartnerRelation.getPartnerMaterialNumber());
+
+        return dto;
     }
 
     @CrossOrigin
@@ -282,7 +296,7 @@ public class StockController {
     public List<PartnerDto> triggerPartnerProductStockUpdateForMaterial(@RequestParam String ownMaterialNumber) {
 
         Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
-        log.info("Found material: " + (materialEntity != null));
+        log.info("Found material: " + (materialEntity != null) + " " + ownMaterialNumber);
 
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
 

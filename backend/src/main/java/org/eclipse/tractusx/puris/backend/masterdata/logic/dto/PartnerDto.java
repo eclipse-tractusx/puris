@@ -22,17 +22,4 @@ public class PartnerDto implements Serializable {
     private String bpnl;
     private String siteBpns;
 
-    @ToString.Exclude
-    @Setter(AccessLevel.NONE)
-    private List<ProductStockDto> allocatedProductStocksForCustomer = new ArrayList<>();
-
-    @ToString.Exclude
-    @Setter(AccessLevel.NONE)
-    private List<PartnerProductStockDto> partnerProductStocks = new ArrayList<>();
-
-    public void addPartnerProductStock(PartnerProductStockDto partnerProductStockDto) {
-        this.partnerProductStocks.add(partnerProductStockDto);
-        partnerProductStockDto.setSupplierPartner(this);
-    }
-
 }

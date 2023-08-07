@@ -57,9 +57,5 @@ public class PartnerProductStock extends Stock {
         super(material, quantity, atSiteBpnl, lastUpdatedOn);
         super.setType(DT_StockTypeEnum.PRODUCT);
     }
-//
-//    public void setSupplierPartner(Partner supplierPartner) {
-//        this.supplierPartner = supplierPartner;
-//        supplierPartner.getPartnerProductStocks().add(this);
-//    }
+
 }

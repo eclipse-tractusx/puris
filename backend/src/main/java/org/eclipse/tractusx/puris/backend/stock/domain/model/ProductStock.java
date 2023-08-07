@@ -39,9 +39,6 @@ import java.util.Date;
 @DiscriminatorValue("ProductStock")
 public class ProductStock extends Stock {
 
-//    @ManyToOne
-//    @MapsId("uuid")
-//    @JoinColumn(name = "partner_uuid")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "partner_uuid")
     @ToString.Exclude
@@ -63,9 +60,4 @@ public class ProductStock extends Stock {
         super();
     }
 
-//    public void setAllocatedToCustomerPartner(Partner allocatedToCustomerPartner) {
-//        this.allocatedToCustomerPartner = allocatedToCustomerPartner;
-//        allocatedToCustomerPartner.getAllocatedProductStocksForCustomer().size();
-//        allocatedToCustomerPartner.getAllocatedProductStocksForCustomer().add(this);
-//    }
 }
