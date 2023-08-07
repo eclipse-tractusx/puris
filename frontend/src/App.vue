@@ -135,6 +135,17 @@ import { RouterLink, RouterView } from "vue-router";
                 />Responses</RouterLink
               >
             </li>
+            <li>
+                <RouterLink
+                    class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
+                    to="/supplierDashboard"
+                ><img
+                    class="mr-2"
+                    src="@/assets/icons/home.svg"
+                    alt="Icon"
+                />Supplier Dashboard</RouterLink
+                >
+            </li>
           </ul>
         </aside>
       </div>
@@ -150,7 +161,7 @@ import { RouterLink, RouterView } from "vue-router";
 
 #app {
   max-width: 1280px;
-  margin: 0 auto;
+  margin: 0px auto 0px 16rem;
   padding: 2rem;
 
   font-weight: normal;
@@ -204,16 +215,18 @@ nav a:first-of-type {
   border: 0;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1500px) {
   body {
     display: flex;
     place-items: center;
   }
 
   #app {
-    //display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
+  //display: grid;
+  //grid-template-columns: 1fr 1fr;
+      margin: 0 auto;
+      max-width: calc(100% - 32rem);
+      padding: 0 2rem;
   }
 
   header {
