@@ -261,12 +261,12 @@ public class StockController {
     @CrossOrigin
     @GetMapping("partner-product-stocks")
     @ResponseBody
-    public List<PartnerProductStockDto> getPartnerProductStocks() {
-        List<PartnerProductStockDto> allPartnerProductStocks = partnerProductStockService.findAll().stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-
-        return allPartnerProductStocks;
+    public List<PartnerProductStockDto> getPartnerProductStocks(@RequestParam String ownMaterialNumber) {
+        return partnerProductStockService.
+            findAllByOwnMaterialNumber(ownMaterialNumber)
+            .stream()
+            .map(this::convertToDto)
+            .collect(Collectors.toList());
     }
 
     private PartnerProductStockDto convertToDto(PartnerProductStock entity) {

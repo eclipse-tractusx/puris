@@ -73,24 +73,25 @@ export default {
     if (this.selectedMaterialOrProductId !== "") {
       if (this.partnerRole === "supplier") {
         this.getAvailableMaterials();
-      } else if (this.partnerRole === "customer") {
-        this.getAvailableProducts();
       }
+      // else if (this.partnerRole === "customer") {
+      //   this.getAvailableProducts();
+      // }
     }
   },
   methods: {
     getAvailableMaterials() {
-      fetch(this.backendURL + this.endpointPartnerProductStocks)
+      fetch(this.backendURL + this.endpointPartnerProductStocks + this.selectedMaterialOrProductId)
         .then(res => res.json())
         .then(data => this.availableMaterialsOrProducts = data)
         .catch(err => console.log(err));
     },
-    getAvailableProducts() {
-      fetch(this.backendURL + this.endpointPartnerProductStocks)
-        .then(res => res.json())
-        .then(data => this.availableMaterialsOrProducts = data)
-        .catch(err => console.log(err));
-    },
+    // getAvailableProducts() {
+    //   fetch(this.backendURL + this.endpointPartnerProductStocks)
+    //     .then(res => res.json())
+    //     .then(data => this.availableMaterialsOrProducts = data)
+    //     .catch(err => console.log(err));
+    // },
     updateMaterialOrProduct() {
       fetch(this.backendURL + this.endpointUpdatePartnerProductStock + this.selectedMaterialOrProductId)
         .then(res => res.json())
