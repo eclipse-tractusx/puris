@@ -30,7 +30,7 @@
                     </div>
                     <select v-model="dropdownCustomer" id="dropdown-customer" name="ddc" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a customer</option>
-                        <option v-for="item in dropdownCustomerData" :value="item">{{item}}</option>
+                        <option v-for="item in customer" :value="item">{{item.name}}</option>
                     </select>
                 </div>
                 <div class="mt-2">
@@ -39,15 +39,18 @@
                     </div>
                     <select v-model="dropdownMaterial" id="dropdown-material" name="ddm"  class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a material</option>
-                        <option v-for="item in dropdownMaterialData" :value="item">{{item}}</option>
+                        <option v-for="item in dropdownCustomer.materials " :value="item">{{item.name}}</option>
                     </select>
+                    <!--
                     <button
                         class="mt-auto float-right bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                         id="showBtn"
                         type="submit"
+                        @click="filterCustomerAndMaterial(dropdownCustomer,dropdownMaterial)"
                     >
                         Show
                     </button>
+                    -->
                 </div>
             </div>
 
@@ -70,143 +73,25 @@
                     <tr>
                         <td class="font-bold text-xl firstRow firstColumn">Customer Information</td>
 
-                        <td class="firstRow ">Tue, 01.08.2023</td>
-                        <td class="firstRow">Wed, 02.08.2023</td>
-                        <td class="firstRow">Thu, 03.08.2023</td>
-                        <td class="firstRow">Fr, 04.08.2023</td>
-                        <td class="firstRow">Sa, 05.08.2023</td>
-                        <td class="firstRow">Su, 06.08.2023</td>
-                        <td class="firstRow ">Mo, 07.08.2023</td>
-
-                        <td class="firstRow">Tue, 08.08.2023</td>
-                        <td class="firstRow">Wed, 09.08.2023</td>
-                        <td class="firstRow">Thu, 10.08.2023</td>
-                        <td class="firstRow">Fr, 11.08.2023</td>
-                        <td class="firstRow">Sa, 12.08.2023</td>
-                        <td class="firstRow ">Su, 13.08.2023</td>
-                        <td class="firstRow">Mo, 14.08.2023</td>
-
-                        <td class="firstRow">Tue, 15.08.2023</td>
-                        <td class="firstRow">Wed, 16.08.2023</td>
-                        <td class="firstRow">Thu, 17.08.2023</td>
-                        <td class="firstRow">Fr, 18.08.2023</td>
-                        <td class="firstRow ">Sa, 19.08.2023</td>
-                        <td class="firstRow">So, 20.08.2023</td>
-                        <td class="firstRow">Mo, 21.08.2023</td>
-
-                        <td class="firstRow">Tue, 22.08.2023</td>
-                        <td class="firstRow">Wed, 23.08.2023</td>
-                        <td class="firstRow">Thu, 24.08.2023</td>
-                        <td class="firstRow">Fr, 25.08.2023</td>
-                        <td class="firstRow">Sa, 26.08.2023</td>
-                        <td class="firstRow">So, 27.08.2023</td>
-                        <td class="firstRow">Mo, 28.08.2023</td>
+                        <td v-for="day in datesData" :value="day" class="firstRow">{{day}}</td>
 
                     </tr>
-                    <tr>
+                    <tr  id="demandActual">
                         <td class="firstColumn">Demand (Actual)</td>
 
-                        <td class="">100</td>
-                        <td class="">300</td>
-                        <td class="">400</td>
-                        <td class="">200</td>
-                        <td class="">50</td>
-                        <td class="">350</td>
-                        <td class="">150</td>
+                        <td v-for="item in dropdownMaterial.demandActual " :value="item">{{item}}</td>
 
-                        <td class="">100</td>
-                        <td class="">300</td>
-                        <td class="">400</td>
-                        <td class="">200</td>
-                        <td class="">50</td>
-                        <td class="">350</td>
-                        <td class="">150</td>
-
-                        <td class="">100</td>
-                        <td class="">300</td>
-                        <td class="">400</td>
-                        <td class="">200</td>
-                        <td class="">50</td>
-                        <td class="">350</td>
-                        <td class="">150</td>
-
-                        <td class="">100</td>
-                        <td class="">300</td>
-                        <td class="">400</td>
-                        <td class="">200</td>
-                        <td class="">50</td>
-                        <td class="">350</td>
-                        <td class="">150</td>
                     </tr>
-                    <tr>
+                    <tr id="demandAdditional">
                         <td class="firstColumn secondLastRow">Demand (Additional)</td>
 
-                        <td class=" secondLastRow">0</td>
-                        <td class="secondLastRow">100</td>
-                        <td class="secondLastRow">50</td>
-                        <td class="secondLastRow">200</td>
-                        <td class="secondLastRow">150</td>
-                        <td class="secondLastRow">0</td>
-                        <td class="secondLastRow">250</td>
+                        <td v-for="item in dropdownMaterial.demandAdditional" :value="item" class="secondLastRow">{{item}}</td>
 
-                        <td class="secondLastRow">0</td>
-                        <td class="secondLastRow">100</td>
-                        <td class="secondLastRow">50</td>
-                        <td class="secondLastRow">200</td>
-                        <td class="secondLastRow">150</td>
-                        <td class="secondLastRow">0</td>
-                        <td class="secondLastRow">250</td>
-
-                        <td class="secondLastRow">0</td>
-                        <td class="secondLastRow">100</td>
-                        <td class="secondLastRow">50</td>
-                        <td class="secondLastRow">200</td>
-                        <td class="secondLastRow">150</td>
-                        <td class="secondLastRow">0</td>
-                        <td class="secondLastRow">250</td>
-
-                        <td class="secondLastRow">0</td>
-                        <td class="secondLastRow">100</td>
-                        <td class="secondLastRow">50</td>
-                        <td class="secondLastRow">200</td>
-                        <td class="secondLastRow">150</td>
-                        <td class="secondLastRow">0</td>
-                        <td class="secondLastRow">250</td>
                     </tr>
-                    <tr>
+                    <tr id="demandTotal">
                         <td class="firstColumn">Demand (Total)</td>
 
-                        <td class="">100</td>
-                        <td class="">400</td>
-                        <td class="">450</td>
-                        <td class="">400</td>
-                        <td class="">200</td>
-                        <td class="">350</td>
-                        <td class="">400</td>
-
-                        <td class="">100</td>
-                        <td class="">400</td>
-                        <td class="">450</td>
-                        <td class="">400</td>
-                        <td class="">200</td>
-                        <td class="">350</td>
-                        <td class="">400</td>
-
-                        <td class="">100</td>
-                        <td class="">400</td>
-                        <td class="">450</td>
-                        <td class="">400</td>
-                        <td class="">200</td>
-                        <td class="">350</td>
-                        <td class="">400</td>
-
-                        <td class="">100</td>
-                        <td class="">400</td>
-                        <td class="">450</td>
-                        <td class="">400</td>
-                        <td class="">200</td>
-                        <td class="">350</td>
-                        <td class="">400</td>
+                        <td v-if="(dropdownMaterial.demandActual != null)" v-for="item in (addDemands(dropdownMaterial))"  :value="item">{{item}}</td>
                     </tr>
 
                     <!-- line separator -->
@@ -215,7 +100,7 @@
                     </tr>
 
                     <tr>
-                        <td class="font-bold text-xl firstRow firstColumn">Your Own Information</td>
+                        <td class="font-bold text-xl firstRow firstColumn ">Your Own Information</td>
 
                         <td class="firstRow "></td>
                         <td class="firstRow"></td>
@@ -250,40 +135,10 @@
                         <td class="firstRow"></td>
                     </tr>
 
-                    <tr>
+                    <tr id="production">
                         <td class="firstColumn ">Production</td>
 
-                        <td class="">100</td>
-                        <td class="">400</td>
-                        <td class="">450</td>
-                        <td class="">100</td>
-                        <td class="">200</td>
-                        <td class="">350</td>
-                        <td class="">400</td>
-
-                        <td class="">100</td>
-                        <td class="">400</td>
-                        <td class="">450</td>
-                        <td class="">100</td>
-                        <td class="">200</td>
-                        <td class="">350</td>
-                        <td class="">400</td>
-
-                        <td class="">100</td>
-                        <td class="">400</td>
-                        <td class="">450</td>
-                        <td class="">100</td>
-                        <td class="">200</td>
-                        <td class="">350</td>
-                        <td class="">400</td>
-
-                        <td class="">100</td>
-                        <td class="">400</td>
-                        <td class="">450</td>
-                        <td class="">100  </td>
-                        <td class="">200</td>
-                        <td class="">350</td>
-                        <td class="">400</td>
+                        <td v-for="item in dropdownMaterial.production" :value="item" class="">{{item}}</td>
                     </tr>
 
                     <!-- line separator -->
@@ -311,30 +166,89 @@ export default{
 
   data() {
     return{
+        // Customer dropdown
         dropdownCustomer: "",
-        dropdownCustomerData: "",
+        // Material dropdown
         dropdownMaterial: "",
-        dropdownMaterialData: "",
+        test:"",
+
+        datesData: [],
+        customer: {
+            customer1: {
+                name: "Customer 1",
+                materials: {
+                    centralControlUnit: {
+                        name: "Central Control Unit",
+                        demandActual: [],
+                        demandAdditional: [],
+                        production: [],
+                    },
+                    steeringWheel: {
+                        name: "Steering Wheel",
+                        demandActual: [],
+                        demandAdditional: [],
+                        production: [],
+                    },
+                    wheel: {
+                        name: "Wheel",
+                        demandActual: [],
+                        demandAdditional: [],
+                        production: [],
+                    }
+                }
+            },
+            customer2: {
+                name: "Customer 2",
+                materials: {
+                    centralControlUnit: {
+                        name: "Central Control Unit",
+                        demandActual: [],
+                        demandAdditional: [],
+                        production: [],
+                    },
+                    steeringWheel: {
+                        name: "Steering Wheel",
+                        demandActual: [],
+                        demandAdditional: [],
+                        production: [],
+                    },
+                    wheel: {
+                        name: "Test",
+                        demandActual: [868,614,834,325,989,442,121,609,964,789,331,923,22,315,947,956,732,422,878,425,562,737,370,904,727,706,823,459],
+                        demandAdditional: [100,300,400,200,50,350,150,100,300,400,200,50,350,150,100,300,400,200,50,350,150,100,300,400,200,50,350,150],
+                        production: [122,339,940,237,977,626,915,196,749,382,48,982,95,14,831,23,542,142,10,664,333,731,611,797,366,485,732,357],
+                    }
+                }
+            },
+        }
     };
   },
     mounted() {
-        setTimeout(()=> this.dropdownCustomerData = ["Customer 1 ", "Customer 2"]),
-        setTimeout(()=> this.dropdownMaterialData = ["Central Control Unit","Steering Wheel","Wheel"])
+        setTimeout(()=> this.dropdownCustomerData = ["Customer 1", "Customer 2"]),
+        setTimeout(()=> this.dropdownMaterialData = ["Central Control Unit","Steering Wheel","Wheel"]),
+        setTimeout(()=> this.datesData = ["Tue, 01.08.2023", "Wed, 02.08.2023","Thu, 03.08.2023","Fr, 04.08.2023", "Sa, 05.08.2023", "Su, 06.08.2023", "Mo, 07.08.2023",
+        "Tue, 08.08.2023", "Wed, 09.08.202", "Thu, 10.08.2023", "Fr, 11.08.2023", "Sa, 12.08.2023", "Su, 13.08.2023", "Mo, 14.08.2023", "Tue, 15.08.2023", "Wed, 16.08.2023",
+        "Thu, 17.08.2023","Fr, 18.08.2023", "Sa, 19.08.2023", "So, 20.08.2023", "Mo, 21.08.2023", "Tue, 22.08.2023", "Wed, 23.08.2023", "Thu, 24.08.2023", "Fr, 25.08.2023",
+        "Sa, 26.08.2023","So, 27.08.2023", "Mo, 28.08.2023"])
     },
     methods: {
-      /*
-    addOptionToDropdown(selectId, optionData) {
-      for(const val of optionData){
-        var option = document.createElement("option");
-        option.value = val;
-        option.text = val.charAt(0).toUpperCase() + val.slice(1);
-        selectId.appendChild(option);
-      }
+    addDemands: function(materialObject){
+        var demandActual = materialObject.demandActual;
+        var demandAdditional = materialObject.demandAdditional;
+        let demandTotal = [];
 
+        for (let i=0;i <demandActual.length;i++){
+            if(demandAdditional[i] != undefined) {
+                demandTotal.push(parseFloat(demandActual[i]) + parseFloat(demandAdditional[i]));
+            } else {
+                demandTotal.push(parseFloat(demandActual[i]));
+            }
+        }
+        return demandTotal;
     }
-     */
+
   }
-}
+};
 
 </script>
 
