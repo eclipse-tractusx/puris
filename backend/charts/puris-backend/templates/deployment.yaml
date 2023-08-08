@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "puris-backend.fullname" . }}
+  labels:
+    {{- include "puris-backend.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "puris-backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "puris-backend.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "puris-backend.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SERVER_PORT
+              value: "{{ .Values.service.port }}"
+            - name: API_ROOTDIR
+              value: "{{ .Values.api.rootDir }}"
+            - name: DATASOURCE_DRIVERCLASSNAME
+              value: "{{ .Values.datasource.driverClassName }}"
+            - name: DATASOURCE_URL
+              value: "{{ .Values.datasource.url }}"
+            - name: DATASOURCE_USERNAME
+              value: "{{ .Values.datasource.username }}"
+            - name: DATASOURCE_PASSWORD
+              value: "{{ .Values.datasource.password }}"
+            - name: EDC_CONTROLPLANE_HOST
+              value: "{{ .Values.edc.controlplane.host }}"
+            - name: EDC_CONTROLPLANE_DATA_PORT
+              value: "{{ .Values.edc.controlplane.data.port }}"
+            - name: EDC_CONTROLPLANE_KEY
+              value: "{{ .Values.edc.controlplane.key | default (randAlphaNum 16) }}"
+            - name: EDC_BACKEND_URL
+              value: "{{ .Values.edc.backend.url }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /catena/health/
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /catena/health/
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
