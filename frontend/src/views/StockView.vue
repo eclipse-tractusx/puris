@@ -130,17 +130,12 @@
 
 <script>
 import StockTableSFC from "@/views/stock/StockTableSFC.vue";
-import {inject} from 'vue'
 
 export default {
   name: "StockView",
   components: {StockTableSFC},
-  setup() {
-    const backendURL = inject("baseUrl")
-  },
   data() {
     return {
-      //backendUrl: inject("baseUrl"),
       backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
       endpointMaterials: import.meta.env.VITE_ENDPOINT_MATERIALS,
       endpointProducts: import.meta.env.VITE_ENDPOINT_PRODUCTS,
@@ -167,6 +162,7 @@ export default {
     };
   },
   mounted() {
+      console.log("backendURL in StockView: " + this.backendURL);
     fetch(this.backendURL + this.endpointMaterials)
       .then(res => res.json())
       .then(data => this.bdMaterials = data)

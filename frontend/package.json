@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "vite --host",
+    "dockerbuild": "vite build --mode dockerbuild",
     "build": "vite build",
     "local": "vite build --mode minikube",
     "develop": "vite build --mode dev",
