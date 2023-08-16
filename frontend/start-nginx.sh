@@ -7,12 +7,15 @@ echo "ENVIRONMENT VARIABLES:"
 printenv
 echo "==============="
 
-sponge
-
 for file in $JSFOLDER;
 do
+  echo -e "\r\n"
+  echo $file
+
   # other command cuts off length of files. sponge has no file-size limitation.
   #cat $file | envsubst $EXISTING_VARS | tee $file
+  #envsubst $EXISTING_VARS < $file | tee $file
   envsubst $EXISTING_VARS < $file | sponge $file
+  echo -e "\r\n"
 done
 nginx -g 'daemon off;'
