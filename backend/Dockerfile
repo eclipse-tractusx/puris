@@ -31,8 +31,8 @@ FROM eclipse-temurin:17-jre-alpine
 RUN mkdir /opt/app
 COPY --from=build /app/target/*.jar /opt/app/puris-backend.jar
 
-#RUN useradd -u 8877 nonroot
+RUN adduser -u 8877 -D nonroot && chmod 755 /opt/app/puris-backend.jar
 
-#USER nonroot
+USER nonroot
 
 ENTRYPOINT ["sh", "-c", " java ${JAVA_OPTS} -jar /opt/app/puris-backend.jar ${0} ${@}"]
