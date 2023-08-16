@@ -1,0 +1,16 @@
+version: '1'
+services:
+    puris-backend:
+        image: puris-backend:dev
+        container_name: backend
+        ports:
+            - 8081:8081
+        environment:
+            - server.port=8081
+            - puris.demonstrator.role= #customer/supplier
+            - edc.controlplane.host=172.17.0.2
+            - edc.controlplane.data.port=31605
+            - edc.dataplane.public.port=31503
+            - edc.idsUrl=http://plato-controlplane:8084/api/v1/ids
+            - own.bpnl= #BPNL4444444444XX
+            - own.bpns= #BPNS4444444444XX
