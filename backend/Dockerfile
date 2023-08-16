@@ -18,7 +18,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-
 FROM maven:3.8.7-eclipse-temurin-17 as build
 RUN mkdir /app
 WORKDIR /app
@@ -28,7 +27,12 @@ RUN mvn initialize -f pom.xml
 COPY src/ /app/src/
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:17
+FROM eclipse-temurin:17-jre-alpine
 RUN mkdir /opt/app
-COPY --from=build /app/target/*.jar /opt/app/scm-be.jar
-CMD ["java", "-jar", "/opt/app/scm-be.jar"]
+COPY --from=build /app/target/*.jar /opt/app/puris-backend.jar
+
+#RUN useradd -u 8877 nonroot
+
+#USER nonroot
+
+ENTRYPOINT ["sh", "-c", " java ${JAVA_OPTS} -jar /opt/app/puris-backend.jar ${0} ${@}"]
