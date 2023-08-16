@@ -30,8 +30,8 @@ import java.util.UUID;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class SuccessfullRequestDto {
+public class SuccessfulRequestDto {
 
-    @JsonProperty("request-id")
+    @JsonProperty("requestId")
     private UUID requestId;
 }

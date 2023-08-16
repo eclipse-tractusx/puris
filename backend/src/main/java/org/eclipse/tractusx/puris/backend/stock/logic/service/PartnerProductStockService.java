@@ -38,6 +38,6 @@ public interface PartnerProductStockService {
 
     PartnerProductStock update(PartnerProductStock partnerProductStock);
 
-    List<PartnerProductStock> findAllByMaterialUuidAndPartnerUuid(UUID partnerUuid,
-                                                                  UUID materialUuid);
+    List<PartnerProductStock> findAllByMaterialUuidAndPartnerUuid(UUID materialUuid,
+                                                                  UUID partnerUuid);
 }

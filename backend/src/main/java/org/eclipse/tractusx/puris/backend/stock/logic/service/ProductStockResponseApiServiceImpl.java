@@ -81,9 +81,9 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
                 // or whether an update is sufficient.
                 List<PartnerProductStock> existingPartnerProductStocks =
                         partnerProductStockService.findAllByMaterialUuidAndPartnerUuid(
-                                partnerProductStockDto.getSupplierPartner().getUuid(),
-                                partnerProductStockDto.getMaterial().getUuid()
-                        );
+                                partnerProductStockDto.getMaterial().getUuid(),
+                                partnerProductStockDto.getSupplierPartner().getUuid()
+                            );
 
                 // currently we only accept a one to one mapping of partner - material - stock -site
                 // therefore the can only be one PartnerProductStock
@@ -104,8 +104,12 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
                     log.info(String.format("Created Partner ProductStock from SAMM: %s",
                             createdPartnerProductStock));
                 } else {
+                    // update quantity only
+                    PartnerProductStock existingPartnerProductStock = existingPartnerProductStocks.get(0);
+                    existingPartnerProductStock.setQuantity(partnerProductStockDto.getQuantity());
+
                     PartnerProductStock updatedPartnerProductStock =
-                            partnerProductStockService.update(existingPartnerProductStocks.get(0));
+                            partnerProductStockService.update(existingPartnerProductStock);
                     log.info(String.format("Updated Partner ProductStock from SAMM: %s",
                             updatedPartnerProductStock));
                 }
