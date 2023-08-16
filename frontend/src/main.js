@@ -32,8 +32,8 @@ const publicEnvVar = import.meta.env.VITE_BASE_URL;
 app.use(router);
 app.use(JsonViewer);
 
-console.log("config.json BACKEND_BASE_URL" + Config.BACKEND_BASE_URL);
-console.log(".env.x VITE_BASE_URL" + publicEnvVar);
+console.log("config.json BACKEND_BASE_URL=" + Config.BACKEND_BASE_URL);
+console.log(".env.x VITE_BASE_URL=" + import.meta.env.VITE_BASE_URL);
 
 app.mount("#app");
 app.provide("baseUrl", publicEnvVar);
