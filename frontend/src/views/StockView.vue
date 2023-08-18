@@ -59,8 +59,8 @@
               v-model="this.changedStock.materialId"
               :disabled="this.changedStock.type === 'Product'"
           >
-            <option v-for="material in this.bdMaterials" :value="material.uuid">
-              {{ material.materialNumberCustomer }} ({{ material.name }})
+            <option v-for="material in this.bdMaterials" :value="material.ownMaterialNumber">
+              {{ material.ownMaterialNumber }} ({{ material.description }})
             </option>
           </select>
         </div>
@@ -71,10 +71,10 @@
               id="productSelect"
               v-model="this.changedStock.productId"
               :disabled="this.changedStock.type === 'Material'"
-              @change="onProductChange($event)"
+              @change="onProductChange(this.changedStock.productId)"
           >
-            <option v-for="product in this.bdProducts" :value="product.uuid">
-              {{ product.materialNumberCustomer }} ({{ product.name }})
+            <option v-for="product in this.bdProducts" :value="product.ownMaterialNumber">
+              {{ product.ownMaterialNumber }} ({{ product.description }})
             </option>
           </select>
         </div>
@@ -157,12 +157,12 @@ export default {
       },
       site: {
         bpns: "BPNS12345678910ZZZ",
-        name: "Wolfsburg Hauptwertk",
+        name: "Wolfsburg Hauptwerk",
       },
     };
   },
   mounted() {
-      console.log("backendURL in StockView: " + this.backendURL);
+    console.log("backendURL in StockView: " + this.backendURL);
     fetch(this.backendURL + this.endpointMaterials)
       .then(res => res.json())
       .then(data => this.bdMaterials = data)
@@ -181,7 +181,7 @@ export default {
     addOrUpdateStock(changedStock) {
       if (changedStock.type === "Material") {
         var existingMaterialStocks = this.bdMaterialStocks.filter(
-            (stock) => (stock.material.uuid === changedStock.materialId)
+            (stock) => (stock.material.materialNumberCustomer === changedStock.materialId)
         );
 
         if (existingMaterialStocks.length === 1) { // Update existing material stock
@@ -193,13 +193,13 @@ export default {
         } else { // Create new material stock
             // 1. Determine product
             var existingMaterial = this.bdMaterials.filter(
-                (m) => m.uuid === changedStock.materialId
+                (m) => m.materialNumberCustomer === changedStock.materialId
             )[0];
 
             // 2. Create Stock
             var newStock = {
                 uuid: "",
-                material: existingMaterial,
+                material: { materialNumberCustomer: existingMaterial.ownMaterialNumber } ,
                 quantity: changedStock.quantity,
                 unitOfMeasure: existingMaterial.unitOfMeasure,
                 allocatedToCustomerPartner: existingCustomer,
@@ -214,7 +214,7 @@ export default {
         }
       } else if (changedStock.type === "Product") {
         var existingProductStocks = this.bdProductStocks.filter(
-            (stock) => (stock.material.uuid === changedStock.productId) &&
+            (stock) => (stock.material.materialNumberSupplier === changedStock.productId) &&
                 (stock.allocatedToCustomerPartner.uuid === changedStock.allocatedToCustomer)
         );
 
@@ -227,7 +227,7 @@ export default {
         } else { // Create new product stock
           // 1. Determine product
             var existingProduct = this.bdProducts.filter(
-              (p) => p.uuid === changedStock.productId
+              (p) => p.ownMaterialNumber === changedStock.productId
           )[0];
 
           // 2. Determine partner
@@ -238,7 +238,7 @@ export default {
           // 3. Create Stock
           newStock = {
               uuid: "",
-              material: existingProduct,
+              material: {materialNumberSupplier: existingProduct.ownMaterialNumber},
               quantity: changedStock.quantity,
               unitOfMeasure: existingProduct.unitOfMeasure,
               allocatedToCustomerPartner: existingCustomer,
@@ -284,8 +284,8 @@ export default {
         .then(data => console.log(data))
         .catch(err => console.log(err));
     },
-    onProductChange(event) {
-      fetch(this.backendURL + this.endpointCustomer + event.target.value)
+    onProductChange(productId) {
+      fetch(this.backendURL + this.endpointCustomer + productId)
         .then(res => res.json())
         .then(data => this.bdCustomers = data)
         .catch(err => console.log(err));
