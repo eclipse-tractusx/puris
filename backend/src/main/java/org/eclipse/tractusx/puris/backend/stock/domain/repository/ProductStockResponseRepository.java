@@ -18,25 +18,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain.repository;
+package org.eclipse.tractusx.puris.backend.stock.domain.repository;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Repository to access Requests
+ * Repository to access Responses
  */
-public interface ProductStockRequestRepository extends JpaRepository<ProductStockRequest, UUID> {
+@Repository
+public interface ProductStockResponseRepository extends JpaRepository<ProductStockRequest, UUID> {
 
-    /**
-     * find the request by the requestUuid from the message's header
-     *
-     * @param headerRequestUuid uuid set by the sending partner in the header
-     * @return Request
-     */
-    public Optional<ProductStockRequest> findFirstByHeader_RequestId(UUID headerRequestUuid);
 
 }

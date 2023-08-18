@@ -21,18 +21,27 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.domain.repository;
 
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface PartnerRepository extends JpaRepository<Partner, UUID> {
+public interface MaterialPartnerRelationRepository extends JpaRepository<MaterialPartnerRelation, MaterialPartnerRelation.Key> {
 
-    Optional<Partner> findFirstByBpnl(String bpnl);
+    List<MaterialPartnerRelation> findAllByPartner_Uuid(UUID partnerUuid);
 
-    Optional<Partner> findFirstBySiteBpns(String siteBpns);
+    List<MaterialPartnerRelation> findAllByPartner_UuidAndPartnerSuppliesMaterialIsTrue(UUID partnerUuid);
 
+    List<MaterialPartnerRelation> findAllByPartner_UuidAndPartnerBuysMaterialIsTrue(UUID partnerUuid);
+
+    List<MaterialPartnerRelation> findAllByMaterial_OwnMaterialNumber(String ownMaterialNumber);
+
+    List<MaterialPartnerRelation> findAllByMaterial_OwnMaterialNumberAndPartnerSuppliesMaterialIsTrue(String ownMaterialNumber);
+
+    List<MaterialPartnerRelation> findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(String ownMaterialNumber);
+
+    List<MaterialPartnerRelation> findAllByPartnerMaterialNumber(String partnerMaterialNumber);
 }

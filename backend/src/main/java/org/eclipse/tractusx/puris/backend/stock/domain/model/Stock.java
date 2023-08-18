@@ -47,7 +47,7 @@ public class Stock {
     private UUID uuid;
 
     @ManyToOne
-    @JoinColumn(name = "material_uuid")
+    @JoinColumn(name = "material_ownMaterialNumber")
     @NotNull
     private Material material;
 
