@@ -21,21 +21,27 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.MaterialStockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
+@Slf4j
 @Service
 public class MaterialStockServiceImpl implements MaterialStockService {
 
     @Autowired
     MaterialStockRepository materialStockRepository;
+
+    @Autowired
+    MaterialPartnerRelationService mprService;
 
     @Override
     public MaterialStock create(MaterialStock materialStock) {
@@ -59,17 +65,37 @@ public class MaterialStockServiceImpl implements MaterialStockService {
     }
 
     @Override
-    public List<MaterialStock> findAllByMaterialNumberCustomer(String materialNumberCustomer) {
-        return materialStockRepository.findAllByMaterial_MaterialNumberCustomerAndType(materialNumberCustomer, DT_StockTypeEnum.MATERIAL);
+    public List<MaterialStock> findAllByPartnerMaterialNumber(String partnerMaterialNumber) {
+        var materials = mprService.findAllByPartnerMaterialNumber(partnerMaterialNumber);
+        ArrayList<MaterialStock> output = new ArrayList<>();
+        for (var material : materials) {
+            output.addAll(
+            materialStockRepository.findAllByMaterial_OwnMaterialNumberAndType(material.getOwnMaterialNumber(),
+                DT_StockTypeEnum.MATERIAL));
+        }
+        return output;
+    }
+
+    @Override
+    public List<MaterialStock> findAllByOwnMaterialNumber(String ownMaterialNumber) {
+        return materialStockRepository.findAllByMaterial_OwnMaterialNumberAndType(ownMaterialNumber, DT_StockTypeEnum.MATERIAL);
     }
 
     @Override
     public MaterialStock update(MaterialStock materialStock) {
-
         Optional<MaterialStock> existingStock = materialStockRepository.findById(materialStock.getUuid());
-
         if (existingStock.isPresent() && existingStock.get().getType() == DT_StockTypeEnum.MATERIAL) {
-            return existingStock.get();
-        } else return null;//TODO error handling: Updated MaterialStock is not material
+            materialStock = materialStockRepository.save(materialStock);
+            return materialStock;
+        } else {
+            if (existingStock.isPresent()) {
+                log.error(("update of materialStock " + materialStock.getUuid() + " failed because" +
+                    " existing stock is not of type MATERIAL"));
+                return null;
+            }
+        }
+        log.error("update of materialStock " + materialStock.getUuid() + " failed because there " +
+            "is no existing stock stored to the database");
+        return null;
     }
 }
