@@ -22,15 +22,12 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.controller.exception.RequestIdNotFoundException;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentErrorDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.ResponseDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
@@ -39,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Service implements the handling of a response for Product Stock
@@ -50,13 +46,16 @@ import java.util.UUID;
  */
 @Component
 @Slf4j
-public class ProductStockResponseApiServiceImpl implements ResponseApiService {
+public class ProductStockResponseApiServiceImpl {
 
     @Autowired
-    private RequestService requestService;
+    private ProductStockRequestService productStockRequestService;
 
     @Autowired
     private PartnerProductStockService partnerProductStockService;
+
+    @Autowired
+    private PartnerService partnerService;
 
     @Autowired
     private ProductStockSammMapper productStockSammMapper;
@@ -64,26 +63,26 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
     @Autowired
     private ModelMapper modelMapper;
 
-    @Override
-    public void consumeResponse(ResponseDto responseDto) {
 
-        ProductStockRequest correspondingProductStockRequest = findCorrespondingRequest(responseDto);
+    public void consumeResponse(ProductStockResponse response) {
 
-        for (MessageContentDto messageContentDto : responseDto.getPayload()) {
+//        ProductStockRequest correspondingProductStockRequest = findCorrespondingRequest(responseDto);
+        ProductStockRequest correspondingProductStockRequest = productStockRequestService.findRequestByHeaderUuid(response.getHeader().getRequestId());
+        if (correspondingProductStockRequest == null) {
+            log.error("Received Response without corresponding request");
+            return;
+        }
+        Partner partner = partnerService.findByBpnl(response.getHeader().getSender());
+        for (ProductStockSammDto sammDto : response.getContent().getProductStocks()) {
 
-            if (messageContentDto instanceof ProductStockSammDto) {
-
-                ProductStockSammDto sammDto = (ProductStockSammDto) messageContentDto;
                 PartnerProductStockDto partnerProductStockDto =
-                        productStockSammMapper.fromSamm(sammDto);
-
+                        productStockSammMapper.fromSamm(sammDto, partner);
                 // check whether a new PartnerProductStock must be created
                 // or whether an update is sufficient.
                 List<PartnerProductStock> existingPartnerProductStocks =
-                        partnerProductStockService.findAllByMaterialUuidAndPartnerUuid(
-                                partnerProductStockDto.getMaterial().getUuid(),
-                                partnerProductStockDto.getSupplierPartner().getUuid()
-                            );
+                    partnerProductStockService.findAllByOwnMaterialNumberAndPartnerUuid(
+                        partnerProductStockDto.getMaterial().getMaterialNumberCustomer(),
+                        partnerProductStockDto.getSupplierPartner().getUuid());
 
                 // currently we only accept a one to one mapping of partner - material - stock -site
                 // therefore the can only be one PartnerProductStock
@@ -113,28 +112,10 @@ public class ProductStockResponseApiServiceImpl implements ResponseApiService {
                     log.info(String.format("Updated Partner ProductStock from SAMM: %s",
                             updatedPartnerProductStock));
                 }
-            } else if (messageContentDto instanceof MessageContentErrorDto) {
-                log.error(String.format("Could not receive information: %s", messageContentDto));
-            } else
-                throw new IllegalStateException(String.format("Message Content is unknown: %s",
-                        messageContentDto));
-
         }
 
         // Update status - also only MessageContentErrorDtos would be completed
-        requestService.updateState(correspondingProductStockRequest, DT_RequestStateEnum.COMPLETED);
-    }
-
-    private ProductStockRequest findCorrespondingRequest(ResponseDto responseDto) {
-        UUID requestId = responseDto.getHeader().getRequestId();
-
-        ProductStockRequest productStockRequestFound =
-                requestService.findRequestByHeaderUuid(requestId);
-
-        if (productStockRequestFound == null) {
-            throw new RequestIdNotFoundException(requestId);
-        } else return productStockRequestFound;
-
+        productStockRequestService.updateState(correspondingProductStockRequest, DT_RequestStateEnum.COMPLETED);
     }
 
 }
