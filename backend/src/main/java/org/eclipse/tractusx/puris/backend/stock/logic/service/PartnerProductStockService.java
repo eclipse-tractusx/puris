@@ -21,22 +21,26 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
-@Service
 public interface PartnerProductStockService {
 
     PartnerProductStock create(PartnerProductStock partnerProductStock);
 
     List<PartnerProductStock> findAll();
 
-    List<PartnerProductStock> findAllByMaterialUuid(UUID materialUuid);
+    List<PartnerProductStock> findAllByOwnMaterialNumber(String ownMaterialNumber);
 
     PartnerProductStock update(PartnerProductStock partnerProductStock);
+
+    List<PartnerProductStock> findAllByOwnMaterialNumberAndPartnerUuid(String ownMaterialNumber, UUID partnerUuid);
+
+    List<PartnerProductStock> findAllByPartnerMaterialNumber(Partner partner, String partnerMaterialNumber);
 
     List<PartnerProductStock> findAllByMaterialUuidAndPartnerUuid(UUID materialUuid,
                                                                   UUID partnerUuid);

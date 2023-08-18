@@ -21,6 +21,9 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
+import lombok.AllArgsConstructor;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.PartnerProductStockRepository;
@@ -30,12 +33,14 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
+import java.util.stream.Collectors;
 @Service
+@AllArgsConstructor
 public class PartnerProductStockServiceImpl implements PartnerProductStockService {
 
-    @Autowired
-    PartnerProductStockRepository partnerProductStockRepository;
+    private PartnerProductStockRepository partnerProductStockRepository;
+
+    private MaterialPartnerRelationService mprService;
 
     @Override
     public PartnerProductStock create(PartnerProductStock partnerProductStock) {
@@ -48,8 +53,8 @@ public class PartnerProductStockServiceImpl implements PartnerProductStockServic
     }
 
     @Override
-    public List<PartnerProductStock> findAllByMaterialUuid(UUID materialUuid) {
-        return partnerProductStockRepository.findAllByMaterial_UuidAndType(materialUuid, DT_StockTypeEnum.PRODUCT);
+    public List<PartnerProductStock> findAllByOwnMaterialNumber(String ownMaterialNumber) {
+        return partnerProductStockRepository.findAllByMaterial_OwnMaterialNumberAndType(ownMaterialNumber, DT_StockTypeEnum.PRODUCT);
     }
 
     @Override
@@ -64,7 +69,20 @@ public class PartnerProductStockServiceImpl implements PartnerProductStockServic
     }
 
     @Override
-    public List<PartnerProductStock> findAllByMaterialUuidAndPartnerUuid(UUID materialUuid, UUID partnerUuid) {
-        return partnerProductStockRepository.findAllByMaterial_UuidAndTypeAndSupplierPartner_Uuid(materialUuid, DT_StockTypeEnum.PRODUCT, partnerUuid);
+
+    public List<PartnerProductStock> findAllByOwnMaterialNumberAndPartnerUuid(String ownMaterialNumber, UUID partnerUuid) {
+        return partnerProductStockRepository.findAllByMaterial_OwnMaterialNumberAndTypeAndSupplierPartner_Uuid(
+            ownMaterialNumber, DT_StockTypeEnum.PRODUCT, partnerUuid);
+    }
+
+    @Override
+    public List<PartnerProductStock> findAllByPartnerMaterialNumber(Partner partner, String partnerMaterialNumber) {
+
+        var materialsList  = mprService.findAllByPartnerMaterialNumber(partnerMaterialNumber);
+        return partnerProductStockRepository
+            .findAllBySupplierPartner_Uuid(partner.getUuid())
+            .stream()
+            .filter(pps -> materialsList.contains(pps.getMaterial()))
+            .collect(Collectors.toList());
     }
 }

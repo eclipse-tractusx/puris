@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
-@Service
 public interface MaterialStockService {
 
     MaterialStock create(MaterialStock materialStock);
@@ -36,7 +35,9 @@ public interface MaterialStockService {
 
     MaterialStock findByUuid(UUID materialStockUuid);
 
-    List<MaterialStock> findAllByMaterialNumberCustomer(String materialNumberCustomer);
+    List<MaterialStock> findAllByPartnerMaterialNumber(String partnerMaterialNumber);
+
+    List<MaterialStock> findAllByOwnMaterialNumber(String ownMaterialNumber);
 
     MaterialStock update(MaterialStock materialStock);
 

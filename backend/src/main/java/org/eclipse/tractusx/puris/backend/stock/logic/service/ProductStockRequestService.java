@@ -18,9 +18,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.logic.service;
+package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +30,7 @@ import java.util.UUID;
  * Service providing the interface to the {@link ProductStockRequest}
  */
 @Service
-public interface RequestService {
+public interface ProductStockRequestService {
 
     /**
      * create a {@link ProductStockRequest} in state REQUESTED.

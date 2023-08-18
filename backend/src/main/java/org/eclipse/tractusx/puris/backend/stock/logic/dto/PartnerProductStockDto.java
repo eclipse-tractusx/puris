@@ -47,6 +47,5 @@ public class PartnerProductStockDto extends StockDto {
         super(material, quantity, atSiteBpnl, new Date());
         this.setType(DT_StockTypeEnum.PRODUCT);
         this.supplierPartner = supplierPartner;
-        supplierPartner.addPartnerProductStock(this);
     }
 }
