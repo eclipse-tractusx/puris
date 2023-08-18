@@ -64,7 +64,7 @@ public class PartnerProductStockServiceImpl implements PartnerProductStockServic
     }
 
     @Override
-    public List<PartnerProductStock> findAllByMaterialUuidAndPartnerUuid(UUID partnerUuid, UUID materialUuid) {
+    public List<PartnerProductStock> findAllByMaterialUuidAndPartnerUuid(UUID materialUuid, UUID partnerUuid) {
         return partnerProductStockRepository.findAllByMaterial_UuidAndTypeAndSupplierPartner_Uuid(materialUuid, DT_StockTypeEnum.PRODUCT, partnerUuid);
     }
 }

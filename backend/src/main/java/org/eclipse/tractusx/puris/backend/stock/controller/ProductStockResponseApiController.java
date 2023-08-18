@@ -25,7 +25,7 @@ import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfullRequestDto;
+import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfulRequestDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.RequestService;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.ResponseApiService;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ApiMarshallingService;
@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -98,7 +97,7 @@ public class ProductStockResponseApiController {
         responseApiService.consumeResponse(productStockResponseDto);
 
         // if the request has been correctly taken over, return 202
-        return ResponseEntity.status(HttpStatusCode.valueOf(202)).body(new SuccessfullRequestDto(requestId));
+        return ResponseEntity.status(HttpStatusCode.valueOf(202)).body(new SuccessfulRequestDto(requestId));
     }
 
 }
