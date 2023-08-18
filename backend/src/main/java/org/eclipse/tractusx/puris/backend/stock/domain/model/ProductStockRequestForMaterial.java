@@ -41,7 +41,7 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(callSuper = true)
+@ToString
 public class ProductStockRequestForMaterial {
 
     @NotNull

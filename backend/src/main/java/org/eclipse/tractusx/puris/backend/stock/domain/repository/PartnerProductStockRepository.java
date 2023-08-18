@@ -44,7 +44,13 @@ public interface PartnerProductStockRepository extends JpaRepository<PartnerProd
 
     List<PartnerProductStock> findAllByType(DT_StockTypeEnum stockType);
 
-    List<PartnerProductStock> findAllByMaterial_UuidAndType(UUID materialUuid, DT_StockTypeEnum stockType);
+//    List<PartnerProductStock> findAllByMaterial_UuidAndType(UUID materialUuid, DT_StockTypeEnum stockType);
 
-    List<PartnerProductStock> findAllByMaterial_UuidAndTypeAndSupplierPartner_Uuid(UUID materialUuid, DT_StockTypeEnum stockType, UUID supplierUuid);
+    List<PartnerProductStock> findAllByMaterial_OwnMaterialNumberAndType(String ownMaterialNumber, DT_StockTypeEnum stockType);
+
+//    List<PartnerProductStock> findAllByMaterial_UuidAndTypeAndSupplierPartner_Uuid(UUID materialUuid, DT_StockTypeEnum stockType, UUID supplierUuid);
+
+    List<PartnerProductStock> findAllByMaterial_OwnMaterialNumberAndTypeAndSupplierPartner_Uuid(String ownMaterialNumber, DT_StockTypeEnum stockType, UUID supplierUuid);
+
+    List<PartnerProductStock> findAllBySupplierPartner_Uuid(UUID uuid);
 }

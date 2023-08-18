@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -40,17 +39,23 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Override
     public Material create(Material material) {
-        return materialRepository.save(material);
+        var searchResult = materialRepository.findById(material.getOwnMaterialNumber());
+        if (searchResult.isEmpty()) {
+            return materialRepository.save(material);
+        }
+        log.error("Could not create material " + material.getOwnMaterialNumber() + " because it already exists");
+        return null;
     }
 
     @Override
     public Material update(Material material) {
         Optional<Material> existingMaterial =
-                materialRepository.findById(material.getUuid());
-
+                materialRepository.findById(material.getOwnMaterialNumber());
         if (existingMaterial.isPresent()) {
             return existingMaterial.get();
-        } else return null;
+        }
+        log.error("Could not update material " + material.getOwnMaterialNumber() + " because it didn't exist before");
+        return null;
     }
 
     @Override
@@ -64,13 +69,12 @@ public class MaterialServiceImpl implements MaterialService {
     }
 
     @Override
-    public Material findByUuid(UUID materialUuid) {
-        Optional<Material> foundMaterial = materialRepository.findById(materialUuid);
-
-        if (!foundMaterial.isPresent()) {
-            return null;
+    public Material findByOwnMaterialNumber(String ownMaterialNumber) {
+        var searchResult = materialRepository.findById(ownMaterialNumber);
+        if (searchResult.isPresent()) {
+            return searchResult.get();
         }
-        return foundMaterial.get();
+        return null;
     }
 
     @Override
@@ -86,34 +90,4 @@ public class MaterialServiceImpl implements MaterialService {
 
     }
 
-    @Override
-    public Material findMaterialByMaterialNumberCustomer(String materialNumberCustomer) {
-
-        List<Material> foundMaterial =
-                materialRepository.findByMaterialNumberCustomerAndMaterialFlagTrue(materialNumberCustomer);
-
-        if (foundMaterial.size() == 0) {
-            return null;
-        }
-        if (foundMaterial.size() > 1) {
-            log.warn("Found more than one result for materialNumberCx " + materialNumberCustomer);
-        }
-        return foundMaterial.get(0);
-    }
-
-    @Override
-    public Material findProductByMaterialNumberCustomer(String materialNumberCustomer) {
-
-        List<Material> foundProduct =
-                materialRepository.findByMaterialNumberCustomerAndProductFlagTrue(materialNumberCustomer);
-
-        if (foundProduct.size() == 0) {
-            return null;
-        }
-        if (foundProduct.size() > 1) {
-            log.warn("Found more than one result for materialNumberCx " + materialNumberCustomer);
-        }
-        return foundProduct.get(0);
-
-    }
 }

@@ -18,22 +18,27 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain.model;
+package org.eclipse.tractusx.puris.backend.stock.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * This Response represents the message received via a Response API.
+ * This Request represents the message received via a Request API.
  * <p>
- * This Response may not be confused with an HTTP response.
+ * This Request may not be confused with an HTTP request.
  * Both, the Response and the Request, are called (api) request.
  */
 @Entity
@@ -41,27 +46,45 @@ import java.util.UUID;
 @Setter
 @ToString
 @NoArgsConstructor
-public class ProductStockResponse {
+public class ProductStockRequest {
+
+    /**
+     * State of the request.
+     *
+     * @see DT_RequestStateEnum
+     */
+    @NotNull
+    @JsonIgnore
+    private DT_RequestStateEnum state;
 
     @Id
     @GeneratedValue
+    @JsonIgnore
     /**
      * Technical identifier for a Message.
      */
     private UUID uuid;
 
     /**
-     * Steering information {@link ProductStockResponse} api message.
+     * Steering information of a {@link ProductStockRequest} api message.
      */
     @Embedded
     private MessageHeader header;
 
-    /**
-     * List of actual content of the payload.
-     * <p>
-     * May contain also errors.
-     */
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MessageContent> payload = new ArrayList<>();
+    private ContentWrapper content = new ContentWrapper();
+
+    @Embeddable
+    @Getter
+    @Setter
+    @ToString
+    public static class ContentWrapper {
+
+        /**
+         * List of actual content of the payload.
+         */
+        @ElementCollection
+        private List<ProductStockRequestForMaterial> productStock = new ArrayList<>();
+
+    }
 
 }

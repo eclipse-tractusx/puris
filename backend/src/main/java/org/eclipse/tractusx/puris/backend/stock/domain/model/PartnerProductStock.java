@@ -21,13 +21,11 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.domain.model;
 
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -38,12 +36,13 @@ import java.util.Date;
 @Entity
 @DiscriminatorValue("PartnerProductStock")
 @Getter
+@Setter
 @ToString(callSuper = true)
 @NoArgsConstructor
 public class PartnerProductStock extends Stock {
 
-    @ManyToOne
-    @JoinColumn(name = "supplier_partner_uuid")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "partner_uuid")
     @NotNull
     private Partner supplierPartner;
 
@@ -59,8 +58,4 @@ public class PartnerProductStock extends Stock {
         super.setType(DT_StockTypeEnum.PRODUCT);
     }
 
-    public void setSupplierPartner(Partner supplierPartner) {
-        this.supplierPartner = supplierPartner;
-        supplierPartner.getPartnerProductStocks().add(this);
-    }
 }

@@ -43,9 +43,11 @@ public interface ProductStockRepository extends JpaRepository<ProductStock, UUID
 
     List<ProductStock> findAllByTypeAndUuid(DT_StockTypeEnum stockType, UUID productStockUuid);
 
+    List<ProductStock> findAllByMaterial_OwnMaterialNumberAndType(String ownMaterialNumber, DT_StockTypeEnum stockType);
+
     List<ProductStock> findAllByType(DT_StockTypeEnum stockType);
 
-    List<ProductStock> findAllByMaterial_MaterialNumberCustomerAndType(String materialNumberCustomer, DT_StockTypeEnum stockType);
+//    List<ProductStock> findAllByMaterial_MaterialNumberCustomerAndType(String materialNumberCustomer, DT_StockTypeEnum stockType);
 
-    List<ProductStock> findAllByMaterial_MaterialNumberCustomerAndTypeAndAllocatedToCustomerPartner_Bpnl(String materialNumberCustomer, DT_StockTypeEnum stockType, String allocatedToPartnerBpnl);
+//    List<ProductStock> findAllByMaterial_MaterialNumberCustomerAndTypeAndAllocatedToCustomerPartner_Bpnl(String materialNumberCustomer, DT_StockTypeEnum stockType, String allocatedToPartnerBpnl);
 }

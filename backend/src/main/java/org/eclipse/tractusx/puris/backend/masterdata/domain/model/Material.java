@@ -21,11 +21,17 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 
-import jakarta.persistence.*;
-import lombok.*;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "material")
@@ -34,36 +40,6 @@ import java.util.*;
 @ToString
 @NoArgsConstructor
 public class Material {
-
-    @Id
-    @GeneratedValue
-    private UUID uuid;
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "partner_supplies_product",
-            joinColumns = @JoinColumn(name = "material_uuid", referencedColumnName = "uuid"),
-            inverseJoinColumns = @JoinColumn(name = "partner_uuid", referencedColumnName = "uuid")
-    )
-    @ToString.Exclude
-    @Setter(AccessLevel.NONE)
-    private Set<Partner> suppliedByPartners = new HashSet<>();
-    ;;
-
-    @ManyToMany(targetEntity = Partner.class, fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "partner_orders_product",
-            joinColumns = @JoinColumn(name = "material_uuid", referencedColumnName = "uuid"),
-            inverseJoinColumns = @JoinColumn(name = "partner_uuid", referencedColumnName = "uuid")
-    )
-    @ToString.Exclude
-    @Setter(AccessLevel.NONE)
-    private Set<Partner> orderedByPartners = new HashSet<>();
-
-    @OneToMany(mappedBy = "uuid")
-    @ToString.Exclude
-    @Setter(AccessLevel.NONE)
-    private List<Stock> materialOnStocks = new ArrayList<>();
 
     /**
      * If true, then the Material is a material (input for production / something I buy).
@@ -79,30 +55,27 @@ public class Material {
      */
     private boolean productFlag;
 
-    private String materialNumberCustomer;
-
-    private String materialNumberSupplier;
+    @Id
+    private String ownMaterialNumber;
 
     private String materialNumberCx;
 
     private String name;
 
-    public Material(boolean materialFlag, boolean productFlag, String materialNumberCustomer, String materialNumberSupplier, String materialNumberCx, String name) {
-        this.materialFlag = materialFlag;
-        this.productFlag = productFlag;
-        this.materialNumberCustomer = materialNumberCustomer;
-        this.materialNumberSupplier = materialNumberSupplier;
-        this.materialNumberCx = materialNumberCx;
-        this.name = name;
+    @OneToMany(mappedBy = "material")
+    Set<MaterialPartnerRelation> materialPartnerRelations;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Material)) return false;
+        Material material = (Material) o;
+        return Objects.equals(ownMaterialNumber, material.ownMaterialNumber);
     }
 
-    public void addPartnerToSuppliedByPartners(Partner supplierPartner) {
-        this.suppliedByPartners.add(supplierPartner);
-        supplierPartner.getSuppliesMaterials().add(this);
+    @Override
+    public int hashCode() {
+        return Objects.hash(ownMaterialNumber);
     }
 
-    public void addPartnerToOrderedByPartners(Partner customerPartner) {
-        this.orderedByPartners.add(customerPartner);
-        customerPartner.getOrdersProducts().add(this);
-    }
 }
