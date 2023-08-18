@@ -32,9 +32,9 @@
         </tr>
         <tr
             v-for="stock in stocks"
-            :key="stock.id"
-            @click="selectStock(stock.material.materialNumberCustomer, stock.material.uuid)"
-            :class="{ highlight: stock.material.materialNumberCustomer === selectedStockId }"
+            :key="stock.uuid"
+            @click="selectStock(stock.material.materialNumberCustomer, stock.uuid)"
+            :class="{ highlight: stock.material.materialNumberCustomer === selectedMaterialId }"
         >
           <td>{{ stock.material.materialNumberCustomer }}</td>
           <td>{{ stock.material.name }}</td>
@@ -45,10 +45,9 @@
     </div>
     <div class="basis-1/2">
       <PartnerStockSFC
-          :selectedMaterialOrProductId="this.selectedStockId"
-          :materialUuid="this.selectedStockUuid"
+          :selectedMaterialOrProductId="this.selectedMaterialId"
           :partnerRole="this.partnerRole"
-          :key="this.selectedStockId"
+          :key="this.selectedMaterialId"
       />
       <!--
       <h2 class="text-center bold text-3xl">You're currently seeing your suppliers' stocks for {{this.selectedMaterial.name}} [{{ this.selectedMaterial.id }}]</h2>
@@ -72,16 +71,16 @@ export default {
 
   data() {
     return {
-      selectedStockId: "",
+      selectedMaterialId: "",
       selectedStockUuid: "",
       materialNumberCustomer : ""
     };
   },
   methods: {
-    selectStock(stockId, stockUuid) {
+    selectStock(materialId, stockUuid) {
       if(this.partnerRole == 'customer')
         return;
-      this.selectedStockId = stockId;
+      this.selectedMaterialId = materialId;
       this.selectedStockUuid = stockUuid;
     },
   },

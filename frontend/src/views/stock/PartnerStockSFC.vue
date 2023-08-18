@@ -59,7 +59,6 @@ export default {
 
   props: {
     selectedMaterialOrProductId: {type: String, required: true},
-    materialUuid: {type: String, required: true},
     partnerRole: {type: String, required: true},
   },
   data() {
@@ -73,29 +72,26 @@ export default {
   created() {
     if (this.selectedMaterialOrProductId !== "") {
       if (this.partnerRole === "supplier") {
-        this.getAvailableMaterials(
-            this.selectedMaterialOrProductId
-        );
-      } else if (this.partnerRole === "customer") {
-        this.getAvailableProducts(
-            this.selectedMaterialOrProductId
-        );
+        this.getAvailableMaterials();
       }
+      // else if (this.partnerRole === "customer") {
+      //   this.getAvailableProducts();
+      // }
     }
   },
   methods: {
-    getAvailableMaterials(materialId) {
-      fetch(this.backendURL + this.endpointPartnerProductStocks)
+    getAvailableMaterials() {
+      fetch(this.backendURL + this.endpointPartnerProductStocks + this.selectedMaterialOrProductId)
         .then(res => res.json())
         .then(data => this.availableMaterialsOrProducts = data)
         .catch(err => console.log(err));
     },
-    getAvailableProducts(productId) {
-      fetch(this.backendURL + this.endpointPartnerProductStocks)
-        .then(res => res.json())
-        .then(data => this.availableMaterialsOrProducts = data)
-        .catch(err => console.log(err));
-    },
+    // getAvailableProducts() {
+    //   fetch(this.backendURL + this.endpointPartnerProductStocks)
+    //     .then(res => res.json())
+    //     .then(data => this.availableMaterialsOrProducts = data)
+    //     .catch(err => console.log(err));
+    // },
     updateMaterialOrProduct() {
       fetch(this.backendURL + this.endpointUpdatePartnerProductStock + this.selectedMaterialOrProductId)
         .then(res => res.json())

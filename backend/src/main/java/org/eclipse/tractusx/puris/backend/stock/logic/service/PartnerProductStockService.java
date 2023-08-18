@@ -42,6 +42,6 @@ public interface PartnerProductStockService {
 
     List<PartnerProductStock> findAllByPartnerMaterialNumber(Partner partner, String partnerMaterialNumber);
 
-    List<PartnerProductStock> findAllByMaterialUuidAndPartnerUuid(UUID materialUuid,
-                                                                  UUID partnerUuid);
+    //List<PartnerProductStock> findAllByMaterialUuidAndPartnerUuid(UUID materialUuid,
+    //                                                              UUID partnerUuid);
 }
