@@ -1,0 +1,4 @@
+{
+    "APP_NAME": "$APP_NAME",
+    "BACKEND_BASE_URL": "$BACKEND_BASE_URL"
+}

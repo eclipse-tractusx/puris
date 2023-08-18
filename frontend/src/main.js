@@ -19,17 +19,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { createApp } from "vue";
+import {createApp} from "vue";
 import App from "./App.vue";
 import router from "./router";
 import "./index.css";
 import JsonViewer from "vue-json-viewer";
+import Config from "./config.json"
 
 const app = createApp(App);
 const publicEnvVar = import.meta.env.VITE_BASE_URL;
 
 app.use(router);
 app.use(JsonViewer);
+
+console.log("config.json BACKEND_BASE_URL=" + Config.BACKEND_BASE_URL);
+console.log(".env.x VITE_BASE_URL=" + import.meta.env.VITE_BASE_URL);
 
 app.mount("#app");
 app.provide("baseUrl", publicEnvVar);

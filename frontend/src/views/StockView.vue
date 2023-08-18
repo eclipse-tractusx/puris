@@ -134,7 +134,6 @@ import StockTableSFC from "@/views/stock/StockTableSFC.vue";
 export default {
   name: "StockView",
   components: {StockTableSFC},
-
   data() {
     return {
       backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
@@ -163,6 +162,7 @@ export default {
     };
   },
   mounted() {
+      console.log("backendURL in StockView: " + this.backendURL);
     fetch(this.backendURL + this.endpointMaterials)
       .then(res => res.json())
       .then(data => this.bdMaterials = data)

@@ -18,29 +18,46 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+FROM node:lts-alpine as build
 
-FROM node:lts-alpine
+ARG NPM_BUILD_MODE=dockerbuild
+ENV JQ_VERSION=1.6
 
-# build arg for setting mode (local, develop, integration or beta, defaults to develop)
-ARG npm_build_mode=develop
+# TODO curl results in problem with node during ```npm run ${NPM_BUILD_MODE}```
+#RUN apk --no-cache add curl
+#RUN curl https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/jq-linux64 -o /tmp/jq-linux64
+RUN wget --no-check-certificate https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/jq-linux64 -O /tmp/jq-linux64
+RUN cp /tmp/jq-linux64 /usr/bin/jq
+RUN chmod +x /usr/bin/jq
 
-# install simple http server for serving static content
-RUN npm install -g http-server
-
-# make the 'app' folder the current working directory
 WORKDIR /app
-
-# copy both 'package.json' and 'package-lock.json' (if available)
-COPY package*.json ./
-
-# install project dependencies
-RUN npm install
-
-# copy project files and folders to the current working directory (i.e. 'app' folder)
 COPY . .
 
-# build app for production with minification
-RUN npm run $npm_build_mode
+RUN jq 'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' ./src/config.json > ./src/config.tmp.json && mv ./src/config.tmp.json ./src/config.json
 
-EXPOSE 8080
-CMD [ "http-server", "dist" ]
+RUN npm install && npm run ${NPM_BUILD_MODE}
+
+RUN chmod -R 777 /app/dist
+
+
+# uses 101 restricted user
+FROM nginxinc/nginx-unprivileged:stable-alpine
+#FROM nginx:stable-alpine
+
+# commly it would be .../html/js/.*js, but due to the project structure the JS files are in .../html/assets
+ENV JSFOLDER=/usr/share/nginx/html/assets/*.js
+
+# use root user to install moreutils for sponge in start-nginx to substring env workaround
+USER root
+
+COPY ./start-nginx.sh /usr/bin/start-nginx.sh
+RUN apk --no-cache add moreutils
+
+# use non-root user
+USER 101
+
+WORKDIR /usr/share/nginx/html
+COPY --from=build /app/dist .
+ENTRYPOINT [ "start-nginx.sh" ]
+# nginx exposes at port 80
+# nginx-unpriviledged exposes at port 8080
