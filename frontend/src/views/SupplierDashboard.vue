@@ -39,14 +39,14 @@
                     </div>
                     <select v-model="dropdownMaterial" id="dropdown-material" name="ddm"  class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a material</option>
-                        <option v-for="item in dropdownCustomer.materials " :value="item">{{item.name}}</option>
+                        <option v-for="item in dropdownCustomer.materials " :value="item" @click="emptyTotalDemandArray()">{{item.name}}</option>
                     </select>
                     <!--
                     <button
                         class="mt-auto float-right bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                         id="showBtn"
                         type="submit"
-                        @click="filterCustomerAndMaterial(dropdownCustomer,dropdownMaterial)"
+                        @click=""
                     >
                         Show
                     </button>
@@ -88,10 +88,14 @@
                         <td v-for="item in dropdownMaterial.demandAdditional" :value="item" class="secondLastRow">{{item}}</td>
 
                     </tr>
+
                     <tr id="demandTotal">
                         <td class="firstColumn">Demand (Total)</td>
 
-                        <td v-if="(dropdownMaterial.demandActual != null)" v-for="item in (addDemands(dropdownMaterial))"  :value="item">{{item}}</td>
+                        <td v-if="(dropdownMaterial.demandActual != null)"
+                            v-for="(item,index) in (addDemands(dropdownMaterial))"
+                            :ref="setTotalDemand(item,index)"
+                            :value="item">{{item}}</td>
                     </tr>
 
                     <!-- line separator -->
@@ -102,45 +106,19 @@
                     <tr>
                         <td class="font-bold text-xl firstRow firstColumn ">Your Own Information</td>
 
-                        <td class="firstRow "></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
+                        <td class="firstRow" v-for="item in datesData">
+                            {{}}
+                        </td>
 
-                        <td class="firstRow "></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
-                        <td class="firstRow"></td>
                     </tr>
 
                     <tr id="production">
                         <td class="firstColumn ">Production</td>
 
-                        <td v-for="item in dropdownMaterial.production" :value="item" class="">{{item}}</td>
+                        <td v-for="(item, index) in dropdownMaterial.production"
+                            :style="changeBgColor(index,item)">
+                            {{item}}</td>
                     </tr>
-
                     <!-- line separator -->
                     <tr>
                         <td class="firstColumn"></td>
@@ -170,9 +148,11 @@ export default{
         dropdownCustomer: "",
         // Material dropdown
         dropdownMaterial: "",
-        test:"",
-
+        // Dates
         datesData: [],
+        // Temp array for total demand
+        totalDemand: [],
+
         customer: {
             customer1: {
                 name: "Customer 1",
@@ -208,9 +188,9 @@ export default{
                     },
                     steeringWheel: {
                         name: "Steering Wheel",
-                        demandActual: [],
-                        demandAdditional: [],
-                        production: [],
+                        demandActual: [100, 100, 150],
+                        demandAdditional: [100, 0, 50],
+                        production: [100,150,200],
                     },
                     wheel: {
                         name: "Test",
@@ -224,8 +204,6 @@ export default{
     };
   },
     mounted() {
-        setTimeout(()=> this.dropdownCustomerData = ["Customer 1", "Customer 2"]),
-        setTimeout(()=> this.dropdownMaterialData = ["Central Control Unit","Steering Wheel","Wheel"]),
         setTimeout(()=> this.datesData = ["Tue, 01.08.2023", "Wed, 02.08.2023","Thu, 03.08.2023","Fr, 04.08.2023", "Sa, 05.08.2023", "Su, 06.08.2023", "Mo, 07.08.2023",
         "Tue, 08.08.2023", "Wed, 09.08.202", "Thu, 10.08.2023", "Fr, 11.08.2023", "Sa, 12.08.2023", "Su, 13.08.2023", "Mo, 14.08.2023", "Tue, 15.08.2023", "Wed, 16.08.2023",
         "Thu, 17.08.2023","Fr, 18.08.2023", "Sa, 19.08.2023", "So, 20.08.2023", "Mo, 21.08.2023", "Tue, 22.08.2023", "Wed, 23.08.2023", "Thu, 24.08.2023", "Fr, 25.08.2023",
@@ -245,8 +223,20 @@ export default{
             }
         }
         return demandTotal;
-    }
-
+    },
+    changeBgColor: function (index, production){
+        if (production < this.totalDemand[index]){
+            return {'background-color': 'red'};
+        }
+    },
+    setTotalDemand: function (el, index){
+        if(el && this.totalDemand[index] == null) {
+            this.totalDemand.push(el);
+        }
+    },
+    emptyTotalDemandArray: function (){
+        this.totalDemand.length = 0;
+    },
   }
 };
 
