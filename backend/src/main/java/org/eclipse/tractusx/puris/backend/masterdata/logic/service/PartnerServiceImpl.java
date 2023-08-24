@@ -107,7 +107,7 @@ public class PartnerServiceImpl implements PartnerService {
     @Override
     public Partner findByBpns(String bpns) {
         Optional<Partner> existingPartner =
-                partnerRepository.findFirstBySiteBpns(bpns);
+                partnerRepository.findFirstBySiteBpnsListIsContaining(bpns);
 
         if (existingPartner.isPresent()) {
             return existingPartner.get();

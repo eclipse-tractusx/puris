@@ -42,7 +42,8 @@ public class Partner {
     private String name;
     private String edcUrl;
     private String bpnl;
-    private String siteBpns;
+    @ElementCollection
+    private List<String> siteBpnsList = new ArrayList<>();
 
     @OneToMany(mappedBy = "partner")
     private Set<MaterialPartnerRelation> materialPartnerRelations;
@@ -61,7 +62,7 @@ public class Partner {
         this.name = name;
         this.edcUrl = edcUrl;
         this.bpnl = bpnl;
-        this.siteBpns = siteBpns;
+        siteBpnsList.add(siteBpns);
     }
 
     @Override

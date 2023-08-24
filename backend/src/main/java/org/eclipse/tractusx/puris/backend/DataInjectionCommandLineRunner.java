@@ -168,7 +168,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         PartnerProductStock partnerProductStockEntity = new PartnerProductStock(
                 semiconductorMaterial,
                 10,
-                supplierPartner.getSiteBpns(),
+                supplierPartner.getSiteBpnsList().get(0),
                 new Date(),
                 supplierPartner
         );
