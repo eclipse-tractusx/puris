@@ -40,7 +40,6 @@ import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockServi
 import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -121,6 +120,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info(String.format("UUID of supplier partner: %s", supplierPartner.getUuid()));
         supplierPartner = partnerService.findByUuid(supplierPartner.getUuid());
         log.info(String.format("Found supplier partner: %s", supplierPartner));
+        supplierPartner = partnerService.findByBpns(supplierPartner.getSites().stream().findAny().get().getBpns());
+        log.info("Found supplier partner by bpns: " + (supplierPartner != null));
 
 
         MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
@@ -168,7 +169,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         PartnerProductStock partnerProductStockEntity = new PartnerProductStock(
                 semiconductorMaterial,
                 10,
-                supplierPartner.getSiteBpnsList().get(0),
+                supplierPartner.getSites().stream().findAny().get().getBpns(),
                 new Date(),
                 supplierPartner
         );

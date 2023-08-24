@@ -33,5 +33,5 @@ public interface PartnerRepository extends JpaRepository<Partner, UUID> {
 
     Optional<Partner> findFirstByBpnl(String bpnl);
 
-    Optional<Partner> findFirstBySiteBpnsListIsContaining(String siteBpns);
+    Optional<Partner> findFirstBySites_Bpns(String siteBpns);
 }

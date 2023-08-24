@@ -42,8 +42,8 @@ public class Partner {
     private String name;
     private String edcUrl;
     private String bpnl;
-    @ElementCollection
-    private List<String> siteBpnsList = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL)
+    private Set<Site> sites = new HashSet<>();
 
     @OneToMany(mappedBy = "partner")
     private Set<MaterialPartnerRelation> materialPartnerRelations;
@@ -62,7 +62,7 @@ public class Partner {
         this.name = name;
         this.edcUrl = edcUrl;
         this.bpnl = bpnl;
-        siteBpnsList.add(siteBpns);
+        sites.add(new Site(siteBpns));
     }
 
     @Override
@@ -77,4 +77,5 @@ public class Partner {
     public int hashCode() {
         return Objects.hash(uuid);
     }
+
 }

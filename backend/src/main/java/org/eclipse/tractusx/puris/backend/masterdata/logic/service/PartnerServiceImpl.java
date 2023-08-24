@@ -53,7 +53,7 @@ public class PartnerServiceImpl implements PartnerService {
         }
 
         var searchResult = partnerRepository.findById(partner.getUuid());
-        if(searchResult.isEmpty()) {
+        if (searchResult.isEmpty()) {
             return partnerRepository.save(partner);
         }
         log.error("Could not create Partner " + partner.getBpnl() + " because it already existed before");
@@ -62,11 +62,7 @@ public class PartnerServiceImpl implements PartnerService {
 
     @Override
     public Partner findByUuid(UUID partnerUuid) {
-        Optional<Partner> foundPartner = partnerRepository.findById(partnerUuid);
-        if (foundPartner.isPresent()) {
-            return foundPartner.get();
-        }
-        return null;
+        return partnerRepository.findById(partnerUuid).orElse(null);
     }
 
     @Override
@@ -76,7 +72,7 @@ public class PartnerServiceImpl implements PartnerService {
 
     @Override
     public List<Partner> findAllSupplierPartnersForMaterialId(String ownMaterialNumber) {
-        var searchResult  = materialRepository.findById(ownMaterialNumber);
+        var searchResult = materialRepository.findById(ownMaterialNumber);
         if (searchResult.isPresent()) {
             return mprService.findAllSuppliersForMaterial(searchResult.get());
         }
@@ -86,7 +82,7 @@ public class PartnerServiceImpl implements PartnerService {
     @Override
     public Partner update(Partner partner) {
         Optional<Partner> existingPartner =
-                partnerRepository.findById(partner.getUuid());
+            partnerRepository.findById(partner.getUuid());
         if (existingPartner.isPresent()) {
             return partnerRepository.save(partner);
         }
@@ -96,21 +92,11 @@ public class PartnerServiceImpl implements PartnerService {
 
     @Override
     public Partner findByBpnl(String bpnl) {
-        Optional<Partner> existingPartner =
-                partnerRepository.findFirstByBpnl(bpnl);
-
-        if (existingPartner.isPresent()) {
-            return existingPartner.get();
-        } else return null;
+        return partnerRepository.findFirstByBpnl(bpnl).orElse(null);
     }
 
     @Override
     public Partner findByBpns(String bpns) {
-        Optional<Partner> existingPartner =
-                partnerRepository.findFirstBySiteBpnsListIsContaining(bpns);
-
-        if (existingPartner.isPresent()) {
-            return existingPartner.get();
-        } else return null;
+        return partnerRepository.findFirstBySites_Bpns(bpns).orElse(null);
     }
 }
