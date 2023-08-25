@@ -28,6 +28,13 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 
 import java.util.*;
 
+/**
+ * <p>This class represents an external business partner. Each partner
+ * is uniquely defined by his BPNL.</p>
+ *
+ * <p>Furthermore, each business partner must have at least one
+ * site-BPNS, and exactly one EDC-URL.</p>
+ */
 @Entity
 @Table(name = "partner")
 @Getter
@@ -39,6 +46,9 @@ public class Partner {
     @Id
     @GeneratedValue
     private UUID uuid;
+    /**
+     * The full name of the partner.
+     */
     private String name;
     private String edcUrl;
     private String bpnl;

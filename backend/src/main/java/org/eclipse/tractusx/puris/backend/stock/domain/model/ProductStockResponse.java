@@ -47,27 +47,12 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ProductStockResponse {
 
-//    @Id
-//    @GeneratedValue
-//    @JsonIgnore
-//    /**
-//     * Technical identifier for a Message.
-//     */
-//    private UUID uuid;
-
     /**
      * Steering information {@link ProductStockResponse} api message.
      */
     @Embedded
     private MessageHeader header;
 
-//    /**
-//     * List of actual content of the payload.
-//     * <p>
-//     * May contain also errors.
-//     */
-//    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<MessageContent> payload = new ArrayList<>();
 
     private ContentWrapper content = new ContentWrapper();
 
