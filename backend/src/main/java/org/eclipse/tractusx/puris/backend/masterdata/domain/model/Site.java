@@ -1,10 +1,42 @@
+/*
+ * Copyright (c) 2023 Volkswagen AG
+ * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * A Site represents a real estate business asset of a business partner.
+ * It may be a production plant, office building, warehouse, etc.
+ * Each Site is uniquely identified by it's BPNS.
+ * For every Site there is at least one business address, which is in turn
+ * represented by the {@link Address}.
+ */
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,12 +49,20 @@ public class Site {
     @NotNull
     private String bpns;
     private String name;
-    private String streetAndNumber;
-    private String zipCodeAndCity;
-    private String country;
+    @ElementCollection
+    private Set<Address> addresses = new HashSet<>();
 
-    public Site(String bpns) {
+
+    public Site(String bpns, String siteName, String bpna, String streetAndNumber, String zipCodeAndCity, String country) {
         this.bpns = bpns;
+        this.name = siteName;
+        addresses.add(new Address(bpna, streetAndNumber, zipCodeAndCity, country));
+    }
+
+    public Site(String bpns, String siteName, String bpna, String geoCoordinates) {
+        this.bpns = bpns;
+        this.name = siteName;
+        addresses.add(new Address(bpna, geoCoordinates));
     }
 
     @Override

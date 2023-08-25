@@ -22,6 +22,7 @@
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.PartnerRepository;
@@ -44,6 +45,9 @@ public class PartnerServiceImpl implements PartnerService {
 
     @Autowired
     private MaterialPartnerRelationService mprService;
+
+    @Autowired
+    private VariablesService variablesService;
 
 
     @Override
@@ -98,5 +102,10 @@ public class PartnerServiceImpl implements PartnerService {
     @Override
     public Partner findByBpns(String bpns) {
         return partnerRepository.findFirstBySites_Bpns(bpns).orElse(null);
+    }
+
+    @Override
+    public Partner getOwnPartnerEntity() {
+        return partnerRepository.findFirstByBpnl(variablesService.getOwnBpnl()).orElse(null);
     }
 }

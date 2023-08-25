@@ -42,6 +42,8 @@ public class Partner {
     private String name;
     private String edcUrl;
     private String bpnl;
+    @ElementCollection
+    private Set<Address> addresses = new HashSet<>();
     @OneToMany(cascade = CascadeType.ALL)
     private Set<Site> sites = new HashSet<>();
 
@@ -58,11 +60,28 @@ public class Partner {
     @Setter(AccessLevel.NONE)
     private List<PartnerProductStock> partnerProductStocks = new ArrayList<>();
 
-    public Partner(String name, String edcUrl, String bpnl, String siteBpns) {
+    public Partner(String name, String edcUrl, String bpnl, String siteBpns, String siteName, String siteBpna, String streetAndNumber,
+                   String zipCodeAndCity, String country) {
         this.name = name;
         this.edcUrl = edcUrl;
         this.bpnl = bpnl;
-        sites.add(new Site(siteBpns));
+        Site site = new Site(siteBpns, siteName, siteBpna, streetAndNumber, zipCodeAndCity, country);
+        sites.add(site);
+        addresses.add(site.getAddresses().stream().findFirst().get());
+    }
+
+    public Partner(String name, String edcUrl, String bpnl, String bpna, String streetAndNumber, String zipCodeAndCity, String country) {
+        this.name = name;
+        this.edcUrl = edcUrl;
+        this.bpnl = bpnl;
+        addresses.add(new Address(bpna, streetAndNumber, zipCodeAndCity, country));
+    }
+
+    public Partner(String name, String edcUrl, String bpnl, String bpna, String geoCoordinates) {
+        this.name = name;
+        this.edcUrl = edcUrl;
+        this.bpnl = bpnl;
+        addresses.add(new Address(bpna, geoCoordinates));
     }
 
     @Override
