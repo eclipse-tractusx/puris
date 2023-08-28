@@ -35,7 +35,7 @@ import java.util.UUID;
 public class MaterialPartnerRelation {
 
     @EmbeddedId
-    Key key;
+    private Key key;
 
     private String partnerMaterialNumber;
     private boolean partnerSuppliesMaterial;
@@ -44,12 +44,12 @@ public class MaterialPartnerRelation {
     @ManyToOne
     @MapsId("ownMaterialNumber")
     @JoinColumn(name = "material_ownMaterialNumber")
-    Material material;
+    private Material material;
 
     @ManyToOne
     @MapsId("uuid")
     @JoinColumn(name = "partner_uuid")
-    Partner partner;
+    private Partner partner;
 
     public MaterialPartnerRelation() {
         this.key = new Key();
