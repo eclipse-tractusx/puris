@@ -56,6 +56,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * This class contains a range of REST endpoints to provide the frontend
+ * the necessary data concerning stocks.
+ */
 @RestController
 @RequestMapping("stockView")
 @Slf4j
