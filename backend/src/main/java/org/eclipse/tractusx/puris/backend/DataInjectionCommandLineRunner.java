@@ -40,7 +40,6 @@ import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockServi
 import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -329,7 +328,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         rfm = new ProductStockRequestForMaterial("OtherCU-MNR",
             null, "OtherSU-MNR");
         productStock.add(rfm);
-        request.setState(DT_RequestStateEnum.WORKING);
+        request.setState(DT_RequestStateEnum.Working);
 
         request = productStockRequestService.createRequest(request);
 

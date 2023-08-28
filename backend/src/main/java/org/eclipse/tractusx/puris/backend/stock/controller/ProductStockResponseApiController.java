@@ -115,7 +115,7 @@ public class ProductStockResponseApiController {
             return ResponseEntity.status(401).build();
         }
 
-        productStockRequestService.updateState(productStockRequestFound, DT_RequestStateEnum.COMPLETED);
+        productStockRequestService.updateState(productStockRequestFound, DT_RequestStateEnum.Completed);
         productStockResponseApiService.consumeResponse(productStockResponse);
 
         // if the request has been correctly taken over, return 202

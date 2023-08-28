@@ -117,7 +117,7 @@ public class EDCRequestBodyBuilder {
         offerNode.put("assetId", assetId);
         var policyNode = MAPPER.createObjectNode();
         policyNode.put("uid", assetId);
-        policyNode.set("prohibiitons", MAPPER.createArrayNode());
+        policyNode.set("prohibitions", MAPPER.createArrayNode());
         policyNode.set("obligations", MAPPER.createArrayNode());
         var permissionArray = MAPPER.createArrayNode();
         var permissionNode = MAPPER.createObjectNode();

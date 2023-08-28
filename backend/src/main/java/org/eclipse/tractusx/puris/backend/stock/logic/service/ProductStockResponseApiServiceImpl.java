@@ -115,7 +115,7 @@ public class ProductStockResponseApiServiceImpl {
         }
 
         // Update status - also only MessageContentErrorDtos would be completed
-        productStockRequestService.updateState(correspondingProductStockRequest, DT_RequestStateEnum.COMPLETED);
+        productStockRequestService.updateState(correspondingProductStockRequest, DT_RequestStateEnum.Completed);
     }
 
 }

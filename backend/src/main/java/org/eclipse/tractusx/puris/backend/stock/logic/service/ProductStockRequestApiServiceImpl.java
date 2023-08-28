@@ -27,7 +27,6 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -115,7 +114,7 @@ public class ProductStockRequestApiServiceImpl {
 
     public void handleRequest(ProductStockRequest productStockRequest) {
 
-        productStockRequest = productStockRequestService.updateState(productStockRequest,DT_RequestStateEnum.WORKING);
+        productStockRequest = productStockRequestService.updateState(productStockRequest,DT_RequestStateEnum.Working);
         String requestingPartnerBpnl = productStockRequest.getHeader().getSender();
         Partner requestingPartner =  partnerService.findByBpnl(requestingPartnerBpnl);
 
@@ -124,7 +123,7 @@ public class ProductStockRequestApiServiceImpl {
         if (productStockRequest.getHeader().getSenderEdc() != null && !partnerIdsUrl.equals(productStockRequest.getHeader().getSenderEdc())) {
             log.warn("Partner " + requestingPartner.getName() + " is using unknown idsUrl: " + productStockRequest.getHeader().getSenderEdc());
             log.warn("Request will not be processed");
-            productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
+            productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
             return;
         }
 
@@ -228,7 +227,7 @@ public class ProductStockRequestApiServiceImpl {
         var data = edcAdapterService.getContractForResponseApi(partnerIdsUrl);
         if(data == null) {
             log.error("Failed to contract response api from " + partnerIdsUrl);
-            productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
+            productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
             log.info("Request status: \n" + productStockRequest.toString());
             return;
         }
@@ -261,10 +260,10 @@ public class ProductStockRequestApiServiceImpl {
                     endpoint, authKey, authCode, requestBody);
             log.info(httpResponse.body().string());
             httpResponse.body().close();
-            productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.COMPLETED);
+            productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Completed);
         } catch (Exception e) {
             log.error("Failed to send response to " + response.getHeader().getReceiver(), e);
-            productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
+            productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
         } finally {
             log.info("Request status: \n" + productStockRequest.toString());
         }

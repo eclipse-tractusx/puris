@@ -356,7 +356,7 @@ public class StockController {
 
 
             productStockRequest.setHeader(messageHeader);
-            productStockRequest.setState(DT_RequestStateEnum.WORKING);
+            productStockRequest.setState(DT_RequestStateEnum.Working);
             productStockRequest = productStockRequestService.createRequest(productStockRequest);
             var test = productStockRequestService.findRequestByHeaderUuid(productStockRequest.getHeader().getRequestId());
             log.debug("Stored in Database " + (test != null) + " " + productStockRequest.getHeader().getRequestId());
@@ -366,19 +366,19 @@ public class StockController {
                 response = edcAdapterService.sendDataPullRequest(endpoint, authKey, authCode, requestBody);
                 log.debug(response.body().string());
                 if(response.code() < 400) {
-                    productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.REQUESTED);
+                    productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Requested);
                     log.debug("Sent request and received HTTP Status code " + response.code());
-                    log.debug("Setting request state to " + DT_RequestStateEnum.REQUESTED);
-                    productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.REQUESTED);
+                    log.debug("Setting request state to " + DT_RequestStateEnum.Requested);
+                    productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Requested);
                 } else {
                     log.warn("Received HTTP Status Code " + response.code() + " for request " + productStockRequest.getHeader().getRequestId()
                     + " from " + productStockRequest.getHeader().getReceiver());
-                    productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
+                    productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
                 }
                 
             } catch (Exception e) {
                 log.error("Failed to send data pull request to " + supplierPartner.getEdcUrl(), e);
-                productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
+                productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
             } finally {
                 try {
                     if(response != null) {

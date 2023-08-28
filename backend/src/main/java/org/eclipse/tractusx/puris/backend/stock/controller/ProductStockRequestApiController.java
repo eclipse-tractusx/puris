@@ -111,7 +111,7 @@ public class ProductStockRequestApiController {
             return ResponseEntity.status(422).build();
         }
 
-        productStockRequest.setState(DT_RequestStateEnum.RECEIPT);
+        productStockRequest.setState(DT_RequestStateEnum.Received);
         productStockRequestService.createRequest(productStockRequest);
 
         final ProductStockRequest requestForAsyncThread = productStockRequest;
@@ -157,7 +157,7 @@ public class ProductStockRequestApiController {
             var requestStatus = request.getState();
             var jsonResponseBody = objectMapper.createObjectNode();
             jsonResponseBody.put("requestId", header.getRequestId().toString());
-            jsonResponseBody.put("requestState", requestStatus.STATUSTEXT);
+            jsonResponseBody.put("requestState", requestStatus.name());
             return ResponseEntity.status(200).body(jsonResponseBody);
         } catch (Exception e) {
             return ResponseEntity.status(400).build();
