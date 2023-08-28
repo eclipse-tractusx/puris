@@ -28,6 +28,14 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * <p>This class represents a relation between an instance of the {@link Material} Entity
+ * and one instance of the {@link Partner} Entity. For each pair of Material and Partner
+ * Entities there exists at most one MaterialPartnerRelation. </p>
+ * <p>This class stores, under which identifier (material number) the Partner knows
+ * this Material, and whether this Partner is a supplier or a customer of the Material.</p>
+ *
+ */
 @Entity
 @Getter
 @Setter
