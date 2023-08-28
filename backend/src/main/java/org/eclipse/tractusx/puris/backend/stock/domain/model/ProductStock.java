@@ -45,14 +45,14 @@ public class ProductStock extends Stock {
     @NotNull
     private Partner allocatedToCustomerPartner;
 
-    public ProductStock(Material material, double quantity, String atSiteBpnl, Date lastUpdatedOn, Partner allocatedToCustomerPartner) {
-        super(material, quantity, atSiteBpnl, lastUpdatedOn);
+    public ProductStock(Material material, double quantity, String atSiteBpns, Date lastUpdatedOn, Partner allocatedToCustomerPartner) {
+        super(material, quantity, atSiteBpns, lastUpdatedOn);
         super.setType(DT_StockTypeEnum.PRODUCT);
         this.setAllocatedToCustomerPartner(allocatedToCustomerPartner);
     }
 
-    public ProductStock(Material material, double quantity, String atSiteBpnl, Date lastUpdatedOn) {
-        super(material, quantity, atSiteBpnl, lastUpdatedOn);
+    public ProductStock(Material material, double quantity, String atSiteBpns, Date lastUpdatedOn) {
+        super(material, quantity, atSiteBpns, lastUpdatedOn);
         super.setType(DT_StockTypeEnum.PRODUCT);
     }
 
