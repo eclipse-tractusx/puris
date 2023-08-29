@@ -76,7 +76,7 @@ public class EndpointDataReferenceReceiver {
         @ApiResponse(responseCode = "400", description = "Received invalid message")
     })
     private ResponseEntity<String> authCodeReceivingEndpoint(@RequestBody JsonNode body) {
-        log.info("Received edr data:\n" + body.toPrettyString());
+        log.debug("Received edr data:\n" + body.toPrettyString());
         String transferId = body.get("id").asText(); 
         String authKey = body.get("authKey").asText();
         String authCode = body.get("authCode").asText();

@@ -23,6 +23,11 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.Response;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
@@ -112,6 +117,7 @@ public class StockController {
     @CrossOrigin
     @GetMapping("materials")
     @ResponseBody
+    @Operation(description = "Returns a list of all materials (excluding products)")
     public List<FrontendMaterialDto> getMaterials() {
         return materialService.findAllMaterials()
             .stream()
@@ -122,6 +128,13 @@ public class StockController {
     @CrossOrigin
     @GetMapping("materialnumbers-mapping")
     @ResponseBody
+    @Operation(description = "Returns a mapping of all material numbers, that others partners are using" +
+        "for the material given in the request parameter.")
+    @ApiResponses(value = {@ApiResponse(content = @Content(examples = {
+        @ExampleObject(name = "Basic sample", value = "{" +
+            "  \"BPNL1234567890ZZ\": \"MNR-8101-ID146955.001\"," +
+            "  \"BPNL4444444444XX\": \"MNR-7307-AU340474.002\"}")
+    }))})
     public Map<String, String> getMaterialNumbers(@RequestParam String ownMaterialNumber) {
         return mprService.getBPNL_To_MaterialNumberMap(ownMaterialNumber);
     }
@@ -129,6 +142,7 @@ public class StockController {
     @CrossOrigin
     @GetMapping("products")
     @ResponseBody
+    @Operation(description = "Returns a list of all products (excluding materials)")
     public List<FrontendMaterialDto> getProducts() {
         return materialService.findAllProducts()
             .stream()
@@ -139,6 +153,7 @@ public class StockController {
     @CrossOrigin
     @GetMapping("product-stocks")
     @ResponseBody
+    @Operation(description = "Returns a list of all product-stocks")
     public List<ProductStockDto> getProductStocks() {
         List<ProductStockDto> allProductStocks = productStockService.findAll().stream()
             .map(this::convertToDto)
@@ -150,6 +165,7 @@ public class StockController {
     @CrossOrigin
     @PostMapping("product-stocks")
     @ResponseBody
+    @Operation(description = "Creates a new product-stock")
     public ProductStockDto createProductStocks(@RequestBody ProductStockDto productStockDto) {
 
         ProductStock productStockToCreate = convertToEntity(productStockDto);
@@ -170,6 +186,7 @@ public class StockController {
     @CrossOrigin
     @PutMapping("product-stocks")
     @ResponseBody
+    @Operation(description = "Updates an existing product-stock")
     public ProductStockDto updateProductStocks(@RequestBody ProductStockDto productStockDto) {
         ProductStock existingProductStock = productStockService.findByUuid(productStockDto.getUuid());
         if (existingProductStock.getUuid() == null) {
@@ -206,6 +223,7 @@ public class StockController {
     @CrossOrigin
     @GetMapping("material-stocks")
     @ResponseBody
+    @Operation(description = "Returns a list of all material-stocks")
     public List<MaterialStockDto> getMaterialStocks() {
         List<MaterialStockDto> allMaterialStocks = materialStockService.findAll().stream()
                 .map(this::convertToDto)
@@ -217,6 +235,7 @@ public class StockController {
     @CrossOrigin
     @PostMapping("material-stocks")
     @ResponseBody
+    @Operation(description = "Creates a new material-stock")
     public MaterialStockDto createMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
 
         MaterialStock materialStockToCreate = convertToEntity(materialStockDto);
@@ -232,6 +251,7 @@ public class StockController {
     @CrossOrigin
     @PutMapping("material-stocks")
     @ResponseBody
+    @Operation(description = "Updates an existing material-stock")
     public MaterialStockDto updateMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
         MaterialStock existingMaterialStock = materialStockService.findByUuid(materialStockDto.getUuid());
         if (existingMaterialStock == null || existingMaterialStock.getUuid() == null) {
@@ -265,6 +285,7 @@ public class StockController {
     @CrossOrigin
     @GetMapping("partner-product-stocks")
     @ResponseBody
+    @Operation(description = "Returns a list of all partner-product-stocks that refer to the given material number")
     public List<PartnerProductStockDto> getPartnerProductStocks(@RequestParam String ownMaterialNumber) {
         return partnerProductStockService.
             findAllByOwnMaterialNumber(ownMaterialNumber)
@@ -287,6 +308,7 @@ public class StockController {
     @CrossOrigin
     @GetMapping("customer")
     @ResponseBody
+    @Operation(description = "Returns a list of all Partners that are ordering the given material")
     public List<PartnerDto> getCustomerPartnersOrderingMaterial(@RequestParam String ownMaterialNumber) {
         List<PartnerDto> allCustomerPartners = partnerService.findAllCustomerPartnersForMaterialId(ownMaterialNumber).stream()
                 .map(this::convertToDto)
@@ -297,6 +319,11 @@ public class StockController {
     @CrossOrigin
     @GetMapping("update-partner-product-stock")
     @ResponseBody
+    @Operation(description = "For the given material, all known suppliers will be requested to report their" +
+        "current product-stocks. The response body contains a list of those supplier partners that were sent a request." +
+        "Please note that these requests are handled asynchronously by the partners, so there are no guarantees, if and " +
+        "when the corresponding responses will be available. As soon as a response arrives, it will be available via a " +
+        "call to the GET partner-product-stocks endpoint.")
     public List<PartnerDto> triggerPartnerProductStockUpdateForMaterial(@RequestParam String ownMaterialNumber) {
 
         Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
