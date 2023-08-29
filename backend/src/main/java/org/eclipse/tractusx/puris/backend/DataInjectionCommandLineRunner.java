@@ -229,7 +229,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Partner createAndGetCustomerPartner() {
         Partner customerPartnerEntity = new Partner(
                 "Scenario Customer",
-                "http://sokrates-controlplane:8084/api/v1/ids",
+                //"http://sokrates-controlplane:8084/api/v1/ids",
+                "http://customer-control-plane:8184/api/v1/ids",
                 "BPNL4444444444XX",
                 "BPNS4444444444XX"
         );
@@ -248,7 +249,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Partner createAndGetSupplierPartner() {
         Partner supplierPartnerEntity = new Partner(
                 "Scenario Supplier",
-                "http://plato-controlplane:8084/api/v1/ids",
+                //"http://plato-controlplane:8084/api/v1/ids",
+                "http://supplier-control-plane:9184/api/v1/ids",
                 "BPNL1234567890ZZ",
                 "BPNS1234567890ZZ"
         );
@@ -315,7 +317,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         messageHeader.setRespondAssetId("product-stock-response-api");
         messageHeader.setContractAgreementId("some cid");
         messageHeader.setSender("BPNL1234567890ZZ");
-        messageHeader.setSenderEdc("http://plato-controlplane:8084/api/v1/ids");
+        //messageHeader.setSenderEdc("http://plato-controlplane:8084/api/v1/ids");
+        messageHeader.setSenderEdc("http://supplier-control-plane:9184/api/v1/ids");
         messageHeader.setReceiver("BPNL4444444444XX");
         messageHeader.setUseCase(DT_UseCaseEnum.PURIS);
         messageHeader.setCreationDate(new Date());

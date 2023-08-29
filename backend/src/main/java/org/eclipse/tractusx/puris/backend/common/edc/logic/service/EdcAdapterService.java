@@ -65,6 +65,12 @@ public class EdcAdapterService {
     @Value("${edc.controlplane.data.port}")
     private Integer dataPort;
 
+    /**
+     * Path to data management api
+     */
+    @Value("${edc.controlplane.data.path}")
+    private String dataPath;
+
     @Value("${edc.backend.url}")
     private String backendUrl;
 
@@ -113,13 +119,13 @@ public class EdcAdapterService {
             var policyBody = edcRequestBodyBuilder.buildPolicyRequestBody(orderId);
             var contractBody = edcRequestBodyBuilder.buildContractRequestBody(orderId);
 
-            var response = sendEdcRequest(assetBody, "/data/assets");
+            var response = sendEdcRequest(assetBody, "/assets");
             var success = response.isSuccessful();
             response.body().close();
-            response = sendEdcRequest(policyBody, "/data/policydefinitions");
+            response = sendEdcRequest(policyBody, "/policydefinitions");
             success &= response.isSuccessful();
             response.body().close();
-            response = sendEdcRequest(contractBody, "/data/contractdefinitions");
+            response = sendEdcRequest(contractBody, "/contractdefinitions");
             success &= response.isSuccessful();
             response.body().close();
             return success;
@@ -146,15 +152,15 @@ public class EdcAdapterService {
         JsonNode contractBody = edcRequestBodyBuilder.buildContractRequestBody(assetId);
         log.info(String.format("Contract Body: \n%s", contractBody.toPrettyString()));
         log.info(String.format("Asset Body: \n%s", assetBody.toPrettyString()));
-        var response = sendEdcRequest(assetBody, "/data/assets");
+        var response = sendEdcRequest(assetBody, "/assets");
         success &= response.isSuccessful();
         log.info(String.format("Creation of asset was successfull: %b", success));
         response.body().close();
-        response = sendEdcRequest(policyBody, "/data/policydefinitions");
+        response = sendEdcRequest(policyBody, "/policydefinitions");
         log.info(String.format("Creation of policy was successfull: %b", response.isSuccessful()));
         success &= response.isSuccessful();
         response.body().close();
-        response = sendEdcRequest(contractBody, "/data/contractdefinitions");
+        response = sendEdcRequest(contractBody, "/contractdefinitions");
         success &= response.isSuccessful();
         log.info(String.format("Created Contract Definition (%b) for Asset %s", response.isSuccessful(),
                 objectMapper.writeValueAsString(createAssetDto)));
@@ -188,6 +194,8 @@ public class EdcAdapterService {
         urlBuilder.scheme("http")
                 .host(edcHost)
                 .port(dataPort)
+            .addPathSegment("api")
+                .addPathSegment("v1")
                 .addPathSegment("data")
                 .addPathSegment("catalog")
                 .addEncodedQueryParameter("providerUrl", idsUrl + "/data");
@@ -268,7 +276,7 @@ public class EdcAdapterService {
         var negotiationRequestBody =
                 edcRequestBodyBuilder.buildNegotiationRequestBody(connectorAddress,
                         contractDefinitionId, assetId);
-        var response = sendEdcRequest(negotiationRequestBody, "/data/contractnegotiations");
+        var response = sendEdcRequest(negotiationRequestBody, "/contractnegotiations");
         String stringData = response.body().string();
         response.body().close();
         return stringData;
@@ -283,7 +291,7 @@ public class EdcAdapterService {
      * @throws IOException
      */
     public String getNegotiationState(String negotiationId) throws IOException {
-        var response = sendEdcRequest("/data/contractnegotiations/" + negotiationId);
+        var response = sendEdcRequest("/contractnegotiations/" + negotiationId);
         String stringData = response.body().string();
         response.body().close();
         return stringData;
@@ -305,7 +313,7 @@ public class EdcAdapterService {
                                 String orderId) throws IOException {
         var transferNode = edcRequestBodyBuilder.buildTransferRequestBody(transferId, connectorAddress, contractId, orderId);
         log.debug("TransferRequestBody:\n" + transferNode.toPrettyString());
-        var response = sendEdcRequest(transferNode, "/data/transferprocess");
+        var response = sendEdcRequest(transferNode, "/transferprocess");
         String stringData = response.body().string();
         response.body().close();
         return stringData;
@@ -320,7 +328,7 @@ public class EdcAdapterService {
      * @throws IOException
      */
     public String getTransferState(String transferId) throws IOException {
-        var response = sendEdcRequest("/data/transferprocess/" + transferId);
+        var response = sendEdcRequest("/transferprocess/" + transferId);
         String stringData = response.body().string();
         response.body().close();
         return stringData;
@@ -402,9 +410,9 @@ public class EdcAdapterService {
                 .header("X-Api-Key", edcApiKey)
                 .header("Content-Type", "application/json")
                 .post(RequestBody.create(MediaType.parse("application/json"), requestBody.toString()))
-                .url("http://" + edcHost + ":" + dataPort + urlSuffix)
+                .url("http://" + edcHost + ":" + dataPort + dataPath + urlSuffix)
                 .build();
-
+        log.debug(String.format("Request send to url: %s", request.urlString()));
         log.debug(String.format("Request body of EDC Request: %s", requestBody));
         return CLIENT.newCall(request).execute();
     }
@@ -422,7 +430,7 @@ public class EdcAdapterService {
         Request request = new Request.Builder()
                 .header("X-Api-Key", edcApiKey)
                 .header("Content-Type", "application/json")
-                .url("http://" + edcHost + ":" + dataPort + urlSuffix)
+                .url("http://" + edcHost + ":" + dataPort + dataPath + urlSuffix)
                 .build();
         log.debug(String.format("Send Request to url: %s", request.urlString()));
 
@@ -442,6 +450,7 @@ public class EdcAdapterService {
      * @return the response from your dataplane
      */
     public Response sendDataPullRequest(String url, String authKey, String authCode, String requestBodyString){
+        log.debug(String.format("Sending proxy call to endpoint '%s' with auth key '%s' and auth code '%s' with request body '%s'", url, authKey, authCode, requestBodyString));
         try {
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), requestBodyString);
             Request request = new Request.Builder()
