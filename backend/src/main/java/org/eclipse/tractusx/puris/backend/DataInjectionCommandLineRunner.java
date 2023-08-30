@@ -115,15 +115,27 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
      * the PURIS application.
      */
     private void createOwnPartnerEntity() {
-        Partner mySelf = new Partner(variablesService.getOwnName(),
-            variablesService.getOwnEdcIdsUrl(),
-            variablesService.getOwnBpnl(),
-            variablesService.getOwnDefaultBpns(),
-            variablesService.getOwnDefaultSiteName(),
-            variablesService.getOwnDefaultBpna(),
-            variablesService.getOwnDefaultStreetAndNumber(),
-            variablesService.getOwnDefaultZipCodeAndCity(),
-            variablesService.getOwnDefaultCountry());
+        Partner mySelf;
+        if(variablesService.getOwnDefaultBpns()!= null && variablesService.getOwnDefaultBpns().length()!=0) {
+            mySelf = new Partner(variablesService.getOwnName(),
+                variablesService.getOwnEdcIdsUrl(),
+                variablesService.getOwnBpnl(),
+                variablesService.getOwnDefaultBpns(),
+                variablesService.getOwnDefaultSiteName(),
+                variablesService.getOwnDefaultBpna(),
+                variablesService.getOwnDefaultStreetAndNumber(),
+                variablesService.getOwnDefaultZipCodeAndCity(),
+                variablesService.getOwnDefaultCountry());
+        } else {
+            mySelf = new Partner(variablesService.getOwnName(),
+                variablesService.getOwnEdcIdsUrl(),
+                variablesService.getOwnBpnl(),
+                variablesService.getOwnDefaultBpna(),
+                variablesService.getOwnDefaultStreetAndNumber(),
+                variablesService.getOwnDefaultZipCodeAndCity(),
+                variablesService.getOwnDefaultCountry()
+            );
+        }
         mySelf = partnerService.create(mySelf);
         log.info("Successfully created own Partner Entity: " + (partnerService.findByBpnl(mySelf.getBpnl()) != null));
         if(mySelf != null) {

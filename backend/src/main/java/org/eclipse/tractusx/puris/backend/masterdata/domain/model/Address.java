@@ -48,8 +48,14 @@ public class Address {
     private String zipCodeAndCity;
     private String country;
 
-    private String geoCoordinates;
-
+    /**
+     * Use this constructor to generate a new Address, consisting of the BPNA, street and
+     * number, zip code and city and country.
+     * @param bpna
+     * @param streetAndNumber
+     * @param zipCodeAndCity
+     * @param country
+     */
     public Address(String bpna, String streetAndNumber, String zipCodeAndCity, String country) {
         this.bpna = bpna;
         this.streetAndNumber = streetAndNumber;
@@ -57,10 +63,6 @@ public class Address {
         this.country = country;
     }
 
-    public Address(String bpna, String geoCoordinates) {
-        this.bpna = bpna;
-        this.geoCoordinates = geoCoordinates;
-    }
 
     @Override
     public boolean equals(Object obj) {

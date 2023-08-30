@@ -28,6 +28,18 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 
 import java.util.*;
 
+/**
+ * <p>This class represents business partner entities.
+ * Each Partner is required to have a BPNL number, a BPNA and
+ * an EDC-URL.</p>
+ *
+ * <p>Each Partner may have zero or more BPNS.
+ * Since each BPNS contains a BPNA, the requirement of having a BPNA
+ * is fulfilled by having at least one BPNS. </p>
+ * <p>If there is no BPNS, then this Partner has to have at least one
+ * BPNA, that is not attached to any other BPNS. </p>
+ *
+ */
 @Entity
 @Table(name = "partner")
 @Getter
@@ -79,7 +91,6 @@ public class Partner {
         this.bpnl = bpnl;
         Site site = new Site(siteBpns, siteName, siteBpna, streetAndNumber, zipCodeAndCity, country);
         sites.add(site);
-        addresses.add(site.getAddresses().stream().findAny().get());
     }
 
     /**
@@ -99,21 +110,6 @@ public class Partner {
         addresses.add(new Address(bpna, streetAndNumber, zipCodeAndCity, country));
     }
 
-    /**
-     * Use this constructor to generate a new Partner with a BPNA, that has no usual address,
-     * but a geo coordinate instead.
-     * @param name the human-readable name of this Partner
-     * @param edcUrl the edc-url of this Partner
-     * @param bpnl the BPNL of this Partner
-     * @param bpna the BPNA attached to the Partner
-     * @param geoCoordinates the geo coordinates assigned to that BPNA
-     */
-    public Partner(String name, String edcUrl, String bpnl, String bpna, String geoCoordinates) {
-        this.name = name;
-        this.edcUrl = edcUrl;
-        this.bpnl = bpnl;
-        addresses.add(new Address(bpna, geoCoordinates));
-    }
 
     @Override
     public boolean equals(Object o) {

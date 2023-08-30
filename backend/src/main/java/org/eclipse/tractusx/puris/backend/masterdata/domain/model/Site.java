@@ -53,16 +53,19 @@ public class Site {
     private Set<Address> addresses = new HashSet<>();
 
 
+    /**
+     * This constructor generates a new Site.
+     * @param bpns the BPNS of this Site
+     * @param siteName the human-readable description of this Site
+     * @param bpna the BPNA assigned to this Site
+     * @param streetAndNumber street and number assigned to the BPNA
+     * @param zipCodeAndCity zip code and city assigned to the BPNA
+     * @param country the country assigned to the BPNA
+     */
     public Site(String bpns, String siteName, String bpna, String streetAndNumber, String zipCodeAndCity, String country) {
         this.bpns = bpns;
         this.name = siteName;
         addresses.add(new Address(bpna, streetAndNumber, zipCodeAndCity, country));
-    }
-
-    public Site(String bpns, String siteName, String bpna, String geoCoordinates) {
-        this.bpns = bpns;
-        this.name = siteName;
-        addresses.add(new Address(bpna, geoCoordinates));
     }
 
     @Override
