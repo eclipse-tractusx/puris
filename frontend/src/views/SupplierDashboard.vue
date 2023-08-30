@@ -41,16 +41,6 @@
                         <option disabled value="" selected hidden>Choose a material</option>
                         <option v-for="item in dropdownCustomer.materials " :value="item" @click="emptyTotalDemandArray()">{{item.name}}</option>
                     </select>
-                    <!--
-                    <button
-                        class="mt-auto float-right bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        id="showBtn"
-                        type="submit"
-                        @click=""
-                    >
-                        Show
-                    </button>
-                    -->
                 </div>
             </div>
 
@@ -255,8 +245,6 @@ export default{
     },
     emptyTotalDemandArray: function (){
         this.totalDemand.length = 0;
-
-        console.log(this.dropdownMaterial.name)
     },
   }
 };
