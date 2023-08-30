@@ -60,6 +60,18 @@ public class Partner {
     @Setter(AccessLevel.NONE)
     private List<PartnerProductStock> partnerProductStocks = new ArrayList<>();
 
+    /**
+     * Use this constructor to generate a new Partner with a BPNS and a BPNA attached.
+     * @param name the human-readable name of this Partner
+     * @param edcUrl the edc-url of this Partner
+     * @param bpnl the BPNL of this Partner
+     * @param siteBpns the BPNS of this Partner
+     * @param siteName the name of the BPNS-site
+     * @param siteBpna the BPNA attached to the site
+     * @param streetAndNumber street and number of this BPNA
+     * @param zipCodeAndCity zip code and city of this BPNA
+     * @param country country of this BPNA
+     */
     public Partner(String name, String edcUrl, String bpnl, String siteBpns, String siteName, String siteBpna, String streetAndNumber,
                    String zipCodeAndCity, String country) {
         this.name = name;
@@ -67,9 +79,19 @@ public class Partner {
         this.bpnl = bpnl;
         Site site = new Site(siteBpns, siteName, siteBpna, streetAndNumber, zipCodeAndCity, country);
         sites.add(site);
-        addresses.add(site.getAddresses().stream().findFirst().get());
+        addresses.add(site.getAddresses().stream().findAny().get());
     }
 
+    /**
+     * Use this constructor to generate a new Partner with a BPNS and a BPNA, but no Site/BPNS.
+     * @param name the human-readable name of this Partner
+     * @param edcUrl the edc-url of this Partner
+     * @param bpnl the BPNL of this Partner
+     * @param bpna the BPNA attached to the Partner
+     * @param streetAndNumber street and number of this BPNA
+     * @param zipCodeAndCity zip code and city of this BPNA
+     * @param country country of this BPNA
+     */
     public Partner(String name, String edcUrl, String bpnl, String bpna, String streetAndNumber, String zipCodeAndCity, String country) {
         this.name = name;
         this.edcUrl = edcUrl;
@@ -77,6 +99,15 @@ public class Partner {
         addresses.add(new Address(bpna, streetAndNumber, zipCodeAndCity, country));
     }
 
+    /**
+     * Use this constructor to generate a new Partner with a BPNA, that has no usual address,
+     * but a geo coordinate instead.
+     * @param name the human-readable name of this Partner
+     * @param edcUrl the edc-url of this Partner
+     * @param bpnl the BPNL of this Partner
+     * @param bpna the BPNA attached to the Partner
+     * @param geoCoordinates the geo coordinates assigned to that BPNA
+     */
     public Partner(String name, String edcUrl, String bpnl, String bpna, String geoCoordinates) {
         this.name = name;
         this.edcUrl = edcUrl;
