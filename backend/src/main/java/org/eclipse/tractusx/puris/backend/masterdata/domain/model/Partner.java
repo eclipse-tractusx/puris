@@ -50,7 +50,13 @@ public class Partner {
      * The full name of the partner.
      */
     private String name;
+    /**
+     * The EDC-URL of the partner.
+     */
     private String edcUrl;
+    /**
+     * The BPNL of the partner. 
+     */
     private String bpnl;
     private String siteBpns;
 
