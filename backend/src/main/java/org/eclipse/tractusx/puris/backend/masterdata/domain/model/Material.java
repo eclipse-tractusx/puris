@@ -49,7 +49,7 @@ import java.util.Set;
  * to sell it immediately to another partner. </p>
  * <p>Each entity of this class is uniquely identified by the material number defined
  * by the partner that runs an instance of the PURIS app.</p>
- * <p>A certain type of semiconductors is produced by partner A. He has labeled his
+ * <p>Example: A certain type of semiconductors is produced by partner A. He has labeled his
  * product with the material number "SC-456.001". Partner B is buying this type of
  * semiconductors from A. In his own ERP-System, he is referring to this semiconductor
  * as "A-CHIP-0815".</p>
@@ -58,7 +58,7 @@ import java.util.Set;
  * that Partner C now wants to buy this material from A as well. In his own domain, C names
  * this material "XYZ-123". Therefore C will register the material under this ownMaterialNumber
  * in his own PURIS app.</p>
- * <p>When two partner are preparing to establish a business relationship in regard to a specific
+ * <p>When two partners are preparing to establish a business relationship in regard to a specific
  * material, then each partner will create a {@link MaterialPartnerRelation}, where he
  * designates the other partner as supplier or customer of this entity. He also must define,
  * under which material number his partner refers to this material.</p>
