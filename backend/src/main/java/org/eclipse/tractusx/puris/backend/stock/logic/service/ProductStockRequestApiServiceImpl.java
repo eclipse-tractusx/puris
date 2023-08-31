@@ -112,6 +112,18 @@ public class ProductStockRequestApiServiceImpl {
     }
 
 
+    /**
+     * This method should be called in a separate Thread.
+     *
+     * It will evaluate the given ProductStockRequest and check, whether this Partner is
+     * currently known as a customer for the given products. Then this method will assemble
+     * all necessary information from database, generate ProductStockSammDto's and then send
+     * them to the Partner via his product-stock-response-api.
+     *
+     * <p>Please note that this method currently does not support multple BPNS's/BPNA's per Partner.</p>
+     *
+     * @param productStockRequest a ProductStockRequest you received from a Customer Partner
+     */
     public void handleRequest(ProductStockRequest productStockRequest) {
 
         productStockRequest = productStockRequestService.updateState(productStockRequest,DT_RequestStateEnum.Working);
