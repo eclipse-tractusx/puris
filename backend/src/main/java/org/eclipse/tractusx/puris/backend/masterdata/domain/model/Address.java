@@ -30,9 +30,7 @@ import lombok.ToString;
 
 /**
  * <p>An Address either specifies the usual properties like street, house number,
- * zip code, city and country. Or instead of these it may just contain the
- * geographical coordinates, specified by longitude and latitude, like
- * for example "51.524784N, 7.443659E"</p>
+ * zip code, city and country.</p>
  * <p>All Addresses are uniquely identified by their BPNA</p>
  */
 @Embeddable
@@ -40,17 +38,30 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class Address {
+public class Address implements Comparable<Address> {
 
+    /**
+     * The BPNA of this Address.
+     */
     private String bpna;
 
+    /**
+     * The street and house number of this Address.
+     */
     private String streetAndNumber;
+    /**
+     * The zip code and city of this Address.
+     */
     private String zipCodeAndCity;
+    /**
+     * The country of this Address.
+     */
     private String country;
 
     /**
      * Use this constructor to generate a new Address, consisting of the BPNA, street and
      * number, zip code and city and country.
+     *
      * @param bpna
      * @param streetAndNumber
      * @param zipCodeAndCity
@@ -76,5 +87,10 @@ public class Address {
     @Override
     public int hashCode() {
         return bpna.hashCode();
+    }
+
+    @Override
+    public int compareTo(Address o) {
+        return bpna.compareTo(o.bpna);
     }
 }

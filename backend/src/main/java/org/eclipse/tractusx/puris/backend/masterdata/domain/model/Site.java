@@ -27,13 +27,13 @@ import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * A Site represents a real estate business asset of a business partner.
  * It may be a production plant, office building, warehouse, etc.
- * Each Site is uniquely identified by it's BPNS.
+ * Each Site is uniquely identified by its BPNS.
  * For every Site there is at least one business address, which is in turn
  * represented by the {@link Address}.
  */
@@ -43,24 +43,35 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString
-public class Site {
+public class Site implements Comparable<Site> {
 
     @Id
     @NotNull
+    /**
+     * The BPNS of this Site.
+     */
     private String bpns;
+    /**
+     * A human-readable, distinctive name of this site.
+     */
     private String name;
     @ElementCollection
-    private Set<Address> addresses = new HashSet<>();
+    /**
+     * Contains all Addresses (BPNAs) that are directly assigned to this
+     * Site's BPNS.
+     */
+    private SortedSet<Address> addresses = new TreeSet<>();
 
 
     /**
      * This constructor generates a new Site.
-     * @param bpns the BPNS of this Site
-     * @param siteName the human-readable description of this Site
-     * @param bpna the BPNA assigned to this Site
+     *
+     * @param bpns            the BPNS of this Site
+     * @param siteName        the human-readable description of this Site
+     * @param bpna            the BPNA assigned to this Site
      * @param streetAndNumber street and number assigned to the BPNA
-     * @param zipCodeAndCity zip code and city assigned to the BPNA
-     * @param country the country assigned to the BPNA
+     * @param zipCodeAndCity  zip code and city assigned to the BPNA
+     * @param country         the country assigned to the BPNA
      */
     public Site(String bpns, String siteName, String bpna, String streetAndNumber, String zipCodeAndCity, String country) {
         this.bpns = bpns;
@@ -80,5 +91,10 @@ public class Site {
     @Override
     public int hashCode() {
         return bpns.hashCode();
+    }
+
+    @Override
+    public int compareTo(Site o) {
+        return bpns.compareTo(o.bpns);
     }
 }

@@ -159,7 +159,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info(String.format("UUID of supplier partner: %s", supplierPartner.getUuid()));
         supplierPartner = partnerService.findByUuid(supplierPartner.getUuid());
         log.info(String.format("Found supplier partner: %s", supplierPartner));
-        supplierPartner = partnerService.findByBpns(supplierPartner.getSites().stream().findAny().get().getBpns());
+        supplierPartner = partnerService.findByBpns(supplierPartner.getSites().stream().findFirst().get().getBpns());
         log.info("Found supplier partner by bpns: " + (supplierPartner != null));
 
 
@@ -208,7 +208,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         PartnerProductStock partnerProductStockEntity = new PartnerProductStock(
             semiconductorMaterial,
             10,
-            supplierPartner.getSites().stream().findAny().get().getBpns(),
+            supplierPartner.getSites().stream().findFirst().get().getBpns(),
             new Date(),
             supplierPartner
         );

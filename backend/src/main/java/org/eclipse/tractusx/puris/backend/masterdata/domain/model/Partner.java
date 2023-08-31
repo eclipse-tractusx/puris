@@ -38,7 +38,6 @@ import java.util.*;
  * is fulfilled by having at least one BPNS. </p>
  * <p>If there is no BPNS, then this Partner has to have at least one
  * BPNA, that is not attached to any other BPNS. </p>
- *
  */
 @Entity
 @Table(name = "partner")
@@ -51,38 +50,66 @@ public class Partner {
     @Id
     @GeneratedValue
     private UUID uuid;
+    /**
+     * A human-readable, distinctive name of this partner.
+     */
     private String name;
+    /**
+     * The EDC-URL of the partner.
+     */
     private String edcUrl;
+    /**
+     * The BPNL of the partner.
+     */
+
     private String bpnl;
     @ElementCollection
-    private Set<Address> addresses = new HashSet<>();
+    /**
+     * Contains all Addresses (BPNAs) that are directly assigned to this
+     * Partner's BPNL.
+     */
+    private SortedSet<Address> addresses = new TreeSet<>();
     @OneToMany(cascade = CascadeType.ALL)
-    private Set<Site> sites = new HashSet<>();
+    /**
+     * Contains all Sites (BPNSs) that are assigned to this
+     * Partner's BPNL. Each BPNS has one or more addresses (BPNAs).
+     */
+    private SortedSet<Site> sites = new TreeSet<>();
 
     @OneToMany(mappedBy = "partner")
+    /**
+     * Contains all MaterialPartnerRelations that this Partner is involved in.
+     */
     private Set<MaterialPartnerRelation> materialPartnerRelations;
 
     @OneToMany
     @ToString.Exclude
     @Setter(AccessLevel.NONE)
+    /**
+     * Contains all ProductStocks that are created for this Partner.
+     */
     private List<ProductStock> allocatedProductStocksForCustomer = new ArrayList<>();
 
     @OneToMany
     @ToString.Exclude
     @Setter(AccessLevel.NONE)
+    /**
+     * Contains all PartnerProductStocks that this Partner has for us.
+     */
     private List<PartnerProductStock> partnerProductStocks = new ArrayList<>();
 
     /**
      * Use this constructor to generate a new Partner with a BPNS and a BPNA attached.
-     * @param name the human-readable name of this Partner
-     * @param edcUrl the edc-url of this Partner
-     * @param bpnl the BPNL of this Partner
-     * @param siteBpns the BPNS of this Partner
-     * @param siteName the name of the BPNS-site
-     * @param siteBpna the BPNA attached to the site
+     *
+     * @param name            the human-readable name of this Partner
+     * @param edcUrl          the edc-url of this Partner
+     * @param bpnl            the BPNL of this Partner
+     * @param siteBpns        the BPNS of this Partner
+     * @param siteName        the name of the BPNS-site
+     * @param siteBpna        the BPNA attached to the site
      * @param streetAndNumber street and number of this BPNA
-     * @param zipCodeAndCity zip code and city of this BPNA
-     * @param country country of this BPNA
+     * @param zipCodeAndCity  zip code and city of this BPNA
+     * @param country         country of this BPNA
      */
     public Partner(String name, String edcUrl, String bpnl, String siteBpns, String siteName, String siteBpna, String streetAndNumber,
                    String zipCodeAndCity, String country) {
@@ -95,13 +122,14 @@ public class Partner {
 
     /**
      * Use this constructor to generate a new Partner with a BPNS and a BPNA, but no Site/BPNS.
-     * @param name the human-readable name of this Partner
-     * @param edcUrl the edc-url of this Partner
-     * @param bpnl the BPNL of this Partner
-     * @param bpna the BPNA attached to the Partner
+     *
+     * @param name            the human-readable name of this Partner
+     * @param edcUrl          the edc-url of this Partner
+     * @param bpnl            the BPNL of this Partner
+     * @param bpna            the BPNA attached to the Partner
      * @param streetAndNumber street and number of this BPNA
-     * @param zipCodeAndCity zip code and city of this BPNA
-     * @param country country of this BPNA
+     * @param zipCodeAndCity  zip code and city of this BPNA
+     * @param country         country of this BPNA
      */
     public Partner(String name, String edcUrl, String bpnl, String bpna, String streetAndNumber, String zipCodeAndCity, String country) {
         this.name = name;
