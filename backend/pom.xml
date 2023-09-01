@@ -179,21 +179,14 @@
             </includes>
           <targetPath>BOOT-INF/classes/</targetPath>
       </resource>
-        <!-- add README to META-INF -->
+        <!-- add legal information to META-INF -->
         <resource>
-        <directory>${project.basedir}/..</directory>
+        <directory>${project.basedir}/</directory>
         <includes>
           <include>README.md</include>
-        </includes>
-        <targetPath>META-INF</targetPath>
-      </resource>
-        <!-- add legal information to META-INF -->
-      <resource>
-        <directory>${project.basedir}/..</directory>
-        <includes>
           <include>LICENSE</include>
           <include>NOTICE.md</include>
-          <include>DEPENDENCIES_BACKEND</include>
+          <include>DEPENDENCIES</include>
           <include>SECURITY.md</include>
         </includes>
         <targetPath>META-INF</targetPath>
