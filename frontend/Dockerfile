@@ -38,7 +38,10 @@ RUN jq 'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item
 RUN npm install && npm run ${NPM_BUILD_MODE}
 
 RUN chmod -R 777 /app/dist
+
+# Copy Legal information for distributions
 COPY README.md /app/dist/README.md
+COPY SECURITY.md /app/dist/SECURITY.md
 COPY LICENSE /app/dist/LICENSE
 COPY NOTICE.md /app/dist/NOTICE.md
 COPY DEPENDENCIES /app/dist/DEPENDENCIES
