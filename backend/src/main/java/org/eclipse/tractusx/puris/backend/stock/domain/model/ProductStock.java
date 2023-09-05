@@ -29,6 +29,7 @@ import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 
 import java.util.Date;
 
@@ -50,14 +51,14 @@ public class ProductStock extends Stock {
     @NotNull
     private Partner allocatedToCustomerPartner;
 
-    public ProductStock(Material material, double quantity, String atSiteBpns, Date lastUpdatedOn, Partner allocatedToCustomerPartner) {
-        super(material, quantity, atSiteBpns, lastUpdatedOn);
+    public ProductStock(Material material, double quantity, MeasurementUnit measurementUnit, String atSiteBpns, Date lastUpdatedOn, Partner allocatedToCustomerPartner) {
+        super(material, quantity, measurementUnit, atSiteBpns, lastUpdatedOn);
         super.setType(DT_StockTypeEnum.PRODUCT);
         this.setAllocatedToCustomerPartner(allocatedToCustomerPartner);
     }
 
-    public ProductStock(Material material, double quantity, String atSiteBpns, Date lastUpdatedOn) {
-        super(material, quantity, atSiteBpns, lastUpdatedOn);
+    public ProductStock(Material material, double quantity, MeasurementUnit measurementUnit, String atSiteBpns, Date lastUpdatedOn) {
+        super(material, quantity, measurementUnit, atSiteBpns, lastUpdatedOn);
         super.setType(DT_StockTypeEnum.PRODUCT);
     }
 
