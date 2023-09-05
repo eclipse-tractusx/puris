@@ -42,10 +42,7 @@ import org.springframework.stereotype.Component;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.util.ArrayList;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -68,19 +65,6 @@ public class ProductStockSammMapper {
      */
     public ProductStockSammDto toSamm(Stock stock) {
 
-        GregorianCalendar calendar = new GregorianCalendar();
-        calendar.setTime(stock.getLastUpdatedOn());
-        XMLGregorianCalendar lastUpdatedOn = null;
-        try {
-            lastUpdatedOn =
-                    DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
-        } catch (DatatypeConfigurationException e) {
-            log.error(String.format("Could not create XML Gregorian " +
-                            "Calender from PartnerProductStock.lastUpdatedOn: %s",
-                    stock.getLastUpdatedOn().toString()));
-            return null;
-        }
-
         AllocatedStock allocatedStock = new AllocatedStock(
                 new Quantity(stock.getQuantity(), "unit:" + stock.getMeasurementUnit()),
                 new LocationId(LocationIdTypeEnum.B_P_N_S, stock.getAtSiteBpns())
@@ -90,7 +74,7 @@ public class ProductStockSammMapper {
 
         Position position = new Position(
                 null,
-                lastUpdatedOn,
+                stock.getLastUpdatedOn(),
                 allocatedStocks
         );
         List<Position> positions = new ArrayList<>();
@@ -155,6 +139,12 @@ public class ProductStockSammMapper {
         measurementUnitString = measurementUnitString.replace("unit:", "");
         MeasurementUnit measurementUnit = MeasurementUnit.valueOf(measurementUnitString);
 
+        // Another quickfix. This will retrieve the lastUpdatedOn timestamp from
+        // the first position found and apply it to the accumulated stock.
+        Date lastUpdatedOnDate = samm.getPositions().stream().findFirst()
+            .get().getLastUpdatedOnDateTime();
+
+
         // determine material
 
         Material foundMaterial = materialService.findByOwnMaterialNumber(samm.getMaterialNumberCustomer());
@@ -178,7 +168,8 @@ public class ProductStockSammMapper {
                 quantity,
                 measurementUnit,
                 atSiteBpns,
-                supplierPartner
+                supplierPartner,
+                lastUpdatedOnDate
         );
     }
 }
