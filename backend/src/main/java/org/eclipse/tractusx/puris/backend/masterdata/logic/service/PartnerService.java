@@ -42,4 +42,6 @@ public interface PartnerService {
 
     Partner findByBpns(String bpns);
 
+    Partner getOwnPartnerEntity();
+
 }

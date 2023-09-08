@@ -27,7 +27,6 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -203,7 +202,7 @@ public class ProductStockRequestApiServiceImpl {
             if (productStocks.size() > 1) {
                 List<ProductStock> distinctProductStocks =
                         productStocks.stream()
-                                .filter(distinctByKey(p -> p.getAtSiteBpnl()))
+                                .filter(distinctByKey(p -> p.getAtSiteBpns()))
                                 .collect(Collectors.toList());
                 if (distinctProductStocks.size() > 1) {
                     log.warn(String.format("More than one site is not yet supported per " +

@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -40,7 +41,6 @@ import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockServi
 import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -78,6 +78,9 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     @Autowired
     private ProductStockRequestService productStockRequestService;
 
+    @Autowired
+    private VariablesService variablesService;
+
 
     @Value("${puris.demonstrator.role}")
     private String demoRole;
@@ -94,7 +97,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
+        createOwnPartnerEntity();
         log.info("Creating setup for " + demoRole.toUpperCase());
         if (demoRole.equals("supplier")) {
             setupSupplierRole();
@@ -107,7 +110,42 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     }
 
     /**
-     * Generates an initial set of data for a customer within the demonstration context. 
+     * Generates and persists a Partner entity that holds all
+     * relevant data about the owner of the running instance of
+     * the PURIS application.
+     */
+    private void createOwnPartnerEntity() {
+        Partner mySelf;
+        if(variablesService.getOwnDefaultBpns()!= null && variablesService.getOwnDefaultBpns().length()!=0) {
+            mySelf = new Partner(variablesService.getOwnName(),
+                variablesService.getOwnEdcIdsUrl(),
+                variablesService.getOwnBpnl(),
+                variablesService.getOwnDefaultBpns(),
+                variablesService.getOwnDefaultSiteName(),
+                variablesService.getOwnDefaultBpna(),
+                variablesService.getOwnDefaultStreetAndNumber(),
+                variablesService.getOwnDefaultZipCodeAndCity(),
+                variablesService.getOwnDefaultCountry());
+        } else {
+            mySelf = new Partner(variablesService.getOwnName(),
+                variablesService.getOwnEdcIdsUrl(),
+                variablesService.getOwnBpnl(),
+                variablesService.getOwnDefaultBpna(),
+                variablesService.getOwnDefaultStreetAndNumber(),
+                variablesService.getOwnDefaultZipCodeAndCity(),
+                variablesService.getOwnDefaultCountry()
+            );
+        }
+        mySelf = partnerService.create(mySelf);
+        log.info("Successfully created own Partner Entity: " + (partnerService.findByBpnl(mySelf.getBpnl()) != null));
+        if(mySelf != null) {
+            log.info(mySelf.toString());
+        }
+    }
+
+    /**
+     * Generates an initial set of data for a customer within the demonstration context.
+     *
      * @throws JsonProcessingException
      */
     private void setupCustomerRole() throws JsonProcessingException {
@@ -121,6 +159,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info(String.format("UUID of supplier partner: %s", supplierPartner.getUuid()));
         supplierPartner = partnerService.findByUuid(supplierPartner.getUuid());
         log.info(String.format("Found supplier partner: %s", supplierPartner));
+        supplierPartner = partnerService.findByBpns(supplierPartner.getSites().stream().findFirst().get().getBpns());
+        log.info("Found supplier partner by bpns: " + (supplierPartner != null));
 
 
         MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
@@ -154,10 +194,10 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         // Create Material Stock
         MaterialStock materialStockEntity = new MaterialStock(
-                semiconductorMaterial,
-                5,
-                "BPNS4444444444XX",
-                new Date()
+            semiconductorMaterial,
+            5,
+            "BPNS4444444444XX",
+            new Date()
         );
         materialStockEntity = materialStockService.create(materialStockEntity);
         log.info(String.format("Created materialStock: %s", materialStockEntity));
@@ -166,19 +206,22 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         // Create PartnerProductStock
         semiconductorMaterial = materialService.findByOwnMaterialNumber(semiconductorMaterial.getOwnMaterialNumber());
         PartnerProductStock partnerProductStockEntity = new PartnerProductStock(
-                semiconductorMaterial,
-                10,
-                supplierPartner.getSiteBpns(),
-                new Date(),
-                supplierPartner
+            semiconductorMaterial,
+            10,
+            supplierPartner.getSites().stream().findFirst().get().getBpns(),
+            new Date(),
+            supplierPartner
         );
         log.info(String.format("Created partnerProductStock: %s", partnerProductStockEntity));
         partnerProductStockEntity = partnerProductStockService.create(partnerProductStockEntity);
         ProductStockSammDto productStockSammDto = productStockSammMapper.toSamm(partnerProductStockEntity);
         log.info("SAMM-DTO:\n" + objectMapper.writeValueAsString(productStockSammDto));
+
+        log.info("Own Street and Number: " + variablesService.getOwnDefaultStreetAndNumber());
     }
+
     /**
-     * Generates an initial set of data for a supplier within the demonstration context. 
+     * Generates an initial set of data for a supplier within the demonstration context.
      */
     private void setupSupplierRole() {
         Partner customerPartner = createAndGetCustomerPartner();
@@ -205,11 +248,11 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
 
         ProductStock productStockEntity = new ProductStock(
-                semiconductorMaterial,
-                20,
-                "BPNS1234567890ZZ",
-                new Date(),
-                customerPartner
+            semiconductorMaterial,
+            20,
+            "BPNS1234567890ZZ",
+            new Date(),
+            customerPartner
         );
         productStockEntity = productStockService.create(productStockEntity);
         log.info(String.format("Created productStock: %s", productStockEntity.toString()));
@@ -217,21 +260,27 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         List<ProductStock> foundProductStocks = productStockService.
             findAllByMaterialNumberCustomer(semiconductorMatNbrCustomer, customerPartner);
         log.info(String.format("Found productStocks by material number and allocated to customer " +
-                "bpnl: %s", foundProductStocks));
+            "bpnl: %s", foundProductStocks));
     }
 
 
     /**
      * creates a new customer Partner entity, stores it to
-     * the database and returns this entity. 
+     * the database and returns this entity.
+     *
      * @return a reference to the newly created customer
      */
     private Partner createAndGetCustomerPartner() {
         Partner customerPartnerEntity = new Partner(
-                "Scenario Customer",
-                "http://sokrates-controlplane:8084/api/v1/ids",
-                "BPNL4444444444XX",
-                "BPNS4444444444XX"
+            "Scenario Customer",
+            "http://sokrates-controlplane:8084/api/v1/ids",
+            "BPNL4444444444XX",
+            "BPNS4444444444XY",
+            "Hauptwerk Musterhausen",
+            "BPNA4444444444ZZ",
+            "Musterstraße 35b",
+            "77777 Musterhausen",
+            "Germany"
         );
         customerPartnerEntity = partnerService.create(customerPartnerEntity);
         log.info(String.format("Created customer partner: %s", customerPartnerEntity));
@@ -242,15 +291,21 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     /**
      * creates a new supplier Partner entity, stores it to
-     * the database and returns this entity. 
+     * the database and returns this entity.
+     *
      * @return a reference to the newly created supplier
      */
     private Partner createAndGetSupplierPartner() {
         Partner supplierPartnerEntity = new Partner(
-                "Scenario Supplier",
-                "http://plato-controlplane:8084/api/v1/ids",
-                "BPNL1234567890ZZ",
-                "BPNS1234567890ZZ"
+            "Scenario Supplier",
+            "http://plato-controlplane:8084/api/v1/ids",
+            "BPNL1234567890ZZ",
+            "BPNS1234567890XY",
+            "Konzernzentrale Dudelsdorf",
+            "BPNA1234567890AA",
+            "Heinrich-Supplier-Straße 1",
+            "77785 Dudelsdorf",
+            "Germany"
         );
         supplierPartnerEntity = partnerService.create(supplierPartnerEntity);
         log.info(String.format("Created supplier partner: %s", supplierPartnerEntity));
@@ -261,15 +316,19 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     /**
      * creates a new (non-scenario) customer entity, stores
-     * it to the database and returns this entity. 
+     * it to the database and returns this entity.
+     *
      * @return a reference to the newly created non-scenario customer
      */
     private Partner createAndGetNonScenarioCustomer() {
         Partner nonScenarioCustomer = new Partner(
-                "Non-Scenario Customer",
-                "(None Provided!)>",
-                "BPNL2222222222RR",
-                "BPNL2222222222RR"
+            "Non-Scenario Customer",
+            "(None Provided!)>",
+            "BPNL2222222222RR",
+            "BPNS2222222222XZ",
+            "Zentraleinkaufsabteilung",
+            "BPNA2222222222HH",
+            "54.321N, 8.7654E"
         );
         nonScenarioCustomer = partnerService.create(nonScenarioCustomer);
         log.info(String.format("Created non-scenario customer partner: %s", nonScenarioCustomer));
@@ -295,8 +354,9 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     }
 
     /**
-     * creates a new central control unit Material object. 
-     * Note: this object is not yet stored to the database 
+     * creates a new central control unit Material object.
+     * Note: this object is not yet stored to the database
+     *
      * @return a reference to the newly created central control unit material
      */
     private Material getNewCentralControlUnitMaterial() {
@@ -334,11 +394,10 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         request = productStockRequestService.createRequest(request);
 
 
-
         String stringOutput = objectMapper.writeValueAsString(request);
-        log.info("SAMPLE-Request\n" +  objectMapper.readTree(stringOutput).toPrettyString());
+        log.info("SAMPLE-Request\n" + objectMapper.readTree(stringOutput).toPrettyString());
 
-        var deserializedRequest =  objectMapper.readValue(stringOutput, ProductStockRequest.class);
+        var deserializedRequest = objectMapper.readValue(stringOutput, ProductStockRequest.class);
         log.info(deserializedRequest.toString());
 
 

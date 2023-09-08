@@ -34,8 +34,8 @@ import java.util.Date;
 @AllArgsConstructor
 public class MaterialStockDto extends StockDto {
 
-    public MaterialStockDto(MaterialDto material, double quantity, String atSiteBpnl) {
-        super(material, quantity, atSiteBpnl, new Date());
+    public MaterialStockDto(MaterialDto material, double quantity, String atSiteBpns) {
+        super(material, quantity, atSiteBpns, new Date());
         this.setType(DT_StockTypeEnum.MATERIAL);
     }
 }
