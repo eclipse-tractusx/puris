@@ -33,6 +33,37 @@ import lombok.ToString;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * <p>This class represents materials and products that are to be traded between
+ * partners that collaborate via the PURIS application. </p>
+ * <p>Whether a material is a product or a "material", is determined by the point of
+ * view. If the owner of the current instance of a PURIS application is selling a
+ * certain product to customers, the product flag must be set to "true" and the business
+ * logic will treat this material as a product if the circumstances require a differentiation
+ * between products and materials.</p>
+ * <p>If, on the other hand, the owner of the current instance of a PURIS application is buying
+ * a material from external partners, then the material-flag must be set to "true", in order to
+ * allow the business logic to handle this correctly.</p>
+ * <p>This approach allows for flexibility, especially in cases when the the owner of the current
+ * instance of a PURIS application is a trader who is buying a certain good from one partner just
+ * to sell it immediately to another partner. </p>
+ * <p>Each entity of this class is uniquely identified by the material number defined
+ * by the partner that runs an instance of the PURIS app.</p>
+ * <p>Example: A certain type of semiconductors is produced by partner A. He has labeled his
+ * product with the material number "SC-456.001". Partner B is buying this type of
+ * semiconductors from A. In his own ERP-System, he is referring to this semiconductor
+ * as "A-CHIP-0815".</p>
+ * <p>In partner A's PURIS app this material will be registered under the ownMaterialNumber
+ * "SC-456.001", while partner B will registered as "A-CHIP-0815". Let's further assume
+ * that Partner C now wants to buy this material from A as well. In his own domain, C names
+ * this material "XYZ-123". Therefore C will register the material under this ownMaterialNumber
+ * in his own PURIS app.</p>
+ * <p>When two partners are preparing to establish a business relationship in regard to a specific
+ * material, then each partner will create a {@link MaterialPartnerRelation}, where he
+ * designates the other partner as supplier or customer of this entity. He also must define,
+ * under which material number his partner refers to this material.</p>
+ *
+ */
 @Entity
 @Table(name = "material")
 @Getter
@@ -55,11 +86,22 @@ public class Material {
      */
     private boolean productFlag;
 
+    /**
+     * The unique material number defined by the owner of this
+     * PURIS instance for this material.
+     */
     @Id
     private String ownMaterialNumber;
 
+    /**
+     * If there is a Catena-X material number defined
+     * for this material, this is stored here.
+     */
     private String materialNumberCx;
 
+    /**
+     * Informal name or description of the material.
+     */
     private String name;
 
     @OneToMany(mappedBy = "material")

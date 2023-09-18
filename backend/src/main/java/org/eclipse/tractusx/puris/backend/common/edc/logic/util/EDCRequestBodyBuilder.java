@@ -117,7 +117,7 @@ public class EDCRequestBodyBuilder {
         offerNode.put("assetId", assetId);
         var policyNode = MAPPER.createObjectNode();
         policyNode.put("uid", assetId);
-        policyNode.set("prohibiitons", MAPPER.createArrayNode());
+        policyNode.set("prohibitions", MAPPER.createArrayNode());
         policyNode.set("obligations", MAPPER.createArrayNode());
         var permissionArray = MAPPER.createArrayNode();
         var permissionNode = MAPPER.createObjectNode();
@@ -185,7 +185,7 @@ public class EDCRequestBodyBuilder {
         AssetPropertiesDto apiAssetPropertiesDto = new AssetPropertiesDto();
         apiAssetPropertiesDto.setApiBusinessObject(DT_ApiBusinessObjectEnum.PRODUCT_STOCK.PROPERTIES_DESCRIPTION);
         apiAssetPropertiesDto.setApiPurpose(method.PURPOSE);
-        apiAssetPropertiesDto.setContentType("appplication/json");
+        apiAssetPropertiesDto.setContentType("application/json");
         apiAssetPropertiesDto.setId(variablesService.getApiAssetId(method));
         apiAssetPropertiesDto.setName(method.NAME);
         apiAssetPropertiesDto.setType(DT_AssetTypeEnum.api);

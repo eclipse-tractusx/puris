@@ -33,6 +33,11 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTy
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ * This class is the common superclass of MaterialStock, ProductStock
+ * and PartnerProductStock.
+ *
+ */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "stock_type")

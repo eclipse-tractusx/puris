@@ -389,7 +389,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         rfm = new ProductStockRequestForMaterial("OtherCU-MNR",
             null, "OtherSU-MNR");
         productStock.add(rfm);
-        request.setState(DT_RequestStateEnum.WORKING);
+        request.setState(DT_RequestStateEnum.Working);
 
         request = productStockRequestService.createRequest(request);
 

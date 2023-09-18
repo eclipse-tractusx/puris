@@ -32,6 +32,11 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTy
 
 import java.util.Date;
 
+/**
+ * <p>This class represents a distinct stock of products that the owner of
+ * the current instance of the PURIS application has in his warehouse and
+ * that is dedicated to be sent to a certain customer partner later in time</p>
+ */
 @Entity
 @Getter
 @Setter

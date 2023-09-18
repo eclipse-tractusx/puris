@@ -33,6 +33,12 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTy
 
 import java.util.Date;
 
+/**
+ * <p>This class represents a distinct stock of products that a supplier partner of
+ * the owner of the current instance of the PURIS application has in his warehouse and
+ * that is dedicated to be sent to the owner of the current instance of the PURIS
+ * application later in time</p>
+ */
 @Entity
 @DiscriminatorValue("PartnerProductStock")
 @Getter

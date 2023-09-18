@@ -61,7 +61,6 @@ public class Partner {
     /**
      * The BPNL of the partner.
      */
-
     private String bpnl;
     @ElementCollection
     /**

@@ -243,7 +243,7 @@ public class EdcAdapterService {
     /**
      * Orders your own EDC Connector Controlplane to negotiate a contract with 
      * the owner of the given connector address for an asset (specified by the 
-     * assetId) under conditions as stated in the contract defintion with the 
+     * assetId) under conditions as stated in the contract definition with the
      * given contractDefinitionId
      * @param connectorAddress
      * @param contractDefinitionId
@@ -303,8 +303,8 @@ public class EdcAdapterService {
      * Sends a request to the own EDC Connector Controlplane in order to receive
      * the current status of the previously initiated transfer as specified by 
      * the parameter. 
-     * @param transferId
-     * @return
+     * @param transferId the id of the transfer in question
+     * @return the response from your Controlplane
      * @throws IOException
      */
     public String getTransferState(String transferId) throws IOException {
