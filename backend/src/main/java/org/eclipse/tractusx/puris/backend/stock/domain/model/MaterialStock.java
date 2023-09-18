@@ -45,9 +45,9 @@ import java.util.Date;
 @NoArgsConstructor
 public class MaterialStock extends Stock {
 
-    public MaterialStock(Material material, double quantity, String atSiteBpnl,
+    public MaterialStock(Material material, double quantity, String atSiteBpns,
                          Date lastUpdatedOn) {
-        super(material, quantity, atSiteBpnl, lastUpdatedOn);
+        super(material, quantity, atSiteBpns, lastUpdatedOn);
         super.setType(DT_StockTypeEnum.MATERIAL);
     }
 

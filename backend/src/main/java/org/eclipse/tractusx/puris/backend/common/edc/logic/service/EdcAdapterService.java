@@ -65,9 +65,6 @@ public class EdcAdapterService {
     @Value("${edc.controlplane.data.port}")
     private Integer dataPort;
 
-    @Value("${edc.backend.url}")
-    private String backendUrl;
-
     @Value("${edc.controlplane.key}")
     private String edcApiKey;
 
@@ -495,7 +492,6 @@ public class EdcAdapterService {
      */
     public String[] getContractForRequestOrResponseApiApi(String partnerIdsUrl, Map<String, String> filter) {
         try {
-            // String catalog = getCatalog(partnerIdsUrl, Optional.of(filter));
             JsonNode objectNode = getCatalogFilteredByAssetPropertyObjectFilter(partnerIdsUrl, filter);
             JsonNode contractOffer = objectNode.get("contractOffers").get(0);
             String assetApi = contractOffer.get("asset").get("id").asText();

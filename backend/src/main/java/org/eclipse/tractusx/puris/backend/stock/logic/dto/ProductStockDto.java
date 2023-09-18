@@ -39,14 +39,14 @@ public class ProductStockDto extends StockDto {
 
     private PartnerDto allocatedToCustomerPartner;
 
-    public ProductStockDto(MaterialDto material, double quantity, String atSiteBpnl) {
-        super(material, quantity, atSiteBpnl, new Date());
+    public ProductStockDto(MaterialDto material, double quantity, String atSiteBpns) {
+        super(material, quantity, atSiteBpns, new Date());
         this.setType(DT_StockTypeEnum.PRODUCT);
     }
 
-    public ProductStockDto(MaterialDto material, double quantity, String atSiteBpnl,
+    public ProductStockDto(MaterialDto material, double quantity, String atSiteBpns,
                            PartnerDto allocatedToCustomerPartner) {
-        super(material, quantity, atSiteBpnl, new Date());
+        super(material, quantity, atSiteBpns, new Date());
         this.setType(DT_StockTypeEnum.PRODUCT);
         this.allocatedToCustomerPartner = allocatedToCustomerPartner;
     }

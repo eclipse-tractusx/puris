@@ -214,7 +214,7 @@ public class ProductStockRequestApiServiceImpl {
             if (productStocks.size() > 1) {
                 List<ProductStock> distinctProductStocks =
                         productStocks.stream()
-                                .filter(distinctByKey(p -> p.getAtSiteBpnl()))
+                                .filter(distinctByKey(p -> p.getAtSiteBpns()))
                                 .collect(Collectors.toList());
                 if (distinctProductStocks.size() > 1) {
                     log.warn(String.format("More than one site is not yet supported per " +

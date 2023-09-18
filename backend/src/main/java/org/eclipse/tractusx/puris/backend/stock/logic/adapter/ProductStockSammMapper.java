@@ -82,7 +82,7 @@ public class ProductStockSammMapper {
 
         AllocatedStock allocatedStock = new AllocatedStock(
                 new Quantity(stock.getQuantity(), "unit:piece"),
-                new LocationId(LocationIdTypeEnum.B_P_N_S, stock.getAtSiteBpnl())
+                new LocationId(LocationIdTypeEnum.B_P_N_S, stock.getAtSiteBpns())
         );
         List<AllocatedStock> allocatedStocks = new ArrayList<>();
         allocatedStocks.add(allocatedStock);

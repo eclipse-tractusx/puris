@@ -60,7 +60,7 @@ public class Stock {
     private double quantity;
 
     @NotNull
-    private String atSiteBpnl;
+    private String atSiteBpns;
 
     @Enumerated(EnumType.STRING)
     @NotNull
@@ -70,10 +70,10 @@ public class Stock {
     @NotNull
     private Date lastUpdatedOn;
 
-    public Stock(Material material, double quantity, String atSiteBpnl, Date lastUpdatedOn) {
+    public Stock(Material material, double quantity, String atSiteBpns, Date lastUpdatedOn) {
         this.material = material;
         this.quantity = quantity;
-        this.atSiteBpnl = atSiteBpnl;
+        this.atSiteBpns = atSiteBpns;
         this.lastUpdatedOn = lastUpdatedOn;
     }
 }

@@ -46,16 +46,16 @@ public abstract class StockDto implements Serializable {
 
     private double quantity;
 
-    private String atSiteBpnl;
+    private String atSiteBpns;
 
     private DT_StockTypeEnum type;
 
     private Date lastUpdatedOn;
 
-    public StockDto(MaterialDto material, double quantity, String atSiteBpnl, Date lastUpdatedOn) {
+    public StockDto(MaterialDto material, double quantity, String atSiteBpns, Date lastUpdatedOn) {
         this.material = material;
         this.quantity = quantity;
-        this.atSiteBpnl = atSiteBpnl;
+        this.atSiteBpns = atSiteBpns;
         this.lastUpdatedOn = lastUpdatedOn;
     }
 }

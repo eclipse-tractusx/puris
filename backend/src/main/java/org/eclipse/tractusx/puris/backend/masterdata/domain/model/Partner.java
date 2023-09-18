@@ -29,11 +29,15 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import java.util.*;
 
 /**
- * <p>This class represents an external business partner. Each partner
- * is uniquely defined by his BPNL.</p>
+ * <p>This class represents business partner entities.
+ * Each Partner is required to have a BPNL number, a BPNA and
+ * an EDC-URL.</p>
  *
- * <p>Furthermore, each business partner must have at least one
- * site-BPNS, and exactly one EDC-URL.</p>
+ * <p>Each Partner may have zero or more BPNS.
+ * Since each BPNS contains a BPNA, the requirement of having a BPNA
+ * is fulfilled by having at least one BPNS. </p>
+ * <p>If there is no BPNS, then this Partner has to have at least one
+ * BPNA, that is not attached to any other BPNS. </p>
  */
 @Entity
 @Table(name = "partner")
@@ -47,7 +51,7 @@ public class Partner {
     @GeneratedValue
     private UUID uuid;
     /**
-     * The full name of the partner.
+     * A human-readable, distinctive name of this partner.
      */
     private String name;
     /**
@@ -55,30 +59,84 @@ public class Partner {
      */
     private String edcUrl;
     /**
-     * The BPNL of the partner. 
+     * The BPNL of the partner.
      */
     private String bpnl;
-    private String siteBpns;
+    @ElementCollection
+    /**
+     * Contains all Addresses (BPNAs) that are directly assigned to this
+     * Partner's BPNL.
+     */
+    private SortedSet<Address> addresses = new TreeSet<>();
+    @OneToMany(cascade = CascadeType.ALL)
+    /**
+     * Contains all Sites (BPNSs) that are assigned to this
+     * Partner's BPNL. Each BPNS has one or more addresses (BPNAs).
+     */
+    private SortedSet<Site> sites = new TreeSet<>();
 
     @OneToMany(mappedBy = "partner")
+    /**
+     * Contains all MaterialPartnerRelations that this Partner is involved in.
+     */
     private Set<MaterialPartnerRelation> materialPartnerRelations;
 
     @OneToMany
     @ToString.Exclude
     @Setter(AccessLevel.NONE)
+    /**
+     * Contains all ProductStocks that are created for this Partner.
+     */
     private List<ProductStock> allocatedProductStocksForCustomer = new ArrayList<>();
 
     @OneToMany
     @ToString.Exclude
     @Setter(AccessLevel.NONE)
+    /**
+     * Contains all PartnerProductStocks that this Partner has for us.
+     */
     private List<PartnerProductStock> partnerProductStocks = new ArrayList<>();
 
-    public Partner(String name, String edcUrl, String bpnl, String siteBpns) {
+    /**
+     * Use this constructor to generate a new Partner with a BPNS and a BPNA attached.
+     *
+     * @param name            the human-readable name of this Partner
+     * @param edcUrl          the edc-url of this Partner
+     * @param bpnl            the BPNL of this Partner
+     * @param siteBpns        the BPNS of this Partner
+     * @param siteName        the name of the BPNS-site
+     * @param siteBpna        the BPNA attached to the site
+     * @param streetAndNumber street and number of this BPNA
+     * @param zipCodeAndCity  zip code and city of this BPNA
+     * @param country         country of this BPNA
+     */
+    public Partner(String name, String edcUrl, String bpnl, String siteBpns, String siteName, String siteBpna, String streetAndNumber,
+                   String zipCodeAndCity, String country) {
         this.name = name;
         this.edcUrl = edcUrl;
         this.bpnl = bpnl;
-        this.siteBpns = siteBpns;
+        Site site = new Site(siteBpns, siteName, siteBpna, streetAndNumber, zipCodeAndCity, country);
+        sites.add(site);
     }
+
+    /**
+     * Use this constructor to generate a new Partner with a BPNS and a BPNA, but no Site/BPNS.
+     *
+     * @param name            the human-readable name of this Partner
+     * @param edcUrl          the edc-url of this Partner
+     * @param bpnl            the BPNL of this Partner
+     * @param bpna            the BPNA attached to the Partner
+     * @param streetAndNumber street and number of this BPNA
+     * @param zipCodeAndCity  zip code and city of this BPNA
+     * @param country         country of this BPNA
+     */
+    public Partner(String name, String edcUrl, String bpnl, String bpna, String streetAndNumber, String zipCodeAndCity, String country) {
+        this.name = name;
+        this.edcUrl = edcUrl;
+        this.bpnl = bpnl;
+        addresses.add(new Address(bpna, streetAndNumber, zipCodeAndCity, country));
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -92,4 +150,5 @@ public class Partner {
     public int hashCode() {
         return Objects.hash(uuid);
     }
+
 }
