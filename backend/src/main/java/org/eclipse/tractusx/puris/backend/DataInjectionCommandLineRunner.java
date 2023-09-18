@@ -35,6 +35,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
@@ -196,6 +197,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         MaterialStock materialStockEntity = new MaterialStock(
             semiconductorMaterial,
             5,
+            MeasurementUnit.piece,
             "BPNS4444444444XX",
             new Date()
         );
@@ -208,6 +210,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         PartnerProductStock partnerProductStockEntity = new PartnerProductStock(
             semiconductorMaterial,
             10,
+            MeasurementUnit.piece,
             supplierPartner.getSites().stream().findFirst().get().getBpns(),
             new Date(),
             supplierPartner
@@ -250,6 +253,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         ProductStock productStockEntity = new ProductStock(
             semiconductorMaterial,
             20,
+            MeasurementUnit.piece,
             "BPNS1234567890ZZ",
             new Date(),
             customerPartner

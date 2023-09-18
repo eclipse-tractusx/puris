@@ -32,6 +32,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialServi
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.*;
 import org.modelmapper.ModelMapper;
@@ -41,10 +42,7 @@ import org.springframework.stereotype.Component;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.util.ArrayList;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -67,21 +65,8 @@ public class ProductStockSammMapper {
      */
     public ProductStockSammDto toSamm(Stock stock) {
 
-        GregorianCalendar calendar = new GregorianCalendar();
-        calendar.setTime(stock.getLastUpdatedOn());
-        XMLGregorianCalendar lastUpdatedOn = null;
-        try {
-            lastUpdatedOn =
-                    DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
-        } catch (DatatypeConfigurationException e) {
-            log.error(String.format("Could not create XML Gregorian " +
-                            "Calender from PartnerProductStock.lastUpdatedOn: %s",
-                    stock.getLastUpdatedOn().toString()));
-            return null;
-        }
-
         AllocatedStock allocatedStock = new AllocatedStock(
-                new Quantity(stock.getQuantity(), "unit:piece"),
+                new Quantity(stock.getQuantity(), "unit:" + stock.getMeasurementUnit()),
                 new LocationId(LocationIdTypeEnum.B_P_N_S, stock.getAtSiteBpns())
         );
         List<AllocatedStock> allocatedStocks = new ArrayList<>();
@@ -89,7 +74,7 @@ public class ProductStockSammMapper {
 
         Position position = new Position(
                 null,
-                lastUpdatedOn,
+                stock.getLastUpdatedOn(),
                 allocatedStocks
         );
         List<Position> positions = new ArrayList<>();
@@ -143,6 +128,23 @@ public class ProductStockSammMapper {
                                 ).sum()
                 ).sum();
 
+        // This is just a quickfix in line with the above-mentioned restriction that
+        // we are currently supporting only an aggregated stock. It is assumed that all
+        // stocks are using the same unit. If, for example, one stock uses kilograms and
+        // another stock uses metric tonnes for the same material, this will of course
+        // lead to faulty data.
+        String measurementUnitString = samm.getPositions().stream().findFirst()
+            .stream().findFirst().get().getAllocatedStocks().stream().findFirst()
+            .get().getQuantityOnAllocatedStock().getMeasurementUnit();
+        measurementUnitString = measurementUnitString.replace("unit:", "");
+        MeasurementUnit measurementUnit = MeasurementUnit.valueOf(measurementUnitString);
+
+        // Another quickfix. This will retrieve the lastUpdatedOn timestamp from
+        // the first position found and apply it to the accumulated stock.
+        Date lastUpdatedOnDate = samm.getPositions().stream().findFirst()
+            .get().getLastUpdatedOnDateTime();
+
+
         // determine material
 
         Material foundMaterial = materialService.findByOwnMaterialNumber(samm.getMaterialNumberCustomer());
@@ -164,8 +166,10 @@ public class ProductStockSammMapper {
         return new PartnerProductStockDto(
                 foundMaterialDto,
                 quantity,
+                measurementUnit,
                 atSiteBpns,
-                supplierPartner
+                supplierPartner,
+                lastUpdatedOnDate
         );
     }
 }

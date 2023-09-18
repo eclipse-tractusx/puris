@@ -45,9 +45,6 @@ public class LocationId {
     @JsonCreator
     public LocationId(@JsonProperty(value = "locationIdType") LocationIdTypeEnum locationIdType,
                       @JsonProperty(value = "locationId") String locationId) {
-        super(
-
-        );
         this.locationIdType = locationIdType;
         this.locationId = locationId;
     }

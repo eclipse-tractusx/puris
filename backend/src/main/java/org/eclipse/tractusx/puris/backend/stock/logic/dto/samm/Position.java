@@ -28,6 +28,7 @@ import lombok.ToString;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -40,7 +41,7 @@ public class Position {
     private Optional<OrderPositionReference> orderPositionReference;
 
     @NotNull
-    private XMLGregorianCalendar lastUpdatedOnDateTime;
+    private Date lastUpdatedOnDateTime;
 
     @NotNull
     private Collection<AllocatedStock> allocatedStocks;
@@ -48,7 +49,7 @@ public class Position {
     @JsonCreator
     public Position(
             @JsonProperty(value = "orderPositionReference") Optional<OrderPositionReference> orderPositionReference,
-            @JsonProperty(value = "lastUpdatedOnDateTime") XMLGregorianCalendar lastUpdatedOnDateTime,
+            @JsonProperty(value = "lastUpdatedOnDateTime") Date lastUpdatedOnDateTime,
             @JsonProperty(value = "allocatedStocks") Collection<AllocatedStock> allocatedStocks) {
         super(
 
@@ -72,7 +73,7 @@ public class Position {
      *
      * @return {@link #lastUpdatedOnDateTime}
      */
-    public XMLGregorianCalendar getLastUpdatedOnDateTime() {
+    public Date getLastUpdatedOnDateTime() {
         return this.lastUpdatedOnDateTime;
     }
 

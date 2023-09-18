@@ -45,9 +45,6 @@ public class Quantity {
     @JsonCreator
     public Quantity(@JsonProperty(value = "quantityNumber") Double quantityNumber,
                     @JsonProperty(value = "measurementUnit") String measurementUnit) {
-        super(
-
-        );
         this.quantityNumber = quantityNumber;
         this.measurementUnit = measurementUnit;
     }

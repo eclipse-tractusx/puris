@@ -48,9 +48,6 @@ public class AllocatedStock {
     @JsonCreator
     public AllocatedStock(@JsonProperty(value = "quantityOnAllocatedStock") Quantity quantityOnAllocatedStock,
                           @JsonProperty(value = "supplierStockLocationId") LocationId supplierStockLocationId) {
-        super(
-
-        );
         this.quantityOnAllocatedStock = quantityOnAllocatedStock;
         this.supplierStockLocationId = supplierStockLocationId;
     }

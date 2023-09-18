@@ -19,24 +19,37 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.logic.dto;
+package org.eclipse.tractusx.puris.backend.stock.domain.model.measurement;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+public enum MeasurementUnit {
 
-import java.util.Date;
+    gram,
+    kilogram,
+    tonneMetricTon,
+    tonUsOrShortTonUkorus,
+    ounceAvoirdupois,
+    pound,
+    centimetre,
+    metre,
+    kilometre,
+    inch,
+    foot,
+    yard,
+    squareCentimetre,
+    squareMetre,
+    squareInch,
+    squareFoot,
+    squareYard,
+    cubicCentimetre,
+    cubicMetre,
+    cubicInch,
+    millilitre,
+    litre,
+    hectolitre,
+    piece,
+    set,
+    pair,
+    page,
+    kilowattHour
 
-@Getter
-@Setter
-@AllArgsConstructor
-public class MaterialStockDto extends StockDto {
-
-    public MaterialStockDto(MaterialDto material, double quantity, MeasurementUnit measurementUnit, String atSiteBpns) {
-        super(material, quantity, measurementUnit, atSiteBpns, new Date());
-        this.setType(DT_StockTypeEnum.MATERIAL);
-    }
 }

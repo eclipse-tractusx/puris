@@ -29,6 +29,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 
 import java.util.Date;
 import java.util.UUID;
@@ -60,6 +61,9 @@ public class Stock {
     private double quantity;
 
     @NotNull
+    private MeasurementUnit measurementUnit;
+
+    @NotNull
     private String atSiteBpns;
 
     @Enumerated(EnumType.STRING)
@@ -70,9 +74,10 @@ public class Stock {
     @NotNull
     private Date lastUpdatedOn;
 
-    public Stock(Material material, double quantity, String atSiteBpns, Date lastUpdatedOn) {
+    public Stock(Material material, double quantity, MeasurementUnit measurementUnit, String atSiteBpns, Date lastUpdatedOn) {
         this.material = material;
         this.quantity = quantity;
+        this.measurementUnit = measurementUnit;
         this.atSiteBpns = atSiteBpns;
         this.lastUpdatedOn = lastUpdatedOn;
     }

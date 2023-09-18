@@ -62,9 +62,6 @@ public class ProductStockSammDto extends MessageContentDto {
                                @JsonProperty(value = "materialNumberCustomer") String materialNumberCustomer,
                                @JsonProperty(value = "materialNumberCatenaX") Optional<String> materialNumberCatenaX,
                                @JsonProperty(value = "materialNumberSupplier") Optional<String> materialNumberSupplier) {
-        super(
-
-        );
         this.positions = positions;
         this.materialNumberCustomer = materialNumberCustomer;
         this.materialNumberCatenaX = materialNumberCatenaX;
