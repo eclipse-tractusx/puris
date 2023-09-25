@@ -21,10 +21,7 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 
-import jakarta.annotation.Nullable;
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
 
 import java.io.Serializable;
 import java.util.*;
@@ -41,6 +38,8 @@ public class PartnerDto implements Serializable {
 
     private String edcUrl;
     private String bpnl;
-    private String siteBpns;
+
+    private SortedSet<AddressDto> addresses = new TreeSet<>();
+    private SortedSet<SiteDto> sites = new TreeSet<>();
 
 }
