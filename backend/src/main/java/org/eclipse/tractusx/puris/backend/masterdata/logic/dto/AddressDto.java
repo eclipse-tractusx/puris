@@ -19,18 +19,39 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.logic.dto;
+package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FrontendMaterialDto {
-    String ownMaterialNumber;
-    String description;
+@ToString
+public class AddressDto implements Comparable<AddressDto> {
+
+    private String bpna;
+    private String streetAndNumber;
+    private String zipCodeAndCity;
+    private String country;
+
+    @Override
+    public int compareTo(AddressDto o) {
+        return bpna.compareTo(o.bpna);
+    }
+
+    @Override
+    public int hashCode() {
+        return bpna.hashCode();
+    }
+
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other instanceof AddressDto) {
+            return bpna.equals(((AddressDto) other).bpna);
+        }
+        return false;
+    }
 }
