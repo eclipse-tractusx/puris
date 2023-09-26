@@ -90,4 +90,9 @@ public class MaterialServiceImpl implements MaterialService {
 
     }
 
+    @Override
+    public List<Material> findAll() {
+        return materialRepository.findAll();
+    }
+
 }
