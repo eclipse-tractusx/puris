@@ -22,6 +22,7 @@
 package org.eclipse.tractusx.puris.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.*;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.*;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.*;
@@ -47,15 +48,14 @@ public class PartnerController {
     @Operation(description = "Creates a new Partner entity with the data given in the request body. Please not that no " +
         "UUID can be assigned to a Partner that wasn't created before. So the request body must not contain a UUID.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Partner created successfully. In this case the newly created Partner is " +
-            "returned as a DTO (including the UUID). "),
+        @ApiResponse(responseCode = "200", description = "Partner created successfully."),
         @ApiResponse(responseCode = "400", description = "Request body was malformed, didn't meet the minimum constraints or wrongfully contained a UUID."),
         @ApiResponse(responseCode = "409", description = "The BPNL specified in the request body is already assigned. ")
     })
     public ResponseEntity<?> createPartner(@RequestBody PartnerDto partnerDto) {
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
         // Any given UUID is wrong by default since we're creating a new Partner entity
-        if (partnerDto.getUuid() != null) {
+        if (partnerDto.getUuid() != null || partnerDto.getBpnl() == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
 
@@ -78,25 +78,24 @@ public class PartnerController {
             // Creation failed due to unfulfilled constraints
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-        return new ResponseEntity<>(modelMapper.map(partnerEntity, PartnerDto.class), HttpStatusCode.valueOf(200));
+        return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }
 
     @PutMapping("putAddress")
     @CrossOrigin
     @Operation(description = "Updates an existing Partner by adding a new Address. If that this Partner already has " +
-        "an Address with the BPNA given in the request body, that existing Address will be overwritten. " +
-        "You have to provide either the BPNL parameter or the UUID parameter in order to identify the requested Partner." +
-        " If both are provided, the BPNL is evaluated first.")
+        "an Address with the BPNA given in the request body, that existing Address will be overwritten. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Update accepted"),
         @ApiResponse(responseCode = "400", description = "Invalid Address data"),
         @ApiResponse(responseCode = "404", description = "Partner not found"),
         @ApiResponse(responseCode = "500", description = "")
     })
-    public ResponseEntity<?> addAddress(@RequestParam(required = false) String bpnl,
-                                        @RequestParam(required = false) UUID uuid,
-                                        @RequestBody AddressDto address) {
-        Partner existingPartner = findPartner(bpnl, uuid);
+    public ResponseEntity<?> addAddress(
+        @Parameter(name = "partnerBpnl", description = "The unique BPNL that was assigned to that Partner.",
+            example = "BPNL2222222222RR", required = true) @RequestParam() String partnerBpnl,
+        @RequestBody AddressDto address) {
+        Partner existingPartner = partnerService.findByBpnl(partnerBpnl);
         if (existingPartner == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
         }
@@ -120,19 +119,18 @@ public class PartnerController {
     @PutMapping("putSite")
     @CrossOrigin
     @Operation(description = "Updates an existing Partner by adding a new Site. If that this Partner already has " +
-        "a Site with the BPNS given in the request body, that existing Site will be overwritten. " +
-        "You have to provide either the BPNL parameter or the UUID parameter in order to identify the requested Partner." +
-        " If both are provided, the BPNL is evaluated first.")
+        "a Site with the BPNS given in the request body, that existing Site will be overwritten. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Update accepted"),
         @ApiResponse(responseCode = "400", description = "Invalid Address data"),
         @ApiResponse(responseCode = "404", description = "Partner not found"),
         @ApiResponse(responseCode = "500", description = "")
     })
-    public ResponseEntity<?> addSite(@RequestParam(required = false) String bpnl,
-                                     @RequestParam(required = false) UUID uuid,
-                                     @RequestBody SiteDto site) {
-        Partner existingPartner = findPartner(bpnl, uuid);
+    public ResponseEntity<?> addSite(
+        @Parameter(name = "partnerBpnl", description = "The unique BPNL that was assigned to that Partner.",
+            example = "BPNL2222222222RR", required = true) @RequestParam() String partnerBpnl,
+        @RequestBody SiteDto site) {
+        Partner existingPartner = partnerService.findByBpnl(partnerBpnl);
         if (existingPartner == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
         }
@@ -157,23 +155,25 @@ public class PartnerController {
 
     @CrossOrigin
     @GetMapping
-    @Operation(description = "Returns the requested PartnerDto. You have to provide either the BPNL parameter or the " +
-        "UUID parameter in order to identify the requested Partner. If both are provided, the BPNL is evaluated first.")
+    @Operation(description = "Returns the requested PartnerDto.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Found Partner, returning it in response body."),
-        @ApiResponse(responseCode = "404", description = "Requested Partner not found.")
+        @ApiResponse(responseCode = "404", description = "Requested Partner not found."),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
-    public ResponseEntity<PartnerDto> getPartner(@RequestParam(required = false) String bpnl, @RequestParam(required = false) UUID uuid) {
-        Partner partner = findPartner(bpnl, uuid);
-        if (partner != null) {
-            try {
-                PartnerDto partnerDto = modelMapper.map(partner, PartnerDto.class);
-                return new ResponseEntity<>(partnerDto, HttpStatusCode.valueOf(200));
-            } catch (Exception e) {
-                return new ResponseEntity<>(HttpStatusCode.valueOf(500));
-            }
+    public ResponseEntity<PartnerDto> getPartner(
+        @Parameter(name = "partnerBpnl", description = "The unique BPNL that was assigned to that Partner.",
+            example = "BPNL2222222222RR", required = true) @RequestParam() String partnerBpnl) {
+        Partner partner = partnerService.findByBpnl(partnerBpnl);
+        if (partner == null) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(404));
         }
-        return new ResponseEntity<>(HttpStatusCode.valueOf(404));
+        try {
+            PartnerDto partnerDto = modelMapper.map(partner, PartnerDto.class);
+            return new ResponseEntity<>(partnerDto, HttpStatusCode.valueOf(200));
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(500));
+        }
     }
 
     @CrossOrigin
@@ -185,19 +185,4 @@ public class PartnerController {
         return new ResponseEntity<>(outputList, HttpStatusCode.valueOf(200));
     }
 
-    private Partner findPartner(String bpnl, UUID uuid) {
-        if (bpnl != null) {
-            Partner existingPartner = partnerService.findByBpnl(bpnl);
-            if (existingPartner != null) {
-                return existingPartner;
-            }
-        }
-        if (uuid != null) {
-            Partner existingPartner = partnerService.findByUuid(uuid);
-            if (existingPartner != null) {
-                return existingPartner;
-            }
-        }
-        return null;
-    }
 }
