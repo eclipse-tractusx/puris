@@ -24,7 +24,9 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 import lombok.*;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.UUID;
 
 @Getter
 @Setter

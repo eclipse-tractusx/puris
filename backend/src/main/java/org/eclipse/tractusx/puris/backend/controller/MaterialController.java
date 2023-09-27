@@ -22,6 +22,7 @@
 package org.eclipse.tractusx.puris.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
@@ -118,7 +119,9 @@ public class MaterialController {
         @ApiResponse(responseCode = "200", description = "Returns the requested Material."),
         @ApiResponse(responseCode = "404", description = "Requested Material was not found.")
     })
-    public ResponseEntity<MaterialEntityDto> getMaterial(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<MaterialEntityDto> getMaterial(@Parameter(name = "ownMaterialNumber",
+        description = "The Material Number that is used in your own company to identify the Material.",
+        example = "MNR-7307-AU340474.002", required = true) @RequestParam String ownMaterialNumber) {
         Material foundMaterial = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (foundMaterial == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
