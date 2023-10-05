@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.0.2</version>
+    <version>3.1.4</version>
     <relativePath/>
   </parent>
   <groupId>org.eclipse.tractusx.puris</groupId>
@@ -41,6 +41,7 @@
     <springdoc.version>2.1.0</springdoc.version>
     <okhttp3.version>2.7.5</okhttp3.version>
     <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
+      <snakeyaml.version>2.2</snakeyaml.version>
   </properties>
   <dependencies>
     <dependency>
@@ -58,12 +59,6 @@
     <dependency>
       <groupId>org.springframework.session</groupId>
       <artifactId>spring-session-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-devtools</artifactId>
-      <scope>runtime</scope>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.hsqldb</groupId>
@@ -180,7 +175,7 @@
     <resources>
       <!-- add basic application properties -->
       <resource>
-          <directory>${project.basedir}/src/main/resources</directory>
+          <directory>backend/src/main/resources</directory>
             <includes>
                 <include>application.properties</include>
             </includes>
