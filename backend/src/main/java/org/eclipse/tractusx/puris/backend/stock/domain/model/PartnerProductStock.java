@@ -60,9 +60,4 @@ public class PartnerProductStock extends Stock {
         this.setSupplierPartner(supplierPartner);
     }
 
-    public PartnerProductStock(Material material, double quantity, MeasurementUnit measurementUnit, String atSiteBpns, Date lastUpdatedOn) {
-        super(material, quantity, measurementUnit, atSiteBpns, lastUpdatedOn);
-        super.setType(DT_StockTypeEnum.PRODUCT);
-    }
-
 }

@@ -21,8 +21,10 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,6 +43,9 @@ public interface PartnerProductStockService {
     List<PartnerProductStock> findAllByOwnMaterialNumberAndPartnerUuid(String ownMaterialNumber, UUID partnerUuid);
 
     List<PartnerProductStock> findAllByPartnerMaterialNumber(Partner partner, String partnerMaterialNumber);
+
+    List<PartnerProductStock> findAllByPartnerAndMaterialAndLocationAndMeasurementUnit(Partner partner, Material material,
+                                                                                       String site, MeasurementUnit measurementUnit);
 
     //List<PartnerProductStock> findAllByMaterialUuidAndPartnerUuid(UUID materialUuid,
     //                                                              UUID partnerUuid);

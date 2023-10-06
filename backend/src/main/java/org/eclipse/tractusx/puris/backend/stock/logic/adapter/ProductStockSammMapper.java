@@ -23,25 +23,18 @@ package org.eclipse.tractusx.puris.backend.stock.logic.adapter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.*;
 
 @Slf4j
@@ -66,7 +59,7 @@ public class ProductStockSammMapper {
     public ProductStockSammDto toSamm(Stock stock) {
 
         AllocatedStock allocatedStock = new AllocatedStock(
-                new Quantity(stock.getQuantity(), "unit:" + stock.getMeasurementUnit()),
+                new Quantity(stock.getQuantity(), stock.getMeasurementUnit().jsonRepresentation()),
                 new LocationId(LocationIdTypeEnum.B_P_N_S, stock.getAtSiteBpns())
         );
         List<AllocatedStock> allocatedStocks = new ArrayList<>();
@@ -107,69 +100,45 @@ public class ProductStockSammMapper {
         );
     }
 
-
     /**
-     * Utility method to deserialize a ProductStockSammDto on the side of the customer
+     * Utility method to deserialize a ProductStockSammDto on the side of the customer.
+     * Since each ProductStockSammDto may contain multiple Positions, this method will
+     * return a list of PartnerProductStocks, where each Samm-Position is mapped to an
+     * instance of PartnerProductStock.
+     *
+     * The caller of this method has to decide how whether he wants to aggregate some of
+     * the items of the returned list. Furthermore, he may want to compare the resulting
+     * list to his current database and then decide which of the resulting PartnerProductStocks
+     * are an update to existing entities in his database.
+     *
      * @param samm a ProductStockSammDto received from a supplier
      * @param partner the partner you received the message from
      * @return a PartnerProductStockDto
      */
-    public PartnerProductStockDto fromSamm(ProductStockSammDto samm, Partner partner) {
-        // application currently only supports:
-        // - an AGGREGATED Partner stock
-        // - one Site per Partner
-
-        // aggregate quantity
-        double quantity = samm.getPositions().stream().
-                mapToDouble(
-                        pos -> pos.getAllocatedStocks().stream().
-                                mapToDouble(stock ->
-                                        stock.getQuantityOnAllocatedStock().getQuantityNumber()
-                                ).sum()
-                ).sum();
-
-        // This is just a quickfix in line with the above-mentioned restriction that
-        // we are currently supporting only an aggregated stock. It is assumed that all
-        // stocks are using the same unit. If, for example, one stock uses kilograms and
-        // another stock uses metric tonnes for the same material, this will of course
-        // lead to faulty data.
-        String measurementUnitString = samm.getPositions().stream().findFirst()
-            .stream().findFirst().get().getAllocatedStocks().stream().findFirst()
-            .get().getQuantityOnAllocatedStock().getMeasurementUnit();
-        measurementUnitString = measurementUnitString.replace("unit:", "");
-        MeasurementUnit measurementUnit = MeasurementUnit.valueOf(measurementUnitString);
-
-        // Another quickfix. This will retrieve the lastUpdatedOn timestamp from
-        // the first position found and apply it to the accumulated stock.
-        Date lastUpdatedOnDate = samm.getPositions().stream().findFirst()
-            .get().getLastUpdatedOnDateTime();
-
-
-        // determine material
-
-        Material foundMaterial = materialService.findByOwnMaterialNumber(samm.getMaterialNumberCustomer());
-        MaterialPartnerRelation materialPartnerRelation = mprService.find(foundMaterial, partner);
-        MaterialDto foundMaterialDto = new MaterialDto(foundMaterial.isMaterialFlag(), foundMaterial.isProductFlag(),
-            foundMaterial.getOwnMaterialNumber(), materialPartnerRelation.getPartnerMaterialNumber(), foundMaterial.getMaterialNumberCx(),
-            foundMaterial.getName());
-
-        // find bpns - we use the first one as we currently only have one site per partner.
-        // alternative would be to inject the bpnl of the partner.
-        // also we set the bpn here always to the site
-        String atSiteBpns =
-                samm.getPositions()
-                        .stream().findFirst().get().getAllocatedStocks()
-                        .stream().findFirst().get().getSupplierStockLocationId().getLocationId();
-
-        PartnerDto supplierPartner = modelMapper.map(partner, PartnerDto.class);
-
-        return new PartnerProductStockDto(
-                foundMaterialDto,
-                quantity,
-                measurementUnit,
-                atSiteBpns,
-                supplierPartner,
-                lastUpdatedOnDate
-        );
+    public List<PartnerProductStock> sammToPartnerProductStocks(ProductStockSammDto samm, Partner partner) {
+        ArrayList<PartnerProductStock> output = new ArrayList<>();
+        Material material = materialService.findByOwnMaterialNumber(samm.getMaterialNumberCustomer());
+        if(material == null && samm.getMaterialNumberCatenaX().isPresent()) {
+            materialService.findByMaterialNumberCx(samm.getMaterialNumberCatenaX().get());
+        }
+        for(var position : samm.getPositions()) {
+            Date lastUpdated = position.getLastUpdatedOnDateTime();
+            for(var allocatedStock : position.getAllocatedStocks()) {
+                double quantity = allocatedStock.getQuantityOnAllocatedStock().getQuantityNumber();
+                MeasurementUnit unit = MeasurementUnit.parseStringFromJson(
+                    allocatedStock.getQuantityOnAllocatedStock().getMeasurementUnit());
+                String locationId = allocatedStock.getSupplierStockLocationId().getLocationId();
+                PartnerProductStock partnerProductStock = new PartnerProductStock(
+                    material,
+                    quantity,
+                    unit,
+                    locationId,
+                    lastUpdated,
+                    partner
+                );
+                output.add(partnerProductStock);
+            }
+        }
+        return output;
     }
 }

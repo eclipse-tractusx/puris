@@ -22,12 +22,13 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.AllArgsConstructor;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.PartnerProductStockRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -84,5 +85,11 @@ public class PartnerProductStockServiceImpl implements PartnerProductStockServic
             .stream()
             .filter(pps -> materialsList.contains(pps.getMaterial()))
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PartnerProductStock> findAllByPartnerAndMaterialAndLocationAndMeasurementUnit(Partner partner, Material material,
+                                                                                              String site, MeasurementUnit measurementUnit) {
+        return partnerProductStockRepository.findAllBySupplierPartnerAndMaterialAndAtSiteBpnsAndMeasurementUnit(partner, material, site, measurementUnit);
     }
 }

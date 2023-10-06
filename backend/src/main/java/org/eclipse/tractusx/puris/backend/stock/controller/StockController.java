@@ -196,7 +196,7 @@ public class StockController {
         existingProductStock.setQuantity(productStockDto.getQuantity());
         existingProductStock.setLastUpdatedOn(new Date());
 
-        existingProductStock = productStockService.create(existingProductStock);
+        existingProductStock = productStockService.update(existingProductStock);
         log.info("Updated product-stock: " + existingProductStock);
 
         ProductStockDto productStockToReturn = convertToDto(existingProductStock);

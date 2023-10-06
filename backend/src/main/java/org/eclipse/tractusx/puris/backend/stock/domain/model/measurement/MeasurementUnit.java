@@ -21,6 +21,10 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.domain.model.measurement;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
+
 public enum MeasurementUnit {
 
     gram,
@@ -50,6 +54,30 @@ public enum MeasurementUnit {
     set,
     pair,
     page,
-    kilowattHour
+    kilowattHour;
+
+    /**
+     * Returns a json representation needed for de-/serialization of the {@link ProductStockSammDto}.
+     * For example: "unit:piece"
+     *
+     * @return the json representation as String
+     */
+    @JsonValue
+    public String jsonRepresentation() {
+        return "unit:" + this;
+    }
+
+    /**
+     * Maps the input to a MeasurementUnit by skipping the prefix "unit:" and evaluating the remainder.
+     * Needed for deserialization of the {@link ProductStockSammDto}
+     *
+     * @param value the input String to be parsed
+     * @return a MeasurementUnit or null
+     */
+    @JsonCreator
+    public static MeasurementUnit parseStringFromJson(String value) {
+        value = value.startsWith("unit:") ? value.substring(5) : value;
+        return MeasurementUnit.valueOf(value);
+    }
 
 }

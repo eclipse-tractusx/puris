@@ -21,9 +21,12 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.domain.repository;
 
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -44,13 +47,15 @@ public interface PartnerProductStockRepository extends JpaRepository<PartnerProd
 
     List<PartnerProductStock> findAllByType(DT_StockTypeEnum stockType);
 
-//    List<PartnerProductStock> findAllByMaterial_UuidAndType(UUID materialUuid, DT_StockTypeEnum stockType);
-
     List<PartnerProductStock> findAllByMaterial_OwnMaterialNumberAndType(String ownMaterialNumber, DT_StockTypeEnum stockType);
-
-//    List<PartnerProductStock> findAllByMaterial_UuidAndTypeAndSupplierPartner_Uuid(UUID materialUuid, DT_StockTypeEnum stockType, UUID supplierUuid);
 
     List<PartnerProductStock> findAllByMaterial_OwnMaterialNumberAndTypeAndSupplierPartner_Uuid(String ownMaterialNumber, DT_StockTypeEnum stockType, UUID supplierUuid);
 
     List<PartnerProductStock> findAllBySupplierPartner_Uuid(UUID uuid);
+
+    List<PartnerProductStock> findAllBySupplierPartnerAndMaterialAndAtSiteBpnsAndMeasurementUnit(
+        Partner supplierPartner,
+        Material material,
+        String siteBpns,
+        MeasurementUnit measurementUnit);
 }
