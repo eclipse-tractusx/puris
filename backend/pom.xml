@@ -40,7 +40,7 @@
     <java.version>11</java.version>
     <springdoc.version>2.1.0</springdoc.version>
     <okhttp3.version>2.7.5</okhttp3.version>
-    <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
+    <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
   </properties>
   <dependencies>
     <dependency>
