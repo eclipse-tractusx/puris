@@ -59,7 +59,7 @@ public class ProductStockSammMapper {
     public ProductStockSammDto toSamm(Stock stock) {
 
         AllocatedStock allocatedStock = new AllocatedStock(
-                new Quantity(stock.getQuantity(), stock.getMeasurementUnit().jsonRepresentation()),
+                new Quantity(stock.getQuantity(), stock.getMeasurementUnit()),
                 new LocationId(LocationIdTypeEnum.B_P_N_S, stock.getAtSiteBpns())
         );
         List<AllocatedStock> allocatedStocks = new ArrayList<>();
@@ -125,8 +125,7 @@ public class ProductStockSammMapper {
             Date lastUpdated = position.getLastUpdatedOnDateTime();
             for(var allocatedStock : position.getAllocatedStocks()) {
                 double quantity = allocatedStock.getQuantityOnAllocatedStock().getQuantityNumber();
-                MeasurementUnit unit = MeasurementUnit.parseStringFromJson(
-                    allocatedStock.getQuantityOnAllocatedStock().getMeasurementUnit());
+                MeasurementUnit unit = allocatedStock.getQuantityOnAllocatedStock().getMeasurementUnit();
                 String locationId = allocatedStock.getSupplierStockLocationId().getLocationId();
                 PartnerProductStock partnerProductStock = new PartnerProductStock(
                     material,
