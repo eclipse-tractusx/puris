@@ -19,18 +19,41 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.logic.dto;
+package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FrontendMaterialDto {
-    String ownMaterialNumber;
-    String description;
+@ToString
+public class SiteDto implements Comparable<SiteDto> {
+    private String bpns;
+    private String name;
+    private Set<AddressDto> addresses = new HashSet<>();
+
+    @Override
+    public int compareTo(SiteDto o) {
+        return bpns.compareTo(o.bpns);
+    }
+
+    @Override
+    public int hashCode() {
+        return bpns.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other instanceof SiteDto) {
+            return bpns.equals(((SiteDto) other).bpns);
+        }
+        return false;
+    }
 }
