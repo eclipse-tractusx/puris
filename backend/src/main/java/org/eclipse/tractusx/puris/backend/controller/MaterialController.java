@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("materials")
@@ -51,9 +52,9 @@ public class MaterialController {
         "it must contain a new, unique ownMaterialNumber.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully created a new Material entity."),
-        @ApiResponse(responseCode = "400", description = "Malformed request body"),
+        @ApiResponse(responseCode = "400", description = "Malformed request body."),
         @ApiResponse(responseCode = "409", description = "Material with the given ownMaterialNumber already exists."),
-        @ApiResponse(responseCode = "500", description = "Internal Server error")
+        @ApiResponse(responseCode = "500", description = "Internal Server error.")
     })
     public ResponseEntity<?> createMaterial(@RequestBody MaterialEntityDto materialDto) {
         if (materialDto.getOwnMaterialNumber() == null || materialDto.getOwnMaterialNumber().isEmpty()) {
@@ -121,7 +122,7 @@ public class MaterialController {
     })
     public ResponseEntity<MaterialEntityDto> getMaterial(@Parameter(name = "ownMaterialNumber",
         description = "The Material Number that is used in your own company to identify the Material.",
-        example = "MNR-7307-AU340474.002", required = true) @RequestParam String ownMaterialNumber) {
+        example = "MNR-7307-AU340474.002") @RequestParam String ownMaterialNumber) {
         Material foundMaterial = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (foundMaterial == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
@@ -133,10 +134,10 @@ public class MaterialController {
 
     @CrossOrigin
     @GetMapping("/all")
-    @Operation(description = "Returns a list of all Materials and Products. ")
+    @Operation(description = "Returns a list of all Materials and Products.")
     public ResponseEntity<List<MaterialEntityDto>> listMaterials() {
-        ArrayList<MaterialEntityDto> outputList = new ArrayList<>();
-        materialService.findAll().stream().forEach(mat -> outputList.add(modelMapper.map(mat, MaterialEntityDto.class)));
-        return new ResponseEntity<>(outputList, HttpStatusCode.valueOf(200));
+        return new ResponseEntity<>(materialService.findAll().
+            stream().map(x -> modelMapper.map(x, MaterialEntityDto.class)).collect(Collectors.toList()),
+            HttpStatusCode.valueOf(200));
     }
 }
