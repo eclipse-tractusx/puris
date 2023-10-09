@@ -16,9 +16,10 @@ mvn install
 
 # run for demo or development puroposes
 # customer role
-mvn spring-boot:run -Dspring-boot.run.arguments=--spring.profiles.active=customer
+mvn spring-boot:run -Dspring-boot.run.arguments=--spring.config.location="./src/main/resources/application-customer.properties"
+
 # supplier role
-mvn spring-boot:run -Dspring-boot.run.arguments=--spring.profiles.active=supplier
+mvn spring-boot:run -Dspring-boot.run.arguments=--spring.config.location="./src/main/resources/application-supplier.properties"
 ```
 5. Done! The Swagger UI should be available at 
     - (Java & Docker) `http://YOURIP:8081/catena/swagger-ui/index.html`
