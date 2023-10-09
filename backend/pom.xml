@@ -175,7 +175,7 @@
     <resources>
       <!-- add basic application properties -->
       <resource>
-          <directory>backend/src/main/resources</directory>
+          <directory>${project.basedir}/src/main/resources</directory>
             <includes>
                 <include>application.properties</include>
             </includes>
