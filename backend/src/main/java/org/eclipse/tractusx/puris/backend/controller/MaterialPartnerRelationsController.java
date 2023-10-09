@@ -61,18 +61,18 @@ public class MaterialPartnerRelationsController {
         @ApiResponse(responseCode = "200", description = "Successfully created a new MaterialPartnerRelationEntity."),
         @ApiResponse(responseCode = "400", description = "Material and/or Partner do not exist."),
         @ApiResponse(responseCode = "409", description = "Relation for given Material and Partner does already exist."),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error")
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public ResponseEntity<?> createMaterialPartnerRelation(
-        @Parameter(name = "ownMaterialNumber", description = "The Material Number that is used in your own company to identify the Material.",
-            example = "MNR-7307-AU340474.002", required = true) @RequestParam String ownMaterialNumber,
-        @Parameter(name = "partnerBpnl", description = "The unique BPNL that was assigned to that Partner.",
-            example = "BPNL2222222222RR", required = true) @RequestParam() String partnerBpnl,
-        @Parameter(name = "partnerMaterialNumber", description = "The Material Number that this Partner is using in his own company to identify the Material.",
+        @Parameter(description = "The Material Number that is used in your own company to identify the Material.",
+            example = "MNR-7307-AU340474.002") @RequestParam String ownMaterialNumber,
+        @Parameter(description = "The unique BPNL that was assigned to that Partner.",
+            example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
+        @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material.",
             example = "MNR-8101-ID146955.001") @RequestParam String partnerMaterialNumber,
-        @Parameter(name = "partnerSupplies", description = "This boolean flag indicates whether this Partner is a potential supplier of the given Material.",
+        @Parameter(description = "This boolean flag indicates whether this Partner is a potential supplier of the given Material.",
             example = "true") @RequestParam boolean partnerSupplies,
-        @Parameter(name = "partnerBuys", description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
+        @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
             example = "true") @RequestParam boolean partnerBuys) {
         Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (material == null || partnerBpnl == null) {
@@ -105,19 +105,19 @@ public class MaterialPartnerRelationsController {
         "the partnerBpnl. The other three parameters are genuinely optional. Provide them only if you want to change their values. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Update was accepted."),
-        @ApiResponse(responseCode = "404", description = "No existing entity was found. "),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error")
+        @ApiResponse(responseCode = "404", description = "No existing entity was found."),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public ResponseEntity<?> updateMaterialPartnerRelation(
-        @Parameter(name = "ownMaterialNumber", description = "The Material Number that is used in your own company to identify the Material.",
-            example = "MNR-7307-AU340474.002", required = true) @RequestParam String ownMaterialNumber,
-        @Parameter(name = "partnerBpnl", description = "The unique BPNL that was assigned to that Partner.",
-            example = "BPNL2222222222RR", required = true) @RequestParam() String partnerBpnl,
-        @Parameter(name = "partnerMaterialNumber", description = "The Material Number that this Partner is using in his own company to identify the Material.",
+        @Parameter(description = "The Material Number that is used in your own company to identify the Material.",
+            example = "MNR-7307-AU340474.002") @RequestParam String ownMaterialNumber,
+        @Parameter(description = "The unique BPNL that was assigned to that Partner.",
+            example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
+        @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material.",
             example = "MNR-8101-ID146955.001") @RequestParam(required = false) String partnerMaterialNumber,
-        @Parameter(name = "partnerSupplies", description = "This boolean flag indicates whether this Partner is a potential supplier of the given Material.",
+        @Parameter(description = "This boolean flag indicates whether this Partner is a potential supplier of the given Material.",
             example = "true") @RequestParam(required = false) Boolean partnerSupplies,
-        @Parameter(name = "partnerBuys", description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
+        @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
             example = "true") @RequestParam(required = false) Boolean partnerBuys) {
         MaterialPartnerRelation existingRelation = null;
         Partner partner = partnerService.findByBpnl(partnerBpnl);
