@@ -88,7 +88,7 @@ public class ProductStockServiceImpl implements ProductStockService {
 
     @Override
     public List<ProductStock> findAll() {
-        return productStockRepository.findAllByType(DT_StockTypeEnum.PRODUCT);
+        return productStockRepository.findAll();
     }
 
     @Override

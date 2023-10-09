@@ -30,7 +30,6 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -79,27 +78,32 @@ public class ProductStockResponseApiServiceImpl {
             if(!foundStocks.isEmpty()) {
                 // Per definition each instance of the ProductStockSammDto contains
                 // information about exactly one instance of Material.
-                // If locationIds of any pair of foundStocks do match,
-                // then these two should be merged.
 
-                // Create lists of Stocks with same location
-                var groupedByLocations = foundStocks.stream().collect(Collectors.groupingBy(Stock::getAtSiteBpns, Collectors.toList()));
-                for(var locationGrouping : groupedByLocations.entrySet()) {
-                    // From each grouping with same location, create sub-lists with same MeasurementUnit
-                    var groupedByMeasurementUnit = locationGrouping.getValue().stream().collect(Collectors.groupingBy(
-                        Stock::getMeasurementUnit, Collectors.toList()));
-                    for (var entry : groupedByMeasurementUnit.values()) {
-                        // Aggregate Stocks with same location and MeasurementUnit
-                        if(entry.size() > 1) {
-                            PartnerProductStock baseStock = entry.get(0);
-                            baseStock.setQuantity(0);
-                            PartnerProductStock aggregatedStock = entry.stream().reduce(baseStock, (stockA, stockB) -> {
-                                stockA.setQuantity(stockA.getQuantity() + stockB.getQuantity());
-                                return stockA;
-                            });
-                            consolidatedStocks.add(aggregatedStock);
-                        } else {
-                            consolidatedStocks.add(entry.get(0));
+                // If locationIds and -types of any pair of foundStocks do match,
+                // then these two should be merged if they have the same MeasurementUnit
+
+                // Create lists of Stocks with same locationId
+                var groupedByLocationIdTypes = foundStocks.stream().collect(Collectors.groupingBy(Stock::getLocationIdType, Collectors.toList()));
+                for (var locationTypeGrouping : groupedByLocationIdTypes.values()) {
+                    var groupedByLocations = locationTypeGrouping.stream().collect(Collectors.groupingBy(Stock::getLocationId, Collectors.toList()));
+                    // From each grouping with same locationIdType, create sub-lists with same locationId
+                    for (var locationGrouping : groupedByLocations.values()) {
+                        // From each grouping with same location, create sub-lists with same MeasurementUnit
+                        var groupedByMeasurementUnit = locationGrouping.stream().collect(Collectors.groupingBy(
+                            Stock::getMeasurementUnit, Collectors.toList()));
+                        for (var entry : groupedByMeasurementUnit.values()) {
+                            // Aggregate Stocks with same location and MeasurementUnit
+                            if (entry.size() > 1) {
+                                PartnerProductStock baseStock = entry.get(0);
+                                baseStock.setQuantity(0);
+                                PartnerProductStock aggregatedStock = entry.stream().reduce(baseStock, (stockA, stockB) -> {
+                                    stockA.setQuantity(stockA.getQuantity() + stockB.getQuantity());
+                                    return stockA;
+                                });
+                                consolidatedStocks.add(aggregatedStock);
+                            } else {
+                                consolidatedStocks.add(entry.get(0));
+                            }
                         }
                     }
                 }
@@ -110,7 +114,8 @@ public class ProductStockResponseApiServiceImpl {
         // an existing PartnerProductStock gets updated.
         for (PartnerProductStock newStockData : consolidatedStocks) {
             var existingPartnerProductStocks = partnerProductStockService.findAllByPartnerAndMaterialAndLocationAndMeasurementUnit(
-                newStockData.getSupplierPartner(), newStockData.getMaterial(), newStockData.getAtSiteBpns(), newStockData.getMeasurementUnit());
+                newStockData.getSupplierPartner(), newStockData.getMaterial(), newStockData.getLocationId(),
+                newStockData.getLocationIdType(), newStockData.getMeasurementUnit());
             // There should be at most one instance in that list, because we are aggregating them (see above)
             if(existingPartnerProductStocks.size()>1) {
                 log.warn("Found multiple instances of PartnerProductStock: \n" + existingPartnerProductStocks);

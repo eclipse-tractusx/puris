@@ -31,6 +31,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 
 import java.util.Date;
 
@@ -53,9 +54,9 @@ public class PartnerProductStock extends Stock {
     @NotNull
     private Partner supplierPartner;
 
-    public PartnerProductStock(Material material, double quantity, MeasurementUnit measurementUnit, String atSiteBpns,
-                               Date lastUpdatedOn, Partner supplierPartner) {
-        super(material, quantity, measurementUnit, atSiteBpns, lastUpdatedOn);
+    public PartnerProductStock(Material material, double quantity, MeasurementUnit measurementUnit, String locationId,
+                               LocationIdTypeEnum locationIdType, Date lastUpdatedOn, Partner supplierPartner) {
+        super(material, quantity, measurementUnit, locationId, locationIdType, lastUpdatedOn);
         super.setType(DT_StockTypeEnum.PRODUCT);
         this.setSupplierPartner(supplierPartner);
     }

@@ -29,6 +29,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.PartnerProductStockRepository;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -89,7 +90,9 @@ public class PartnerProductStockServiceImpl implements PartnerProductStockServic
 
     @Override
     public List<PartnerProductStock> findAllByPartnerAndMaterialAndLocationAndMeasurementUnit(Partner partner, Material material,
-                                                                                              String site, MeasurementUnit measurementUnit) {
-        return partnerProductStockRepository.findAllBySupplierPartnerAndMaterialAndAtSiteBpnsAndMeasurementUnit(partner, material, site, measurementUnit);
+                                                                                              String locationId, LocationIdTypeEnum locationIdType, MeasurementUnit measurementUnit) {
+        return partnerProductStockRepository.
+            findAllBySupplierPartnerAndMaterialAndLocationIdAndLocationIdTypeAndMeasurementUnit(partner, material, locationId,
+                locationIdType, measurementUnit);
     }
 }

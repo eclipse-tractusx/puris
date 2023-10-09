@@ -29,6 +29,7 @@ import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -49,17 +50,21 @@ public abstract class StockDto implements Serializable {
 
     private MeasurementUnit measurementUnit;
 
-    private String atSiteBpns;
+    private String locationId;
+
+    private LocationIdTypeEnum locationIdType;
 
     private DT_StockTypeEnum type;
 
     private Date lastUpdatedOn;
 
-    public StockDto(MaterialDto material, double quantity, MeasurementUnit measurementUnit, String atSiteBpns, Date lastUpdatedOn) {
+    public StockDto(MaterialDto material, double quantity, MeasurementUnit measurementUnit, String locationId,
+                    LocationIdTypeEnum locationIdType, Date lastUpdatedOn) {
         this.material = material;
         this.quantity = quantity;
         this.measurementUnit = measurementUnit;
-        this.atSiteBpns = atSiteBpns;
+        this.locationId = locationId;
+        this.locationIdType = locationIdType;
         this.lastUpdatedOn = lastUpdatedOn;
     }
 }

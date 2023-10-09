@@ -60,7 +60,7 @@ public class ProductStockSammMapper {
 
         AllocatedStock allocatedStock = new AllocatedStock(
                 new Quantity(stock.getQuantity(), stock.getMeasurementUnit()),
-                new LocationId(LocationIdTypeEnum.B_P_N_S, stock.getAtSiteBpns())
+                new LocationId(LocationIdTypeEnum.B_P_N_S, stock.getLocationId())
         );
         List<AllocatedStock> allocatedStocks = new ArrayList<>();
         allocatedStocks.add(allocatedStock);
@@ -127,11 +127,13 @@ public class ProductStockSammMapper {
                 double quantity = allocatedStock.getQuantityOnAllocatedStock().getQuantityNumber();
                 MeasurementUnit unit = allocatedStock.getQuantityOnAllocatedStock().getMeasurementUnit();
                 String locationId = allocatedStock.getSupplierStockLocationId().getLocationId();
+                LocationIdTypeEnum locationIdType = allocatedStock.getSupplierStockLocationId().getLocationIdType();
                 PartnerProductStock partnerProductStock = new PartnerProductStock(
                     material,
                     quantity,
                     unit,
                     locationId,
+                    locationIdType,
                     lastUpdated,
                     partner
                 );

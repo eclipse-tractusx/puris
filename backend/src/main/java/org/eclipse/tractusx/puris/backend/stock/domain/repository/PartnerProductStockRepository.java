@@ -27,6 +27,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock
 import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -53,9 +54,10 @@ public interface PartnerProductStockRepository extends JpaRepository<PartnerProd
 
     List<PartnerProductStock> findAllBySupplierPartner_Uuid(UUID uuid);
 
-    List<PartnerProductStock> findAllBySupplierPartnerAndMaterialAndAtSiteBpnsAndMeasurementUnit(
+    List<PartnerProductStock> findAllBySupplierPartnerAndMaterialAndLocationIdAndLocationIdTypeAndMeasurementUnit(
         Partner supplierPartner,
         Material material,
-        String siteBpns,
+        String locationId,
+        LocationIdTypeEnum locationIdType,
         MeasurementUnit measurementUnit);
 }
