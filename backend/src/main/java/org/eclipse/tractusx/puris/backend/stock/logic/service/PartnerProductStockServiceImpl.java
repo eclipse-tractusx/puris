@@ -22,6 +22,7 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
@@ -38,6 +39,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
+@Slf4j
 public class PartnerProductStockServiceImpl implements PartnerProductStockService {
 
     private PartnerProductStockRepository partnerProductStockRepository;
@@ -46,6 +48,9 @@ public class PartnerProductStockServiceImpl implements PartnerProductStockServic
 
     @Override
     public PartnerProductStock create(PartnerProductStock partnerProductStock) {
+        // avoid unintentional overwriting of an existing PartnerProductStock
+        partnerProductStock.setUuid(null);
+
         return partnerProductStockRepository.save(partnerProductStock);
     }
 

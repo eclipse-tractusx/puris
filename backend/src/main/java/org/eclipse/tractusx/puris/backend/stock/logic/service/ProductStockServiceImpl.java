@@ -59,6 +59,8 @@ public class ProductStockServiceImpl implements ProductStockService {
 
     @Override
     public ProductStock create(ProductStock productStock) {
+        // avoid unintentional overwriting of an existing ProductStock
+        productStock.setUuid(null);
 
         // validate, if material is missing
         if (productStock.getMaterial() == null || productStock.getMaterial().getOwnMaterialNumber() == null){
@@ -67,8 +69,8 @@ public class ProductStockServiceImpl implements ProductStockService {
         }
         Optional<Material> existingMaterial = materialRepository.findById(productStock.getMaterial().getOwnMaterialNumber());
 
-        if (!existingMaterial.isPresent()) {
-            log.error(String.format("Material for uuid %s not found", productStock.getMaterial().getOwnMaterialNumber()));
+        if (existingMaterial.isEmpty()) {
+            log.error(String.format("Material %s not found", productStock.getMaterial().getOwnMaterialNumber()));
             return null;
         }
 
