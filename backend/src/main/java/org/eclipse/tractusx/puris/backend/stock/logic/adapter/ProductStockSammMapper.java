@@ -101,15 +101,18 @@ public class ProductStockSammMapper {
     }
 
     /**
-     * Utility method to deserialize a ProductStockSammDto on the side of the customer.
+     * <p>Utility method to deserialize a ProductStockSammDto on the side of the customer.
      * Since each ProductStockSammDto may contain multiple Positions, this method will
      * return a list of PartnerProductStocks, where each Samm-Position is mapped to an
-     * instance of PartnerProductStock.
+     * instance of PartnerProductStock. </p>
      *
-     * The caller of this method has to decide how whether he wants to aggregate some of
+     * <p>The caller of this method has to decide whether he wants to aggregate some of
      * the items of the returned list. Furthermore, he may want to compare the resulting
      * list to his current database and then decide which of the resulting PartnerProductStocks
-     * are an update to existing entities in his database.
+     * are an update to existing entities in his database.</p>
+     *
+     * <p>Please note, that this application currently does <b>NOT</b> evaluate the orderPositionReference of the
+     * ProductStockSammDto.</p>
      *
      * @param samm a ProductStockSammDto received from a supplier
      * @param partner the partner you received the message from
@@ -117,10 +120,36 @@ public class ProductStockSammMapper {
      */
     public List<PartnerProductStock> sammToPartnerProductStocks(ProductStockSammDto samm, Partner partner) {
         ArrayList<PartnerProductStock> output = new ArrayList<>();
-        Material material = materialService.findByOwnMaterialNumber(samm.getMaterialNumberCustomer());
-        if(material == null && samm.getMaterialNumberCatenaX().isPresent()) {
-            materialService.findByMaterialNumberCx(samm.getMaterialNumberCatenaX().get());
+        Material material = null;
+        if(samm.getMaterialNumberCatenaX().isPresent()) {
+            material = materialService.findByMaterialNumberCx(samm.getMaterialNumberCatenaX().get());
         }
+        if(material == null && samm.getMaterialNumberCustomer() != null) {
+            material = materialService.findByOwnMaterialNumber(samm.getMaterialNumberCustomer());
+        }
+        if(material == null && samm.getMaterialNumberSupplier().isPresent()) {
+            var materialsFromPartners = mprService.findAllByPartnerMaterialNumber(samm.getMaterialNumberSupplier().get());
+            int foundMatches = 0;
+            for (var foundMaterial : materialsFromPartners) {
+                if(mprService.partnerSuppliesMaterial(foundMaterial, partner)) {
+                    material = foundMaterial;
+                    foundMatches++;
+                }
+            }
+            if(foundMatches > 1) {
+                // Ambiguous results found, i.e. this Partner seems to use his MaterialNumber which he transmitted
+                // in the SammDto for more than one Product.
+                // Will arbitrarily use the last one found, but issue a warning.
+                log.warn("Could not unambiguously determine Material via partner material number " +
+                    samm.getMaterialNumberSupplier().get());
+            }
+        }
+        if(material == null) {
+            log.error("Could not identify material in SammDto: \n" + samm);
+            // Abort and return empty list.
+            return output;
+        }
+
         for(var position : samm.getPositions()) {
             Date lastUpdated = position.getLastUpdatedOnDateTime();
             for(var allocatedStock : position.getAllocatedStocks()) {
