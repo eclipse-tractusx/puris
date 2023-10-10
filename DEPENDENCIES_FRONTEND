@@ -95,7 +95,7 @@ npm/npmjs/-/glob/7.2.3, ISC, approved, clearlydefined
 npm/npmjs/-/globals/13.16.0, MIT, approved, clearlydefined
 npm/npmjs/-/good-listener/1.2.2, MIT, approved, clearlydefined
 npm/npmjs/-/has-flag/4.0.0, MIT, approved, clearlydefined
-npm/npmjs/-/has/1.0.3, MIT, approved, clearlydefined
+npm/npmjs/-/has/1.0.3, MIT, approved, #10930
 npm/npmjs/-/ignore/5.2.0, MIT, approved, #5907
 npm/npmjs/-/import-fresh/3.3.0, MIT, approved, clearlydefined
 npm/npmjs/-/imurmurhash/0.1.4, MIT, approved, clearlydefined
