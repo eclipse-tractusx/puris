@@ -43,6 +43,8 @@ public interface MaterialService {
 
     Material findByMaterialNumberCx(String materialNumberCx);
 
+    List<Material> findAll();
+
 //    Material findMaterialByMaterialNumberCustomer(String materialNumberCustomer);
 //
 //    Material findProductByMaterialNumberCustomer(String materialNumberCustomer);

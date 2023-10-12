@@ -32,6 +32,9 @@ import java.util.*;
 @AllArgsConstructor
 @ToString
 @NoArgsConstructor
+/**
+ *  This Dto class is being used within the ProductStockSammDto.
+ */
 public class MaterialDto implements Serializable {
 
     private UUID uuid;

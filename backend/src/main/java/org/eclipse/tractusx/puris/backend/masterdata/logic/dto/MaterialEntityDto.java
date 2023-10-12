@@ -19,18 +19,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.logic.dto;
+package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FrontendMaterialDto {
-    String ownMaterialNumber;
-    String description;
+@Getter
+@Setter
+@ToString
+public class MaterialEntityDto {
+
+    private boolean materialFlag;
+    private boolean productFlag;
+    private String ownMaterialNumber;
+    private String materialNumberCx;
+    private String name;
 }

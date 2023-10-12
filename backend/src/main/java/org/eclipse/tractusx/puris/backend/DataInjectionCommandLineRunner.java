@@ -331,12 +331,12 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Partner createAndGetNonScenarioCustomer() {
         Partner nonScenarioCustomer = new Partner(
             "Non-Scenario Customer",
-            "(None Provided!)>",
+            "http://nonscenario-customer.com/api/v1/ids",
             "BPNL2222222222RR",
-            "BPNS2222222222XZ",
-            "Zentraleinkaufsabteilung",
-            "BPNA2222222222HH",
-            "54.321N, 8.7654E"
+            "BPNA2222222222XZ",
+            "Fichtenweg 23",
+            "65432 Waldhausen",
+            "Germany"
         );
         nonScenarioCustomer = partnerService.create(nonScenarioCustomer);
         log.info(String.format("Created non-scenario customer partner: %s", nonScenarioCustomer));
