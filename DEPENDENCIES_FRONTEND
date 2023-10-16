@@ -87,7 +87,7 @@ npm/npmjs/-/flatted/3.2.6, ISC AND (ISC AND MIT), approved, #2430
 npm/npmjs/-/fraction.js/4.2.0, MIT, approved, clearlydefined
 npm/npmjs/-/fs.realpath/1.0.0, ISC, approved, clearlydefined
 npm/npmjs/-/fsevents/2.3.2, MIT, approved, #2967
-npm/npmjs/-/function-bind/1.1.1, MIT, approved, clearlydefined
+npm/npmjs/-/function-bind/1.1.1, MIT, approved, #11063
 npm/npmjs/-/functional-red-black-tree/1.0.1, MIT, approved, clearlydefined
 npm/npmjs/-/glob-parent/5.1.2, ISC, approved, clearlydefined
 npm/npmjs/-/glob-parent/6.0.2, ISC, approved, clearlydefined

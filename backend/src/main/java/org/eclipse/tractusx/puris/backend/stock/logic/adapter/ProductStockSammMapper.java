@@ -35,7 +35,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -53,22 +56,23 @@ public class ProductStockSammMapper {
     /**
      * Utility method to serialize a ProductStock or PartnerProduct on the side
      * of the responding supplier;
+     *
      * @param stock MUST be either ProductStock or PartnerProductStock
      * @return the corresponding ProductStockSammDto
      */
     public ProductStockSammDto toSamm(Stock stock) {
 
         AllocatedStock allocatedStock = new AllocatedStock(
-                new Quantity(stock.getQuantity(), stock.getMeasurementUnit()),
-                new LocationId(LocationIdTypeEnum.B_P_N_S, stock.getLocationId())
+            new Quantity(stock.getQuantity(), stock.getMeasurementUnit()),
+            new LocationId(LocationIdTypeEnum.B_P_N_S, stock.getLocationId())
         );
         List<AllocatedStock> allocatedStocks = new ArrayList<>();
         allocatedStocks.add(allocatedStock);
 
         Position position = new Position(
-                null,
-                stock.getLastUpdatedOn(),
-                allocatedStocks
+            null,
+            stock.getLastUpdatedOn(),
+            allocatedStocks
         );
         List<Position> positions = new ArrayList<>();
         positions.add(position);
@@ -78,7 +82,7 @@ public class ProductStockSammMapper {
             // Partner is customer
             ProductStock productStock = (ProductStock) stock;
             Partner partner = productStock.getAllocatedToCustomerPartner();
-            materialNumberCustomer =  mprService.find(stock.getMaterial(), partner).getPartnerMaterialNumber();
+            materialNumberCustomer = mprService.find(stock.getMaterial(), partner).getPartnerMaterialNumber();
             materialNumberSupplier = stock.getMaterial().getOwnMaterialNumber();
         } else if (stock instanceof PartnerProductStock) {
             // Partner is supplier
@@ -93,10 +97,10 @@ public class ProductStockSammMapper {
         }
 
         return new ProductStockSammDto(
-                positions,
-                materialNumberCustomer,
-                Optional.ofNullable(stock.getMaterial().getMaterialNumberCx()),
-                Optional.ofNullable(materialNumberSupplier)
+            positions,
+            materialNumberCustomer,
+            Optional.ofNullable(stock.getMaterial().getMaterialNumberCx()),
+            Optional.ofNullable(materialNumberSupplier)
         );
     }
 
@@ -114,45 +118,65 @@ public class ProductStockSammMapper {
      * <p>Please note, that this application currently does <b>NOT</b> evaluate the orderPositionReference of the
      * ProductStockSammDto.</p>
      *
-     * @param samm a ProductStockSammDto received from a supplier
+     * @param samm    a ProductStockSammDto received from a supplier
      * @param partner the partner you received the message from
      * @return a PartnerProductStockDto
      */
     public List<PartnerProductStock> sammToPartnerProductStocks(ProductStockSammDto samm, Partner partner) {
         ArrayList<PartnerProductStock> output = new ArrayList<>();
         Material material = null;
-        if(samm.getMaterialNumberCatenaX().isPresent()) {
+        if (samm.getMaterialNumberCatenaX().isPresent()) {
             material = materialService.findByMaterialNumberCx(samm.getMaterialNumberCatenaX().get());
+            if (material != null) {
+                if (!material.getOwnMaterialNumber().equals(samm.getMaterialNumberCustomer())) {
+                    log.warn("Mismatch between MaterialNumberCX and CustomerMaterialNumber!");
+                }
+                if (samm.getMaterialNumberSupplier().isPresent() &&
+                    !mprService.findAllByPartnerMaterialNumber(samm.getMaterialNumberSupplier().get()).contains(material)) {
+                    log.warn("Mismatch between MaterialNumberCX and SupplierMaterialNumber!");
+                }
+            } else {
+                log.warn("Could not identify Material via MaterialNumberCX: " + samm.getMaterialNumberCatenaX());
+            }
         }
-        if(material == null && samm.getMaterialNumberCustomer() != null) {
-            material = materialService.findByOwnMaterialNumber(samm.getMaterialNumberCustomer());
-        }
-        if(material == null && samm.getMaterialNumberSupplier().isPresent()) {
+        if (material == null && samm.getMaterialNumberSupplier().isPresent()) {
             var materialsFromPartners = mprService.findAllByPartnerMaterialNumber(samm.getMaterialNumberSupplier().get());
             int foundMatches = 0;
             for (var foundMaterial : materialsFromPartners) {
-                if(mprService.partnerSuppliesMaterial(foundMaterial, partner)) {
+                if (mprService.partnerSuppliesMaterial(foundMaterial, partner)) {
                     material = foundMaterial;
+                    if (foundMaterial.getOwnMaterialNumber().equals(samm.getMaterialNumberCustomer())) {
+                        // foundMaterial is a definitive match
+                        foundMatches = 1;
+                        break;
+                    }
                     foundMatches++;
                 }
             }
-            if(foundMatches > 1) {
+            if (foundMatches > 1) {
                 // Ambiguous results found, i.e. this Partner seems to use his MaterialNumber which he transmitted
                 // in the SammDto for more than one Product.
                 // Will arbitrarily use the last one found, but issue a warning.
-                log.warn("Could not unambiguously determine Material via partner material number " +
+                log.warn("Could not unambiguously determine Material via MaterialNumberSupplier " +
                     samm.getMaterialNumberSupplier().get());
             }
+            if (foundMatches < 1) {
+                log.warn("Could not identify Material via MaterialNumberSupplier: " + samm.getMaterialNumberSupplier().get());
+            }
         }
-        if(material == null) {
+        if (material == null && samm.getMaterialNumberCustomer() != null) {
+            material = materialService.findByOwnMaterialNumber(samm.getMaterialNumberCustomer());
+        }
+
+        if (material == null) {
             log.error("Could not identify material in SammDto: \n" + samm);
             // Abort and return empty list.
             return output;
         }
 
-        for(var position : samm.getPositions()) {
+        for (var position : samm.getPositions()) {
             Date lastUpdated = position.getLastUpdatedOnDateTime();
-            for(var allocatedStock : position.getAllocatedStocks()) {
+            for (var allocatedStock : position.getAllocatedStocks()) {
                 double quantity = allocatedStock.getQuantityOnAllocatedStock().getQuantityNumber();
                 MeasurementUnit unit = allocatedStock.getQuantityOnAllocatedStock().getMeasurementUnit();
                 String locationId = allocatedStock.getSupplierStockLocationId().getLocationId();
