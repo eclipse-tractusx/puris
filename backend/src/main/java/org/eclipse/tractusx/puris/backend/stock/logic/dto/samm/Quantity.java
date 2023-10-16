@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 
 import java.util.Objects;
 
@@ -39,12 +40,11 @@ public class Quantity {
     private Double quantityNumber;
 
     @NotNull
-    //custom: made Curie a String
-    private String measurementUnit;
+    private MeasurementUnit measurementUnit;
 
     @JsonCreator
     public Quantity(@JsonProperty(value = "quantityNumber") Double quantityNumber,
-                    @JsonProperty(value = "measurementUnit") String measurementUnit) {
+                    @JsonProperty(value = "measurementUnit") MeasurementUnit measurementUnit) {
         this.quantityNumber = quantityNumber;
         this.measurementUnit = measurementUnit;
     }
@@ -63,7 +63,7 @@ public class Quantity {
      *
      * @return {@link #measurementUnit}
      */
-    public String getMeasurementUnit() {
+    public MeasurementUnit getMeasurementUnit() {
         return this.measurementUnit;
     }
 

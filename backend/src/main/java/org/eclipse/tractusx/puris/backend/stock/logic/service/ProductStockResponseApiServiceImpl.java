@@ -28,14 +28,14 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service implements the handling of a response for Product Stock
@@ -60,61 +60,76 @@ public class ProductStockResponseApiServiceImpl {
     @Autowired
     private ProductStockSammMapper productStockSammMapper;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
 
     public void consumeResponse(ProductStockResponse response) {
-
-//        ProductStockRequest correspondingProductStockRequest = findCorrespondingRequest(responseDto);
         ProductStockRequest correspondingProductStockRequest = productStockRequestService.findRequestByHeaderUuid(response.getHeader().getRequestId());
         if (correspondingProductStockRequest == null) {
-            log.error("Received Response without corresponding request");
+            log.error("Received Response without corresponding request\n" + response);
             return;
         }
         Partner partner = partnerService.findByBpnl(response.getHeader().getSender());
-        for (ProductStockSammDto sammDto : response.getContent().getProductStocks()) {
+        if(partner == null) {
+            log.error("Received response from unknown Partner\n" + response);
+            return;
+        }
+        ArrayList<PartnerProductStock> consolidatedStocks = new ArrayList<>();
+        for(var sammDto : response.getContent().getProductStocks()) {
+            List<PartnerProductStock> foundStocks = productStockSammMapper.sammToPartnerProductStocks(sammDto, partner);
+            if(!foundStocks.isEmpty()) {
+                // Per definition each instance of the ProductStockSammDto contains
+                // information about exactly one instance of Material.
 
-                PartnerProductStockDto partnerProductStockDto =
-                        productStockSammMapper.fromSamm(sammDto, partner);
-                // check whether a new PartnerProductStock must be created
-                // or whether an update is sufficient.
-                List<PartnerProductStock> existingPartnerProductStocks =
-                    partnerProductStockService.findAllByOwnMaterialNumberAndPartnerUuid(
-                        partnerProductStockDto.getMaterial().getMaterialNumberCustomer(),
-                        partnerProductStockDto.getSupplierPartner().getUuid());
+                // If locationIds and -types of any pair of foundStocks do match,
+                // then these two should be merged if they have the same MeasurementUnit
 
-                // currently we only accept a one to one mapping of partner - material - stock -site
-                // therefore the can only be one PartnerProductStock
-                // if > 0 -> IllegalState
-                if (existingPartnerProductStocks.size() > 1) {
-                    throw new IllegalStateException(String.format("There exist %d " +
-                                    "PartnerProductStocks for material uuid %s and supplier partner uuid " +
-                                    "%s", existingPartnerProductStocks.size(),
-                            partnerProductStockDto.getMaterial().getUuid(),
-                            partnerProductStockDto.getSupplierPartner().getUuid()));
+                // Create lists of Stocks with same locationId
+                var groupedByLocationIdTypes = foundStocks.stream().collect(Collectors.groupingBy(Stock::getLocationIdType, Collectors.toList()));
+                for (var locationTypeGrouping : groupedByLocationIdTypes.values()) {
+                    var groupedByLocations = locationTypeGrouping.stream().collect(Collectors.groupingBy(Stock::getLocationId, Collectors.toList()));
+                    // From each grouping with same locationIdType, create sub-lists with same locationId
+                    for (var locationGrouping : groupedByLocations.values()) {
+                        // From each grouping with same location, create sub-lists with same MeasurementUnit
+                        var groupedByMeasurementUnit = locationGrouping.stream().collect(Collectors.groupingBy(
+                            Stock::getMeasurementUnit, Collectors.toList()));
+                        for (var entry : groupedByMeasurementUnit.values()) {
+                            // Aggregate Stocks with same location and MeasurementUnit
+                            if (entry.size() > 1) {
+                                PartnerProductStock baseStock = entry.get(0);
+                                baseStock.setQuantity(0);
+                                PartnerProductStock aggregatedStock = entry.stream().reduce(baseStock, (stockA, stockB) -> {
+                                    stockA.setQuantity(stockA.getQuantity() + stockB.getQuantity());
+                                    return stockA;
+                                });
+                                consolidatedStocks.add(aggregatedStock);
+                            } else {
+                                consolidatedStocks.add(entry.get(0));
+                            }
+                        }
+                    }
                 }
-
-                // Create or update
-                if (existingPartnerProductStocks.isEmpty()) {
-                    PartnerProductStock createdPartnerProductStock =
-                            partnerProductStockService.create(modelMapper.map(partnerProductStockDto,
-                                    PartnerProductStock.class));
-                    log.info(String.format("Created Partner ProductStock from SAMM: %s",
-                            createdPartnerProductStock));
-                } else {
-                    // update quantity only
-                    PartnerProductStock existingPartnerProductStock = existingPartnerProductStocks.get(0);
-                    existingPartnerProductStock.setQuantity(partnerProductStockDto.getQuantity());
-
-                    PartnerProductStock updatedPartnerProductStock =
-                            partnerProductStockService.update(existingPartnerProductStock);
-                    log.info(String.format("Updated Partner ProductStock from SAMM: %s",
-                            updatedPartnerProductStock));
-                }
+            }
         }
 
-        // Update status - also only MessageContentErrorDtos would be completed
+        // Check whether a new PartnerProductStock must be created or whether
+        // an existing PartnerProductStock gets updated.
+        for (PartnerProductStock newStockData : consolidatedStocks) {
+            var existingPartnerProductStocks = partnerProductStockService.findAllByPartnerAndMaterialAndLocationAndMeasurementUnit(
+                newStockData.getSupplierPartner(), newStockData.getMaterial(), newStockData.getLocationId(),
+                newStockData.getLocationIdType(), newStockData.getMeasurementUnit());
+            // There should be at most one instance in that list, because we are aggregating them (see above)
+            if(existingPartnerProductStocks.size()>1) {
+                log.warn("Found multiple instances of PartnerProductStock: \n" + existingPartnerProductStocks);
+            }
+            if(existingPartnerProductStocks.isEmpty()) {
+                // create new PartnerProductStock in database:
+                partnerProductStockService.create(newStockData);
+            } else {
+                // update existing PartnerProductStock
+                PartnerProductStock existingPartnerProductStock = existingPartnerProductStocks.get(0);
+                existingPartnerProductStock.setQuantity(newStockData.getQuantity());
+                partnerProductStockService.update(existingPartnerProductStock);
+            }
+        }
         productStockRequestService.updateState(correspondingProductStockRequest, DT_RequestStateEnum.Completed);
     }
 
