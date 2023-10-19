@@ -18,7 +18,7 @@ npm run dev
 # B production
 npm run build
 ```
-5. Done! The frontend should be available at `http://YOURIP:3000/`
+5. Done! The frontend should be available at `http://YOURIP:30000/`
 
 ### Running using docker (deployment)
 As JS-frameworks hard-wire their environments, this project uses a workaround to make the .env variables replaceable by (docker) environment variables.
@@ -35,4 +35,13 @@ docker run -d --rm -p 3000:8080 --name frontend -e BACKEND_BASE_URL=http://YOURB
 docker-compose up
 ```
 Note: please find the available parameters in src/config.json
-5. Done! The frontend should be available at `http://YOURIP:3000/`
+4. Done! The frontend should be available at `http://YOURIP:30000/`
+
+### Running using helm (deployment)
+3. Run the application:
+```shell
+cd charts/puris/charts/frontend
+
+helm install frontend --namespace puris --create-namespace . --set ingress.enabled=true
+```
+4. Done! The frontend should be available at `http://YOURIP:30000/`
