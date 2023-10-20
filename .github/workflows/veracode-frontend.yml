@@ -33,6 +33,7 @@ on:
 
 jobs:
   analyze-frontend:
+    if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
     runs-on: ubuntu-latest
     permissions:
       actions: read
