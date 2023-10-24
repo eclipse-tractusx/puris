@@ -24,7 +24,7 @@ replicaCount: 1
 
 image:
   # -- Repository of the docker image
-  repository: ghcr.io/catenax-ng/tx-puris-frontend/puris-frontend
+  repository: tractusx/app-puris-frontend
   # -- THe policy for the image pull process
   pullPolicy: IfNotPresent
   # -- Overrides the image tag whose default is the chart appVersion.
@@ -55,11 +55,15 @@ podSecurityContext: {}
 # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
 # @url: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 # -- Security configurations
-securityContext: {}
-#  allowPrivilegeEscalation: false
-#  runAsNonRoot: true
-#  runAsUser: 1000
-#  runAsGroup: 3000
+securityContext:
+    # -- Get more privileges than the parent process
+    allowPrivilegeEscalation: false
+    # -- Configures the non-root privileges for a run
+    runAsNonRoot: true
+    # -- Configures the user id for a run
+    runAsUser: 1000
+    # -- Configures the group id of a user for a run
+    runAsGroup: 3000
 
 service:
   # -- Type of the service
@@ -155,10 +159,23 @@ readinessProbe:
   # -- Timeout in seconds of the readiness probe
   timeoutSeconds: 1
 
-
 # APPLICATION SPECIFIC
-app:
-  # -- The name of the app displayed in the frontend
-  viteAppName: PURIS
-  # -- The base URL for vite
-  viteBaseUrl: http://192.168.49.2:30001/catena
+puris:
+    # -- The name of the app displayed in the frontend
+    appName: PURIS
+    # -- The base URL for the backend base URL without further endpoints
+    baseUrl: http://192.168.49.2:30001/catena
+    # -- The endpoint for materials for the stock view
+    endpointMaterials: stockView/materials
+    # -- The endpoint for products for the stock view
+    endpointProducts: stockView/products
+    # -- The endpoint for material stocks for the stock view
+    endpointMaterialStocks: stockView/material-stocks
+    # -- The endpoint for product stocks for the stock view
+    endpointProductStocks: stockView/product-stocks
+    # -- The endpoint for the customers own material number for the stock view
+    endpointCustomer: stockView/customer?ownMaterialNumber=
+    # -- The endpoint for the partners product stocks and their material numbers for the stock view
+    endpointPartnerProductStocks: stockView/partner-product-stocks?ownMaterialNumber=
+    # -- The endpoint for updating the partners product stocks and their material numbers for the stock view
+    endpointUpdatePartnerProductStocks: stockView/update-partner-product-stock?ownMaterialNumber=
