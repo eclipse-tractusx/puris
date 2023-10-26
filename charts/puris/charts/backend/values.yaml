@@ -24,11 +24,12 @@ replicaCount: 1
 
 image:
   # -- Repository of the docker image
-  repository: ghcr.io/catenax-ng/tx-puris-backend/puris-backend
+
+  repository: tractusx/app-puris-backend
   # -- THe policy for the image pull process
   pullPolicy: IfNotPresent
   # -- Overrides the image tag whose default is the chart appVersion.
-  tag: ""S
+  tag: ""
 
 # -- List of used secrets
 imagePullSecrets: []
@@ -89,7 +90,8 @@ autoscaling:
 
 ingress:
   # -- Enable the Ingress
-  enabled: true
+  enabled: false
+
   annotations:
     # -- Kubernetes Ingress class annotation for direct bindings
     kubernetes.io/ingress.class: nginx
@@ -160,31 +162,79 @@ readinessProbe:
   # -- Timeout in seconds of the readiness probe
   timeoutSeconds: 1
 
-
 # APPLICATION SPECIFIC
-api:
-  # -- The root directory of the API
-  rootDir: /catena
-
-datasource:
-  # -- Driver class name of the database
-  driverClassName: org.hsqldb.jdbc.JDBCDriver
-  # -- URL of the database
-  url: jdbc:hsqldb:mem:testdb;DB_CLOSE_DELAY=-1
-  # -- Username of the database
-  username: sa
-  # -- Password for the database user
-  password: ""
-
-edc:
-  controlplane:
-    # -- IP address of the EDC control plane
-    host: 172.17.0.2
-    data:
-      # -- Data port of the EDC control plane
-      port: 30091
-    # -- Key for the EDC control plane
-    key: ""
-  backend:
-    # -- URL of the EDC backend service
-    url: http://172.17.0.2:32084
+puris:
+    api:
+      # -- The root directory of the API
+      rootDir: /catena
+    datasource:
+      # -- Driver class name of the database
+      driverClassName: org.hsqldb.jdbc.JDBCDriver
+      # -- URL of the database
+      url: jdbc:hsqldb:mem:testdb;DB_CLOSE_DELAY=-1
+      # -- Username of the database
+      username: sa
+      # -- Password for the database user.
+      # Do not set a password!
+      password:
+    edc:
+      controlplane:
+          # -- IP address of the EDC control plane
+          host: 172.17.0.2
+          data:
+              # -- Data port of the EDC control plane
+              port: 30091
+          # -- Key for the EDC control plane
+          key: ""
+      backend:
+          # -- URL of the EDC backend service
+          url: http://172.17.0.2:32084
+      applydataplaneworkaround: true
+      dataplane:
+          public:
+              # -- Public port of the EDC data plane
+              port: 30784
+      # -- Own IDS URL of the EDC
+      idsUrl: http://plato-controlplane:8084/api/v1/ids
+    minikube:
+      # -- IP of minikube for the EDC configuration
+      ip: host.minikube.internal
+    own:
+      # -- Own BPNL of the EDC
+      bpnl: BPNL1234567890ZZ
+      # -- Own BPNS of the EDC
+      bpns: BPNS1234567890ZZ
+      edr:
+          # -- Number of minutes before received authentication data of a consumer pull is removed from memory
+          deletiontimer: 2
+    # -- Current version of the puris API
+    apiversion: 1.0.0
+    demonstrator:
+        # -- Current role of the PURIS demonstrator. Default value should be empty.
+        # Can be set to "customer" or "supplier" to enable demonstration setup
+        role:
+    jpa:
+      hibernate:
+          # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones
+          ddl-auto: create
+      properties:
+          hibernate:
+              # -- Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction
+              enable_lazy_load_no_trans: true
+    my:
+      base:
+          # -- Own base URL
+          url: http://localhost
+    request:
+      # -- Endpoint of server for request
+      serverendpoint: ${my.base.url}:${server.port}/catena/product-stock/request
+      # -- Asset ID for request API
+      apiassetid: product-stock-request-api
+    response:
+      # -- Endpoint of server for response
+      serverendpoint: ${my.base.url}:${server.port}/catena/product-stock/response
+      # -- Asset ID for response API
+      apiassetid: product-stock-response-api
+    edr:
+      # -- Endpoint for EDR
+      endpoint: ${my.base.url}:${server.port}/catena/edrendpoint

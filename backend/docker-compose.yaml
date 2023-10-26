@@ -21,16 +21,22 @@
 version: '1'
 services:
     puris-backend:
-        image: puris-backend:dev
+        image: tractusx/app-puris-backend:main
         container_name: backend
         ports:
             - 8081:8081
         environment:
             - server.port=8081
-            - puris.demonstrator.role= #customer/supplier
-            - edc.controlplane.host=172.17.0.2
-            - edc.controlplane.data.port=31605
-            - edc.dataplane.public.port=31503
-            - edc.idsUrl=http://plato-controlplane:8084/api/v1/ids
-            - own.bpnl= #BPNL4444444444XX
-            - own.bpns= #BPNS4444444444XX
+            - puris.demonstrator.role=
+            - edc.controlplane.host=customer-control-plane
+            - edc.controlplane.data.port=8181
+            - edc.controlplane.data.path=/api/v1/data
+            - edc.controlplane.key=password
+            - edc.dataplane.public.port=8285 # edc-customer-data-plane
+            - edc.applydataplaneworkaround=false
+            - edc.idsUrl=http://control-plane:8184/api/v1/ids
+            - own.bpnl=BPNL4444444444XX
+            - own.bpns=BPNS4444444444XX
+            - edr.endpoint=http://backend:8081/catena/edrendpoint
+            - request.serverendpoint=http://backend:8081/catena/product-stock/request
+            - response.serverendpoint=http://backend:8081/catena/product-stock/response
