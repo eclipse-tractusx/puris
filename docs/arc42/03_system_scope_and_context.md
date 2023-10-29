@@ -1,5 +1,8 @@
 # System Scope and Context
 
+The first draft of this application only targets to provide a possibility to enter and exchange stock information 
+related to partners. This application scope follows the following information.
+
 ## Business Context
 
 PURIS FOSS may be operated in any supply network, but currently will likely be operated in the
