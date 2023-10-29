@@ -7,7 +7,7 @@ The runtime view mainly focuses on two separate scenarios. One can either intera
 The information exchange in PURIS follows a response and request pattern. Requests are directly answered based on
 existing data as soon as they arrive.
 
-**\<TODO Diagram or Table>**
+![Overview of request and response](img/6-api-flow.svg)
 
 The request and response flow both implement a message header and a content section in the exchanged data.
 - the message header contains information about the message.
