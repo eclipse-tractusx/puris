@@ -15,6 +15,8 @@ been omitted for readability.
 
 No whitebox is needed for the "EDC" and for "Data Provisioning & Data Transformation".
 
+![Level 1 - PURIS FOSS - Whitebox View](img/5-level-1-puris-foss.svg)
+
 | Component / system | Descriptions                                                                                            |
 |--------------------|---------------------------------------------------------------------------------------------------------|
 | Frontend           | The frontend provides the capabilities to interact with the data.                                       |

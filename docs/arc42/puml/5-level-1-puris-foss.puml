@@ -1,0 +1,19 @@
+@startuml
+
+skinparam linetype ortho
+
+package "<<system>> PURIS FOSS"{
+  [EDC Controller] as edc_controller
+  [Backend] as puris_back
+  [Frontend] as puris_front
+
+  edc_controller -- "request data (via edc)\n provide data (via edc)" puris_back
+  puris_back - "MAD CRUD Interface"
+  puris_back -- "Stock Interface"
+  "EDC APIs" -- edc_controller
+
+  "Stock Interface" <- "query or update data" puris_front
+  "MAD CRUD Interface" <-- "query material and\npartner data" puris_front
+}
+
+@enduml
