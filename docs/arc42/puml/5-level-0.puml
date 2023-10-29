@@ -1,0 +1,16 @@
+@startuml
+
+package "<<system>> PURIS"{
+  [Eclipse DataSpace Components Connector] as edc
+  [PURIS FOSS] as puris
+
+  edc -- "provide and pull data\naccording to standards" puris
+  puris - "Interface internal systems"
+  "EDC APIs" -- edc
+}
+
+[Data Provisioning & Transformation] as data_prov
+
+"Interface internal systems" <- data_prov
+
+@enduml

@@ -3,6 +3,8 @@
 The components or (sub-) systems do have the following capabilities. Please note that the authentication flows have 
 been omitted for readability.
 
+![Level 0 - Blackbox View](img/5-level-0.svg)
+
 | Component / system                 | Descriptions                                                                                                                                                                                                                              |
 |------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Data Provisioning & Transformation | The Data Provisioning & Transformation Building Block handles the upload of data from internal systems into PURIS and provides capabilities for data transformation. **This component is not part of this repository**.                   |
