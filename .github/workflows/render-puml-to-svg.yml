@@ -31,11 +31,9 @@ on:
       - '**/*.puml'
 jobs:
   render-images:
-    if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
     uses: eclipse-tractusx/sig-infra/.github/workflows/reusable-generate-puml-svg.yml@main
 
   store-images:
-    if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
     runs-on: ubuntu-latest
     # 2nd job needs to wait for first job to finish
     needs: render-images
