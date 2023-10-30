@@ -4,7 +4,7 @@
 
 Overall the Deployment locally looks similar to the following graphic.
 
-![Local Deployment of two PURIS clients with MVD](img/07-deployment.svg)
+![Local Deployment of two PURIS clients with MVD](puml/07-deployment.svg)
 
 **Docker**
 

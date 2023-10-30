@@ -3,7 +3,7 @@
 The components or (sub-) systems do have the following capabilities. Please note that the authentication flows have 
 been omitted for readability.
 
-![Level 0 - Blackbox View](img/05-level-0.svg)
+![Level 0 - Blackbox View](puml/05-level-0.svg)
 
 | Component / system                 | Descriptions                                                                                                                                                                                                                              |
 |------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -16,7 +16,7 @@ been omitted for readability.
 
 **PURIS FOSS Frontend**
 
-![Level 1 - Whitebox View - PURIS FOSS Frontend](img/05-level-1-frontend.svg)
+![Level 1 - Whitebox View - PURIS FOSS Frontend](puml/05-level-1-frontend.svg)
 
 The Frontend only handles visualization logic. The remaining logic is handled in the backend.
 
@@ -27,7 +27,7 @@ The Frontend only handles visualization logic. The remaining logic is handled in
 
 **PURIS FOSS Backend**
 
-![Level 1 - Whitebox View - PURIS FOSS Backend](img/05-level-1-backend.svg)
+![Level 1 - Whitebox View - PURIS FOSS Backend](puml/05-level-1-backend.svg)
 
 | Component / system | Descriptions                                                                                                                                           |
 |--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
