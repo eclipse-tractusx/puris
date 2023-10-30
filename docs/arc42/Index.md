@@ -9,5 +9,6 @@
 - [06. Runtime View](06_runtime_view.md)
 - [07. Deployment View](07_deployment_view.md)
 - [08. Concepts](08_concepts.md)
+- [09. Architecture Decisions](09_architecture_decisions.md)
 - [10. Quality Requirements](10_quality_requirements.md)
 - [11. Technical Risks](11_technical_risks.md)
