@@ -12,3 +12,4 @@
 - [09. Architecture Decisions](09_architecture_decisions.md)
 - [10. Quality Requirements](10_quality_requirements.md)
 - [11. Technical Risks](11_technical_risks.md)
+- [12. Glossary](12_glossary.md)
