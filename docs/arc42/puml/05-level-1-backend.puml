@@ -1,0 +1,22 @@
+@startuml
+skinparam linetype ortho
+
+package "<<system>> PURIS FOSS Backend"{
+
+  [EDC] as edc
+  edc - "EDC Client Interface"
+
+  [Stock] as stock
+  stock - "Stock Interface"
+  "Stock Request &\n Response Interfaces\n(through EDC)" - stock
+
+  edc -- "query catalog &\nrequest data (via edc)" stock
+
+  [MAD] as mad
+  mad - "MAD Interface"
+
+  stock -- mad
+
+}
+
+@enduml
