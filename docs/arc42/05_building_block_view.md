@@ -16,6 +16,8 @@ been omitted for readability.
 
 **PURIS FOSS Frontend**
 
+![Level 1 - Whitebox View - PURIS FOSS Frontend](img/5-level-1-frontend.svg)
+
 The Frontend only handles visualization logic. The remaining logic is handled in the backend.
 
 | Component / system | Descriptions                                                                                                                                                 |
