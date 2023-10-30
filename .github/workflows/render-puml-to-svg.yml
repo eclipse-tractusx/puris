@@ -29,6 +29,9 @@ on:
       - 'main'
     paths:
       - '**/*.puml'
+  workflow_dispatch:
+  # Trigger manually
+  
 jobs:
   render-images:
     uses: eclipse-tractusx/sig-infra/.github/workflows/reusable-generate-puml-svg.yaml@main
