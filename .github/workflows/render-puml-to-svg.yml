@@ -31,7 +31,7 @@ on:
       - '**/*.puml'
 jobs:
   render-images:
-    uses: eclipse-tractusx/sig-infra/.github/workflows/reusable-generate-puml-svg.yml@main
+    uses: eclipse-tractusx/sig-infra/.github/workflows/reusable-generate-puml-svg.yaml@main
 
   store-images:
     runs-on: ubuntu-latest
