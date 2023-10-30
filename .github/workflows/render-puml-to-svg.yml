@@ -1,0 +1,29 @@
+# Example .github/workflows/add-static-puml-files.yaml in your repo
+name: "Render static puml files"
+# Trigger as you want here in example each time a PlantUML file was updated on main branch
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - '**/*.puml'
+jobs:
+  render-images:
+    if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
+    uses: eclipse-tractusx/sig-infra/.github/workflows/reusable-generate-puml-svg.yml@main
+
+  store-images:
+    if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
+    runs-on: ubuntu-latest
+    # 2nd job needs to wait for first job to finish
+    needs: render-images
+    steps:
+      - name: checkout source repo
+        uses: actions/checkout@v3
+      - name: download generated svg file from job before
+        uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: artifacts
+          path: ${{ github.workspace }}
+      # now you can handle the files in your desired way
