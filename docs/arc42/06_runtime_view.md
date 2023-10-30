@@ -5,7 +5,7 @@ The runtime view mainly focuses on two separate scenarios. One can either intera
 ## Scenario: Update partner-related data
 
 The information exchange in PURIS follows a response and request pattern. Requests are directly answered based on
-existing data as soon as they arrive.
+existing data as soon as they arrive. The diagram does not integrate the EDC to explain the overall flow.
 
 ![Overview of request and response](img/6-api-flow.svg)
 
