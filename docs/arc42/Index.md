@@ -8,3 +8,4 @@
 - [05. Building Block View](05_building_block_view.md)
 - [06. Runtime View](06_runtime_view.md)
 - [10. Quality Requirements](10_quality_requirements.md)
+- [11. Technical Risks](11_technical_risks.md)
