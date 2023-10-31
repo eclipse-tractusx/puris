@@ -92,7 +92,7 @@ maven/mavencentral/org.springframework.security/spring-security-core/6.1.4, Apac
 maven/mavencentral/org.springframework.security/spring-security-crypto/6.1.4, Apache-2.0 AND ISC, approved, #9735
 maven/mavencentral/org.springframework.security/spring-security-test/6.1.4, Apache-2.0, approved, #10674
 maven/mavencentral/org.springframework.security/spring-security-web/6.1.4, Apache-2.0, approved, #9800
-maven/mavencentral/org.springframework.session/spring-session-core/3.1.2, Apache-2.0, approved, clearlydefined
+maven/mavencentral/org.springframework.session/spring-session-core/3.1.2, Apache-2.0, approved, #11345
 maven/mavencentral/org.springframework/spring-aop/6.0.12, Apache-2.0, approved, #5940
 maven/mavencentral/org.springframework/spring-aspects/6.0.12, Apache-2.0, approved, #5930
 maven/mavencentral/org.springframework/spring-beans/6.0.12, Apache-2.0, approved, #5937
