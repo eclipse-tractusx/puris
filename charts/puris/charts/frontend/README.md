@@ -39,7 +39,7 @@ $ helm install frontend --namespace puris --create-namespace .
 | ingress.annotations | object | `{}` | Annotations for the Ingress controller |
 | ingress.className | string | `""` | Class name for the Ingress controller |
 | ingress.enabled | bool | `false` | Enable the Ingress |
-| ingress.hosts | list | `[{"host":"chart-example.local","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
+| ingress.hosts | list | `[{"host":"puris-frontend.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
 | ingress.tls | list | `[]` | TLS certificates for the Ingress controller |
 | livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":10,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |

@@ -24,3 +24,22 @@ source ~/.bashrc
 cd frontend
 eclipseDashTool package-lock.json -project automotive.tractusx -summary ../DEPENDENCIES_FRONTEND
 ```
+
+## Frontend container building workaround to use environment variables for vue
+
+### The mechanism for docker is the following:
+- .env has vite variables
+- .env.dockerbuild has the vite variable that maps on an environment variable (VITE_BACKEND_BASE_URL=$BACKEND_BASE_URL)
+- src/config.json has the environment variable names and the environment variable to substring in a json format.
+
+### When building the container:
+1. .env.dockerbuild is used
+2. vite / vue builds the application into a dest folder, that will be served by nginx
+
+> Result for the .env: <br> VITE_BACKEND_BASE_URL won't write a variable value BUT a placeholder into the built files ($BACKEND_BASE_URL)
+
+### When building the container, there is a "start-nginx.sh" file that does the following
+1. Collects the environment variables (set for the docker container / set via helm as BACKEND_BASE_URL)
+2. Looks-up the "to replace string" from config.json (for BACKEND_BASE_URL, it will search for $BACKEND_BASE-URL in the built files)
+3. Does the replacement in the built files
+4. Starts nginx

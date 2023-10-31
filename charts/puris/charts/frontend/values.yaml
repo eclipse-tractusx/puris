@@ -80,7 +80,7 @@ ingress:
   annotations: {}
   # -- Hosts for the Ingress controller
   hosts:
-    - host: chart-example.local
+    - host: puris-frontend.net
       paths:
         - path: /
           pathType: ImplementationSpecific

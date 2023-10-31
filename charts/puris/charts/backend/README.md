@@ -37,8 +37,8 @@ $ helm install backend --namespace puris --create-namespace .
 | ingress.annotations."nginx.ingress.kubernetes.io/force-ssl-redirect" | string | `"true"` | Force redirects from HTTP to HTTPS |
 | ingress.annotations."nginx.ingress.kubernetes.io/ssl-passthrough" | string | `"true"` | Pass SSL traffic to the backend ports |
 | ingress.enabled | bool | `false` | Enable the Ingress |
-| ingress.hosts | list | `[{"host":"home.int.demo.catena-x.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
-| ingress.tls | list | `[{"hosts":["home.int.demo.catena-x.net"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
+| ingress.hosts | list | `[{"host":"puris-backend.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
+| ingress.tls | list | `[{"hosts":["puris-backend.net"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
 | livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":250,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
 | livenessProbe.initialDelaySeconds | int | `250` | Delay in seconds after which an initial liveness probe is checked |

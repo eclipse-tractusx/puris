@@ -103,7 +103,7 @@ ingress:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
   # -- Hosts for the Ingress controller
   hosts:
-    - host: "home.int.demo.catena-x.net"
+    - host: "puris-backend.net"
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -111,7 +111,7 @@ ingress:
   tls:
     - secretName: tls-secret
       hosts:
-        - home.int.demo.catena-x.net
+        - puris-backend.net
 
 # -- Constrains for the node selector
 nodeSelector: {}

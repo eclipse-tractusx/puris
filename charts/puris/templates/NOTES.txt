@@ -1,0 +1,45 @@
+1. Get the application URL by running these commands:
+{{- if and .Values.frontend.ingress.enabled .Values.backend.ingress.enabled }}
+  {{- range $hostF := $.Values.frontend.ingress.hosts}}
+  Frontend:
+  http{{ if $.Values.frontend.ingress.tls }}s{{ end }}://{{ $hostF.host }}{{ .path }}
+  {{ end }}
+  {{- range $hostB := $.Values.backend.ingress.hosts -}}
+  Backend:
+  http{{ if $.Values.backend.ingress.tls }}s{{ end }}://{{ $hostB.host }}{{ .path }}
+  {{- end }}
+{{- else if and (contains "NodePort" .Values.frontend.service.type) (contains "NodePort" .Values.backend.service.type) }}
+  Frontend:
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "puris-frontend.fullname" . }}-frontend)
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+  Backend:
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "puris-backend.fullname" . }}-backend)
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+  Or
+  enable ingress by setting it to true while installation e.g.:
+  "helm install puris --namespace puris --create-namespace . --set frontend.ingress.enabled=true --set backend.ingress.enabled=true"
+{{- else if and (contains "LoadBalancer" .Values.frontend.service.type)  (contains "LoadBalancer" .Values.backend.service.type) }}
+  Frontend:
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "puris-frontend.fullname" . }}-frontend'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "puris-frontend.fullname" . }}-frontend --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+  Backend:
+  NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+             You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "puris-backend.fullname" . }}-backend'
+    export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "puris-backend.fullname" . }}-backend --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+    echo http://$SERVICE_IP:{{ .Values.service.port }}
+{{- else if and (contains "ClusterIP" .Values.frontend.service.type) (contains "ClusterIP" .Values.backend.service.type) }}
+  Frontend:
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "puris-frontend.name" . }}-frontend,app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+  Backend:
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "puris-backend.name" . }}-backend,app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}
