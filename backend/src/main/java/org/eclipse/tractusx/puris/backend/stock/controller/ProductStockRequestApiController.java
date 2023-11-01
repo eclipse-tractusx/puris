@@ -31,13 +31,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfulRequestDto;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestApiServiceImpl;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
@@ -65,9 +64,6 @@ public class ProductStockRequestApiController {
 
     @Autowired
     ProductStockRequestApiServiceImpl requestApiService;
-
-    @Autowired
-    EdcAdapterService edcAdapterService;
 
     @PostMapping("request")
     @Operation(summary = "This endpoint receives the product stock requests from a consumer.",
