@@ -21,44 +21,37 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.squareup.okhttp.Response;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.FrontendMaterialDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.MaterialStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestApiService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -70,15 +63,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class StockController {
 
-    @Value("${edc.dataplane.public.port}")
-    private String dataPlanePort;
-
-    @Value("${edc.controlplane.host}")
-    private String dataPlaneHost;
-
-    @Value("${edc.applydataplaneworkaround}")
-    private boolean applyDataplaneWorkaround;
-
     @Autowired
     private ProductStockService productStockService;
 
@@ -87,6 +71,9 @@ public class StockController {
 
     @Autowired
     private PartnerProductStockService partnerProductStockService;
+
+    @Autowired
+    private ProductStockRequestApiService productStockRequestApiService;
 
     @Autowired
     private MaterialService materialService;
@@ -98,21 +85,7 @@ public class StockController {
     private MaterialPartnerRelationService mprService;
 
     @Autowired
-    private ProductStockRequestService productStockRequestService;
-
-    @Autowired
     private ModelMapper modelMapper;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private EdcAdapterService edcAdapterService;
-
-    @Autowired
-    private VariablesService variablesService;
-
-
 
     @CrossOrigin
     @GetMapping("materials")
@@ -155,11 +128,9 @@ public class StockController {
     @ResponseBody
     @Operation(description = "Returns a list of all product-stocks")
     public List<ProductStockDto> getProductStocks() {
-        List<ProductStockDto> allProductStocks = productStockService.findAll().stream()
+        return productStockService.findAll().stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
-
-        return allProductStocks;
     }
 
     @CrossOrigin
@@ -178,9 +149,7 @@ public class StockController {
         }
         log.info("Created product-stock: " + createdProductStock);
 
-        ProductStockDto productStockToReturn = convertToDto(createdProductStock);
-
-        return productStockToReturn;
+        return convertToDto(createdProductStock);
     }
 
     @CrossOrigin
@@ -199,9 +168,7 @@ public class StockController {
         existingProductStock = productStockService.update(existingProductStock);
         log.info("Updated product-stock: " + existingProductStock);
 
-        ProductStockDto productStockToReturn = convertToDto(existingProductStock);
-
-        return productStockToReturn;
+        return convertToDto(existingProductStock);
     }
 
     private ProductStockDto convertToDto(ProductStock entity) {
@@ -243,9 +210,7 @@ public class StockController {
 
         MaterialStock createdMaterialStock = materialStockService.create(materialStockToCreate);
 
-        MaterialStockDto materialStockToReturn = convertToDto(createdMaterialStock);
-
-        return materialStockToReturn;
+        return convertToDto(createdMaterialStock);
     }
 
     @CrossOrigin
@@ -264,9 +229,7 @@ public class StockController {
 
         existingMaterialStock = materialStockService.update(existingMaterialStock);
 
-        MaterialStockDto productStockToReturn = convertToDto(existingMaterialStock);
-
-        return productStockToReturn;
+        return convertToDto(existingMaterialStock);
     }
 
     private MaterialStockDto convertToDto(MaterialStock entity) {
@@ -310,10 +273,9 @@ public class StockController {
     @ResponseBody
     @Operation(description = "Returns a list of all Partners that are ordering the given material")
     public List<PartnerDto> getCustomerPartnersOrderingMaterial(@RequestParam String ownMaterialNumber) {
-        List<PartnerDto> allCustomerPartners = partnerService.findAllCustomerPartnersForMaterialId(ownMaterialNumber).stream()
+        return partnerService.findAllCustomerPartnersForMaterialId(ownMaterialNumber).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
-        return allCustomerPartners;
     }
 
     @CrossOrigin
@@ -333,96 +295,12 @@ public class StockController {
 
         for (Partner supplierPartner : allSupplierPartnerEntities) {
 
-            ProductStockRequest productStockRequest = new ProductStockRequest();
-
-            MaterialPartnerRelation materialPartnerRelation = mprService.find(materialEntity, supplierPartner);
-
-            if (materialPartnerRelation == null) {
-                log.error("Missing material-partner-relation for " + materialEntity.getOwnMaterialNumber()
-                    + " and " + supplierPartner.getBpnl());
-                continue;
-            }
-
-            ProductStockRequestForMaterial material = new ProductStockRequestForMaterial(
-                materialEntity.getOwnMaterialNumber(),
-                materialEntity.getMaterialNumberCx(),
-                materialPartnerRelation.getPartnerMaterialNumber()
-            );
-            productStockRequest.getContent().getProductStock().add(material);
-
-            String [] data = edcAdapterService.getContractForRequestApi(supplierPartner.getEdcUrl());
-            if(data == null) {
-                log.error("failed to obtain request api from " + supplierPartner.getEdcUrl());
-                continue;
-            }
-            String authKey = data[0];
-            String authCode = data[1];
-            String endpoint = data[2];
-            if (applyDataplaneWorkaround) {
-                log.info("Applying Dataplane Address Workaround");
-                endpoint = "http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public";
-            }
-
-            String cid = data[3];
-            MessageHeader messageHeader = new MessageHeader();
-            UUID randomUuid = UUID.randomUUID();
-
-            // Avoid randomly choosing a UUID that was already used by this customer.
-            while (productStockRequestService.findRequestByHeaderUuid(randomUuid) != null) {
-                randomUuid = UUID.randomUUID();
-            }
-            messageHeader.setRequestId(randomUuid);
-            messageHeader.setRespondAssetId(variablesService.getResponseApiAssetId());
-            messageHeader.setContractAgreementId(cid);
-            messageHeader.setSender(variablesService.getOwnBpnl());
-            messageHeader.setSenderEdc(variablesService.getOwnEdcIdsUrl());
-            // set receiver per partner
-            messageHeader.setReceiver(supplierPartner.getBpnl());
-            messageHeader.setUseCase(DT_UseCaseEnum.PURIS);
-            messageHeader.setCreationDate(new Date());
-
-
-            productStockRequest.setHeader(messageHeader);
-            productStockRequest.setState(DT_RequestStateEnum.Working);
-            productStockRequest = productStockRequestService.createRequest(productStockRequest);
-            var test = productStockRequestService.findRequestByHeaderUuid(productStockRequest.getHeader().getRequestId());
-            log.debug("Stored in Database " + (test != null) + " " + productStockRequest.getHeader().getRequestId());
-            Response response = null;
-            try {
-                String requestBody = objectMapper.writeValueAsString(productStockRequest);
-                response = edcAdapterService.sendDataPullRequest(endpoint, authKey, authCode, requestBody);
-                log.debug(response.body().string());
-                if(response.code() < 400) {
-                    productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Requested);
-                    log.debug("Sent request and received HTTP Status code " + response.code());
-                    log.debug("Setting request state to " + DT_RequestStateEnum.Requested);
-                    productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Requested);
-                } else {
-                    log.warn("Received HTTP Status Code " + response.code() + " for request " + productStockRequest.getHeader().getRequestId()
-                    + " from " + productStockRequest.getHeader().getReceiver());
-                    productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
-                }
-                
-            } catch (Exception e) {
-                log.error("Failed to send data pull request to " + supplierPartner.getEdcUrl(), e);
-                productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
-            } finally {
-                try {
-                    if(response != null) {
-                        response.body().close();
-                    }
-                } catch (Exception e) {
-                    log.warn("Failed to close response body");
-                }
-            }
+            productStockRequestApiService.request(materialEntity, supplierPartner);
         }
 
-        List<PartnerDto> allSupplierPartners = allSupplierPartnerEntities.stream()
+        return allSupplierPartnerEntities.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
-
-
-        return allSupplierPartners;
     }
 
     private PartnerDto convertToDto(Partner entity) {
