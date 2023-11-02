@@ -1,4 +1,4 @@
-@startuml Figure 1
+@startuml
 autonumber
 skinparam sequenceMessageAlign center
 
