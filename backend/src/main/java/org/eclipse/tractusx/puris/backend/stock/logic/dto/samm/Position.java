@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.ToString;
 
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;

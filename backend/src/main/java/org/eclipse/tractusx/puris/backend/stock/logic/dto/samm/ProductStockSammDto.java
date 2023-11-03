@@ -32,7 +32,6 @@ import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Optional;
 
 /**

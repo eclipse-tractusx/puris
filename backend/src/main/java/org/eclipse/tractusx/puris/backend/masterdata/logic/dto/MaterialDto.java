@@ -22,10 +22,9 @@
 package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.StockDto;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.UUID;
 
 @Getter
 @Setter
