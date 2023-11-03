@@ -31,7 +31,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRespons
 import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
  * {@link org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock} according to the
  * API specification.
  */
-@Component
+@Service
 @Slf4j
 public class ProductStockResponseApiServiceImpl {
 

@@ -22,31 +22,27 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.squareup.okhttp.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequestForMaterial;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -59,9 +55,9 @@ import java.util.stream.Collectors;
  * {@link org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock} and return it
  * according to the API specification.
  */
-@Component
+@Service
 @Slf4j
-public class ProductStockRequestApiServiceImpl {
+public class ProductStockRequestApiServiceImpl implements ProductStockRequestApiService{
 
     @Autowired
     private ProductStockRequestService productStockRequestService;
@@ -85,9 +81,6 @@ public class ProductStockRequestApiServiceImpl {
     private EdcAdapterService edcAdapterService;
 
     @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Value("${edc.dataplane.public.port}")
@@ -105,7 +98,8 @@ public class ProductStockRequestApiServiceImpl {
     @Value("${edc.applydataplaneworkaround}")
     private boolean applyDataplaneWorkaround;
 
-
+    @Autowired
+    private VariablesService variablesService;
 
     public static <T> Predicate<T> distinctByKey(
             Function<? super T, ?> keyExtractor) {
@@ -217,7 +211,7 @@ public class ProductStockRequestApiServiceImpl {
             if (productStocks.size() > 1) {
                 List<ProductStock> distinctProductStocks =
                         productStocks.stream()
-                                .filter(distinctByKey(p -> p.getLocationId()))
+                                .filter(distinctByKey(Stock::getLocationId))
                                 .collect(Collectors.toList());
                 if (distinctProductStocks.size() > 1) {
                     log.warn(String.format("More than one site is not yet supported per " +
@@ -228,7 +222,7 @@ public class ProductStockRequestApiServiceImpl {
                 }
 
                 double quantity = productStocks.stream().
-                        mapToDouble(stock -> stock.getQuantity()).sum();
+                        mapToDouble(Stock::getQuantity).sum();
                 productStock.setQuantity(quantity);
 
             }
@@ -283,5 +277,89 @@ public class ProductStockRequestApiServiceImpl {
             log.info("Request status: \n" + productStockRequest.toString());
         }
 
+    }
+
+    public void request(Material material, Partner supplierPartner){
+        ProductStockRequest productStockRequest = new ProductStockRequest();
+
+        MaterialPartnerRelation materialPartnerRelation = mprService.find(material, supplierPartner);
+
+        if (materialPartnerRelation == null) {
+            log.error("Missing material-partner-relation for " + material.getOwnMaterialNumber()
+                + " and " + supplierPartner.getBpnl());
+            return;
+        }
+
+        ProductStockRequestForMaterial materialToRequest = new ProductStockRequestForMaterial(
+            material.getOwnMaterialNumber(),
+            material.getMaterialNumberCx(),
+            materialPartnerRelation.getPartnerMaterialNumber()
+        );
+        productStockRequest.getContent().getProductStock().add(materialToRequest);
+
+        String [] data = edcAdapterService.getContractForRequestApi(supplierPartner.getEdcUrl());
+        if(data == null) {
+            log.error("failed to obtain request api from " + supplierPartner.getEdcUrl());
+            return;
+        }
+        String authKey = data[0];
+        String authCode = data[1];
+        String endpoint = data[2];
+        if (applyDataplaneWorkaround) {
+            log.info("Applying Dataplane Address Workaround");
+            endpoint = "http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public";
+        }
+
+        String cid = data[3];
+        MessageHeader messageHeader = new MessageHeader();
+        UUID randomUuid = UUID.randomUUID();
+
+        // Avoid randomly choosing a UUID that was already used by this customer.
+        while (productStockRequestService.findRequestByHeaderUuid(randomUuid) != null) {
+            randomUuid = UUID.randomUUID();
+        }
+        messageHeader.setRequestId(randomUuid);
+        messageHeader.setRespondAssetId(variablesService.getResponseApiAssetId());
+        messageHeader.setContractAgreementId(cid);
+        messageHeader.setSender(variablesService.getOwnBpnl());
+        messageHeader.setSenderEdc(variablesService.getOwnEdcIdsUrl());
+        // set receiver per partner
+        messageHeader.setReceiver(supplierPartner.getBpnl());
+        messageHeader.setUseCase(DT_UseCaseEnum.PURIS);
+        messageHeader.setCreationDate(new Date());
+
+        productStockRequest.setHeader(messageHeader);
+        productStockRequest.setState(DT_RequestStateEnum.Working);
+        productStockRequest = productStockRequestService.createRequest(productStockRequest);
+        var test = productStockRequestService.findRequestByHeaderUuid(productStockRequest.getHeader().getRequestId());
+        log.debug("Stored in Database " + (test != null) + " " + productStockRequest.getHeader().getRequestId());
+        Response response = null;
+        try {
+            String requestBody = objectMapper.writeValueAsString(productStockRequest);
+            response = edcAdapterService.sendDataPullRequest(endpoint, authKey, authCode, requestBody);
+            log.debug(response.body().string());
+            if(response.code() < 400) {
+                productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Requested);
+                log.debug("Sent request and received HTTP Status code " + response.code());
+                log.debug("Setting request state to " + DT_RequestStateEnum.Requested);
+                productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Requested);
+            } else {
+                log.warn("Received HTTP Status Code " + response.code() + " for request " + productStockRequest.getHeader().getRequestId()
+                    + " from " + productStockRequest.getHeader().getReceiver());
+                productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
+            }
+
+        } catch (Exception e) {
+            log.error("Failed to send data pull request to " + supplierPartner.getEdcUrl(), e);
+            productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
+        } finally {
+            try {
+                if(response != null) {
+                    response.body().close();
+                }
+            } catch (Exception e) {
+                log.warn("Failed to close response body");
+            }
+        }
     }
 }
