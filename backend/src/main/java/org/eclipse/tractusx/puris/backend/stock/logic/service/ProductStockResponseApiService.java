@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,23 +17,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.logic.service;
+package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.ResponseDto;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
 
 /**
- * Service receives performs the tasks associated with the Response API.
+ * Interface definition to handle responses to the Product Stock Response API
  */
-public interface ResponseApiService {
+public interface ProductStockResponseApiService {
 
     /**
-     * Consume the response
-     * <p>
-     * Commonly this involves:
-     * <li>validate the data</li>
-     * <li>store the data</li>
+     * processes the response and saves the results
      *
-     * @param responseDto response to consume
+     * @param productStockResponse response to save the stock information from
      */
-    public void consumeResponse(ResponseDto responseDto);
+    void consumeResponse(ProductStockResponse productStockResponse);
 }

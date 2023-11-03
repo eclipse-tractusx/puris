@@ -19,21 +19,27 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.controller;
+package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.*;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.*;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.*;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Address;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.AddressDto;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.SiteDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.modelmapper.*;
+import org.modelmapper.Conditions;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -42,7 +48,7 @@ public class PartnerController {
 
     @Autowired
     private PartnerService partnerService;
-    private ModelMapper modelMapper = new ModelMapper();
+    private final ModelMapper modelMapper = new ModelMapper();
 
     @CrossOrigin
     @PostMapping
