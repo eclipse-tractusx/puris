@@ -16,9 +16,10 @@ mvn install
 
 # run for demo or development puroposes
 # customer role
-mvn spring-boot:run -Dspring-boot.run.arguments=--spring.profiles.active=customer
+mvn spring-boot:run -Dspring-boot.run.arguments=--spring.config.location="./src/main/resources/application-customer.properties"
+
 # supplier role
-mvn spring-boot:run -Dspring-boot.run.arguments=--spring.profiles.active=supplier
+mvn spring-boot:run -Dspring-boot.run.arguments=--spring.config.location="./src/main/resources/application-supplier.properties"
 ```
 5. Done! The Swagger UI should be available at 
     - (Java & Docker) `http://YOURIP:8081/catena/swagger-ui/index.html`
@@ -46,15 +47,13 @@ docker-compose up
 6. It is highly suggested to install and run the PURIS frontend afterward
 
 ### Running using helm (deployment)
-Change the `src/main/resources/application.properties` or the respective environment
-variables to configure the port, the URL of the EDC control plane, backend application etc.
-4. Run the application:
+3. Run the application:
 ```shell
-cd backend/charts
+cd charts/puris/charts/backend
 
-helm install puris-backend
+helm install backend --namespace puris --create-namespace . --set ingress.enabled=true
 ```
-5. Done! The Swagger UI should be available at
+4. Done! The Swagger UI should be available at
     - (Java & Docker) `http://YOURIP:8081/catena/swagger-ui/index.html`
     - (Kubernetes) `http://CLUSTERIP:30001/catena/swagger-ui/index.html`
-6. It is highly suggested to install and run the PURIS frontend afterward
+5. It is highly suggested to install and run the PURIS frontend afterward

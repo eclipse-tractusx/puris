@@ -23,7 +23,6 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
@@ -59,6 +58,8 @@ public class ProductStockServiceImpl implements ProductStockService {
 
     @Override
     public ProductStock create(ProductStock productStock) {
+        // avoid unintentional overwriting of an existing ProductStock
+        productStock.setUuid(null);
 
         // validate, if material is missing
         if (productStock.getMaterial() == null || productStock.getMaterial().getOwnMaterialNumber() == null){
@@ -67,8 +68,8 @@ public class ProductStockServiceImpl implements ProductStockService {
         }
         Optional<Material> existingMaterial = materialRepository.findById(productStock.getMaterial().getOwnMaterialNumber());
 
-        if (!existingMaterial.isPresent()) {
-            log.error(String.format("Material for uuid %s not found", productStock.getMaterial().getOwnMaterialNumber()));
+        if (existingMaterial.isEmpty()) {
+            log.error(String.format("Material %s not found", productStock.getMaterial().getOwnMaterialNumber()));
             return null;
         }
 
@@ -88,7 +89,7 @@ public class ProductStockServiceImpl implements ProductStockService {
 
     @Override
     public List<ProductStock> findAll() {
-        return productStockRepository.findAllByType(DT_StockTypeEnum.PRODUCT);
+        return productStockRepository.findAll();
     }
 
     @Override

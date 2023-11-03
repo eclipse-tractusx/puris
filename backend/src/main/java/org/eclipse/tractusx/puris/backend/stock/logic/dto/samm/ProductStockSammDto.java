@@ -32,7 +32,6 @@ import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -62,9 +61,6 @@ public class ProductStockSammDto extends MessageContentDto {
                                @JsonProperty(value = "materialNumberCustomer") String materialNumberCustomer,
                                @JsonProperty(value = "materialNumberCatenaX") Optional<String> materialNumberCatenaX,
                                @JsonProperty(value = "materialNumberSupplier") Optional<String> materialNumberSupplier) {
-        super(
-
-        );
         this.positions = positions;
         this.materialNumberCustomer = materialNumberCustomer;
         this.materialNumberCatenaX = materialNumberCatenaX;

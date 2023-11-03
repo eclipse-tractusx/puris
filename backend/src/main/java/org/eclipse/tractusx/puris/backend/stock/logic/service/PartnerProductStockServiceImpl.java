@@ -22,12 +22,15 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.PartnerProductStockRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,6 +39,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
+@Slf4j
 public class PartnerProductStockServiceImpl implements PartnerProductStockService {
 
     private PartnerProductStockRepository partnerProductStockRepository;
@@ -44,6 +48,9 @@ public class PartnerProductStockServiceImpl implements PartnerProductStockServic
 
     @Override
     public PartnerProductStock create(PartnerProductStock partnerProductStock) {
+        // avoid unintentional overwriting of an existing PartnerProductStock
+        partnerProductStock.setUuid(null);
+
         return partnerProductStockRepository.save(partnerProductStock);
     }
 
@@ -84,5 +91,13 @@ public class PartnerProductStockServiceImpl implements PartnerProductStockServic
             .stream()
             .filter(pps -> materialsList.contains(pps.getMaterial()))
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PartnerProductStock> findAllByPartnerAndMaterialAndLocationAndMeasurementUnit(Partner partner, Material material,
+                                                                                              String locationId, LocationIdTypeEnum locationIdType, MeasurementUnit measurementUnit) {
+        return partnerProductStockRepository.
+            findAllBySupplierPartnerAndMaterialAndLocationIdAndLocationIdTypeAndMeasurementUnit(partner, material, locationId,
+                locationIdType, measurementUnit);
     }
 }

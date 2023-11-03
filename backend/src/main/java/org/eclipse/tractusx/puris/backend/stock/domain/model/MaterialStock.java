@@ -29,9 +29,16 @@ import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 
 import java.util.Date;
 
+/**
+ * <p>This class represents a distinct stock of a certain material, that the owner of
+ * the current instance of the PURIS application has in his own warehouse.</p>
+ *
+ */
 @Entity
 @DiscriminatorValue("MaterialStock")
 @Getter
@@ -40,9 +47,10 @@ import java.util.Date;
 @NoArgsConstructor
 public class MaterialStock extends Stock {
 
-    public MaterialStock(Material material, double quantity, String atSiteBpnl,
+    public MaterialStock(Material material, double quantity, MeasurementUnit measurementUnit, String locationId,
+                         LocationIdTypeEnum locationIdType,
                          Date lastUpdatedOn) {
-        super(material, quantity, atSiteBpnl, lastUpdatedOn);
+        super(material, quantity, measurementUnit, locationId, locationIdType, lastUpdatedOn);
         super.setType(DT_StockTypeEnum.MATERIAL);
     }
 

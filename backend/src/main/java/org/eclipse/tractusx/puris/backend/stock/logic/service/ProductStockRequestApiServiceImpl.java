@@ -24,10 +24,8 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -35,6 +33,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequestForMaterial;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
@@ -44,7 +43,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -113,9 +115,21 @@ public class ProductStockRequestApiServiceImpl {
     }
 
 
+    /**
+     * This method should be called in a separate Thread.
+     *
+     * It will evaluate the given ProductStockRequest and check, whether this Partner is
+     * currently known as a customer for the given products. Then this method will assemble
+     * all necessary information from database, generate ProductStockSammDto's and then send
+     * them to the Partner via his product-stock-response-api.
+     *
+     * <p>Please note that this method currently does not support multple BPNS's/BPNA's per Partner.</p>
+     *
+     * @param productStockRequest a ProductStockRequest you received from a Customer Partner
+     */
     public void handleRequest(ProductStockRequest productStockRequest) {
 
-        productStockRequest = productStockRequestService.updateState(productStockRequest,DT_RequestStateEnum.WORKING);
+        productStockRequest = productStockRequestService.updateState(productStockRequest,DT_RequestStateEnum.Working);
         String requestingPartnerBpnl = productStockRequest.getHeader().getSender();
         Partner requestingPartner =  partnerService.findByBpnl(requestingPartnerBpnl);
 
@@ -124,7 +138,7 @@ public class ProductStockRequestApiServiceImpl {
         if (productStockRequest.getHeader().getSenderEdc() != null && !partnerIdsUrl.equals(productStockRequest.getHeader().getSenderEdc())) {
             log.warn("Partner " + requestingPartner.getName() + " is using unknown idsUrl: " + productStockRequest.getHeader().getSenderEdc());
             log.warn("Request will not be processed");
-            productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
+            productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
             return;
         }
 
@@ -203,7 +217,7 @@ public class ProductStockRequestApiServiceImpl {
             if (productStocks.size() > 1) {
                 List<ProductStock> distinctProductStocks =
                         productStocks.stream()
-                                .filter(distinctByKey(p -> p.getAtSiteBpnl()))
+                                .filter(distinctByKey(p -> p.getLocationId()))
                                 .collect(Collectors.toList());
                 if (distinctProductStocks.size() > 1) {
                     log.warn(String.format("More than one site is not yet supported per " +
@@ -228,7 +242,7 @@ public class ProductStockRequestApiServiceImpl {
         var data = edcAdapterService.getContractForResponseApi(partnerIdsUrl);
         if(data == null) {
             log.error("Failed to contract response api from " + partnerIdsUrl);
-            productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
+            productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
             log.info("Request status: \n" + productStockRequest.toString());
             return;
         }
@@ -261,10 +275,10 @@ public class ProductStockRequestApiServiceImpl {
                     endpoint, authKey, authCode, requestBody);
             log.info(httpResponse.body().string());
             httpResponse.body().close();
-            productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.COMPLETED);
+            productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Completed);
         } catch (Exception e) {
             log.error("Failed to send response to " + response.getHeader().getReceiver(), e);
-            productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.ERROR);
+            productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
         } finally {
             log.info("Request status: \n" + productStockRequest.toString());
         }

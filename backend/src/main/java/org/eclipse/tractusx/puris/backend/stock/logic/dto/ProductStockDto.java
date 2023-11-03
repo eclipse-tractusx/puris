@@ -28,6 +28,8 @@ import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 
 import java.util.Date;
 
@@ -39,14 +41,9 @@ public class ProductStockDto extends StockDto {
 
     private PartnerDto allocatedToCustomerPartner;
 
-    public ProductStockDto(MaterialDto material, double quantity, String atSiteBpnl) {
-        super(material, quantity, atSiteBpnl, new Date());
-        this.setType(DT_StockTypeEnum.PRODUCT);
-    }
-
-    public ProductStockDto(MaterialDto material, double quantity, String atSiteBpnl,
-                           PartnerDto allocatedToCustomerPartner) {
-        super(material, quantity, atSiteBpnl, new Date());
+    public ProductStockDto(MaterialDto material, double quantity, MeasurementUnit measurementUnit, String atSiteBpns,
+                           LocationIdTypeEnum locationIdType, PartnerDto allocatedToCustomerPartner, Date lastUpdatedOn) {
+        super(material, quantity, measurementUnit, atSiteBpns, locationIdType, lastUpdatedOn);
         this.setType(DT_StockTypeEnum.PRODUCT);
         this.allocatedToCustomerPartner = allocatedToCustomerPartner;
     }

@@ -30,9 +30,17 @@ import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 
 import java.util.Date;
 
+/**
+ * <p>This class represents a distinct stock of products that a supplier partner of
+ * the owner of the current instance of the PURIS application has in his warehouse and
+ * that is dedicated to be sent to the owner of the current instance of the PURIS
+ * application later in time</p>
+ */
 @Entity
 @DiscriminatorValue("PartnerProductStock")
 @Getter
@@ -46,16 +54,11 @@ public class PartnerProductStock extends Stock {
     @NotNull
     private Partner supplierPartner;
 
-    public PartnerProductStock(Material material, double quantity, String atSiteBpnl,
-                               Date lastUpdatedOn, Partner supplierPartner) {
-        super(material, quantity, atSiteBpnl, lastUpdatedOn);
+    public PartnerProductStock(Material material, double quantity, MeasurementUnit measurementUnit, String locationId,
+                               LocationIdTypeEnum locationIdType, Date lastUpdatedOn, Partner supplierPartner) {
+        super(material, quantity, measurementUnit, locationId, locationIdType, lastUpdatedOn);
         super.setType(DT_StockTypeEnum.PRODUCT);
         this.setSupplierPartner(supplierPartner);
-    }
-
-    public PartnerProductStock(Material material, double quantity, String atSiteBpnl, Date lastUpdatedOn) {
-        super(material, quantity, atSiteBpnl, lastUpdatedOn);
-        super.setType(DT_StockTypeEnum.PRODUCT);
     }
 
 }

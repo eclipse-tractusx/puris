@@ -29,10 +29,17 @@ import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ * This class is the common superclass of MaterialStock, ProductStock
+ * and PartnerProductStock.
+ *
+ */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "stock_type")
@@ -55,7 +62,13 @@ public class Stock {
     private double quantity;
 
     @NotNull
-    private String atSiteBpnl;
+    private MeasurementUnit measurementUnit;
+
+    @NotNull
+    private String locationId;
+
+    @NotNull
+    private LocationIdTypeEnum locationIdType;
 
     @Enumerated(EnumType.STRING)
     @NotNull
@@ -65,10 +78,12 @@ public class Stock {
     @NotNull
     private Date lastUpdatedOn;
 
-    public Stock(Material material, double quantity, String atSiteBpnl, Date lastUpdatedOn) {
+    public Stock(Material material, double quantity, MeasurementUnit measurementUnit, String locationId, LocationIdTypeEnum locationIdType, Date lastUpdatedOn) {
         this.material = material;
         this.quantity = quantity;
-        this.atSiteBpnl = atSiteBpnl;
+        this.measurementUnit = measurementUnit;
+        this.locationId = locationId;
+        this.locationIdType = locationIdType;
         this.lastUpdatedOn = lastUpdatedOn;
     }
 }

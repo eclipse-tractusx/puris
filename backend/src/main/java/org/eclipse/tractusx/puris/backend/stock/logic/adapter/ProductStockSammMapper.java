@@ -23,26 +23,20 @@ package org.eclipse.tractusx.puris.backend.stock.logic.adapter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,35 +56,23 @@ public class ProductStockSammMapper {
     /**
      * Utility method to serialize a ProductStock or PartnerProduct on the side
      * of the responding supplier;
+     *
      * @param stock MUST be either ProductStock or PartnerProductStock
      * @return the corresponding ProductStockSammDto
      */
     public ProductStockSammDto toSamm(Stock stock) {
 
-        GregorianCalendar calendar = new GregorianCalendar();
-        calendar.setTime(stock.getLastUpdatedOn());
-        XMLGregorianCalendar lastUpdatedOn = null;
-        try {
-            lastUpdatedOn =
-                    DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
-        } catch (DatatypeConfigurationException e) {
-            log.error(String.format("Could not create XML Gregorian " +
-                            "Calender from PartnerProductStock.lastUpdatedOn: %s",
-                    stock.getLastUpdatedOn().toString()));
-            return null;
-        }
-
         AllocatedStock allocatedStock = new AllocatedStock(
-                new Quantity(stock.getQuantity(), "unit:piece"),
-                new LocationId(LocationIdTypeEnum.B_P_N_S, stock.getAtSiteBpnl())
+            new Quantity(stock.getQuantity(), stock.getMeasurementUnit()),
+            new LocationId(LocationIdTypeEnum.B_P_N_S, stock.getLocationId())
         );
         List<AllocatedStock> allocatedStocks = new ArrayList<>();
         allocatedStocks.add(allocatedStock);
 
         Position position = new Position(
-                null,
-                lastUpdatedOn,
-                allocatedStocks
+            null,
+            stock.getLastUpdatedOn(),
+            allocatedStocks
         );
         List<Position> positions = new ArrayList<>();
         positions.add(position);
@@ -100,7 +82,7 @@ public class ProductStockSammMapper {
             // Partner is customer
             ProductStock productStock = (ProductStock) stock;
             Partner partner = productStock.getAllocatedToCustomerPartner();
-            materialNumberCustomer =  mprService.find(stock.getMaterial(), partner).getPartnerMaterialNumber();
+            materialNumberCustomer = mprService.find(stock.getMaterial(), partner).getPartnerMaterialNumber();
             materialNumberSupplier = stock.getMaterial().getOwnMaterialNumber();
         } else if (stock instanceof PartnerProductStock) {
             // Partner is supplier
@@ -115,57 +97,102 @@ public class ProductStockSammMapper {
         }
 
         return new ProductStockSammDto(
-                positions,
-                materialNumberCustomer,
-                Optional.ofNullable(stock.getMaterial().getMaterialNumberCx()),
-                Optional.ofNullable(materialNumberSupplier)
+            positions,
+            materialNumberCustomer,
+            Optional.ofNullable(stock.getMaterial().getMaterialNumberCx()),
+            Optional.ofNullable(materialNumberSupplier)
         );
     }
 
-
     /**
-     * Utility method to deserialize a ProductStockSammDto on the side of the customer
-     * @param samm a ProductStockSammDto received from a supplier
+     * <p>Utility method to deserialize a ProductStockSammDto on the side of the customer.
+     * Since each ProductStockSammDto may contain multiple Positions, this method will
+     * return a list of PartnerProductStocks, where each Samm-Position is mapped to an
+     * instance of PartnerProductStock. </p>
+     *
+     * <p>The caller of this method has to decide whether he wants to aggregate some of
+     * the items of the returned list. Furthermore, he may want to compare the resulting
+     * list to his current database and then decide which of the resulting PartnerProductStocks
+     * are an update to existing entities in his database.</p>
+     *
+     * <p>Please note, that this application currently does <b>NOT</b> evaluate the orderPositionReference of the
+     * ProductStockSammDto.</p>
+     *
+     * @param samm    a ProductStockSammDto received from a supplier
      * @param partner the partner you received the message from
      * @return a PartnerProductStockDto
      */
-    public PartnerProductStockDto fromSamm(ProductStockSammDto samm, Partner partner) {
-        // application currently only supports:
-        // - an AGGREGATED Partner stock
-        // - one Site per Partner
+    public List<PartnerProductStock> sammToPartnerProductStocks(ProductStockSammDto samm, Partner partner) {
+        ArrayList<PartnerProductStock> output = new ArrayList<>();
+        Material material = null;
+        if (samm.getMaterialNumberCatenaX().isPresent()) {
+            material = materialService.findByMaterialNumberCx(samm.getMaterialNumberCatenaX().get());
+            if (material != null) {
+                if (!material.getOwnMaterialNumber().equals(samm.getMaterialNumberCustomer())) {
+                    log.warn("Mismatch between MaterialNumberCX and CustomerMaterialNumber!");
+                }
+                if (samm.getMaterialNumberSupplier().isPresent() &&
+                    !mprService.findAllByPartnerMaterialNumber(samm.getMaterialNumberSupplier().get()).contains(material)) {
+                    log.warn("Mismatch between MaterialNumberCX and SupplierMaterialNumber!");
+                }
+            } else {
+                log.warn("Could not identify Material via MaterialNumberCX: " + samm.getMaterialNumberCatenaX());
+            }
+        }
+        if (material == null && samm.getMaterialNumberSupplier().isPresent()) {
+            var materialsFromPartners = mprService.findAllByPartnerMaterialNumber(samm.getMaterialNumberSupplier().get());
+            int foundMatches = 0;
+            for (var foundMaterial : materialsFromPartners) {
+                if (mprService.partnerSuppliesMaterial(foundMaterial, partner)) {
+                    material = foundMaterial;
+                    if (foundMaterial.getOwnMaterialNumber().equals(samm.getMaterialNumberCustomer())) {
+                        // foundMaterial is a definitive match
+                        foundMatches = 1;
+                        break;
+                    }
+                    foundMatches++;
+                }
+            }
+            if (foundMatches > 1) {
+                // Ambiguous results found, i.e. this Partner seems to use his MaterialNumber which he transmitted
+                // in the SammDto for more than one Product.
+                // Will arbitrarily use the last one found, but issue a warning.
+                log.warn("Could not unambiguously determine Material via MaterialNumberSupplier " +
+                    samm.getMaterialNumberSupplier().get());
+            }
+            if (foundMatches < 1) {
+                log.warn("Could not identify Material via MaterialNumberSupplier: " + samm.getMaterialNumberSupplier().get());
+            }
+        }
+        if (material == null && samm.getMaterialNumberCustomer() != null) {
+            material = materialService.findByOwnMaterialNumber(samm.getMaterialNumberCustomer());
+        }
 
-        // aggregate quantity
-        double quantity = samm.getPositions().stream().
-                mapToDouble(
-                        pos -> pos.getAllocatedStocks().stream().
-                                mapToDouble(stock ->
-                                        stock.getQuantityOnAllocatedStock().getQuantityNumber()
-                                ).sum()
-                ).sum();
+        if (material == null) {
+            log.error("Could not identify material in SammDto: \n" + samm);
+            // Abort and return empty list.
+            return output;
+        }
 
-        // determine material
-
-        Material foundMaterial = materialService.findByOwnMaterialNumber(samm.getMaterialNumberCustomer());
-        MaterialPartnerRelation materialPartnerRelation = mprService.find(foundMaterial, partner);
-        MaterialDto foundMaterialDto = new MaterialDto(foundMaterial.isMaterialFlag(), foundMaterial.isProductFlag(),
-            foundMaterial.getOwnMaterialNumber(), materialPartnerRelation.getPartnerMaterialNumber(), foundMaterial.getMaterialNumberCx(),
-            foundMaterial.getName());
-
-        // find bpns - we use the first one as we currently only have one site per partner.
-        // alternative would be to inject the bpnl of the partner.
-        // also we set the bpn here always to the site
-        String atSiteBpns =
-                samm.getPositions()
-                        .stream().findFirst().get().getAllocatedStocks()
-                        .stream().findFirst().get().getSupplierStockLocationId().getLocationId();
-
-        PartnerDto supplierPartner = modelMapper.map(partner, PartnerDto.class);
-
-        return new PartnerProductStockDto(
-                foundMaterialDto,
-                quantity,
-                atSiteBpns,
-                supplierPartner
-        );
+        for (var position : samm.getPositions()) {
+            Date lastUpdated = position.getLastUpdatedOnDateTime();
+            for (var allocatedStock : position.getAllocatedStocks()) {
+                double quantity = allocatedStock.getQuantityOnAllocatedStock().getQuantityNumber();
+                MeasurementUnit unit = allocatedStock.getQuantityOnAllocatedStock().getMeasurementUnit();
+                String locationId = allocatedStock.getSupplierStockLocationId().getLocationId();
+                LocationIdTypeEnum locationIdType = allocatedStock.getSupplierStockLocationId().getLocationIdType();
+                PartnerProductStock partnerProductStock = new PartnerProductStock(
+                    material,
+                    quantity,
+                    unit,
+                    locationId,
+                    locationIdType,
+                    lastUpdated,
+                    partner
+                );
+                output.add(partnerProductStock);
+            }
+        }
+        return output;
     }
 }

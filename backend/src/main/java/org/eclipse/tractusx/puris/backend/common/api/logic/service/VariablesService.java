@@ -21,11 +21,10 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.logic.service;
 
+import lombok.Getter;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import lombok.Getter;
 
 
 @Getter
@@ -47,8 +46,23 @@ public class VariablesService {
     @Value("${own.bpnl}")
     private String ownBpnl;
 
+    @Value("${own.name}")
+    private String ownName;
     @Value("${edc.idsUrl}")
     private String ownEdcIdsUrl;
+    @Value("${own.default.bpns}")
+    private String ownDefaultBpns;
+    @Value("${own.default.streetandnumber}")
+    private String ownDefaultStreetAndNumber;
+    @Value("${own.default.site.name}")
+    private String ownDefaultSiteName;
+    @Value("${own.default.bpna}")
+    private String ownDefaultBpna;
+    @Value("${own.default.zipcodeandcity}")
+    private String ownDefaultZipCodeAndCity;
+    @Value("${own.default.country}")
+    private String ownDefaultCountry;
+
 
     /**
      * Returns the asset-id as defined in the properties file for the given api method

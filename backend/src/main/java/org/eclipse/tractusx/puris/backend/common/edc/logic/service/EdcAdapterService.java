@@ -25,24 +25,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.squareup.okhttp.*;
 import lombok.extern.slf4j.Slf4j;
-
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.CreateAssetDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EDCRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.model.repo.OrderRepository;
-import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
@@ -71,26 +64,14 @@ public class EdcAdapterService {
     @Value("${edc.controlplane.data.path}")
     private String dataPath;
 
-    @Value("${edc.backend.url}")
-    private String backendUrl;
-
     @Value("${edc.controlplane.key}")
     private String edcApiKey;
 
     @Value("${server.port}")
     private String serverPort;
 
-    @Value("${edc.dataplane.public.port}")
-    private String dataplanePort;
-
     @Value("${minikube.ip}")
     private String minikubeIp;
-
-    @Value("${request.serverendpoint}")
-    private String requestServerEndpointURL;
-
-    @Value("${response.serverendpoint}")
-    private String responseServerEndpointURL;
 
     private ObjectMapper objectMapper;
 
@@ -513,7 +494,6 @@ public class EdcAdapterService {
      */
     public String[] getContractForRequestOrResponseApiApi(String partnerIdsUrl, Map<String, String> filter) {
         try {
-            // String catalog = getCatalog(partnerIdsUrl, Optional.of(filter));
             JsonNode objectNode = getCatalogFilteredByAssetPropertyObjectFilter(partnerIdsUrl, filter);
             JsonNode contractOffer = objectNode.get("contractOffers").get(0);
             String assetApi = contractOffer.get("asset").get("id").asText();

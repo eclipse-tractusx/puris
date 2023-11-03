@@ -29,9 +29,16 @@ import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 
 import java.util.Date;
 
+/**
+ * <p>This class represents a distinct stock of products that the owner of
+ * the current instance of the PURIS application has in his warehouse and
+ * that is dedicated to be sent to a certain customer partner later in time</p>
+ */
 @Entity
 @Getter
 @Setter
@@ -45,14 +52,16 @@ public class ProductStock extends Stock {
     @NotNull
     private Partner allocatedToCustomerPartner;
 
-    public ProductStock(Material material, double quantity, String atSiteBpnl, Date lastUpdatedOn, Partner allocatedToCustomerPartner) {
-        super(material, quantity, atSiteBpnl, lastUpdatedOn);
+    public ProductStock(Material material, double quantity, MeasurementUnit measurementUnit, String locationId,
+                        LocationIdTypeEnum locationIdType, Date lastUpdatedOn, Partner allocatedToCustomerPartner) {
+        super(material, quantity, measurementUnit, locationId, locationIdType, lastUpdatedOn);
         super.setType(DT_StockTypeEnum.PRODUCT);
         this.setAllocatedToCustomerPartner(allocatedToCustomerPartner);
     }
 
-    public ProductStock(Material material, double quantity, String atSiteBpnl, Date lastUpdatedOn) {
-        super(material, quantity, atSiteBpnl, lastUpdatedOn);
+    public ProductStock(Material material, double quantity, MeasurementUnit measurementUnit, String atSiteBpns,
+                        LocationIdTypeEnum locationIdType, Date lastUpdatedOn) {
+        super(material, quantity, measurementUnit, atSiteBpns, locationIdType, lastUpdatedOn);
         super.setType(DT_StockTypeEnum.PRODUCT);
     }
 

@@ -36,10 +36,14 @@ public interface PartnerService {
 
     List<Partner> findAllSupplierPartnersForMaterialId(String ownMaterialNumber);
 
+    List<Partner> findAll();
+
     Partner update(Partner partner);
 
     Partner findByBpnl(String bpnl);
 
     Partner findByBpns(String bpns);
+
+    Partner getOwnPartnerEntity();
 
 }

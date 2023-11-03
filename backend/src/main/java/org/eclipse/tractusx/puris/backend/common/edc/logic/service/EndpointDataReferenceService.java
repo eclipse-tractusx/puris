@@ -20,12 +20,12 @@
  */
 package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
-import java.util.HashMap;
-
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import lombok.extern.slf4j.Slf4j;
+
+import java.util.HashMap;
 /**
  * This class stores authCodes which are generated in the course of 
  * the contracting for the request or response api. Since authCodes
@@ -51,7 +51,7 @@ public class EndpointDataReferenceService {
      * Please note that any data will only be stored for a period of 5
      * minutes. 
      * @param transferId
-     * @param authCode
+     * @param edr_Dto
      */
     public void save(String transferId, EDR_Dto edr_Dto) {
         nonpersistantRepository.put(transferId, edr_Dto);
