@@ -99,7 +99,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        createOwnPartnerEntity();
+        //createOwnPartnerEntity();
         log.info("Creating setup for " + demoRole.toUpperCase());
         if (demoRole.equals("supplier")) {
             setupSupplierRole();
@@ -306,7 +306,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Partner createAndGetSupplierPartner() {
         Partner supplierPartnerEntity = new Partner(
             "Scenario Supplier",
-            "http://supplier-control-plane:0184/api/v1/ids",
+            "http://supplier-control-plane:9184/api/v1/ids",
             "BPNL1234567890ZZ",
             "BPNS1234567890XY",
             "Konzernzentrale Dudelsdorf",
