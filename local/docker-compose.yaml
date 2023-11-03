@@ -28,13 +28,20 @@ services:
         environment:
             - APP_NAME=PURIS Customer
             - BACKEND_BASE_URL=http://localhost:8081/catena/
+            - ENDPOINT_MATERIAL=stockView/materials
+            - ENDPOINT_PRODUCTS=stockView/products
+            - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
+            - ENDPOINT_PRODUCT_STOCKS=stockView/product-stocks
+            - ENDPOINT_CUSTOMER=stockView/customer?ownMaterialNumber=
+            - ENDPOINT_PARTNER_PRODUCT_STOCKS=stockView/partner-product-stocks?ownMaterialNumber=
+            - ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK=stockView/update-partner-product-stock?ownMaterialNumber=
+
     puris-backend-customer:
         image: puris-backend:dev
         container_name: customer-backend
         depends_on: 
             edc-customer-control-plane:
                 condition: service_started #service_healthy
-                #restart: true
         ports:
             - 8081:8081 # expose port of server.port
         environment:
@@ -106,7 +113,6 @@ services:
             edc.vault.hashicorp.token: ${VAULT_DEV_ROOT_TOKEN_ID}
         volumes:
             - ./tractus-x-edc/config/customer/data-plane.properties:/app/configuration.properties
-            
 
     omejdn-daps:
         extends:
@@ -116,7 +122,7 @@ services:
         volumes:
             - ./vault/secrets/customer.cert:/opt/keys/clients/customer.cert:ro
             - ./vault/secrets/supplier.cert:/opt/keys/clients/supplier.cert:ro
-        
+
     vault:
         build: ./vault
         container_name: vault
@@ -145,7 +151,6 @@ services:
             # only then, changes to the script are executed!
             - ./postgres/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
 
-
     puris-frontend-supplier:
         image: puris-frontend:dev
         container_name: supplier-frontend
@@ -154,6 +159,14 @@ services:
         environment:
             - APP_NAME=PURIS Customer
             - BACKEND_BASE_URL=http://localhost:8082/catena/
+            - ENDPOINT_MATERIAL=stockView/materials
+            - ENDPOINT_PRODUCTS=stockView/products
+            - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
+            - ENDPOINT_PRODUCT_STOCKS=stockView/product-stocks
+            - ENDPOINT_CUSTOMER=stockView/customer?ownMaterialNumber=
+            - ENDPOINT_PARTNER_PRODUCT_STOCKS=stockView/partner-product-stocks?ownMaterialNumber=
+            - ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK=stockView/update-partner-product-stock?ownMaterialNumber=
+
     puris-backend-supplier:
         image: puris-backend:dev
         container_name: supplier-backend
