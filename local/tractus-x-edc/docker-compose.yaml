@@ -18,7 +18,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-version: "1"
+version: "3"
 services:
     control-plane:
         image: ghcr.io/catenax-ng/product-edc/edc-controlplane-postgresql-hashicorp-vault:0.3.0
@@ -34,7 +34,7 @@ services:
 
     data-plane:
         image: ghcr.io/catenax-ng/product-edc/edc-dataplane-hashicorp-vault:0.3.0
-        ports:
+        #ports:
         #    - "8080:8080" # default
         #    - "8185:8185" # public
         volumes:

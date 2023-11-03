@@ -18,7 +18,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-version: '1'
+version: "3"
 services:
     omejdn-daps:
         image: ghcr.io/fraunhofer-aisec/omejdn-server:1.7.1

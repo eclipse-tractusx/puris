@@ -18,7 +18,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-version: '2'
+version: "3"
 services:
     puris-frontend-customer:
         image: puris-frontend:dev
@@ -134,8 +134,8 @@ services:
             VAULT_ADDR: http://vault:8200
             VAULT_PUT_SECRETS_DIR: ${VAULT_SECRETS_DIR}
             # ATTENTION: Non productive environment
-            SKIP_SETCAP: true
-            SKIP_CHOWN: true
+            SKIP_SETCAP: "true"
+            SKIP_CHOWN: "true"
         volumes:
             - ./vault/secrets:${VAULT_SECRETS_DIR}
         
