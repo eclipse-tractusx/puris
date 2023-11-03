@@ -4,3 +4,6 @@ repositories:
 - name: "puris"
   usage: "PURIS Frontend and Backend Implementation"
   url: "https://github.com/eclipse-tractusx/puris"
+skipReleaseChecks:
+  alignedBaseImage:
+    - "local/vault/Dockerfile"

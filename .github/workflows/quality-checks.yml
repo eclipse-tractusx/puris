@@ -30,6 +30,3 @@ jobs:
     name: Check quality guidelines
     uses: eclipse-tractusx/sig-infra/.github/workflows/reusable-quality-checks.yaml@main
     secrets: inherit
-    skipReleaseChecks:
-      alignedBaseImage:
-      - "local/vault/Dockerfile"
