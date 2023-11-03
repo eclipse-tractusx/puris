@@ -28,7 +28,7 @@ services:
         environment:
             - APP_NAME=PURIS Customer
             - BACKEND_BASE_URL=http://localhost:8081/catena/
-            - ENDPOINT_MATERIAL=stockView/materials
+            - ENDPOINT_MATERIALS=stockView/materials
             - ENDPOINT_PRODUCTS=stockView/products
             - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
             - ENDPOINT_PRODUCT_STOCKS=stockView/product-stocks
@@ -159,7 +159,7 @@ services:
         environment:
             - APP_NAME=PURIS Customer
             - BACKEND_BASE_URL=http://localhost:8082/catena/
-            - ENDPOINT_MATERIAL=stockView/materials
+            - ENDPOINT_MATERIALS=stockView/materials
             - ENDPOINT_PRODUCTS=stockView/products
             - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
             - ENDPOINT_PRODUCT_STOCKS=stockView/product-stocks
