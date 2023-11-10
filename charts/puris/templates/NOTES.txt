@@ -1,12 +1,14 @@
 1. Get the application URL by running these commands:
 {{- if and .Values.frontend.ingress.enabled .Values.backend.ingress.enabled }}
-  {{- range $hostF := $.Values.frontend.ingress.hosts}}
   Frontend:
-  http{{ if $.Values.frontend.ingress.tls }}s{{ end }}://{{ $hostF.host }}{{ .path }}
+    - locally reachable:    http{{ if $.Values.frontend.ingress.tls }}{{ end }}://{{ .Values.backend.puris.edc.controlplane.host }}:30000
+  {{- range $hostF := $.Values.frontend.ingress.hosts}}
+    - internet reachable:   http{{ if $.Values.frontend.ingress.tls }}{{ end }}://{{ $hostF.host }}{{ .path }}
   {{ end }}
-  {{- range $hostB := $.Values.backend.ingress.hosts -}}
   Backend:
-  http{{ if $.Values.backend.ingress.tls }}s{{ end }}://{{ $hostB.host }}{{ .path }}
+    - locally reachable:    http{{ if $.Values.backend.ingress.tls }}{{ end }}://{{ .Values.backend.puris.edc.controlplane.host }}:30001
+  {{- range $hostB := $.Values.backend.ingress.hosts }}
+    - internet reachable:   http{{ if $.Values.backend.ingress.tls }}{{ end }}://{{ $hostB.host }}{{ .path }}
   {{- end }}
 {{- else if and (contains "NodePort" .Values.frontend.service.type) (contains "NodePort" .Values.backend.service.type) }}
   Frontend:
