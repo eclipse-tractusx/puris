@@ -149,6 +149,13 @@ import { RouterLink, RouterView } from "vue-router";
           </ul>
         </aside>
       </div>
+      <div class="mt-auto mr-auto ml-auto">
+        <RouterLink class="font-semibold disable"
+                    to="/aboutLicense"
+                    >
+            About License
+        </RouterLink>
+      </div>
     </div>
     <div class="sm:ml-64 lg:ml-0 content-center overflow-auto">
       <RouterView />
@@ -253,5 +260,8 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
+}
+.disable:hover{
+    background: unset !important;
 }
 </style>
