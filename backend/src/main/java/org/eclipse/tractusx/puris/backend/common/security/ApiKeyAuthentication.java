@@ -1,4 +1,4 @@
-package org.eclipse.tractusx.puris.backend;
+package org.eclipse.tractusx.puris.backend.common.security;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,4 +1,4 @@
-package org.eclipse.tractusx.puris.backend;
+package org.eclipse.tractusx.puris.backend.common.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;

@@ -1,4 +1,4 @@
-package org.eclipse.tractusx.puris.backend;
+package org.eclipse.tractusx.puris.backend.common.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
