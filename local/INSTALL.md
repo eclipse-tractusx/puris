@@ -9,6 +9,7 @@ sh generate-keys.sh
    - set password for edc control plane `EDC_API_PW` (e.g. "password")
    - set user `PG_USER` and password `PG_PW` for postgres (e.g. "edc-pg-user" and "edc-pg-passw0rd")
    - set vault secrets dir as mapped via volume (e.g. `/vault/secrets/`)
+   - set api key for puris backends `BACKEND_API_KEY` (e.g. test)
 
 # Start
 ```shell

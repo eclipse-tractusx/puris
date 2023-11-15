@@ -28,6 +28,7 @@ services:
         environment:
             - APP_NAME=PURIS Customer
             - BACKEND_BASE_URL=http://localhost:8081/catena/
+            - BACKEND_API_KEY=${BACKEND_API_KEY}
             - ENDPOINT_MATERIALS=stockView/materials
             - ENDPOINT_PRODUCTS=stockView/products
             - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
@@ -59,6 +60,7 @@ services:
             - edr.endpoint=http://customer-backend:8081/catena/edrendpoint
             - request.serverendpoint=http://customer-backend:8081/catena/product-stock/request
             - response.serverendpoint=http://customer-backend:8081/catena/product-stock/response
+            - puris.api.key=${BACKEND_API_KEY}
 
     edc-customer-control-plane:
         extends:
@@ -159,6 +161,7 @@ services:
         environment:
             - APP_NAME=PURIS Customer
             - BACKEND_BASE_URL=http://localhost:8082/catena/
+            - BACKEND_API_KEY=${BACKEND_API_KEY}
             - ENDPOINT_MATERIALS=stockView/materials
             - ENDPOINT_PRODUCTS=stockView/products
             - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
@@ -190,6 +193,7 @@ services:
             - edr.endpoint=http://supplier-backend:8082/catena/edrendpoint
             - request.serverendpoint=http://supplier-backend:8082/catena/product-stock/request
             - response.serverendpoint=http://supplier-backend:8082/catena/product-stock/response
+            - puris.api.key=${BACKEND_API_KEY}
                 
     edc-supplier-control-plane:
         extends:
