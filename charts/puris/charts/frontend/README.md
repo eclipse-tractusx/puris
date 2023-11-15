@@ -37,9 +37,9 @@ $ helm install frontend --namespace puris --create-namespace .
 | image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` | List of used secrets |
 | ingress.annotations | object | `{}` | Annotations for the Ingress controller |
-| ingress.className | string | `""` | Class name for the Ingress controller |
+| ingress.className | string | `"nginx"` | Class name for the Ingress controller |
 | ingress.enabled | bool | `false` | Enable the Ingress |
-| ingress.hosts | list | `[{"host":"puris-frontend.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
+| ingress.hosts | list | `[{"host":"puris-customer-frontend.int.demo.catena-x.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
 | ingress.tls | list | `[]` | TLS certificates for the Ingress controller |
 | livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":10,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
@@ -52,7 +52,7 @@ $ helm install frontend --namespace puris --create-namespace .
 | podAnnotations | object | `{}` | Annotations added to a running pod |
 | podSecurityContext | object | `{}` | Added security contexts for a pod |
 | puris.appName | string | `"PURIS"` | The name of the app displayed in the frontend |
-| puris.baseUrl | string | `"http://192.168.49.2:30001/catena"` | The base URL for the backend base URL without further endpoints |
+| puris.baseUrl | string | `"http://172.17.0.2:30001/catena/"` | The base URL for the backend base URL without further endpoints |
 | puris.endpointCustomer | string | `"stockView/customer?ownMaterialNumber="` | The endpoint for the customers own material number for the stock view |
 | puris.endpointMaterialStocks | string | `"stockView/material-stocks"` | The endpoint for material stocks for the stock view |
 | puris.endpointMaterials | string | `"stockView/materials"` | The endpoint for materials for the stock view |

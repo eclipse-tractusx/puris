@@ -32,13 +32,14 @@ $ helm install backend --namespace puris --create-namespace .
 | image.repository | string | `"tractusx/app-puris-backend"` |  |
 | image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` | List of used secrets |
+| ingress.annotations | object | `{"kubernetes.io/ingress.class":"nginx","nginx.ingress.kubernetes.io/backend-protocol":"HTTP","nginx.ingress.kubernetes.io/force-ssl-redirect":"true","nginx.ingress.kubernetes.io/ssl-passthrough":"true"}` | Annotations for the Ingress controller |
 | ingress.annotations."kubernetes.io/ingress.class" | string | `"nginx"` | Kubernetes Ingress class annotation for direct bindings |
 | ingress.annotations."nginx.ingress.kubernetes.io/backend-protocol" | string | `"HTTP"` | The backend protocol type (e.g. HTTP) |
 | ingress.annotations."nginx.ingress.kubernetes.io/force-ssl-redirect" | string | `"true"` | Force redirects from HTTP to HTTPS |
 | ingress.annotations."nginx.ingress.kubernetes.io/ssl-passthrough" | string | `"true"` | Pass SSL traffic to the backend ports |
 | ingress.enabled | bool | `false` | Enable the Ingress |
-| ingress.hosts | list | `[{"host":"puris-backend.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
-| ingress.tls | list | `[{"hosts":["puris-backend.net"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
+| ingress.hosts | list | `[{"host":"puris-customer-backend.int.demo.catena-x.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
+| ingress.tls | list | `[{"hosts":["puris-customer-backend.int.demo.catena-x.net"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
 | livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":250,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
 | livenessProbe.initialDelaySeconds | int | `250` | Delay in seconds after which an initial liveness probe is checked |
@@ -74,7 +75,7 @@ $ helm install backend --namespace puris --create-namespace .
 | puris.own.bpns | string | `"BPNS1234567890ZZ"` | Own default BPNS of the EDC |
 | puris.own.country | string | `"Germany"` | Own default country |
 | puris.own.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
-| puris.own.name | string | `"test"` | Own name (self-description) |
+| puris.own.name | string | `"Your application name"` | Own name (self-description) |
 | puris.own.site.name | string | `"puris-test"` | Own site name |
 | puris.own.streetnumber | string | `"Musterstraße 110A"` | Own street and number |
 | puris.own.zipcodeandcity | string | `"12345 Musterhausen"` | Own zipcode and city |

@@ -75,12 +75,12 @@ ingress:
   # -- Enable the Ingress
   enabled: false
   # -- Class name for the Ingress controller
-  className: ""
+  className: "nginx"
   # -- Annotations for the Ingress controller
   annotations: {}
   # -- Hosts for the Ingress controller
   hosts:
-    - host: puris-frontend.net
+    - host: puris-customer-frontend.int.demo.catena-x.net
       paths:
         - path: /
           pathType: ImplementationSpecific

@@ -39,13 +39,14 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.image.repository | string | `"tractusx/app-puris-backend"` | Repository of the docker image |
 | backend.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | backend.imagePullSecrets | list | `[]` | List of used secrets |
+| backend.ingress.annotations | object | `{"kubernetes.io/ingress.class":"nginx","nginx.ingress.kubernetes.io/backend-protocol":"HTTP","nginx.ingress.kubernetes.io/force-ssl-redirect":"true","nginx.ingress.kubernetes.io/ssl-passthrough":"true"}` | Annotations for the Ingress controller |
 | backend.ingress.annotations."kubernetes.io/ingress.class" | string | `"nginx"` | Kubernetes Ingress class annotation for direct bindings |
 | backend.ingress.annotations."nginx.ingress.kubernetes.io/backend-protocol" | string | `"HTTP"` | The backend protocol type (e.g. HTTP) |
 | backend.ingress.annotations."nginx.ingress.kubernetes.io/force-ssl-redirect" | string | `"true"` | Force redirects from HTTP to HTTPS |
 | backend.ingress.annotations."nginx.ingress.kubernetes.io/ssl-passthrough" | string | `"true"` | Pass SSL traffic to the backend ports |
 | backend.ingress.enabled | bool | `false` | Enable the Ingress |
-| backend.ingress.hosts | list | `[{"host":"puris-backend.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
-| backend.ingress.tls | list | `[{"hosts":["puris-backend.net"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
+| backend.ingress.hosts | list | `[{"host":"puris-customer-backend.int.demo.catena-x.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
+| backend.ingress.tls | list | `[{"hosts":["puris-customer-backend.int.demo.catena-x.net"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
 | backend.livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":250,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | backend.livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
 | backend.livenessProbe.initialDelaySeconds | int | `250` | Delay in seconds after which an initial liveness probe is checked |
@@ -81,7 +82,7 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.own.bpns | string | `"BPNS1234567890ZZ"` | Own default BPNS of the EDC |
 | backend.puris.own.country | string | `"Germany"` | Own default country |
 | backend.puris.own.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
-| backend.puris.own.name | string | `"test"` | Own name (self-description) |
+| backend.puris.own.name | string | `"Your application name"` | Own name (self-description) |
 | backend.puris.own.site.name | string | `"puris-test"` | Own site name |
 | backend.puris.own.streetnumber | string | `"Musterstraße 110A"` | Own street and number |
 | backend.puris.own.zipcodeandcity | string | `"12345 Musterhausen"` | Own zipcode and city |
@@ -122,9 +123,9 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | frontend.imagePullSecrets | list | `[]` | List of used secrets |
 | frontend.ingress.annotations | object | `{}` | Annotations for the Ingress controller |
-| frontend.ingress.className | string | `""` | Class name for the Ingress controller |
+| frontend.ingress.className | string | `"nginx"` | Class name for the Ingress controller |
 | frontend.ingress.enabled | bool | `false` | Enable the Ingress |
-| frontend.ingress.hosts | list | `[{"host":"puris-frontend.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
+| frontend.ingress.hosts | list | `[{"host":"puris-customer-frontend.int.demo.catena-x.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
 | frontend.ingress.tls | list | `[]` | TLS certificates for the Ingress controller |
 | frontend.livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":10,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | frontend.livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
@@ -137,7 +138,7 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.podAnnotations | object | `{}` | Annotations added to a running pod |
 | frontend.podSecurityContext | object | `{}` | Added security contexts for a pod |
 | frontend.puris.appName | string | `"PURIS"` | The name of the app displayed in the frontend |
-| frontend.puris.baseUrl | string | `"http://192.168.49.2:30001/catena"` | The base URL for the backend base URL without further endpoints |
+| frontend.puris.baseUrl | string | `"http://172.17.0.2:30001/catena/"` | The base URL for the backend base URL without further endpoints |
 | frontend.puris.endpointCustomer | string | `"stockView/customer?ownMaterialNumber="` | The endpoint for the customers own material number for the stock view |
 | frontend.puris.endpointMaterialStocks | string | `"stockView/material-stocks"` | The endpoint for material stocks for the stock view |
 | frontend.puris.endpointMaterials | string | `"stockView/materials"` | The endpoint for materials for the stock view |
