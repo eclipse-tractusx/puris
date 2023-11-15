@@ -1,0 +1,9 @@
+---
+plugins:
+  admin_api:
+  user_selfservice:
+    allow_deletion: false
+    allow_password_change: true
+    editable_attributes: []
+  token_user_attributes:
+    skip_id_token: true

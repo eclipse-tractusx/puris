@@ -20,19 +20,16 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import jakarta.persistence.Embedded;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * This Response represents the message received via a Response API.

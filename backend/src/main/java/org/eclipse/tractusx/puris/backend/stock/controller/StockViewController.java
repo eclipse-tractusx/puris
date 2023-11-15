@@ -61,7 +61,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("stockView")
 @Slf4j
-public class StockController {
+public class StockViewController {
 
     @Autowired
     private ProductStockService productStockService;

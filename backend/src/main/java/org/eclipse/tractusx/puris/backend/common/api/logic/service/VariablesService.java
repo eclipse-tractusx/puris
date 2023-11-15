@@ -21,12 +21,10 @@
  */
 package org.eclipse.tractusx.puris.backend.common.api.logic.service;
 
+import lombok.Getter;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import lombok.Getter;
 
 
 @Getter

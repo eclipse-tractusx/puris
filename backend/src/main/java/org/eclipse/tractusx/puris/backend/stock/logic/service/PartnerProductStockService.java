@@ -26,7 +26,6 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
