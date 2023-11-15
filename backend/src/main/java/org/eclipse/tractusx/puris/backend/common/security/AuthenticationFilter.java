@@ -16,6 +16,13 @@ import java.io.PrintWriter;
 
 public class AuthenticationFilter extends GenericFilterBean {
 
+    private AuthenticationService authenticationService;
+
+    public AuthenticationFilter(AuthenticationService authenticationService){
+        this.authenticationService = authenticationService;
+    }
+
+
 //    @Override
 //    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 //        // Get the API key and secret from request headers
@@ -34,7 +41,7 @@ public class AuthenticationFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         try {
-            Authentication authentication = AuthenticationService.getAuthentication((HttpServletRequest) request);
+            Authentication authentication = authenticationService.getAuthentication((HttpServletRequest) request);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception exp) {
             HttpServletResponse httpResponse = (HttpServletResponse) response;
