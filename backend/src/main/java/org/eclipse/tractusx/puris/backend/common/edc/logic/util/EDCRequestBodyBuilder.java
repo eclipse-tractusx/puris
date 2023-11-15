@@ -168,6 +168,11 @@ public class EDCRequestBodyBuilder {
         transferNode.put("managedResources", false);
         propertiesNode = MAPPER.createObjectNode();
         propertiesNode.put("receiver.http.endpoint", endpointDataReferenceEndpoint);
+        //TODO these two may be mixed up
+        propertiesNode.put("receiver.http.auth-key", variablesService.getApiKey());
+        propertiesNode.put("receiver.http.auth-code", "X-API-KEY");
+        // TODO: check if this can be set dynamically
+        // https://github.com/eclipse-edc/Connector/blob/1a927997d48acd839b68ec89637698166bf6ce46/extensions/control-plane/transfer/transfer-pull-http-receiver/src/main/java/org/eclipse/edc/connector/receiver/http/HttpEndpointDataReferenceReceiverExtension.java#L33
         transferNode.set("properties", propertiesNode);
 
         return transferNode;
@@ -201,6 +206,8 @@ public class EDCRequestBodyBuilder {
         apiDataAddressPropertiesDto.setType(DT_DataAddressTypeEnum.HttpData);
         apiDataAddressPropertiesDto.setProxyBody(true);
         apiDataAddressPropertiesDto.setProxyMethod(true);
+        apiDataAddressPropertiesDto.setAuthKey("X-API-KEY");
+        apiDataAddressPropertiesDto.setAuthCode(variablesService.getApiKey());
 
         DataAddressDto apiDataAddressDto = new DataAddressDto();
         apiDataAddressDto.setDataAddressPropertiesDto(apiDataAddressPropertiesDto);
