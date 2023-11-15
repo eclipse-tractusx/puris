@@ -50,17 +50,17 @@ public class VariablesService {
     private String ownName;
     @Value("${edc.idsUrl}")
     private String ownEdcIdsUrl;
-    @Value("${own.default.bpns}")
+    @Value("${own.bpns}")
     private String ownDefaultBpns;
-    @Value("${own.default.streetandnumber}")
+    @Value("${own.streetandnumber}")
     private String ownDefaultStreetAndNumber;
-    @Value("${own.default.site.name}")
+    @Value("${own.site.name}")
     private String ownDefaultSiteName;
-    @Value("${own.default.bpna}")
+    @Value("${own.bpna}")
     private String ownDefaultBpna;
-    @Value("${own.default.zipcodeandcity}")
+    @Value("${own.zipcodeandcity}")
     private String ownDefaultZipCodeAndCity;
-    @Value("${own.default.country}")
+    @Value("${own.country}")
     private String ownDefaultCountry;
 
 

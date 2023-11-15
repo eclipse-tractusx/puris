@@ -28,7 +28,7 @@ $ helm install backend --namespace puris --create-namespace .
 | affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey | string | `"kubernetes.io/hostname"` | Topology key of the Kubernetes cluster |
 | autoscaling.enabled | bool | `false` | Enable or disable the autoscaling of pods |
 | fullnameOverride | string | `""` | Possibility to override the fullname |
-| image.pullPolicy | string | `"IfNotPresent"` | THe policy for the image pull process |
+| image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
 | image.repository | string | `"tractusx/app-puris-backend"` |  |
 | image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` | List of used secrets |
@@ -69,15 +69,15 @@ $ helm install backend --namespace puris --create-namespace .
 | puris.jpa.properties.hibernate.enable_lazy_load_no_trans | bool | `true` | Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction |
 | puris.minikube.ip | string | `"host.minikube.internal"` | IP of minikube for the EDC configuration |
 | puris.my.base.url | string | `"http://localhost"` | Own base URL |
+| puris.own.bpna | string | `"BPNA1234567890AA"` | Own default BPNA of the EDC |
 | puris.own.bpnl | string | `"BPNL1234567890ZZ"` | Own BPNL of the EDC |
-| puris.own.default.bpna | string | `"BPNA1234567890AA"` | Own default BPNA of the EDC |
-| puris.own.default.bpns | string | `"BPNS1234567890ZZ"` | Own default BPNS of the EDC |
-| puris.own.default.country | string | `"Germany"` | Own default country |
-| puris.own.default.site.name | string | `"puris-test"` | Own site name |
-| puris.own.default.streetnumber | string | `"Musterstraße 110A"` | Own street and number |
-| puris.own.default.zipcodeandcity | string | `"12345 Musterhausen"` | Own zipcode and city |
+| puris.own.bpns | string | `"BPNS1234567890ZZ"` | Own default BPNS of the EDC |
+| puris.own.country | string | `"Germany"` | Own default country |
 | puris.own.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
 | puris.own.name | string | `"test"` | Own name (self-description) |
+| puris.own.site.name | string | `"puris-test"` | Own site name |
+| puris.own.streetnumber | string | `"Musterstraße 110A"` | Own street and number |
+| puris.own.zipcodeandcity | string | `"12345 Musterhausen"` | Own zipcode and city |
 | puris.request.apiassetid | string | `"product-stock-request-api"` | Asset ID for request API |
 | puris.request.serverendpoint | string | `"${my.base.url}:${server.port}/catena/product-stock/request"` | Endpoint of server for request |
 | puris.response.apiassetid | string | `"product-stock-response-api"` | Asset ID for response API |

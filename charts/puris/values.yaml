@@ -27,7 +27,7 @@ frontend:
         # -- Repository of the docker image
         repository: tractusx/app-puris-frontend
         # -- THe policy for the image pull process
-        pullPolicy: IfNotPresent
+        pullPolicy: Always
         # -- Overrides the image tag whose default is the chart appVersion.
         tag: ""
 
@@ -164,7 +164,7 @@ frontend:
         # -- The name of the app displayed in the frontend
         appName: PURIS
         # -- The base URL for the backend base URL without further endpoints
-        baseUrl: http://192.168.49.2:30001/catena
+        baseUrl: http://172.17.0.2:30001/catena/
         # -- The endpoint for materials for the stock view
         endpointMaterials: stockView/materials
         # -- The endpoint for products for the stock view
@@ -189,7 +189,7 @@ backend:
         # -- Repository of the docker image
         repository: tractusx/app-puris-backend
         # -- THe policy for the image pull process
-        pullPolicy: IfNotPresent
+        pullPolicy: Always
         # -- Overrides the image tag whose default is the chart appVersion.
         tag: ""
 
@@ -364,25 +364,24 @@ backend:
         own:
             # -- Own BPNL of the EDC
             bpnl: BPNL1234567890ZZ
-            default:
-                # -- Own default BPNA of the EDC
-                bpna: BPNA1234567890AA
-                # -- Own default BPNS of the EDC
-                bpns: BPNS1234567890ZZ
-                # -- Own default country
-                country: Germany
-                site:
-                    # -- Own site name
-                    name: puris-test
-                # -- Own street and number
-                streetnumber: "Musterstraße 110A"
-                # -- Own zipcode and city
-                zipcodeandcity: "12345 Musterhausen"
+            # -- Own default BPNA of the EDC
+            bpna: BPNA1234567890AA
+            # -- Own default BPNS of the EDC
+            bpns: BPNS1234567890ZZ
+            # -- Own default country
+            country: Germany
+            site:
+                # -- Own site name
+                name: puris-test
+            # -- Own street and number
+            streetnumber: "Musterstraße 110A"
+            # -- Own zipcode and city
+            zipcodeandcity: "12345 Musterhausen"
             edr:
                 # -- Number of minutes before received authentication data of a consumer pull is removed from memory
                 deletiontimer: 2
             # -- Own name (self-description)
-            name: test
+            name: "Your application name"
         # -- Current version of the puris API
         apiversion: 1.0.0
         demonstrator:

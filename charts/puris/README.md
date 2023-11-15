@@ -35,7 +35,7 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey | string | `"kubernetes.io/hostname"` | Topology key of the Kubernetes cluster |
 | backend.autoscaling.enabled | bool | `false` | Enable or disable the autoscaling of pods |
 | backend.fullnameOverride | string | `""` | Possibility to override the fullname |
-| backend.image.pullPolicy | string | `"IfNotPresent"` | THe policy for the image pull process |
+| backend.image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
 | backend.image.repository | string | `"tractusx/app-puris-backend"` | Repository of the docker image |
 | backend.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | backend.imagePullSecrets | list | `[]` | List of used secrets |
@@ -76,15 +76,15 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans | bool | `true` | Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction |
 | backend.puris.minikube.ip | string | `"host.minikube.internal"` | IP of minikube for the EDC configuration |
 | backend.puris.my.base.url | string | `"http://localhost"` | Own base URL |
+| backend.puris.own.bpna | string | `"BPNA1234567890AA"` | Own default BPNA of the EDC |
 | backend.puris.own.bpnl | string | `"BPNL1234567890ZZ"` | Own BPNL of the EDC |
-| backend.puris.own.default.bpna | string | `"BPNA1234567890AA"` | Own default BPNA of the EDC |
-| backend.puris.own.default.bpns | string | `"BPNS1234567890ZZ"` | Own default BPNS of the EDC |
-| backend.puris.own.default.country | string | `"Germany"` | Own default country |
-| backend.puris.own.default.site.name | string | `"puris-test"` | Own site name |
-| backend.puris.own.default.streetnumber | string | `"Musterstraße 110A"` | Own street and number |
-| backend.puris.own.default.zipcodeandcity | string | `"12345 Musterhausen"` | Own zipcode and city |
+| backend.puris.own.bpns | string | `"BPNS1234567890ZZ"` | Own default BPNS of the EDC |
+| backend.puris.own.country | string | `"Germany"` | Own default country |
 | backend.puris.own.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
 | backend.puris.own.name | string | `"test"` | Own name (self-description) |
+| backend.puris.own.site.name | string | `"puris-test"` | Own site name |
+| backend.puris.own.streetnumber | string | `"Musterstraße 110A"` | Own street and number |
+| backend.puris.own.zipcodeandcity | string | `"12345 Musterhausen"` | Own zipcode and city |
 | backend.puris.request.apiassetid | string | `"product-stock-request-api"` | Asset ID for request API |
 | backend.puris.request.serverendpoint | string | `"${my.base.url}:${server.port}/catena/product-stock/request"` | Endpoint of server for request |
 | backend.puris.response.apiassetid | string | `"product-stock-response-api"` | Asset ID for response API |
@@ -117,7 +117,7 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.autoscaling.minReplicas | int | `1` | Number of minimum replica pods for autoscaling |
 | frontend.autoscaling.targetCPUUtilizationPercentage | int | `80` | Value of CPU usage in percentage for autoscaling decisions |
 | frontend.fullnameOverride | string | `""` | Possibility to override the fullname |
-| frontend.image.pullPolicy | string | `"IfNotPresent"` | THe policy for the image pull process |
+| frontend.image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
 | frontend.image.repository | string | `"tractusx/app-puris-frontend"` | Repository of the docker image |
 | frontend.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | frontend.imagePullSecrets | list | `[]` | List of used secrets |

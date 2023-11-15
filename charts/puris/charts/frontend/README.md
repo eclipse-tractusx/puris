@@ -32,7 +32,7 @@ $ helm install frontend --namespace puris --create-namespace .
 | autoscaling.minReplicas | int | `1` | Number of minimum replica pods for autoscaling |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` | Value of CPU usage in percentage for autoscaling decisions |
 | fullnameOverride | string | `""` | Possibility to override the fullname |
-| image.pullPolicy | string | `"IfNotPresent"` | THe policy for the image pull process |
+| image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
 | image.repository | string | `"tractusx/app-puris-frontend"` | Repository of the docker image |
 | image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` | List of used secrets |
