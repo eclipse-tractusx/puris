@@ -19,86 +19,130 @@
  SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div v-if="this.selectedMaterialOrProductId === ''">
-    <h2 class="text-center bold text-3xl">
-      Your {{ this.partnerRole }}s' stocks for no material.
-    </h2>
-  </div>
-  <div v-else class="grid">
-    <h2 class="text-center bold text-3xl">
-      Your {{ this.partnerRole }}s' stocks for
-      {{ this.selectedMaterialOrProductId }}.
-    </h2>
-    <button
-        class="btn-primary place-self-end"
-        @click="updateMaterialOrProduct()"
-    >
-      Update
-    </button>
-    <table class="">
-      <tr class="text-left">
-        <th>Supplier</th>
-        <th>Quantity</th>
-        <th>Last updated on</th>
-      </tr>
-      <tr
-          v-for="stock in availableMaterialsOrProducts"
-          :key="stock.supplierPartner.bpnl"
-      >
-        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.supplierPartner.name }} ({{ stock.supplierPartner.bpnl }})</td>
-        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.quantity }} pieces</td>
-        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.lastUpdatedOn }}</td>
-      </tr>
-    </table>
-  </div>
+    <div v-if="this.selectedMaterialOrProductId === ''">
+        <h2 class="text-center bold text-3xl">
+            Your {{ this.partnerRole }}s' stocks for no material.
+        </h2>
+    </div>
+    <div v-else class="grid">
+        <h2 class="text-center bold text-3xl">
+            Your {{ this.partnerRole }}s' stocks for
+            {{ this.selectedMaterialOrProductId }}.
+        </h2>
+        <button
+            class="btn-primary place-self-end"
+            @click="updateMaterialOrProduct()"
+        >
+            Update
+        </button>
+        <table class="">
+            <tr class="text-left">
+                <th>Supplier</th>
+                <th>Quantity</th>
+                <th>Last updated on</th>
+            </tr>
+            <tr
+                v-for="stock in availableMaterialsOrProducts"
+                :key="stock.supplierPartner.bpnl"
+            >
+                <td
+                    v-if="
+                        this.selectedMaterialOrProductId ==
+                        stock.material.materialNumberCustomer
+                    "
+                >
+                    {{ stock.supplierPartner.name }} ({{
+                        stock.supplierPartner.bpnl
+                    }})
+                </td>
+                <td
+                    v-if="
+                        this.selectedMaterialOrProductId ==
+                        stock.material.materialNumberCustomer
+                    "
+                >
+                    {{ stock.quantity }} pieces
+                </td>
+                <td
+                    v-if="
+                        this.selectedMaterialOrProductId ==
+                        stock.material.materialNumberCustomer
+                    "
+                >
+                    {{ stock.lastUpdatedOn }}
+                </td>
+            </tr>
+        </table>
+    </div>
 </template>
 
 <script>
 export default {
-  name: "PartnerStockSFC",
+    name: "PartnerStockSFC",
 
-  props: {
-    selectedMaterialOrProductId: {type: String, required: true},
-    partnerRole: {type: String, required: true},
-  },
-  data() {
-    return {
-      backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
-      endpointPartnerProductStocks: import.meta.env.VITE_ENDPOINT_PARTNER_PRODUCT_STOCKS,
-      endpointUpdatePartnerProductStock: import.meta.env.VITE_ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK,
-      availableMaterialsOrProducts: [],
-    };
-  },
-  created() {
-    if (this.selectedMaterialOrProductId !== "") {
-      if (this.partnerRole === "supplier") {
-        this.getAvailableMaterials();
-      }
-      // else if (this.partnerRole === "customer") {
-      //   this.getAvailableProducts();
-      // }
-    }
-  },
-  methods: {
-    getAvailableMaterials() {
-      fetch(this.backendURL + this.endpointPartnerProductStocks + this.selectedMaterialOrProductId)
-        .then(res => res.json())
-        .then(data => this.availableMaterialsOrProducts = data)
-        .catch(err => console.log(err));
+    props: {
+        selectedMaterialOrProductId: { type: String, required: true },
+        partnerRole: { type: String, required: true },
     },
-    // getAvailableProducts() {
-    //   fetch(this.backendURL + this.endpointPartnerProductStocks)
-    //     .then(res => res.json())
-    //     .then(data => this.availableMaterialsOrProducts = data)
-    //     .catch(err => console.log(err));
-    // },
-    updateMaterialOrProduct() {
-      fetch(this.backendURL + this.endpointUpdatePartnerProductStock + this.selectedMaterialOrProductId)
-        .then(res => res.json())
-        .then(data => console.log(data))
-        .catch(err => console.log(err));
-    }
-  },
+    data() {
+        return {
+            backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
+            backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
+            endpointPartnerProductStocks: import.meta.env
+                .VITE_ENDPOINT_PARTNER_PRODUCT_STOCKS,
+            endpointUpdatePartnerProductStock: import.meta.env
+                .VITE_ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK,
+            availableMaterialsOrProducts: [],
+        };
+    },
+    created() {
+        if (this.selectedMaterialOrProductId !== "") {
+            if (this.partnerRole === "supplier") {
+                this.getAvailableMaterials();
+            }
+            // else if (this.partnerRole === "customer") {
+            //   this.getAvailableProducts();
+            // }
+        }
+    },
+    methods: {
+        getAvailableMaterials() {
+            fetch(
+                this.backendURL +
+                    this.endpointPartnerProductStocks +
+                    this.selectedMaterialOrProductId,
+                {
+                    headers: {
+                        "X-API-KEY": this.backendApiKey,
+                    },
+                }
+            )
+                .then((res) => res.json())
+                .then((data) => (this.availableMaterialsOrProducts = data))
+                .catch((err) => console.log(err));
+        },
+        // getAvailableProducts() {
+        //   fetch(this.backendURL + this.endpointPartnerProductStocks)
+        //     .then(res => res.json())
+        //     .then(data => this.availableMaterialsOrProducts = data)
+        //     .catch(err => console.log(err));
+        // },
+        updateMaterialOrProduct() {
+            fetch(
+                this.backendURL +
+                    this.endpointUpdatePartnerProductStock +
+                    this.selectedMaterialOrProductId,
+                {
+                    headers: {
+                        "X-API-KEY": this.backendApiKey,
+                    },
+                }
+            )
+                .then((res) => res.json())
+                .then((data) => console.log(data))
+                .catch((err) => console.log(err));
+        },
+    },
 };
 </script>
 
