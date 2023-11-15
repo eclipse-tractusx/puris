@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 //@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@WebMvcTest(StockController.class)
+@WebMvcTest(StockViewController.class)
 class StockControllerTest {
 
 //    @LocalServerPort
@@ -92,11 +92,6 @@ class StockControllerTest {
         allMaterials.add(material1);
         allMaterials.add(material2);
         when(materialService.findAllMaterials()).thenReturn(allMaterials);
-
-        // when
-        // todo solve mocking in this case as @InjectMock seems not to work
-        // maybe mockito?
-        //List<FrontendMaterialDto> returnedMaterials = underTest.getMaterials();
 
         // 401 returned due to https://stackoverflow.com/questions/39554285/spring-test-returning-401-for-unsecured-urls
         // problem: we need security
