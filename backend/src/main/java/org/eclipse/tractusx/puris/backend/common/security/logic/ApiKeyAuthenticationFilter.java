@@ -1,4 +1,4 @@
-package org.eclipse.tractusx.puris.backend.common.security;
+package org.eclipse.tractusx.puris.backend.common.security.logic;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,34 +14,18 @@ import org.springframework.web.filter.GenericFilterBean;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class AuthenticationFilter extends GenericFilterBean {
+public class ApiKeyAuthenticationFilter extends GenericFilterBean {
 
-    private AuthenticationService authenticationService;
+    private ApiKeyAuthenticationService apiKeyAuthenticationService;
 
-    public AuthenticationFilter(AuthenticationService authenticationService){
-        this.authenticationService = authenticationService;
+    public ApiKeyAuthenticationFilter(ApiKeyAuthenticationService apiKeyAuthenticationService){
+        this.apiKeyAuthenticationService = apiKeyAuthenticationService;
     }
-
-
-//    @Override
-//    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-//        // Get the API key and secret from request headers
-//        String requestApiKey = request.getHeader("X-API-KEY");
-//        // Validate the key and secret
-//        if (apiKey.equals(requestApiKey)) {
-//            // Continue processing the request
-//            filterChain.doFilter(request, response);
-//        } else {
-//            // Reject the request and send an unauthorized error
-//            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-//            response.getWriter().write("Unauthorized");
-//        }
-//    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         try {
-            Authentication authentication = authenticationService.getAuthentication((HttpServletRequest) request);
+            Authentication authentication = apiKeyAuthenticationService.getAuthentication((HttpServletRequest) request);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception exp) {
             HttpServletResponse httpResponse = (HttpServletResponse) response;

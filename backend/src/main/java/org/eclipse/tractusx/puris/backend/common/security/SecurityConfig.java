@@ -1,5 +1,7 @@
 package org.eclipse.tractusx.puris.backend.common.security;
 
+import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationFilter;
+import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Autowired
-    private AuthenticationService authenticationService;
+    private ApiKeyAuthenticationService apiKeyAuthenticationService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -28,7 +30,7 @@ public class SecurityConfig {
             .sessionManagement(
                 (sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            .addFilterBefore(new AuthenticationFilter(authenticationService), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new ApiKeyAuthenticationFilter(apiKeyAuthenticationService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
