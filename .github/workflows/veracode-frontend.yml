@@ -42,13 +42,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Zip Project
         run: zip -r ./frontend/veracode-scan-target.zip ./frontend/
 
       - name: Run Veracode Upload And Scan
-        uses: veracode/veracode-uploadandscan-action@0.2.4
+        uses: veracode/veracode-uploadandscan-action@98e2a2941b985e55bfe469ebcb970b2e686625e4 # v0.2.6
         with:
           appname: "PURIS-Frontend"
           createprofile: false
