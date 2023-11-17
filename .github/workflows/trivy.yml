@@ -19,26 +19,16 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-name: "Trivy"
+name: "Run Trivy scan and upload SARIF"
 
 on:
-  push:
-    branches: [ "main" ]
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.txt'
-  pull_request:
-    branches: [ "main" ]
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.txt'
-  schedule:
-    - cron: "0 0 * * *"
   workflow_dispatch:
-  # Trigger manually
+  schedule:
+    - cron: "0 0 * * *" # Once a day
 
 jobs:
-  analyze:
+  analyze-frontend:
+    name: Analyze frontend
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -52,15 +42,36 @@ jobs:
       - name: Run Trivy vulnerability scanner in repo mode
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: "config"
-          exit-code: "1"
-          hide-progress: false
+          image-ref: "tractusx/app-puris-frontend:main"
           format: "sarif"
-          output: "trivy-results1.sarif"
-          severity: "CRITICAL,HIGH"
+          output: "trivy-results-1.sarif"
+          vuln-type: "os,library"
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@66b90a5db151a8042fa97405c6cf843bbe433f7b # v2.227
         if: always()
         with:
-          sarif_file: "trivy-results1.sarif"
+          sarif_file: "trivy-results-1.sarif"
+
+  analyze-backend:
+    name: Analyze backend
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      # Pull image from Docker Hub and run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.14.0
+        with:
+          image-ref: "tractusx/app-puris-backend:main"
+          format: "sarif"
+          output: "trivy-results-2.sarif"
+          vuln-type: "os,library"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: "trivy-results-2.sarif"
