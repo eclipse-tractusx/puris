@@ -64,7 +64,7 @@ jobs:
     steps:
       # Pull image from Docker Hub and run Trivy vulnerability scanner
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.14.0
+        uses: aquasecurity/trivy-action@2b6a709cf9c4025c5438138008beaddbb02086f0 # v0.14.0
         with:
           image-ref: "tractusx/app-puris-backend:main"
           format: "sarif"
@@ -72,6 +72,6 @@ jobs:
           vuln-type: "os,library"
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@66b90a5db151a8042fa97405c6cf843bbe433f7b # v2.227
         with:
           sarif_file: "trivy-results-2.sarif"
