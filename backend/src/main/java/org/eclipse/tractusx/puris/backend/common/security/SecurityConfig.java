@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -21,9 +22,17 @@ public class SecurityConfig {
     private ApiKeyAuthenticationService apiKeyAuthenticationService;
 
     @Bean
+    public WebSecurityCustomizer webSecurityCustomizer(){
+        // exclude springdoc / swagger ui
+        return (web) -> web.ignoring().requestMatchers("/swagger-ui/**", "/v3/api-docs/**");
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(
+                // any request in spring context
                 (authorizeHttpRequests) -> authorizeHttpRequests.anyRequest().authenticated()
             )
             .httpBasic(
@@ -32,7 +41,9 @@ public class SecurityConfig {
             .sessionManagement(
                 (sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            .cors(Customizer.withDefaults())
+            .cors(Customizer.withDefaults());
+
+        http
            .addFilterBefore(new ApiKeyAuthenticationFilter(apiKeyAuthenticationService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
