@@ -166,16 +166,18 @@ public class EDCRequestBodyBuilder {
         transferTypeNode.put("isFinite", true);
         transferNode.set("transferType", transferTypeNode);
         transferNode.put("managedResources", false);
-//        propertiesNode = MAPPER.createObjectNode();
-//        propertiesNode.put("receiver.http.endpoint", endpointDataReferenceEndpoint);
-        //TODO these two may be mixed up
-        // header nanme for auth
-//        propertiesNode.put("receiver.http.auth-code", variablesService.getApiKey());
+        propertiesNode = MAPPER.createObjectNode();
+        // TODO: reminder for EDC 0.5.x: receiverHttpEndpoint - auth key and code still not possible
+        // https://github.com/eclipse-edc/Connector/blob/main/extensions/control-plane/transfer/transfer-pull-http-dynamic-receiver/src/main/java/org/eclipse/edc/connector/receiver/http/dynamic/HttpDynamicEndpointDataReferenceReceiver.java
+        propertiesNode.put("receiver.http.endpoint", endpointDataReferenceEndpoint);
+        // Note: auth-code and header currently can not be set in transfer
+        // https://github.com/eclipse-edc/Connector/blob/release/0.0.1-20230220.patch1-SNAPSHOT/extensions/control-plane/transfer/transfer-pull-http-dynamic-receiver/src/main/java/org/eclipse/edc/connector/receiver/http/dynamic/HttpDynamicEndpointDataReferenceReceiver.java
+        // header name for auth
+        propertiesNode.put("receiver.http.auth-code", variablesService.getApiKey());
         // header value for auth
-//        propertiesNode.put("receiver.http.auth-key", "X-API-KEY");
-        // TODO: check if this can be set dynamically
+        propertiesNode.put("receiver.http.auth-key", "X-API-KEY");
         // https://github.com/eclipse-edc/Connector/blob/1a927997d48acd839b68ec89637698166bf6ce46/extensions/control-plane/transfer/transfer-pull-http-receiver/src/main/java/org/eclipse/edc/connector/receiver/http/HttpEndpointDataReferenceReceiverExtension.java#L33
-//        transferNode.set("properties", propertiesNode);
+        transferNode.set("properties", propertiesNode);
 
         return transferNode;
     }
