@@ -22,7 +22,6 @@ FROM maven:3.8.7-eclipse-temurin-17 as build
 RUN mkdir /app
 WORKDIR /app
 COPY pom.xml .
-#RUN mvn initialize -f pom.xml
 RUN mvn dependency:go-offline
 
 COPY src/ /app/src/
