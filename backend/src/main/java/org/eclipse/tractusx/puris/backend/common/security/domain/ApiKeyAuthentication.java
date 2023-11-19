@@ -27,6 +27,9 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
+/**
+ * Authentication holding apiKey as principal and authenticated flag. No authorities given as the key is set per config.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

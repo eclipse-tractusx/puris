@@ -28,6 +28,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
+/**
+ * Authentication provider that sets authenticated if header is given and matches config
+ */
 @Component
 @Slf4j
 public class ApiKeyAuthenticationProvider implements org.springframework.security.authentication.AuthenticationProvider {

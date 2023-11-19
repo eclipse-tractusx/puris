@@ -39,6 +39,10 @@ public class SecurityConfig {
 
     private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
 
+
+    /**
+     * Configuration of API Key Authentication for all routes except docker
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
