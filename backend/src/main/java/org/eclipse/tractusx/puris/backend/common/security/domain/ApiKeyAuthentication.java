@@ -19,19 +19,27 @@
  */
 package org.eclipse.tractusx.puris.backend.common.security.domain;
 
-import org.springframework.security.authentication.AbstractAuthenticationToken;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
-public class ApiKeyAuthentication extends AbstractAuthenticationToken {
+/**
+ * Authentication holding apiKey as principal and authenticated flag. No authorities given as the key is set per config.
+ */
+@Getter
+@Setter
+@AllArgsConstructor
+public class ApiKeyAuthentication implements Authentication {
 
     private final String apiKey;
-
-    public ApiKeyAuthentication(String apiKey, Collection<? extends GrantedAuthority> authorities) {
-        super(authorities);
-        this.apiKey = apiKey;
-        setAuthenticated(true);
+    private final boolean authenticatedFlag;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
     }
 
     @Override
@@ -40,7 +48,27 @@ public class ApiKeyAuthentication extends AbstractAuthenticationToken {
     }
 
     @Override
+    public Object getDetails() {
+        return null;
+    }
+
+    @Override
     public Object getPrincipal() {
         return apiKey;
+    }
+
+    @Override
+    public boolean isAuthenticated() {
+        return authenticatedFlag;
+    }
+
+    @Override
+    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+
+    }
+
+    @Override
+    public String getName() {
+        return null;
     }
 }
