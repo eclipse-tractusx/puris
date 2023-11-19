@@ -21,41 +21,35 @@ package org.eclipse.tractusx.puris.backend.common.security.logic;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.MediaType;
+import lombok.AllArgsConstructor;
+import org.eclipse.tractusx.puris.backend.common.security.domain.ApiKeyAuthentication;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
-public class ApiKeyAuthenticationFilter extends GenericFilterBean {
+@Component
+@AllArgsConstructor
+public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
-    private ApiKeyAuthenticationService apiKeyAuthenticationService;
-
-    public ApiKeyAuthenticationFilter(ApiKeyAuthenticationService apiKeyAuthenticationService){
-        this.apiKeyAuthenticationService = apiKeyAuthenticationService;
-    }
-
+    private final ApiKeyAuthenticationProvider apiKeyAuthenticationProvider;
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        try {
-            Authentication authentication = apiKeyAuthenticationService.getAuthentication((HttpServletRequest) request);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        } catch (Exception exp) {
-            HttpServletResponse httpResponse = (HttpServletResponse) response;
-            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            httpResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            PrintWriter writer = httpResponse.getWriter();
-            writer.print(exp.getMessage());
-            writer.flush();
-            writer.close();
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String headerKey = request.getHeader("X-API-KEY");
+
+        if (headerKey != null){
+
+            ApiKeyAuthentication apiKeyAuthentication = new ApiKeyAuthentication(headerKey, false);
+//        Authentication authenticatedObject = apiKeyAuthenticationManager.authenticate(apiKeyAuthentication);
+            Authentication authenticatedObject = apiKeyAuthenticationProvider.authenticate(apiKeyAuthentication);
+            SecurityContextHolder.getContext().setAuthentication(authenticatedObject);
         }
 
-        chain.doFilter(request, response);
+
+        filterChain.doFilter(request,response);
     }
 }

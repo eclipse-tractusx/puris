@@ -19,31 +19,41 @@
  */
 package org.eclipse.tractusx.puris.backend.common.security.logic;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.security.domain.ApiKeyAuthentication;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.stereotype.Service;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.stereotype.Component;
 
+@Component
 @Slf4j
-@Service
-public class ApiKeyAuthenticationService {
-
-    private static final String AUTH_TOKEN_HEADER_NAME = "X-API-KEY";
+public class ApiKeyAuthenticationProvider implements org.springframework.security.authentication.AuthenticationProvider {
 
     @Value("${puris.api.key}")
-    private String AUTH_TOKEN;
+    private String apiKey;
 
-    public Authentication getAuthentication(HttpServletRequest request) {
-        String apiKey = request.getHeader(AUTH_TOKEN_HEADER_NAME);
-        if (apiKey == null || !apiKey.equals(AUTH_TOKEN)) {
-            log.info("API key {} is not equal to auth token {}", apiKey, AUTH_TOKEN);
-            throw new BadCredentialsException("Invalid API Key");
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        ApiKeyAuthentication apiKeyAuthentication = (ApiKeyAuthentication) authentication;
+
+        String headerKey = apiKeyAuthentication.getApiKey();
+
+        if (headerKey == null){
+            throw new AuthenticationCredentialsNotFoundException("X-API-KEY has not been set");
         }
 
-        return new ApiKeyAuthentication(apiKey, AuthorityUtils.NO_AUTHORITIES);
+        if (apiKey.equals(headerKey)){
+            log.info("Request has valid key.");
+            return new ApiKeyAuthentication(headerKey, true);
+        }
+        throw new BadCredentialsException("API key is wrong.");
+    }
+
+    @Override
+    public boolean supports(Class<?> authentication) {
+        return ApiKeyAuthentication.class.equals(authentication);
     }
 }
