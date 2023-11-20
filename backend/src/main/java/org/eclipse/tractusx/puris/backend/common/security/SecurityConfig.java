@@ -39,14 +39,12 @@ public class SecurityConfig {
 
     private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
 
-
     /**
      * Configuration of API Key Authentication for all routes except docker
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .csrf(AbstractHttpConfigurer::disable)
+        http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(
                 // any request in spring context
                 (authorizeHttpRequests) -> authorizeHttpRequests
@@ -65,7 +63,5 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-
 
 }
