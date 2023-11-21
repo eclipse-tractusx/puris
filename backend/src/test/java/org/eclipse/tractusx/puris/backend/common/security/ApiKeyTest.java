@@ -39,7 +39,7 @@ public class ApiKeyTest {
     private MockMvc mockMvc;
 
     @Test
-    void stockViewShouldReturn403WithoutAuth() throws Exception {
+    void StockViewController_MaterialsRequestWithoutAuthHeader_ShouldReturn403() throws Exception {
         this.mockMvc.perform(
             get("/stockView/materials"))
                 .andDo(print())
@@ -47,7 +47,7 @@ public class ApiKeyTest {
     }
 
     @Test
-    void stockViewShouldReturn200WithAuth() throws Exception {
+    void StockViewController_MaterialsRequestWithAuthHeader_ShouldReturn200() throws Exception {
         this.mockMvc.perform(
                 get("/stockView/materials")
                     .header("X-API-KEY", "test")
@@ -57,16 +57,16 @@ public class ApiKeyTest {
 
     @Test
     @WithMockApiKey(apiKey = "test2")
-    void stockViewShouldReturn403WithWrongAuthBasedOnMockKeyAnnotation() throws Exception {
+    void StockViewController_MaterialsRequestWithWrongAnnotationAuth_ShouldReturn403() throws Exception {
         this.mockMvc.perform(
                 get("/stockView/materials")
             )
-            .andExpect(status().is(200));
+            .andExpect(status().is(403));
     }
 
     @Test
     @WithMockApiKey
-    void stockViewShouldReturn200WithWrongAuthBasedOnDefaultMockKeyAnnotation() throws Exception {
+    void StockViewController_MaterialsRequestWithCorrectAnnotationAuth_ShouldReturn200() throws Exception {
         this.mockMvc.perform(
                 get("/stockView/materials")
             )

@@ -20,18 +20,27 @@
 package org.eclipse.tractusx.puris.backend.common.security.annotation;
 
 import org.eclipse.tractusx.puris.backend.common.security.domain.ApiKeyAuthentication;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 
 public class WithMockApiKeySecurityContextFactory implements WithSecurityContextFactory<WithMockApiKey> {
 
+    @Value("${puris.api.key}")
+    String apiKeyConfig;
+
     @Override
     public SecurityContext createSecurityContext(WithMockApiKey annotation) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
 
-        ApiKeyAuthentication auth = new ApiKeyAuthentication(annotation.apiKey(), true);
-        context.setAuthentication(auth);
+        if (this.apiKeyConfig.equals((annotation.apiKey()))){
+            ApiKeyAuthentication auth = new ApiKeyAuthentication(annotation.apiKey(), true);
+            context.setAuthentication(auth);
+        } else {
+            ApiKeyAuthentication auth = new ApiKeyAuthentication(annotation.apiKey(), false);
+            context.setAuthentication(auth);
+        }
 
         return context;
     }
