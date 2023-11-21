@@ -54,7 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(StockViewController.class)
 @Import({ SecurityConfig.class, ApiKeyAuthenticationProvider.class })
-class StockControllerTest {
+class StockViewControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
