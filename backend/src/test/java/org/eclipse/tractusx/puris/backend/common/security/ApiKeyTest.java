@@ -47,7 +47,6 @@ public class ApiKeyTest {
     }
 
     @Test
-//    @WithMockApiKey // not yet working
     void stockViewShouldReturn200WithAuth() throws Exception {
         this.mockMvc.perform(
                 get("/stockView/materials")
@@ -55,6 +54,7 @@ public class ApiKeyTest {
             )
             .andExpect(status().is(200));
     }
+    
     @Test
     @WithMockApiKey(apiKey = "test2")
     void stockViewShouldReturn403WithWrongAuthBasedOnMockKeyAnnotation() throws Exception {
