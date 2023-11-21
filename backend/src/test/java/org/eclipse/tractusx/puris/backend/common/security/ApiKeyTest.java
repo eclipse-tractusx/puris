@@ -54,7 +54,7 @@ public class ApiKeyTest {
             )
             .andExpect(status().is(200));
     }
-    
+
     @Test
     @WithMockApiKey(apiKey = "test2")
     void stockViewShouldReturn403WithWrongAuthBasedOnMockKeyAnnotation() throws Exception {
