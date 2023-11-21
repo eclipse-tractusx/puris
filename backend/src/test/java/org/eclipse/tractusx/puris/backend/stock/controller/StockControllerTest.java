@@ -3,6 +3,7 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
+import org.eclipse.tractusx.puris.backend.common.security.WithMockApiKey;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
@@ -63,8 +64,8 @@ class StockControllerTest {
     @MockBean
     private ModelMapper modelMapper;
 
-
     @Test
+    @WithMockApiKey
     void getMaterials() throws Exception{
 
         // given
@@ -84,11 +85,8 @@ class StockControllerTest {
         allMaterials.add(material2);
         when(materialService.findAllMaterials()).thenReturn(allMaterials);
 
-        // 401 returned due to https://stackoverflow.com/questions/39554285/spring-test-returning-401-for-unsecured-urls
-        // problem: we need security
         this.mockMvc.perform(
                 get("/stockView/materials")
-                    .header("X-API-KEY", "test")
             )
             .andDo(print())
             .andExpect(status().isOk())
@@ -119,48 +117,5 @@ class StockControllerTest {
                 );
             });
     }
-//
-//    @Test
-//    void getMaterialNumbers() {
-//    }
-//
-//    @Test
-//    void getProducts() {
-//    }
-//
-//    @Test
-//    void getProductStocks() {
-//    }
-//
-//    @Test
-//    void createProductStocks() {
-//    }
-//
-//    @Test
-//    void updateProductStocks() {
-//    }
-//
-//    @Test
-//    void getMaterialStocks() {
-//    }
-//
-//    @Test
-//    void createMaterialStocks() {
-//    }
-//
-//    @Test
-//    void updateMaterialStocks() {
-//    }
-//
-//    @Test
-//    void getPartnerProductStocks() {
-//    }
-//
-//    @Test
-//    void getCustomerPartnersOrderingMaterial() {
-//    }
-//
-//    @Test
-//    void triggerPartnerProductStockUpdateForMaterial() {
-//    }
+
 }

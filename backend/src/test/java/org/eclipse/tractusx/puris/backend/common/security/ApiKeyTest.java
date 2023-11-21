@@ -35,5 +35,22 @@ public class ApiKeyTest {
             )
             .andExpect(status().is(200));
     }
+    @Test
+    @WithMockApiKey(apiKey = "test2")
+    void stockViewShouldReturn403WithWrongAuthBasedOnMockKeyAnnotation() throws Exception {
+        this.mockMvc.perform(
+                get("/stockView/materials")
+            )
+            .andExpect(status().is(200));
+    }
+
+    @Test
+    @WithMockApiKey
+    void stockViewShouldReturn200WithWrongAuthBasedOnDefaultMockKeyAnnotation() throws Exception {
+        this.mockMvc.perform(
+                get("/stockView/materials")
+            )
+            .andExpect(status().is(200));
+    }
 
 }
