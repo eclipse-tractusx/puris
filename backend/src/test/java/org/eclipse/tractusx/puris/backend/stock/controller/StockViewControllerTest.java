@@ -85,7 +85,7 @@ class StockViewControllerTest {
 
     @Test
     @WithMockApiKey
-    void getMaterials_ReturnsListOfMaterials() throws Exception{
+    void getMaterials_GivenTwoMaterials_ReturnsListOfMaterials() throws Exception{
 
         // given
         Material material1 = Material.builder()
