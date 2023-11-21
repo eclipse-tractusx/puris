@@ -19,6 +19,7 @@
  */
 package org.eclipse.tractusx.puris.backend.common.security;
 
+import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

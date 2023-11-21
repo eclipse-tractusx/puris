@@ -17,7 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.security;
+package org.eclipse.tractusx.puris.backend.common.security.annotation;
 
 import org.springframework.security.test.context.support.WithSecurityContext;
 

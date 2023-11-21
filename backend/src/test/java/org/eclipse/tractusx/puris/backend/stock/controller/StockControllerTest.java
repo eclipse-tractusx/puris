@@ -22,7 +22,7 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
-import org.eclipse.tractusx.puris.backend.common.security.WithMockApiKey;
+import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
