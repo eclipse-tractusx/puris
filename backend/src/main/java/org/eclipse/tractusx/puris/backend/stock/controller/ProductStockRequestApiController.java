@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfulRequestDto;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestApiServiceImpl;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
@@ -54,16 +55,13 @@ import java.util.UUID;
 public class ProductStockRequestApiController {
 
     @Autowired
-    ModelMapper modelMapper;
+    private ObjectMapper objectMapper;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ProductStockRequestService productStockRequestService;
 
     @Autowired
-    ProductStockRequestService productStockRequestService;
-
-    @Autowired
-    ProductStockRequestApiServiceImpl requestApiService;
+    private ProductStockRequestApiServiceImpl requestApiService;
 
     @PostMapping("request")
     @Operation(summary = "This endpoint receives the product stock requests from a consumer.",
@@ -139,7 +137,7 @@ public class ProductStockRequestApiController {
         @ApiResponse(responseCode = "401", description = "Not authorized"),
         @ApiResponse(responseCode = "422", description = "The request ID is not known")
     })
-    public ResponseEntity<Object> getRequest(@RequestBody JsonNode body) {
+    public ResponseEntity<Object> getRequest(@RequestBody(required = false) JsonNode body) {
         try {
             MessageHeaderDto header = objectMapper.convertValue(body.get("header"), MessageHeaderDto.class);
             var request = productStockRequestService.findRequestByHeaderUuid(header.getRequestId());

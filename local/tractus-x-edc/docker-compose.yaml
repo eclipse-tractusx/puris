@@ -21,22 +21,13 @@
 version: "3"
 services:
     control-plane:
-        image: ghcr.io/catenax-ng/product-edc/edc-controlplane-postgresql-hashicorp-vault:0.3.0
-        #ports:
-        #    - "8180:8080" # default
-        #    - "8184:8084" # ids
-        #    - "8181:8081" # data management api - should be private later on
-        #    - "8182:8082" # validation
-        #entrypoint: find startup information in product-edc/edc-controlplane/edc-controlplane-postgresql-hashicorp-vault/src/main/docker/Dockerfile
+        image : tractusx/edc-controlplane-memory-hashicorp-vault:0.5.3
         volumes:
             - ./config/default/opentelemetry.properties:/app/opentelemetry.properties
             - ./config/default/logging.properties:/app/logging.properties
 
     data-plane:
-        image: ghcr.io/catenax-ng/product-edc/edc-dataplane-hashicorp-vault:0.3.0
-        #ports:
-        #    - "8080:8080" # default
-        #    - "8185:8185" # public
+        image: tractusx/edc-dataplane-hashicorp-vault:0.5.3
         volumes:
             - ./config/default/opentelemetry.properties:/app/opentelemetry.properties
             - ./config/default/logging.properties:/app/logging.properties

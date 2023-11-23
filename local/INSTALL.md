@@ -1,52 +1,46 @@
 # Initial Setup
-1. Generate keys
+In case you had any previous installations of this project on your machine, it is advisable to remove them via the script
+(see below in the Notes on debugging section).  
+
+Run the following script to generate the necessary keys. It will also create an .env file in the ./local folder. 
+Make sure to have `openssl` and `jq` installed in your shell.   
 ```shell
 cd local
 sh generate-keys.sh
 ```
-2. Define remaining secrets in `/local/.env`
-   - set root token for vault instance `VAULT_DEV_ROOT_TOKEN_ID` (e.g. "4Ko6r3UcHM4dXnOGmPKTHds3")
-   - set password for edc control plane `EDC_API_PW` (e.g. "password")
-   - set user `PG_USER` and password `PG_PW` for postgres (e.g. "edc-pg-user" and "edc-pg-passw0rd")
-   - set vault secrets dir as mapped via volume (e.g. `/vault/secrets/`)
+
+# Build
+If you are doing a fresh install and everytime you edited the code of the PURIS frontend or backend you have to create a 
+new build of docker images for the PURIS frontend/backend. 
+
+Please see the INSTALL.md documents in the [frontend](../frontend/INSTALL.md) and [backend](../backend/INSTALL.md)
+
+The default image tag is 'dev'. Remember to also adjust the tag in the docker-compose.yaml if you want to use different 
+tags. 
 
 # Start
+First start the infrastructure: 
+
 ```shell
-docker-compose up
+docker compose -f docker-compose-infrastructure.yaml up
 ```
-or use
+After the MIW container has finished booting, use this script to initialise two wallets for customer and supplier: 
+```shell
+sh ./init-wallets.sh
 ```
-sh restart.sh
+Then start the PURIS demonstrator containers via: 
+```shell
+docker compose up
 ```
-Wait for the startup and visit http://localhost:3000/
+Wait for the startup and visit http://localhost:3000/ for the customer's frontend or http://localhost:3000/ for the supplier side. 
 
 ## Notes on debugging
 
-### DAPS
-The omejdn-daps does not provide any further logging configuration.
-It may make sense to log the whole tokens or responses to decode the JWT or similar.
-
-Requires ruby, which can be installed on Ubuntu as follows:
-```shell
-sudo apt-get install ruby
-```
-
-Then download the respective [omejdn release](https://github.com/Fraunhofer-AISEC/omejdn-server/releases/tag/v1.7.1) and unzip it.
-In the `omejdn-server/omejdn.rb`
-- search for token POST endpoint ("endpoint '/token', ['POST'],")
-- go to end of endpoint definition (most left-hand end)
-- add your echo / log upfront the status codes return (e.g. "puts.response.compact.to_json")
-- build the omejdn server
-```shell
-docker build -t omejdn-server:local
-```
-
-Finally update the `./daps/docker-compose.yaml` to use this image instead.
-
 ### Vault & Certs
-When having problems with the certs or the vault, one need to delete the vault container.
-Following script helps faster restarting
+When having problems with the certs or the vault, one may need to delete the vault container.
+The following script stops all infrastructure containers as well as the PURIS demonstrator containers: 
 ```shell
 cd local
-sh restart.sh
+sh cleanup.sh
 ```
+Then start your containers again with the aforementioned commands. 

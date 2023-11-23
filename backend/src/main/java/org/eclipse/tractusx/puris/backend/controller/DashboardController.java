@@ -39,27 +39,27 @@ import java.io.IOException;
 @RequestMapping("dashboard")
 public class DashboardController {
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  @Autowired OrderRepository orderRepository;
+    @Autowired
+    OrderRepository orderRepository;
 
-  @Autowired
-  EdcAdapterService edcAdapter;
+    @Autowired
+    EdcAdapterService edcAdapter;
 
-  /**
-   * Collect information for frontends dashboard.
-   *
-   * @return information about created and published orders, used to show frontends dashboard.
-   * @throws IOException when connection to EDC fails.
-   */
-  @GetMapping("data")
-  @CrossOrigin
-  public JsonNode getData() throws IOException {
-    var orders = orderRepository.findAll();
-    var node = MAPPER.createObjectNode();
-    node.put("orders", orders.size());
-    node.put("ordersSent", edcAdapter.getFromEdc(null, "data", "assets"));
-    node.put("responses", edcAdapter.getFromEdc(null, "data", "transferprocess"));
-    return node;
-  }
+    /**
+     * Collect information for frontends dashboard.
+     *
+     * @return information about created and published orders, used to show frontends dashboard.
+     * @throws IOException when connection to EDC fails.
+     */
+    @GetMapping("data")
+    @CrossOrigin
+    public JsonNode getData() throws IOException {
+        var orders = orderRepository.findAll();
+        var node = MAPPER.createObjectNode();
+        node.put("orders", orders.size());
+        node.put("service", "currently not supported");
+        return node;
+    }
 }

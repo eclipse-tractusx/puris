@@ -37,6 +37,10 @@ This project leverages the following third party content.
 See `DEPENDENCIES_FRONTEND` and `DEPENDENCIES_BACKEND` file. Further, the following third-party content is used that
 isn't listed in any DEPENDENCIES file:
 
+[Keycloak initial realm setup](./local/miw/keycloak-setup.json) derived from 
+https://github.com/eclipse-tractusx/managed-identity-wallet/blob/287b61d12cabf7e2a39f60e1f49d9baaa8401e8c/dev-assets/docker-environment/keycloak/miw_test_realm_docker.json#L809
+under SPDX-License-Identifier: Apache-2.0
+
 feather (4.29)
 * License: MIT License
 * Licence Path: https://github.com/feathericons/feather/blob/master/LICENSE
