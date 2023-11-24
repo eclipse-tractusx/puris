@@ -2,25 +2,23 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.*;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiBusinessObjectEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_AssetTypeEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_DataAddressTypeEnum;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * Utility Component for building EDC request body json objects.
  */
 @Component
+@Slf4j
 public class EDCRequestBodyBuilder {
 
-    @Value("${edr.endpoint}")
-    private String endpointDataReferenceEndpoint;
 
     @Autowired
     private VariablesService variablesService;
@@ -28,188 +26,201 @@ public class EDCRequestBodyBuilder {
     @Autowired
     private ObjectMapper MAPPER;
 
+    private final String publicPolicyId = "policy1";
+    private final String publicContractDefinitionId = "contractdef1";
+    private final String EDC_NAMESPACE = "https://w3id.org/edc/v0.0.1/ns/";
+    private final String VOCAB_KEY = "@vocab";
+    private final String ODRL_NAMESPACE = "http://www.w3.org/ns/odrl/2/";
+    private final String CX_TAXO_NAMESPACE = "https://w3id.org/catenax/taxonomy#";
+    private final String CX_COMMON_NAMESPACE = "https://w3id.org/catenax/ontology/common#";
+    private final String CX_VERSION_KEY = "https://w3id.org/catenax/ontology/common#version";
+    private final String CX_VERSION_NUMBER = "2.0.0";
+    private final String DCT_NAMESPACE = "https://purl.org/dc/terms/";
+    private final String PURL_TYPE_KEY = "https://purl.org/dc/terms/type";
+
+
     /**
-     * Build an EDC request body for the creation of an asset (using an order).
+     * Creates a request body for requesting a catalog in DSP protocol.
+     * You can add filter criteria. However, at the moment there are issues
+     * with nested catalog item properties, so it seems advisable to check
+     * for the filter criteria programmatically.
      *
-     * @param orderUrl url where the published order can be received by the controlplane.
-     * @param orderId  id of the created asset (currently has to match policy and contract id).
-     * @return JsonNode used as requestBody for asset creation.
+     * @param counterPartyDspUrl The protocol url of the other party
+     * @param filter             Key-value-pairs, may be empty or null
+     * @return The request body
      */
-    public JsonNode buildAssetRequestBody(String orderUrl, String orderId) {
-        var assetRequest = MAPPER.createObjectNode();
-        var assetNode = MAPPER.createObjectNode();
-        var assetPropNode = MAPPER.createObjectNode();
-        assetNode.set("properties", assetPropNode);
-        assetPropNode.put("asset:prop:id", orderId);
-        assetPropNode.put("asset:prop:description", "EDC Demo Asset");
-        assetRequest.set("asset", assetNode);
-        var dataAddressNode = MAPPER.createObjectNode();
-        var propertiesNode = MAPPER.createObjectNode();
-        dataAddressNode.set("properties", propertiesNode);
-        propertiesNode.put("type", "HttpData");
-        propertiesNode.put("baseUrl", orderUrl);
-        assetRequest.set("dataAddress", dataAddressNode);
-        return assetRequest;
+    public ObjectNode buildBasicDSPCatalogRequestBody(String counterPartyDspUrl, Map<String, String> filter) {
+        var objectNode = getEDCContextObject();
+        objectNode.put("protocol", "dataspace-protocol-http");
+        objectNode.put("@type", "CatalogRequest");
+        objectNode.put("counterPartyAddress", counterPartyDspUrl);
+        if (filter != null && !filter.isEmpty()) {
+            var querySpecNode = MAPPER.createObjectNode();
+            objectNode.set("querySpec", querySpecNode);
+            for (var entry : filter.entrySet()) {
+                querySpecNode.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return objectNode;
     }
 
     /**
-     * Build an EDC request body for the creation of a simple USE policy.
+     * Build a request body for a request to register an api method as an asset in DSP protocol.
      *
-     * @param orderId id of the policy to create (currently has to match contract and asset id).
-     * @return JsonNode used as requestBody for policy creation.
+     * @param apiMethod The API method you want to register
+     * @return The request body
      */
-    public JsonNode buildPolicyRequestBody(String orderId) {
-        var policyNode = MAPPER.createObjectNode();
-        var policySubNode = MAPPER.createObjectNode();
-        policySubNode.set("prohibitions", MAPPER.createArrayNode());
-        policySubNode.set("obligations", MAPPER.createArrayNode());
-        var permissionArray = MAPPER.createArrayNode();
-        var permissionNode = MAPPER.createObjectNode();
-        permissionNode.put("edctype", "dataspaceconnector:permission");
-        permissionNode.set("constraints", MAPPER.createArrayNode());
-        var actionNode = MAPPER.createObjectNode();
-        actionNode.put("type", "USE");
-        permissionNode.set("action", actionNode);
-        permissionArray.add(permissionNode);
-        policySubNode.set("permissions", permissionArray);
-        policyNode.put("id", orderId);
-        policyNode.set("policy", policySubNode);
-        return policyNode;
+    public JsonNode buildDSPCreateAssetBody(DT_ApiMethodEnum apiMethod) {
+        var body = MAPPER.createObjectNode();
+        var context = MAPPER.createObjectNode();
+        context.put(VOCAB_KEY, EDC_NAMESPACE);
+        context.put("cx-taxo", CX_TAXO_NAMESPACE);
+        context.put("cx-common", CX_COMMON_NAMESPACE);
+        context.put("dct", DCT_NAMESPACE);
+        body.set("@context", context);
+
+        String apiId = variablesService.getApiAssetId(apiMethod);
+        body.put("@id", apiId);
+        var properties = MAPPER.createObjectNode();
+        properties.put("asset:prop:type", "api");
+        properties.put("asset:prop:apibusinessobject", "product-stock");
+        properties.put("asset:prop:version", variablesService.getPurisApiVersion());
+        properties.put("asset:prop:apipurpose", apiMethod.PURPOSE);
+        body.set("properties", properties);
+        var edcProperties = MAPPER.createObjectNode();
+        edcProperties.put(CX_VERSION_KEY, CX_VERSION_NUMBER);
+        var typeNode = MAPPER.createObjectNode();
+        String taxonomy = DT_ApiMethodEnum.REQUEST == apiMethod ? "ProductStockRequestApi" : "ProductStockResponseApi";
+        typeNode.put("@id", CX_TAXO_NAMESPACE + taxonomy);
+        edcProperties.set(PURL_TYPE_KEY, typeNode);
+
+        var dataAddress = MAPPER.createObjectNode();
+        String url = apiMethod == DT_ApiMethodEnum.REQUEST ? variablesService.getRequestServerEndpoint() : variablesService.getResponseServerEndpoint();
+        dataAddress.put("baseUrl", url);
+        dataAddress.put("type", "HttpData");
+        dataAddress.put("proxyPath", "true");
+        dataAddress.put("proxyBody", "true");
+        dataAddress.put("proxyMethod", "true");
+        body.set("dataAddress", dataAddress);
+        return body;
+    }
+
+
+    /**
+     * Creates a request body for registering a public policy in DSP protocol that contains no
+     * restrictions whatsoever.
+     *
+     * @return The request body
+     */
+    public JsonNode buildPublicDSPPolicy() {
+        var body = MAPPER.createObjectNode();
+        var context = MAPPER.createObjectNode();
+        context.put("odrl", ODRL_NAMESPACE);
+        body.set("@context", context);
+        body.put("@type", "PolicyDefinitionRequestDto");
+        body.put("@id", publicPolicyId);
+        var policy = MAPPER.createObjectNode();
+        policy.put("@type", "set");
+        var emptyArray = MAPPER.createArrayNode();
+        policy.set("odrl:permission", emptyArray);
+        policy.set("odrl:prohibition", emptyArray);
+        policy.set("odrl:obligation", emptyArray);
+        body.set("policy", policy);
+        return body;
     }
 
     /**
-     * Build an EDC request body for the creation of a contract.
+     * Creates the request body for registering a simple contract definition.
+     * Relies on the policy that is created via the buildPublicDSPPolicy() method.
      *
-     * @param orderId id of the contract to create (currently has to match policy and asset id).
-     * @return JsonNode used as requestBody for contract creation.
+     * @return The request body
      */
-    public JsonNode buildContractRequestBody(String orderId) {
-        var contractNode = MAPPER.createObjectNode();
-        contractNode.put("id", orderId);
-        contractNode.put("accessPolicyId", orderId);
-        contractNode.put("contractPolicyId", orderId);
-        var criteriaArray = MAPPER.createArrayNode();
-        var criteriaNode = MAPPER.createObjectNode();
-        criteriaNode.put("operandLeft", "asset:prop:id");
-        criteriaNode.put("operator", "=");
-        criteriaNode.put("operandRight", orderId);
-        criteriaArray.add(criteriaNode);
-        contractNode.set("criteria", criteriaArray);
-        return contractNode;
+    public JsonNode buildDSPContractDefinitionWithPublicPolicy() {
+        var body = getEDCContextObject();
+        body.put("@id", publicContractDefinitionId);
+        body.put("accessPolicyId", publicPolicyId);
+        body.put("contractPolicyId", publicPolicyId);
+        body.set("assetsSelector", MAPPER.createArrayNode());
+        return body;
     }
 
     /**
-     * Build an EDC request body used for starting a negotiation.
-     * @param connectorAddress      ids url of the negotiation counterparty.
-     * @param contractDefinitionId  id of a contract offer given by the counterparty.
-     * @param assetId               id of the negotiations target asset.
-     * @return JsonNode used as requestBody for an EDC negotiation request.
+     * Creates the request body for initiating a negotiation in DSP protocol.
+     * Will use the policy terms as specified in the catalog item.
+     *
+     * @param partner         The Partner to negotiate with
+     * @param dcatCatalogItem The catalog entry that describes the target asset.
+     * @return The request body
      */
-    public JsonNode buildNegotiationRequestBody(String connectorAddress,
-                                                       String contractDefinitionId,
-                                                       String assetId) {
-        var negotiationNode = MAPPER.createObjectNode();
-        negotiationNode.put("connectorId", "foo");
-        negotiationNode.put("connectorAddress", connectorAddress);
-        negotiationNode.put("protocol", "ids-multipart");
+    public ObjectNode buildDSPAssetNegotiation(Partner partner, JsonNode dcatCatalogItem) {
+        var objectNode = MAPPER.createObjectNode();
+        var contextNode = MAPPER.createObjectNode();
+        contextNode.put(VOCAB_KEY, EDC_NAMESPACE);
+        contextNode.put("odrl", ODRL_NAMESPACE);
+        objectNode.set("@context", contextNode);
+        objectNode.put("@type", "NegotiationInitiateRequestDto");
+        objectNode.put("connectorId", partner.getBpnl());
+        objectNode.put("connectorAddress", partner.getEdcUrl());
+        objectNode.put("consumerId", variablesService.getOwnBpnl());
+        objectNode.put("providerId", partner.getBpnl());
+        objectNode.put("protocol", "dataspace-protocol-http");
+        String assetId = dcatCatalogItem.get("@id").asText();
+        var policyNode = dcatCatalogItem.get("odrl:hasPolicy");
         var offerNode = MAPPER.createObjectNode();
-        offerNode.put("offerId", contractDefinitionId);
+        String offerId = policyNode.get("@id").asText();
+        offerNode.put("offerId", offerId);
         offerNode.put("assetId", assetId);
-        var policyNode = MAPPER.createObjectNode();
-        policyNode.put("uid", assetId);
-        policyNode.set("prohibitions", MAPPER.createArrayNode());
-        policyNode.set("obligations", MAPPER.createArrayNode());
-        var permissionArray = MAPPER.createArrayNode();
-        var permissionNode = MAPPER.createObjectNode();
-        permissionNode.put("edctype", "dataspaceconnector:permission");
-        permissionNode.put("target", assetId);
-        permissionNode.set("constraints", MAPPER.createArrayNode());
-        var actionNode = MAPPER.createObjectNode();
-        actionNode.put("type", "USE");
-        permissionNode.set("action", actionNode);
-        permissionArray.add(permissionNode);
-        policyNode.set("permissions", permissionArray);
         offerNode.set("policy", policyNode);
-        negotiationNode.set("offer", offerNode);
-        return negotiationNode;
+        objectNode.set("offer", offerNode);
+        return objectNode;
     }
 
     /**
-     * Build an EDC request body used for starting a transfer.
+     * Creates the request body for requesting a data pull transfer using the
+     * DSP protocol and the Tractus-X-EDC.
      *
-     * @param transferId       id created for the transferprocess.
-     * @param connectorAddress ids url of the negotiation counterparty.
-     * @param contractId       id of the negotiated contract.
-     * @param orderId          id of the transfers target asset.
-     * @return JsonNode used as requestBody for an EDC transfer request.
+     * @param partner    The Partner who controls the target asset
+     * @param contractID The contractId
+     * @param assetId    The assetId
+     * @return The request body
      */
-    public JsonNode buildTransferRequestBody(String transferId,
-                                                    String connectorAddress,
-                                                    String contractId,
-                                                    String orderId) {
-        var transferNode = MAPPER.createObjectNode();
-        transferNode.put("edctype", "dataspaceconnector:datarequest");
-        transferNode.put("protocol", "ids-multipart");
-        transferNode.put("id", transferId);
-        transferNode.put("connectorId", "foo");
-        transferNode.put("connectorAddress", connectorAddress);
-        transferNode.put("contractId", contractId);
-        transferNode.put("assetId", orderId);
-        transferNode.put("managedResources", "false");
-        var destinationNode = MAPPER.createObjectNode();
-        var propertiesNode = MAPPER.createObjectNode();
-        propertiesNode.put("type", "HttpProxy");
-        destinationNode.set("properties", propertiesNode);
-        transferNode.set("dataDestination", destinationNode);
-        var transferTypeNode = MAPPER.createObjectNode();
-        transferTypeNode.put("contentType", "application/octet-stream");
-        transferTypeNode.put("isFinite", true);
-        transferNode.set("transferType", transferTypeNode);
-        transferNode.put("managedResources", false);
-        propertiesNode = MAPPER.createObjectNode();
-        propertiesNode.put("receiver.http.endpoint", endpointDataReferenceEndpoint);
-        transferNode.set("properties", propertiesNode);
-
-        return transferNode;
+    public JsonNode buildDSPDataPullRequestBody(Partner partner, String contractID, String assetId) {
+        var body = getEDCContextObject();
+        body.put("@type", "TransferRequestDto");
+        body.put("connectorId", partner.getBpnl());
+        body.put("connectorAddress", partner.getEdcUrl());
+        body.put("contractId", contractID);
+        body.put("assetId", assetId);
+        body.put("protocol", "dataspace-protocol-http");
+        var dataDestination = MAPPER.createObjectNode();
+        dataDestination.put("type", "HttpProxy");
+        body.set("dataDestination", dataDestination);
+        var callbackAddress = MAPPER.createObjectNode();
+        callbackAddress.put("uri", variablesService.getEdrEndpoint());
+        callbackAddress.put("transactional", false);
+        var events = MAPPER.createArrayNode();
+        events.add("contract.negotiation");
+        events.add("transfer.process");
+        callbackAddress.set("events", events);
+        var callbackAddresses = MAPPER.createArrayNode();
+        callbackAddresses.add(callbackAddress);
+        body.set("callbackAddresses", callbackAddresses);
+        return body;
     }
 
     /**
-     * Builds a CreateAssetDto for an API
+     * A helper method returning a basic request object that can be used to build other
+     * specific request bodies.
      *
-     * @param method     api method to create
-     * @param apiBaseUrl api baseUrl to get the data at
-     * @return assetDto for creation.
+     * @return A request body stub
      */
-    public CreateAssetDto buildCreateAssetDtoForApi(DT_ApiMethodEnum method,
-                                                           String apiBaseUrl) {
-        AssetPropertiesDto apiAssetPropertiesDto = new AssetPropertiesDto();
-        apiAssetPropertiesDto.setApiBusinessObject(DT_ApiBusinessObjectEnum.PRODUCT_STOCK.PROPERTIES_DESCRIPTION);
-        apiAssetPropertiesDto.setApiPurpose(method.PURPOSE);
-        apiAssetPropertiesDto.setContentType("application/json");
-        apiAssetPropertiesDto.setId(variablesService.getApiAssetId(method));
-        apiAssetPropertiesDto.setName(method.NAME);
-        apiAssetPropertiesDto.setType(DT_AssetTypeEnum.api);
-        apiAssetPropertiesDto.setUseCase(DT_UseCaseEnum.PURIS);
-        apiAssetPropertiesDto.setVersion(variablesService.getPurisApiVersion());
-
-        AssetDto apiAssetDto = new AssetDto();
-        apiAssetDto.setPropertiesDto(apiAssetPropertiesDto);
-
-        DataAddressPropertiesDto apiDataAddressPropertiesDto =
-                new DataAddressPropertiesDto();
-        apiDataAddressPropertiesDto.setBaseUrl(apiBaseUrl);
-        apiDataAddressPropertiesDto.setType(DT_DataAddressTypeEnum.HttpData);
-        apiDataAddressPropertiesDto.setProxyBody(true);
-        apiDataAddressPropertiesDto.setProxyMethod(true);
-
-        DataAddressDto apiDataAddressDto = new DataAddressDto();
-        apiDataAddressDto.setDataAddressPropertiesDto(apiDataAddressPropertiesDto);
-
-        CreateAssetDto createApiAssetDto = new CreateAssetDto();
-        createApiAssetDto.setAssetDto(apiAssetDto);
-        createApiAssetDto.setDataAddressDto(apiDataAddressDto);
-
-        return createApiAssetDto;
+    private ObjectNode getEDCContextObject() {
+        ObjectNode node = MAPPER.createObjectNode();
+        var context = MAPPER.createObjectNode();
+        context.put(VOCAB_KEY, EDC_NAMESPACE);
+        node.set("@context", context);
+        return node;
     }
+
 
 }
