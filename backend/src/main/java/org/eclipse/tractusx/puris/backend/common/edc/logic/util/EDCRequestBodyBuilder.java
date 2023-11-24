@@ -29,6 +29,7 @@ public class EDCRequestBodyBuilder {
     private final String publicPolicyId = "policy1";
     private final String publicContractDefinitionId = "contractdef1";
     private final String EDC_NAMESPACE = "https://w3id.org/edc/v0.0.1/ns/";
+    private final String VOCAB_KEY = "@vocab";
     private final String ODRL_NAMESPACE = "http://www.w3.org/ns/odrl/2/";
     private final String CX_TAXO_NAMESPACE = "https://w3id.org/catenax/taxonomy#";
     private final String CX_COMMON_NAMESPACE = "https://w3id.org/catenax/ontology/common#";
@@ -72,7 +73,7 @@ public class EDCRequestBodyBuilder {
     public JsonNode buildDSPCreateAssetBody(DT_ApiMethodEnum apiMethod) {
         var body = MAPPER.createObjectNode();
         var context = MAPPER.createObjectNode();
-        context.put("edc", EDC_NAMESPACE);
+        context.put(VOCAB_KEY, EDC_NAMESPACE);
         context.put("cx-taxo", CX_TAXO_NAMESPACE);
         context.put("cx-common", CX_COMMON_NAMESPACE);
         context.put("dct", DCT_NAMESPACE);
@@ -154,7 +155,7 @@ public class EDCRequestBodyBuilder {
     public ObjectNode buildDSPAssetNegotiation(Partner partner, JsonNode dcatCatalogItem) {
         var objectNode = MAPPER.createObjectNode();
         var contextNode = MAPPER.createObjectNode();
-        contextNode.put("edc", EDC_NAMESPACE);
+        contextNode.put(VOCAB_KEY, EDC_NAMESPACE);
         contextNode.put("odrl", ODRL_NAMESPACE);
         objectNode.set("@context", contextNode);
         objectNode.put("@type", "NegotiationInitiateRequestDto");
@@ -216,7 +217,7 @@ public class EDCRequestBodyBuilder {
     private ObjectNode getEDCContextObject() {
         ObjectNode node = MAPPER.createObjectNode();
         var context = MAPPER.createObjectNode();
-        context.put("edc", EDC_NAMESPACE);
+        context.put(VOCAB_KEY, EDC_NAMESPACE);
         node.set("@context", context);
         return node;
     }

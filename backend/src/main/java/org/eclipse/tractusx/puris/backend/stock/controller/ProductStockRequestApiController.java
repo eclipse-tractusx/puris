@@ -137,7 +137,7 @@ public class ProductStockRequestApiController {
         @ApiResponse(responseCode = "401", description = "Not authorized"),
         @ApiResponse(responseCode = "422", description = "The request ID is not known")
     })
-    public ResponseEntity<Object> getRequest(@RequestBody(required = false) JsonNode body) {
+    public ResponseEntity<Object> getRequest(@RequestBody JsonNode body) {
         try {
             MessageHeaderDto header = objectMapper.convertValue(body.get("header"), MessageHeaderDto.class);
             var request = productStockRequestService.findRequestByHeaderUuid(header.getRequestId());
