@@ -2,4 +2,4 @@
 *.cert
 *.keys
 *.secret
-local/.env
+.env
