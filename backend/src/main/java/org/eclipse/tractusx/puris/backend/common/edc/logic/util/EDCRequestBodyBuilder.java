@@ -192,19 +192,16 @@ public class EDCRequestBodyBuilder {
         body.put("contractId", contractID);
         body.put("assetId", assetId);
         body.put("protocol", "dataspace-protocol-http");
+        body.put("managedResources", false);
+
         var dataDestination = MAPPER.createObjectNode();
         dataDestination.put("type", "HttpProxy");
         body.set("dataDestination", dataDestination);
-        var callbackAddress = MAPPER.createObjectNode();
-        callbackAddress.put("uri", variablesService.getEdrEndpoint());
-        callbackAddress.put("transactional", false);
-        var events = MAPPER.createArrayNode();
-        events.add("contract.negotiation");
-        events.add("transfer.process");
-        callbackAddress.set("events", events);
-        var callbackAddresses = MAPPER.createArrayNode();
-        callbackAddresses.add(callbackAddress);
-        body.set("callbackAddresses", callbackAddresses);
+
+        var privateProperties = MAPPER.createObjectNode();
+        privateProperties.put("receiverHttpEndpoint", variablesService.getEdrEndpoint());
+        body.set("privateProperties", privateProperties);
+        log.info(body.toPrettyString());
         return body;
     }
 

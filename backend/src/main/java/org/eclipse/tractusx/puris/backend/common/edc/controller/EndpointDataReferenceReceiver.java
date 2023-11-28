@@ -44,7 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class EndpointDataReferenceReceiver {
 
     @Autowired
-    private EndpointDataReferenceService edcService;
+    private EndpointDataReferenceService edrService;
     private final static String prefix = "https://w3id.org/edc/v0.0.1/ns/";
 
     /**
@@ -62,27 +62,18 @@ public class EndpointDataReferenceReceiver {
         @ApiResponse(responseCode = "200", description = "Ok")
     })
     private ResponseEntity<String> authCodeReceivingEndpoint(@RequestBody JsonNode body) {
-        ResponseEntity<String> response = ResponseEntity.status(200).build();
-        var payload = body.get("payload");
-        if (payload.get("dataAddress") == null) {
-            return response;
-        }
-        var dataAddress = payload.get("dataAddress");
-        if (dataAddress.get("properties") == null) {
-            return response;
-        }
-        var properties = dataAddress.get("properties");
-        String transferId = properties.get(prefix + "id").asText();
-        String authKey = properties.get(prefix + "authKey").asText();
-        String authCode = properties.get(prefix + "authCode").asText();
-        String endpoint = properties.get(prefix + "endpoint").asText();
+        log.debug("Received edr data:\n" + body.toPrettyString());
+        String transferId = body.get("id").asText();
+        String authKey = body.get("authKey").asText();
+        String authCode = body.get("authCode").asText();
+        String endpoint = body.get("endpoint").asText();
         if (transferId == null || authCode == null) {
-            log.warn("EDR endpoint received invalid message:\n" + body.toPrettyString());
-            return response;
+            log.warn("authCodes endpoint received invalid message:\n" + body.toPrettyString());
+            return ResponseEntity.status(400).build();
         }
-        edcService.save(transferId, new EDR_Dto(authKey, authCode, endpoint));
-        log.info("EDR endpoint stored authCode for " + transferId);
-        return response;
+        edrService.save(transferId, new EDR_Dto(authKey, authCode, endpoint));
+        log.debug("authCodes endpoint stored authCode for " + transferId);
+        return ResponseEntity.status(200).build();
     }
 
     private final static String sample = "{\"id\":\"3b603c3e-0f1a-4989-90b7-a4b024496d04\",\"at\":1699446240954,\"payload\":{\"transferProcessId\":\"e5c59912-b88a-4c42-9766-9fa593b72603\",\"callbackAddresses\":[{\"uri\":\"http://host.docker.internal:4000\",\"events\":[\"contract.negotiation\",\"transfer.process\"],\"transactional\":false,\"authKey\":null,\"authCodeId\":null}],\"dataAddress\":{\"properties\":{\"https://w3id.org/edc/v0.0.1/ns/type\":\"EDR\",\"https://w3id.org/edc/v0.0.1/ns/endpoint\":\"http://supplier-data-plane:9285/api/public/\",\"https://w3id.org/edc/v0.0.1/ns/authCode\":\"eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE2OTk0NDY4NDAsImRhZCI6ImMvMnFYVThaemVRTnJ5WDloUjhFZytONXpaWjhaUnc5dHpDOWRPcDlQNnpQQUhxZE9XN0pyN3JIWk94R0k0dFBXMmUxZVZ6elRJNlA5dUZXREpVVWtvRjJpWm93aXp6UEhmbGF4YTdsY0JIcWNISThhZWlEcm5MYiswM1ZXemRtMEZqLzNYYVdUa3VGYzM4VGtWS1lMaEViOVRNRUV4UGhqbEM5WFplamc0ZWJHNUZ6QldDQXZ2bmlMaWpFMjA4ZDhOcE80M0w5cG4xWXBpUThkZ2IrYjhkcEsyMDZObDNzTFhyS1hsU09ZaERHR2tLM2dSYkxBRHpiRjl3RWlCd3Z6SjFvSzFXbllzMVJwTVNOY1ZPc1ZseDJ6YS9mT1J6M29NYnh4TGdsSzMxU1c3NjVNWlVyWWlLK3JDOFhFaHNNa2JMSlNIcXhKYlFWYnZtL3dic1FyQWoxbUVsajhjbk9FY1p2NUhJOHJoUElyaTQyeU1hbXpWSXhXWW9hWU5PV0x4WHk1SUhZc3ZKcUJMc1cwaWs4eDlOZDhTcDduUGhqempLYjlQeFVVbCthS3BZQWVJaE9XZnNGT2pSMFFHM3lYcmJDalM0S1ZlaHhZbW1MZ0ZIczhyeWNsd1h2VUJzRkk4bzVLZUVwSll2U2RPSjlTQ0dNODB5a1lNczFxK0dTRVZmN2VrTUZRU2pjeGRSMElncUtFRk92OE5Ra3ZXZHAxbVpXc25IbnZNY2E0MFYxTm5nQWFVRndtRDhEeGVyc3k4R0IiLCJjaWQiOiJNUT09OlptVjBZMmhCYzNObGRBPT06T0dWbE4yWmhZelV0WlRjek15MDBPR0prTFRneFl6a3RaV1kzTkRsbFlXSTVNMll6In0.z9Nm_csmyHGBPGdEGgiyUV7pLWes0KE2IK82BHtCOS8XBerJrGb_wqNCgcgph6Zx7j84FwaVSH190FQ98FhJORgVCQ8u187hz1iPjXne9GEclR5Xr9_fSb9ZNK8VNTJvCdevJO5uT7Jkkc_-2U8DKUDDOj_Wqby8uStoSSs0P0idQ4pAazFYTy_Dbl0ltJsz6xc3YxwXk3yk0P1Ys5zYN0ueBznUMEJ6-YXpafAS5kn_iN8zU3It3Q2AgS0ER_M9AzeBHXZmST2MkaXXo3s_kuVxCZEtGRWkv8gmI3XZ5dprJ6x6keQSZ2ApSrxtmhswq2hPcqSQXF1gIFTTSSzg8A\",\"https://w3id.org/edc/v0.0.1/ns/id\":\"e5c59912-b88a-4c42-9766-9fa593b72603\",\"https://w3id.org/edc/v0.0.1/ns/authKey\":\"Authorization\"}}},\"type\":\"TransferProcessStarted\"}";
