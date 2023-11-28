@@ -30,8 +30,8 @@
       {{ this.selectedMaterialOrProductId }}.
     </h2>
     <button
-        class="btn-primary place-self-end"
-        @click="updateMaterialOrProduct()"
+      class="btn-primary place-self-end"
+      @click="updateMaterialOrProduct()"
     >
       Update
     </button>
@@ -58,12 +58,13 @@ export default {
   name: "PartnerStockSFC",
 
   props: {
-    selectedMaterialOrProductId: {type: String, required: true},
-    partnerRole: {type: String, required: true},
+    selectedMaterialOrProductId: { type: String, required: true },
+    partnerRole: { type: String, required: true },
   },
   data() {
     return {
       backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
+      backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
       endpointPartnerProductStocks: import.meta.env.VITE_ENDPOINT_PARTNER_PRODUCT_STOCKS,
       endpointUpdatePartnerProductStock: import.meta.env.VITE_ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK,
       availableMaterialsOrProducts: [],
@@ -74,17 +75,26 @@ export default {
       if (this.partnerRole === "supplier") {
         this.getAvailableMaterials();
       }
-      // else if (this.partnerRole === "customer") {
-      //   this.getAvailableProducts();
-      // }
+            // else if (this.partnerRole === "customer") {
+            //   this.getAvailableProducts();
+            // }
     }
   },
   methods: {
     getAvailableMaterials() {
-      fetch(this.backendURL + this.endpointPartnerProductStocks + this.selectedMaterialOrProductId)
-        .then(res => res.json())
-        .then(data => this.availableMaterialsOrProducts = data)
-        .catch(err => console.log(err));
+      fetch(
+        this.backendURL +
+        this.endpointPartnerProductStocks +
+        this.selectedMaterialOrProductId,
+        {
+          headers: {
+            "X-API-KEY": this.backendApiKey,
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((data) => (this.availableMaterialsOrProducts = data))
+        .catch((err) => console.log(err));
     },
     // getAvailableProducts() {
     //   fetch(this.backendURL + this.endpointPartnerProductStocks)
@@ -93,11 +103,20 @@ export default {
     //     .catch(err => console.log(err));
     // },
     updateMaterialOrProduct() {
-      fetch(this.backendURL + this.endpointUpdatePartnerProductStock + this.selectedMaterialOrProductId)
-        .then(res => res.json())
-        .then(data => console.log(data))
-        .catch(err => console.log(err));
-    }
+      fetch(
+        this.backendURL +
+        this.endpointUpdatePartnerProductStock +
+        this.selectedMaterialOrProductId,
+        {
+          headers: {
+            "X-API-KEY": this.backendApiKey,
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((data) => console.log(data))
+        .catch((err) => console.log(err));
+    },
   },
 };
 </script>

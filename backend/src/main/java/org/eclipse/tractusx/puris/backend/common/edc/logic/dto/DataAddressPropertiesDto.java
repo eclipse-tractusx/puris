@@ -62,4 +62,18 @@ public class DataAddressPropertiesDto {
     @JsonProperty("type")
     @NotNull
     private DT_DataAddressTypeEnum type;
+
+    /**
+     * Defines the auth key used in httpProxy e.g. "X-API-KEY"
+     */
+    @JsonProperty("authKey")
+    @NotNull
+    private String authKey;
+
+    /**
+     * Defines the auth code used in httpProxy e.g. "some value"
+     */
+    @JsonProperty("authCode")
+    @NotNull
+    private String authCode;
 }
