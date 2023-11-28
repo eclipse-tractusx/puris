@@ -19,6 +19,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# GlOBAL -----------
+global:
+    domain: &domain backend
 # FRONTEND -----------
 frontend:
     replicaCount: 1
@@ -62,13 +65,13 @@ frontend:
         # -- Configures the non-root privileges for a run
         runAsNonRoot: true
         # -- Configures the user id for a run
-        runAsUser: 1000
+        runAsUser: 10001
         # -- Configures the group id of a user for a run
         runAsGroup: 3000
 
     service:
         # -- Type of the service
-        type: NodePort
+        type: ClusterIP
         # -- The port of the service
         port: 8080
 
@@ -81,23 +84,26 @@ frontend:
         annotations: { }
         # -- Hosts for the Ingress controller
         hosts:
-            -   host: puris-customer-frontend.int.demo.catena-x.net
+            -   host: "your-frontend-host-adress.com"
                 paths:
                     -   path: /
                         pathType: ImplementationSpecific
         # -- TLS certificates for the Ingress controller
-        tls: [ ]
+        tls:
+            -   secretName: tls-secret
+                hosts:
+                    - your-frontend-host-adress.com
 
     # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
     # @url: https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-resource-requests-and-limits
     resources:
         # -- Maximum resource limits of CPU und memory
         limits:
-            cpu: 500m
+            cpu: 600m
             memory: 128Mi
         # -- Minimum requested resources for CPU und memory
         requests:
-            cpu: 100m
+            cpu: 200m
             memory: 128Mi
 
     autoscaling:
@@ -164,7 +170,7 @@ frontend:
         # -- The name of the app displayed in the frontend
         appName: PURIS
         # -- The base URL for the backend base URL without further endpoints
-        baseUrl: http://172.17.0.2:30001/catena/
+        baseUrl: *domain #http://172.17.0.2:30001/catena/
         # -- The endpoint for materials for the stock view
         endpointMaterials: stockView/materials
         # -- The endpoint for products for the stock view
@@ -198,7 +204,7 @@ backend:
     # -- Possibility to override the name
     nameOverride: ""
     # -- Possibility to override the fullname
-    fullnameOverride: ""
+    fullnameOverride: *domain
 
     serviceAccount:
         # -- Specifies whether a service account should be created
@@ -224,13 +230,13 @@ backend:
         # -- Configures the non-root privileges for a run
         runAsNonRoot: true
         # -- Configures the user id for a run
-        runAsUser: 1000
+        runAsUser: 10001
         # -- Configures the group id of a user for a run
         runAsGroup: 3000
 
     service:
         # -- Type of the service
-        type: NodePort
+        type: ClusterIP
         # -- The port of the service
         port: 8081
 
@@ -239,7 +245,7 @@ backend:
     resources:
         # -- Maximum resource limits of CPU und memory
         limits:
-            cpu: 2000m
+            cpu: 3000m
             memory: 2048Mi
         # -- Minimum requested resources for CPU und memory
         requests:
@@ -265,7 +271,7 @@ backend:
             nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
         # -- Hosts for the Ingress controller
         hosts:
-            -   host: "puris-customer-backend.int.demo.catena-x.net"
+            -   host: "your-backend-host-adress.com"
                 paths:
                     -   path: /
                         pathType: ImplementationSpecific
@@ -273,7 +279,7 @@ backend:
         tls:
             -   secretName: tls-secret
                 hosts:
-                    - puris-customer-backend.int.demo.catena-x.net
+                    - your-backend-host-adress.com
 
     # -- Constrains for the node selector
     nodeSelector: { }
@@ -341,7 +347,7 @@ backend:
         edc:
             controlplane:
                 # -- IP address of the EDC control plane
-                host: &ipEdcControlplane "172.17.0.2"
+                host: "172.17.0.2"
                 data:
                     # -- Data path of the EDC control plane
                     path: /api/v1/data
@@ -365,15 +371,15 @@ backend:
         own:
             # -- Own BPNL of the EDC
             bpnl: BPNL1234567890ZZ
-            # -- Own default BPNA of the EDC
+            # -- Own BPNA of the EDC
             bpna: BPNA1234567890AA
-            # -- Own default BPNS of the EDC
+            # -- Own BPNS of the EDC
             bpns: BPNS1234567890ZZ
-            # -- Own default country
-            country: Germany
+            # -- Own country
+            country: "Germany"
             site:
                 # -- Own site name
-                name: puris-test
+                name: "puris-test"
             # -- Own street and number
             streetnumber: "Musterstraße 110A"
             # -- Own zipcode and city
@@ -382,7 +388,7 @@ backend:
                 # -- Number of minutes before received authentication data of a consumer pull is removed from memory
                 deletiontimer: 2
             # -- Own name (self-description)
-            name: "Your application name"
+            name: "YOUR-APPLICATION-NAME"
         # -- Current version of the puris API
         apiversion: 1.0.0
         demonstrator:
@@ -414,6 +420,3 @@ backend:
         edr:
             # -- Endpoint for EDR
             endpoint: ${my.base.url}:${server.port}/catena/edrendpoint
-global:
-    edc:
-        controlplane: *ipEdcControlplane

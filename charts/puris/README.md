@@ -45,8 +45,8 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.ingress.annotations."nginx.ingress.kubernetes.io/force-ssl-redirect" | string | `"true"` | Force redirects from HTTP to HTTPS |
 | backend.ingress.annotations."nginx.ingress.kubernetes.io/ssl-passthrough" | string | `"true"` | Pass SSL traffic to the backend ports |
 | backend.ingress.enabled | bool | `false` | Enable the Ingress |
-| backend.ingress.hosts | list | `[{"host":"puris-customer-backend.int.demo.catena-x.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
-| backend.ingress.tls | list | `[{"hosts":["puris-customer-backend.int.demo.catena-x.net"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
+| backend.ingress.hosts | list | `[{"host":"YOUR-BACKEND-HOST-ADRESS.com","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
+| backend.ingress.tls | list | `[{"hosts":["YOUR-BACKEND-HOST-ADRESS.com"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
 | backend.livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":250,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | backend.livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
 | backend.livenessProbe.initialDelaySeconds | int | `250` | Delay in seconds after which an initial liveness probe is checked |
@@ -77,12 +77,12 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans | bool | `true` | Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction |
 | backend.puris.minikube.ip | string | `"host.minikube.internal"` | IP of minikube for the EDC configuration |
 | backend.puris.my.base.url | string | `"http://localhost"` | Own base URL |
-| backend.puris.own.bpna | string | `"BPNA1234567890AA"` | Own default BPNA of the EDC |
+| backend.puris.own.bpna | string | `"BPNA1234567890AA"` | Own BPNA of the EDC |
 | backend.puris.own.bpnl | string | `"BPNL1234567890ZZ"` | Own BPNL of the EDC |
-| backend.puris.own.bpns | string | `"BPNS1234567890ZZ"` | Own default BPNS of the EDC |
-| backend.puris.own.country | string | `"Germany"` | Own default country |
+| backend.puris.own.bpns | string | `"BPNS1234567890ZZ"` | Own BPNS of the EDC |
+| backend.puris.own.country | string | `"Germany"` | Own country |
 | backend.puris.own.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
-| backend.puris.own.name | string | `"Your application name"` | Own name (self-description) |
+| backend.puris.own.name | string | `"YOUR-APPLICATION-NAME"` | Own name (self-description) |
 | backend.puris.own.site.name | string | `"puris-test"` | Own site name |
 | backend.puris.own.streetnumber | string | `"Musterstraße 110A"` | Own street and number |
 | backend.puris.own.zipcodeandcity | string | `"12345 Musterhausen"` | Own zipcode and city |
@@ -125,8 +125,8 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.ingress.annotations | object | `{}` | Annotations for the Ingress controller |
 | frontend.ingress.className | string | `"nginx"` | Class name for the Ingress controller |
 | frontend.ingress.enabled | bool | `false` | Enable the Ingress |
-| frontend.ingress.hosts | list | `[{"host":"puris-customer-frontend.int.demo.catena-x.net","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
-| frontend.ingress.tls | list | `[]` | TLS certificates for the Ingress controller |
+| frontend.ingress.hosts | list | `[{"host":"YOUR-FRONTEND-HOST-ADRESS.com","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
+| frontend.ingress.tls | list | `[{"hosts":["YOUR-FRONTEND-HOST-ADRESS.com"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
 | frontend.livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":10,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | frontend.livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
 | frontend.livenessProbe.initialDelaySeconds | int | `10` | Delay in seconds after which an initial liveness probe is checked |
