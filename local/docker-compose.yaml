@@ -29,6 +29,7 @@ services:
         environment:
             - APP_NAME=PURIS Customer
             - BACKEND_BASE_URL=http://localhost:8081/catena/
+            - BACKEND_API_KEY=${CUSTOMER_BACKEND_API_KEY}
             - ENDPOINT_MATERIALS=stockView/materials
             - ENDPOINT_PRODUCTS=stockView/products
             - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
@@ -47,7 +48,6 @@ services:
         depends_on: 
             edc-customer-control-plane:
                 condition: service_started #service_healthy
-                #restart: true
         ports:
             - "127.0.0.1:8081:8081" # expose port of server.port
         env_file:
@@ -103,6 +103,7 @@ services:
         environment:
             - APP_NAME=PURIS Customer
             - BACKEND_BASE_URL=http://localhost:8082/catena/
+            - BACKEND_API_KEY=${SUPPLIER_BACKEND_API_KEY}
             - ENDPOINT_MATERIALS=stockView/materials
             - ENDPOINT_PRODUCTS=stockView/products
             - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks

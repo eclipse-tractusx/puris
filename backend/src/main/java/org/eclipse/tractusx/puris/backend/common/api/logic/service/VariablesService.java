@@ -146,6 +146,11 @@ public class VariablesService {
      * The country in which your ownDefaultBpna-address is located.
      */
     private String ownDefaultCountry;
+    /**
+     * The key for accessing the api.
+     */
+    @Value("${puris.api.key}")
+    private String apiKey;
 
     /**
      * Returns the asset-id as defined in the properties file for the given api method

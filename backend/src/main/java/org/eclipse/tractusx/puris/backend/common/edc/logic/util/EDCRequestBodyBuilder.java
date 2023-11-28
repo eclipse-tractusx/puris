@@ -101,6 +101,8 @@ public class EDCRequestBodyBuilder {
         dataAddress.put("proxyPath", "true");
         dataAddress.put("proxyBody", "true");
         dataAddress.put("proxyMethod", "true");
+        dataAddress.put("authKey", "x-api-key");
+        dataAddress.put("authCode", variablesService.getApiKey());
         body.set("dataAddress", dataAddress);
         return body;
     }
