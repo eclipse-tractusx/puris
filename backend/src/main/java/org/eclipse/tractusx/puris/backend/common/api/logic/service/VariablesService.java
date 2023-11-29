@@ -62,6 +62,8 @@ public class VariablesService {
     private String ownDefaultZipCodeAndCity;
     @Value("${own.country}")
     private String ownDefaultCountry;
+    @Value("${puris.api.key}")
+    private String apiKey;
 
 
     /**
