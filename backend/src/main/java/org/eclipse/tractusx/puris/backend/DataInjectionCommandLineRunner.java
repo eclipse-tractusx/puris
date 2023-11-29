@@ -39,10 +39,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.Measure
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -69,6 +66,9 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private ProductStockService productStockService;
+
+    @Autowired
+    private ItemStockService itemStockService;
 
     @Autowired
     private PartnerProductStockService partnerProductStockService;
@@ -219,6 +219,26 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info("SAMM-DTO:\n" + objectMapper.writeValueAsString(productStockSammDto));
 
         log.info("Own Street and Number: " + variablesService.getOwnDefaultStreetAndNumber());
+
+        ItemStock.Builder builder = ItemStock.Builder.newInstance();
+        var itemStock = builder
+            .customerOrderId("123")
+            .supplierOrderId("234")
+            .customerOrderPositionId("1")
+            .direction(ItemStock.Direction.INBOUND)
+            .materialNumberCustomer(semiconductorMatNbrCustomer)
+            .materialNumberSupplier(semiconductorMatNbrSupplier)
+            .measurementUnit(MeasurementUnit.piece)
+            .locationBpns(supplierPartner.getSites().first().getBpns())
+            .locationBpna(supplierPartner.getSites().first().getAddresses().first().getBpna())
+            .partnerBpnl(supplierPartner.getBpnl())
+            .quantity(5)
+            .build();
+        itemStock = itemStockService.create(itemStock);
+        log.info("Created ItemStock: \n" + itemStock);
+        var foundItemStock = itemStockService.findAll().get(0);
+        log.info("Found ItemStock: " + foundItemStock.equals(itemStock));
+        log.info("\n" + foundItemStock);
     }
 
     /**
@@ -264,6 +284,26 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             findAllByMaterialNumberCustomer(semiconductorMatNbrCustomer, customerPartner);
         log.info(String.format("Found productStocks by material number and allocated to customer " +
             "bpnl: %s", foundProductStocks));
+
+        ItemStock.Builder builder = ItemStock.Builder.newInstance();
+        var itemStock = builder
+            .customerOrderId("123")
+            .supplierOrderId("234")
+            .customerOrderPositionId("1")
+            .direction(ItemStock.Direction.OUTBOUND)
+            .materialNumberCustomer(semiconductorMatNbrCustomer)
+            .materialNumberSupplier(semiconductorMatNbrSupplier)
+            .measurementUnit(MeasurementUnit.piece)
+            .locationBpns(partnerService.getOwnPartnerEntity().getSites().first().getBpns())
+            .locationBpna(partnerService.getOwnPartnerEntity().getSites().first().getAddresses().first().getBpna())
+            .partnerBpnl(customerPartner.getBpnl())
+            .quantity(10)
+            .build();
+        itemStock = itemStockService.create(itemStock);
+        log.info("Created ItemStock: \n" + itemStock);
+        var foundItemStock = itemStockService.findAll().get(0);
+        log.info("Found ItemStock: " + foundItemStock.equals(itemStock));
+        log.info("\n" + foundItemStock);
     }
 
 
