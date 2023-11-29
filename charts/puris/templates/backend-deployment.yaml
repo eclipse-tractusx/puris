@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "backend.fullname" . }}
+  labels:
+    {{- include "backend.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.backend.autoscaling.enabled }}
+  replicas: {{ .Values.backend.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.backend.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "backend.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.backend.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "backend.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.backend.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.backend.securityContext | nindent 12 }}
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          env:
+            - name: SERVER_PORT
+              value: "{{ .Values.backend.service.port }}"
+            - name: API_ROOTDIR
+              value: "{{ .Values.backend.puris.api.rootDir }}"
+            - name: DATASOURCE_DRIVERCLASSNAME
+              value: "{{ .Values.backend.puris.datasource.driverClassName }}"
+            - name: DATASOURCE_URL
+              value: "{{ .Values.backend.puris.datasource.url }}"
+            - name: DATASOURCE_USERNAME
+              value: "{{ .Values.backend.puris.datasource.username }}"
+            - name: DATASOURCE_PASSWORD
+              value: "{{ .Values.backend.puris.datasource.password }}"
+            - name: EDC_CONTROLPLANE_HOST
+              value: "{{ .Values.backend.puris.edc.controlplane.host }}"
+            - name: EDC_CONTROLPLANE_DATA_PATH
+              value: "{{ .Values.backend.puris.edc.controlplane.data.path }}"
+            - name: EDC_CONTROLPLANE_DATA_PORT
+              value: "{{ .Values.backend.puris.edc.controlplane.data.port }}"
+            - name: EDC_CONTROLPLANE_KEY
+              value: "{{ .Values.backend.puris.edc.controlplane.key | default (randAlphaNum 16) }}"
+            - name: EDC_BACKEND_URL
+              value: "{{ .Values.backend.puris.edc.backend.url }}"
+            - name: EDC_APPLYDATAPLANEWORKAROUND
+              value: "{{ .Values.backend.puris.edc.applydataplaneworkaround }}"
+            - name: EDC_DATAPLANE_PUBLIC_PORT
+              value: "{{ .Values.backend.puris.edc.dataplane.public.port }}"
+            - name: EDC_IDSURL
+              value: "{{ .Values.backend.puris.edc.idsurl }}"
+            - name: MINIKUBE_IP
+              value: "{{ .Values.backend.puris.minikube.ip }}"
+            - name: OWN_BPNA
+              value: "{{ .Values.backend.puris.own.bpna }}"
+            - name: OWN_BPNL
+              value: "{{ .Values.backend.puris.own.bpnl }}"
+            - name: OWN_BPNS
+              value: "{{ .Values.backend.puris.own.bpns }}"
+            - name: OWN_COUNTRY
+              value: "{{ .Values.backend.puris.own.country }}"
+            - name: OWN_EDR_DELETIONTIMER
+              value: "{{ .Values.backend.puris.own.edr.deletiontimer }}"
+            - name: OWN_NAME
+              value: "{{ .Values.backend.puris.own.name }}"
+            - name: OWN_SITE
+              value: "{{ .Values.backend.puris.own.site.name }}"
+            - name: OWN_STREETNUMBER
+              value: "{{ .Values.backend.puris.own.streetnumber }}"
+            - name: OWN_ZIPCODEANDCITY
+              value: "{{ .Values.backend.puris.own.zipcodeandcity }}"
+            - name: PURIS_APIVERSION
+              value: "{{ .Values.backend.puris.apiversion }}"
+            - name: PURIS_DEMONSTRATOR_ROLE
+              value: "{{ .Values.backend.puris.demonstrator.role }}"
+            - name: JPA_HIBERNATE_DDL-AUTO
+              value: {{ index .Values.backend "puris" "jpa" "hibernate" "ddl-auto" }} #Need to do workaround because of '-' in ddl-auto
+            - name: JPA_PROPERTIES_HIBERNATE_ENABLE.LAZY.LOAD.NO.TRANS
+              value: "{{ .Values.backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans }}"
+            - name: MY_BASE_URL
+              value: "{{ .Values.backend.puris.my.base.url }}"
+            - name: REQUEST_SERVERENDPOINT
+              value: "{{ .Values.backend.puris.request.serverendpoint }}"
+            - name: REQUEST_APIASSETID
+              value: "{{ .Values.backend.puris.request.apiassetid }}"
+            - name: RESPONSE_SERVERENDPOINT
+              value: "{{ .Values.backend.puris.response.serverendpoint }}"
+            - name: RESPONSE_APIASSETID
+              value: "{{ .Values.backend.puris.response.apiassetid }}"
+            - name: EDR_ENDPOINT
+              value: "{{ .Values.backend.puris.edr.endpoint }}"
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.backend.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /catena/health/
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /catena/health/
+              port: http
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+      {{- with .Values.backend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
