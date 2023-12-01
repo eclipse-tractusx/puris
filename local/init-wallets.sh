@@ -9,3 +9,5 @@ echo $result
 curl -X POST -H "Authorization: Bearer $token" -H "Content-Type: application/json" -d '{ "name": "customer wallet", "bpn": "BPNL4444444444XX" }' http://localhost:8000/api/wallets
 
 curl -X POST -H "Authorization: Bearer $token" -H "Content-Type: application/json" -d '{ "name": "supplier wallet", "bpn": "BPNL1234567890ZZ" }' http://localhost:8000/api/wallets
+
+echo ""

@@ -32,7 +32,7 @@ Then start the PURIS demonstrator containers via:
 ```shell
 docker compose up
 ```
-Wait for the startup and visit http://localhost:3000/ for the customer's frontend or http://localhost:3000/ for the supplier side. 
+Wait for the startup and visit http://localhost:3000/ for the customer's frontend or http://localhost:3001/ for the supplier side. 
 
 ## Notes on debugging
 
