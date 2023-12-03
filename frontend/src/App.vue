@@ -20,238 +20,182 @@
 -->
 
 <script setup>
-import { RouterLink, RouterView } from "vue-router";
+import {RouterLink, RouterView} from "vue-router";
 </script>
 
 <template>
-  <div class="flex">
-    <div
-      class="flex flex-col overflow-y-auto border-r w-64 fixed left-0 top-0 h-screen p-10"
-    >
-      <div>
-        <h2 class="text-3xl font-semibold text-center text-blue-800">
-          PURIS
-        </h2>
-      </div>
-      <div class="flex flex-col justify-between mt-6">
-        <aside>
-          <ul class="space-y-2">
-            <li>
-              <RouterLink
-                class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
-                to="/"
-                ><img
-                  class="mr-2"
-                  src="@/assets/icons/home.svg"
-                  alt="Icon"
-                />Dashboard</RouterLink
-              >
-            </li>
-            <li>
-              <RouterLink
-                class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
-                to="/createOrder"
-                ><img
-                  class="mr-2"
-                  src="@/assets/icons/create.svg"
-                  alt="Icon"
-                />Create</RouterLink
-              >
-            </li>
-            <li>
-              <RouterLink
-                  class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
-                  to="/stocks"
-              ><img
-                  class="mr-2"
-                  src="@/assets/icons/stock.svg"
-                  alt="Icon"
-              />Stocks</RouterLink
-              >
-            </li>
-            <li>
-              <RouterLink
-                class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
-                to="/manageOrders"
-                ><img
-                  class="mr-2"
-                  src="@/assets/icons/manage.svg"
-                  alt="Icon"
-                />Manage</RouterLink
-              >
-            </li>
-            <li>
-              <RouterLink
-                class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
-                to="/connectors"
-                ><img
-                  class="mr-2"
-                  src="@/assets/icons/manage.svg"
-                  alt="Icon"
-                />Connectors</RouterLink
-              >
-            </li>
-            <li>
-              <RouterLink
-                class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
-                to="/catalog"
-                ><img
-                  class="mr-2"
-                  src="@/assets/icons/catalog.svg"
-                  alt="Icon"
-                />Catalog</RouterLink
-              >
-            </li>
-            <li>
-              <RouterLink
-                class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
-                to="/negotiations"
-                ><img
-                  class="mr-2"
-                  src="@/assets/icons/catalog.svg"
-                  alt="Icon"
-                />Negotiations</RouterLink
-              >
-            </li>
-            <li>
-              <RouterLink
-                class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
-                to="/transfers"
-                ><img
-                  class="mr-2"
-                  src="@/assets/icons/catalog.svg"
-                  alt="Icon"
-                />Transfers</RouterLink
-              >
-            </li>
-            <li>
-              <RouterLink
-                class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
-                to="/responses"
-                ><img
-                  class="mr-2"
-                  src="@/assets/icons/responses.svg"
-                  alt="Icon"
-                />Responses</RouterLink
-              >
-            </li>
-            <li>
-                <RouterLink
-                    class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
-                    to="/supplierDashboard"
-                ><img
-                    class="mr-2"
-                    src="@/assets/icons/home.svg"
-                    alt="Icon"
-                />Supplier Dashboard</RouterLink
-                >
-            </li>
-          </ul>
-        </aside>
-      </div>
+    <div class="flex">
+        <div
+            class="flex flex-col overflow-y-auto border-r w-64 fixed left-0 top-0 h-screen p-10"
+        >
+            <div>
+                <h2 class="text-3xl font-semibold text-center text-blue-800">
+                    PURIS
+                </h2>
+            </div>
+            <div class="flex flex-col justify-between mt-6">
+                <aside>
+                    <ul class="space-y-2">
+                        <li
+                            v-for="route in this.viewsWithAccess"
+                            key="route.name"
+                        >
+                            <RouterLink
+                                class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
+                                :to="route.path"
+                                ><img
+                                    class="mr-2"
+                                    :src="getImagePath(route.name)"
+                                    alt="Icon"
+                                />{{ route.name }}</RouterLink
+                            >
+                        </li>
+                    </ul>
+                </aside>
+            </div>
+        </div>
+        <div class="sm:ml-64 lg:ml-0 content-center overflow-auto">
+            <RouterView />
+        </div>
     </div>
-    <div class="sm:ml-64 lg:ml-0 content-center overflow-auto">
-      <RouterView />
-    </div>
-  </div>
 </template>
 
 <style>
 @import "@/assets/base.css";
 
 #app {
-  max-width: 1280px;
-  margin: 0px auto 0px 16rem;
-  padding: 2rem;
+    max-width: 1280px;
+    margin: 0px auto 0px 16rem;
+    padding: 2rem;
 
-  font-weight: normal;
+    font-weight: normal;
 }
 
 header {
-  line-height: 1.5;
-  max-height: 100vh;
+    line-height: 1.5;
+    max-height: 100vh;
 }
 
 .logo {
-  display: block;
-  margin: 0 auto 2rem;
+    display: block;
+    margin: 0 auto 2rem;
 }
 
 a,
 .green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
+    text-decoration: none;
+    color: hsla(160, 100%, 37%, 1);
+    transition: 0.4s;
 }
 
 @media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
+    a:hover {
+        background-color: hsla(160, 100%, 37%, 0.2);
+    }
 }
 
 nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+    width: 100%;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 2rem;
 }
 
 nav a.router-link-exact-active {
-  color: var(--color-text);
+    color: var(--color-text);
 }
 
 nav a.router-link-exact-active:hover {
-  background-color: transparent;
+    background-color: transparent;
 }
 
 nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
+    display: inline-block;
+    padding: 0 1rem;
+    border-left: 1px solid var(--color-border);
 }
 
 nav a:first-of-type {
-  border: 0;
+    border: 0;
 }
 
 @media (min-width: 1500px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
+    body {
+        display: flex;
+        place-items: center;
+    }
 
-  #app {
-  //display: grid;
-  //grid-template-columns: 1fr 1fr;
-      margin: 0 auto;
-      max-width: calc(100% - 32rem);
-      padding: 0 2rem;
-  }
+    #app {
+        //display: grid;
+        //grid-template-columns: 1fr 1fr;
+        margin: 0 auto;
+        max-width: calc(100% - 32rem);
+        padding: 0 2rem;
+    }
 
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+    header {
+        display: flex;
+        place-items: center;
+        padding-right: calc(var(--section-gap) / 2);
+    }
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+    header .wrapper {
+        display: flex;
+        place-items: flex-start;
+        flex-wrap: wrap;
+    }
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+    .logo {
+        margin: 0 2rem 0 0;
+    }
 
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
+    nav {
+        text-align: left;
+        margin-left: -1rem;
+        font-size: 1rem;
 
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+        padding: 1rem 0;
+        margin-top: 1rem;
+    }
 }
 </style>
+<script>
+import AccessService from "./services/AccessService.js";
+import HomeIcon from "@/assets/icons/home.svg";
+import CreateIcon from "@/assets/icons/create.svg";
+import ManageIcon from "@/assets/icons/manage.svg";
+import CatalogIcon from "@/assets/icons/catalog.svg";
+import ResponsesIcon from "@/assets/icons/responses.svg";
+import StockIcon from "@/assets/icons/stock.svg";
+
+
+export default {
+    name: "StockView",
+    components: {},
+    data() {
+        return {
+            viewsWithAccess: [],
+        };
+    },
+    mounted() {
+        this.viewsWithAccess = AccessService.getViewsWithAccess();
+    },
+    methods: {
+        getImagePath(routeName) {
+            const imageMap = {
+                dashboard: HomeIcon,
+                "create order": CreateIcon,
+                "manage orders": ManageIcon,
+                catalog: CatalogIcon,
+                negotiations: CatalogIcon,
+                transfers: CatalogIcon,
+                responses: ResponsesIcon,
+                connectors: ManageIcon,
+                stocks: StockIcon,
+                "supplier dashboard": HomeIcon,
+            };
+            return imageMap[routeName.toLowerCase()];
+        },
+    },
+};
+</script>
