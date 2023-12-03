@@ -20,16 +20,16 @@
 
 export const isDisabled =
     import.meta.env.VITE_IDP_DISABLE === true ||
-    import.meta.env.VITE_IDP_DISABLE === "true";
+    import.meta.env.VITE_IDP_DISABLE.trim().toLowerCase() === "true";
 
-export const getIdpUrl = import.meta.env.VITE_IDP_URL;
+export const getIdpUrl = import.meta.env.VITE_IDP_URL.trim();
 
-export const getIdpRealm = import.meta.env.VITE_IDP_REALM;
+export const getIdpRealm = import.meta.env.VITE_IDP_REALM.trim();
 
-export const getIdpClientId = import.meta.env.VITE_IDP_CLIENT_ID;
+export const getIdpClientId = import.meta.env.VITE_IDP_CLIENT_ID.trim();
 
 export const getIdpRedirectUrlFrontend = import.meta.env
-    .VITE_IDP_REDIRECT_URL_FRONTEND;
+    .VITE_IDP_REDIRECT_URL_FRONTEND.trim();
 
 const AuthenticationConfig = {
     isDisabled,
