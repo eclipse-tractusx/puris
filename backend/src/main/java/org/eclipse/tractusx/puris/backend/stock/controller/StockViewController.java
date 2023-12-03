@@ -287,15 +287,12 @@ public class StockViewController {
         "when the corresponding responses will be available. As soon as a response arrives, it will be available via a " +
         "call to the GET partner-product-stocks endpoint.")
     public List<PartnerDto> triggerPartnerProductStockUpdateForMaterial(@RequestParam String ownMaterialNumber) {
-
         Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         log.info("Found material: " + (materialEntity != null) + " " + ownMaterialNumber);
-
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
 
         for (Partner supplierPartner : allSupplierPartnerEntities) {
-
-            productStockRequestApiService.request(materialEntity, supplierPartner);
+            productStockRequestApiService.doRequest(materialEntity, supplierPartner);
         }
 
         return allSupplierPartnerEntities.stream()

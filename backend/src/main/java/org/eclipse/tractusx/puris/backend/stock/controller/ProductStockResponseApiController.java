@@ -31,18 +31,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfulRequestDto;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockResponseApiServiceImpl;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -55,17 +52,13 @@ import java.util.UUID;
 public class ProductStockResponseApiController {
 
     @Autowired
-    ProductStockRequestService productStockRequestService;
+    private ProductStockRequestService productStockRequestService;
 
     @Autowired
-    ModelMapper modelMapper;
+    private ObjectMapper objectMapper;
 
     @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    ProductStockResponseApiServiceImpl productStockResponseApiService;
-
+    private ProductStockResponseApiServiceImpl productStockResponseApiService;
 
     @PostMapping("response")
     @Operation(summary = "This endpoint receives the responses to the consumer's requests.",

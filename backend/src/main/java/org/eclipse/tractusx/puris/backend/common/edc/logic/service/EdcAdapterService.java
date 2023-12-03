@@ -22,20 +22,20 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.squareup.okhttp.*;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.CreateAssetDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EDCRequestBodyBuilder;
-import org.eclipse.tractusx.puris.backend.model.repo.OrderRepository;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
@@ -45,39 +45,11 @@ import java.util.*;
 @Slf4j
 public class EdcAdapterService {
     private static final OkHttpClient CLIENT = new OkHttpClient();
-
     @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired 
-    VariablesService variablesService;
-
-    @Value("${edc.controlplane.host}")
-    private String edcHost;
-
-    @Value("${edc.controlplane.data.port}")
-    private Integer dataPort;
-
-    /**
-     * Path to data management api
-     */
-    @Value("${edc.controlplane.data.path}")
-    private String dataPath;
-
-    @Value("${edc.controlplane.key}")
-    private String edcApiKey;
-
-    @Value("${server.port}")
-    private String serverPort;
-
-    @Value("${minikube.ip}")
-    private String minikubeIp;
-
+    private VariablesService variablesService;
     private ObjectMapper objectMapper;
-
     @Autowired
     private EDCRequestBodyBuilder edcRequestBodyBuilder;
-
     @Autowired
     private EndpointDataReferenceService edrService;
 
@@ -85,449 +57,371 @@ public class EdcAdapterService {
         this.objectMapper = objectMapper;
     }
 
-    /**
-     * Publish an order at own EDC.
-     *
-     * @param orderId id of the order to publish.
-     * @return true, if order was published.
-     * @throws IOException if the connection to the EDC failed.
-     */
-    public boolean publishOrderAtEDC(String orderId) throws IOException {
-        var order = orderRepository.findByOrderId(orderId);
-        if (order.isPresent()) {
-            var orderUrl = "http://" + minikubeIp + ":" + serverPort + "/catena/orders/order/id/" + orderId;
-            var assetBody = edcRequestBodyBuilder.buildAssetRequestBody(orderUrl, orderId);
-            var policyBody = edcRequestBodyBuilder.buildPolicyRequestBody(orderId);
-            var contractBody = edcRequestBodyBuilder.buildContractRequestBody(orderId);
 
-            var response = sendEdcRequest(assetBody, "/assets");
-            var success = response.isSuccessful();
-            response.body().close();
-            response = sendEdcRequest(policyBody, "/policydefinitions");
-            success &= response.isSuccessful();
-            response.body().close();
-            response = sendEdcRequest(contractBody, "/contractdefinitions");
-            success &= response.isSuccessful();
-            response.body().close();
-            return success;
-        }
-        return false;
+    /**
+     * Call this method at startup to register the necessary request and
+     * response apis, including unrestricted policy- and contract-definitions
+     * that allow any external Partner to contract them.
+     *
+     * @return true if all registrations were successful, otherwise false
+     */
+    public boolean doInitialAssetRegistration() {
+        boolean result;
+        log.info("Registration of product-stock request api successful " + (result = registerDSPApiAsset(DT_ApiMethodEnum.REQUEST)));
+        if (!result) return false;
+        log.info("Registration of product-stock response api successful " + (result = registerDSPApiAsset(DT_ApiMethodEnum.RESPONSE)));
+        if (!result) return false;
+        log.info("Registration of policy successful " + (result = registerDSPSimplePolicy()));
+        if (!result) return false;
+        log.info("Registration of contract definition successful " + (result = registerDSPSimpleContractDefinition()));
+        return result;
     }
 
     /**
-     * Publish an Asset (ContractDefinition) using an {@link CreateAssetDto} with a public policy.
+     * Util method to register a simple contract definition without restrictions
+     * regarding the asset selector. Will therefore be applicable to all assets
+     * that were registered previously. Must be called after registerDSPSimplePolicy()
      *
-     * @param createAssetDto asset creation dto to use.
-     * @return true, if ContractDefinition has been created successfully
-     * @throws IOException   if REST calls for creation could not be sent
+     * @return true if successful
      */
-    public boolean publishAssetAtEDC(CreateAssetDto createAssetDto) throws IOException {
-
-        String assetId = createAssetDto.getAssetDto().getPropertiesDto().getId();
-
-        boolean success = true;
-        JsonNode assetBody = objectMapper.valueToTree(createAssetDto);
-        JsonNode policyBody =
-                edcRequestBodyBuilder.buildPolicyRequestBody(assetId);
-        log.info(String.format("Policy Body: \n%s", policyBody.toPrettyString()));
-        JsonNode contractBody = edcRequestBodyBuilder.buildContractRequestBody(assetId);
-        log.info(String.format("Contract Body: \n%s", contractBody.toPrettyString()));
-        log.info(String.format("Asset Body: \n%s", assetBody.toPrettyString()));
-        var response = sendEdcRequest(assetBody, "/assets");
-        success &= response.isSuccessful();
-        log.info(String.format("Creation of asset was successfull: %b", success));
-        response.body().close();
-        response = sendEdcRequest(policyBody, "/policydefinitions");
-        log.info(String.format("Creation of policy was successfull: %b", response.isSuccessful()));
-        success &= response.isSuccessful();
-        response.body().close();
-        response = sendEdcRequest(contractBody, "/contractdefinitions");
-        success &= response.isSuccessful();
-        log.info(String.format("Created Contract Definition (%b) for Asset %s", response.isSuccessful(),
-                objectMapper.writeValueAsString(createAssetDto)));
-        response.body().close();
-        return success;
-    }
-
-
-    /**
-     * Get catalog from an EDC.
-     *
-     * @param idsUrl url of the EDC to get catalog from.
-     * @return catalog of the requested EDC.
-     * @throws IOException if the connection to the EDC failed.
-     */
-    public String getCatalog(String idsUrl) throws IOException {
-        return getCatalog(idsUrl, Optional.empty());
-    }
-
-    /**
-     * Get catalog from an EDC.
-     *
-     * @param idsUrl           url of the EDC to get catalog from.
-     * @param filterProperties maps with key = asset property and value = filter value
-     * @return catalog of the requested EDC.
-     * @throws IOException if the connection to the EDC failed.
-     */
-    public String getCatalog(String idsUrl, Optional<Map<String, String>> filterProperties) throws IOException {
-
-        HttpUrl.Builder urlBuilder = new HttpUrl.Builder();
-        urlBuilder.scheme("http")
-                .host(edcHost)
-                .port(dataPort)
-            .addPathSegment("api")
-                .addPathSegment("v1")
-                .addPathSegment("data")
-                .addPathSegment("catalog")
-                .addEncodedQueryParameter("providerUrl", idsUrl + "/data");
-
-        HttpUrl httpUrl = urlBuilder.build();
-
-        // workaround EDC 0.3 takes filter=key=value, but HttpUrlBuilder encodes = to %3D
-        // which is not recognized
-        if (filterProperties.isPresent() && filterProperties.get().size() >= 1) {
-            String url = urlBuilder.build().toString();
-
-            for (Map.Entry<String, String> entry : filterProperties.get().entrySet()) {
-                url = url + String.format("&filter=%s=%s", entry.getKey(), entry.getValue());
+    private boolean registerDSPSimpleContractDefinition() {
+        var body = edcRequestBodyBuilder.buildDSPContractDefinitionWithPublicPolicy();
+        try {
+            var response = sendDspPostRequest(body, List.of("v2", "contractdefinitions"));
+            boolean result = response.isSuccessful();
+            if (!result) {
+                log.warn("Contract definition registration failed \n" + response.body().string());
             }
-            httpUrl = HttpUrl.parse(url);
+            response.body().close();
+            return result;
+        } catch (Exception e) {
+            log.error("Failed to register contract definition ", e);
+            return false;
         }
-        log.debug(String.format("catalog request url: %s", httpUrl));
+    }
 
-        var request = new Request.Builder()
-                .get()
-                .url(httpUrl)
-                .header("X-Api-Key", edcApiKey)
-                .header("Content-Type", "application/json")
-                .build();
-        var response = CLIENT.newCall(request).execute();
+    /**
+     * Util method to register a policy without any restrictions to
+     * your control plane. Should be called after asset creation.
+     *
+     * @return true if successful
+     */
+    private boolean registerDSPSimplePolicy() {
+        var body = edcRequestBodyBuilder.buildPublicDSPPolicy();
+        try {
+            var response = sendDspPostRequest(body, List.of("v2", "policydefinitions"));
+            boolean result = response.isSuccessful();
+            if (!result) {
+                log.warn("Policy registration failed \n" + response.body().string());
+            }
+            response.body().close();
+            return result;
+        } catch (Exception e) {
+            log.error("Failed to register policy definition ", e);
+            return false;
+        }
+    }
+
+    /**
+     * Util method to register an API asset to your control plane.
+     *
+     * @param apiMethod the api method to register.
+     * @return true if successful.
+     */
+    private boolean registerDSPApiAsset(DT_ApiMethodEnum apiMethod) {
+        var body = edcRequestBodyBuilder.buildDSPCreateAssetBody(apiMethod);
+        try {
+            var response = sendDspPostRequest(body, List.of("v3", "assets"));
+            boolean result = response.isSuccessful();
+            if (!result) {
+                log.warn("Asset registration failed \n" + response.body().string());
+            }
+            response.body().close();
+            return result;
+        } catch (Exception e) {
+            log.error("Failed to register api asset " + apiMethod.PURPOSE, e);
+            return false;
+        }
+    }
+
+
+    /**
+     * Retrieve an (unfiltered) catalog from the partner with the
+     * given dspUrl
+     *
+     * @param dspUrl The dspUrl of your partner
+     * @return The full catalog
+     * @throws IOException If the connection to the partners control plane fails
+     */
+    public JsonNode getDSPCatalog(String dspUrl) throws IOException {
+        var response = sendDspPostRequest(edcRequestBodyBuilder.buildBasicDSPCatalogRequestBody(dspUrl, null), List.of("v2", "catalog", "request"));
+        String stringData = response.body().string();
+        response.body().close();
+        return objectMapper.readTree(stringData);
+    }
+
+    /**
+     * Retrieve the content of the catalog from a remote EDC Connector as an
+     * array of catalog items.
+     * You may specify filter criteria, consisting of a map of key-value-pairs.
+     * Catalog items that don't have these filter criteria will be removed from the output array.
+     *
+     * @param dspUrl The Protocol URL of the other EDC Connector
+     * @param filter A map of key-value-pairs. May be empty or null.
+     * @return An array of Catalog items.
+     * @throws IOException If the connection to the partners control plane fails
+     */
+    private JsonNode getDSPCatalogItems(String dspUrl, Map<String, String> filter) throws IOException {
+        var response = sendDspPostRequest(edcRequestBodyBuilder.
+            buildBasicDSPCatalogRequestBody(dspUrl, filter), List.of("v2", "catalog", "request"));
         String stringData = response.body().string();
         if (!response.isSuccessful()) {
-            throw new IOException(stringData);
+            throw new IOException("Http Catalog Request unsuccessful");
         }
         response.body().close();
-        return stringData;
-    }
+        JsonNode responseNode = objectMapper.readTree(stringData);
 
-    /**
-     * Get a catalog from EDC. This method accepts a set of key/value 
-     * pairs which are to be applied on the asset.properties level of
-     * the catalog. 
-     * @param idsUrl url of the EDC to get catalog from.
-     * @param propertyObjectFilter the filter to be applied
-     * @return the catalog as JsonNode
-     * @throws IOException
-     */
-    public JsonNode getCatalogFilteredByAssetPropertyObjectFilter(String idsUrl, Map<String,String> propertyObjectFilter) throws IOException {
-        var catalogObject = objectMapper.readTree(getCatalog(idsUrl));
-        var outputNode = objectMapper.createObjectNode();
-        outputNode.put("id", catalogObject.get("id").asText());
-        var contractOffersArray = objectMapper.createArrayNode();
-        outputNode.set("contractOffers", contractOffersArray);
-        List<ObjectNode> catalogItems = objectMapper.readerForListOf(ObjectNode.class).readValue(catalogObject.get("contractOffers"));
-        for (var catalogItem : catalogItems) {
-            var properties = catalogItem.get("asset").get("properties");
+        var catalogArray = responseNode.get("dcat:dataset");
+        // If there is exactly one asset, the catalogContent will be a JSON object.
+        // In all other cases catalogContent will be a JSON array.
+        // For the sake of uniformity we will embed a single object in an array.
+        if (catalogArray.isObject()) {
+            catalogArray = objectMapper.createArrayNode().add(catalogArray);
+        }
+        if (filter == null || filter.isEmpty()) {
+            return catalogArray;
+        }
+        var filteredNode = objectMapper.createArrayNode();
+        for (var catalogEntry : catalogArray) {
             boolean testPassed = true;
-            for(var entry : propertyObjectFilter.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-                testPassed = testPassed && properties.get(key) != null && value.equals(properties.get(key).asText());
+            for (var filterEntry : filter.entrySet()) {
+                testPassed = testPassed && catalogEntry.has(filterEntry.getKey())
+                    && catalogEntry.get(filterEntry.getKey()).asText().equals(filterEntry.getValue());
             }
             if (testPassed) {
-                contractOffersArray.add(catalogItem);
+                filteredNode.add(catalogEntry);
             }
         }
-        return outputNode;
+        return filteredNode;
     }
 
     /**
-     * Orders your own EDC Connector Controlplane to negotiate a contract with 
-     * the owner of the given connector address for an asset (specified by the 
-     * assetId) under conditions as stated in the contract defintion with the 
-     * given contractDefinitionId
-     * @param connectorAddress
-     * @param contractDefinitionId
-     * @param assetId
-     * @return the response body as String
-     * @throws IOException
-     */
-    public String startNegotiation(String connectorAddress,
-                                   String contractDefinitionId, String assetId) throws IOException {
-        var negotiationRequestBody =
-                edcRequestBodyBuilder.buildNegotiationRequestBody(connectorAddress,
-                        contractDefinitionId, assetId);
-        var response = sendEdcRequest(negotiationRequestBody, "/contractnegotiations");
-        String stringData = response.body().string();
-        response.body().close();
-        return stringData;
-    }
-
-    /**
-     * Sends a request to the own EDC Connector Controlplane in order to receive
-     * the current status of the previously initiated contractNegotiations as 
-     * specified by the parameter. 
-     * @param negotiationId
-     * @return the response body as String
-     * @throws IOException
-     */
-    public String getNegotiationState(String negotiationId) throws IOException {
-        var response = sendEdcRequest("/contractnegotiations/" + negotiationId);
-        String stringData = response.body().string();
-        response.body().close();
-        return stringData;
-    }
-
-    /**
-     * Start a data transfer with another EDC.
+     * Helper method for contracting a certain asset as specified in the catalog item from
+     * a specific Partner.
      *
-     * @param transferId       id created for the transferprocess.
-     * @param connectorAddress ids url of the transfer counterparty.
-     * @param contractId       id of the negotiated contract.
-     * @param orderId          id of the transfers target asset.
-     * @return response body received from the EDC.
-     * @throws IOException if the connection to the EDC failed.
+     * @param partner     The Partner to negotiate with
+     * @param catalogItem An excerpt from a catalog.
+     * @return The JSON response to your contract offer.
+     * @throws IOException If the connection to the partners control plane fails
      */
-    public String startTransfer(String transferId,
-                                String connectorAddress,
-                                String contractId,
-                                String orderId) throws IOException {
-        var transferNode = edcRequestBodyBuilder.buildTransferRequestBody(transferId, connectorAddress, contractId, orderId);
-        log.debug("TransferRequestBody:\n" + transferNode.toPrettyString());
-        var response = sendEdcRequest(transferNode, "/transferprocess");
-        String stringData = response.body().string();
+    private JsonNode startDspNegotiation(Partner partner, JsonNode catalogItem) throws IOException {
+        var requestBody = edcRequestBodyBuilder.buildDSPAssetNegotiation(partner, catalogItem);
+        var response = sendDspPostRequest(requestBody, List.of("v2", "contractnegotiations"));
+        String responseString = response.body().string();
         response.body().close();
-        return stringData;
+        return objectMapper.readTree(responseString);
     }
 
-    /**
-     * Sends a request to the own EDC Connector Controlplane in order to receive
-     * the current status of the previously initiated transfer as specified by 
-     * the parameter. 
-     * @param transferId
-     * @return
-     * @throws IOException
-     */
-    public String getTransferState(String transferId) throws IOException {
-        var response = sendEdcRequest("/transferprocess/" + transferId);
-        String stringData = response.body().string();
-        response.body().close();
-        return stringData;
-    }
 
     /**
-     * Delete an asset from the own EDC.
+     * Util method for issuing a GET request to the management api of your control plane.
      *
-     * @param assetId id of the asset to delete.
-     * @return response body received from the EDC.
-     * @throws IOException if the connection to the EDC failed.
+     * @param pathSegments The path segments
+     * @return The response
+     * @throws IOException If the connection to your control plane fails
      */
-    public String deleteAsset(String assetId) throws IOException {
-        var urlBuilder = new HttpUrl.Builder()
-                .scheme("http")
-                .host(edcHost)
-                .port(dataPort);
-        urlBuilder.addPathSegment("data");
-        urlBuilder.addPathSegment("assets");
-        urlBuilder.addPathSegment(assetId);
-        var url = urlBuilder.build();
-        var request = new Request.Builder()
-                .url(url)
-                .header("X-Api-Key", edcApiKey)
-                .header("Content-Type", "application/json")
-                .delete()
-                .build();
-        var response = CLIENT.newCall(request).execute();
-        String stringData = response.body().string();
-        response.body().close();
-        return stringData;
-    }
-
-    /**
-     * Send a GET request to the own EDC.
-     *
-     * @param resourceId   (optional) id of the resource to request, will be left empty if null.
-     * @param pathSegments varargs for the path segments of the request
-     *                     (e.g "data", "assets" will be turned to /data/assets).
-     * @return response body received from the EDC.
-     * @throws IOException if the connection to the EDC failed.
-     */
-    public String getFromEdc(String resourceId, String... pathSegments) throws IOException {
-        var urlBuilder = new HttpUrl.Builder()
-                .scheme("http")
-                .host(edcHost)
-                .port(dataPort);
-        for (var seg : pathSegments) {
-            urlBuilder.addPathSegment(seg);
+    public Response sendDspGetRequest(List<String> pathSegments) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getEdcManagementUrl()).newBuilder();
+        for (var pathSegment : pathSegments) {
+            urlBuilder.addPathSegment(pathSegment);
         }
-        if (resourceId != null) {
-            urlBuilder.addPathSegment(resourceId);
-        }
-        var url = urlBuilder.build();
         var request = new Request.Builder()
-                .get()
-                .url(url)
-                .header("X-Api-Key", edcApiKey)
-                .header("Content-Type", "application/json")
-                .build();
-        var response = CLIENT.newCall(request).execute();
-        String stringData = response.body().string();
-        response.body().close();
-        return stringData;
-    }
-
-    /**
-     * Util method for building a http POST request to the own EDC.
-     * Any caller of this method has the responsibility to close 
-     * the returned Response object after using it. 
-     *
-     * @param requestBody   requestBody to be sent to the EDC.
-     * @param urlSuffix     path to POST data to
-     * @return              response received from the EDC.
-     * @throws IOException  if the connection to the EDC failed.
-     */
-    public Response sendEdcRequest(JsonNode requestBody, String urlSuffix) throws IOException {
-        Request request = new Request.Builder()
-                .header("X-Api-Key", edcApiKey)
-                .header("Content-Type", "application/json")
-                .post(RequestBody.create(MediaType.parse("application/json"), requestBody.toString()))
-                .url("http://" + edcHost + ":" + dataPort + dataPath + urlSuffix)
-                .build();
-        log.debug(String.format("Request send to url: %s", request.urlString()));
-        log.debug(String.format("Request body of EDC Request: %s", requestBody));
+            .get()
+            .url(urlBuilder.build())
+            .header("X-Api-Key", variablesService.getEdcApiKey())
+            .build();
         return CLIENT.newCall(request).execute();
     }
 
     /**
-     * Util method for building a http GET request to the own EDC.
-     * Any caller of this method has the responsibility to close 
-     * the returned Response object after using it. 
-     * 
-     * @param urlSuffix     path to send GET request to
-     * @return              response received from the EDC.
-     * @throws IOException  if the connection to the EDC failed.
+     * Util method for issuing a POST request to the management api of your control plane.
+     *
+     * @param requestBody  The request body
+     * @param pathSegments The path segments
+     * @return The response from your control plane
+     * @throws IOException If the connection to your control plane fails
      */
-    public Response sendEdcRequest(String urlSuffix) throws IOException {
-        Request request = new Request.Builder()
-                .header("X-Api-Key", edcApiKey)
-                .header("Content-Type", "application/json")
-                .url("http://" + edcHost + ":" + dataPort + dataPath + urlSuffix)
-                .build();
-        log.debug(String.format("Send Request to url: %s", request.urlString()));
+    private Response sendDspPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getEdcManagementUrl()).newBuilder();
+        for (var pathSegment : pathSegments) {
+            urlBuilder.addPathSegment(pathSegment);
+        }
+        RequestBody body = RequestBody.create(MediaType.parse("application/json"), requestBody.toString());
 
+        var request = new Request.Builder()
+            .post(body)
+            .url(urlBuilder.build())
+            .header("X-Api-Key", variablesService.getEdcApiKey())
+            .header("Content-Type", "application/json")
+            .build();
         return CLIENT.newCall(request).execute();
     }
 
     /**
-     * Util method for sending a post request to your own dataplane 
+     * Sends a request to the own control plane in order to receive
+     * the current status of the previously initiated contractNegotiations as
+     * specified by the parameter.
+     *
+     * @param negotiationId The id of the ongoing negotiation
+     * @return The response body as String
+     * @throws IOException If the connection to your control plane fails
+     */
+    public JsonNode getDspNegotiationState(String negotiationId) throws IOException {
+        var response = sendDspGetRequest(List.of("v2", "contractnegotiations", negotiationId));
+        String stringData = response.body().string();
+        response.body().close();
+        return objectMapper.readTree(stringData);
+    }
+
+    /**
+     * Sends a request to the own control plane in order to initiate a transfer of
+     * a previously negotiated asset.
+     *
+     * @param partner    The partner
+     * @param contractId The contract id
+     * @param assetId    The asset id
+     * @return The response object
+     * @throws IOException If the connection to your control plane fails
+     */
+    public JsonNode startDspPullTransfer(Partner partner, String contractId, String assetId) throws IOException {
+        var body = edcRequestBodyBuilder.buildDSPDataPullRequestBody(partner, contractId, assetId);
+        var response = sendDspPostRequest(body, List.of("v2", "transferprocesses"));
+        String data = response.body().string();
+        response.body().close();
+        return objectMapper.readTree(data);
+    }
+
+    /**
+     * Sends a request to the own control plane in order to receive
+     * the current status of the previously initiated transfer as specified by
+     * the parameter.
+     *
+     * @param transferId The id of the transfer in question
+     * @return The response from your Controlplane
+     * @throws IOException If the connection to your control plane fails
+     */
+    public JsonNode getDspTransferState(String transferId) throws IOException {
+        var response = sendDspGetRequest(List.of("v2", "transferprocesses", transferId));
+        String data = response.body().string();
+        response.body().close();
+        return objectMapper.readTree(data);
+    }
+
+
+    /**
+     * Util method for sending a post request the given endpoint
      * in order to initiate a consumer pull request.
      * Any caller of this method has the responsibility to close
      * the returned Response object after using it.
-     * 
-     * @param url the URL of an endpoint you received to perform a pull request
-     * @param authKey authKey to be used in the HTTP request header
-     * @param authCode authCode to be used in the HTTP request header
-     * @param requestBodyString the request body in JSON format as String
-     * @return the response from your dataplane
+     *
+     * @param url               The URL of an endpoint you received to perform a pull request
+     * @param authKey           The authKey to be used in the HTTP request header
+     * @param authCode          The authCode to be used in the HTTP request header
+     * @param requestBodyString The request body in JSON format as String
+     * @return The response from the endpoint defined in the url (which is usually the other party's data plane), carrying the asset payload
      */
-    public Response sendDataPullRequest(String url, String authKey, String authCode, String requestBodyString){
-        log.debug(String.format("Sending proxy call to endpoint '%s' with auth key '%s' and auth code '%s' with request body '%s'", url, authKey, authCode, requestBodyString));
+    public Response sendDataPullRequest(String url, String authKey, String authCode, String requestBodyString) {
         try {
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), requestBodyString);
             Request request = new Request.Builder()
-                            .url(url)
-                            .header(authKey, authCode)
-                            .post(requestBody)
-                            .build();
+                .url(url)
+                .header(authKey, authCode)
+                .post(requestBody)
+                .build();
             return CLIENT.newCall(request).execute();
         } catch (Exception e) {
             log.error("Failed to send Data Pull request to " + url, e);
             throw new RuntimeException(e);
         }
-        
     }
 
     /**
      * Tries to negotiate for the request api of the given partner, including the retrieval of the
-     * authCode for a request. 
-     * It will return a String array of length 5. The authKey is stored under index 0, the 
-     * authCode under index 1, the endpoint under index 2 and the contractId under index 3. 
-     * 
-     * @param partnerIdsUrl
-     * @return a String array or null, if negotiation or transfer have failed or the authCode did not arrive
+     * authCode for a request.
+     * It will return a String array of length 4. The authKey is stored under index 0, the
+     * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
+     *
+     * @param partner The partner to negotiate with
+     * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
-    public String[] getContractForRequestApi(String partnerIdsUrl) {
+    public String[] getContractForRequestApi(Partner partner) {
         HashMap<String, String> filter = new HashMap<>();
         filter.put("asset:prop:type", "api");
         filter.put("asset:prop:apibusinessobject", "product-stock");
         filter.put("asset:prop:apipurpose", "request");
         filter.put("asset:prop:version", variablesService.getPurisApiVersion());
-        return getContractForRequestOrResponseApiApi(partnerIdsUrl,  filter);
+        return getContractForRequestOrResponseApiApi(partner, filter);
     }
 
     /**
      * Tries to negotiate for the response api of the given partner, including the retrieval of the
-     * authCode for a request. 
-     * It will return a String array of length 5. The authKey is stored under index 0, the 
-     * authCode under index 1, the endpoint under index 2 and the contractId under index 3. 
-     * @param partnerIdsUrl
-     * @return a String array or null, if negotiation or transfer have failed or the authCode did not arrive
+     * authCode for a request.
+     * It will return a String array of length 4. The authKey is stored under index 0, the
+     * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
+     *
+     * @param partner The partner to negotiate with
+     * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
-    public String[] getContractForResponseApi(String partnerIdsUrl) {
+    public String[] getContractForResponseApi(Partner partner) {
         HashMap<String, String> filter = new HashMap<>();
         filter.put("asset:prop:type", "api");
         filter.put("asset:prop:apibusinessobject", "product-stock");
         filter.put("asset:prop:apipurpose", "response");
         filter.put("asset:prop:version", variablesService.getPurisApiVersion());
-        return getContractForRequestOrResponseApiApi(partnerIdsUrl, filter);
+        return getContractForRequestOrResponseApiApi(partner, filter);
     }
 
     /**
      * Tries to negotiate for the given api of the partner specified by the parameter
-     * and also tries to initiate the transfer of the edr token to the given endpoint. 
-     * 
-     * It will return a String array of length 5. The authKey is stored under index 0, the 
-     * authCode under index 1, the endpoint under index 2 and the contractId under index 3. 
-     * @param partnerIdsUrl counterparty's idsUrl
-     * @param filter        the filter to be applied on the level of the asset's properties object.
-     * @return   a String array or null, if negotiation or transfer have failed or the authCode did not arrive
+     * and also tries to initiate the transfer of the edr token to the given endpoint.
+     * <p>
+     * It will return a String array of length 4. The authKey is stored under index 0, the
+     * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
+     *
+     * @param partner The partner to negotiate with
+     * @param filter  The filter to be applied on the level of the asset's properties object.
+     * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
-    public String[] getContractForRequestOrResponseApiApi(String partnerIdsUrl, Map<String, String> filter) {
+    public String[] getContractForRequestOrResponseApiApi(Partner partner, Map<String, String> filter) {
         try {
-            JsonNode objectNode = getCatalogFilteredByAssetPropertyObjectFilter(partnerIdsUrl, filter);
-            JsonNode contractOffer = objectNode.get("contractOffers").get(0);
-            String assetApi = contractOffer.get("asset").get("id").asText();
-            String contractDefinitionId = contractOffer.get("id").asText();
-            String negotiationResponseString = startNegotiation(partnerIdsUrl + "/data", contractDefinitionId, assetApi);
-            String negotiationId = objectMapper.readTree(negotiationResponseString).get("id").asText();
-
+            JsonNode catalogItem = getDSPCatalogItems(partner.getEdcUrl(), filter).get(0);
+            JsonNode negotiationResponse = startDspNegotiation(partner, catalogItem);
+            String assetApi = catalogItem.get("@id").asText();
+            String negotiationId = negotiationResponse.get("@id").asText();
             // Await confirmation of contract and contractId
             String contractId = null;
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
-                var negotiationState = getNegotiationState(negotiationId);
-                var responseObject = objectMapper.readTree(negotiationState);
-                if ("CONFIRMED".equals(responseObject.get("state").asText())) {
-                    contractId = responseObject.get("contractAgreementId").asText();
+                var responseObject = getDspNegotiationState(negotiationId);
+                if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
+                    contractId = responseObject.get("edc:contractAgreementId").asText();
                     break;
                 }
             }
             if (contractId == null) {
-                var negotiationState = getNegotiationState(negotiationId);
-                log.warn("no contract id, last negotiation state: " + negotiationState);
-                log.warn("Failed to obtain " + assetApi + " from " + partnerIdsUrl);
+                var negotiationState = getDspNegotiationState(negotiationId);
+                log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
+                log.error("Failed to obtain " + assetApi + " from " + partner.getEdcUrl());
                 return null;
             }
 
             // Initiate transfer of edr
-            String randomTransferID = UUID.randomUUID().toString();
-            String transferResponse = startTransfer(randomTransferID, partnerIdsUrl + "/data", contractId, assetApi);
-            String transferId = objectMapper.readTree(transferResponse).get("id").asText();
+            var transferResp = startDspPullTransfer(partner, contractId, assetApi);
+            String transferId = transferResp.get("@id").asText();
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
-                transferResponse = getTransferState(transferId);
-                var transferResponseObject = objectMapper.readTree(transferResponse);
-                if ("COMPLETED".equals(transferResponseObject.get("state").asText())) {
+                transferResp = getDspTransferState(transferId);
+                if ("STARTED".equals(transferResp.get("edc:state").asText())) {
                     break;
                 }
             }
@@ -535,21 +429,18 @@ public class EdcAdapterService {
             // Await arrival of edr
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
-                EDR_Dto edr_Dto = edrService.findByTransferId(randomTransferID);
+                EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
                 if (edr_Dto != null) {
-                    log.info("Successfully negotiated for " + assetApi + " with " + partnerIdsUrl);
-                    return new String [] {edr_Dto.getAuthKey(),edr_Dto.getAuthCode(), edr_Dto.getEndpoint(), contractId};
+                    log.info("Successfully negotiated for " + assetApi + " with " + partner.getEdcUrl());
+                    return new String[]{edr_Dto.getAuthKey(), edr_Dto.getAuthCode(), edr_Dto.getEndpoint(), contractId};
                 }
             }
             log.warn("did not receive authCode");
-            log.warn("Failed to obtain " + assetApi + " from " + partnerIdsUrl);
+            log.error("Failed to obtain " + assetApi + " from " + partner.getEdcUrl());
             return null;
-        } catch (Exception e){
-            log.warn("ERROR");
-            log.error("Failed to obtain api from " + partnerIdsUrl, e);
+        } catch (Exception e) {
+            log.error("Failed to obtain api from " + partner.getEdcUrl(), e);
             return null;
         }
-
     }
-
 }

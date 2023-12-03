@@ -51,9 +51,9 @@ public class PartnerServiceImpl implements PartnerService {
     @Autowired
     private VariablesService variablesService;
 
-    private Pattern bpnlPattern = Pattern.compile("^BPNL[0-9]{10}[A-Z]{2}$");
-    private Pattern bpnsPattern = Pattern.compile("^BPNS[0-9]{10}[A-Z]{2}$");
-    private Pattern bpnaPattern = Pattern.compile("^BPNA[0-9]{10}[A-Z]{2}$");
+    private final Pattern bpnlPattern = Pattern.compile("^BPNL[0-9a-zA-Z]{12}$");
+    private final Pattern bpnsPattern = Pattern.compile("^BPNS[0-9a-zA-Z]{12}$");
+    private final Pattern bpnaPattern = Pattern.compile("^BPNA[0-9a-zA-Z]{12}$");
 
     @Override
     public Partner create(Partner partner) {
