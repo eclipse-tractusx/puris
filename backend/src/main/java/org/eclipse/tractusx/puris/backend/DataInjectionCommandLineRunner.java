@@ -44,7 +44,6 @@ import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStoc
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -83,10 +82,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     @Autowired
     private VariablesService variablesService;
 
-
-    @Value("${puris.demonstrator.role}")
-    private String demoRole;
-
     private ObjectMapper objectMapper;
 
     private final String semiconductorMatNbrCustomer = "MNR-7307-AU340474.002";
@@ -99,11 +94,11 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        //createOwnPartnerEntity();
-        log.info("Creating setup for " + demoRole.toUpperCase());
-        if (demoRole.equals("supplier")) {
+        createOwnPartnerEntity();
+        log.info("Creating setup for " + variablesService.getDemoRole().toUpperCase());
+        if (variablesService.getDemoRole().equals("supplier")) {
             setupSupplierRole();
-        } else if (demoRole.equals(("customer"))) {
+        } else if (variablesService.getDemoRole().equals(("customer"))) {
             setupCustomerRole();
             createRequest();
         } else {
@@ -120,7 +115,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         Partner mySelf;
         if(variablesService.getOwnDefaultBpns()!= null && variablesService.getOwnDefaultBpns().length()!=0) {
             mySelf = new Partner(variablesService.getOwnName(),
-                variablesService.getOwnEdcIdsUrl(),
+                variablesService.getEdcProtocolUrl(),
                 variablesService.getOwnBpnl(),
                 variablesService.getOwnDefaultBpns(),
                 variablesService.getOwnDefaultSiteName(),
@@ -130,7 +125,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 variablesService.getOwnDefaultCountry());
         } else {
             mySelf = new Partner(variablesService.getOwnName(),
-                variablesService.getOwnEdcIdsUrl(),
+                variablesService.getEdcProtocolUrl(),
                 variablesService.getOwnBpnl(),
                 variablesService.getOwnDefaultBpna(),
                 variablesService.getOwnDefaultStreetAndNumber(),
@@ -281,9 +276,9 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Partner createAndGetCustomerPartner() {
         Partner customerPartnerEntity = new Partner(
             "Scenario Customer",
-            "http://customer-control-plane:8184/api/v1/ids",
+            "http://customer-control-plane:8184/api/v1/dsp",
             "BPNL4444444444XX",
-            "BPNS4444444444XY",
+            "BPNS4444444444XX",
             "Hauptwerk Musterhausen",
             "BPNA4444444444ZZ",
             "Musterstraße 35b",
@@ -306,9 +301,9 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Partner createAndGetSupplierPartner() {
         Partner supplierPartnerEntity = new Partner(
             "Scenario Supplier",
-            "http://supplier-control-plane:9184/api/v1/ids",
+            "http://supplier-control-plane:9184/api/v1/dsp",
             "BPNL1234567890ZZ",
-            "BPNS1234567890XY",
+            "BPNS1234567890ZZ",
             "Konzernzentrale Dudelsdorf",
             "BPNA1234567890AA",
             "Heinrich-Supplier-Straße 1",
@@ -331,7 +326,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Partner createAndGetNonScenarioCustomer() {
         Partner nonScenarioCustomer = new Partner(
             "Non-Scenario Customer",
-            "http://nonscenario-customer.com/api/v1/ids",
+            "http://nonscenario-customer.com/api/v1/dsp",
             "BPNL2222222222RR",
             "BPNA2222222222XZ",
             "Fichtenweg 23",
@@ -383,8 +378,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         messageHeader.setRespondAssetId("product-stock-response-api");
         messageHeader.setContractAgreementId("some cid");
         messageHeader.setSender("BPNL1234567890ZZ");
-        //messageHeader.setSenderEdc("http://plato-controlplane:8084/api/v1/ids");
-        messageHeader.setSenderEdc("http://supplier-control-plane:9184/api/v1/ids");
+        messageHeader.setSenderEdc("http://supplier-controlplane:8084/api/v1/dsp");
         messageHeader.setReceiver("BPNL4444444444XX");
         messageHeader.setUseCase(DT_UseCaseEnum.PURIS);
         messageHeader.setCreationDate(new Date());

@@ -37,6 +37,12 @@ This project leverages the following third party content.
 See `DEPENDENCIES_FRONTEND` and `DEPENDENCIES_BACKEND` file. Further, the following third-party content is used that
 isn't listed in any DEPENDENCIES file:
 
+Keycloak initial realm setup
+* SPDX-License-Identifier: Apache-2.0
+* SPDX-FileCopyrightText: https://github.com/eclipse-tractusx/managed-identity-wallet/blob/main/LICENSE
+* Source URL: https://github.com/eclipse-tractusx/managed-identity-wallet
+
+
 feather (4.29)
 * License: MIT License
 * Licence Path: https://github.com/feathericons/feather/blob/master/LICENSE

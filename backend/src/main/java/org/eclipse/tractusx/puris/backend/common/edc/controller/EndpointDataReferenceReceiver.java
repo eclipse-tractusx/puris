@@ -37,44 +37,33 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * This class contains the endpoint for receiving the authCodes from
- * the counterparty's dataplane. 
+ * the counterparty's dataplane.
  */
 @RestController
 @Slf4j
 public class EndpointDataReferenceReceiver {
 
     @Autowired
-    private EndpointDataReferenceService edcService;
+    private EndpointDataReferenceService edrService;
+    private final static String prefix = "https://w3id.org/edc/v0.0.1/ns/";
 
     /**
-     * This endpoint awaits incoming authCodes from external
-     * partners during a consumer pull transfer. 
+     * This endpoint awaits incoming EDR Tokens from external
+     * partners during a consumer pull transfer.
+     *
      * @param body
-     * @return
+     * @return Status code 200 if request body was found, otherwise 400
      */
     @PostMapping("/edrendpoint")
-    @Operation(summary = "Endpoint for receiving the authCodes from the counterparty's dataplane",
+    @Operation(summary = "Endpoint for receiving the authCodes from the counterparty's connector",
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            content = @Content(examples = {
-                @ExampleObject(name = "EDR Token",
-                    value = "{\n" +
-                        "  \"id\" : \"6c2e5600-294a-488e-8ce1-2073806c1927\",\n" +
-                        "  \"endpoint\" : \"http://sokrates-dataplane:8181/api/public\",\n" +
-                        "  \"authKey\" : \"Authorization\",\n" +
-                        "  \"authCode\" : \"eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE2OTMyMTgzNzIsImRhZCI6Ik5YY2J1VktDOVFCTWY5eG9BQUFBQWN3RmE2blhIS1JEcllHTnZCeUNlbTdCNTBOVkVWd05vczdsNU1YM0lKL1pVK0NUU3NvcE02ZUVFbzloYmx5ak1aTlJYYnRnOUZpZ04vampRVmVlaDFWQk01RHA1RXUyN2VIbk5TNCt0VE9uMEZFZTVGVGNITjh6dWwwZG5VbW1nbCtsVERxODZhdHUwbjYxZVV5dXNzQ25pbTZDaWhOai9lRXZ0cUZydVhCbXNIWVQvSTNYN3JrYk1FeFZWRFhBOHNPVGFGeFVpTnl3YTI0cURpWkFnc0Nka1FDenBaSFVIWk16ZDQrNURKTTVkVkNDWnEyUHBnRDhuR09wVzVVTTJUYUlmNHdMOTFQbnhEdEQ2a1dWTCtNQUNGSE41S2RyVUt2a3pOeXAyRzVYcWJ2V29waEhhY0VLTTR4UTZDc2dkUHFoMGN6elNnbFZGdy9IWVl3ZDBXQVpCcnVSSTlUekY4WTJkMXBscW5zRFFwcWh1bUUzUUtGTW5UbzUxWVFuVmdzcUZ5ZEpObkpMZjQzWnBwOXNPZ3U0V1Yxd3lxN096QzFXeFZjRk9xNVZQMkJRYk5pS29YeEZINXd3WmZJMzR6dFNCTFE0akUvY3BJTlk0Rks0Tk95YjNicENOYlpDamplbXRYaE1jTXlUQ0tyMU8zS2RvdkhEMnEzMjhVdDk0U3hzZW9jK0FCUXZaTk5EK1hGbm9Bcm01K01jbkVXdkdPVHJPT0NIaG83bWhnTGUxRzVEaHBqRjFaclBVTHFNNitzTmZzU0l4REhSOEtzMW1OMGhwajVwMUJ4Tm9rMDE2bGNJSURTbnVpclhyZWlzVzhEK0NHRDlEREdlUlVNQkk3cVBCSVc4eXY5RmU1eldrNHU0cERzbFAwR0dPYjBpMHVBMnFyS0dFS2JQUmd6ODRPeWZTNW84KzdiQ1dkMElKdmZERlRGK3UwVVgzVWordmFtYlZPREpQK1FmbXpOM0U2NFdaY1ozVDRMQURKZWhGcEZ5WGh6bUM5SnAyK2RYZ2syWE4rUnVzbGZFeGNMbXA0U05DenRxZDVQTXZqVjdOMXFYZnQ5a0hLLytwYWhoVUUxLzBENTEvS04razN4cmxoTDFPVnF3QzYvUjlScDA5WUk4dno3enNXS0V3aEpNOGk2OCtRdHlDMldNay9ucVpjTmtieVQ3T21WZ1R2bFhxYmV5WlpVOTlSdGxVNExJemZjM3hKRlIvUGpDa2xUK2dkZXpsaXFnbGFWMlFLL2EwVHpXbFlncXVDQ21kQzhieGJaR1JFWFdrbVFlNUwwZC9UWWZZYVRCNWdURkRDL1ZDRnYrRUFzNFhXQ2pBQ2NraW5rTDJDYWlZYm5WV0I5Zi9nRkJaWkY1cDhBNHFrMkIvdkNBS3ByckpQZkMwZTZIQXFxUlZxRFZ1VktZRHl1U3V5Umx6Q2hPbXZvNHRoRUhDcmtwVFlCNzZIVlNPeld2ZFJubmJRQmNyOW5YQkVCd2xvbGZkV3F4TGZUY3dmRnFJV2tla0YrT3NzTDE1TVV5Ym1vZXlxVnUxSkdpVGN1Sy90NGhINkxEQXNWeVhOT294NVF4eDE1b0dIN1hoWXVrWEpBb2J6SXduVWtrM2cxOE1GMko1LzNIbVpHVDM3bHU0SUNmR3g3d3JxY0xHSEJnb3l5MndsZDl3WVdGMHB4RXlwbmltZWZHZTQ4di9TbEIwYldRekY5S0UrVGwrcTA3d1c2aHVNbU51VDhUNWJLeXBIUVYzMnlpSkozbGx3WnpTVmc5NWtsWXo3VThxZ3FhNlJCa1plbXovNFhISG4vVXRGTUl5K1VnZkNEbVJ5L2dORmZOQkdmQ2RQSGNidTh3RXRvd2QrOTJ5R0JPLzZIbFgwdysxYlNzVGZYRDI1U21ZdWtRcDhTUlgyTEtTaUtzc3VKQ0QwOTdCbTAvRkorUkxJOVZHd2FJRXBLMTIzOEVyUTFublVIbGNnblByY2xKVE5jdWtXNFp5YkhESUYrT3YwNHFMNnpYa292NXBoYXB0b1dBaHNCaE4vbW5sUWlHYnpSOGN4WWJ1SEpRRDRxd3VuZzloYVR3b2RyeGhxTXh4RVM5SHhVN3UrQ3U2SkhaRkVoL0pEeWpzVnc5ZXg5Uy94aUxFNjNZR21iWnNBK3Q5QXRzdjJPVC9TbS9ZMkk9IiwiY2lkIjoicHJvZHVjdC1zdG9jay1yZXF1ZXN0LWFwaTphMDUwYmY1MS0xYWIxLTRkZTQtODM0Yy1mNWNlMGEzMDMwZWEifQ.oxERHPWzhunY18bJjgTGjlvZhHUGtDm2V_svDVkYz3VulluMjoFV5jm1EDuy46Z3vEgLQmKsFsG-VTsVwHaJKh5pnlx1QEj8SUFYu5JZraIL6vghI1X3cPb0qNfCBX191ztJCRgszyNMsxXGd4GQjkUdnP8J58UtBwaoNTQNWxMOIYgpBaNUuyPr6wSz1ek05B-TahoVjfjFmgAlDoKLjLQ-Ec-ejfM6FaITvifrVJyGUyHGiqzU7v4_Dd29rVHVHSE_F3rr6sLV56PeU30coBAn_q7hnTN6GWdulxg3vjc5uDcqSntxmxGE_STI-paBDHG5aToQzNNgARpv3SJDjg\",\n" +
-                        "  \"properties\" : {\n" +
-                        "    \"cid\" : \"product-stock-request-api:a050bf51-1ab1-4de4-834c-f5ce0a3030ea\"\n" +
-                        "  }\n" +
-                        "}\n")
-            })
-    ))
+            content = @Content(examples = {@ExampleObject(name = "EDR Token", value = sample)})))
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Ok"),
-        @ApiResponse(responseCode = "400", description = "Received invalid message")
+        @ApiResponse(responseCode = "200", description = "Ok")
     })
     private ResponseEntity<String> authCodeReceivingEndpoint(@RequestBody JsonNode body) {
         log.debug("Received edr data:\n" + body.toPrettyString());
-        String transferId = body.get("id").asText(); 
+        String transferId = body.get("id").asText();
         String authKey = body.get("authKey").asText();
         String authCode = body.get("authCode").asText();
         String endpoint = body.get("endpoint").asText();
@@ -82,9 +71,11 @@ public class EndpointDataReferenceReceiver {
             log.warn("authCodes endpoint received invalid message:\n" + body.toPrettyString());
             return ResponseEntity.status(400).build();
         }
-        edcService.save(transferId, new EDR_Dto(authKey, authCode, endpoint));
+        edrService.save(transferId, new EDR_Dto(authKey, authCode, endpoint));
         log.debug("authCodes endpoint stored authCode for " + transferId);
         return ResponseEntity.status(200).build();
     }
+
+    private final static String sample = "{\"id\":\"3b603c3e-0f1a-4989-90b7-a4b024496d04\",\"at\":1699446240954,\"payload\":{\"transferProcessId\":\"e5c59912-b88a-4c42-9766-9fa593b72603\",\"callbackAddresses\":[{\"uri\":\"http://host.docker.internal:4000\",\"events\":[\"contract.negotiation\",\"transfer.process\"],\"transactional\":false,\"authKey\":null,\"authCodeId\":null}],\"dataAddress\":{\"properties\":{\"https://w3id.org/edc/v0.0.1/ns/type\":\"EDR\",\"https://w3id.org/edc/v0.0.1/ns/endpoint\":\"http://supplier-data-plane:9285/api/public/\",\"https://w3id.org/edc/v0.0.1/ns/authCode\":\"eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE2OTk0NDY4NDAsImRhZCI6ImMvMnFYVThaemVRTnJ5WDloUjhFZytONXpaWjhaUnc5dHpDOWRPcDlQNnpQQUhxZE9XN0pyN3JIWk94R0k0dFBXMmUxZVZ6elRJNlA5dUZXREpVVWtvRjJpWm93aXp6UEhmbGF4YTdsY0JIcWNISThhZWlEcm5MYiswM1ZXemRtMEZqLzNYYVdUa3VGYzM4VGtWS1lMaEViOVRNRUV4UGhqbEM5WFplamc0ZWJHNUZ6QldDQXZ2bmlMaWpFMjA4ZDhOcE80M0w5cG4xWXBpUThkZ2IrYjhkcEsyMDZObDNzTFhyS1hsU09ZaERHR2tLM2dSYkxBRHpiRjl3RWlCd3Z6SjFvSzFXbllzMVJwTVNOY1ZPc1ZseDJ6YS9mT1J6M29NYnh4TGdsSzMxU1c3NjVNWlVyWWlLK3JDOFhFaHNNa2JMSlNIcXhKYlFWYnZtL3dic1FyQWoxbUVsajhjbk9FY1p2NUhJOHJoUElyaTQyeU1hbXpWSXhXWW9hWU5PV0x4WHk1SUhZc3ZKcUJMc1cwaWs4eDlOZDhTcDduUGhqempLYjlQeFVVbCthS3BZQWVJaE9XZnNGT2pSMFFHM3lYcmJDalM0S1ZlaHhZbW1MZ0ZIczhyeWNsd1h2VUJzRkk4bzVLZUVwSll2U2RPSjlTQ0dNODB5a1lNczFxK0dTRVZmN2VrTUZRU2pjeGRSMElncUtFRk92OE5Ra3ZXZHAxbVpXc25IbnZNY2E0MFYxTm5nQWFVRndtRDhEeGVyc3k4R0IiLCJjaWQiOiJNUT09OlptVjBZMmhCYzNObGRBPT06T0dWbE4yWmhZelV0WlRjek15MDBPR0prTFRneFl6a3RaV1kzTkRsbFlXSTVNMll6In0.z9Nm_csmyHGBPGdEGgiyUV7pLWes0KE2IK82BHtCOS8XBerJrGb_wqNCgcgph6Zx7j84FwaVSH190FQ98FhJORgVCQ8u187hz1iPjXne9GEclR5Xr9_fSb9ZNK8VNTJvCdevJO5uT7Jkkc_-2U8DKUDDOj_Wqby8uStoSSs0P0idQ4pAazFYTy_Dbl0ltJsz6xc3YxwXk3yk0P1Ys5zYN0ueBznUMEJ6-YXpafAS5kn_iN8zU3It3Q2AgS0ER_M9AzeBHXZmST2MkaXXo3s_kuVxCZEtGRWkv8gmI3XZ5dprJ6x6keQSZ2ApSrxtmhswq2hPcqSQXF1gIFTTSSzg8A\",\"https://w3id.org/edc/v0.0.1/ns/id\":\"e5c59912-b88a-4c42-9766-9fa593b72603\",\"https://w3id.org/edc/v0.0.1/ns/authKey\":\"Authorization\"}}},\"type\":\"TransferProcessStarted\"}";
 
 }

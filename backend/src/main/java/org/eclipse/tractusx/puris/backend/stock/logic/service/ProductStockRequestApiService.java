@@ -43,10 +43,10 @@ public interface ProductStockRequestApiService {
     void handleRequest(ProductStockRequest productStockRequest);
 
     /**
-     * requests an update for the stock of the material for the given supplierPartner
+     * This method requests an update for the stock of the material for the given supplierPartner.
      *
      * @param material material to get the latest stock quantity for
      * @param supplierPartner partner to get the update from
      */
-    void request(Material material, Partner supplierPartner);
+    void doRequest(Material material, Partner supplierPartner);
 }

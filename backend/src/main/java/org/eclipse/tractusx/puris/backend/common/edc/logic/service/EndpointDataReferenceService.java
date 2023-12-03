@@ -21,7 +21,9 @@
 package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -41,10 +43,8 @@ public class EndpointDataReferenceService {
      *  The key is the transferId, the value is the authCode
      */ 
     final private HashMap<String, EDR_Dto> nonpersistantRepository = new HashMap<>();
-
-
-    @Value("${own.edr.deletiontimer}")
-    private long minutesUntilDeletion;
+    @Autowired
+    private VariablesService variablesService;
 
     /**
      * Stores transferId and authCode as a key/value-pair. 
@@ -55,7 +55,7 @@ public class EndpointDataReferenceService {
      */
     public void save(String transferId, EDR_Dto edr_Dto) {
         nonpersistantRepository.put(transferId, edr_Dto);
-        final long timer = minutesUntilDeletion * 60 * 1000;
+        final long timer = variablesService.getEdrTokenDeletionTimer() * 60 * 1000;
         // Start timer for deletion
         new Thread(()-> {
             try {

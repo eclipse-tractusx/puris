@@ -20,15 +20,16 @@
 #
 version: "3"
 services:
+
     puris-frontend-customer:
         image: puris-frontend:dev
         container_name: customer-frontend
         ports:
-            - 3000:8080
+            - "127.0.0.1:3000:8080"
         environment:
             - APP_NAME=PURIS Customer
             - BACKEND_BASE_URL=http://localhost:8081/catena/
-            - BACKEND_API_KEY=${BACKEND_API_KEY}
+            - BACKEND_API_KEY=${CUSTOMER_BACKEND_API_KEY}
             - ENDPOINT_MATERIALS=stockView/materials
             - ENDPOINT_PRODUCTS=stockView/products
             - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
@@ -36,6 +37,10 @@ services:
             - ENDPOINT_CUSTOMER=stockView/customer?ownMaterialNumber=
             - ENDPOINT_PARTNER_PRODUCT_STOCKS=stockView/partner-product-stocks?ownMaterialNumber=
             - ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK=stockView/update-partner-product-stock?ownMaterialNumber=
+        networks:
+            - miw-net
+        extra_hosts:
+            - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
     puris-backend-customer:
         image: puris-backend:dev
@@ -44,124 +49,61 @@ services:
             edc-customer-control-plane:
                 condition: service_started #service_healthy
         ports:
-            - 8081:8081 # expose port of server.port
-        environment:
-            - server.port=8081
-            - puris.demonstrator.role=customer
-            - edc.controlplane.host=customer-control-plane
-            - edc.controlplane.data.port=8181
-            - edc.controlplane.data.path=/api/v1/data
-            - edc.controlplane.key=${EDC_API_PW}
-            - edc.dataplane.public.port=8285 # edc-customer-data-plane
-            - edc.applydataplaneworkaround=false
-            - edc.idsUrl=http://customer-control-plane:8184/api/v1/ids
-            - own.bpnl=BPNL4444444444XX
-            - own.bpns=BPNS4444444444XX
-            - edr.endpoint=http://customer-backend:8081/catena/edrendpoint
-            - request.serverendpoint=http://customer-backend:8081/catena/product-stock/request
-            - response.serverendpoint=http://customer-backend:8081/catena/product-stock/response
-            - puris.api.key=${BACKEND_API_KEY}
+            - "127.0.0.1:8081:8081" # expose port of server.port
+        env_file:
+            -   ./tractus-x-edc/config/customer/puris-backend.properties
+        networks:
+            - miw-net
+        extra_hosts:
+            - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
     edc-customer-control-plane:
+        restart: on-failure
         extends:
             file: ./tractus-x-edc/docker-compose.yaml
             service: control-plane
         container_name: customer-control-plane
-        depends_on: 
-            omejdn-daps:
-                condition: service_started # has no health-check
-            vault:
-                condition: service_started # has no health-check, needs to run script to put secrets
-            postgres:
-                condition: service_started # has no health-check, needs to run db script to create edc tables
-        environment:
-            edc.vault.hashicorp.token: ${VAULT_DEV_ROOT_TOKEN_ID}
-            edc.api.auth.key: ${EDC_API_PW}
-            edc.datasource.asset.user: ${PG_USER}
-            edc.datasource.asset.password: ${PG_PW}
-            edc.datasource.contractdefinition.user: ${PG_USER}
-            edc.datasource.contractdefinition.password: ${PG_PW}
-            edc.datasource.contractnegotiation.user: ${PG_USER}
-            edc.datasource.contractnegotiation.password: ${PG_PW}
-            edc.datasource.policy.user: ${PG_USER}
-            edc.datasource.policy.password: ${PG_PW}
-            edc.datasource.transferprocess.user: ${PG_USER}
-            edc.datasource.transferprocess.password: ${PG_PW}
+        env_file:
+            -   ./tractus-x-edc/config/customer/control-plane.properties
         ports:
-            - 8180:8180
-            - 8181:8181
-            - 8182:8182
-            - 8183:8183
-            - 8184:8184
-        volumes:
-            - ./tractus-x-edc/config/customer/control-plane.properties:/app/configuration.properties
+            - "127.0.0.1:8180:8180"
+            - "127.0.0.1:8181:8181"
+            - "127.0.0.1:8182:8182"
+            - "127.0.0.1:8183:8183"
+            - "127.0.0.1:8184:8184"
+        networks:
+            - miw-net
+        extra_hosts:
+            - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
     edc-customer-data-plane:
+        restart: on-failure
         extends:
             file: ./tractus-x-edc/docker-compose.yaml
             service: data-plane
         container_name: customer-data-plane
-        depends_on:
-            omejdn-daps:
-                condition: service_started # has no health-check
-            vault:
-                condition: service_started # has no health-check, needs to run script to put secrets
-            postgres:
-                condition: service_started # has no health-check, needs to run db script to create edc tables
         ports:
-            - 8280:8280
-            - 8285:8285
+            - "127.0.0.1:8280:8280"
+            - "127.0.0.1:8285:8285"
+            - "127.0.0.1:8299:8299"
         environment:
             edc.vault.hashicorp.token: ${VAULT_DEV_ROOT_TOKEN_ID}
-        volumes:
-            - ./tractus-x-edc/config/customer/data-plane.properties:/app/configuration.properties
-
-    omejdn-daps:
-        extends:
-            file: ./daps/docker-compose.yaml
-            service: omejdn-daps
-        container_name: omejdn-daps
-        volumes:
-            - ./vault/secrets/customer.cert:/opt/keys/clients/customer.cert:ro
-            - ./vault/secrets/supplier.cert:/opt/keys/clients/supplier.cert:ro
-
-    vault:
-        build: ./vault
-        container_name: vault
-        ports:
-            - 8200:8200
-        environment:
-            # token id may not contain prefix
-            VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN_ID}
-            VAULT_ADDR: http://vault:8200
-            VAULT_PUT_SECRETS_DIR: ${VAULT_SECRETS_DIR}
-            # ATTENTION: Non productive environment
-            SKIP_SETCAP: "true"
-            SKIP_CHOWN: "true"
-        volumes:
-            - ./vault/secrets:${VAULT_SECRETS_DIR}
-        
-    postgres:
-        image: postgres:15.4-alpine
-        container_name: postgres
-        environment:
-            POSTGRES_DB: edc
-            POSTGRES_USER: ${PG_USER}
-            POSTGRES_PASSWORD: ${PG_PW}
-        volumes:
-            # use docker-compose down --volumes to kill db volume
-            # only then, changes to the script are executed!
-            - ./postgres/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+        env_file:
+            -   ./tractus-x-edc/config/customer/data-plane.properties
+        networks:
+            - miw-net
+        extra_hosts:
+            - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
     puris-frontend-supplier:
         image: puris-frontend:dev
         container_name: supplier-frontend
         ports:
-            - 3001:8080
+            - "127.0.0.1:3001:8080"
         environment:
             - APP_NAME=PURIS Customer
             - BACKEND_BASE_URL=http://localhost:8082/catena/
-            - BACKEND_API_KEY=${BACKEND_API_KEY}
+            - BACKEND_API_KEY=${SUPPLIER_BACKEND_API_KEY}
             - ENDPOINT_MATERIALS=stockView/materials
             - ENDPOINT_PRODUCTS=stockView/products
             - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
@@ -169,6 +111,10 @@ services:
             - ENDPOINT_CUSTOMER=stockView/customer?ownMaterialNumber=
             - ENDPOINT_PARTNER_PRODUCT_STOCKS=stockView/partner-product-stocks?ownMaterialNumber=
             - ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK=stockView/update-partner-product-stock?ownMaterialNumber=
+        networks:
+            - miw-net
+        extra_hosts:
+            - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
     puris-backend-supplier:
         image: puris-backend:dev
@@ -177,74 +123,54 @@ services:
             edc-supplier-control-plane:
                 condition: service_started #service_healthy
         ports:
-            - 8082:8082
-        environment:
-            - server.port=8082
-            - puris.demonstrator.role=supplier
-            - edc.controlplane.host=supplier-control-plane
-            - edc.controlplane.data.port=9181
-            - edc.controlplane.data.path=/api/v1/data
-            - edc.controlplane.key=${EDC_API_PW}
-            - edc.dataplane.public.port=9285
-            - edc.applydataplaneworkaround=false
-            - edc.idsUrl=http://supplier-control-plane:9184/api/v1/ids
-            - own.bpnl=BPNL1234567890ZZ
-            - own.bpns=BPNS1234567890ZZ
-            - edr.endpoint=http://supplier-backend:8082/catena/edrendpoint
-            - request.serverendpoint=http://supplier-backend:8082/catena/product-stock/request
-            - response.serverendpoint=http://supplier-backend:8082/catena/product-stock/response
-            - puris.api.key=${BACKEND_API_KEY}
-                
+            - "127.0.0.1:8082:8082"
+        env_file:
+            -   ./tractus-x-edc/config/supplier/puris-backend.properties
+        networks:
+            - miw-net
+        extra_hosts:
+            - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
+
     edc-supplier-control-plane:
+        restart: on-failure
         extends:
             file: ./tractus-x-edc/docker-compose.yaml
             service: control-plane
         container_name: supplier-control-plane
-        depends_on:
-            omejdn-daps:
-                condition: service_started # has no health-check
-            vault:
-                condition: service_started # has no health-check, needs to run script to put secrets
-            postgres:
-                condition: service_started # has no health-check, needs to run db script to create edc tables
         ports:
-            - 9180:9180
-            - 9181:9181
-            - 9182:9182
-            - 9183:9183
-            - 9184:9184
-        environment:
-            edc.vault.hashicorp.token: ${VAULT_DEV_ROOT_TOKEN_ID}
-            edc.api.auth.key: ${EDC_API_PW}
-            edc.datasource.asset.user: ${PG_USER}
-            edc.datasource.asset.password: ${PG_PW}
-            edc.datasource.contractdefinition.user: ${PG_USER}
-            edc.datasource.contractdefinition.password: ${PG_PW}
-            edc.datasource.contractnegotiation.user: ${PG_USER}
-            edc.datasource.contractnegotiation.password: ${PG_PW}
-            edc.datasource.policy.user: ${PG_USER}
-            edc.datasource.policy.password: ${PG_PW}
-            edc.datasource.transferprocess.user: ${PG_USER}
-            edc.datasource.transferprocess.password: ${PG_PW}
-        volumes:
-            - ./tractus-x-edc/config/supplier/control-plane.properties:/app/configuration.properties
+            - "127.0.0.1:9180:9180"
+            - "127.0.0.1:9181:9181"
+            - "127.0.0.1:9182:9182"
+            - "127.0.0.1:9183:9183"
+            - "127.0.0.1:9184:9184"
+            - "127.0.0.1:1044:1044"
+        env_file:
+            -   ./tractus-x-edc/config/supplier/control-plane.properties
+        networks:
+            - miw-net
+        extra_hosts:
+            - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
+
 
     edc-supplier-data-plane:
+        restart: on-failure
         extends:
             file: ./tractus-x-edc/docker-compose.yaml
             service: data-plane
         container_name: supplier-data-plane
-        depends_on:
-            omejdn-daps:
-                condition: service_started # has no health-check
-            vault:
-                condition: service_started # has no health-check, needs to run script to put secrets
-            postgres:
-                condition: service_started # has no health-check, needs to run db script to create edc tables
         ports:
-            - 9280:9280
-            - 9285:9285
+            - "127.0.0.1:9280:9280"
+            - "127.0.0.1:9285:9285"
+            - "127.0.0.1:9299:9299"
         environment:
             edc.vault.hashicorp.token: ${VAULT_DEV_ROOT_TOKEN_ID}
-        volumes:
-            - ./tractus-x-edc/config/supplier/data-plane.properties:/app/configuration.properties
+        env_file:
+            -   ./tractus-x-edc/config/supplier/data-plane.properties
+        networks:
+            - miw-net
+        extra_hosts:
+            - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
+
+networks:
+    miw-net:
+        external: true
