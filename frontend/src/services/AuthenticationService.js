@@ -37,8 +37,7 @@ const isEnabled = AuthenticationConfig.isDisabled !== true;
 
 const init = () => {
     return new Promise((resolve, reject) => {
-        console.log(AuthenticationConfig.isDisabled);
-        console.log(isEnabled);
+        console.log("Auth is disabled: ", AuthenticationConfig.isDisabled);
         if (!isEnabled) {
             return resolve();
         }

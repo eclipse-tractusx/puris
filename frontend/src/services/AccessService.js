@@ -24,7 +24,7 @@ const getViewsWithAccess = () => {
     let views = [];
 
     if (!AuthenticationService.isEnabled) {
-        return ALL_ROUTES;
+        return ALL_ROUTES.filter(route=> route.name !== "Unauthorized");
     }
 
     ALL_ROUTES.forEach((item) => {

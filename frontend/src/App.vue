@@ -37,7 +37,7 @@ import {RouterLink, RouterView} from "vue-router";
                 <aside>
                     <ul class="space-y-2">
                         <li
-                            v-for="route in this.viewsWithAccess"
+                            v-for="route in viewsWithAccess"
                             key="route.name"
                         >
                             <RouterLink
