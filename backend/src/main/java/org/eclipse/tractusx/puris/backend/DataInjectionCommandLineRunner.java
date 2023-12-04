@@ -236,7 +236,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .build();
         itemStock = itemStockService.create(itemStock);
         log.info("Created ItemStock: \n" + itemStock);
-        var foundItemStock = itemStockService.findAll().get(0);
+        var foundItemStock = itemStockService.findById(itemStock.getKey());
         log.info("Found ItemStock: " + foundItemStock.equals(itemStock));
         log.info("\n" + foundItemStock);
     }
@@ -301,7 +301,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .build();
         itemStock = itemStockService.create(itemStock);
         log.info("Created ItemStock: \n" + itemStock);
-        var foundItemStock = itemStockService.findAll().get(0);
+        var foundItemStock = itemStockService.findById(itemStock.getKey());
         log.info("Found ItemStock: " + foundItemStock.equals(itemStock));
         log.info("\n" + foundItemStock);
     }

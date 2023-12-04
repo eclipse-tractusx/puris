@@ -11,7 +11,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import static org.mockito.Mockito.when;
 
 @DataJpaTest
 public class ItemStockServiceTest {
@@ -29,7 +32,22 @@ public class ItemStockServiceTest {
 
     @Test
     void storeAndFindItemStock() {
-        Partner supplierPartner = createAndGetSupplierPartner();
+
+        Partner supplierPartner = getSupplierPartner();
+        final var sp = supplierPartner;
+        ItemStock itemStock = getItemStock(supplierPartner);
+        final var is = itemStock;
+        when(partnerRepository.save(Mockito.any(Partner.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(itemStockRepository.save(Mockito.any(ItemStock.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(itemStockRepository.findById(Mockito.any(ItemStock.Key.class))).thenAnswer(x -> is);
+
+        itemStock = itemStockService.create(itemStock);
+        var foundItemStock = itemStockService.findById(itemStock.getKey());
+        Assertions.assertEquals(itemStock, foundItemStock);
+
+    }
+
+    private ItemStock getItemStock(Partner supplierPartner) {
         ItemStock.Builder builder = ItemStock.Builder.newInstance();
         var itemStock = builder
             .customerOrderId("123")
@@ -44,16 +62,10 @@ public class ItemStockServiceTest {
             .partnerBpnl(supplierPartner.getBpnl())
             .quantity(5)
             .build();
-
-//        when(partnerRepository.)
-
-        itemStock = itemStockService.create(itemStock);
-        var foundItemStock = itemStockService.findAll().get(0);
-        Assertions.assertEquals(itemStock, foundItemStock);
-
+        return itemStock;
     }
 
-    private Partner createAndGetSupplierPartner() {
+    private Partner getSupplierPartner() {
         Partner supplierPartnerEntity = new Partner(
             "Scenario Supplier",
             "http://supplier-control-plane:9184/api/v1/dsp",
@@ -65,8 +77,6 @@ public class ItemStockServiceTest {
             "77785 Dudelsdorf",
             "Germany"
         );
-        supplierPartnerEntity = partnerService.create(supplierPartnerEntity);
-        supplierPartnerEntity = partnerService.findByUuid(supplierPartnerEntity.getUuid());
         return supplierPartnerEntity;
     }
 }

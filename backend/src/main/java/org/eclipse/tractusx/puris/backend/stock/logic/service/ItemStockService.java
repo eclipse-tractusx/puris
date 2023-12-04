@@ -38,6 +38,10 @@ public class ItemStockService {
         return itemStockRepository.save(itemStock);
     }
 
+    public ItemStock findById(ItemStock.Key key) {
+        return itemStockRepository.findById(key).orElse(null);
+    }
+
     public List<ItemStock> findAll() {
         return itemStockRepository.findAll();
     }
