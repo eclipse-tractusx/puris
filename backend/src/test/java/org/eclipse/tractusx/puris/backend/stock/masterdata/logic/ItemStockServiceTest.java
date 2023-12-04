@@ -1,8 +1,10 @@
 package org.eclipse.tractusx.puris.backend.stock.masterdata.logic;
 
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.PartnerRepository;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServiceImpl;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ItemStockRepository;
@@ -14,6 +16,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import static org.mockito.Mockito.when;
 
 @DataJpaTest
@@ -22,9 +27,9 @@ public class ItemStockServiceTest {
     @Mock
     private ItemStockRepository itemStockRepository;
     @Mock
-    private PartnerRepository partnerRepository;
-    @InjectMocks
-    private PartnerServiceImpl partnerService;
+    private MaterialPartnerRelationService materialPartnerRelationService;
+    @Mock
+    private PartnerService partnerService;
     @InjectMocks
     private ItemStockService itemStockService;
     private final String semiconductorMatNbrCustomer = "MNR-7307-AU340474.002";
@@ -32,19 +37,17 @@ public class ItemStockServiceTest {
 
     @Test
     void storeAndFindItemStock() {
-
         Partner supplierPartner = getSupplierPartner();
-        final var sp = supplierPartner;
         ItemStock itemStock = getItemStock(supplierPartner);
         final var is = itemStock;
-        when(partnerRepository.save(Mockito.any(Partner.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(partnerService.findByBpnl(supplierPartner.getBpnl())).thenAnswer(x -> supplierPartner);
         when(itemStockRepository.save(Mockito.any(ItemStock.class))).thenAnswer(i -> i.getArguments()[0]);
-        when(itemStockRepository.findById(Mockito.any(ItemStock.Key.class))).thenAnswer(x -> is);
+        when(itemStockRepository.findById(is.getKey())).thenAnswer(x -> Optional.of(is));
+        when(materialPartnerRelationService.find(semiconductorMatNbrCustomer, supplierPartner.getUuid())).thenAnswer(x -> getMaterialPartnerRelation());
 
         itemStock = itemStockService.create(itemStock);
         var foundItemStock = itemStockService.findById(itemStock.getKey());
         Assertions.assertEquals(itemStock, foundItemStock);
-
     }
 
     private ItemStock getItemStock(Partner supplierPartner) {
@@ -77,6 +80,23 @@ public class ItemStockServiceTest {
             "77785 Dudelsdorf",
             "Germany"
         );
+        supplierPartnerEntity.setUuid(UUID.randomUUID());
         return supplierPartnerEntity;
+    }
+
+    private MaterialPartnerRelation getMaterialPartnerRelation() {
+        MaterialPartnerRelation mpr = new MaterialPartnerRelation();
+        mpr.setPartnerMaterialNumber(semiconductorMatNbrSupplier);
+        mpr.setPartnerSuppliesMaterial(true);
+        mpr.setMaterial(getMaterial());
+        return mpr;
+    }
+
+    private Material getMaterial() {
+        Material material = new Material();
+        material.setOwnMaterialNumber(semiconductorMatNbrCustomer);
+        material.setMaterialFlag(true);
+        material.setName("Semiconductor");
+        return material;
     }
 }
