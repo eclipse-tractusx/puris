@@ -39,15 +39,15 @@ helm.sh/chart: {{ include "backend.chart" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}-backend
 {{- end }}
 
 {{/*
 Selector labels
 */}}
 {{- define "backend.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "backend.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/name: {{ include "backend.name" . }}-backend
+app.kubernetes.io/instance: {{ .Release.Name }}-backend
 {{- end }}
 
 {{/*
@@ -103,15 +103,15 @@ helm.sh/chart: {{ include "frontend.chart" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}-frontend
 {{- end }}
 
 {{/*
 Selector labels
 */}}
 {{- define "frontend.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "frontend.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/name: {{ include "frontend.name" . }}-frontend
+app.kubernetes.io/instance: {{ .Release.Name }}-frontend
 {{- end }}
 
 {{/*

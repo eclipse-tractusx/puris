@@ -9,7 +9,6 @@ spec:
   ports:
     - port: {{ .Values.backend.service.port }}
       targetPort: http
-      nodePort: 30001
       protocol: TCP
       name: http
   selector:

@@ -28,7 +28,7 @@ spec:
       securityContext:
         {{- toYaml .Values.frontend.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ include "frontend.fullname" . }}
           securityContext:
             {{- toYaml .Values.frontend.securityContext | nindent 12 }}
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default .Chart.AppVersion }}"
@@ -37,7 +37,7 @@ spec:
             - name: APP_NAME
               value: "{{ .Values.frontend.puris.appName }}"
             - name: BACKEND_BASE_URL
-              value: "{{ .Values.frontend.puris.baseUrl }}"
+              value: "https://{{ .Values.frontend.puris.baseUrl }}/catena/"
             - name: ENDPOINT_MATERIALS
               value: "{{ .Values.frontend.puris.endpointMaterials }}"
             - name: ENDPOINT_PRODUCTS
@@ -52,6 +52,8 @@ spec:
               value: "{{ .Values.frontend.puris.endpointPartnerProductStocks }}"
             - name: ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK
               value: "{{ .Values.frontend.puris.endpointUpdatePartnerProductStocks }}"
+            - name: BACKEND_API_KEY
+              value: "test"
           ports:
             - name: http
               containerPort: {{ .Values.frontend.service.port }}

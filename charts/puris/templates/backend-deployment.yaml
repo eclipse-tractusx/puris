@@ -28,7 +28,7 @@ spec:
       securityContext:
         {{- toYaml .Values.backend.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ include "backend.fullname" . }}
           securityContext:
             {{- toYaml .Values.backend.securityContext | nindent 12 }}
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Chart.AppVersion }}"
@@ -62,6 +62,8 @@ spec:
               value: "{{ .Values.backend.puris.edc.dataplane.public.port }}"
             - name: EDC_IDSURL
               value: "{{ .Values.backend.puris.edc.idsurl }}"
+            - name: EDC_WEB_REST_CORS_ENABLED
+              value: "{{ .Values.backend.puris.edc.web.rest.cors.enabled }}"
             - name: MINIKUBE_IP
               value: "{{ .Values.backend.puris.minikube.ip }}"
             - name: OWN_BPNA
@@ -109,12 +111,12 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /catena/health/
-              port: http
+                path: /catena/health/
+                port: http
           readinessProbe:
             httpGet:
-              path: /catena/health/
-              port: http
+                path: /catena/health/
+                port: http
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}
       {{- with .Values.backend.nodeSelector }}

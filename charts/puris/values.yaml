@@ -21,7 +21,9 @@
 
 # GlOBAL -----------
 global:
-    domain: &domain backend
+    domain:
+       backend:
+          ingress: &domain your-backend-host-adress.com
 # FRONTEND -----------
 frontend:
     replicaCount: 1
@@ -39,7 +41,7 @@ frontend:
     # -- Possibility to override the name
     nameOverride: ""
     # -- Possibility to override the fullname
-    fullnameOverride: ""
+    fullnameOverride: "frontend"
 
     serviceAccount:
         # -- Specifies whether a service account should be created
@@ -170,7 +172,7 @@ frontend:
         # -- The name of the app displayed in the frontend
         appName: PURIS
         # -- The base URL for the backend base URL without further endpoints
-        baseUrl: *domain #http://172.17.0.2:30001/catena/
+        baseUrl: *domain
         # -- The endpoint for materials for the stock view
         endpointMaterials: stockView/materials
         # -- The endpoint for products for the stock view
@@ -204,7 +206,7 @@ backend:
     # -- Possibility to override the name
     nameOverride: ""
     # -- Possibility to override the fullname
-    fullnameOverride: *domain
+    fullnameOverride: backend
 
     serviceAccount:
         # -- Specifies whether a service account should be created
@@ -271,7 +273,7 @@ backend:
             nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
         # -- Hosts for the Ingress controller
         hosts:
-            -   host: "your-backend-host-adress.com"
+            -   host: *domain
                 paths:
                     -   path: /
                         pathType: ImplementationSpecific
@@ -279,7 +281,7 @@ backend:
         tls:
             -   secretName: tls-secret
                 hosts:
-                    - your-backend-host-adress.com
+                    - *domain
 
     # -- Constrains for the node selector
     nodeSelector: { }
@@ -365,6 +367,10 @@ backend:
                     port: 30784
             # -- Own IDS URL of the EDC
             idsUrl: http://plato-controlplane:8084/api/v1/ids
+            web:
+                rest:
+                    cors:
+                        enabled: true
         minikube:
             # -- IP of minikube for the EDC configuration
             ip: host.minikube.internal
