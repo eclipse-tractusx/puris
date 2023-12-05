@@ -294,48 +294,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info(String.format("Found productStocks by material number and allocated to customer " +
             "bpnl: %s", foundProductStocks));
 
-        ItemStock.Builder builder = ItemStock.Builder.newInstance();
-        var itemStock = builder
-            .customerOrderId("123")
-            .supplierOrderId("234")
-            .customerOrderPositionId("1")
-            .direction(DirectionCharacteristic.OUTBOUND)
-            .materialNumberCustomer(semiconductorMatNbrCustomer)
-            .materialNumberSupplier(semiconductorMatNbrSupplier)
-            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
-            .locationBpns(partnerService.getOwnPartnerEntity().getSites().first().getBpns())
-            .locationBpna(partnerService.getOwnPartnerEntity().getSites().first().getAddresses().first().getBpna())
-            .partnerBpnl(customerPartner.getBpnl())
-            .quantity(10)
-            .build();
-        itemStock = itemStockService.create(itemStock);
-        log.info("Created ItemStock: \n" + itemStock);
-        var foundItemStock = itemStockService.findById(itemStock.getKey());
-        log.info("Found ItemStock: " + foundItemStock.equals(itemStock));
-        log.info("\n" + foundItemStock);
-
-        ItemStockSAMM samm = new ItemStockSAMM();
-        samm.setDirection(DirectionCharacteristic.INBOUND);
-        samm.setMaterialNumberSupplier(semiconductorMatNbrSupplier);
-        samm.setMaterialNumberCustomer(semiconductorMatNbrCustomer);
-
-        OrderPositionReference opr = new OrderPositionReference("234", "123", "1");
-        ItemQuantityEntity quantity = new ItemQuantityEntity(20.0, ItemUnitEnumeration.UNIT_PIECE);
-        AllocatedStock allocatedStock = new AllocatedStock(quantity, partnerService.getOwnPartnerEntity().getSites().first().getBpns(),
-            false, partnerService.getOwnPartnerEntity().getSites().first().getAddresses().first().getBpna());
-        Position position = new Position(opr, new Date(), List.of(allocatedStock));
-        samm.setPositions(List.of(position));
-        try {
-            var jsonNode = objectMapper.readTree(objectMapper.writeValueAsString(samm));
-            log.info("Created ItemStockSamm \n" + jsonNode.toPrettyString());
-            var readSamm = objectMapper.readValue(jsonNode.toString(), ItemStockSAMM.class);
-            log.info("Recreated ItemStockSamm \n" + objectMapper.readTree(objectMapper.writeValueAsString(readSamm)));
-            log.info("Equal? " + samm.equals(readSamm));
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-
-
     }
 
 
