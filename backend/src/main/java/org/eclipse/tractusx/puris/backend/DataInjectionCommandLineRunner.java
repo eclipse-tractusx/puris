@@ -37,6 +37,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
@@ -225,10 +226,10 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .customerOrderId("123")
             .supplierOrderId("234")
             .customerOrderPositionId("1")
-            .direction(ItemStock.Direction.INBOUND)
+            .direction(DirectionCharacteristic.INBOUND)
             .materialNumberCustomer(semiconductorMatNbrCustomer)
             .materialNumberSupplier(semiconductorMatNbrSupplier)
-            .measurementUnit(MeasurementUnit.piece)
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
             .locationBpns(supplierPartner.getSites().first().getBpns())
             .locationBpna(supplierPartner.getSites().first().getAddresses().first().getBpna())
             .partnerBpnl(supplierPartner.getBpnl())
@@ -239,6 +240,14 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         var foundItemStock = itemStockService.findById(itemStock.getKey());
         log.info("Found ItemStock: " + foundItemStock.equals(itemStock));
         log.info("\n" + foundItemStock);
+        try {
+            log.info("Trying to serialize: ");
+            var json = objectMapper.readTree(objectMapper.writeValueAsString(itemStock));
+            log.info("\n" + json.toPrettyString());
+        } catch (Exception e) {
+            log.info("fail");
+            log.error(e.getMessage());
+        }
     }
 
     /**
@@ -290,10 +299,10 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .customerOrderId("123")
             .supplierOrderId("234")
             .customerOrderPositionId("1")
-            .direction(ItemStock.Direction.OUTBOUND)
+            .direction(DirectionCharacteristic.OUTBOUND)
             .materialNumberCustomer(semiconductorMatNbrCustomer)
             .materialNumberSupplier(semiconductorMatNbrSupplier)
-            .measurementUnit(MeasurementUnit.piece)
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
             .locationBpns(partnerService.getOwnPartnerEntity().getSites().first().getBpns())
             .locationBpna(partnerService.getOwnPartnerEntity().getSites().first().getAddresses().first().getBpna())
             .partnerBpnl(customerPartner.getBpnl())
@@ -304,6 +313,29 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         var foundItemStock = itemStockService.findById(itemStock.getKey());
         log.info("Found ItemStock: " + foundItemStock.equals(itemStock));
         log.info("\n" + foundItemStock);
+
+        ItemStockSAMM samm = new ItemStockSAMM();
+        samm.setDirection(DirectionCharacteristic.INBOUND);
+        samm.setMaterialNumberSupplier(semiconductorMatNbrSupplier);
+        samm.setMaterialNumberCustomer(semiconductorMatNbrCustomer);
+
+        OrderPositionReference opr = new OrderPositionReference("234", "123", "1");
+        ItemQuantityEntity quantity = new ItemQuantityEntity(20.0, ItemUnitEnumeration.UNIT_PIECE);
+        AllocatedStock allocatedStock = new AllocatedStock(quantity, partnerService.getOwnPartnerEntity().getSites().first().getBpns(),
+            false, partnerService.getOwnPartnerEntity().getSites().first().getAddresses().first().getBpna());
+        Position position = new Position(opr, new Date(), List.of(allocatedStock));
+        samm.setPositions(List.of(position));
+        try {
+            var jsonNode = objectMapper.readTree(objectMapper.writeValueAsString(samm));
+            log.info("Created ItemStockSamm \n" + jsonNode.toPrettyString());
+            var readSamm = objectMapper.readValue(jsonNode.toString(), ItemStockSAMM.class);
+            log.info("Recreated ItemStockSamm \n" + objectMapper.readTree(objectMapper.writeValueAsString(readSamm)));
+            log.info("Equal? " + samm.equals(readSamm));
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+
     }
 
 

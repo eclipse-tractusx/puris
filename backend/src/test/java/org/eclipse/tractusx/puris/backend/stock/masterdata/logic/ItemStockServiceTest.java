@@ -6,8 +6,9 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ItemStockRepository;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -56,10 +57,10 @@ public class ItemStockServiceTest {
             .customerOrderId("123")
             .supplierOrderId("234")
             .customerOrderPositionId("1")
-            .direction(ItemStock.Direction.INBOUND)
+            .direction(DirectionCharacteristic.INBOUND)
             .materialNumberCustomer(semiconductorMatNbrCustomer)
             .materialNumberSupplier(semiconductorMatNbrSupplier)
-            .measurementUnit(MeasurementUnit.piece)
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
             .locationBpns(supplierPartner.getSites().first().getBpns())
             .locationBpna(supplierPartner.getSites().first().getAddresses().first().getBpna())
             .partnerBpnl(supplierPartner.getBpnl())

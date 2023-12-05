@@ -1,0 +1,64 @@
+
+package org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Generated class for Position. The Position can be located at several stocks.
+ * In case of a supplier's stock for a customer, a position may be either
+ * anonymous or reference a position within a customer order. In case of a
+ * customer's stock for a supplier, the order position reference MUST NOT be
+ * set.
+ */
+
+@Getter
+@Setter
+@NoArgsConstructor
+public class Position {
+	private OrderPositionReference orderPositionReference;
+
+    @NotNull
+	private Date lastUpdatedOnDateTime;
+
+	@NotNull
+	private List<AllocatedStock> allocatedStocks;
+
+	@JsonCreator
+	public Position(
+			@JsonProperty(value = "orderPositionReference") OrderPositionReference orderPositionReference,
+			@JsonProperty(value = "lastUpdatedOnDateTime") Date lastUpdatedOnDateTime,
+			@JsonProperty(value = "allocatedStocks") List<AllocatedStock> allocatedStocks) {
+		this.orderPositionReference = orderPositionReference;
+		this.lastUpdatedOnDateTime = lastUpdatedOnDateTime;
+		this.allocatedStocks = allocatedStocks;
+	}
+
+	@Override
+	public boolean equals(final Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		final Position that = (Position) o;
+		return Objects.equals(orderPositionReference, that.orderPositionReference)
+				&& Objects.equals(lastUpdatedOnDateTime, that.lastUpdatedOnDateTime)
+				&& Objects.equals(allocatedStocks, that.allocatedStocks);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(orderPositionReference, lastUpdatedOnDateTime, allocatedStocks);
+	}
+}

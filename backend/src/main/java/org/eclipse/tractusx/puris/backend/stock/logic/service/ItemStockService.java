@@ -7,6 +7,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ItemStockRepository;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -65,7 +66,7 @@ public class ItemStockService {
             Partner partner =  partnerService.findByBpnl(key.getPartnerBpnl());
             Objects.requireNonNull(partner, "Unknown partner: " + key.getPartnerBpnl());
             Partner mySelf = partnerService.getOwnPartnerEntity();
-            Partner customer = key.getDirection() == ItemStock.Direction.INBOUND ? mySelf : partner;
+            Partner customer = key.getDirection() == DirectionCharacteristic.INBOUND ? mySelf : partner;
             Partner supplier = customer == mySelf ? partner : mySelf;
             var stockBpns = supplier.getSites().stream()
                 .filter(site -> site.getBpns().equals(key.getLocationBpns())).findFirst().orElse(null);

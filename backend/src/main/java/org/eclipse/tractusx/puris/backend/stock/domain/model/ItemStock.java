@@ -4,7 +4,8 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -42,7 +43,7 @@ public class ItemStock {
         return key.getMaterialGlobalAssetId();
     }
 
-    public Direction getDirection() {
+    public DirectionCharacteristic getDirection() {
         return key.direction;
     }
 
@@ -74,7 +75,7 @@ public class ItemStock {
         this.lastUpdatedOnDateTime = lastUpdatedOnDateTime;
     }
 
-    public MeasurementUnit getMeasurementUnit() {
+    public ItemUnitEnumeration getMeasurementUnit() {
         return quantityOnAllocatedStock.getMeasurementUnit();
     }
 
@@ -95,7 +96,7 @@ public class ItemStock {
         if (this == o) return true;
         if (!(o instanceof ItemStock)) return false;
         ItemStock itemStock = (ItemStock) o;
-        return key.equals(((ItemStock) o).key);
+        return key.equals(itemStock.key);
     }
 
     @Override
@@ -104,17 +105,17 @@ public class ItemStock {
     }
 
 
-
     @Embeddable
     @Getter
     @Setter
     @ToString
     public static class Key implements Serializable {
+
         private String partnerBpnl;
         private String materialNumberCustomer;
         private String materialNumberSupplier;
         private String materialGlobalAssetId;
-        private Direction direction;
+        private DirectionCharacteristic direction;
         private String supplierOrderId;
         private String customerOrderId;
         private String customerOrderPositionId;
@@ -150,7 +151,7 @@ public class ItemStock {
     @ToString
     public static class QuantityOnAllocatedStock {
         private Double quantity;
-        private MeasurementUnit measurementUnit;
+        private ItemUnitEnumeration measurementUnit;
 
         @Override
         public boolean equals(Object o) {
@@ -166,10 +167,6 @@ public class ItemStock {
         }
     }
 
-    public static enum Direction {
-        INBOUND, OUTBOUND;
-    }
-
     public static class Builder {
 
         private Builder() {
@@ -179,7 +176,7 @@ public class ItemStock {
         private String materialNumberCustomer;
         private String materialNumberSupplier;
         private String materialGlobalAssetId;
-        private Direction direction;
+        private DirectionCharacteristic direction;
         private String supplierOrderId;
         private String customerOrderId;
         private String customerOrderPositionId;
@@ -209,7 +206,7 @@ public class ItemStock {
             return this;
         }
 
-        public Builder direction(Direction direction) {
+        public Builder direction(DirectionCharacteristic direction) {
             this.direction = direction;
             return this;
         }
@@ -245,7 +242,7 @@ public class ItemStock {
         }
 
 
-        public Builder measurementUnit(MeasurementUnit measurementUnit) {
+        public Builder measurementUnit(ItemUnitEnumeration measurementUnit) {
             quantityOnAllocatedStock.measurementUnit = measurementUnit;
             return this;
         }
