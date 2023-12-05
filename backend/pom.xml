@@ -37,7 +37,7 @@
   <name>puris-backend</name>
   <description>PURIS Backend</description>
   <properties>
-    <java.version>11</java.version>
+    <java.version>17</java.version>
     <springdoc.version>2.2.0</springdoc.version>
     <okhttp3.version>2.7.5</okhttp3.version>
     <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
