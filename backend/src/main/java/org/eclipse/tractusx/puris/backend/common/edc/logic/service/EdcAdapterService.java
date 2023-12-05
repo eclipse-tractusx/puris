@@ -110,7 +110,7 @@ public class EdcAdapterService {
      *
      * @return true if all registrations were successful, otherwise false
      */
-    public boolean doInitialAssetRegistration() {
+    public boolean registerAssetsInitially() {
         boolean result;
         log.info("Registration of product-stock request api successful " + (result = registerApiAsset(DT_ApiMethodEnum.REQUEST)));
         if (!result) return false;
@@ -359,7 +359,7 @@ public class EdcAdapterService {
         filter.put("asset:prop:apibusinessobject", "product-stock");
         filter.put("asset:prop:apipurpose", "request");
         filter.put("asset:prop:version", variablesService.getPurisApiVersion());
-        return getContractForRequestOrResponseApiApi(partner, filter);
+        return getContractForRequestOrResponseApi(partner, filter);
     }
 
     /**
@@ -377,7 +377,7 @@ public class EdcAdapterService {
         filter.put("asset:prop:apibusinessobject", "product-stock");
         filter.put("asset:prop:apipurpose", "response");
         filter.put("asset:prop:version", variablesService.getPurisApiVersion());
-        return getContractForRequestOrResponseApiApi(partner, filter);
+        return getContractForRequestOrResponseApi(partner, filter);
     }
 
     /**
@@ -391,7 +391,7 @@ public class EdcAdapterService {
      * @param filter  The filter to be applied on the level of the asset's properties object.
      * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
-    public String[] getContractForRequestOrResponseApiApi(Partner partner, Map<String, String> filter) {
+    private String[] getContractForRequestOrResponseApi(Partner partner, Map<String, String> filter) {
         try {
             JsonNode catalogItem = getCatalogItems(partner.getEdcUrl(), filter).get(0);
             JsonNode negotiationResponse = initiateNegotiation(partner, catalogItem);

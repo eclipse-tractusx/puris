@@ -36,12 +36,12 @@ public class AssetCreatorCommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (!edcAdapterService.doInitialAssetRegistration()) {
+        if (!edcAdapterService.registerAssetsInitially()) {
             // retry
             int retryDelaySeconds = 3;
             log.warn("retrying initial asset registration in " + retryDelaySeconds + " seconds");
             Thread.sleep(retryDelaySeconds * 1000);
-            log.warn("retry successful: " + edcAdapterService.doInitialAssetRegistration());
+            log.warn("retry successful: " + edcAdapterService.registerAssetsInitially());
         }
     }
 }

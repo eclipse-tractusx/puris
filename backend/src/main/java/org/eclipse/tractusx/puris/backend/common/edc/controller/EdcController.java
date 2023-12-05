@@ -48,7 +48,7 @@ public class EdcController {
      */
     @GetMapping("/catalog")
     @CrossOrigin
-    public ResponseEntity<String> getEDCCatalog(@RequestParam String dspUrl) {
+    public ResponseEntity<String> getCatalog(@RequestParam String dspUrl) {
         try {
             var catalog = edcAdapter.getCatalog(dspUrl);
             return ResponseEntity.ok(catalog.toPrettyString());
