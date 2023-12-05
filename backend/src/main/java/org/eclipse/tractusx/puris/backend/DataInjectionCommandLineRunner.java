@@ -293,7 +293,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             findAllByMaterialNumberCustomer(semiconductorMatNbrCustomer, customerPartner);
         log.info(String.format("Found productStocks by material number and allocated to customer " +
             "bpnl: %s", foundProductStocks));
-
     }
 
 
