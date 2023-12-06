@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -77,17 +76,14 @@ public enum ItemUnitEnumeration {
 
     @JsonCreator
     static ItemUnitEnumeration enumDeserializationConstructor(String value) {
-        return fromValue(value).orElseThrow(() -> new IllegalArgumentException(
+        return Optional.of(ItemUnitEnumeration.valueOf(ItemUnitEnumeration.class, value)).orElseThrow(
+            () -> new IllegalArgumentException(
             "Tried to parse value \"" + value + "\", but there is no enum field like that in ItemUnitEnumeration"));
     }
 
     @JsonValue
     public String getValue() {
         return value;
-    }
-
-    public static Optional<ItemUnitEnumeration> fromValue(String value) {
-        return Arrays.stream(ItemUnitEnumeration.values()).filter(enumValue -> enumValue.getValue().equals(value)).findFirst();
     }
 
 }
