@@ -24,13 +24,12 @@ import App from "./App.vue";
 import router from "./router";
 import "./index.css";
 import JsonViewer from "vue-json-viewer";
-import Config from "./config.json";
 
 import AuthenticationService from "./services/AuthenticationService.js";
 
 AuthenticationService.init()
     .then(() => {
-        console.info("User is authenticated, init application");
+        console.info("Initialize application");
 
         const app = createApp(App);
         const publicEnvVar = import.meta.env.VITE_BASE_URL;
@@ -38,9 +37,6 @@ AuthenticationService.init()
         app.use(router);
         app.use(JsonViewer);
 
-        console.debug(
-            "config.json BACKEND_BASE_URL=" + Config.BACKEND_BASE_URL
-        );
         console.debug(".env.x VITE_BASE_URL=" + import.meta.env.VITE_BASE_URL);
 
         app.mount("#app");

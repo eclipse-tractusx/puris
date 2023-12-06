@@ -25,20 +25,24 @@ import AuthenticationConfig, {
     getIdpUrl,
 } from "@/services/AuthenticationConfig";
 
+// 5 min validity
+const MIN_TOKEN_VALIDITY = 600;
+
 const keycloak = new Keycloak({
     onLoad: "login-required",
     url: getIdpUrl,
     realm: getIdpRealm,
     clientId: getIdpClientId,
     redirectUri: getIdpRedirectUrlFrontend,
+    enableLogging: true,
 });
 
 const isEnabled = AuthenticationConfig.isDisabled !== true;
 
 const init = () => {
     return new Promise((resolve, reject) => {
-        console.log("Auth is disabled: ", AuthenticationConfig.isDisabled);
         if (!isEnabled) {
+            console.info("Authentication via Identity Provider is disabled.");
             return resolve();
         }
         keycloak
@@ -46,17 +50,40 @@ const init = () => {
             .then((authenticated) => {
                 if (!authenticated) {
                     // User is not authenticated
+                    console.error(
+                        "User %s is NOT authenticated.",
+                        getUsername()
+                    );
                     reject();
                 } else {
                     // authenticated
+                    console.info("User %s authenticated.", getUsername());
                     resolve();
                 }
             })
             .catch((error) => {
-                console.error("Not authenticated:", error);
+                console.error("Authentication failed:", error);
                 reject(error);
             });
     });
+};
+
+keycloak.onTokenExpired = () => {
+    keycloak
+        .updateToken(MIN_TOKEN_VALIDITY)
+        .then((updated) => {
+            if (updated) {
+                console.info("Renewed auth token for user %s.", getUsername());
+            } else {
+                console.error(
+                    "Auth token could not be renewed for user %s.",
+                    getUsername()
+                );
+            }
+        })
+        .catch((error) => {
+            console.error("Error during auth token renewal:", error);
+        });
 };
 
 const isAuthenticated = () => {
@@ -78,21 +105,28 @@ const userHasRole = (requiredRoles) => {
 };
 
 const logout = () => {
-    if (!isEnabled){
+    if (!isEnabled) {
         return;
     }
     keycloak
         .logout()
         .then((success) => {
-            console.info("Logged out: ", success);
+            console.info(
+                "User % logged out successfully: ",
+                getUsername(),
+                success
+            );
         })
         .catch((error) => {
-            console.error("Logout failed: ", error);
+            console.error("Logout for user %s failed: ", getUsername(), error);
         });
 };
 
+const getUsername = () => keycloak.idTokenParsed.preferred_username;
+
 const AuthenticationService = {
     isEnabled,
+    getUsername,
     init,
     logout,
     isAuthenticated,
