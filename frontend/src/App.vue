@@ -36,10 +36,7 @@ import {RouterLink, RouterView} from "vue-router";
             <div class="flex flex-col justify-between mt-6">
                 <aside>
                     <ul class="space-y-2">
-                        <li
-                            v-for="route in viewsWithAccess"
-                            key="route.name"
-                        >
+                        <li v-for="route in viewsWithAccess" key="route.name">
                             <RouterLink
                                 class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
                                 :to="route.path"
@@ -49,6 +46,17 @@ import {RouterLink, RouterView} from "vue-router";
                                     alt="Icon"
                                 />{{ route.name }}</RouterLink
                             >
+                        </li>
+                        <li
+                            class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700 rounded-md"
+                        >
+                            <button @click="logout">
+                                <img
+                                    class="mr-2"
+                                    :src="TrashIcon"
+                                    alt="Icon"
+                                />Logout
+                            </button>
                         </li>
                     </ul>
                 </aside>
@@ -65,7 +73,7 @@ import {RouterLink, RouterView} from "vue-router";
 
 #app {
     max-width: 1280px;
-    margin: 0px auto 0px 16rem;
+    margin: 0 auto 0 16rem;
     padding: 2rem;
 
     font-weight: normal;
@@ -167,7 +175,8 @@ import ManageIcon from "@/assets/icons/manage.svg";
 import CatalogIcon from "@/assets/icons/catalog.svg";
 import ResponsesIcon from "@/assets/icons/responses.svg";
 import StockIcon from "@/assets/icons/stock.svg";
-
+import TrashIcon from "@/assets/icons/trash.svg";
+import AuthenticationService from "@/services/AuthenticationService";
 
 export default {
     name: "StockView",
@@ -195,6 +204,9 @@ export default {
                 "supplier dashboard": HomeIcon,
             };
             return imageMap[routeName.toLowerCase()];
+        },
+        logout() {
+            AuthenticationService.logout();
         },
     },
 };

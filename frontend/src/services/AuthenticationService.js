@@ -78,6 +78,9 @@ const userHasRole = (requiredRoles) => {
 };
 
 const logout = () => {
+    if (!isEnabled){
+        return;
+    }
     keycloak
         .logout()
         .then((success) => {

@@ -28,8 +28,7 @@ import Config from "./config.json";
 
 import AuthenticationService from "./services/AuthenticationService.js";
 
-AuthenticationService
-    .init()
+AuthenticationService.init()
     .then(() => {
         console.info("User is authenticated, init application");
 
@@ -39,7 +38,9 @@ AuthenticationService
         app.use(router);
         app.use(JsonViewer);
 
-        console.debug("config.json BACKEND_BASE_URL=" + Config.BACKEND_BASE_URL);
+        console.debug(
+            "config.json BACKEND_BASE_URL=" + Config.BACKEND_BASE_URL
+        );
         console.debug(".env.x VITE_BASE_URL=" + import.meta.env.VITE_BASE_URL);
 
         app.mount("#app");
@@ -48,5 +49,3 @@ AuthenticationService
     .catch((error) => {
         console.log(error);
     });
-
-window.authService = AuthenticationService;

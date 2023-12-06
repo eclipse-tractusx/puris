@@ -427,7 +427,7 @@
     "protocol" : "openid-connect",
     "attributes" : {
       "client.secret.creation.time" : "1701016951",
-      "post.logout.redirect.uris" : "http://localhost:10081",
+      "post.logout.redirect.uris" : "",
       "oauth2.device.authorization.grant.enabled" : "false",
       "backchannel.logout.revoke.offline.tokens" : "false",
       "use.refresh.tokens" : "true",
