@@ -37,7 +37,8 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
@@ -227,12 +228,11 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .supplierOrderId("234")
             .customerOrderPositionId("1")
             .direction(DirectionCharacteristic.INBOUND)
-            .materialNumberCustomer(semiconductorMatNbrCustomer)
-            .materialNumberSupplier(semiconductorMatNbrSupplier)
+            .material(semiconductorMaterial)
             .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
             .locationBpns(supplierPartner.getSites().first().getBpns())
             .locationBpna(supplierPartner.getSites().first().getAddresses().first().getBpna())
-            .partnerBpnl(supplierPartner.getBpnl())
+            .partner(supplierPartner)
             .quantity(5)
             .build();
         itemStock = itemStockService.create(itemStock);
@@ -294,7 +294,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info(String.format("Found productStocks by material number and allocated to customer " +
             "bpnl: %s", foundProductStocks));
     }
-
 
     /**
      * creates a new customer Partner entity, stores it to

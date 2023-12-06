@@ -60,7 +60,7 @@ public class ItemStockServiceTest {
     @Test
     void storeAndFindItemStock() {
         Partner supplierPartner = getSupplierPartner();
-        ItemStock itemStock = getItemStock(supplierPartner);
+        ItemStock itemStock = getItemStock(supplierPartner, getMaterial());
         final var is = itemStock;
         when(partnerService.findByBpnl(supplierPartner.getBpnl())).thenAnswer(x -> supplierPartner);
         when(itemStockRepository.save(Mockito.any(ItemStock.class))).thenAnswer(i -> i.getArguments()[0]);
@@ -72,19 +72,18 @@ public class ItemStockServiceTest {
         Assertions.assertEquals(itemStock, foundItemStock);
     }
 
-    private ItemStock getItemStock(Partner supplierPartner) {
+    private ItemStock getItemStock(Partner supplierPartner, Material material) {
         ItemStock.Builder builder = ItemStock.Builder.newInstance();
         var itemStock = builder
             .customerOrderId("123")
             .supplierOrderId("234")
             .customerOrderPositionId("1")
             .direction(DirectionCharacteristic.INBOUND)
-            .materialNumberCustomer(semiconductorMatNbrCustomer)
-            .materialNumberSupplier(semiconductorMatNbrSupplier)
+            .material(material)
             .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
             .locationBpns(supplierPartner.getSites().first().getBpns())
             .locationBpna(supplierPartner.getSites().first().getAddresses().first().getBpna())
-            .partnerBpnl(supplierPartner.getBpnl())
+            .partner(supplierPartner)
             .quantity(5)
             .build();
         return itemStock;

@@ -71,10 +71,9 @@ public class ItemStockService {
     private boolean validate(ItemStock itemStock) {
         var key = itemStock.getKey();
         try {
-            Objects.requireNonNull(key.getPartnerBpnl(), "Missing PartnerBpnl");
-            Objects.requireNonNull(key.getMaterialNumberCustomer(), "Missing materialNumberCustomer");
-            Objects.requireNonNull(key.getMaterialNumberSupplier(), "Missing materialNumberSupplier");
-            Objects.requireNonNull(key.getMaterialGlobalAssetId(), "Missing materialGlobalAssetId");
+            Partner partner = key.getPartner();
+            Objects.requireNonNull(partner, "Missing Partner");
+            Objects.requireNonNull(key.getMaterial(), "Missing Material");
             Objects.requireNonNull(key.getDirection(), "Missing direction");
             Objects.requireNonNull(key.getSupplierOrderId(), "Missing supplierOrderId");
             Objects.requireNonNull(key.getCustomerOrderId(), "Missing customerOrderId");
@@ -84,8 +83,6 @@ public class ItemStockService {
             Objects.requireNonNull(itemStock.getMeasurementUnit(), "Missing measurementUnit");
             Objects.requireNonNull(itemStock.getQuantityAmount(), "Missing quantityAmount");
             Objects.requireNonNull(itemStock.getLastUpdatedOnDateTime(), "Missing lastUpdatedOnTime");
-            Partner partner =  partnerService.findByBpnl(key.getPartnerBpnl());
-            Objects.requireNonNull(partner, "Unknown partner: " + key.getPartnerBpnl());
             Partner mySelf = partnerService.getOwnPartnerEntity();
             Partner customer = key.getDirection() == DirectionCharacteristic.INBOUND ? mySelf : partner;
             Partner supplier = customer == mySelf ? partner : mySelf;
@@ -95,8 +92,7 @@ public class ItemStockService {
             var stockBpna = supplier.getSites().stream().flatMap(site -> site.getAddresses().stream())
                 .filter(address -> address.getBpna().equals(key.getLocationBpna())).findFirst().orElse(null);
             Objects.requireNonNull(stockBpna, "Unknown Bpna: " + key.getLocationBpna());
-            String ownMaterialNumber = mySelf == customer ? key.getMaterialNumberCustomer() : key.getMaterialNumberSupplier();
-            var materialPartnerRelation = mprService.find(ownMaterialNumber, partner.getUuid());
+            var materialPartnerRelation = mprService.find(key.getMaterial(), partner);
             Objects.requireNonNull(materialPartnerRelation, "Missing MaterialPartnerRelation");
         } catch (Exception e) {
             log.error("Validation failed: " + e.getMessage());

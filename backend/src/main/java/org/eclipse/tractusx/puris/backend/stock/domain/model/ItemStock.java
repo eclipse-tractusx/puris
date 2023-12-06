@@ -22,10 +22,11 @@
 
 package org.eclipse.tractusx.puris.backend.stock.domain.model;
 
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
 
@@ -35,59 +36,61 @@ import java.util.Objects;
 
 @NoArgsConstructor
 @Entity
-@ToString
+@ToString(onlyExplicitlyIncluded = true)
 public class ItemStock {
 
     @Getter
     @EmbeddedId
+    @JsonIgnore
     private Key key = new Key();
     private Date lastUpdatedOnDateTime;
-
     private QuantityOnAllocatedStock quantityOnAllocatedStock = new QuantityOnAllocatedStock();
     @Getter
     @Setter
     private boolean isBlocked;
 
-    public String getPartnerBpnl() {
-        return key.partnerBpnl;
+    @JsonIgnore
+    public Partner getPartner() {
+        return key.partner;
+    }
+    @ToString.Include
+    public String getPartnerBpnl(){
+        return key.partner.getBpnl();
+    }
+    @JsonIgnore
+    public Material getMaterial() {
+        return key.material;
+    }
+    @ToString.Include
+    public String getOwnMaterialNumber() {
+        return key.material.getOwnMaterialNumber();
     }
 
-    public String getMaterialNumberCustomer() {
-        return key.materialNumberCustomer;
-    }
-
-    public String getMaterialNumberSupplier() {
-        return key.materialNumberSupplier;
-    }
-
-    public String getMaterialGlobalAssetId() {
-        return key.getMaterialGlobalAssetId();
-    }
-
+    @ToString.Include
     public DirectionCharacteristic getDirection() {
         return key.direction;
     }
-
+    @ToString.Include
     public String getSupplierOrderId() {
         return key.supplierOrderId;
     }
-
+    @ToString.Include
     public String getCustomerOrderId() {
         return key.customerOrderId;
     }
-
+    @ToString.Include
     public String getCustomerOrderPositionId() {
         return key.customerOrderPositionId;
     }
-
+    @ToString.Include
     public String getLocationBpna() {
         return key.locationBpna;
     }
-
+    @ToString.Include
     public String getLocationBpns() {
         return key.locationBpns;
     }
-
+    @ToString.Include
     public Date getLastUpdatedOnDateTime() {
         return (Date) lastUpdatedOnDateTime.clone();
     }
@@ -131,10 +134,14 @@ public class ItemStock {
     @ToString
     public static class Key implements Serializable {
 
-        private String partnerBpnl;
-        private String materialNumberCustomer;
-        private String materialNumberSupplier;
-        private String materialGlobalAssetId;
+        @ManyToOne
+        @MapsId("uuid")
+        @JoinColumn(name = "partner_uuid")
+        private Partner partner;
+        @ManyToOne
+        @MapsId("ownMaterialNumber")
+        @JoinColumn(name = "material_ownMaterialNumber")
+        private Material material;
         private DirectionCharacteristic direction;
         private String supplierOrderId;
         private String customerOrderId;
@@ -147,16 +154,15 @@ public class ItemStock {
             if (this == o) return true;
             if (!(o instanceof Key)) return false;
             Key key = (Key) o;
-            return Objects.equals(partnerBpnl, key.partnerBpnl) && Objects.equals(materialNumberCustomer, key.materialNumberCustomer)
-                && Objects.equals(materialNumberSupplier, key.materialNumberSupplier) && Objects.equals(materialGlobalAssetId,
-                key.materialGlobalAssetId) && direction == key.direction && Objects.equals(supplierOrderId, key.supplierOrderId)
+            return Objects.equals(partner, key.partner) && Objects.equals(material, key.material)
+                && direction == key.direction && Objects.equals(supplierOrderId, key.supplierOrderId)
                 && Objects.equals(customerOrderId, key.customerOrderId) && Objects.equals(customerOrderPositionId, key.customerOrderPositionId)
                 && Objects.equals(locationBpna, key.locationBpna) && Objects.equals(locationBpns, key.locationBpns);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(partnerBpnl, materialNumberCustomer, materialNumberSupplier, materialGlobalAssetId,
+            return Objects.hash(partner, material,
                 direction, supplierOrderId, customerOrderId, customerOrderPositionId, locationBpna, locationBpns);
         }
     }
@@ -190,10 +196,8 @@ public class ItemStock {
         private Builder() {
         }
 
-        private String partnerBpnl;
-        private String materialNumberCustomer;
-        private String materialNumberSupplier;
-        private String materialGlobalAssetId;
+        private Partner partner;
+        private Material material;
         private DirectionCharacteristic direction;
         private String supplierOrderId;
         private String customerOrderId;
@@ -204,23 +208,13 @@ public class ItemStock {
         private final QuantityOnAllocatedStock quantityOnAllocatedStock = new QuantityOnAllocatedStock();
         private boolean isBlocked;
 
-        public Builder partnerBpnl(String partnerBpnl) {
-            this.partnerBpnl = partnerBpnl;
+        public Builder partner(Partner partner) {
+            this.partner = partner;
             return this;
         }
 
-        public Builder materialNumberCustomer(String materialNumberCustomer) {
-            this.materialNumberCustomer = materialNumberCustomer;
-            return this;
-        }
-
-        public Builder materialNumberSupplier(String materialNumberSupplier) {
-            this.materialNumberSupplier = materialNumberSupplier;
-            return this;
-        }
-
-        public Builder materialGlobalAssetId(String materialGlobalAssetId) {
-            this.materialGlobalAssetId = materialGlobalAssetId;
+        public Builder material(Material material) {
+            this.material = material;
             return this;
         }
 
@@ -276,10 +270,8 @@ public class ItemStock {
 
         public ItemStock build() {
             ItemStock itemStock = new ItemStock();
-            itemStock.key.partnerBpnl = partnerBpnl;
-            itemStock.key.materialNumberCustomer = materialNumberCustomer;
-            itemStock.key.materialNumberSupplier = materialNumberSupplier;
-            itemStock.key.materialGlobalAssetId = materialGlobalAssetId == null ? "" : materialGlobalAssetId;
+            itemStock.key.partner = partner;
+            itemStock.key.material = material;
             itemStock.key.direction = direction;
             itemStock.key.supplierOrderId = supplierOrderId;
             itemStock.key.customerOrderId = customerOrderId;
