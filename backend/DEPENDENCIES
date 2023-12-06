@@ -1,6 +1,5 @@
 maven/mavencentral/ch.qos.logback/logback-classic/1.4.11, EPL-1.0 OR LGPL-2.1-only, approved, #3435
 maven/mavencentral/ch.qos.logback/logback-core/1.4.11, EPL-1.0 OR LGPL-2.1-only, approved, #3373
-maven/mavencentral/com.apicatalog/titanium-json-ld/1.3.2, Apache-2.0, approved, #8912
 maven/mavencentral/com.fasterxml.jackson.core/jackson-annotations/2.15.2, Apache-2.0, approved, #7947
 maven/mavencentral/com.fasterxml.jackson.core/jackson-core/2.15.2, MIT AND Apache-2.0, approved, #7932
 maven/mavencentral/com.fasterxml.jackson.core/jackson-databind/2.15.2, Apache-2.0, approved, #7934
@@ -9,35 +8,18 @@ maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/2.15.2, 
 maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/2.15.2, Apache-2.0, approved, #7930
 maven/mavencentral/com.fasterxml.jackson.module/jackson-module-parameter-names/2.15.2, Apache-2.0, approved, #8803
 maven/mavencentral/com.fasterxml/classmate/1.5.1, Apache-2.0, approved, clearlydefined
-maven/mavencentral/com.github.andrewoma.dexx/collection/0.7, MIT, approved, CQ22160
-maven/mavencentral/com.github.ben-manes.caffeine/caffeine/3.1.8, Apache-2.0, approved, clearlydefined
-maven/mavencentral/com.github.jsonld-java/jsonld-java/0.13.4, BSD-3-Clause, approved, CQ22136
-maven/mavencentral/com.google.code.findbugs/jsr305/3.0.2, Apache-2.0, approved, #20
-maven/mavencentral/com.google.code.gson/gson/2.10.1, Apache-2.0, approved, #6159
-maven/mavencentral/com.google.errorprone/error_prone_annotations/2.18.0, Apache-2.0, approved, clearlydefined
-maven/mavencentral/com.google.guava/failureaccess/1.0.1, Apache-2.0, approved, CQ22654
-maven/mavencentral/com.google.guava/guava/32.1.2-jre, Apache-2.0 AND CC0-1.0 AND LicenseRef-Public-Domain, approved, #9229
-maven/mavencentral/com.google.guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava, Apache-2.0, approved, CQ22657
-maven/mavencentral/com.google.j2objc/j2objc-annotations/2.8, Apache-2.0, approved, clearlydefined
-maven/mavencentral/com.google.protobuf/protobuf-java/3.23.3, BSD-3-Clause, approved, #8634
 maven/mavencentral/com.jayway.jsonpath/json-path/2.8.0, Apache-2.0, approved, clearlydefined
 maven/mavencentral/com.squareup.okhttp/okhttp/2.7.5, Apache-2.0, approved, clearlydefined
 maven/mavencentral/com.squareup.okio/okio/1.6.0, Apache-2.0, approved, CQ11382
 maven/mavencentral/com.sun.istack/istack-commons-runtime/4.1.2, BSD-3-Clause, approved, #2590
 maven/mavencentral/com.vaadin.external.google/android-json/0.0.20131108.vaadin1, Apache-2.0, approved, CQ21310
 maven/mavencentral/com.zaxxer/HikariCP/5.0.1, Apache-2.0, approved, clearlydefined
-maven/mavencentral/commons-cli/commons-cli/1.5.0, Apache-2.0, approved, clearlydefined
-maven/mavencentral/commons-codec/commons-codec/1.15, Apache-2.0 AND BSD-3-Clause AND LicenseRef-Public-Domain, approved, CQ22641
-maven/mavencentral/commons-io/commons-io/2.11.0, Apache-2.0, approved, CQ23745
-maven/mavencentral/io.github.classgraph/classgraph/4.8.162, MIT, approved, CQ22530
 maven/mavencentral/io.micrometer/micrometer-commons/1.11.4, Apache-2.0 AND (Apache-2.0 AND MIT), approved, #9243
 maven/mavencentral/io.micrometer/micrometer-observation/1.11.4, Apache-2.0, approved, #9242
 maven/mavencentral/io.smallrye/jandex/3.0.5, Apache-2.0, approved, clearlydefined
 maven/mavencentral/io.swagger.core.v3/swagger-annotations-jakarta/2.2.15, Apache-2.0, approved, #5947
 maven/mavencentral/io.swagger.core.v3/swagger-core-jakarta/2.2.15, Apache-2.0, approved, #5929
 maven/mavencentral/io.swagger.core.v3/swagger-models-jakarta/2.2.15, Apache-2.0, approved, #5919
-maven/mavencentral/io.vavr/vavr-match/0.10.4, Apache-2.0, approved, clearlydefined
-maven/mavencentral/io.vavr/vavr/0.10.4, Apache-2.0, approved, clearlydefined
 maven/mavencentral/jakarta.activation/jakarta.activation-api/2.1.2, EPL-2.0 OR BSD-3-Clause OR GPL-2.0-only with Classpath-exception-2.0, approved, ee4j.jaf
 maven/mavencentral/jakarta.annotation/jakarta.annotation-api/2.1.1, EPL-2.0 OR GPL-2.0-only with Classpath-exception-2.0, approved, ee4j.ca
 maven/mavencentral/jakarta.inject/jakarta.inject-api/2.0.1, Apache-2.0, approved, clearlydefined
@@ -50,41 +32,19 @@ maven/mavencentral/net.bytebuddy/byte-buddy/1.14.8, Apache-2.0 AND BSD-3-Clause,
 maven/mavencentral/net.minidev/accessors-smart/2.4.11, Apache-2.0, approved, #7515
 maven/mavencentral/net.minidev/json-smart/2.4.11, Apache-2.0, approved, #3288
 maven/mavencentral/org.antlr/antlr4-runtime/4.10.1, BSD-3-Clause AND LicenseRef-Public-domain AND MIT AND LicenseRef-Unicode-TOU, approved, #7065
-maven/mavencentral/org.apache.commons/commons-collections4/4.4, Apache-2.0, approved, clearlydefined
-maven/mavencentral/org.apache.commons/commons-compress/1.23.0, Apache-2.0 AND BSD-3-Clause, approved, #7506
-maven/mavencentral/org.apache.commons/commons-csv/1.10.0, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.apache.commons/commons-lang3/3.12.0, Apache-2.0, approved, clearlydefined
-maven/mavencentral/org.apache.httpcomponents/httpclient-cache/4.5.14, Apache-2.0, approved, CQ11714
-maven/mavencentral/org.apache.httpcomponents/httpclient/4.5.14, Apache-2.0 AND LicenseRef-Public-Domain, approved, CQ23527
-maven/mavencentral/org.apache.httpcomponents/httpcore/4.4.16, Apache-2.0, approved, CQ23528
-maven/mavencentral/org.apache.jena/jena-arq/4.9.0, , restricted, clearlydefined
-maven/mavencentral/org.apache.jena/jena-base/4.9.0, , restricted, clearlydefined
-maven/mavencentral/org.apache.jena/jena-core/4.9.0, , restricted, clearlydefined
-maven/mavencentral/org.apache.jena/jena-iri/4.9.0, , restricted, clearlydefined
 maven/mavencentral/org.apache.logging.log4j/log4j-api/2.20.0, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.apache.logging.log4j/log4j-to-slf4j/2.20.0, Apache-2.0, approved, #8799
-maven/mavencentral/org.apache.thrift/libthrift/0.18.1, Apache-2.0, approved, #8911
 maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-core/10.1.13, Apache-2.0 AND (EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0) AND (CDDL-1.0 OR GPL-2.0-only WITH Classpath-exception-2.0) AND W3C AND CC0-1.0, approved, #5949
 maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-el/10.1.13, Apache-2.0, approved, #6997
 maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-websocket/10.1.13, Apache-2.0, approved, #7920
 maven/mavencentral/org.apiguardian/apiguardian-api/1.1.2, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.aspectj/aspectjweaver/1.9.20, Apache-2.0 AND BSD-3-Clause AND EPL-1.0 AND BSD-3-Clause AND Apache-1.1, approved, #7695
 maven/mavencentral/org.assertj/assertj-core/3.24.2, Apache-2.0, approved, #6161
-maven/mavencentral/org.checkerframework/checker-qual/3.33.0, MIT, approved, clearlydefined
 maven/mavencentral/org.eclipse.angus/angus-activation/2.0.1, EPL-2.0 OR GPL-2.0-only with Classpath-exception-2.0, approved, ee4j.angus
-maven/mavencentral/org.eclipse.esmf/esmf-aspect-meta-model-interface/2.4.2, MPL-2.0, approved, dt.esmf
-maven/mavencentral/org.eclipse.esmf/esmf-aspect-meta-model-java/2.4.2, MPL-2.0, approved, dt.esmf
-maven/mavencentral/org.eclipse.esmf/esmf-aspect-meta-model-resolver/2.4.2, MPL-2.0, approved, dt.esmf
-maven/mavencentral/org.eclipse.esmf/esmf-aspect-meta-model-types/2.4.2, MPL-2.0, approved, dt.esmf
-maven/mavencentral/org.eclipse.esmf/esmf-aspect-meta-model-version-migrator/2.4.2, MPL-2.0, approved, dt.esmf
-maven/mavencentral/org.eclipse.esmf/esmf-aspect-model-java-core/2.4.2, MPL-2.0, approved, dt.esmf
-maven/mavencentral/org.eclipse.esmf/esmf-aspect-model-resolver/2.4.2, MPL-2.0, approved, dt.esmf
-maven/mavencentral/org.eclipse.esmf/esmf-aspect-model-urn/2.4.2, MPL-2.0, approved, dt.esmf
-maven/mavencentral/org.eclipse.esmf/esmf-semantic-aspect-meta-model/2.1.0, MPL-2.0, approved, dt.esmf
 maven/mavencentral/org.glassfish.jaxb/jaxb-core/4.0.3, BSD-3-Clause, approved, ee4j.jaxb
 maven/mavencentral/org.glassfish.jaxb/jaxb-runtime/4.0.3, BSD-3-Clause, approved, ee4j.jaxb
 maven/mavencentral/org.glassfish.jaxb/txw2/4.0.3, BSD-3-Clause, approved, ee4j.jaxb
-maven/mavencentral/org.glassfish/jakarta.json/2.0.1, EPL-2.0 OR GPL-2.0-only with Classpath-exception-2.0, approved, ee4j.jsonp
 maven/mavencentral/org.hamcrest/hamcrest/2.2, BSD-3-Clause, approved, clearlydefined
 maven/mavencentral/org.hibernate.common/hibernate-commons-annotations/6.0.6.Final, LGPL-2.1-only, approved, #6962
 maven/mavencentral/org.hibernate.orm/hibernate-core/6.2.9.Final, LGPL-2.1-only AND Apache-2.0 AND MIT AND CC-PDDC AND (EPL-2.0 OR BSD-3-Clause), approved, #9121
@@ -104,8 +64,6 @@ maven/mavencentral/org.objenesis/objenesis/3.3, Apache-2.0, approved, clearlydef
 maven/mavencentral/org.opentest4j/opentest4j/1.2.0, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.ow2.asm/asm/9.3, BSD-3-Clause, approved, clearlydefined
 maven/mavencentral/org.projectlombok/lombok/1.18.30, MIT AND LicenseRef-Public-Domain, approved, CQ23907
-maven/mavencentral/org.roaringbitmap/RoaringBitmap/0.9.45, Apache-2.0, approved, clearlydefined
-maven/mavencentral/org.roaringbitmap/shims/0.9.45, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.skyscreamer/jsonassert/1.5.1, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.slf4j/jul-to-slf4j/2.0.9, MIT, approved, #7698
 maven/mavencentral/org.slf4j/slf4j-api/2.0.9, MIT, approved, #5915
