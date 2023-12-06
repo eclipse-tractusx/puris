@@ -21,16 +21,11 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;
-
-import java.util.Optional;
 
 /**
  * Generated class {@link ItemUnitEnumeration}.
  */
-@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum ItemUnitEnumeration {
     UNIT_PIECE("unit:piece"),
     UNIT_SET("unit:set"),
@@ -72,13 +67,6 @@ public enum ItemUnitEnumeration {
 
     ItemUnitEnumeration(String value) {
         this.value = value;
-    }
-
-    @JsonCreator
-    static ItemUnitEnumeration enumDeserializationConstructor(String value) {
-        return Optional.of(ItemUnitEnumeration.valueOf(ItemUnitEnumeration.class, value)).orElseThrow(
-            () -> new IllegalArgumentException(
-            "Tried to parse value \"" + value + "\", but there is no enum field like that in ItemUnitEnumeration"));
     }
 
     @JsonValue
