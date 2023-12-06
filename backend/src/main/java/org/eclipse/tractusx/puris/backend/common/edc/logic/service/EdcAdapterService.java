@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EDCRequestBodyBuilder;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,7 +49,7 @@ public class EdcAdapterService {
     private VariablesService variablesService;
     private ObjectMapper objectMapper;
     @Autowired
-    private EDCRequestBodyBuilder edcRequestBodyBuilder;
+    private EdcRequestBodyBuilder edcRequestBodyBuilder;
     @Autowired
     private EndpointDataReferenceService edrService;
 
@@ -57,6 +57,51 @@ public class EdcAdapterService {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Util method for issuing a GET request to the management api of your control plane.
+     * Any caller of this method has the responsibility to close
+     * the returned Response object after using it.
+     * @param pathSegments The path segments
+     * @return The response
+     * @throws IOException If the connection to your control plane fails
+     */
+    public Response sendGetRequest(List<String> pathSegments) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getEdcManagementUrl()).newBuilder();
+        for (var pathSegment : pathSegments) {
+            urlBuilder.addPathSegment(pathSegment);
+        }
+        var request = new Request.Builder()
+            .get()
+            .url(urlBuilder.build())
+            .header("X-Api-Key", variablesService.getEdcApiKey())
+            .build();
+        return CLIENT.newCall(request).execute();
+    }
+
+    /**
+     * Util method for issuing a POST request to the management api of your control plane.
+     * Any caller of this method has the responsibility to close
+     * the returned Response object after using it.
+     * @param requestBody  The request body
+     * @param pathSegments The path segments
+     * @return The response from your control plane
+     * @throws IOException If the connection to your control plane fails
+     */
+    private Response sendPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getEdcManagementUrl()).newBuilder();
+        for (var pathSegment : pathSegments) {
+            urlBuilder.addPathSegment(pathSegment);
+        }
+        RequestBody body = RequestBody.create(MediaType.parse("application/json"), requestBody.toString());
+
+        var request = new Request.Builder()
+            .post(body)
+            .url(urlBuilder.build())
+            .header("X-Api-Key", variablesService.getEdcApiKey())
+            .header("Content-Type", "application/json")
+            .build();
+        return CLIENT.newCall(request).execute();
+    }
 
     /**
      * Call this method at startup to register the necessary request and
@@ -65,29 +110,29 @@ public class EdcAdapterService {
      *
      * @return true if all registrations were successful, otherwise false
      */
-    public boolean doInitialAssetRegistration() {
+    public boolean registerAssetsInitially() {
         boolean result;
-        log.info("Registration of product-stock request api successful " + (result = registerDSPApiAsset(DT_ApiMethodEnum.REQUEST)));
+        log.info("Registration of product-stock request api successful " + (result = registerApiAsset(DT_ApiMethodEnum.REQUEST)));
         if (!result) return false;
-        log.info("Registration of product-stock response api successful " + (result = registerDSPApiAsset(DT_ApiMethodEnum.RESPONSE)));
+        log.info("Registration of product-stock response api successful " + (result = registerApiAsset(DT_ApiMethodEnum.RESPONSE)));
         if (!result) return false;
-        log.info("Registration of policy successful " + (result = registerDSPSimplePolicy()));
+        log.info("Registration of policy successful " + (result = registerPublicPolicy()));
         if (!result) return false;
-        log.info("Registration of contract definition successful " + (result = registerDSPSimpleContractDefinition()));
+        log.info("Registration of contract definition successful " + (result = registerPublicContractDefinition()));
         return result;
     }
 
     /**
-     * Util method to register a simple contract definition without restrictions
+     * Util method to register a public contract definition without restrictions
      * regarding the asset selector. Will therefore be applicable to all assets
-     * that were registered previously. Must be called after registerDSPSimplePolicy()
+     * that were registered previously. Must be called after registerPublicPolicy()
      *
      * @return true if successful
      */
-    private boolean registerDSPSimpleContractDefinition() {
-        var body = edcRequestBodyBuilder.buildDSPContractDefinitionWithPublicPolicy();
+    private boolean registerPublicContractDefinition() {
+        var body = edcRequestBodyBuilder.buildContractDefinitionWithPublicPolicyBody();
         try {
-            var response = sendDspPostRequest(body, List.of("v2", "contractdefinitions"));
+            var response = sendPostRequest(body, List.of("v2", "contractdefinitions"));
             boolean result = response.isSuccessful();
             if (!result) {
                 log.warn("Contract definition registration failed \n" + response.body().string());
@@ -106,10 +151,10 @@ public class EdcAdapterService {
      *
      * @return true if successful
      */
-    private boolean registerDSPSimplePolicy() {
-        var body = edcRequestBodyBuilder.buildPublicDSPPolicy();
+    private boolean registerPublicPolicy() {
+        var body = edcRequestBodyBuilder.buildPublicPolicyBody();
         try {
-            var response = sendDspPostRequest(body, List.of("v2", "policydefinitions"));
+            var response = sendPostRequest(body, List.of("v2", "policydefinitions"));
             boolean result = response.isSuccessful();
             if (!result) {
                 log.warn("Policy registration failed \n" + response.body().string());
@@ -128,10 +173,10 @@ public class EdcAdapterService {
      * @param apiMethod the api method to register.
      * @return true if successful.
      */
-    private boolean registerDSPApiAsset(DT_ApiMethodEnum apiMethod) {
-        var body = edcRequestBodyBuilder.buildDSPCreateAssetBody(apiMethod);
+    private boolean registerApiAsset(DT_ApiMethodEnum apiMethod) {
+        var body = edcRequestBodyBuilder.buildCreateAssetBody(apiMethod);
         try {
-            var response = sendDspPostRequest(body, List.of("v3", "assets"));
+            var response = sendPostRequest(body, List.of("v3", "assets"));
             boolean result = response.isSuccessful();
             if (!result) {
                 log.warn("Asset registration failed \n" + response.body().string());
@@ -144,7 +189,6 @@ public class EdcAdapterService {
         }
     }
 
-
     /**
      * Retrieve an (unfiltered) catalog from the partner with the
      * given dspUrl
@@ -153,8 +197,8 @@ public class EdcAdapterService {
      * @return The full catalog
      * @throws IOException If the connection to the partners control plane fails
      */
-    public JsonNode getDSPCatalog(String dspUrl) throws IOException {
-        var response = sendDspPostRequest(edcRequestBodyBuilder.buildBasicDSPCatalogRequestBody(dspUrl, null), List.of("v2", "catalog", "request"));
+    public JsonNode getCatalog(String dspUrl) throws IOException {
+        var response = sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, null), List.of("v2", "catalog", "request"));
         String stringData = response.body().string();
         response.body().close();
         return objectMapper.readTree(stringData);
@@ -171,9 +215,9 @@ public class EdcAdapterService {
      * @return An array of Catalog items.
      * @throws IOException If the connection to the partners control plane fails
      */
-    private JsonNode getDSPCatalogItems(String dspUrl, Map<String, String> filter) throws IOException {
-        var response = sendDspPostRequest(edcRequestBodyBuilder.
-            buildBasicDSPCatalogRequestBody(dspUrl, filter), List.of("v2", "catalog", "request"));
+    private JsonNode getCatalogItems(String dspUrl, Map<String, String> filter) throws IOException {
+        var response = sendPostRequest(edcRequestBodyBuilder.
+            buildBasicCatalogRequestBody(dspUrl, filter), List.of("v2", "catalog", "request"));
         String stringData = response.body().string();
         if (!response.isSuccessful()) {
             throw new IOException("Http Catalog Request unsuccessful");
@@ -214,57 +258,12 @@ public class EdcAdapterService {
      * @return The JSON response to your contract offer.
      * @throws IOException If the connection to the partners control plane fails
      */
-    private JsonNode startDspNegotiation(Partner partner, JsonNode catalogItem) throws IOException {
-        var requestBody = edcRequestBodyBuilder.buildDSPAssetNegotiation(partner, catalogItem);
-        var response = sendDspPostRequest(requestBody, List.of("v2", "contractnegotiations"));
+    private JsonNode initiateNegotiation(Partner partner, JsonNode catalogItem) throws IOException {
+        var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(partner, catalogItem);
+        var response = sendPostRequest(requestBody, List.of("v2", "contractnegotiations"));
         String responseString = response.body().string();
         response.body().close();
         return objectMapper.readTree(responseString);
-    }
-
-
-    /**
-     * Util method for issuing a GET request to the management api of your control plane.
-     *
-     * @param pathSegments The path segments
-     * @return The response
-     * @throws IOException If the connection to your control plane fails
-     */
-    public Response sendDspGetRequest(List<String> pathSegments) throws IOException {
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getEdcManagementUrl()).newBuilder();
-        for (var pathSegment : pathSegments) {
-            urlBuilder.addPathSegment(pathSegment);
-        }
-        var request = new Request.Builder()
-            .get()
-            .url(urlBuilder.build())
-            .header("X-Api-Key", variablesService.getEdcApiKey())
-            .build();
-        return CLIENT.newCall(request).execute();
-    }
-
-    /**
-     * Util method for issuing a POST request to the management api of your control plane.
-     *
-     * @param requestBody  The request body
-     * @param pathSegments The path segments
-     * @return The response from your control plane
-     * @throws IOException If the connection to your control plane fails
-     */
-    private Response sendDspPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getEdcManagementUrl()).newBuilder();
-        for (var pathSegment : pathSegments) {
-            urlBuilder.addPathSegment(pathSegment);
-        }
-        RequestBody body = RequestBody.create(MediaType.parse("application/json"), requestBody.toString());
-
-        var request = new Request.Builder()
-            .post(body)
-            .url(urlBuilder.build())
-            .header("X-Api-Key", variablesService.getEdcApiKey())
-            .header("Content-Type", "application/json")
-            .build();
-        return CLIENT.newCall(request).execute();
     }
 
     /**
@@ -276,8 +275,8 @@ public class EdcAdapterService {
      * @return The response body as String
      * @throws IOException If the connection to your control plane fails
      */
-    public JsonNode getDspNegotiationState(String negotiationId) throws IOException {
-        var response = sendDspGetRequest(List.of("v2", "contractnegotiations", negotiationId));
+    public JsonNode getNegotiationState(String negotiationId) throws IOException {
+        var response = sendGetRequest(List.of("v2", "contractnegotiations", negotiationId));
         String stringData = response.body().string();
         response.body().close();
         return objectMapper.readTree(stringData);
@@ -293,9 +292,9 @@ public class EdcAdapterService {
      * @return The response object
      * @throws IOException If the connection to your control plane fails
      */
-    public JsonNode startDspPullTransfer(Partner partner, String contractId, String assetId) throws IOException {
-        var body = edcRequestBodyBuilder.buildDSPDataPullRequestBody(partner, contractId, assetId);
-        var response = sendDspPostRequest(body, List.of("v2", "transferprocesses"));
+    public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String assetId) throws IOException {
+        var body = edcRequestBodyBuilder.buildProxyPullRequestBody(partner, contractId, assetId);
+        var response = sendPostRequest(body, List.of("v2", "transferprocesses"));
         String data = response.body().string();
         response.body().close();
         return objectMapper.readTree(data);
@@ -310,8 +309,8 @@ public class EdcAdapterService {
      * @return The response from your Controlplane
      * @throws IOException If the connection to your control plane fails
      */
-    public JsonNode getDspTransferState(String transferId) throws IOException {
-        var response = sendDspGetRequest(List.of("v2", "transferprocesses", transferId));
+    public JsonNode getTransferState(String transferId) throws IOException {
+        var response = sendGetRequest(List.of("v2", "transferprocesses", transferId));
         String data = response.body().string();
         response.body().close();
         return objectMapper.readTree(data);
@@ -320,7 +319,7 @@ public class EdcAdapterService {
 
     /**
      * Util method for sending a post request the given endpoint
-     * in order to initiate a consumer pull request.
+     * in order to initiate a proxy pull request.
      * Any caller of this method has the responsibility to close
      * the returned Response object after using it.
      *
@@ -330,7 +329,7 @@ public class EdcAdapterService {
      * @param requestBodyString The request body in JSON format as String
      * @return The response from the endpoint defined in the url (which is usually the other party's data plane), carrying the asset payload
      */
-    public Response sendDataPullRequest(String url, String authKey, String authCode, String requestBodyString) {
+    public Response postProxyPullRequest(String url, String authKey, String authCode, String requestBodyString) {
         try {
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), requestBodyString);
             Request request = new Request.Builder()
@@ -340,7 +339,7 @@ public class EdcAdapterService {
                 .build();
             return CLIENT.newCall(request).execute();
         } catch (Exception e) {
-            log.error("Failed to send Data Pull request to " + url, e);
+            log.error("Failed to send Proxy Pull request to " + url, e);
             throw new RuntimeException(e);
         }
     }
@@ -360,7 +359,7 @@ public class EdcAdapterService {
         filter.put("asset:prop:apibusinessobject", "product-stock");
         filter.put("asset:prop:apipurpose", "request");
         filter.put("asset:prop:version", variablesService.getPurisApiVersion());
-        return getContractForRequestOrResponseApiApi(partner, filter);
+        return getContractForRequestOrResponseApi(partner, filter);
     }
 
     /**
@@ -378,7 +377,7 @@ public class EdcAdapterService {
         filter.put("asset:prop:apibusinessobject", "product-stock");
         filter.put("asset:prop:apipurpose", "response");
         filter.put("asset:prop:version", variablesService.getPurisApiVersion());
-        return getContractForRequestOrResponseApiApi(partner, filter);
+        return getContractForRequestOrResponseApi(partner, filter);
     }
 
     /**
@@ -392,35 +391,35 @@ public class EdcAdapterService {
      * @param filter  The filter to be applied on the level of the asset's properties object.
      * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
-    public String[] getContractForRequestOrResponseApiApi(Partner partner, Map<String, String> filter) {
+    private String[] getContractForRequestOrResponseApi(Partner partner, Map<String, String> filter) {
         try {
-            JsonNode catalogItem = getDSPCatalogItems(partner.getEdcUrl(), filter).get(0);
-            JsonNode negotiationResponse = startDspNegotiation(partner, catalogItem);
+            JsonNode catalogItem = getCatalogItems(partner.getEdcUrl(), filter).get(0);
+            JsonNode negotiationResponse = initiateNegotiation(partner, catalogItem);
             String assetApi = catalogItem.get("@id").asText();
             String negotiationId = negotiationResponse.get("@id").asText();
             // Await confirmation of contract and contractId
             String contractId = null;
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
-                var responseObject = getDspNegotiationState(negotiationId);
+                var responseObject = getNegotiationState(negotiationId);
                 if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
                     contractId = responseObject.get("edc:contractAgreementId").asText();
                     break;
                 }
             }
             if (contractId == null) {
-                var negotiationState = getDspNegotiationState(negotiationId);
+                var negotiationState = getNegotiationState(negotiationId);
                 log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
                 log.error("Failed to obtain " + assetApi + " from " + partner.getEdcUrl());
                 return null;
             }
 
             // Initiate transfer of edr
-            var transferResp = startDspPullTransfer(partner, contractId, assetApi);
+            var transferResp = initiateProxyPullTransfer(partner, contractId, assetApi);
             String transferId = transferResp.get("@id").asText();
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
-                transferResp = getDspTransferState(transferId);
+                transferResp = getTransferState(transferId);
                 if ("STARTED".equals(transferResp.get("edc:state").asText())) {
                     break;
                 }

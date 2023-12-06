@@ -17,7 +17,7 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-public class EDCRequestBodyBuilder {
+public class EdcRequestBodyBuilder {
 
 
     @Autowired
@@ -49,8 +49,8 @@ public class EDCRequestBodyBuilder {
      * @param filter             Key-value-pairs, may be empty or null
      * @return The request body
      */
-    public ObjectNode buildBasicDSPCatalogRequestBody(String counterPartyDspUrl, Map<String, String> filter) {
-        var objectNode = getEDCContextObject();
+    public ObjectNode buildBasicCatalogRequestBody(String counterPartyDspUrl, Map<String, String> filter) {
+        var objectNode = getEdcContextObject();
         objectNode.put("protocol", "dataspace-protocol-http");
         objectNode.put("@type", "CatalogRequest");
         objectNode.put("counterPartyAddress", counterPartyDspUrl);
@@ -70,7 +70,7 @@ public class EDCRequestBodyBuilder {
      * @param apiMethod The API method you want to register
      * @return The request body
      */
-    public JsonNode buildDSPCreateAssetBody(DT_ApiMethodEnum apiMethod) {
+    public JsonNode buildCreateAssetBody(DT_ApiMethodEnum apiMethod) {
         var body = MAPPER.createObjectNode();
         var context = MAPPER.createObjectNode();
         context.put(VOCAB_KEY, EDC_NAMESPACE);
@@ -114,7 +114,7 @@ public class EDCRequestBodyBuilder {
      *
      * @return The request body
      */
-    public JsonNode buildPublicDSPPolicy() {
+    public JsonNode buildPublicPolicyBody() {
         var body = MAPPER.createObjectNode();
         var context = MAPPER.createObjectNode();
         context.put("odrl", ODRL_NAMESPACE);
@@ -132,13 +132,13 @@ public class EDCRequestBodyBuilder {
     }
 
     /**
-     * Creates the request body for registering a simple contract definition.
-     * Relies on the policy that is created via the buildPublicDSPPolicy() method.
+     * Creates the request body for registering a public contract definition.
+     * Relies on the policy that is created via the buildPublicPolicy() method.
      *
      * @return The request body
      */
-    public JsonNode buildDSPContractDefinitionWithPublicPolicy() {
-        var body = getEDCContextObject();
+    public JsonNode buildContractDefinitionWithPublicPolicyBody() {
+        var body = getEdcContextObject();
         body.put("@id", publicContractDefinitionId);
         body.put("accessPolicyId", publicPolicyId);
         body.put("contractPolicyId", publicPolicyId);
@@ -154,7 +154,7 @@ public class EDCRequestBodyBuilder {
      * @param dcatCatalogItem The catalog entry that describes the target asset.
      * @return The request body
      */
-    public ObjectNode buildDSPAssetNegotiation(Partner partner, JsonNode dcatCatalogItem) {
+    public ObjectNode buildAssetNegotiationBody(Partner partner, JsonNode dcatCatalogItem) {
         var objectNode = MAPPER.createObjectNode();
         var contextNode = MAPPER.createObjectNode();
         contextNode.put(VOCAB_KEY, EDC_NAMESPACE);
@@ -178,7 +178,7 @@ public class EDCRequestBodyBuilder {
     }
 
     /**
-     * Creates the request body for requesting a data pull transfer using the
+     * Creates the request body for requesting a proxy pull transfer using the
      * DSP protocol and the Tractus-X-EDC.
      *
      * @param partner    The Partner who controls the target asset
@@ -186,8 +186,8 @@ public class EDCRequestBodyBuilder {
      * @param assetId    The assetId
      * @return The request body
      */
-    public JsonNode buildDSPDataPullRequestBody(Partner partner, String contractID, String assetId) {
-        var body = getEDCContextObject();
+    public JsonNode buildProxyPullRequestBody(Partner partner, String contractID, String assetId) {
+        var body = getEdcContextObject();
         body.put("@type", "TransferRequestDto");
         body.put("connectorId", partner.getBpnl());
         body.put("connectorAddress", partner.getEdcUrl());
@@ -213,7 +213,7 @@ public class EDCRequestBodyBuilder {
      *
      * @return A request body stub
      */
-    private ObjectNode getEDCContextObject() {
+    private ObjectNode getEdcContextObject() {
         ObjectNode node = MAPPER.createObjectNode();
         var context = MAPPER.createObjectNode();
         context.put(VOCAB_KEY, EDC_NAMESPACE);

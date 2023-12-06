@@ -230,7 +230,7 @@ public class ProductStockRequestApiServiceImpl implements ProductStockRequestApi
 
         try {
             String requestBody = objectMapper.writeValueAsString(response);
-            var httpResponse = edcAdapterService.sendDataPullRequest(
+            var httpResponse = edcAdapterService.postProxyPullRequest(
                 endpoint, authKey, authCode, requestBody);
             log.info(httpResponse.body().string());
             httpResponse.body().close();
@@ -298,7 +298,7 @@ public class ProductStockRequestApiServiceImpl implements ProductStockRequestApi
         Response response = null;
         try {
             String requestBody = objectMapper.writeValueAsString(productStockRequest);
-            response = edcAdapterService.sendDataPullRequest(endpoint, authKey, authCode, requestBody);
+            response = edcAdapterService.postProxyPullRequest(endpoint, authKey, authCode, requestBody);
             log.debug(response.body().string());
             if(response.code() < 400) {
                 productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Requested);
