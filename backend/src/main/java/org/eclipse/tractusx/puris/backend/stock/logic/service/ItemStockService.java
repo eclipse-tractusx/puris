@@ -68,8 +68,8 @@ public class ItemStockService {
 
     private boolean validate(ItemStock itemStock) {
         var key = itemStock.getKey();
+        Partner partner = key.getPartner();
         try {
-            Partner partner = key.getPartner();
             Objects.requireNonNull(partner, "Missing Partner");
             Objects.requireNonNull(key.getMaterial(), "Missing Material");
             Objects.requireNonNull(key.getDirection(), "Missing direction");
@@ -91,9 +91,10 @@ public class ItemStockService {
                 .filter(address -> address.getBpna().equals(key.getLocationBpna())).findFirst().orElse(null);
             Objects.requireNonNull(stockBpna, "Unknown Bpna: " + key.getLocationBpna());
             var materialPartnerRelation = mprService.find(key.getMaterial(), partner);
-            Objects.requireNonNull(materialPartnerRelation, "Missing MaterialPartnerRelation");
+            Objects.requireNonNull(materialPartnerRelation, "Missing MaterialPartnerRelation between Partner " +
+                partner.getBpnl() + " and " + itemStock.getOwnMaterialNumber());
         } catch (Exception e) {
-            log.error("Validation failed: " + e.getMessage());
+            log.error("Validation failed: " + itemStock + "\n" + e.getMessage());
             return false;
         }
         return true;
