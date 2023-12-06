@@ -355,12 +355,12 @@ backend:
               host: "172.17.0.2"
               management:
                 # -- Url to the EDC controlplane management of the edc
-                url: "https://isst-edc.int.demo.catena-x.net/management"
+                url: "https:/your-edc-adress:your-port/management"
               protocol:
                 # -- Url to the EDC controlplane protocol API of the edc
-                url: "https://isst-edc.int.demo.catena-x.net/api/v1/dsp"
+                url: "https://your-edc-adress:your-port/api/v1/dsp"
               # -- Key for the EDC control plane
-              key: "isst-password"
+              key: "password"
             web:
                 rest:
                     cors:

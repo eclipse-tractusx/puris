@@ -118,7 +118,7 @@ public class VariablesService {
      * A human-readable description of yourself, e.g.
      * the name of your company.
      */
-    private String ownName
+    private String ownName;
     @Value("${own.bpns}")
     /**
      * A BPNS that was assigned to you.
