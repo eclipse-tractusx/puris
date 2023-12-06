@@ -27,7 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 
 /**
@@ -49,9 +48,9 @@ public class EdcController {
      */
     @GetMapping("/catalog")
     @CrossOrigin
-    public ResponseEntity<String> getEDCCatalog(@RequestParam String dspUrl) {
+    public ResponseEntity<String> getCatalog(@RequestParam String dspUrl) {
         try {
-            var catalog = edcAdapter.getDSPCatalog(dspUrl);
+            var catalog = edcAdapter.getCatalog(dspUrl);
             return ResponseEntity.ok(catalog.toPrettyString());
         } catch (IOException e) {
             log.warn(e.getMessage());
@@ -69,7 +68,7 @@ public class EdcController {
     @CrossOrigin
     public ResponseEntity<String> getAssets(@RequestParam String assetId) {
         try {
-            var result = edcAdapter.sendDspGetRequest(List.of("v3", "assets", assetId));
+            var result = edcAdapter.sendGetRequest(List.of("v3", "assets", assetId));
             var stringData = result.body().string();
             result.body().close();
             return ResponseEntity.ok(stringData);

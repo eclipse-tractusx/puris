@@ -76,7 +76,7 @@ public class ExternalConnectorService {
      */
     private boolean checkUrl(String url) {
         try {
-            edcAdapter.getDSPCatalog(url);
+            edcAdapter.getCatalog(url);
         } catch (IOException e) {
             return false;
         }
