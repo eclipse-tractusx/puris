@@ -39,7 +39,6 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -83,21 +82,6 @@ public class ProductStockRequestApiServiceImpl implements ProductStockRequestApi
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Value("${edc.dataplane.public.port}")
-    String dataPlanePort;
-
-    @Value("${edc.controlplane.host}")
-    String dataPlaneHost;
-
-    @Value("${edc.idsUrl}")
-    private String ownEdcIdsUrl;
-
-    @Value("${own.bpnl}")
-    private String ownBPNL;
-
-    @Value("${edc.applydataplaneworkaround}")
-    private boolean applyDataplaneWorkaround;
-
     @Autowired
     private VariablesService variablesService;
 
@@ -108,28 +92,14 @@ public class ProductStockRequestApiServiceImpl implements ProductStockRequestApi
         return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
-
-    /**
-     * This method should be called in a separate Thread.
-     *
-     * It will evaluate the given ProductStockRequest and check, whether this Partner is
-     * currently known as a customer for the given products. Then this method will assemble
-     * all necessary information from database, generate ProductStockSammDto's and then send
-     * them to the Partner via his product-stock-response-api.
-     *
-     * <p>Please note that this method currently does not support multple BPNS's/BPNA's per Partner.</p>
-     *
-     * @param productStockRequest a ProductStockRequest you received from a Customer Partner
-     */
     public void handleRequest(ProductStockRequest productStockRequest) {
-
         productStockRequest = productStockRequestService.updateState(productStockRequest,DT_RequestStateEnum.Working);
         String requestingPartnerBpnl = productStockRequest.getHeader().getSender();
         Partner requestingPartner =  partnerService.findByBpnl(requestingPartnerBpnl);
 
-        String partnerIdsUrl = requestingPartner.getEdcUrl();
+        String partnerEdcUrl = requestingPartner.getEdcUrl();
 
-        if (productStockRequest.getHeader().getSenderEdc() != null && !partnerIdsUrl.equals(productStockRequest.getHeader().getSenderEdc())) {
+        if (productStockRequest.getHeader().getSenderEdc() != null && !partnerEdcUrl.equals(productStockRequest.getHeader().getSenderEdc())) {
             log.warn("Partner " + requestingPartner.getName() + " is using unknown idsUrl: " + productStockRequest.getHeader().getSenderEdc());
             log.warn("Request will not be processed");
             productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
@@ -233,9 +203,9 @@ public class ProductStockRequestApiServiceImpl implements ProductStockRequestApi
         }
 
 
-        var data = edcAdapterService.getContractForResponseApi(partnerIdsUrl);
+        var data = edcAdapterService.getContractForResponseApi(requestingPartner);
         if(data == null) {
-            log.error("Failed to contract response api from " + partnerIdsUrl);
+            log.error("Failed to contract response api from " + partnerEdcUrl);
             productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Error);
             log.info("Request status: \n" + productStockRequest.toString());
             return;
@@ -248,25 +218,20 @@ public class ProductStockRequestApiServiceImpl implements ProductStockRequestApi
         MessageHeader messageHeader = new MessageHeader();
         messageHeader.setRequestId(productStockRequest.getHeader().getRequestId());
         messageHeader.setContractAgreementId(contractId);
-        messageHeader.setSender(ownBPNL);
-        messageHeader.setSenderEdc(ownEdcIdsUrl);
+        messageHeader.setSender(variablesService.getOwnBpnl());
+        messageHeader.setSenderEdc(variablesService.getEdcProtocolUrl());
         // set receiver per partner
         messageHeader.setReceiver(productStockRequest.getHeader().getSender());
         messageHeader.setUseCase(DT_UseCaseEnum.PURIS);
         messageHeader.setCreationDate(new Date());
-
         ProductStockResponse response = new ProductStockResponse();
         response.setHeader(messageHeader);
         response.getContent().setProductStocks(resultProductStocks);
 
-        if (applyDataplaneWorkaround) {
-            log.info("Applying Dataplane Address Workaround");
-            endpoint = "http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public";
-        }
         try {
             String requestBody = objectMapper.writeValueAsString(response);
-            var httpResponse = edcAdapterService.sendDataPullRequest(
-                    endpoint, authKey, authCode, requestBody);
+            var httpResponse = edcAdapterService.postProxyPullRequest(
+                endpoint, authKey, authCode, requestBody);
             log.info(httpResponse.body().string());
             httpResponse.body().close();
             productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Completed);
@@ -279,7 +244,8 @@ public class ProductStockRequestApiServiceImpl implements ProductStockRequestApi
 
     }
 
-    public void request(Material material, Partner supplierPartner){
+
+    public void doRequest(Material material, Partner supplierPartner){
         ProductStockRequest productStockRequest = new ProductStockRequest();
 
         MaterialPartnerRelation materialPartnerRelation = mprService.find(material, supplierPartner);
@@ -297,7 +263,7 @@ public class ProductStockRequestApiServiceImpl implements ProductStockRequestApi
         );
         productStockRequest.getContent().getProductStock().add(materialToRequest);
 
-        String [] data = edcAdapterService.getContractForRequestApi(supplierPartner.getEdcUrl());
+        String [] data = edcAdapterService.getContractForRequestApi(supplierPartner);
         if(data == null) {
             log.error("failed to obtain request api from " + supplierPartner.getEdcUrl());
             return;
@@ -305,10 +271,6 @@ public class ProductStockRequestApiServiceImpl implements ProductStockRequestApi
         String authKey = data[0];
         String authCode = data[1];
         String endpoint = data[2];
-        if (applyDataplaneWorkaround) {
-            log.info("Applying Dataplane Address Workaround");
-            endpoint = "http://" + dataPlaneHost + ":" + dataPlanePort + "/api/public";
-        }
 
         String cid = data[3];
         MessageHeader messageHeader = new MessageHeader();
@@ -322,7 +284,7 @@ public class ProductStockRequestApiServiceImpl implements ProductStockRequestApi
         messageHeader.setRespondAssetId(variablesService.getResponseApiAssetId());
         messageHeader.setContractAgreementId(cid);
         messageHeader.setSender(variablesService.getOwnBpnl());
-        messageHeader.setSenderEdc(variablesService.getOwnEdcIdsUrl());
+        messageHeader.setSenderEdc(variablesService.getEdcProtocolUrl());
         // set receiver per partner
         messageHeader.setReceiver(supplierPartner.getBpnl());
         messageHeader.setUseCase(DT_UseCaseEnum.PURIS);
@@ -336,7 +298,7 @@ public class ProductStockRequestApiServiceImpl implements ProductStockRequestApi
         Response response = null;
         try {
             String requestBody = objectMapper.writeValueAsString(productStockRequest);
-            response = edcAdapterService.sendDataPullRequest(endpoint, authKey, authCode, requestBody);
+            response = edcAdapterService.postProxyPullRequest(endpoint, authKey, authCode, requestBody);
             log.debug(response.body().string());
             if(response.code() < 400) {
                 productStockRequest = productStockRequestService.updateState(productStockRequest, DT_RequestStateEnum.Requested);
