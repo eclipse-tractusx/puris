@@ -18,14 +18,66 @@
 
  SPDX-License-Identifier: Apache-2.0
 -->
-<script setup>
-
-</script>
-
 <template>
-
+    <main>
+         <div class="text-gray-900 grid bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700  w-[100%] overflow-auto p-2.5">
+             <table>
+                 <tr v-for="item in information" :id="item.header">
+                     <td class="font-bold">{{item.header}}</td>
+                     <td>
+                         <a v-if="item.hasOwnProperty('link')" :href="item.link" id="fakelink">{{item.body}}</a>
+                         <p v-else> {{item.body}}</p>
+                     </td>
+                 </tr>
+             </table>
+         </div>
+    </main>
 </template>
+<script>
+export default{
+    name: "AboutLicense",
 
+    data() {
+        return {
+            information: {
+                productName: {
+                    header: "Product Name",
+                    body: "PURIS",
+                    link: "https://github.com/eclipse-tractusx/puris"
+                },
+                license: {
+                    header: "License",
+                    body: "Apache-2.0"
+                },
+                licensePath: {
+                    header: "License Path",
+                    body: "License URL",
+                    link: "https://github.com/eclipse-tractusx/puris/blob/main/LICENSE"
+                },
+                notice: {
+                    header: "NOTICE",
+                    body: "Notice.md URL",
+                    link: "https://github.com/eclipse-tractusx/puris/blob/main/NOTICE.md"
+                },
+                sourceUrl: {
+                    header: "Source URL",
+                    body: "Eclipse-Tractus-X",
+                    link: "https://github.com/eclipse-tractusx"
+                },
+                commitId: {
+                    header: "Commit ID",
+                    body: "e66120c1bd8fb78aa51070423e7ceb39bbfa3dae"
+                }
+            }
+        };
+    },
+};
+</script>
 <style scoped>
-
+#fakelink{
+    color: #0000EE;
+}
+#fakelink:hover{
+    color: #0000FF;
+}
 </style>
