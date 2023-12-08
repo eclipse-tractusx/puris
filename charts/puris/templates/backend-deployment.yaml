@@ -96,6 +96,14 @@ spec:
             - name: http
               containerPort: {{ .Values.backend.service.port }}
               protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /catena/health/
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /catena/health/
+              port: http
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}
       {{- with .Values.backend.nodeSelector }}
