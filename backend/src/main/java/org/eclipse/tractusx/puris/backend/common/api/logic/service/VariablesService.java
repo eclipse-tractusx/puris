@@ -29,40 +29,128 @@ import org.springframework.stereotype.Service;
 
 @Getter
 @Service
+/**
+ * This class contains the relevant
+ */
 public class VariablesService {
 
-    @Value("${puris.apiversion}")
-    private String purisApiVersion;
-
+    @Value("${server.port}")
+    /**
+     * The port used by this apps server application.
+     */
+    private String serverPort;
     @Value("${puris.demonstrator.role}")
-    private String purisDemonstratorRole;
-
-    @Value("${request.apiassetid}")
+    /**
+     * Must be set to "CUSTOMER" or "SUPPLIER" if
+     * you want to start with some initial settings
+     * defined in the DataInjectionCommandLineRunner
+     */
+    private String demoRole;
+    @Value("${puris.apiversion}")
+    /**
+     * The current version number
+     */
+    private String purisApiVersion;
+    @Value("${puris.edr.endpoint}")
+    /**
+     * The edrEndpoint to be used during consumer pull asset transfers.
+     */
+    private String edrEndpoint;
+    @Value("${puris.edr.deletiontimer}")
+    /**
+     * The number of minutes before received authentication data
+     * in the context of a consumer pull is removed from memory
+     */
+    private long edrTokenDeletionTimer;
+    @Value("${puris.request.serverendpoint}")
+    /**
+     * The url under which this application's request endpoint can
+     * be reached by external machines.
+     */
+    private String requestServerEndpoint;
+    @Value("${puris.request.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the request API
+     * during asset creation.
+     */
     private String requestApiAssetId;
-
-    @Value("${response.apiassetid}")
+    @Value("${puris.response.serverendpoint}")
+    /**
+     * The url under which this application's response endpoint can
+     * be reached by external machines.
+     */
+    private String responseServerEndpoint;
+    @Value("${puris.response.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the request API
+     * during asset creation.
+     */
     private String responseApiAssetId;
 
-    @Value("${own.bpnl}")
-    private String ownBpnl;
+    @Value("${edc.controlplane.key}")
+    /**
+     * The api key of your control plane
+     */
+    private String edcApiKey;
+    @Value("${edc.controlplane.management.url}")
+    /**
+     * Your control plane's management url
+     */
+    private String edcManagementUrl;
+    @Value("${edc.controlplane.protocol.url}")
+    /**
+     * Your control plane's protocol url
+     */
+    private String edcProtocolUrl;
 
+    @Value("${own.bpnl}")
+    /**
+     * The BPNL that was assigned to you.
+     */
+    private String ownBpnl;
     @Value("${own.name}")
+    /**
+     * A human-readable description of yourself, e.g.
+     * the name of your company.
+     */
     private String ownName;
-    @Value("${edc.idsUrl}")
-    private String ownEdcIdsUrl;
     @Value("${own.default.bpns}")
+    /**
+     * A BPNS that was assigned to you.
+     */
     private String ownDefaultBpns;
-    @Value("${own.default.streetandnumber}")
-    private String ownDefaultStreetAndNumber;
     @Value("${own.default.site.name}")
+    /**
+     * A human-readable description of the site that you referenced in
+     * the ownDefaultBpns.
+     */
     private String ownDefaultSiteName;
     @Value("${own.default.bpna}")
+    /** A BPNA that was assigned to you. If you initialised the
+     * ownDefaultBpns variable, then it must be a BPNA that is associated
+     * to that BPNS.
+     */
     private String ownDefaultBpna;
+    @Value("${own.default.streetandnumber}")
+    /**
+     * The street and number associated to the ownDefaultBpna
+     */
+    private String ownDefaultStreetAndNumber;
     @Value("${own.default.zipcodeandcity}")
+    /**
+     * The zip code and name of the city associated to the ownDefaultBpna
+     */
     private String ownDefaultZipCodeAndCity;
     @Value("${own.default.country}")
+    /**
+     * The country in which your ownDefaultBpna-address is located.
+     */
     private String ownDefaultCountry;
-
+    /**
+     * The key for accessing the api.
+     */
+    @Value("${puris.api.key}")
+    private String apiKey;
 
     /**
      * Returns the asset-id as defined in the properties file for the given api method

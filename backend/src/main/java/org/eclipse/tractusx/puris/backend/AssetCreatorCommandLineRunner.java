@@ -21,14 +21,9 @@
  */
 package org.eclipse.tractusx.puris.backend;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.CreateAssetDto;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EDCRequestBodyBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -39,49 +34,14 @@ public class AssetCreatorCommandLineRunner implements CommandLineRunner {
     @Autowired
     private EdcAdapterService edcAdapterService;
 
-    @Value("${request.serverendpoint}")
-    private String requestApiBaseUrl;
-
-    @Value("${response.serverendpoint}")
-    private String responseApiBaseUrl;
-
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private EDCRequestBodyBuilder edcRequestBodyBuilder;
-
-    public AssetCreatorCommandLineRunner(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
-
     @Override
     public void run(String... args) throws Exception {
-
-        registerResponseAndRequestApiAsset();
-
-    }
-
-    private void registerResponseAndRequestApiAsset() {
-
-        // Create Request Api Asset
-        CreateAssetDto createRequestApiAssetDto =
-                edcRequestBodyBuilder.buildCreateAssetDtoForApi(DT_ApiMethodEnum.REQUEST,
-                        requestApiBaseUrl);
-
-        CreateAssetDto createResponseApiAssetDto =
-                edcRequestBodyBuilder.buildCreateAssetDtoForApi(DT_ApiMethodEnum.RESPONSE,
-                        responseApiBaseUrl);
-
-        try {
-            edcAdapterService.publishAssetAtEDC(createResponseApiAssetDto);
-            edcAdapterService.publishAssetAtEDC(createRequestApiAssetDto);
-            log.info("Published sample RequestAndResponseAssetData");
-        } catch (Exception e) {
-            log.error("FAILED TO REGISTER REQUEST/RESPONSE ASSETS");
-            log.error(e.getMessage());
+        if (!edcAdapterService.registerAssetsInitially()) {
+            // retry
+            int retryDelaySeconds = 3;
+            log.warn("retrying initial asset registration in " + retryDelaySeconds + " seconds");
+            Thread.sleep(retryDelaySeconds * 1000);
+            log.warn("retry successful: " + edcAdapterService.registerAssetsInitially());
         }
-
     }
-
-
 }

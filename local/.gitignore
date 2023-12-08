@@ -1,4 +1,5 @@
 *.key
 *.cert
 *.keys
-local/.env
+*.secret
+.env

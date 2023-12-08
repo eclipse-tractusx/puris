@@ -20,117 +20,41 @@
  */
 package org.eclipse.tractusx.puris.backend.common.edc.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.net.URL;
+import java.util.List;
 
 /**
  * Controller for forwarding/building requests to a productEDC.
  */
 @RestController
 @RequestMapping("edc")
+@Slf4j
 public class EdcController {
 
     @Autowired private EdcAdapterService edcAdapter;
 
-    /**
-     * Publish an order at the edc.
-     *
-     * @param orderId id of the order to be published at the edc.
-     * @return OK if order was published, else false.
-     */
-    @GetMapping("/publish")
-    @CrossOrigin
-    public ResponseEntity<String> publishAtEDC(@RequestParam String orderId) {
-        try {
-            var success = edcAdapter.publishOrderAtEDC(orderId);
-            return ResponseEntity.ok("Success: " + success);
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
-    }
 
     /**
      * Get the catalog from an EDC.
      *
-     * @param idsUrl ids url of the edc to get catalog from.
+     * @param dspUrl url of the edc to get catalog from.
      * @return catalog of the requested edc.
      */
     @GetMapping("/catalog")
     @CrossOrigin
-    public ResponseEntity<String> getEDCCatalog(@RequestParam String idsUrl) {
-        if (!isValidURI(idsUrl)) {
-            return ResponseEntity.badRequest().body("Malformed URL!");
-        }
+    public ResponseEntity<String> getCatalog(@RequestParam String dspUrl) {
         try {
-            var catalog = edcAdapter.getCatalog(idsUrl);
-            return ResponseEntity.ok(catalog);
+            var catalog = edcAdapter.getCatalog(dspUrl);
+            return ResponseEntity.ok(catalog.toPrettyString());
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
-    }
-
-    /**
-     * Start a negotiation with another EDC.
-     *
-     * @param orderId ID of the asset to request.
-     * @param connectorAddress address of the edc to start negotiating with.
-     * @return response of the own EDC.
-     */
-    @GetMapping("/startNegotiation")
-    @CrossOrigin
-    public ResponseEntity<String> startNegotiation(@RequestParam String orderId, @RequestParam String connectorAddress, 
-            @RequestParam String contractDefinitionId) {
-        try {
-            var result = edcAdapter.startNegotiation(connectorAddress, contractDefinitionId, orderId);
-            return ResponseEntity.ok(result);
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
-    }
-
-    /**
-     * Start a data transfer with another EDC.
-     *
-     * @param orderId id of the asset to transfer.
-     * @param connectorAddress address of the requested EDC.
-     * @param transferId id used for the transfer process.
-     * @param contractId id of the negotiated contract.
-     * @return response of the own EDC.
-     */
-    @GetMapping("/startTransfer")
-    @CrossOrigin
-    public ResponseEntity<String> startTransfer(
-            @RequestParam String orderId,
-            @RequestParam String connectorAddress,
-            @RequestParam String transferId,
-            @RequestParam String contractId) {
-        try {
-            var result = edcAdapter.startTransfer(transferId, connectorAddress, contractId, orderId);
-            return ResponseEntity.ok(result);
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
-    }
-
-    /**
-     * Get negotiations from own EDC.
-     *
-     * @param negotiationId optional parameter if only a specific negotiation should be retrieved.
-     * @return response from own EDC.
-     */
-    @GetMapping("/negotiations")
-    @CrossOrigin
-    public ResponseEntity<String> getNegotiations(@RequestParam(required = false) String negotiationId) {
-        try {
-            var result = edcAdapter.getFromEdc(negotiationId, "data", "contractnegotiations");
-            return ResponseEntity.ok(result);
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            log.warn(e.getMessage());
+            return ResponseEntity.internalServerError().build();
         }
     }
 
@@ -142,62 +66,16 @@ public class EdcController {
      */
     @GetMapping("/assets")
     @CrossOrigin
-    public ResponseEntity<String> getAssets(@RequestParam(required = false) String assetId) {
+    public ResponseEntity<String> getAssets(@RequestParam String assetId) {
         try {
-            var result = edcAdapter.getFromEdc(assetId, "data", "assets");
-            return ResponseEntity.ok(result);
+            var result = edcAdapter.sendGetRequest(List.of("v3", "assets", assetId));
+            var stringData = result.body().string();
+            result.body().close();
+            return ResponseEntity.ok(stringData);
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            log.warn(e.getMessage());
+            return ResponseEntity.internalServerError().build();
         }
     }
 
-    /**
-     * Delete an asset from the EDC.
-     *
-     * @param assetId id of the asset to delete.
-     * @return response from own EDC.
-     */
-    @DeleteMapping("/assets/{assetId}")
-    @CrossOrigin
-    public ResponseEntity<String> deleteAsset(@PathVariable String assetId) {
-        try {
-            var result = edcAdapter.deleteAsset(assetId);
-            return ResponseEntity.ok(result);
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
-    }
-
-    /**
-     * Get transfers from the EDC.
-     *
-     * @param transferId optional parameter if only a specific transfer should be retrieved.
-     * @return response from own EDC.
-     */
-    @GetMapping("/transfers")
-    @CrossOrigin
-    public ResponseEntity<String> getTransfers(@RequestParam(required = false) String transferId) {
-        try {
-            var result = edcAdapter.getFromEdc(transferId, "data", "transferprocess");
-            return ResponseEntity.ok(result);
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
-    }
-
-    /**
-     * Utility method to check if a URI is valid.
-     *
-     * @param uriString input string to validate.
-     * @return true iff string is a valid URI.
-     */
-    private static boolean isValidURI(String uriString) {
-        try {
-            URL url = new URL(uriString);
-            url.toURI();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
 }
