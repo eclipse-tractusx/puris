@@ -33,7 +33,6 @@ openssl req -x509 -out localhost.crt -keyout localhost.key \
 ```
 _NOTE: For productive use, you can use certificates provided by a Certificate Authority._
 
-
 Create a nginx.conf to provide certificates for listening on 443 for tls. You can find an example 
 [here](../frontend/nginx.conf).
 ``` conf
@@ -76,3 +75,46 @@ sudo vim /etc/hosts
 # :wq! (write and quit)
 ```
 
+## Backend
+
+Spring provides the possibility to provide ssl certificates.
+
+Let's assume the following structure:
+```shell
+ls
+>> /
+>> /ssl-certificates
+>> /ssl-certificates/application.p12
+>> /applicaiton-with-ssl.properties
+```
+
+For testing purposes, create self-signed certificates using java keytool and follow the prompts.
+Remember the password. They generated key file is a pkcs12 keystore.
+``` sh
+mkdir ssl-certificates
+cd ssl-certificates
+
+keytool -genkeypair -alias application -keyalg RSA -keysize 4096 -storetype PKCS12 -keystore application.p12 -validity 3650
+```
+_NOTE: For productive use, you can use certificates provided by a Certificate Authority._
+
+Use your common application.properties and add the following section to the file. Name it e.g., 
+application-with-ssl.properties.
+```application.properties
+server.ssl.enabled=false
+#server.port=8443
+server.ssl.bundle=server
+spring.ssl.bundle.jks.server.key.alias=application
+spring.ssl.bundle.jks.server.keystore.location=file:/opt/app/ssl-certificates/application.p12
+spring.ssl.bundle.jks.server.keystore.password=
+spring.ssl.bundle.jks.server.keystore.type=PKCS12
+```
+
+Finally pass the created keystore and properties file via docker:
+```shell
+docker run --rm -d -p 8433:8433 --name backend \
+  -v $(pwd)/ssl-certificates/application.p12:/opt/app/ssl-certificates/application.p12 \
+  -v $(pwd)/test.properties:/opt/app/test.properties \
+  -e SPRING_CONFIG_LOCATION=/opt/app/test.properties \
+  puris-backend:dev
+```
