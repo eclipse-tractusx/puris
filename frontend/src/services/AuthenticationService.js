@@ -51,13 +51,13 @@ const init = () => {
                 if (!authenticated) {
                     // User is not authenticated
                     console.error(
-                        "User %s is NOT authenticated.",
+                        "User '%s' is NOT authenticated.",
                         getUsername()
                     );
                     reject();
                 } else {
                     // authenticated
-                    console.info("User %s authenticated.", getUsername());
+                    console.info("User '%s' authenticated.", getUsername());
                     resolve();
                 }
             })
@@ -73,16 +73,18 @@ keycloak.onTokenExpired = () => {
         .updateToken(MIN_TOKEN_VALIDITY)
         .then((updated) => {
             if (updated) {
-                console.info("Renewed auth token for user %s.", getUsername());
+                console.info("Renewed auth token for user '%s'.", getUsername());
             } else {
                 console.error(
-                    "Auth token could not be renewed for user %s.",
+                    "Auth token could not be renewed for user '%s'.",
                     getUsername()
                 );
+                keycloak.clearToken();
             }
         })
         .catch((error) => {
             console.error("Error during auth token renewal:", error);
+            keycloak.clearToken();
         });
 };
 
@@ -112,13 +114,14 @@ const logout = () => {
         .logout()
         .then((success) => {
             console.info(
-                "User % logged out successfully: ",
+                "User '%s' logged out successfully: ",
                 getUsername(),
                 success
             );
+            keycloak.clearToken();
         })
         .catch((error) => {
-            console.error("Logout for user %s failed: ", getUsername(), error);
+            console.error("Logout for user '%s' failed: ", getUsername(), error);
         });
 };
 

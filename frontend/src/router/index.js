@@ -135,7 +135,7 @@ const requireRole = (to, from, next) => {
         next();
     } else {
         console.warn(
-            "User %s tried to access route %s but is not authorized.",
+            "User '%s' tried to access route '%s' but is not authorized.",
             AuthenticationService.getUsername(),
             to.name
         );
@@ -151,7 +151,8 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     if (to.meta.requiresAuth && !AuthenticationService.isAuthenticated()) {
         console.warn(
-            "User is not authenticated but tried to access %s.",
+            "User '%s' is not authenticated but tried to access '%s'.",
+            AuthenticationService.getUsername(),
             to.name
         );
         next("/unauthorized");
