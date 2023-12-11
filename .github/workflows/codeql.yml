@@ -80,6 +80,8 @@ jobs:
           queries: +security-extended,security-and-quality
 
       - name: Setup java for backend
+        # Ensures that the workflow only runs for languages other than 'javascript'
+        if: ${{ matrix.language != 'javascript' }}
         uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3.13.0
         with:
           java-version: 17
@@ -90,6 +92,8 @@ jobs:
       # Autobuild attempts to build any compiled languages (C/C++, C#, Go, Java, or Swift).
       # If this step fails, then you should remove it and run the build manually (see below)
       - name: Autobuild
+        # Ensures that the workflow only runs for languages other than 'javascript'
+        if: ${{ matrix.language != 'javascript' }}
         uses: github/codeql-action/autobuild@66b90a5db151a8042fa97405c6cf843bbe433f7b # v2.227
 
       # Command-line programs to run using the OS shell.
