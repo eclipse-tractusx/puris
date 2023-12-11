@@ -50,7 +50,6 @@ public class PartnerController {
     private PartnerService partnerService;
     private final ModelMapper modelMapper = new ModelMapper();
 
-    @CrossOrigin
     @PostMapping
     @Operation(description = "Creates a new Partner entity with the data given in the request body. Please note that no " +
         "UUID can be assigned to a Partner that wasn't created before. So the request body must not contain a UUID.")
@@ -89,7 +88,6 @@ public class PartnerController {
     }
 
     @PutMapping("putAddress")
-    @CrossOrigin
     @Operation(description = "Updates an existing Partner by adding a new Address. If that Partner already has " +
         "an Address with the BPNA given in the request body, that existing Address will be overwritten. ")
     @ApiResponses(value = {
@@ -124,7 +122,6 @@ public class PartnerController {
     }
 
     @PutMapping("putSite")
-    @CrossOrigin
     @Operation(description = "Updates an existing Partner by adding a new Site. If that Partner already has " +
         "a Site with the BPNS given in the request body, that existing Site will be overwritten. ")
     @ApiResponses(value = {
@@ -159,8 +156,6 @@ public class PartnerController {
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }
 
-
-    @CrossOrigin
     @GetMapping
     @Operation(description = "Returns the requested PartnerDto.")
     @ApiResponses(value = {
@@ -183,7 +178,6 @@ public class PartnerController {
         }
     }
 
-    @CrossOrigin
     @GetMapping("/all")
     @Operation(description = "Returns a list of all Partners. ")
     public ResponseEntity<List<PartnerDto>> listPartners() {

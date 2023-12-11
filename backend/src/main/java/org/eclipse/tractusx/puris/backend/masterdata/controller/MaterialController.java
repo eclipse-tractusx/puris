@@ -46,7 +46,6 @@ public class MaterialController {
     private final ModelMapper modelMapper = new ModelMapper();
 
     @PostMapping
-    @CrossOrigin
     @Operation(description = "Creates a new Material entity with the data given in the request body. As a bare minimum, " +
         "it must contain a new, unique ownMaterialNumber.")
     @ApiResponses(value = {
@@ -80,7 +79,6 @@ public class MaterialController {
     }
 
     @PutMapping
-    @CrossOrigin
     @Operation(description = "Updates an existing Material entity with the data given in the request body.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Update was accepted."),
@@ -113,7 +111,6 @@ public class MaterialController {
     }
 
     @GetMapping
-    @CrossOrigin
     @Operation(description = "Returns the requested Material dto, specified by the given ownMaterialNumber.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Returns the requested Material."),
@@ -131,7 +128,6 @@ public class MaterialController {
         return new ResponseEntity<>(dto, HttpStatusCode.valueOf(200));
     }
 
-    @CrossOrigin
     @GetMapping("/all")
     @Operation(description = "Returns a list of all Materials and Products.")
     public ResponseEntity<List<MaterialEntityDto>> listMaterials() {

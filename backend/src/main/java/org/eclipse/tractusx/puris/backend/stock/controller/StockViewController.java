@@ -87,7 +87,6 @@ public class StockViewController {
     @Autowired
     private ModelMapper modelMapper;
 
-    @CrossOrigin
     @GetMapping("materials")
     @ResponseBody
     @Operation(description = "Returns a list of all materials (excluding products)")
@@ -98,7 +97,6 @@ public class StockViewController {
             .collect(Collectors.toList());
     }
 
-    @CrossOrigin
     @GetMapping("materialnumbers-mapping")
     @ResponseBody
     @Operation(description = "Returns a mapping of all material numbers, that others partners are using" +
@@ -112,7 +110,6 @@ public class StockViewController {
         return mprService.getBPNL_To_MaterialNumberMap(ownMaterialNumber);
     }
 
-    @CrossOrigin
     @GetMapping("products")
     @ResponseBody
     @Operation(description = "Returns a list of all products (excluding materials)")
@@ -123,7 +120,6 @@ public class StockViewController {
             .collect(Collectors.toList());
     }
 
-    @CrossOrigin
     @GetMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Returns a list of all product-stocks")
@@ -133,7 +129,6 @@ public class StockViewController {
             .collect(Collectors.toList());
     }
 
-    @CrossOrigin
     @PostMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Creates a new product-stock")
@@ -152,7 +147,6 @@ public class StockViewController {
         return convertToDto(createdProductStock);
     }
 
-    @CrossOrigin
     @PutMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Updates an existing product-stock")
@@ -187,7 +181,6 @@ public class StockViewController {
         return productStock;
     }
 
-    @CrossOrigin
     @GetMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Returns a list of all material-stocks")
@@ -199,7 +192,6 @@ public class StockViewController {
         return allMaterialStocks;
     }
 
-    @CrossOrigin
     @PostMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Creates a new material-stock")
@@ -213,7 +205,6 @@ public class StockViewController {
         return convertToDto(createdMaterialStock);
     }
 
-    @CrossOrigin
     @PutMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Updates an existing material-stock")
@@ -245,7 +236,6 @@ public class StockViewController {
         return stock;
     }
 
-    @CrossOrigin
     @GetMapping("partner-product-stocks")
     @ResponseBody
     @Operation(description = "Returns a list of all partner-product-stocks that refer to the given material number")
@@ -268,7 +258,6 @@ public class StockViewController {
         return dto;
     }
 
-    @CrossOrigin
     @GetMapping("customer")
     @ResponseBody
     @Operation(description = "Returns a list of all Partners that are ordering the given material")
@@ -278,7 +267,6 @@ public class StockViewController {
                 .collect(Collectors.toList());
     }
 
-    @CrossOrigin
     @GetMapping("update-partner-product-stock")
     @ResponseBody
     @Operation(description = "For the given material, all known suppliers will be requested to report their" +
