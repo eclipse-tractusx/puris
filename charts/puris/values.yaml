@@ -23,7 +23,7 @@
 global:
     domain:
        backend:
-          ingress: &domain your-backend-host-adress.com
+          ingress: &domain your-backend-host-address.com
 # FRONTEND -----------
 frontend:
     replicaCount: 1
@@ -86,7 +86,7 @@ frontend:
         annotations: { }
         # -- Hosts for the Ingress controller
         hosts:
-            -   host: "your-frontend-host-adress.com"
+            -   host: "your-frontend-host-address.com"
                 paths:
                     -   path: /
                         pathType: ImplementationSpecific
@@ -94,7 +94,7 @@ frontend:
         tls:
             -   secretName: tls-secret
                 hosts:
-                    - your-frontend-host-adress.com
+                    - your-frontend-host-address.com
 
     # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
     # @url: https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-resource-requests-and-limits
@@ -355,10 +355,10 @@ backend:
               host: "172.17.0.2"
               management:
                 # -- Url to the EDC controlplane management of the edc
-                url: "https:/your-edc-address:your-port/management"
+                url: "https:/your-edc-address:8181/management"
               protocol:
                 # -- Url to the EDC controlplane protocol API of the edc
-                url: "https://your-edc-address:your-port/api/v1/dsp"
+                url: "https://your-edc-address:8184/api/v1/dsp"
               # -- Key for the EDC control plane
               key: "password"
             web:
