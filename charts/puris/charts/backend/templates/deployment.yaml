@@ -48,6 +48,8 @@ spec:
               value: "{{ .Values.puris.datasource.password }}"
             - name: EDC_CONTROLPLANE_HOST
               value: "{{ .Values.puris.edc.controlplane.host }}"
+            - name: EDC_CONTROLPLANE_DATA_PATH
+              value: "{{ .Values.puris.edc.controlplane.data.path }}"
             - name: EDC_CONTROLPLANE_DATA_PORT
               value: "{{ .Values.puris.edc.controlplane.data.port }}"
             - name: EDC_CONTROLPLANE_KEY
@@ -62,12 +64,24 @@ spec:
               value: "{{ .Values.puris.edc.idsurl }}"
             - name: MINIKUBE_IP
               value: "{{ .Values.puris.minikube.ip }}"
+            - name: OWN_BPNA
+              value: "{{ .Values.puris.own.bpna }}"
             - name: OWN_BPNL
               value: "{{ .Values.puris.own.bpnl }}"
             - name: OWN_BPNS
               value: "{{ .Values.puris.own.bpns }}"
+            - name: OWN_COUNTRY
+              value: "{{ .Values.puris.own.country }}"
             - name: OWN_EDR_DELETIONTIMER
               value: "{{ .Values.puris.own.edr.deletiontimer }}"
+            - name: OWN_NAME
+              value: "{{ .Values.puris.own.name }}"
+            - name: OWN_SITE
+              value: "{{ .Values.puris.own.site.name }}"
+            - name: OWN_STREETNUMBER
+              value: "{{ .Values.puris.own.streetnumber }}"
+            - name: OWN_ZIPCODEANDCITY
+              value: "{{ .Values.puris.own.zipcodeandcity }}"
             - name: PURIS_APIVERSION
               value: "{{ .Values.puris.apiversion }}"
             - name: PURIS_DEMONSTRATOR_ROLE

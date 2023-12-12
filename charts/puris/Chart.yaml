@@ -21,18 +21,12 @@
 
 apiVersion: v2
 name: puris
-description: An umbrella Helm chart for Kubernetes deployment of PURIS
+description: A helm chart for Kubernetes deployment of PURIS
 type: application
 home: https://github.com/eclipse-tractusx/puris
 sources:
     - https://github.com/eclipse-tractusx/puris
-dependencies:
-    - name: frontend
-      version: 1.0.0
-      repository: "file://charts/frontend"
-    - name: backend
-      version: 1.0.0
-      repository: "file://charts/backend"
+dependencies: []
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
