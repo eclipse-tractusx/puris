@@ -13,12 +13,44 @@ See `Install.md` file in folder [local](./local/docker-compose.yaml) for integra
         - **Current role for demonstrator**, under *backend.puris.demonstrator.role*
     > **NOTE**   
     Further information on the individual properties can be found in the following [README.md](./charts/puris/README.md).
-2. Run the application
+
+#### Run without Ingress 
+
+2. Run the application:
 ```shell
 helm install puris charts/puris \
     --namespace puris \
     --create-namespace 
 ```
-2. Done! The applications should be available at
-    - (frontend) `http://YOURIP:30000`
-    - (backend) `http://CLUSTERIP:30001/catena/swagger-ui/index.html`
+3. Forward ports for services:
+```shell
+kubectl -n puris port-forward svc/frontend 8080:8080
+kubectl -n puris port-forward svc/backend 8081:8081
+```
+4. Done! The applications should be available at `http://localhost:<forwarded-port>`.
+
+#### Run with Ingress
+
+Precondition: please refer to your runtime environment's official documentation on how to enable ingress.
+- [minikube](https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/)
+- [kind](https://kind.sigs.k8s.io/docs/user/ingress/)
+
+2. Run the application:
+```shell
+helm install puris charts/puris \
+    --namespace puris \
+    --create-namespace \
+    --set frontend.ingress.enabled=true \
+    --set backend.ingress.enabled=true
+```
+3. Edit /etc/hosts:
+```shell
+# If you are using minikube use minikube ip to get you clusterIp, for kind this is localhost (127.0.0.1)
+sudo vim /etc/hosts
+>> add entry for frontend "<cluster ip> <frontend-url.top-level-domain>"
+>> add entry for backend "<cluster ip> <backend-url.top-level-domain>"
+>> :wq! (save changes)
+```
+4. Done! The applications should be available at:
+    - (frontend) `http://your-frontend-host-address.com`
+    - (backend) `http://your-backend-host-address.com`
