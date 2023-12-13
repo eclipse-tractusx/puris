@@ -22,6 +22,7 @@
 package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.io.Serializable;
@@ -45,6 +46,7 @@ public class MaterialPartnerRelation {
     @EmbeddedId
     private Key key;
 
+    @Pattern(regexp = "^[a-zA-Z0-9\\-\\.]{1,255}$")
     private String partnerMaterialNumber;
     private boolean partnerSuppliesMaterial;
     private boolean partnerBuysMaterial;
@@ -93,6 +95,7 @@ public class MaterialPartnerRelation {
     public static class Key implements Serializable {
 
         @Column(name = "material_ownMaterialNumber")
+        @Pattern(regexp = "^[a-zA-Z0-9\\-\\.]{1,255}$")
         private String ownMaterialNumber;
 
         @Column(name = "partner_uuid")

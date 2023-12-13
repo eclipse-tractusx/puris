@@ -22,6 +22,7 @@
 package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
@@ -53,14 +54,17 @@ public class Partner {
     /**
      * A human-readable, distinctive name of this partner.
      */
+    @Pattern(regexp = "^[a-zA-Z0-9 \\-]{1,255}$")
     private String name;
     /**
      * The EDC-URL of the partner.
      */
+    @Pattern(regexp = "^http[s]?://([a-z0-9][a-z0-9\\-]+[a-z0-9])(\\.[a-z0-9\\-]+)*(:[0-9]{1,4})?(/[a-z0-9\\-]+)+$")
     private String edcUrl;
     /**
      * The BPNL of the partner.
      */
+    @Pattern(regexp = "^BPNL[0-9a-zA-Z]{12}$")
     private String bpnl;
     @ElementCollection
     /**

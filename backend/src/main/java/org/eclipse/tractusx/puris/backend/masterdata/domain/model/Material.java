@@ -25,6 +25,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.util.Objects;
@@ -90,17 +91,20 @@ public class Material {
      * PURIS instance for this material.
      */
     @Id
+    @Pattern(regexp = "^[a-zA-Z0-9\\-\\.]{1,255}$")
     private String ownMaterialNumber;
 
     /**
      * If there is a Catena-X material number defined
      * for this material, this is stored here.
      */
+    @Pattern(regexp = "(^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)")
     private String materialNumberCx;
 
     /**
      * Informal name or description of the material.
      */
+    @Pattern(regexp = "^[a-zA-Z0-9 \\-]{1,255}$")
     private String name;
 
     @OneToMany(mappedBy = "material")
