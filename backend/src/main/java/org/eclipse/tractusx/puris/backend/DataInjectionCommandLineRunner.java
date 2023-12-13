@@ -224,9 +224,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         ItemStock.Builder builder = ItemStock.Builder.newInstance();
         var itemStock = builder
-            .customerOrderId("123")
-            .supplierOrderId("234")
-            .customerOrderPositionId("1")
             .direction(DirectionCharacteristic.INBOUND)
             .material(semiconductorMaterial)
             .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)

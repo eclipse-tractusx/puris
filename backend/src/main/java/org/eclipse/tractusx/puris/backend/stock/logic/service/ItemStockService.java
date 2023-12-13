@@ -73,9 +73,6 @@ public class ItemStockService {
             Objects.requireNonNull(partner, "Missing Partner");
             Objects.requireNonNull(key.getMaterial(), "Missing Material");
             Objects.requireNonNull(key.getDirection(), "Missing direction");
-            Objects.requireNonNull(key.getSupplierOrderId(), "Missing supplierOrderId");
-            Objects.requireNonNull(key.getCustomerOrderId(), "Missing customerOrderId");
-            Objects.requireNonNull(key.getCustomerOrderPositionId(), "Missing customerOrderPositionId");
             Objects.requireNonNull(key.getLocationBpna(), "Missing locationBpna");
             Objects.requireNonNull(key.getLocationBpns(), "Missing locationBpns");
             Objects.requireNonNull(itemStock.getMeasurementUnit(), "Missing measurementUnit");

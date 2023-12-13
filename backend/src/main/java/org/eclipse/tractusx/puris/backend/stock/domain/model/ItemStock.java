@@ -45,7 +45,11 @@ public class ItemStock {
     private QuantityOnAllocatedStock quantityOnAllocatedStock = new QuantityOnAllocatedStock();
     @Getter
     @Setter
+    @ToString.Include
     private boolean isBlocked;
+    private String supplierOrderId;
+    private String customerOrderId;
+    private String customerOrderPositionId;
 
     @JsonIgnore
     public Partner getPartner() {
@@ -70,15 +74,15 @@ public class ItemStock {
     }
     @ToString.Include
     public String getSupplierOrderId() {
-        return key.supplierOrderId;
+        return supplierOrderId;
     }
     @ToString.Include
     public String getCustomerOrderId() {
-        return key.customerOrderId;
+        return customerOrderId;
     }
     @ToString.Include
     public String getCustomerOrderPositionId() {
-        return key.customerOrderPositionId;
+        return customerOrderPositionId;
     }
     @ToString.Include
     public String getLocationBpna() {
@@ -141,9 +145,6 @@ public class ItemStock {
         @JoinColumn(name = "material_ownMaterialNumber")
         private Material material;
         private DirectionCharacteristic direction;
-        private String supplierOrderId;
-        private String customerOrderId;
-        private String customerOrderPositionId;
         private String locationBpna;
         private String locationBpns;
 
@@ -153,15 +154,14 @@ public class ItemStock {
             if (!(o instanceof Key)) return false;
             Key key = (Key) o;
             return Objects.equals(partner, key.partner) && Objects.equals(material, key.material)
-                && direction == key.direction && Objects.equals(supplierOrderId, key.supplierOrderId)
-                && Objects.equals(customerOrderId, key.customerOrderId) && Objects.equals(customerOrderPositionId, key.customerOrderPositionId)
-                && Objects.equals(locationBpna, key.locationBpna) && Objects.equals(locationBpns, key.locationBpns);
+                && direction == key.direction && Objects.equals(locationBpna, key.locationBpna) &&
+                Objects.equals(locationBpns, key.locationBpns);
         }
 
         @Override
         public int hashCode() {
             return Objects.hash(partner, material,
-                direction, supplierOrderId, customerOrderId, customerOrderPositionId, locationBpna, locationBpns);
+                direction, locationBpna, locationBpns);
         }
     }
 
@@ -271,9 +271,9 @@ public class ItemStock {
             itemStock.key.partner = partner;
             itemStock.key.material = material;
             itemStock.key.direction = direction;
-            itemStock.key.supplierOrderId = supplierOrderId;
-            itemStock.key.customerOrderId = customerOrderId;
-            itemStock.key.customerOrderPositionId = customerOrderPositionId;
+            itemStock.supplierOrderId = supplierOrderId;
+            itemStock.customerOrderId = customerOrderId;
+            itemStock.customerOrderPositionId = customerOrderPositionId;
             itemStock.key.locationBpna = locationBpna;
             itemStock.key.locationBpns = locationBpns;
             itemStock.quantityOnAllocatedStock = quantityOnAllocatedStock;
