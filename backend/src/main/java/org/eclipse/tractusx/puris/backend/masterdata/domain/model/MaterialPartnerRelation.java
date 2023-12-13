@@ -46,7 +46,7 @@ public class MaterialPartnerRelation {
     @EmbeddedId
     private Key key;
 
-    @Pattern(regexp = "^[a-zA-Z0-9\\-\\.]{1,255}$")
+    @Pattern(regexp = Material.MATERIAL_NUMBER_REGEX)
     private String partnerMaterialNumber;
     private boolean partnerSuppliesMaterial;
     private boolean partnerBuysMaterial;
@@ -95,7 +95,7 @@ public class MaterialPartnerRelation {
     public static class Key implements Serializable {
 
         @Column(name = "material_ownMaterialNumber")
-        @Pattern(regexp = "^[a-zA-Z0-9\\-\\.]{1,255}$")
+        @Pattern(regexp = Material.MATERIAL_NUMBER_REGEX)
         private String ownMaterialNumber;
 
         @Column(name = "partner_uuid")

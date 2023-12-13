@@ -31,6 +31,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTy
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.PartnerProductStockRepository;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -42,8 +43,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class PartnerProductStockServiceImpl implements PartnerProductStockService {
 
+    @Autowired
     private PartnerProductStockRepository partnerProductStockRepository;
 
+    @Autowired
     private MaterialPartnerRelationService mprService;
 
     @Override

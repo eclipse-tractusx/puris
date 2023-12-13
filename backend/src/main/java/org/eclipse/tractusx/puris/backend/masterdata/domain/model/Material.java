@@ -72,6 +72,8 @@ import java.util.Set;
 @Builder
 public class Material {
 
+    public final static String MATERIAL_NUMBER_REGEX = "^[a-zA-Z0-9\\-\\.]{1,255}$";
+
     /**
      * If true, then the Material is a material (input for production / something I buy).
      * <p>
@@ -91,7 +93,7 @@ public class Material {
      * PURIS instance for this material.
      */
     @Id
-    @Pattern(regexp = "^[a-zA-Z0-9\\-\\.]{1,255}$")
+    @Pattern(regexp = MATERIAL_NUMBER_REGEX)
     private String ownMaterialNumber;
 
     /**

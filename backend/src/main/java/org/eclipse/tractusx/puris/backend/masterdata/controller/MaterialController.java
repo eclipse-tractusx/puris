@@ -35,6 +35,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @RestController
@@ -44,9 +45,9 @@ public class MaterialController {
     @Autowired
     private MaterialService materialService;
     private final ModelMapper modelMapper = new ModelMapper();
+    private final Pattern materialPattern = Pattern.compile(Material.MATERIAL_NUMBER_REGEX);
 
     @PostMapping
-    @CrossOrigin
     @Operation(description = "Creates a new Material entity with the data given in the request body. As a bare minimum, " +
         "it must contain a new, unique ownMaterialNumber.")
     @ApiResponses(value = {
@@ -75,12 +76,10 @@ public class MaterialController {
         if (createdMaterial == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(500));
         }
-
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }
 
     @PutMapping
-    @CrossOrigin
     @Operation(description = "Updates an existing Material entity with the data given in the request body.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Update was accepted."),
@@ -113,15 +112,18 @@ public class MaterialController {
     }
 
     @GetMapping
-    @CrossOrigin
     @Operation(description = "Returns the requested Material dto, specified by the given ownMaterialNumber.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Returns the requested Material."),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter"),
         @ApiResponse(responseCode = "404", description = "Requested Material was not found.")
     })
     public ResponseEntity<MaterialEntityDto> getMaterial(@Parameter(name = "ownMaterialNumber",
         description = "The Material Number that is used in your own company to identify the Material.",
         example = "MNR-7307-AU340474.002") @RequestParam String ownMaterialNumber) {
+        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
         Material foundMaterial = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (foundMaterial == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
@@ -131,7 +133,6 @@ public class MaterialController {
         return new ResponseEntity<>(dto, HttpStatusCode.valueOf(200));
     }
 
-    @CrossOrigin
     @GetMapping("/all")
     @Operation(description = "Returns a list of all Materials and Products.")
     public ResponseEntity<List<MaterialEntityDto>> listMaterials() {

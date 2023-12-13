@@ -48,6 +48,9 @@ import java.util.*;
 @NoArgsConstructor
 public class Partner {
 
+    public final static String BPNL_REGEX = "^BPNL[0-9a-zA-Z]{12}$";
+    public final static String EDC_REGEX = "^http[s]?://([a-z0-9][a-z0-9\\-]+[a-z0-9])(\\.[a-z0-9\\-]+)*(:[0-9]{1,4})?(/[a-z0-9\\-]+)+$";
+
     @Id
     @GeneratedValue
     private UUID uuid;
@@ -59,12 +62,12 @@ public class Partner {
     /**
      * The EDC-URL of the partner.
      */
-    @Pattern(regexp = "^http[s]?://([a-z0-9][a-z0-9\\-]+[a-z0-9])(\\.[a-z0-9\\-]+)*(:[0-9]{1,4})?(/[a-z0-9\\-]+)+$")
+    @Pattern(regexp = EDC_REGEX)
     private String edcUrl;
     /**
      * The BPNL of the partner.
      */
-    @Pattern(regexp = "^BPNL[0-9a-zA-Z]{12}$")
+    @Pattern(regexp = BPNL_REGEX)
     private String bpnl;
     @ElementCollection
     /**

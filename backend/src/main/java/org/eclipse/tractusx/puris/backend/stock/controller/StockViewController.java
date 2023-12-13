@@ -47,11 +47,14 @@ import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockReques
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -87,7 +90,8 @@ public class StockViewController {
     @Autowired
     private ModelMapper modelMapper;
 
-    @CrossOrigin
+    private final Pattern materialPattern = Pattern.compile(Material.MATERIAL_NUMBER_REGEX);
+
     @GetMapping("materials")
     @ResponseBody
     @Operation(description = "Returns a list of all materials (excluding products)")
@@ -98,21 +102,22 @@ public class StockViewController {
             .collect(Collectors.toList());
     }
 
-    @CrossOrigin
     @GetMapping("materialnumbers-mapping")
-    @ResponseBody
     @Operation(description = "Returns a mapping of all material numbers, that others partners are using" +
         "for the material given in the request parameter.")
-    @ApiResponses(value = {@ApiResponse(content = @Content(examples = {
-        @ExampleObject(name = "Basic sample", value = "{" +
-            "  \"BPNL1234567890ZZ\": \"MNR-8101-ID146955.001\"," +
-            "  \"BPNL4444444444XX\": \"MNR-7307-AU340474.002\"}")
-    }))})
-    public Map<String, String> getMaterialNumbers(@RequestParam String ownMaterialNumber) {
-        return mprService.getBPNL_To_MaterialNumberMap(ownMaterialNumber);
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", content = @Content(examples = {
+            @ExampleObject(name = "Basic sample", value = "{" +
+                "  \"BPNL1234567890ZZ\": \"MNR-8101-ID146955.001\"," +
+                "  \"BPNL4444444444XX\": \"MNR-7307-AU340474.002\"}")})),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter")})
+    public ResponseEntity<Map<String, String>> getMaterialNumbers(@RequestParam String ownMaterialNumber) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        return ResponseEntity.ok(mprService.getBPNL_To_MaterialNumberMap(ownMaterialNumber));
     }
 
-    @CrossOrigin
     @GetMapping("products")
     @ResponseBody
     @Operation(description = "Returns a list of all products (excluding materials)")
@@ -123,7 +128,6 @@ public class StockViewController {
             .collect(Collectors.toList());
     }
 
-    @CrossOrigin
     @GetMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Returns a list of all product-stocks")
@@ -133,7 +137,6 @@ public class StockViewController {
             .collect(Collectors.toList());
     }
 
-    @CrossOrigin
     @PostMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Creates a new product-stock")
@@ -144,7 +147,7 @@ public class StockViewController {
         productStockToCreate.setLastUpdatedOn(new Date());
 
         ProductStock createdProductStock = productStockService.create(productStockToCreate);
-        if (createdProductStock == null){
+        if (createdProductStock == null) {
             return null;
         }
         log.info("Created product-stock: " + createdProductStock);
@@ -152,7 +155,6 @@ public class StockViewController {
         return convertToDto(createdProductStock);
     }
 
-    @CrossOrigin
     @PutMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Updates an existing product-stock")
@@ -187,19 +189,17 @@ public class StockViewController {
         return productStock;
     }
 
-    @CrossOrigin
     @GetMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Returns a list of all material-stocks")
     public List<MaterialStockDto> getMaterialStocks() {
         List<MaterialStockDto> allMaterialStocks = materialStockService.findAll().stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+            .map(this::convertToDto)
+            .collect(Collectors.toList());
         log.info(allMaterialStocks.toString());
         return allMaterialStocks;
     }
 
-    @CrossOrigin
     @PostMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Creates a new material-stock")
@@ -213,7 +213,6 @@ public class StockViewController {
         return convertToDto(createdMaterialStock);
     }
 
-    @CrossOrigin
     @PutMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Updates an existing material-stock")
@@ -240,53 +239,68 @@ public class StockViewController {
     }
 
     private MaterialStock convertToEntity(MaterialStockDto dto) {
-        MaterialStock stock =  modelMapper.map(dto, MaterialStock.class);
+        MaterialStock stock = modelMapper.map(dto, MaterialStock.class);
         stock.getMaterial().setOwnMaterialNumber(dto.getMaterial().getMaterialNumberCustomer());
         return stock;
     }
 
-    @CrossOrigin
     @GetMapping("partner-product-stocks")
-    @ResponseBody
     @Operation(description = "Returns a list of all partner-product-stocks that refer to the given material number")
-    public List<PartnerProductStockDto> getPartnerProductStocks(@RequestParam String ownMaterialNumber) {
-        return partnerProductStockService.
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+    })
+    public ResponseEntity<List<PartnerProductStockDto>> getPartnerProductStocks(@RequestParam String ownMaterialNumber) {
+        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        return ResponseEntity.ok(partnerProductStockService.
             findAllByOwnMaterialNumber(ownMaterialNumber)
             .stream()
             .map(this::convertToDto)
-            .collect(Collectors.toList());
+            .collect(Collectors.toList()));
     }
 
     private PartnerProductStockDto convertToDto(PartnerProductStock entity) {
-        PartnerProductStockDto dto =  modelMapper.map(entity, PartnerProductStockDto.class);
+        PartnerProductStockDto dto = modelMapper.map(entity, PartnerProductStockDto.class);
         dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
         dto.getMaterial().setMaterialNumberCustomer(entity.getMaterial().getOwnMaterialNumber());
         var materialPartnerRelation = mprService.find(entity.getMaterial().getOwnMaterialNumber(),
-                entity.getSupplierPartner().getUuid());
+            entity.getSupplierPartner().getUuid());
         dto.getMaterial().setMaterialNumberSupplier(materialPartnerRelation.getPartnerMaterialNumber());
 
         return dto;
     }
 
-    @CrossOrigin
     @GetMapping("customer")
-    @ResponseBody
     @Operation(description = "Returns a list of all Partners that are ordering the given material")
-    public List<PartnerDto> getCustomerPartnersOrderingMaterial(@RequestParam String ownMaterialNumber) {
-        return partnerService.findAllCustomerPartnersForMaterialId(ownMaterialNumber).stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+    })
+    public ResponseEntity<List<PartnerDto>> getCustomerPartnersOrderingMaterial(@RequestParam String ownMaterialNumber) {
+        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        return ResponseEntity.ok(partnerService.findAllCustomerPartnersForMaterialId(ownMaterialNumber).stream()
+            .map(this::convertToDto)
+            .collect(Collectors.toList()));
     }
 
-    @CrossOrigin
     @GetMapping("update-partner-product-stock")
-    @ResponseBody
     @Operation(description = "For the given material, all known suppliers will be requested to report their" +
         "current product-stocks. The response body contains a list of those supplier partners that were sent a request." +
         "Please note that these requests are handled asynchronously by the partners, so there are no guarantees, if and " +
         "when the corresponding responses will be available. As soon as a response arrives, it will be available via a " +
         "call to the GET partner-product-stocks endpoint.")
-    public List<PartnerDto> triggerPartnerProductStockUpdateForMaterial(@RequestParam String ownMaterialNumber) {
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+    })
+    public ResponseEntity<List<PartnerDto>> triggerPartnerProductStockUpdateForMaterial(@RequestParam String ownMaterialNumber) {
+        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
         Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         log.info("Found material: " + (materialEntity != null) + " " + ownMaterialNumber);
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
@@ -295,9 +309,9 @@ public class StockViewController {
             productStockRequestApiService.doRequest(materialEntity, supplierPartner);
         }
 
-        return allSupplierPartnerEntities.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return ResponseEntity.ok(allSupplierPartnerEntities.stream()
+            .map(this::convertToDto)
+            .collect(Collectors.toList()));
     }
 
     private PartnerDto convertToDto(Partner entity) {

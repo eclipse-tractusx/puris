@@ -40,6 +40,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @RestController
@@ -50,7 +51,8 @@ public class PartnerController {
     private PartnerService partnerService;
     private final ModelMapper modelMapper = new ModelMapper();
 
-    @CrossOrigin
+    private final Pattern bpnlPattern = Pattern.compile(Partner.BPNL_REGEX);
+
     @PostMapping
     @Operation(description = "Creates a new Partner entity with the data given in the request body. Please note that no " +
         "UUID can be assigned to a Partner that wasn't created before. So the request body must not contain a UUID.")
@@ -89,12 +91,11 @@ public class PartnerController {
     }
 
     @PutMapping("putAddress")
-    @CrossOrigin
     @Operation(description = "Updates an existing Partner by adding a new Address. If that Partner already has " +
         "an Address with the BPNA given in the request body, that existing Address will be overwritten. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Update accepted."),
-        @ApiResponse(responseCode = "400", description = "Invalid Address data."),
+        @ApiResponse(responseCode = "400", description = "Invalid Address data or invalid partnerBpnl."),
         @ApiResponse(responseCode = "404", description = "Partner not found."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
@@ -102,6 +103,9 @@ public class PartnerController {
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
         @RequestBody AddressDto address) {
+        if(!bpnlPattern.matcher(partnerBpnl).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
         Partner existingPartner = partnerService.findByBpnl(partnerBpnl);
         if (existingPartner == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
@@ -124,12 +128,11 @@ public class PartnerController {
     }
 
     @PutMapping("putSite")
-    @CrossOrigin
     @Operation(description = "Updates an existing Partner by adding a new Site. If that Partner already has " +
         "a Site with the BPNS given in the request body, that existing Site will be overwritten. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Update accepted."),
-        @ApiResponse(responseCode = "400", description = "Invalid Address data."),
+        @ApiResponse(responseCode = "400", description = "Invalid Address data or invalid partnerBpnl."),
         @ApiResponse(responseCode = "404", description = "Partner not found."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
@@ -137,6 +140,9 @@ public class PartnerController {
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
         @RequestBody SiteDto site) {
+        if(!bpnlPattern.matcher(partnerBpnl).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
         Partner existingPartner = partnerService.findByBpnl(partnerBpnl);
         if (existingPartner == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
@@ -159,18 +165,20 @@ public class PartnerController {
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }
 
-
-    @CrossOrigin
     @GetMapping
     @Operation(description = "Returns the requested PartnerDto.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Found Partner, returning it in response body."),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter."),
         @ApiResponse(responseCode = "404", description = "Requested Partner not found."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public ResponseEntity<PartnerDto> getPartner(
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl) {
+        if(!bpnlPattern.matcher(partnerBpnl).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
         Partner partner = partnerService.findByBpnl(partnerBpnl);
         if (partner == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
@@ -183,7 +191,6 @@ public class PartnerController {
         }
     }
 
-    @CrossOrigin
     @GetMapping("/all")
     @Operation(description = "Returns a list of all Partners. ")
     public ResponseEntity<List<PartnerDto>> listPartners() {
