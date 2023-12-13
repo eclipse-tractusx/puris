@@ -50,7 +50,9 @@ public class EndpointDataReferenceReceiver {
     @Autowired
     private EndpointDataReferenceService edrService;
 
-    private final Pattern alphanumericalPattern = Pattern.compile("^[a-zA-Z0-9]$");
+    private final Pattern alphanumericalPattern = Pattern.compile("^[a-zA-Z0-9]+$");
+    private final Pattern idPattern = Pattern.compile("^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$");
+    private final Pattern codePattern = Pattern.compile("^[a-zA-Z0-9\\.\\-_]+$");
     private final Pattern edcUrlPattern = Pattern.compile(Partner.EDC_REGEX);
 
     /**
@@ -72,13 +74,13 @@ public class EndpointDataReferenceReceiver {
     private ResponseEntity<String> authCodeReceivingEndpoint(@RequestBody JsonNode body) {
         log.info("Received edr data:\n" + body.toPrettyString());
         String transferId = body.get("id").asText();
-        boolean valid = (transferId != null) && alphanumericalPattern.matcher(transferId).matches();
+        boolean valid = (transferId != null) && idPattern.matcher(transferId).matches();
 
         String authKey = body.get("authKey").asText();
         valid = valid && (authKey != null) && alphanumericalPattern.matcher(authKey).matches();
 
         String authCode = body.get("authCode").asText();
-        valid = valid && (authCode != null) && alphanumericalPattern.matcher(authCode).matches();
+        valid = valid && (authCode != null) && codePattern.matcher(authCode).matches();
 
         String endpoint = body.get("endpoint").asText();
         valid = valid && (endpoint != null) && edcUrlPattern.matcher(endpoint).matches();
