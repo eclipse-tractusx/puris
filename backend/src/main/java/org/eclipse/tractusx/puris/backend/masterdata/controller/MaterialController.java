@@ -56,6 +56,7 @@ public class MaterialController {
         @ApiResponse(responseCode = "409", description = "Material with the given ownMaterialNumber already exists."),
         @ApiResponse(responseCode = "500", description = "Internal Server error.")
     })
+    @CrossOrigin
     public ResponseEntity<?> createMaterial(@RequestBody MaterialEntityDto materialDto) {
         if (materialDto.getOwnMaterialNumber() == null || materialDto.getOwnMaterialNumber().isEmpty()) {
             // Cannot create material without ownMaterialNumber
@@ -87,6 +88,7 @@ public class MaterialController {
         @ApiResponse(responseCode = "404", description = "No existing Material Entity found, no update was performed."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
+    @CrossOrigin
     public ResponseEntity<?> updateMaterial(@RequestBody MaterialEntityDto materialDto) {
         if (materialDto.getOwnMaterialNumber() == null || materialDto.getOwnMaterialNumber().isEmpty()) {
             // Cannot update material without ownMaterialNumber
@@ -118,6 +120,7 @@ public class MaterialController {
         @ApiResponse(responseCode = "400", description = "Invalid parameter"),
         @ApiResponse(responseCode = "404", description = "Requested Material was not found.")
     })
+    @CrossOrigin
     public ResponseEntity<MaterialEntityDto> getMaterial(@Parameter(name = "ownMaterialNumber",
         description = "The Material Number that is used in your own company to identify the Material.",
         example = "MNR-7307-AU340474.002") @RequestParam String ownMaterialNumber) {
@@ -135,6 +138,7 @@ public class MaterialController {
 
     @GetMapping("/all")
     @Operation(description = "Returns a list of all Materials and Products.")
+    @CrossOrigin
     public ResponseEntity<List<MaterialEntityDto>> listMaterials() {
         return new ResponseEntity<>(materialService.findAll().
             stream().map(x -> modelMapper.map(x, MaterialEntityDto.class)).collect(Collectors.toList()),

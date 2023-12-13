@@ -32,6 +32,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EndpointDataR
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -67,6 +68,7 @@ public class EndpointDataReferenceReceiver {
         @ApiResponse(responseCode = "200", description = "Ok"),
         @ApiResponse(responseCode = "400", description = "Invalid message body")
     })
+    @CrossOrigin
     private ResponseEntity<String> authCodeReceivingEndpoint(@RequestBody JsonNode body) {
         log.info("Received edr data:\n" + body.toPrettyString());
         String transferId = body.get("id").asText();

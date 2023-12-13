@@ -61,6 +61,7 @@ public class PartnerController {
         @ApiResponse(responseCode = "400", description = "Request body was malformed, didn't meet the minimum constraints or wrongfully contained a UUID."),
         @ApiResponse(responseCode = "409", description = "The BPNL specified in the request body is already assigned. ")
     })
+    @CrossOrigin
     public ResponseEntity<?> createPartner(@RequestBody PartnerDto partnerDto) {
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
         // Any given UUID is wrong by default since we're creating a new Partner entity
@@ -99,6 +100,7 @@ public class PartnerController {
         @ApiResponse(responseCode = "404", description = "Partner not found."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
+    @CrossOrigin
     public ResponseEntity<?> addAddress(
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
@@ -136,6 +138,7 @@ public class PartnerController {
         @ApiResponse(responseCode = "404", description = "Partner not found."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
+    @CrossOrigin
     public ResponseEntity<?> addSite(
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
@@ -173,6 +176,7 @@ public class PartnerController {
         @ApiResponse(responseCode = "404", description = "Requested Partner not found."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
+    @CrossOrigin
     public ResponseEntity<PartnerDto> getPartner(
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl) {
@@ -193,6 +197,7 @@ public class PartnerController {
 
     @GetMapping("/all")
     @Operation(description = "Returns a list of all Partners. ")
+    @CrossOrigin
     public ResponseEntity<List<PartnerDto>> listPartners() {
         return new ResponseEntity<>(partnerService.findAll().
             stream().map(partner -> modelMapper.map(partner, PartnerDto.class)).collect(Collectors.toList()),
