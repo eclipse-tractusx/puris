@@ -42,6 +42,6 @@ Note: please find the available parameters in src/config.json
 ```shell
 cd charts/puris/charts/frontend
 
-helm install frontend --namespace puris --create-namespace . --set ingress.enabled=true
+helm install frontend --namespace puris --create-namespace . --set ingress.enabled=true --values ../../values.yaml
 ```
 4. Done! The frontend should be available at `http://YOURIP:30000/`

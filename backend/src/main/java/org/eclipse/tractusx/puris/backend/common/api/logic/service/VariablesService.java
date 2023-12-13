@@ -86,6 +86,11 @@ public class VariablesService {
      * during asset creation.
      */
     private String responseApiAssetId;
+    @Value("${puris.api.key}")
+    /**
+     * The key for accessing the api.
+     */
+    private String apiKey;
 
     @Value("${edc.controlplane.key}")
     /**
@@ -114,43 +119,39 @@ public class VariablesService {
      * the name of your company.
      */
     private String ownName;
-    @Value("${own.default.bpns}")
+    @Value("${own.bpns}")
     /**
      * A BPNS that was assigned to you.
      */
     private String ownDefaultBpns;
-    @Value("${own.default.site.name}")
+    @Value("${own.site.name}")
     /**
      * A human-readable description of the site that you referenced in
      * the ownDefaultBpns.
      */
     private String ownDefaultSiteName;
-    @Value("${own.default.bpna}")
+    @Value("${own.bpna}")
     /** A BPNA that was assigned to you. If you initialised the
      * ownDefaultBpns variable, then it must be a BPNA that is associated
      * to that BPNS.
      */
     private String ownDefaultBpna;
-    @Value("${own.default.streetandnumber}")
+    @Value("${own.streetandnumber}")
     /**
      * The street and number associated to the ownDefaultBpna
      */
     private String ownDefaultStreetAndNumber;
-    @Value("${own.default.zipcodeandcity}")
+    @Value("${own.zipcodeandcity}")
     /**
      * The zip code and name of the city associated to the ownDefaultBpna
      */
     private String ownDefaultZipCodeAndCity;
-    @Value("${own.default.country}")
+    @Value("${own.country}")
     /**
      * The country in which your ownDefaultBpna-address is located.
      */
     private String ownDefaultCountry;
-    /**
-     * The key for accessing the api.
-     */
-    @Value("${puris.api.key}")
-    private String apiKey;
+
 
     /**
      * Returns the asset-id as defined in the properties file for the given api method
