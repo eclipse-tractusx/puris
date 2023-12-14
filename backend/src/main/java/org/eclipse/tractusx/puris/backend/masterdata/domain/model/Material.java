@@ -73,6 +73,7 @@ import java.util.Set;
 public class Material {
 
     public final static String MATERIAL_NUMBER_REGEX = "^[a-zA-Z0-9\\-\\.]{1,255}$";
+    public final static java.util.regex.Pattern MATERIAL_NUMBER_PATTERN = java.util.regex.Pattern.compile(MATERIAL_NUMBER_REGEX);
 
     /**
      * If true, then the Material is a material (input for production / something I buy).
