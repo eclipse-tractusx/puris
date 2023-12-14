@@ -310,10 +310,12 @@ public class StockViewController {
     })
     @CrossOrigin
     public ResponseEntity<List<PartnerDto>> triggerPartnerProductStockUpdateForMaterial(@RequestParam String ownMaterialNumber) {
-        if(!Material.MATERIAL_NUMBER_PATTERN.matcher(ownMaterialNumber).matches()) {
+        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-
+        ownMaterialNumber = ownMaterialNumber.replace("\n","");
+        ownMaterialNumber = ownMaterialNumber.replace("\r", "");
+        ownMaterialNumber = ownMaterialNumber.replace("|","");
         Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         log.info("Found material: " + (materialEntity != null) + " " + ownMaterialNumber);
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
