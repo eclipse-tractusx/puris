@@ -87,7 +87,7 @@ npm/npmjs/-/flatted/3.2.6, ISC AND (ISC AND MIT), approved, #2430
 npm/npmjs/-/fraction.js/4.2.0, MIT, approved, clearlydefined
 npm/npmjs/-/fs.realpath/1.0.0, ISC, approved, clearlydefined
 npm/npmjs/-/fsevents/2.3.2, MIT, approved, #2967
-npm/npmjs/-/function-bind/1.1.1, MIT, approved, clearlydefined
+npm/npmjs/-/function-bind/1.1.1, MIT, approved, #11063
 npm/npmjs/-/functional-red-black-tree/1.0.1, MIT, approved, clearlydefined
 npm/npmjs/-/glob-parent/5.1.2, ISC, approved, clearlydefined
 npm/npmjs/-/glob-parent/6.0.2, ISC, approved, clearlydefined
@@ -95,7 +95,7 @@ npm/npmjs/-/glob/7.2.3, ISC, approved, clearlydefined
 npm/npmjs/-/globals/13.16.0, MIT, approved, clearlydefined
 npm/npmjs/-/good-listener/1.2.2, MIT, approved, clearlydefined
 npm/npmjs/-/has-flag/4.0.0, MIT, approved, clearlydefined
-npm/npmjs/-/has/1.0.3, MIT, approved, clearlydefined
+npm/npmjs/-/has/1.0.3, MIT, approved, #10930
 npm/npmjs/-/ignore/5.2.0, MIT, approved, #5907
 npm/npmjs/-/import-fresh/3.3.0, MIT, approved, clearlydefined
 npm/npmjs/-/imurmurhash/0.1.4, MIT, approved, clearlydefined
@@ -121,7 +121,7 @@ npm/npmjs/-/micromatch/4.0.5, MIT, approved, clearlydefined
 npm/npmjs/-/minimatch/3.1.2, ISC, approved, clearlydefined
 npm/npmjs/-/minimist/1.2.6, MIT, approved, #5886
 npm/npmjs/-/ms/2.1.2, MIT, approved, #5895
-npm/npmjs/-/nanoid/3.3.4, MIT, approved, #7571
+npm/npmjs/-/nanoid/3.3.7, MIT, approved, #7571
 npm/npmjs/-/natural-compare/1.4.0, MIT, approved, clearlydefined
 npm/npmjs/-/node-releases/2.0.5, MIT, approved, #1954
 npm/npmjs/-/normalize-path/3.0.0, MIT, approved, clearlydefined
@@ -143,7 +143,7 @@ npm/npmjs/-/postcss-load-config/3.1.4, MIT, approved, clearlydefined
 npm/npmjs/-/postcss-nested/5.0.6, MIT, approved, clearlydefined
 npm/npmjs/-/postcss-selector-parser/6.0.10, MIT, approved, #5056
 npm/npmjs/-/postcss-value-parser/4.2.0, MIT, approved, clearlydefined
-npm/npmjs/-/postcss/8.4.14, MIT, approved, #3545
+npm/npmjs/-/postcss/8.4.31, MIT, approved, #3545
 npm/npmjs/-/prelude-ls/1.2.1, MIT, approved, clearlydefined
 npm/npmjs/-/prettier-linter-helpers/1.0.0, MIT, approved, clearlydefined
 npm/npmjs/-/prettier/2.7.1, MIT AND (0BSD AND Apache-2.0 AND BSD-2-Clause AND BSD-3-Clause AND CC-BY-SA-4.0 AND ISC AND MIT) AND BSD-2-Clause, approved, #3238
