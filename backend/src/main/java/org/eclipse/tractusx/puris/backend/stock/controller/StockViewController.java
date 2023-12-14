@@ -313,9 +313,9 @@ public class StockViewController {
         if(!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-        ownMaterialNumber = ownMaterialNumber.replace("\n","");
-        ownMaterialNumber = ownMaterialNumber.replace("\r", "");
-        ownMaterialNumber = ownMaterialNumber.replace("|","");
+        ownMaterialNumber.replace("\n","");
+        ownMaterialNumber.replace("\r", "");
+        ownMaterialNumber.replace("|","");
         Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         log.info("Found material: " + (materialEntity != null) + " " + ownMaterialNumber);
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
