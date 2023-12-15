@@ -30,7 +30,7 @@ export const ALL_ROUTES = [
         component: HomeView,
         meta: {
             requiresAuth: true,
-            requiredRoles: ["PURIS_USER"],
+            requiredRoles: ["PURIS_USER","PURIS_ADMIN"],
         },
     },
     {
@@ -105,7 +105,7 @@ export const ALL_ROUTES = [
         component: () => import("../views/StockView.vue"),
         meta: {
             requiresAuth: true,
-            requiredRoles: ["PURIS_USER"],
+            requiredRoles: ["PURIS_USER","PURIS_ADMIN"],
         },
     },
     {
@@ -114,13 +114,18 @@ export const ALL_ROUTES = [
         component: () => import("../views/SupplierDashboard.vue"),
         meta: {
             requiresAuth: true,
-            requiredRoles: ["PURIS_USER"],
+            requiredRoles: ["PURIS_USER","PURIS_ADMIN"],
         },
     },
     {
         path: "/unauthorized",
         name: "Unauthorized",
         component: () => import("../views/Unauthorized.vue"),
+    },
+    {
+        path: "/aboutLicense",
+        name: "aboutLicense",
+        component: () => import("../views/AboutLicense.vue"),
     },
 ];
 

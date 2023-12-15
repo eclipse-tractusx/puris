@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "backend.fullname" . }}
+  labels:
+    {{- include "backend.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.backend.autoscaling.enabled }}
+  replicas: {{ .Values.backend.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.backend.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "backend.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.backend.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "backend.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.backend.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "backend.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.backend.securityContext | nindent 12 }}
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          env:
+            - name: SERVER_PORT
+              value: "{{ .Values.backend.service.port }}"
+            - name: API_ROOTDIR
+              value: "{{ .Values.backend.puris.api.rootDir }}"
+            - name: DATASOURCE_DRIVERCLASSNAME
+              value: "{{ .Values.backend.puris.datasource.driverClassName }}"
+            - name: DATASOURCE_URL
+              value: "{{ .Values.backend.puris.datasource.url }}"
+            - name: DATASOURCE_USERNAME
+              value: "{{ .Values.backend.puris.datasource.username }}"
+            - name: DATASOURCE_PASSWORD
+              value: "{{ .Values.backend.puris.datasource.password }}"
+            - name: EDC_CONTROLPLANE_KEY
+              value: "{{ .Values.backend.puris.edc.controlplane.key | default (randAlphaNum 16) }}"
+            - name: EDC_CONTROLPLANE_MANAGEMENT_URL
+              value: "{{ .Values.backend.puris.edc.controlplane.management.url }}"
+            - name: EDC_CONTROLPLANE_PROTOCOL_URL
+              value: "{{ .Values.backend.puris.edc.controlplane.protocol.url }}"
+            - name: EDC_WEB_REST_CORS_ENABLED
+              value: "{{ .Values.backend.puris.edc.web.rest.cors.enabled }}"
+            - name: OWN_BPNA
+              value: "{{ .Values.backend.puris.own.bpna }}"
+            - name: OWN_BPNL
+              value: "{{ .Values.backend.puris.own.bpnl }}"
+            - name: OWN_BPNS
+              value: "{{ .Values.backend.puris.own.bpns }}"
+            - name: OWN_COUNTRY
+              value: "{{ .Values.backend.puris.own.country }}"
+            - name: OWN_NAME
+              value: "{{ .Values.backend.puris.own.name }}"
+            - name: OWN_SITE
+              value: "{{ .Values.backend.puris.own.site.name }}"
+            - name: OWN_STREETANDNUMBER
+              value: "{{ .Values.backend.puris.own.streetnumber }}"
+            - name: OWN_ZIPCODEANDCITY
+              value: "{{ .Values.backend.puris.own.zipcodeandcity }}"
+            - name: JPA_HIBERNATE_DDL-AUTO
+              value: {{ index .Values.backend "puris" "jpa" "hibernate" "ddl-auto" }} #Need to do workaround because of '-' in ddl-auto
+            - name: JPA_PROPERTIES_HIBERNATE_ENABLE.LAZY.LOAD.NO.TRANS
+              value: "{{ .Values.backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans }}"
+            - name: PURIS_APIVERSION
+              value: "{{ .Values.backend.puris.api.version }}"
+            - name: PURIS_API_KEY
+              value: "{{ .Values.backend.puris.api.key}}"
+            - name: PURIS_DEMONSTRATOR_ROLE
+              value: "{{ .Values.backend.puris.demonstrator.role }}"
+            - name: PURIS_EDR_DELETIONTIMER
+              value: "{{ .Values.backend.puris.edr.deletiontimer }}"
+            - name: PURIS_EDR_ENDPOINT
+              value: "http://{{ .Values.backend.puris.edr.endpoint }}/catena/edrendpoint"
+            - name: PURIS_REQUEST_SERVERENDPOINT
+              value: "http://{{ .Values.backend.puris.request.serverendpoint }}/catena/product-stock/request"
+            - name: PURIS_REQUEST_APIASSETID
+              value: "{{ .Values.backend.puris.request.apiassetid }}"
+            - name: PURIS_RESPONSE_SERVERENDPOINT
+              value: "http://{{ .Values.backend.puris.response.serverendpoint }}/product-stock/response"
+            - name: PURIS_RESPONSE_APIASSETID
+              value: "{{ .Values.backend.puris.response.apiassetid }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.backend.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /catena/health/
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /catena/health/
+              port: http
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+      {{- with .Values.backend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
