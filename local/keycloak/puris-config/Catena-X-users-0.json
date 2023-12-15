@@ -19,7 +19,7 @@
     "requiredActions" : [ ],
     "realmRoles" : [ "default-roles-catena-x" ],
     "clientRoles" : {
-      "Cl3-PURIS" : [ "PURIS_ADMIN", "PURIS_USER" ]
+      "Cl3-PURIS" : [ "PURIS_USER" ]
     },
     "notBefore" : 0,
     "groups" : [ ]
