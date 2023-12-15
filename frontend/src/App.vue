@@ -20,7 +20,7 @@
 -->
 
 <script setup>
-import { RouterLink, RouterView } from "vue-router";
+import {RouterLink, RouterView} from "vue-router";
 </script>
 
 <template>
@@ -60,6 +60,11 @@ import { RouterLink, RouterView } from "vue-router";
                         </li>
                     </ul>
                 </aside>
+            </div>
+            <div class="mt-auto mr-auto ml-auto" id="about-license">
+                <RouterLink class="font-semibold disable" to="/aboutLicense"
+                    >About License</RouterLink
+                >
             </div>
         </div>
         <div class="sm:ml-64 lg:ml-0 content-center overflow-auto">
@@ -133,19 +138,19 @@ nav a:first-of-type {
         place-items: center;
     }
 
-@media (max-height: 665px) {
-    #about-license{
-        margin-top: 0.313rem;
+    @media (max-height: 665px) {
+        #about-license {
+            margin-top: 0.313rem;
+        }
     }
-}
 
-  #app {
-  //display: grid;
-  //grid-template-columns: 1fr 1fr;
-      margin: 0 auto;
-      max-width: calc(100% - 32rem);
-      padding: 0 2rem;
-  }
+    #app {
+        //display: grid;
+        //grid-template-columns: 1fr 1fr;
+        margin: 0 auto;
+        max-width: calc(100% - 32rem);
+        padding: 0 2rem;
+    }
 
     header {
         display: flex;
@@ -172,7 +177,7 @@ nav a:first-of-type {
         margin-top: 1rem;
     }
 }
-.disable:hover{
+.disable:hover {
     background: unset !important;
 }
 </style>
