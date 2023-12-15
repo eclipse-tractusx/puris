@@ -29,7 +29,8 @@ export const ALL_ROUTES = [
         name: "Dashboard",
         component: HomeView,
         meta: {
-            requiredRoles: ["PURIS_USER"],
+            requiresAuth: true,
+            requiredRoles: ["PURIS_USER","PURIS_ADMIN"],
         },
     },
     {
@@ -40,6 +41,7 @@ export const ALL_ROUTES = [
         // which is lazy-loaded when the route is visited.
         component: () => import("../views/CreateOrderView.vue"),
         meta: {
+            requiresAuth: true,
             requiredRoles: ["PURIS_ADMIN"],
         },
     },
@@ -48,6 +50,7 @@ export const ALL_ROUTES = [
         name: "Manage Orders",
         component: () => import("../views/ManageOrderView.vue"),
         meta: {
+            requiresAuth: true,
             requiredRoles: ["PURIS_ADMIN"],
         },
     },
@@ -56,6 +59,7 @@ export const ALL_ROUTES = [
         name: "Catalog",
         component: () => import("../views/CatalogView.vue"),
         meta: {
+            requiresAuth: true,
             requiredRoles: ["PURIS_ADMIN"],
         },
     },
@@ -64,6 +68,7 @@ export const ALL_ROUTES = [
         name: "Negotiations",
         component: () => import("../views/NegotiationView.vue"),
         meta: {
+            requiresAuth: true,
             requiredRoles: ["PURIS_ADMIN"],
         },
     },
@@ -72,6 +77,7 @@ export const ALL_ROUTES = [
         name: "Transfers",
         component: () => import("../views/TransferView.vue"),
         meta: {
+            requiresAuth: true,
             requiredRoles: ["PURIS_ADMIN"],
         },
     },
@@ -80,6 +86,7 @@ export const ALL_ROUTES = [
         name: "Responses",
         component: () => import("../views/OrderResponseView.vue"),
         meta: {
+            requiresAuth: true,
             requiredRoles: ["PURIS_ADMIN"],
         },
     },
@@ -88,6 +95,7 @@ export const ALL_ROUTES = [
         name: "Connectors",
         component: () => import("../views/ConnectorView.vue"),
         meta: {
+            requiresAuth: true,
             requiredRoles: ["PURIS_ADMIN"],
         },
     },
@@ -96,7 +104,8 @@ export const ALL_ROUTES = [
         name: "Stocks",
         component: () => import("../views/StockView.vue"),
         meta: {
-            requiredRoles: ["PURIS_USER"],
+            requiresAuth: true,
+            requiredRoles: ["PURIS_USER","PURIS_ADMIN"],
         },
     },
     {
@@ -104,13 +113,19 @@ export const ALL_ROUTES = [
         name: "Supplier Dashboard",
         component: () => import("../views/SupplierDashboard.vue"),
         meta: {
-            requiredRoles: ["PURIS_USER"],
+            requiresAuth: true,
+            requiredRoles: ["PURIS_USER","PURIS_ADMIN"],
         },
     },
     {
         path: "/unauthorized",
         name: "Unauthorized",
         component: () => import("../views/Unauthorized.vue"),
+    },
+    {
+        path: "/aboutLicense",
+        name: "aboutLicense",
+        component: () => import("../views/AboutLicense.vue"),
     },
 ];
 
@@ -124,6 +139,11 @@ const requireRole = (to, from, next) => {
     if (AuthenticationService.userHasRole(requiredRoles)) {
         next();
     } else {
+        console.warn(
+            "User '%s' tried to access route '%s' but is not authorized.",
+            AuthenticationService.getUsername(),
+            to.name
+        );
         next("/unauthorized");
     }
 };
@@ -134,6 +154,14 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+    if (to.meta.requiresAuth && !AuthenticationService.isAuthenticated()) {
+        console.warn(
+            "User '%s' is not authenticated but tried to access '%s'.",
+            AuthenticationService.getUsername(),
+            to.name
+        );
+        next("/unauthorized");
+    }
     requireRole(to, from, next);
 });
 
