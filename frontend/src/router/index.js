@@ -19,7 +19,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {createRouter, createWebHistory} from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import AuthenticationService from "@/services/AuthenticationService";
 
@@ -111,6 +111,11 @@ export const ALL_ROUTES = [
         path: "/unauthorized",
         name: "Unauthorized",
         component: () => import("../views/Unauthorized.vue"),
+    },
+    {
+        path: "/aboutLicense",
+        name: "aboutLicense",
+        component: () => import("../views/AboutLicense.vue"),
     },
 ];
 

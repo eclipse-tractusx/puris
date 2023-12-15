@@ -20,7 +20,7 @@
 -->
 
 <script setup>
-import {RouterLink, RouterView} from "vue-router";
+import { RouterLink, RouterView } from "vue-router";
 </script>
 
 <template>
@@ -133,13 +133,19 @@ nav a:first-of-type {
         place-items: center;
     }
 
-    #app {
-        //display: grid;
-        //grid-template-columns: 1fr 1fr;
-        margin: 0 auto;
-        max-width: calc(100% - 32rem);
-        padding: 0 2rem;
+@media (max-height: 665px) {
+    #about-license{
+        margin-top: 0.313rem;
     }
+}
+
+  #app {
+  //display: grid;
+  //grid-template-columns: 1fr 1fr;
+      margin: 0 auto;
+      max-width: calc(100% - 32rem);
+      padding: 0 2rem;
+  }
 
     header {
         display: flex;
@@ -165,6 +171,9 @@ nav a:first-of-type {
         padding: 1rem 0;
         margin-top: 1rem;
     }
+}
+.disable:hover{
+    background: unset !important;
 }
 </style>
 <script>

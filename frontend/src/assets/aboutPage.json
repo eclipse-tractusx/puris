@@ -1,0 +1,30 @@
+[
+    {
+        "header": "Product Name",
+        "body": "PURIS",
+        "link": "https://github.com/eclipse-tractusx/puris"
+    },
+    {
+        "header": "License",
+        "body": "Apache-2.0"
+    },
+    {
+        "header": "License Path",
+        "body": "License URL",
+        "link": "https://github.com/eclipse-tractusx/puris/blob/main/LICENSE"
+    },
+    {
+        "header": "NOTICE",
+        "body": "Notice.md URL",
+        "link": "https://github.com/eclipse-tractusx/puris/blob/main/NOTICE.md"
+    },
+    {
+        "header": "Source URL",
+        "body": "Eclipse-Tractus-X",
+        "link": "https://github.com/eclipse-tractusx"
+    },
+    {
+        "header": "Commit ID",
+        "body": "187698ada492dbe171e5ffcf12c9d2194e53fbfa"
+    }
+]
