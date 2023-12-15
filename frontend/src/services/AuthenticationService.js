@@ -73,8 +73,8 @@ const userHasRole = (requiredRoles) => {
     // client roles
     const rolesPerClient = keycloak.tokenParsed.resource_access;
     const userRoles = rolesPerClient[getIdpClientId].roles;
-    // require every role, not some
-    return requiredRoles.every((role) => userRoles.includes(role));
+
+    return requiredRoles.some((role) => userRoles.includes(role));
 };
 
 const logout = () => {

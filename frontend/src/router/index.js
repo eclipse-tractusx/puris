@@ -19,7 +19,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { createRouter, createWebHistory } from "vue-router";
+import {createRouter, createWebHistory} from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import AuthenticationService from "@/services/AuthenticationService";
 
@@ -29,7 +29,7 @@ export const ALL_ROUTES = [
         name: "Dashboard",
         component: HomeView,
         meta: {
-            requiredRoles: ["PURIS_USER"],
+            requiredRoles: ["PURIS_USER","PURIS_ADMIN"],
         },
     },
     {
@@ -96,7 +96,7 @@ export const ALL_ROUTES = [
         name: "Stocks",
         component: () => import("../views/StockView.vue"),
         meta: {
-            requiredRoles: ["PURIS_USER"],
+            requiredRoles: ["PURIS_USER","PURIS_ADMIN"],
         },
     },
     {
@@ -104,7 +104,7 @@ export const ALL_ROUTES = [
         name: "Supplier Dashboard",
         component: () => import("../views/SupplierDashboard.vue"),
         meta: {
-            requiredRoles: ["PURIS_USER"],
+            requiredRoles: ["PURIS_USER","PURIS_ADMIN"],
         },
     },
     {
