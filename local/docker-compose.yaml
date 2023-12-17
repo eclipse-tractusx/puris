@@ -79,7 +79,6 @@ services:
             retries: 3
         networks:
             - miw-net
-        pid: host
         deploy:
             resources:
                 limits:
@@ -184,7 +183,6 @@ services:
             retries: 3
         networks:
             - miw-net
-        pid: host
         deploy:
             resources:
                 limits:
