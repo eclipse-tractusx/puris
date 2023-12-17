@@ -26,7 +26,11 @@ type: application
 home: https://github.com/eclipse-tractusx/puris
 sources:
     - https://github.com/eclipse-tractusx/puris
-dependencies: []
+dependencies:
+  - condition: postgresql.enabled
+    name: postgresql
+    repository: https://charts.bitnami.com/bitnami
+    version: 12.12.x
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.

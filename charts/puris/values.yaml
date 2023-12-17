@@ -342,13 +342,12 @@ backend:
           version: 1.0.0
         datasource:
             # -- Driver class name of the database
-            driverClassName: org.hsqldb.jdbc.JDBCDriver
-            # -- URL of the database
-            url: jdbc:hsqldb:mem:testdb;DB_CLOSE_DELAY=-1
-            # -- Username of the database
-            username: sa
-            # -- Password for the database user.
-            # Do not set a password!
+            driverClassName: org.postgresql.Driver
+            # -- URL of the database. Ignored if postgres.enabled is true.
+            url: jdbc:postgresql://postgresql-name:5432/puris-database
+            # -- Username of the database. Ignored if postgres.enabled is true.
+            username: db-user
+            # -- Password for the database user. Ignored if postgres.enabled is true.
             password:
         edc:
             controlplane:
@@ -367,11 +366,11 @@ backend:
                         enabled: true
         own:
             # -- Own BPNL of the EDC
-            bpnl: BPNL1234567890ZZ
+            bpnl: BPNL4444444444XX
             # -- Own BPNA of the EDC
-            bpna: BPNA1234567890AA
+            bpna: BPNA4444444444ZZ
             # -- Own BPNS of the EDC
-            bpns: BPNS1234567890ZZ
+            bpns: BPNS4444444444XX
             # -- Own country
             country: "Germany"
             site:
@@ -410,3 +409,22 @@ backend:
           deletiontimer: 2
           # -- Endpoint for EDR
           endpoint: *domain
+
+postgresql:
+    # enable postgres by default, set to false to use existing postgres. Make sure to set
+    # backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from
+    # backend).
+    enabled: true
+    # -- Possibility to override the fullname
+    fullnameOverride: "backend-postgresql"
+    service:
+      ports:
+        # Port of postgres database.
+        postgresql: 5432
+    auth:
+        # Name of the database
+        database: "postgres"
+        # Username for the database
+        username: "puris"
+        # Password.
+        password: "password"

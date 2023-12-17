@@ -1,3 +1,20 @@
+## Setup development database
+
+For local development a postgresql database is needed. The file local/docker-compose-dev-postgres.yaml provides a 
+postgres that can be started freshly for development:
+
+```shell
+cd local
+# create .env manually or run sh generate-keys.sh
+docker compose -f docker-compose-dev-postgres.yaml up
+
+# update your application.properties (src) accordingly to user and password
+# work as you want. Shutdown database if needed:
+docker compose -f docker-compose-dev-postgres.yaml down
+```
+
+_NOTE: For testing purposes HyperSql is still used but excluded for spring run._
+
 ## Keeping dependencies-files up to date
 ### Backend
 

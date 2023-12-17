@@ -21,5 +21,3 @@
 .idea/
 *.tmproj
 .vscode/
-# Helm depencies
-charts/*.tgz
