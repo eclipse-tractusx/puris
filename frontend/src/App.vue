@@ -184,7 +184,6 @@ nav a:first-of-type {
 <script>
 import AccessService from "./services/AccessService.js";
 import HomeIcon from "@/assets/icons/home.svg";
-import CreateIcon from "@/assets/icons/create.svg";
 import ManageIcon from "@/assets/icons/manage.svg";
 import CatalogIcon from "@/assets/icons/catalog.svg";
 import ResponsesIcon from "@/assets/icons/responses.svg";
@@ -206,9 +205,6 @@ export default {
     methods: {
         getImagePath(routeName) {
             const imageMap = {
-                dashboard: HomeIcon,
-                "create order": CreateIcon,
-                "manage orders": ManageIcon,
                 catalog: CatalogIcon,
                 negotiations: CatalogIcon,
                 transfers: CatalogIcon,
