@@ -141,6 +141,10 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.puris.endpointProductStocks | string | `"stockView/product-stocks"` | The endpoint for product stocks for the stock view |
 | frontend.puris.endpointProducts | string | `"stockView/products"` | The endpoint for products for the stock view |
 | frontend.puris.endpointUpdatePartnerProductStocks | string | `"stockView/update-partner-product-stock?ownMaterialNumber="` | The endpoint for updating the partners product stocks and their material numbers for the stock view |
+| frontend.puris.keycloak.clientId | string | `"appXYZ"` | Name of the client which is used for the application. |
+| frontend.puris.keycloak.disabled | bool | `true` | Disable the Keycloak integration. |
+| frontend.puris.keycloak.realm | string | `"Catena-X"` | Name of the Realm of the keycloak instance. |
+| frontend.puris.keycloak.redirectUrlFrontend | string | `"https://your-frontend-url.com"` | URL to use as keycloak redirect url. |
 | frontend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":10,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
 | frontend.readinessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a readiness probe |
 | frontend.readinessProbe.initialDelaySeconds | int | `10` | Delay in seconds after which an initial readiness probe is checked |

@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,28 +17,35 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.controller;
+import {ALL_ROUTES} from "@/router";
+import AuthenticationService from "./AuthenticationService.js";
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+const getViewsWithAccess = () => {
+    let views = [];
 
-/**
- * Controller used for health and readiness probes.
- */
-@RestController
-@RequestMapping("health")
-public class HealthController {
-
-    /**
-     * Return 200 OK status for health and readiness probes.
-     *
-     * @return 200 OK if healthy.
-     */
-    @GetMapping("/")
-    public ResponseEntity<?> getHealth() {
-        return ResponseEntity.ok().build();
+    if (!AuthenticationService.isEnabled) {
+        return ALL_ROUTES.filter(route=> route.name !== "Unauthorized");
     }
 
-}
+    ALL_ROUTES.forEach((item) => {
+        if (
+            item.name !== "Unauthorized" &&
+            item.meta &&
+            item.meta.requiredRoles
+        ) {
+            if (AuthenticationService.userHasRole(item.meta.requiredRoles)) {
+                views.push({
+                    path: item.path,
+                    name: item.name,
+                });
+            }
+        }
+    });
+    return views;
+};
+
+const AccessService = {
+    getViewsWithAccess,
+};
+
+export default AccessService;

@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,28 +17,26 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+export const isDisabled =
+    import.meta.env.VITE_IDP_DISABLE === true ||
+    import.meta.env.VITE_IDP_DISABLE.trim().toLowerCase() === "true";
 
-/**
- * Controller used for health and readiness probes.
- */
-@RestController
-@RequestMapping("health")
-public class HealthController {
+export const getIdpUrl = import.meta.env.VITE_IDP_URL.trim();
 
-    /**
-     * Return 200 OK status for health and readiness probes.
-     *
-     * @return 200 OK if healthy.
-     */
-    @GetMapping("/")
-    public ResponseEntity<?> getHealth() {
-        return ResponseEntity.ok().build();
-    }
+export const getIdpRealm = import.meta.env.VITE_IDP_REALM.trim();
 
-}
+export const getIdpClientId = import.meta.env.VITE_IDP_CLIENT_ID.trim();
+
+export const getIdpRedirectUrlFrontend = import.meta.env
+    .VITE_IDP_REDIRECT_URL_FRONTEND.trim();
+
+const AuthenticationConfig = {
+    isDisabled,
+    getIdpUrl,
+    getIdpRealm,
+    getIdpClientId,
+    getIdpRedirectUrlFrontend,
+};
+
+export default AuthenticationConfig;

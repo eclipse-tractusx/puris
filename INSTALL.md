@@ -7,11 +7,12 @@ See `Install.md` file in folder [local](./local/docker-compose.yaml) for integra
 1. Configure the application:
     1. Open the `values.yaml` file in [charts/puris](./charts/puris/values.yaml).
     2. Edit the following properties to your requirements:
-        - **Ingress**(if you want to enable ingress) for frontend/backend, under `frontend.ingress` and `backend.ingress`
-        - **EDC**, under `backend.puris.edc`
-        - **Own data**, under `backend.puris.own`
-        - **Current role for demonstrator**, under `backend.puris.demonstrator.role`
+        - **Ingress**(if you want to enable ingress) for frontend/backend, under *frontend.ingress.* and *backend.ingress.*
+        - **EDC**, under *backend.puris.edc*
+        - **Own data**, under *backend.puris.own*
+        - **Current role for demonstrator**, under *backend.puris.demonstrator.role*
         - **Postgresql settings**, under `backend.puris.datasource` (only necessary, if `postgres.enabled` is false - else autoconfigured).
+        - **Keycloak** is disabled by default but can be configured under `frontend.puris.keycloak`.
     > **NOTE**   
     Further information on the individual properties can be found in the following [README.md](./charts/puris/README.md).
 2. Install dependencies

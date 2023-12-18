@@ -1,0 +1,50 @@
+{
+  "realm" : "Catena-X",
+  "users" : [ {
+    "id" : "c0c07880-3751-48d7-9113-a27b5397942f",
+    "createdTimestamp" : 1702650618523,
+    "username" : "puris_admin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "credentials" : [ {
+      "id" : "7abcf0dc-cf7c-4c68-b9cf-424bb817f25a",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1702650630912,
+      "secretData" : "{\"value\":\"tYgCZcQnFPCkLMeybjgCBoRGWvf6gfFufmg9dA35Zo4=\",\"salt\":\"8gfZwzezjkp5/b3388bBYQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-catena-x" ],
+    "clientRoles" : {
+      "Cl3-PURIS" : [ "PURIS_ADMIN" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "57f7531a-3bc8-4f9c-90b3-2f4cdd3183e8",
+    "createdTimestamp" : 1701016987726,
+    "username" : "puris_user",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "credentials" : [ {
+      "id" : "6788c4bc-5d9f-4aa3-b7fa-60ed8ec5acda",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1701016999312,
+      "secretData" : "{\"value\":\"ZBchRqn06xTlyJ+YMzfQOmCY88SkMKoJHVOYPa2RGis=\",\"salt\":\"YZQCSYYtQSPKQ8J83HJUHA==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-catena-x" ],
+    "clientRoles" : {
+      "Cl3-PURIS" : [ "PURIS_USER" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}
