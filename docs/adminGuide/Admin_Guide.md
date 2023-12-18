@@ -107,8 +107,7 @@ openssl req -x509 -out localhost.crt -keyout localhost.key \
 ```
 _NOTE: For productive use, you can use certificates provided by a Certificate Authority._
 
-Create a nginx.conf to provide certificates for listening on 443 for tls. You can find an example
-[here](../frontend/nginx.conf).
+Create a nginx.conf to provide certificates for listening on 443 for tls.
 ``` conf
 http {
     # other configurations 
