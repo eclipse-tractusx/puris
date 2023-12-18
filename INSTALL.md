@@ -11,6 +11,7 @@ See `Install.md` file in folder [local](./local/docker-compose.yaml) for integra
         - **EDC**, under *backend.puris.edc*
         - **Own data**, under *backend.puris.own*
         - **Current role for demonstrator**, under *backend.puris.demonstrator.role*
+        - **Keycloak** is disabled by default but can be configured under `frontend.puris.keycloak`.
     > **NOTE**   
     Further information on the individual properties can be found in the following [README.md](./charts/puris/README.md).
 
