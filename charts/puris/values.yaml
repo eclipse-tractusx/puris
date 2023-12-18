@@ -411,7 +411,7 @@ backend:
           endpoint: *domain
 
 postgresql:
-    # enable postgres by default, set to false to use existing postgres. Make sure to set
+    # -- Enable postgres by default, set to false to use existing postgres. Make sure to set
     # backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from
     # backend).
     enabled: true
@@ -419,12 +419,12 @@ postgresql:
     fullnameOverride: "backend-postgresql"
     service:
       ports:
-        # Port of postgres database.
+        # -- Port of postgres database.
         postgresql: 5432
     auth:
-        # Name of the database
+        # -- Name of the database.
         database: "postgres"
-        # Username for the database
+        # -- Username for the database.
         username: "puris"
-        # Password.
+        # -- Password for the database.
         password: "password"
