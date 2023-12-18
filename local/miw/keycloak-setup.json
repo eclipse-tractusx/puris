@@ -2044,58 +2044,6 @@
         "subComponents": {},
         "config": {}
       }
-    ],
-    "org.keycloak.keys.KeyProvider": [
-      {
-        "id": "f19c25ec-b555-4a60-8d98-fa41190c58d8",
-        "name": "hmac-generated",
-        "providerId": "hmac-generated",
-        "subComponents": {},
-        "config": {
-          "priority": [
-            "100"
-          ],
-          "algorithm": [
-            "HS256"
-          ]
-        }
-      },
-      {
-        "id": "25496642-de17-48e8-8b48-49982e3e0bff",
-        "name": "aes-generated",
-        "providerId": "aes-generated",
-        "subComponents": {},
-        "config": {
-          "priority": [
-            "100"
-          ]
-        }
-      },
-      {
-        "id": "31fc839e-8c60-48b7-b9a2-66ecaa0902e5",
-        "name": "rsa-enc-generated",
-        "providerId": "rsa-enc-generated",
-        "subComponents": {},
-        "config": {
-          "priority": [
-            "100"
-          ],
-          "algorithm": [
-            "RSA-OAEP"
-          ]
-        }
-      },
-      {
-        "id": "c09f0435-5a5c-4ee6-af62-6bc7db9fbc88",
-        "name": "rsa-generated",
-        "providerId": "rsa-generated",
-        "subComponents": {},
-        "config": {
-          "priority": [
-            "100"
-          ]
-        }
-      }
     ]
   },
   "internationalizationEnabled": false,
