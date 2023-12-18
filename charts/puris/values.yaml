@@ -187,6 +187,16 @@ frontend:
         endpointPartnerProductStocks: stockView/partner-product-stocks?ownMaterialNumber=
         # -- The endpoint for updating the partners product stocks and their material numbers for the stock view
         endpointUpdatePartnerProductStocks: stockView/update-partner-product-stock?ownMaterialNumber=
+        keycloak:
+            # Disable the Keycloak integration.
+            disabled: true
+            # Name of the Realm of the keycloak instance.
+            realm: "Catena-X"
+            # Name of the client which is used for the application.
+            clientId: "appXYZ"
+            # URL to use as keycloak redirect url.
+            redirectUrlFrontend: "https://your-frontend-url.com"
+
 
 # BACKEND -----------
 backend:
