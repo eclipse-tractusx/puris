@@ -11,24 +11,33 @@ See `Install.md` file in folder [local](./local/docker-compose.yaml) for integra
         - **EDC**, under *backend.puris.edc*
         - **Own data**, under *backend.puris.own*
         - **Current role for demonstrator**, under *backend.puris.demonstrator.role*
+        - **Postgresql settings**, under `backend.puris.datasource` (only necessary, if `postgres.enabled` is false - else autoconfigured).
         - **Keycloak** is disabled by default but can be configured under `frontend.puris.keycloak`.
     > **NOTE**   
     Further information on the individual properties can be found in the following [README.md](./charts/puris/README.md).
+2. Install dependencies
+```shell
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm dependency update
+```
+
+**Attention**: When using `postgres.enabled` = false and bringing your own database, ensure to set 
+`backend.puris.jpa.hibernate.ddl-auto` = `validate` to prevent **DATA LOSS**.
 
 #### Run without Ingress 
 
-2. Run the application:
+3. Run the application:
 ```shell
 helm install puris charts/puris \
     --namespace puris \
     --create-namespace 
 ```
-3. Forward ports for services:
+4. Forward ports for services:
 ```shell
 kubectl -n puris port-forward svc/frontend 8080:8080
 kubectl -n puris port-forward svc/backend 8081:8081
 ```
-4. Done! The applications should be available at `http://localhost:<forwarded-port>`.
+5. Done! The applications should be available at `http://localhost:<forwarded-port>`.
 
 #### Run with Ingress
 
@@ -36,7 +45,7 @@ Precondition: please refer to your runtime environment's official documentation 
 - [minikube](https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/)
 - [kind](https://kind.sigs.k8s.io/docs/user/ingress/)
 
-2. Run the application:
+3. Run the application:
 ```shell
 helm install puris charts/puris \
     --namespace puris \
@@ -44,7 +53,7 @@ helm install puris charts/puris \
     --set frontend.ingress.enabled=true \
     --set backend.ingress.enabled=true
 ```
-3. Edit /etc/hosts:
+4. Edit /etc/hosts:
 ```shell
 # If you are using minikube use minikube ip to get you clusterIp, for kind this is localhost (127.0.0.1)
 sudo vim /etc/hosts
@@ -52,6 +61,6 @@ sudo vim /etc/hosts
 >> add entry for backend "<cluster ip> <backend-url.top-level-domain>"
 >> :wq! (save changes)
 ```
-4. Done! The applications should be available at:
+5. Done! The applications should be available at:
     - (frontend) `http://your-frontend-host-address.com`
     - (backend) `http://your-backend-host-address.com`

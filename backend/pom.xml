@@ -41,7 +41,7 @@
     <springdoc.version>2.2.0</springdoc.version>
     <okhttp3.version>2.7.5</okhttp3.version>
     <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
-      <snakeyaml.version>2.2</snakeyaml.version>
+    <snakeyaml.version>2.2</snakeyaml.version>
   </properties>
   <dependencies>
     <dependency>
@@ -70,6 +70,12 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.7.1</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -111,13 +117,6 @@
   </dependencies>
 
   <pluginRepositories>
-<!--    <pluginRepository>-->
-<!--      <id>dash-licenses-snapshots</id>-->
-<!--      <url>https://repo.eclipse.org/content/repositories/dash-licenses-snapshots/</url>-->
-<!--      <snapshots>-->
-<!--        <enabled>true</enabled>-->
-<!--      </snapshots>-->
-<!--    </pluginRepository>-->
       <pluginRepository>
           <id>dash-licenses</id>
           <url>https://repo.eclipse.org/content/repositories/dash-licenses</url>
@@ -154,6 +153,11 @@
             <exclude>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
+            </exclude>
+            <!-- keep for testing purposes, but exclude for security reasons -->
+            <exclude>
+              <groupId>org.hsqldb</groupId>
+              <artifactId>hsqldb</artifactId>
             </exclude>
           </excludes>
         </configuration>
