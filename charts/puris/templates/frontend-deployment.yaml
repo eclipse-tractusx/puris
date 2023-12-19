@@ -54,6 +54,14 @@ spec:
               value: "{{ .Values.frontend.puris.endpointUpdatePartnerProductStocks }}"
             - name: BACKEND_API_KEY
               value: "test"
+            - name: IDP_DISABLE
+              value: "{{ .Values.frontend.puris.keycloak.disabled }}"
+            - name: IDP_REALM
+              value: "{{ .Values.frontend.puris.keycloak.realm }}"
+            - name: IDP_CLIENT_ID
+              value: "{{ .Values.frontend.puris.keycloak.clientId }}"
+            - name: IDP_REDIRECT_URL_FRONTEND
+              value: "{{ .Values.frontend.puris.keycloak.redirectUrlFrontend }}"
           ports:
             - name: http
               containerPort: {{ .Values.frontend.service.port }}

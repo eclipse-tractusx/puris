@@ -57,7 +57,6 @@ public class MaterialPartnerRelationsController {
     private final Pattern bpnlPattern = Pattern.compile(Partner.BPNL_REGEX);
 
     @PostMapping
-    @CrossOrigin
     @Operation(description = "Creates a new MaterialPartnerRelation with the given parameter data. " +
         "Please note that this is only possible, if the designated Material " +
         "and Partner entities have already been created before this request. ")
@@ -112,7 +111,6 @@ public class MaterialPartnerRelationsController {
     }
 
     @PutMapping
-    @CrossOrigin
     @Operation(description = "Updates an existing MaterialPartnerRelation. You have to specify the ownMaterialNumber and " +
         "the partnerBpnl. The other three parameters are genuinely optional. Provide them only if you want to change their values. ")
     @ApiResponses(value = {

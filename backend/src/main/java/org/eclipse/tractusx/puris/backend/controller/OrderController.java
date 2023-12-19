@@ -25,11 +25,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.tractusx.puris.backend.model.Order;
 import org.eclipse.tractusx.puris.backend.model.repo.OrderPositionRepository;
 import org.eclipse.tractusx.puris.backend.model.repo.OrderRepository;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Controller for creating and managing Orders/Call-offs.
@@ -50,7 +51,6 @@ public class OrderController {
    * @return List of all orders.
    */
   @GetMapping("order")
-  @CrossOrigin
   public ResponseEntity<List<Order>> getAllOrders() {
     return ResponseEntity.ok(orderRepository.findAll());
   }
@@ -61,7 +61,6 @@ public class OrderController {
    * @return list of all orders where sent=true.
    */
   @GetMapping("orders/sent")
-  @CrossOrigin
   public ResponseEntity<List<Order>> getSentOrders() {
     return ResponseEntity.ok(
         orderRepository.findAll().stream().filter(Order::isSent).collect(Collectors.toList()));
@@ -73,7 +72,6 @@ public class OrderController {
    * @return list of all orders where sent=false.
    */
   @GetMapping("orders/pending")
-  @CrossOrigin
   public ResponseEntity<List<Order>> getNotSentOrder() {
     return ResponseEntity.ok(
         orderRepository.findAll().stream()
@@ -88,7 +86,6 @@ public class OrderController {
    * @return requested order or 404 not found.
    */
   @GetMapping("order/id/{id}")
-  @CrossOrigin
   public ResponseEntity<?> getOrder(@PathVariable String id) {
     var order = orderRepository.findByOrderId(id);
     if (order.isEmpty()) {
@@ -106,7 +103,6 @@ public class OrderController {
    * @return OK if order was created, or information about why order could not be created.
    */
   @PostMapping("order")
-  @CrossOrigin
   public ResponseEntity<?> createOrder(@RequestBody String content) {
     try {
       var order = MAPPER.readValue(content, Order.class);
@@ -137,7 +133,6 @@ public class OrderController {
    * @return OK or info why order could not be deleted.
    */
   @DeleteMapping("order")
-  @CrossOrigin
   public ResponseEntity<?> deleteOrder(@RequestParam String id) {
     var toDelete = orderRepository.findByOrderId(id);
     if (toDelete.isEmpty()) {

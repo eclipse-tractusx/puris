@@ -40,12 +40,21 @@ spec:
               value: "{{ .Values.backend.puris.api.rootDir }}"
             - name: DATASOURCE_DRIVERCLASSNAME
               value: "{{ .Values.backend.puris.datasource.driverClassName }}"
+            {{- if .Values.postgresql.enabled }}
+            - name: DATASOURCE_URL
+              value: "jdbc:postgresql://{{ .Values.postgresql.fullnameOverride }}:{{ .Values.postgresql.service.ports.postgresql }}/{{ .Values.postgresql.auth.database}}"
+            - name: DATASOURCE_USERNAME
+              value: "{{ .Values.postgresql.auth.username }}"
+            - name: DATASOURCE_PASSWORD
+              value: "{{ .Values.postgresql.auth.password }}"
+            {{- else }}
             - name: DATASOURCE_URL
               value: "{{ .Values.backend.puris.datasource.url }}"
             - name: DATASOURCE_USERNAME
               value: "{{ .Values.backend.puris.datasource.username }}"
             - name: DATASOURCE_PASSWORD
               value: "{{ .Values.backend.puris.datasource.password }}"
+            {{- end }}
             - name: EDC_CONTROLPLANE_KEY
               value: "{{ .Values.backend.puris.edc.controlplane.key | default (randAlphaNum 16) }}"
             - name: EDC_CONTROLPLANE_MANAGEMENT_URL

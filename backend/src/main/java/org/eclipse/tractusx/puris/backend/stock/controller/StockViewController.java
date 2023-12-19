@@ -131,20 +131,20 @@ public class StockViewController {
             .collect(Collectors.toList());
     }
 
+    @CrossOrigin
     @GetMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Returns a list of all product-stocks")
-    @CrossOrigin
     public List<ProductStockDto> getProductStocks() {
         return productStockService.findAll().stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
     }
 
+    @CrossOrigin
     @PostMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Creates a new product-stock")
-    @CrossOrigin
     public ProductStockDto createProductStocks(@RequestBody ProductStockDto productStockDto) {
 
         ProductStock productStockToCreate = convertToEntity(productStockDto);
@@ -160,10 +160,10 @@ public class StockViewController {
         return convertToDto(createdProductStock);
     }
 
+    @CrossOrigin
     @PutMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Updates an existing product-stock")
-    @CrossOrigin
     public ProductStockDto updateProductStocks(@RequestBody ProductStockDto productStockDto) {
         ProductStock existingProductStock = productStockService.findByUuid(productStockDto.getUuid());
         if (existingProductStock.getUuid() == null) {
@@ -195,10 +195,10 @@ public class StockViewController {
         return productStock;
     }
 
+    @CrossOrigin
     @GetMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Returns a list of all material-stocks")
-    @CrossOrigin
     public List<MaterialStockDto> getMaterialStocks() {
         List<MaterialStockDto> allMaterialStocks = materialStockService.findAll().stream()
             .map(this::convertToDto)
@@ -207,10 +207,10 @@ public class StockViewController {
         return allMaterialStocks;
     }
 
+    @CrossOrigin
     @PostMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Creates a new material-stock")
-    @CrossOrigin
     public MaterialStockDto createMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
 
         MaterialStock materialStockToCreate = convertToEntity(materialStockDto);
@@ -221,10 +221,10 @@ public class StockViewController {
         return convertToDto(createdMaterialStock);
     }
 
+    @CrossOrigin
     @PutMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Updates an existing material-stock")
-    @CrossOrigin
     public MaterialStockDto updateMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
         MaterialStock existingMaterialStock = materialStockService.findByUuid(materialStockDto.getUuid());
         if (existingMaterialStock == null || existingMaterialStock.getUuid() == null) {
@@ -253,13 +253,13 @@ public class StockViewController {
         return stock;
     }
 
+    @CrossOrigin
     @GetMapping("partner-product-stocks")
     @Operation(description = "Returns a list of all partner-product-stocks that refer to the given material number")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
-    @CrossOrigin
     public ResponseEntity<List<PartnerProductStockDto>> getPartnerProductStocks(@RequestParam String ownMaterialNumber) {
         if(!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));

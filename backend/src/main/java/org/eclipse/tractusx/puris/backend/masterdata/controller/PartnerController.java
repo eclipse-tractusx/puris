@@ -92,6 +92,7 @@ public class PartnerController {
     }
 
     @PutMapping("putAddress")
+    @CrossOrigin
     @Operation(description = "Updates an existing Partner by adding a new Address. If that Partner already has " +
         "an Address with the BPNA given in the request body, that existing Address will be overwritten. ")
     @ApiResponses(value = {
@@ -100,7 +101,6 @@ public class PartnerController {
         @ApiResponse(responseCode = "404", description = "Partner not found."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
-    @CrossOrigin
     public ResponseEntity<?> addAddress(
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
@@ -168,6 +168,8 @@ public class PartnerController {
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }
 
+
+    @CrossOrigin
     @GetMapping
     @Operation(description = "Returns the requested PartnerDto.")
     @ApiResponses(value = {
@@ -176,7 +178,6 @@ public class PartnerController {
         @ApiResponse(responseCode = "404", description = "Requested Partner not found."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
-    @CrossOrigin
     public ResponseEntity<PartnerDto> getPartner(
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl) {
@@ -195,9 +196,9 @@ public class PartnerController {
         }
     }
 
+    @CrossOrigin
     @GetMapping("/all")
     @Operation(description = "Returns a list of all Partners. ")
-    @CrossOrigin
     public ResponseEntity<List<PartnerDto>> listPartners() {
         return new ResponseEntity<>(partnerService.findAll().
             stream().map(partner -> modelMapper.map(partner, PartnerDto.class)).collect(Collectors.toList()),
