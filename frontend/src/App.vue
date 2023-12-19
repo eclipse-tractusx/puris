@@ -186,7 +186,6 @@ import AccessService from "./services/AccessService.js";
 import HomeIcon from "@/assets/icons/home.svg";
 import ManageIcon from "@/assets/icons/manage.svg";
 import CatalogIcon from "@/assets/icons/catalog.svg";
-import ResponsesIcon from "@/assets/icons/responses.svg";
 import StockIcon from "@/assets/icons/stock.svg";
 import TrashIcon from "@/assets/icons/trash.svg";
 import AuthenticationService from "@/services/AuthenticationService";
@@ -208,7 +207,6 @@ export default {
                 catalog: CatalogIcon,
                 negotiations: CatalogIcon,
                 transfers: CatalogIcon,
-                responses: ResponsesIcon,
                 connectors: ManageIcon,
                 stocks: StockIcon,
                 "supplier dashboard": HomeIcon,

@@ -61,15 +61,6 @@ export const ALL_ROUTES = [
         },
     },
     {
-        path: "/responses",
-        name: "Responses",
-        component: () => import("../views/OrderResponseView.vue"),
-        meta: {
-            requiresAuth: true,
-            requiredRoles: ["PURIS_ADMIN"],
-        },
-    },
-    {
         path: "/connectors",
         name: "Connectors",
         component: () => import("../views/ConnectorView.vue"),
