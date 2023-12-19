@@ -20,38 +20,17 @@
  */
 
 import {createRouter, createWebHistory} from "vue-router";
-import HomeView from "../views/HomeView.vue";
+import StockView from "../views/StockView.vue";
 import AuthenticationService from "@/services/AuthenticationService";
 
 export const ALL_ROUTES = [
     {
         path: "/",
-        name: "Dashboard",
-        component: HomeView,
+        name: "Stocks",
+        component: StockView,
         meta: {
             requiresAuth: true,
-            requiredRoles: ["PURIS_USER","PURIS_ADMIN"],
-        },
-    },
-    {
-        path: "/createOrder",
-        name: "Create Order",
-        // route level code-splitting
-        // this generates a separate chunk (About.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
-        component: () => import("../views/CreateOrderView.vue"),
-        meta: {
-            requiresAuth: true,
-            requiredRoles: ["PURIS_ADMIN"],
-        },
-    },
-    {
-        path: "/manageOrders",
-        name: "Manage Orders",
-        component: () => import("../views/ManageOrderView.vue"),
-        meta: {
-            requiresAuth: true,
-            requiredRoles: ["PURIS_ADMIN"],
+            requiredRoles: ["PURIS_USER", "PURIS_ADMIN"],
         },
     },
     {
@@ -82,15 +61,6 @@ export const ALL_ROUTES = [
         },
     },
     {
-        path: "/responses",
-        name: "Responses",
-        component: () => import("../views/OrderResponseView.vue"),
-        meta: {
-            requiresAuth: true,
-            requiredRoles: ["PURIS_ADMIN"],
-        },
-    },
-    {
         path: "/connectors",
         name: "Connectors",
         component: () => import("../views/ConnectorView.vue"),
@@ -100,21 +70,12 @@ export const ALL_ROUTES = [
         },
     },
     {
-        path: "/stocks",
-        name: "Stocks",
-        component: () => import("../views/StockView.vue"),
-        meta: {
-            requiresAuth: true,
-            requiredRoles: ["PURIS_USER","PURIS_ADMIN"],
-        },
-    },
-    {
         path: "/supplierDashboard",
         name: "Supplier Dashboard",
         component: () => import("../views/SupplierDashboard.vue"),
         meta: {
             requiresAuth: true,
-            requiredRoles: ["PURIS_USER","PURIS_ADMIN"],
+            requiredRoles: ["PURIS_USER", "PURIS_ADMIN"],
         },
     },
     {
