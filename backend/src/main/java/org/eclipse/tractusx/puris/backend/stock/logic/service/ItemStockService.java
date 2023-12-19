@@ -1,7 +1,5 @@
 /*
  * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
- * (represented by Fraunhofer ISST)
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,87 +19,149 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.repository.ItemStockRepository;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
-import org.springframework.stereotype.Service;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
+import java.util.function.Function;
 
-@Service
-@RequiredArgsConstructor
+
 @Slf4j
-public class ItemStockService {
 
-    private final ItemStockRepository itemStockRepository;
-    private final PartnerService partnerService;
-    private final MaterialPartnerRelationService mprService;
+public abstract class ItemStockService<T extends ItemStock> {
 
-    public ItemStock create(ItemStock itemStock) {
-        if(!validate(itemStock)) {
+    protected final PartnerService partnerService;
+
+    protected final MaterialPartnerRelationService mprService;
+
+    protected final JpaRepository<T, UUID> repository;
+
+    protected final Function<T, Boolean> validator;
+
+    public ItemStockService(PartnerService partnerService, MaterialPartnerRelationService mprService, JpaRepository<T, UUID> repository) {
+        this.partnerService = partnerService;
+        this.mprService = mprService;
+        this.repository = repository;
+        this.validator = this::validate;
+    }
+
+
+
+    public final T create(T itemStock) {
+        if(itemStock.getUuid() != null && repository.findById(itemStock.getUuid()).isPresent()) {
             return null;
         }
-        return itemStockRepository.save(itemStock);
-    }
-
-    public ItemStock update(ItemStock itemStock) {
-        if(!validate(itemStock)) {
+        if(!validator.apply(itemStock)) {
             return null;
         }
-        if(itemStockRepository.findById(itemStock.getKey()).isEmpty()){
+        return repository.save(itemStock);
+    }
+
+    public final T update(T itemStock) {
+        if(itemStock.getUuid() == null || repository.findById(itemStock.getUuid()).isEmpty()) {
             return null;
         }
-        return itemStockRepository.save(itemStock);
+        return repository.save(itemStock);
     }
 
-    public ItemStock findById(ItemStock.Key key) {
-        return itemStockRepository.findById(key).orElse(null);
+    public final T findById(UUID uuid) {
+        return repository.findById(uuid).orElse(null);
     }
 
-    public List<ItemStock> findAll() {
-        return itemStockRepository.findAll();
+    public final void delete(UUID uuid) {
+        repository.deleteById(uuid);
     }
 
-    private boolean validate(ItemStock itemStock) {
-        var key = itemStock.getKey();
+    public  final List<T> findAll() {
+        return repository.findAll();
+    }
+
+    public abstract boolean validate(T itemStock);
+
+    protected boolean basicValidation(ItemStock itemStock) {
         try {
-            Objects.requireNonNull(key.getPartnerBpnl(), "Missing PartnerBpnl");
-            Objects.requireNonNull(key.getMaterialNumberCustomer(), "Missing materialNumberCustomer");
-            Objects.requireNonNull(key.getMaterialNumberSupplier(), "Missing materialNumberSupplier");
-            Objects.requireNonNull(key.getMaterialGlobalAssetId(), "Missing materialGlobalAssetId");
-            Objects.requireNonNull(key.getDirection(), "Missing direction");
-            Objects.requireNonNull(key.getSupplierOrderId(), "Missing supplierOrderId");
-            Objects.requireNonNull(key.getCustomerOrderId(), "Missing customerOrderId");
-            Objects.requireNonNull(key.getCustomerOrderPositionId(), "Missing customerOrderPositionId");
-            Objects.requireNonNull(key.getLocationBpna(), "Missing locationBpna");
-            Objects.requireNonNull(key.getLocationBpns(), "Missing locationBpns");
+            Objects.requireNonNull(itemStock.getPartner(), "Missing Partner");
+            Objects.requireNonNull(itemStock.getMaterial(), "Missing Material");
+            Objects.requireNonNull(itemStock.getLocationBpna(), "Missing locationBpna");
+            Objects.requireNonNull(itemStock.getLocationBpns(), "Missing locationBpns");
             Objects.requireNonNull(itemStock.getMeasurementUnit(), "Missing measurementUnit");
-            Objects.requireNonNull(itemStock.getQuantityAmount(), "Missing quantityAmount");
             Objects.requireNonNull(itemStock.getLastUpdatedOnDateTime(), "Missing lastUpdatedOnTime");
-            Partner partner =  partnerService.findByBpnl(key.getPartnerBpnl());
-            Objects.requireNonNull(partner, "Unknown partner: " + key.getPartnerBpnl());
-            Partner mySelf = partnerService.getOwnPartnerEntity();
-            Partner customer = key.getDirection() == DirectionCharacteristic.INBOUND ? mySelf : partner;
-            Partner supplier = customer == mySelf ? partner : mySelf;
-            var stockBpns = supplier.getSites().stream()
-                .filter(site -> site.getBpns().equals(key.getLocationBpns())).findFirst().orElse(null);
-            Objects.requireNonNull(stockBpns, "Unknown Bpns: " + key.getLocationBpns());
-            var stockBpna = supplier.getSites().stream().flatMap(site -> site.getAddresses().stream())
-                .filter(address -> address.getBpna().equals(key.getLocationBpna())).findFirst().orElse(null);
-            Objects.requireNonNull(stockBpna, "Unknown Bpna: " + key.getLocationBpna());
-            String ownMaterialNumber = mySelf == customer ? key.getMaterialNumberCustomer() : key.getMaterialNumberSupplier();
-            var materialPartnerRelation = mprService.find(ownMaterialNumber, partner.getUuid());
-            Objects.requireNonNull(materialPartnerRelation, "Missing MaterialPartnerRelation");
         } catch (Exception e) {
-            log.error("Validation failed: " + e.getMessage());
+            log.error("Basic Validation failed: " + itemStock + "\n" + e.getMessage());
             return false;
         }
         return true;
     }
+
+    protected boolean validateLocalStock(ItemStock itemStock) {
+        return validateLocation(itemStock, partnerService.getOwnPartnerEntity());
+    }
+
+    protected boolean validateRemoteStock(ItemStock itemStock) {
+        return validateLocation(itemStock, itemStock.getPartner());
+    }
+
+    protected final boolean validateMaterialItemStock(ItemStock itemStock) {
+        try {
+            Partner partner = itemStock.getPartner();
+            Material material = itemStock.getMaterial();
+            MaterialPartnerRelation relation = mprService.find(material, partner);
+            Objects.requireNonNull(relation, "Missing MaterialPartnerRelation");
+            if(!material.isMaterialFlag()) {
+                throw new IllegalArgumentException("Material flag is missing");
+            }
+            if(!relation.isPartnerSuppliesMaterial()) {
+                throw new IllegalArgumentException("Partner does not supply material");
+            }
+        } catch (Exception e) {
+            log.error("MaterialItemStock Validation failed: " + itemStock + "\n" + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    protected final boolean validateProductItemStock(ItemStock itemStock) {
+        try {
+            Partner partner = itemStock.getPartner();
+            Material material = itemStock.getMaterial();
+            MaterialPartnerRelation relation = mprService.find(material, partner);
+            Objects.requireNonNull(relation, "Missing MaterialPartnerRelation");
+            if (!material.isProductFlag()) {
+                throw new IllegalArgumentException("Product flag is missing");
+            }
+            if (!relation.isPartnerBuysMaterial()) {
+                throw new IllegalArgumentException("Partner does not buy material");
+            }
+        } catch (Exception e) {
+            log.error("ProductItemStock Validation failed: " + itemStock + "\n" + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    protected boolean validateLocation(ItemStock itemStock, Partner partner) {
+        try {
+            var stockSite = partner.getSites().stream()
+                .filter(site -> site.getBpns().equals(itemStock.getLocationBpns()))
+                .findFirst().orElse(null);
+            Objects.requireNonNull(stockSite, "Site not found");
+            var stockAddress = stockSite.getAddresses().stream()
+                .filter(addr -> addr.getBpna().equals(itemStock.getLocationBpna()))
+                .findFirst().orElse(null);
+            Objects.requireNonNull(stockAddress, "Address not found");
+        } catch (Exception e) {
+            log.error("Location Validation failed: " + itemStock + "\n" + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
 }
