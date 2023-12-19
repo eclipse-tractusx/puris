@@ -21,43 +21,27 @@
 
 <script>
 export default {
-  inject: ["baseUrl"],
   data() {
     return {
+      backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
       catalog: {},
     };
   },
   methods: {
-    getCatalog() {
-      let vm = this;
-      fetch(vm.baseUrl + "/edc/negotiations")
+    getNegotiations() {
+      fetch(this.backendURL + "/edc/negotiations", {
+        headers: {
+          "X-API-KEY": this.backendApiKey,
+        },
+      })
         .then((response) => response.json())
         .then((data) => {
-          vm.catalog = data;
+          this.catalog = data;
         });
-    },
-    startTransfer(orderId, url) {
-      const idArray = orderId.split(":");
-      const edcEncoded = encodeURIComponent(url);
-      let vm = this;
-      fetch(
-        vm.baseUrl +
-          "/edc/startTransfer?orderId=" +
-          idArray[0] +
-          "&connectorAddress=" +
-          edcEncoded +
-          "&transferId=" +
-          idArray[1] +
-          "&contractId=" +
-          idArray[1]
-      )
-        .then((response) => response.text())
-        .then((json) => window.alert(json));
     },
   },
   mounted() {
-    let vm = this;
-    vm.getCatalog();
+    this.getNegotiations();
   },
 };
 </script>
@@ -93,20 +77,6 @@ export default {
             Agreement ID: {{ offer.contractAgreementId }}
           </h2>
         </div>
-        <button
-          v-if="offer.state == 'CONFIRMED' && offer.type == 'CONSUMER'"
-          class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          id="orderBtn"
-          type="submit"
-          v-on:click="
-            startTransfer(
-              offer.contractAgreementId,
-              offer.counterPartyAddress
-            )
-          "
-        >
-          Start Transfer
-        </button>
       </div>
     </li>
   </main>
