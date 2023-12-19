@@ -1,14 +1,31 @@
+## Setup development database
+
+For local development a postgresql database is needed. The file local/docker-compose-dev-postgres.yaml provides a 
+postgres that can be started freshly for development:
+
+```shell
+cd local
+# create .env manually or run sh generate-keys.sh
+docker compose -f docker-compose-dev-postgres.yaml up
+
+# update your application.properties (src) accordingly to user and password
+# work as you want. Shutdown database if needed:
+docker compose -f docker-compose-dev-postgres.yaml down
+```
+
+_NOTE: For testing purposes HyperSql is still used but excluded for spring run._
+
 ## Keeping dependencies-files up to date
 ### Backend
 
-Navigate to the ./backend folder and run:  
+Navigate to the `./backend` folder and run:  
 ```
 mvn org.eclipse.dash:license-tool-plugin:license-check   
 cp DEPENDENCIES ../DEPENDENCIES_BACKEND
 ```
 The first line runs the maven license tool with the parameters specified in the 
-./backend/pom.xml and produces a DEPENDENCIES file in the ./backend folder.  
-Then this file gets copied to the PURIS-project root folder under the name DEPENDENCIES_BACKEND. 
+`./backend/pom.xml` and produces a DEPENDENCIES file in the .`/backend` folder.  
+Then this file gets copied to the PURIS-project root folder under the name `DEPENDENCIES_BACKEND`. 
 Both files should be updated prior to any pull request.  
 
 ### Frontend
@@ -28,18 +45,18 @@ eclipseDashTool package-lock.json -project automotive.tractusx -summary ../DEPEN
 ## Frontend container building workaround to use environment variables for vue
 
 ### The mechanism for docker is the following:
-- .env has vite variables
-- .env.dockerbuild has the vite variable that maps on an environment variable (VITE_BACKEND_BASE_URL=$BACKEND_BASE_URL)
-- src/config.json has the environment variable names and the environment variable to substring in a json format.
+- `.env` has vite variables
+- `.env.dockerbuild` has the vite variable that maps on an environment variable (`VITE_BACKEND_BASE_URL=$BACKEND_BASE_URL`)
+- `src/config.json` has the environment variable names and the environment variable to substring in a json format.
 
 ### When building the container:
-1. .env.dockerbuild is used
+1. `.env.dockerbuild` is used
 2. vite / vue builds the application into a dest folder, that will be served by nginx
 
 > Result for the .env: <br> VITE_BACKEND_BASE_URL won't write a variable value BUT a placeholder into the built files ($BACKEND_BASE_URL)
 
 ### When building the container, there is a "start-nginx.sh" file that does the following
-1. Collects the environment variables (set for the docker container / set via helm as BACKEND_BASE_URL)
-2. Looks-up the "to replace string" from config.json (for BACKEND_BASE_URL, it will search for $BACKEND_BASE-URL in the built files)
+1. Collects the environment variables (set for the docker container / set via helm as `BACKEND_BASE_URL`)
+2. Looks-up the "to replace string" from `config.json` (e.g., for `BACKEND_BASE_URL`, it will search for `$BACKEND_BASE-URL` in the built files)
 3. Does the replacement in the built files
 4. Starts nginx

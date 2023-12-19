@@ -19,6 +19,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# GlOBAL -----------
+global:
+    domain:
+       backend:
+          ingress: &domain your-backend-host-address.com
 # FRONTEND -----------
 frontend:
     replicaCount: 1
@@ -27,7 +32,7 @@ frontend:
         # -- Repository of the docker image
         repository: tractusx/app-puris-frontend
         # -- THe policy for the image pull process
-        pullPolicy: IfNotPresent
+        pullPolicy: Always
         # -- Overrides the image tag whose default is the chart appVersion.
         tag: ""
 
@@ -36,7 +41,7 @@ frontend:
     # -- Possibility to override the name
     nameOverride: ""
     # -- Possibility to override the fullname
-    fullnameOverride: ""
+    fullnameOverride: "frontend"
 
     serviceAccount:
         # -- Specifies whether a service account should be created
@@ -62,13 +67,13 @@ frontend:
         # -- Configures the non-root privileges for a run
         runAsNonRoot: true
         # -- Configures the user id for a run
-        runAsUser: 1000
+        runAsUser: 10001
         # -- Configures the group id of a user for a run
         runAsGroup: 3000
 
     service:
         # -- Type of the service
-        type: NodePort
+        type: ClusterIP
         # -- The port of the service
         port: 8080
 
@@ -76,28 +81,31 @@ frontend:
         # -- Enable the Ingress
         enabled: false
         # -- Class name for the Ingress controller
-        className: ""
+        className: "nginx"
         # -- Annotations for the Ingress controller
         annotations: { }
         # -- Hosts for the Ingress controller
         hosts:
-            -   host: puris-frontend.net
+            -   host: "your-frontend-host-address.com"
                 paths:
                     -   path: /
                         pathType: ImplementationSpecific
         # -- TLS certificates for the Ingress controller
-        tls: [ ]
+        tls:
+            -   secretName: tls-secret
+                hosts:
+                    - your-frontend-host-address.com
 
     # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
     # @url: https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-resource-requests-and-limits
     resources:
         # -- Maximum resource limits of CPU und memory
         limits:
-            cpu: 500m
+            cpu: 600m
             memory: 128Mi
         # -- Minimum requested resources for CPU und memory
         requests:
-            cpu: 100m
+            cpu: 200m
             memory: 128Mi
 
     autoscaling:
@@ -164,7 +172,7 @@ frontend:
         # -- The name of the app displayed in the frontend
         appName: PURIS
         # -- The base URL for the backend base URL without further endpoints
-        baseUrl: http://192.168.49.2:30001/catena
+        baseUrl: *domain
         # -- The endpoint for materials for the stock view
         endpointMaterials: stockView/materials
         # -- The endpoint for products for the stock view
@@ -179,6 +187,16 @@ frontend:
         endpointPartnerProductStocks: stockView/partner-product-stocks?ownMaterialNumber=
         # -- The endpoint for updating the partners product stocks and their material numbers for the stock view
         endpointUpdatePartnerProductStocks: stockView/update-partner-product-stock?ownMaterialNumber=
+        keycloak:
+            # -- Disable the Keycloak integration.
+            disabled: true
+            # -- Name of the Realm of the keycloak instance.
+            realm: "Catena-X"
+            # -- Name of the client which is used for the application.
+            clientId: "appXYZ"
+            # -- URL to use as keycloak redirect url.
+            redirectUrlFrontend: "https://your-frontend-url.com"
+
 
 # BACKEND -----------
 backend:
@@ -189,7 +207,7 @@ backend:
         # -- Repository of the docker image
         repository: tractusx/app-puris-backend
         # -- THe policy for the image pull process
-        pullPolicy: IfNotPresent
+        pullPolicy: Always
         # -- Overrides the image tag whose default is the chart appVersion.
         tag: ""
 
@@ -198,7 +216,7 @@ backend:
     # -- Possibility to override the name
     nameOverride: ""
     # -- Possibility to override the fullname
-    fullnameOverride: ""
+    fullnameOverride: backend
 
     serviceAccount:
         # -- Specifies whether a service account should be created
@@ -224,13 +242,13 @@ backend:
         # -- Configures the non-root privileges for a run
         runAsNonRoot: true
         # -- Configures the user id for a run
-        runAsUser: 1000
+        runAsUser: 10001
         # -- Configures the group id of a user for a run
         runAsGroup: 3000
 
     service:
         # -- Type of the service
-        type: NodePort
+        type: ClusterIP
         # -- The port of the service
         port: 8081
 
@@ -239,7 +257,7 @@ backend:
     resources:
         # -- Maximum resource limits of CPU und memory
         limits:
-            cpu: 2000m
+            cpu: 3000m
             memory: 2048Mi
         # -- Minimum requested resources for CPU und memory
         requests:
@@ -253,6 +271,7 @@ backend:
     ingress:
         # -- Enable the Ingress
         enabled: false
+        # -- Annotations for the Ingress controller
         annotations:
             # -- Kubernetes Ingress class annotation for direct bindings
             kubernetes.io/ingress.class: nginx
@@ -264,7 +283,7 @@ backend:
             nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
         # -- Hosts for the Ingress controller
         hosts:
-            -   host: "puris-backend.net"
+            -   host: *domain
                 paths:
                     -   path: /
                         pathType: ImplementationSpecific
@@ -272,7 +291,7 @@ backend:
         tls:
             -   secretName: tls-secret
                 hosts:
-                    - puris-backend.net
+                    - *domain
 
     # -- Constrains for the node selector
     nodeSelector: { }
@@ -325,50 +344,54 @@ backend:
 
     puris:
         api:
-            # -- The root directory of the API
-            rootDir: /catena
+          # -- The API key of the PURIS application
+          key: "test"
+          # -- The root directory of the API
+          rootDir: /catena
+          # -- Current version of the puris API
+          version: 1.0.0
         datasource:
             # -- Driver class name of the database
-            driverClassName: org.hsqldb.jdbc.JDBCDriver
-            # -- URL of the database
-            url: jdbc:hsqldb:mem:testdb;DB_CLOSE_DELAY=-1
-            # -- Username of the database
-            username: sa
-            # -- Password for the database user.
-            # Do not set a password!
+            driverClassName: org.postgresql.Driver
+            # -- URL of the database. Ignored if postgres.enabled is true.
+            url: jdbc:postgresql://postgresql-name:5432/puris-database
+            # -- Username of the database. Ignored if postgres.enabled is true.
+            username: db-user
+            # -- Password for the database user. Ignored if postgres.enabled is true.
             password:
         edc:
             controlplane:
-                # -- IP address of the EDC control plane
-                host: 172.17.0.2
-                data:
-                    # -- Data port of the EDC control plane
-                    port: 30091
-                # -- Key for the EDC control plane
-                key: ""
-            backend:
-                # -- URL of the EDC backend service
-                url: http://172.17.0.2:32084
-            applydataplaneworkaround: true
-            dataplane:
-                public:
-                    # -- Public port of the EDC data plane
-                    port: 30784
-            # -- Own IDS URL of the EDC
-            idsUrl: http://plato-controlplane:8084/api/v1/ids
-        minikube:
-            # -- IP of minikube for the EDC configuration
-            ip: host.minikube.internal
+              host: "172.17.0.2"
+              management:
+                # -- Url to the EDC controlplane management of the edc
+                url: "https:/your-edc-address:8181/management"
+              protocol:
+                # -- Url to the EDC controlplane protocol API of the edc
+                url: "https://your-edc-address:8184/api/v1/dsp"
+              # -- Key for the EDC control plane
+              key: "password"
+            web:
+                rest:
+                    cors:
+                        enabled: true
         own:
             # -- Own BPNL of the EDC
-            bpnl: BPNL1234567890ZZ
+            bpnl: BPNL4444444444XX
+            # -- Own BPNA of the EDC
+            bpna: BPNA4444444444ZZ
             # -- Own BPNS of the EDC
-            bpns: BPNS1234567890ZZ
-            edr:
-                # -- Number of minutes before received authentication data of a consumer pull is removed from memory
-                deletiontimer: 2
-        # -- Current version of the puris API
-        apiversion: 1.0.0
+            bpns: BPNS4444444444XX
+            # -- Own country
+            country: "Germany"
+            site:
+                # -- Own site name
+                name: "puris-test"
+            # -- Own street and number
+            streetnumber: "Musterstraße 110A"
+            # -- Own zipcode and city
+            zipcodeandcity: "12345 Musterhausen"
+            # -- Own name (self-description)
+            name: "YOUR-APPLICATION-NAME"
         demonstrator:
             # -- Current role of the PURIS demonstrator. Default value should be empty.
             # Can be set to "customer" or "supplier" to enable demonstration setup
@@ -381,20 +404,37 @@ backend:
                 hibernate:
                     # -- Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction
                     enable_lazy_load_no_trans: true
-        my:
-            base:
-                # -- Own base URL
-                url: http://localhost
         request:
-            # -- Endpoint of server for request
-            serverendpoint: ${my.base.url}:${server.port}/catena/product-stock/request
-            # -- Asset ID for request API
-            apiassetid: product-stock-request-api
+          # -- Endpoint of server for request
+          serverendpoint: *domain
+          # -- Asset ID for request API
+          apiassetid: product-stock-request-api
         response:
-            # -- Endpoint of server for response
-            serverendpoint: ${my.base.url}:${server.port}/catena/product-stock/response
-            # -- Asset ID for response API
-            apiassetid: product-stock-response-api
+          # -- Endpoint of server for response
+          serverendpoint: *domain
+          # -- Asset ID for response API
+          apiassetid: product-stock-response-api
         edr:
-            # -- Endpoint for EDR
-            endpoint: ${my.base.url}:${server.port}/catena/edrendpoint
+          # -- Number of minutes before received authentication data of a consumer pull is removed from memory
+          deletiontimer: 2
+          # -- Endpoint for EDR
+          endpoint: *domain
+
+postgresql:
+    # -- Enable postgres by default, set to false to use existing postgres. Make sure to set
+    # backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from
+    # backend).
+    enabled: true
+    # -- Possibility to override the fullname
+    fullnameOverride: "backend-postgresql"
+    service:
+      ports:
+        # -- Port of postgres database.
+        postgresql: 5432
+    auth:
+        # -- Name of the database.
+        database: "postgres"
+        # -- Username for the database.
+        username: "puris"
+        # -- Password for the database.
+        password: "password"

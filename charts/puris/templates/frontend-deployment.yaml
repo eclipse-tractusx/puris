@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "frontend.fullname" . }}
+  labels:
+    {{- include "frontend.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.frontend.autoscaling.enabled }}
+  replicas: {{ .Values.frontend.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "frontend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.frontend.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "frontend.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.frontend.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "frontend.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.frontend.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "frontend.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.frontend.securityContext | nindent 12 }}
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          env:
+            - name: APP_NAME
+              value: "{{ .Values.frontend.puris.appName }}"
+            - name: BACKEND_BASE_URL
+              value: "https://{{ .Values.frontend.puris.baseUrl }}/catena/"
+            - name: ENDPOINT_MATERIALS
+              value: "{{ .Values.frontend.puris.endpointMaterials }}"
+            - name: ENDPOINT_PRODUCTS
+              value: "{{ .Values.frontend.puris.endpointProducts }}"
+            - name: ENDPOINT_MATERIAL_STOCKS
+              value: "{{ .Values.frontend.puris.endpointMaterialStocks }}"
+            - name: ENDPOINT_PRODUCT_STOCKS
+              value: "{{ .Values.frontend.puris.endpointProductStocks }}"
+            - name: ENDPOINT_CUSTOMER
+              value: "{{ .Values.frontend.puris.endpointCustomer }}"
+            - name: ENDPOINT_PARTNER_PRODUCT_STOCKS
+              value: "{{ .Values.frontend.puris.endpointPartnerProductStocks }}"
+            - name: ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK
+              value: "{{ .Values.frontend.puris.endpointUpdatePartnerProductStocks }}"
+            - name: BACKEND_API_KEY
+              value: "test"
+            - name: IDP_DISABLE
+              value: "{{ .Values.frontend.puris.keycloak.disabled }}"
+            - name: IDP_REALM
+              value: "{{ .Values.frontend.puris.keycloak.realm }}"
+            - name: IDP_CLIENT_ID
+              value: "{{ .Values.frontend.puris.keycloak.clientId }}"
+            - name: IDP_REDIRECT_URL_FRONTEND
+              value: "{{ .Values.frontend.puris.keycloak.redirectUrlFrontend }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.frontend.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
+      {{- with .Values.frontend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.frontend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.frontend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

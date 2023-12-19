@@ -56,7 +56,6 @@ public class ExternalConnectorController {
      * @return the created connector, if it was created.
      */
     @PostMapping("create")
-    @CrossOrigin
     public ResponseEntity<ExternalConnector> createConnector(@RequestBody String content){
         try {
             var connector = MAPPER.readValue(content, ExternalConnector.class);
@@ -75,7 +74,6 @@ public class ExternalConnectorController {
      * @return list of all currently known external connectors.
      */
     @GetMapping("all")
-    @CrossOrigin
     public List<ExternalConnector> getAll() {
         return externalConnectorService.getAll();
     }

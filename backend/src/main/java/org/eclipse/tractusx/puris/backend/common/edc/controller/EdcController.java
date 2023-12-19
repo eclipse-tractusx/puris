@@ -24,7 +24,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
@@ -47,7 +50,6 @@ public class EdcController {
      * @return catalog of the requested edc.
      */
     @GetMapping("/catalog")
-    @CrossOrigin
     public ResponseEntity<String> getCatalog(@RequestParam String dspUrl) {
         try {
             var catalog = edcAdapter.getCatalog(dspUrl);
@@ -65,7 +67,6 @@ public class EdcController {
      * @return response from own EDC.
      */
     @GetMapping("/assets")
-    @CrossOrigin
     public ResponseEntity<String> getAssets(@RequestParam String assetId) {
         try {
             var result = edcAdapter.sendGetRequest(List.of("v3", "assets", assetId));
