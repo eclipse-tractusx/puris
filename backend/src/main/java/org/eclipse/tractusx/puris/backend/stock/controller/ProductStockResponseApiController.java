@@ -31,7 +31,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfulRequestDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
@@ -75,6 +74,7 @@ public class ProductStockResponseApiController {
         @ApiResponse(responseCode = "401", description = "Not authorized"),
         @ApiResponse(responseCode = "422", description = "The request ID does not match any open request")
     })
+    @CrossOrigin
     public ResponseEntity<Object> postResponse(@RequestBody String body) {
         ProductStockResponse productStockResponse = null;
         try {

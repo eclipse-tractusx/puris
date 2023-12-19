@@ -40,7 +40,7 @@ services:
       resources:
         limits:
           memory: 512mb
-          cpus: 0.5
+          cpus: "0.5"
     security_opt:
       - no-new-privileges:true
 

@@ -29,11 +29,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EndpointDataReferenceService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.regex.Pattern;
 
 /**
  * This class contains the endpoint for receiving the authCodes from
@@ -45,7 +49,11 @@ public class EndpointDataReferenceReceiver {
 
     @Autowired
     private EndpointDataReferenceService edrService;
-    private final static String prefix = "https://w3id.org/edc/v0.0.1/ns/";
+
+    private final Pattern alphanumericalPattern = Pattern.compile("^[a-zA-Z0-9]+$");
+    private final Pattern idPattern = Pattern.compile("^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$");
+    private final Pattern codePattern = Pattern.compile("^[a-zA-Z0-9\\.\\-_]+$");
+    private final Pattern edcUrlPattern = Pattern.compile(Partner.EDC_REGEX);
 
     /**
      * This endpoint awaits incoming EDR Tokens from external
@@ -59,20 +67,31 @@ public class EndpointDataReferenceReceiver {
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(examples = {@ExampleObject(name = "EDR Token", value = sample)})))
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Ok")
+        @ApiResponse(responseCode = "200", description = "Ok"),
+        @ApiResponse(responseCode = "400", description = "Invalid message body")
     })
+    @CrossOrigin
     private ResponseEntity<String> authCodeReceivingEndpoint(@RequestBody JsonNode body) {
         log.debug("Received edr data:\n" + body.toPrettyString());
         String transferId = body.get("id").asText();
+        boolean valid = (transferId != null) && idPattern.matcher(transferId).matches();
+
         String authKey = body.get("authKey").asText();
+        valid = valid && (authKey != null) && alphanumericalPattern.matcher(authKey).matches();
+
         String authCode = body.get("authCode").asText();
+        valid = valid && (authCode != null) && codePattern.matcher(authCode).matches();
+
         String endpoint = body.get("endpoint").asText();
-        if (transferId == null || authCode == null) {
-            log.warn("authCodes endpoint received invalid message:\n" + body.toPrettyString());
+        valid = valid && (endpoint != null) && edcUrlPattern.matcher(endpoint).matches();
+
+        if (!valid) {
+            log.warn("EDR endpoint received invalid message:\n" + body.toPrettyString());
             return ResponseEntity.status(400).build();
         }
+
         edrService.save(transferId, new EDR_Dto(authKey, authCode, endpoint));
-        log.debug("authCodes endpoint stored authCode for " + transferId);
+        log.debug("EDR endpoint stored authCode for " + transferId);
         return ResponseEntity.status(200).build();
     }
 
