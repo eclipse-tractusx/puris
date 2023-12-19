@@ -48,9 +48,6 @@ public class OrderPositionReference {
 	public OrderPositionReference(@JsonProperty(value = "supplierOrderId") String supplierOrderId,
 			@JsonProperty(value = "customerOrderId") String customerOrderId,
 			@JsonProperty(value = "customerOrderPositionId") String customerOrderPositionId) {
-		super(
-
-		);
 		this.supplierOrderId = supplierOrderId;
 		this.customerOrderId = customerOrderId;
 		this.customerOrderPositionId = customerOrderPositionId;
