@@ -25,8 +25,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Address;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
 
 import java.util.Date;
@@ -63,8 +65,10 @@ public abstract class ItemStock {
     @NotNull
     protected ItemUnitEnumeration measurementUnit;
     @NotNull
+    @Pattern(regexp = Address.BPNA_REGEX)
     protected String locationBpna;
     @NotNull
+    @Pattern(regexp = Site.BPNS_REGEX)
     protected String locationBpns;
     @NotNull
     protected Date lastUpdatedOnDateTime;
