@@ -72,7 +72,7 @@ public class EndpointDataReferenceReceiver {
     })
     @CrossOrigin
     private ResponseEntity<String> authCodeReceivingEndpoint(@RequestBody JsonNode body) {
-        log.info("Received edr data:\n" + body.toPrettyString());
+        log.debug("Received edr data:\n" + body.toPrettyString());
         String transferId = body.get("id").asText();
         boolean valid = (transferId != null) && idPattern.matcher(transferId).matches();
 
