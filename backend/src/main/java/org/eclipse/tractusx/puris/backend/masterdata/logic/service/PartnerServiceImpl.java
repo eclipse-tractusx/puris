@@ -107,6 +107,10 @@ public class PartnerServiceImpl implements PartnerService {
                 validData = validData && validBpna;
                 addressCount++;
             }
+            if(site.getAddresses().isEmpty()) {
+                validData = false;
+                log.error("Site " + site.getBpns() + " has no addresses");
+            }
         }
         for (var address : partner.getAddresses()) {
             boolean validBpna = bpnaPattern.matcher(address.getBpna()).matches();

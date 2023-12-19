@@ -34,11 +34,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageHeaderDto;
 import org.eclipse.tractusx.puris.backend.common.api.logic.dto.SuccessfulRequestDto;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestApiServiceImpl;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -73,6 +71,7 @@ public class ProductStockRequestApiController {
         @ApiResponse(responseCode = "400", description = "Request body malformed"),
         @ApiResponse(responseCode = "422", description = "A request with the same ID already exists")
     })
+    @CrossOrigin
     public ResponseEntity<Object> postRequest(@RequestBody String requestBody) {
         log.info("product-stock/request called: \n" + requestBody);
 
@@ -137,6 +136,7 @@ public class ProductStockRequestApiController {
         @ApiResponse(responseCode = "401", description = "Not authorized"),
         @ApiResponse(responseCode = "422", description = "The request ID is not known")
     })
+    @CrossOrigin
     public ResponseEntity<Object> getRequest(@RequestBody JsonNode body) {
         try {
             MessageHeaderDto header = objectMapper.convertValue(body.get("header"), MessageHeaderDto.class);

@@ -22,15 +22,11 @@
 package org.eclipse.tractusx.puris.backend.stock.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageContent;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 
 /**
  * Payload specifying a material for which a customer wants to get product stock
@@ -46,6 +42,7 @@ public class ProductStockRequestForMaterial {
 
     @NotNull
     @JsonProperty("materialNumberCustomer")
+    @Pattern(regexp = Material.MATERIAL_NUMBER_REGEX)
     private String materialNumberCustomer;
 
     @Pattern(regexp = "(^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)")
@@ -53,5 +50,6 @@ public class ProductStockRequestForMaterial {
     private String materialNumberCatenaX;
 
     @JsonProperty("materialNumberSupplier")
+    @Pattern(regexp = Material.MATERIAL_NUMBER_REGEX)
     private String materialNumberSupplier;
 }

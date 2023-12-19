@@ -35,6 +35,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @RestController
@@ -44,6 +45,7 @@ public class MaterialController {
     @Autowired
     private MaterialService materialService;
     private final ModelMapper modelMapper = new ModelMapper();
+    private final Pattern materialPattern = Pattern.compile(Material.MATERIAL_NUMBER_REGEX);
 
     @PostMapping
     @Operation(description = "Creates a new Material entity with the data given in the request body. As a bare minimum, " +
@@ -54,6 +56,7 @@ public class MaterialController {
         @ApiResponse(responseCode = "409", description = "Material with the given ownMaterialNumber already exists."),
         @ApiResponse(responseCode = "500", description = "Internal Server error.")
     })
+    @CrossOrigin
     public ResponseEntity<?> createMaterial(@RequestBody MaterialEntityDto materialDto) {
         if (materialDto.getOwnMaterialNumber() == null || materialDto.getOwnMaterialNumber().isEmpty()) {
             // Cannot create material without ownMaterialNumber
@@ -74,7 +77,6 @@ public class MaterialController {
         if (createdMaterial == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(500));
         }
-
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }
 
@@ -86,6 +88,7 @@ public class MaterialController {
         @ApiResponse(responseCode = "404", description = "No existing Material Entity found, no update was performed."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
+    @CrossOrigin
     public ResponseEntity<?> updateMaterial(@RequestBody MaterialEntityDto materialDto) {
         if (materialDto.getOwnMaterialNumber() == null || materialDto.getOwnMaterialNumber().isEmpty()) {
             // Cannot update material without ownMaterialNumber
@@ -114,11 +117,16 @@ public class MaterialController {
     @Operation(description = "Returns the requested Material dto, specified by the given ownMaterialNumber.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Returns the requested Material."),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter"),
         @ApiResponse(responseCode = "404", description = "Requested Material was not found.")
     })
+    @CrossOrigin
     public ResponseEntity<MaterialEntityDto> getMaterial(@Parameter(name = "ownMaterialNumber",
         description = "The Material Number that is used in your own company to identify the Material.",
         example = "MNR-7307-AU340474.002") @RequestParam String ownMaterialNumber) {
+        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
         Material foundMaterial = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (foundMaterial == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
@@ -130,6 +138,7 @@ public class MaterialController {
 
     @GetMapping("/all")
     @Operation(description = "Returns a list of all Materials and Products.")
+    @CrossOrigin
     public ResponseEntity<List<MaterialEntityDto>> listMaterials() {
         return new ResponseEntity<>(materialService.findAll().
             stream().map(x -> modelMapper.map(x, MaterialEntityDto.class)).collect(Collectors.toList()),
