@@ -36,6 +36,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.regex.Pattern;
+
 @RestController
 @RequestMapping("materialpartnerrelations")
 public class MaterialPartnerRelationsController {
@@ -50,13 +52,17 @@ public class MaterialPartnerRelationsController {
     @Autowired
     private MaterialPartnerRelationService mprService;
 
+    private final Pattern materialPattern = Pattern.compile(Material.MATERIAL_NUMBER_REGEX);
+
+    private final Pattern bpnlPattern = Pattern.compile(Partner.BPNL_REGEX);
+
     @PostMapping
     @Operation(description = "Creates a new MaterialPartnerRelation with the given parameter data. " +
         "Please note that this is only possible, if the designated Material " +
         "and Partner entities have already been created before this request. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully created a new MaterialPartnerRelationEntity."),
-        @ApiResponse(responseCode = "400", description = "Material and/or Partner do not exist."),
+        @ApiResponse(responseCode = "400", description = "Material and/or Partner do not exist or invalid parameters"),
         @ApiResponse(responseCode = "409", description = "Relation for given Material and Partner does already exist."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
@@ -71,6 +77,14 @@ public class MaterialPartnerRelationsController {
             example = "true") @RequestParam boolean partnerSupplies,
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
             example = "true") @RequestParam boolean partnerBuys) {
+
+        if(!materialPattern.matcher(ownMaterialNumber).matches() || !materialPattern.matcher(partnerMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+
+        if(!bpnlPattern.matcher(partnerBpnl).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
         Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (material == null || partnerBpnl == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
@@ -101,6 +115,7 @@ public class MaterialPartnerRelationsController {
         "the partnerBpnl. The other three parameters are genuinely optional. Provide them only if you want to change their values. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Update was accepted."),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters"),
         @ApiResponse(responseCode = "404", description = "No existing entity was found."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
@@ -116,7 +131,14 @@ public class MaterialPartnerRelationsController {
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
             example = "true") @RequestParam(required = false) Boolean partnerBuys) {
         MaterialPartnerRelation existingRelation = null;
+
+        if(!bpnlPattern.matcher(partnerBpnl).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
         Partner partner = partnerService.findByBpnl(partnerBpnl);
+        if(!materialPattern.matcher(ownMaterialNumber).matches() || !materialPattern.matcher(partnerMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
         Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (partner != null && material != null) {
             existingRelation = mprService.find(material, partner);

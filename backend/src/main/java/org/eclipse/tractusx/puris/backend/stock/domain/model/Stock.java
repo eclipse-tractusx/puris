@@ -23,6 +23,7 @@ package org.eclipse.tractusx.puris.backend.stock.domain.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -65,6 +66,7 @@ public class Stock {
     private MeasurementUnit measurementUnit;
 
     @NotNull
+    @Pattern(regexp = "^BPN[SA][0-9a-zA-Z]{12}$")
     private String locationId;
 
     @NotNull

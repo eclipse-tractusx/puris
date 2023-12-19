@@ -22,6 +22,7 @@
 package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 
 import jakarta.persistence.Embeddable;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -43,19 +44,23 @@ public class Address implements Comparable<Address> {
     /**
      * The BPNA of this Address.
      */
+    @Pattern(regexp = "^BPNA[0-9a-zA-Z]{12}$")
     private String bpna;
 
     /**
      * The street and house number of this Address.
      */
+    @Pattern(regexp = "^[a-zA-Z ]+ [0-9]+[a-zA-Z]$")
     private String streetAndNumber;
     /**
      * The zip code and city of this Address.
      */
+    @Pattern(regexp = "^[0-9]{1,5} [a-zA-Z]+$")
     private String zipCodeAndCity;
     /**
      * The country of this Address.
      */
+    @Pattern(regexp = "^[a-zA-Z]+$")
     private String country;
 
     /**

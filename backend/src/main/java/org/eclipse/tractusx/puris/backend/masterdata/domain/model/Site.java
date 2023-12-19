@@ -25,6 +25,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.util.SortedSet;
@@ -50,10 +51,12 @@ public class Site implements Comparable<Site> {
     /**
      * The BPNS of this Site.
      */
+    @Pattern(regexp = "^BPNS[0-9a-zA-Z]{12}$")
     private String bpns;
     /**
      * A human-readable, distinctive name of this site.
      */
+    @Pattern(regexp = "^[a-zA-Z0-9 \\-]{1,255}$")
     private String name;
     @ElementCollection
     /**
