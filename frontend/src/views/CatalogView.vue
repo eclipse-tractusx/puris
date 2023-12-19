@@ -21,92 +21,138 @@
 
 <script>
 export default {
-  inject: ["baseUrl"],
-  data() {
-    return {
-      edc: {
-        url: "",
-      },
-      catalog: {},
-    };
-  },
-  methods: {
-    getCatalog(url) {
-      let vm = this;
-      const edcEncoded = encodeURIComponent(url);
-      fetch(vm.baseUrl + "/edc/catalog?idsUrl=" + edcEncoded)
-        .then((response) => response.json())
-        .then((data) => {
-          vm.catalog = data;
-        });
+    data() {
+        return {
+            backendUrl: import.meta.env.VITE_BACKEND_BASE_URL,
+            backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
+            edc: {
+                url: "",
+            },
+            catalog: {},
+        };
     },
-    startNegotiation(id) {
-      let vm = this;
-      const idArray = id.split(":");
-      const edcEncoded = encodeURIComponent(vm.edc.url);
-      fetch(
-        vm.baseUrl +
-          "/edc/startNegotiation?orderId=" +
-          idArray[0] +
-          "&connectorAddress=" +
-          edcEncoded
-      )
-        .then((response) => response.text())
-        .then((json) => window.alert(json));
+    methods: {
+        getCatalog(url) {
+            const edcEncoded = encodeURIComponent(url);
+            fetch(this.backendUrl + "edc/catalog?dspUrl=" + edcEncoded, {
+                headers: {
+                    "X-API-KEY": this.backendApiKey,
+                },
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    this.catalog = data;
+                });
+        },
     },
-  },
-  mounted() {},
+    mounted() {},
 };
 </script>
 
 <template>
-  <main>
-    <h1 class="w-full text-center bold text-5xl mb-6 pb-6">View EDC Catalog</h1>
-    <div class="grid grid-rows-1 grid-flow-col gap-4">
-      <form class="w-max max-w-lg">
-        <div>
-          <label for="orderName">EDC Url</label>
-          <input
-            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-            type="text"
-            id="edcUrlInput"
-            placeholder="Enter url"
-            v-model="edc.url"
-          />
+    <main>
+        <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
+            View EDC Catalog
+        </h1>
+        <div class="grid grid-rows-1 grid-flow-col gap-4">
+            <form class="w-max max-w-lg">
+                <div>
+                    <label for="orderName">EDC DSP URL</label>
+                    <input
+                        class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                        type="text"
+                        id="edcUrlInput"
+                        placeholder="Enter url"
+                        v-model="edc.url"
+                    />
+                </div>
+            </form>
+            <button
+                class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                id="orderBtn"
+                type="submit"
+                v-on:click="getCatalog(edc.url)"
+            >
+                Get Catalog
+            </button>
         </div>
-      </form>
-      <button
-        class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        id="orderBtn"
-        type="submit"
-        v-on:click="getCatalog(edc.url)"
-      >
-        Get Catalog
-      </button>
-    </div>
-    <li class="list-none" v-for="offer in catalog.contractOffers">
-      <div
-        class="text-center mx-4 my-8 block p-6 w-full bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
-      >
-        <div>
-          <h1
-            class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white"
-          >
-            Order {{ offer.id }}
-          </h1>
-          <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-            Description: {{ offer.asset.properties["asset:prop:description"] }}
-          </h2>
-        </div>
-        <button
-          class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          id="orderBtn"
-          type="submit"
-          v-on:click="startNegotiation(offer.id)"
-        >
-          Start Negotiation
-        </button>
-      </div>
-    </li>
-  </main>
+        <li class="list-none" v-for="offer in catalog['dcat:dataset']">
+            <div
+                class="text-center mx-4 my-8 block p-6 w-full bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+            >
+                <div>
+                    <h1
+                        class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white"
+                    >
+                        Catalog Item's Asset ID "{{ offer["asset:prop:type"] }}"
+                    </h1>
+                    <h2
+                        class="font-normal text-medium text-gray-700 dark:text-gray-400"
+                    >
+                        Asset Prop type: "{{ offer["asset:prop:type"] }}"
+                    </h2>
+                    <div>
+                        Following permissions are defined: <br />
+                        <ul v-if="offer['odrl:permission']">
+                            <li
+                                class="list-none"
+                                v-for="constraint in offer['odrl:permission']"
+                            >
+                                {{ constraint["odrl:or"]["odrl:leftOperand"] }}
+                                {{
+                                    constraint["odrl:or"]["odrl:operator"][
+                                        "@id"
+                                    ]
+                                }}
+                                {{ constraint["odrl:or"]["odrl:rightOperand"] }}
+                            </li>
+                        </ul>
+                        <ul v-else>
+                            None
+                        </ul>
+                    </div>
+                    <div>
+                        Following prohibitions are defined: <br />
+                        <ul v-if="offer['odrl:prohibition']">
+                            <li
+                                class="list-none"
+                                v-for="constraint in offer['odrl:prohibition']"
+                            >
+                                {{ constraint["odrl:or"]["odrl:leftOperand"] }}
+                                {{
+                                    constraint["odrl:or"]["odrl:operator"][
+                                        "@id"
+                                    ]
+                                }}
+                                {{ constraint["odrl:or"]["odrl:rightOperand"] }}
+                            </li>
+                        </ul>
+                        <ul v-else>
+                            None
+                        </ul>
+                    </div>
+                    <div>
+                        Following obligations are defined: <br />
+                        <ul v-if="offer['odrl:obligation']">
+                            <li
+                                class="list-none"
+                                v-for="constraint in offer['odrl:obligation']"
+                            >
+                                {{ constraint["odrl:or"]["odrl:leftOperand"] }}
+                                {{
+                                    constraint["odrl:or"]["odrl:operator"][
+                                        "@id"
+                                    ]
+                                }}
+                                {{ constraint["odrl:or"]["odrl:rightOperand"] }}
+                            </li>
+                        </ul>
+                        <ul v-else>
+                            None
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </li>
+    </main>
 </template>
