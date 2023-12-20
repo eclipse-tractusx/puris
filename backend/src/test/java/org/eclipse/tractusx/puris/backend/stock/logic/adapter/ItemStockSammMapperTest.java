@@ -19,17 +19,20 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.adapter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.platform.commons.logging.Logger;
+import org.junit.platform.commons.logging.LoggerFactory;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -41,7 +44,50 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ItemStockSammMapperTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ItemStockSammMapperTest.class);
+    private static ItemStockSAMM SAMM_FROM_CUSTOMER_PARTNER;
+    final static String CUSTOMER_MAT_NUMBER = "MNR-7307-AU340474.002";
+    final static String SUPPLIER_MAT_NUMBER = "MNR-8101-ID146955.001";
+    final static String CX_MAT_NUMBER = UUID.randomUUID().toString();
+    final static String OWN_BPNL = "BPNL4444444444LL";
+    final static String OWN_BPNS = "BPNS4444444444SS";
+    final static String OWN_BPNA = "BPNA4444444444AA";
+    final static String SUPPLIER_BPNL = "BPNL1111111111LE";
+    final static String SUPPLIER_BPNS = "BPNS1111111111SI";
+    final static String SUPPLIER_BPNA = "BPNA1111111111AD";
+
+    final static String OPR_REF_CUSTOMER_ORDER_ID = "C-Nbr-4711";
+    final static String OPR_REF_SUPPLIER_ORDER_ID = "S-Nbr-4712";
+    final static String OPR_REF_CUSTOMER_POS_ID = "C-Nbr-4711-Pos-1";
+    final static String SUPPLIER_BPNS2 = "BPNS2222222222SI";
+    final static String SUPPLIER_BPNA2 = "BPNA2222222222AD";
+
+    final Partner supplierPartner = new Partner(
+        "Scenario Supplier",
+        "http://supplier-control-plane:9184/api/v1/dsp",
+        SUPPLIER_BPNL,
+        SUPPLIER_BPNS,
+        "Konzernzentrale Dudelsdorf",
+        SUPPLIER_BPNA,
+        "Heinrich-Supplier-Straße 1",
+        "77785 Dudelsdorf",
+        "Germany"
+    );
+
+    final Partner customerPartner = new Partner(
+        "Scenario Customer",
+        "http://customer-control-plane:8184/api/v1/dsp",
+        "BPNL4444444444XX",
+        "BPNS4444444444XX",
+        "Hauptwerk Musterhausen",
+        "BPNA4444444444ZZ",
+        "Musterstraße 35b",
+        "77777 Musterhausen",
+        "Germany"
+    );
 
     @Mock
     private MaterialService materialService;
@@ -58,28 +104,9 @@ public class ItemStockSammMapperTest {
     }
 
     @Test
+    @Order(1)
     void map_WhenSingleMaterialItemStock_ReturnsItemStockSamm() {
         // Given
-        final String CUSTOMER_MAT_NUMBER = "MNR-7307-AU340474.002";
-        final String SUPPLIER_MAT_NUMBER = "MNR-8101-ID146955.001";
-        final String OWN_BPNL = "BPNL4444444444LL";
-        final String OWN_BPNS = "BPNS4444444444SS";
-        final String OWN_BPNA = "BPNA4444444444AA";
-        final String SUPPLIER_BPNL = "BPNL1111111111LE";
-        final String SUPPLIER_BPNS = "BPNS1111111111SI";
-        final String SUPPLIER_BPNA = "BPNA1111111111AD";
-
-        Partner supplierPartner = new Partner(
-            "Scenario Supplier",
-            "http://supplier-control-plane:9184/api/v1/dsp",
-            SUPPLIER_BPNL,
-            SUPPLIER_BPNS,
-            "Konzernzentrale Dudelsdorf",
-            SUPPLIER_BPNA,
-            "Heinrich-Supplier-Straße 1",
-            "77785 Dudelsdorf",
-            "Germany"
-        );
         Material semiconductorMaterial = Material.builder()
             .ownMaterialNumber(CUSTOMER_MAT_NUMBER)
             .materialFlag(true)
@@ -134,7 +161,7 @@ public class ItemStockSammMapperTest {
         assertEquals(1, position.getAllocatedStocks().size());
 
         AllocatedStock allocatedStock = position.getAllocatedStocks().get(0);
-        assertEquals(50, allocatedStock.getQuantityOnAllocatedStock().getValue());
+        assertEquals(20, allocatedStock.getQuantityOnAllocatedStock().getValue());
         assertEquals(ItemUnitEnumeration.UNIT_PIECE, allocatedStock.getQuantityOnAllocatedStock().getUnit());
         assertEquals(OWN_BPNS, allocatedStock.getStockLocationBPNS());
         assertEquals(OWN_BPNA, allocatedStock.getStockLocationBPNA());
@@ -143,31 +170,24 @@ public class ItemStockSammMapperTest {
     }
 
     @Test
+    @Order(2)
     void map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStock() {
+        // If we want to map a Samm to a ProductItemStock entity, then this implies
+        // that we are the supplier, who has received a Samm from his customer partner.
+        // That customer partner therefore would have generated the Samm from his
+        // MaterialEntityStock entities.
+        // Since from the customer's point of view, the items he received from his supplier
+        // are INBOUND, then we have to set the DirectionCharacteristic accordingly.
+
+
         // Given
-        final String CUSTOMER_MAT_NUMBER = "MNR-7307-AU340474.002";
-        final String SUPPLIER_MAT_NUMBER = "MNR-8101-ID146955.001";
-        final String CX_MAT_NUMBER = UUID.randomUUID().toString();
-        final String OWN_BPNL = "BPNL4444444444LL";
-        final String OWN_BPNS = "BPNS4444444444SS";
-        final String OWN_BPNA = "BPNA4444444444AA";
-        final String SUPPLIER_BPNL = "BPNL1111111111LE";
-        final String SUPPLIER_BPNS = "BPNS1111111111SI";
-        final String SUPPLIER_BPNA = "BPNA1111111111AD";
-        final String SUPPLIER_BPNS2 = "BPNS2222222222SI";
-        final String SUPPLIER_BPNA2 = "BPNA2222222222AD";
 
-        final String OPR_REF_CUSTOMER_ORDER_ID = "C-Nbr-4711";
-        final String OPR_REF_SUPPLIER_ORDER_ID = "S-Nbr-4712";
-        final String OPR_REF_CUSTOMER_POS_ID = "C-Nbr-4711-Pos-1";
+        ItemStockSAMM inboundProductStockSamm = new ItemStockSAMM();
 
-        ItemStockSAMM outboundProductStockSamm = new ItemStockSAMM();
-
-        // TODO: A warning comes up. The direction is set according to the information sender. As the Supplier reports the Stock of his product, this should be OUTBOUND
-        outboundProductStockSamm.setDirection(DirectionCharacteristic.OUTBOUND);
-        outboundProductStockSamm.setMaterialNumberCustomer(CUSTOMER_MAT_NUMBER);
-        outboundProductStockSamm.setMaterialNumberSupplier(SUPPLIER_MAT_NUMBER);
-        outboundProductStockSamm.setMaterialGlobalAssetId(CX_MAT_NUMBER);
+        inboundProductStockSamm.setDirection(DirectionCharacteristic.INBOUND);
+        inboundProductStockSamm.setMaterialNumberCustomer(CUSTOMER_MAT_NUMBER);
+        inboundProductStockSamm.setMaterialNumberSupplier(SUPPLIER_MAT_NUMBER);
+        inboundProductStockSamm.setMaterialGlobalAssetId(CX_MAT_NUMBER);
 
         // first position
         Position anonymousPosition = new Position();
@@ -231,26 +251,14 @@ public class ItemStockSammMapperTest {
             OPR_REF_CUSTOMER_POS_ID
         ));
 
-        outboundProductStockSamm.setPositions(Arrays.asList(anonymousPosition, positionWithOrderPositionReference));
-
-        Partner supplierPartner = new Partner(
-            "Scenario Supplier",
-            "http://supplier-control-plane:9184/api/v1/dsp",
-            SUPPLIER_BPNL,
-            SUPPLIER_BPNS,
-            "Konzernzentrale Dudelsdorf",
-            SUPPLIER_BPNA,
-            "Heinrich-Supplier-Straße 1",
-            "77785 Dudelsdorf",
-            "Germany"
-        );
+        inboundProductStockSamm.setPositions(Arrays.asList(anonymousPosition, positionWithOrderPositionReference));
 
         Site site2 = new Site(SUPPLIER_BPNS2, "Site 2", SUPPLIER_BPNA2, "Test Street 2", "44174 Dortmund", "Germany");
 
-        SortedSet<Site> adjustedSet = supplierPartner.getSites();
+        SortedSet<Site> adjustedSet = customerPartner.getSites();
         adjustedSet.add(site2);
 
-        supplierPartner.setSites(adjustedSet);
+        customerPartner.setSites(adjustedSet);
 
         Material semiconductorProduct = Material.builder()
             .ownMaterialNumber(CUSTOMER_MAT_NUMBER)
@@ -261,7 +269,7 @@ public class ItemStockSammMapperTest {
             .build();
 
         MaterialPartnerRelation mpr = new MaterialPartnerRelation();
-        mpr.setPartner(supplierPartner);
+        mpr.setPartner(customerPartner);
         mpr.setMaterial(semiconductorProduct);
         mpr.setPartnerBuysMaterial(false);
         mpr.setPartnerSuppliesMaterial(true);
@@ -270,7 +278,7 @@ public class ItemStockSammMapperTest {
         // When
         // Find material based on CX number and mpr
         when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(semiconductorProduct);
-        when(mprService.find(semiconductorProduct, supplierPartner)).thenReturn(mpr);
+        when(mprService.find(semiconductorProduct, customerPartner)).thenReturn(mpr);
 
         // Then we should build 5 reported product stocks:
         // - no OrderPositionReference (OPR), blocked, 10 pieces, BPNS & BPNA
@@ -278,24 +286,24 @@ public class ItemStockSammMapperTest {
         // - no OPR, not blocked, 20 kilo, BPNS & BPNA
         // - OPR, blocked, 10 pieces, BPNS & BPNA
         // - OPR, not blocked, 20 kilo, BPNS & BPNA
-        List<ReportedProductItemStock> reportedProductItemStocks = itemStockSammMapper.sammToReportedProductItemStock(outboundProductStockSamm, supplierPartner);
+        List<ReportedProductItemStock> reportedProductItemStocks = itemStockSammMapper.sammToReportedProductItemStock(inboundProductStockSamm, customerPartner);
 
         // Then
         assertEquals(5, reportedProductItemStocks.size());
 
         // 1. anonymous stocks
         // Check for stockBlocked
-        List<ReportedProductItemStock> potentialBlockedAnonymousStock = filterReportedItemStock(
-                reportedProductItemStocks,
-                stockBlocked,
-                anonymousPosition,
-                CUSTOMER_MAT_NUMBER
-            );
+        List<? extends ItemStock> potentialBlockedAnonymousStock = filterReportedItemStock(
+            reportedProductItemStocks,
+            stockBlocked,
+            anonymousPosition,
+            CUSTOMER_MAT_NUMBER
+        );
 
         assertEquals(1, potentialBlockedAnonymousStock.size());
 
         // Check for stockNOTBlocked
-        List<ReportedProductItemStock> potentialNotBlockedAnonymousStock = filterReportedItemStock(
+        List<? extends ItemStock> potentialNotBlockedAnonymousStock = filterReportedItemStock(
             reportedProductItemStocks,
             stockNotBlocked,
             anonymousPosition,
@@ -305,7 +313,7 @@ public class ItemStockSammMapperTest {
         assertEquals(1, potentialNotBlockedAnonymousStock.size());
 
         // Check for stockBlocked
-        List<ReportedProductItemStock> potentialAnonymousStockOtherSite = filterReportedItemStock(
+        List<? extends ItemStock> potentialAnonymousStockOtherSite = filterReportedItemStock(
             reportedProductItemStocks,
             stockOtherSite,
             anonymousPosition,
@@ -316,7 +324,7 @@ public class ItemStockSammMapperTest {
         // 2. opr related ones
 
         // Check for oprStockBlocked
-        List<ReportedProductItemStock> potentialOprStockBlocked = filterReportedItemStock(
+        List<? extends ItemStock> potentialOprStockBlocked = filterReportedItemStock(
             reportedProductItemStocks,
             oprStockBlocked,
             positionWithOrderPositionReference,
@@ -325,7 +333,7 @@ public class ItemStockSammMapperTest {
         assertEquals(1, potentialOprStockBlocked.size());
 
         // Check for oprStockNotBlocked
-        List<ReportedProductItemStock> potentialOprStockNotBlocked = filterReportedItemStock(
+        List<? extends ItemStock> potentialOprStockNotBlocked = filterReportedItemStock(
             reportedProductItemStocks,
             oprStockBlocked,
             positionWithOrderPositionReference,
@@ -333,13 +341,80 @@ public class ItemStockSammMapperTest {
         );
         assertEquals(1, potentialOprStockNotBlocked.size());
 
+        //
+        SAMM_FROM_CUSTOMER_PARTNER = inboundProductStockSamm;
     }
 
-    private List<ReportedProductItemStock> filterReportedItemStock(List<ReportedProductItemStock> reportedProductItemStocks, AllocatedStock allocatedStock, Position position, String ownMaterialNumber){
+    @Test
+    @Order(3)
+    void test_unmarshalling() {
+        // Setup from the suppliers point of view
 
-        if (position.getOrderPositionReference() ==null) {
+        Material material = new Material();
+        material.setProductFlag(true);
+        material.setOwnMaterialNumber(SUPPLIER_MAT_NUMBER);
+        material.setMaterialNumberCx(CX_MAT_NUMBER);
 
-            List<ReportedProductItemStock> potentialStocks = reportedProductItemStocks.stream()
+        MaterialPartnerRelation mpr = new MaterialPartnerRelation();
+        mpr.setPartner(supplierPartner);
+        mpr.setMaterial(material);
+        mpr.setPartnerBuysMaterial(true);
+        mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
+
+        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(material);
+        when(mprService.findAllByPartnerMaterialNumber(CUSTOMER_MAT_NUMBER)).thenReturn(List.of(material));
+        when(mprService.find(material, supplierPartner)).thenReturn(mpr);
+
+        var list = itemStockSammMapper.sammToReportedProductItemStock(SAMM_FROM_CUSTOMER_PARTNER, supplierPartner);
+        assertNotNull(list);
+        assertEquals(5, list.size());
+    }
+
+    @Test
+    @Order(4)
+    void test_deserializationFromJson() throws Exception {
+        // Setup from the suppliers point of view
+
+
+        Material material = new Material();
+        material.setProductFlag(true);
+        material.setOwnMaterialNumber(SUPPLIER_MAT_NUMBER);
+        material.setMaterialNumberCx(CX_MAT_NUMBER);
+
+        MaterialPartnerRelation mpr = new MaterialPartnerRelation();
+        mpr.setPartner(supplierPartner);
+        mpr.setMaterial(material);
+        mpr.setPartnerBuysMaterial(true);
+        mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
+
+        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(material);
+        when(mprService.findAllByPartnerMaterialNumber(CUSTOMER_MAT_NUMBER)).thenReturn(List.of(material));
+        when(mprService.find(material, supplierPartner)).thenReturn(mpr);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+
+        String sammJsonString = objectMapper.writeValueAsString(SAMM_FROM_CUSTOMER_PARTNER);
+        LOG.info(() -> {
+            try {
+                return objectMapper.readTree(sammJsonString).toPrettyString();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        var itemStockSamm = objectMapper.readValue(sammJsonString, ItemStockSAMM.class);
+        assertEquals(SAMM_FROM_CUSTOMER_PARTNER, itemStockSamm);
+        var list = itemStockSammMapper.sammToReportedProductItemStock(itemStockSamm, supplierPartner);
+        assertNotNull(list);
+//        assertEquals(5, list.size());
+
+    }
+
+    private List<? extends ItemStock> filterReportedItemStock(List<? extends ItemStock> reportedProductItemStocks, AllocatedStock allocatedStock, Position position, String ownMaterialNumber) {
+
+        if (position.getOrderPositionReference() == null) {
+
+            List<? extends ItemStock> potentialStocks = reportedProductItemStocks.stream()
                 .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
                 .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
                 .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
@@ -352,8 +427,8 @@ public class ItemStockSammMapperTest {
                 .filter(item -> item.getCustomerOrderPositionId() == null)
                 .collect(Collectors.toList());
             return potentialStocks;
-        }else {
-            List<ReportedProductItemStock> potentialStocks = reportedProductItemStocks.stream()
+        } else {
+            List<? extends ItemStock> potentialStocks = reportedProductItemStocks.stream()
                 .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
                 .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
                 .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
@@ -368,4 +443,48 @@ public class ItemStockSammMapperTest {
             return potentialStocks;
         }
     }
+
+    private static String sampleSAMM = "{\n" +
+        "\"positions\" : [ {\n" +
+        "\"orderPositionReference\" : null,\n" +
+        "\"lastUpdatedOnDateTime\" : \"2023-12-20T11:35:43.034+00:00\",\n" +
+        "\"allocatedStocks\" : [ {\n" +
+        "\"quantityOnAllocatedStock\" : {\n" +
+        "\"value\" : 23.0,\n" +
+        "\"unit\" : \"unit:piece\"\n" +
+        "},\n" +
+        "\"stockLocationBPNS\" : \"BPNS4444444444DD\",\n" +
+        "\"isBlocked\" : true,\n" +
+        "\"stockLocationBPNA\" : \"BPNA4444444444DD\"\n" +
+        "} ]\n" +
+        "}, {\n" +
+        "\"orderPositionReference\" : null,\n" +
+        "\"lastUpdatedOnDateTime\" : \"2023-12-20T11:35:42.959+00:00\",\n" +
+        "\"allocatedStocks\" : [ {\n" +
+        "\"quantityOnAllocatedStock\" : {\n" +
+        "\"value\" : 20.0,\n" +
+        "\"unit\" : \"unit:piece\"\n" +
+        "},\n" +
+        "\"stockLocationBPNS\" : \"BPNS4444444444XX\",\n" +
+        "\"isBlocked\" : false,\n" +
+        "\"stockLocationBPNA\" : \"BPNA4444444444AA\"\n" +
+        "} ]\n" +
+        "}, {\n" +
+        "\"orderPositionReference\" : null,\n" +
+        "\"lastUpdatedOnDateTime\" : \"2023-12-20T11:35:43.016+00:00\",\n" +
+        "\"allocatedStocks\" : [ {\n" +
+        "\"quantityOnAllocatedStock\" : {\n" +
+        "\"value\" : 12.0,\n" +
+        "\"unit\" : \"unit:piece\"\n" +
+        "},\n" +
+        "\"stockLocationBPNS\" : \"BPNS4444444444DD\",\n" +
+        "\"isBlocked\" : false,\n" +
+        "\"stockLocationBPNA\" : \"BPNA4444444444DD\"\n" +
+        "} ]\n" +
+        "} ],\n" +
+        "\"materialNumberCustomer\" : \"MNR-7307-AU340474.002\",\n" +
+        "\"materialGlobalAssetId\" : null,\n" +
+        "\"materialNumberSupplier\" : \"MNR-8101-ID146955.001\",\n" +
+        "\"direction\" : \"INBOUND\"\n" +
+        "}\n";
 }

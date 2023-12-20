@@ -60,7 +60,7 @@ public abstract class ItemStock {
     @ToString.Exclude
     @NotNull
     protected Material material;
-    
+
     protected double quantity;
     @NotNull
     protected ItemUnitEnumeration measurementUnit;
@@ -82,13 +82,25 @@ public abstract class ItemStock {
     protected String customerOrderPositionId;
 
     @ToString.Include
-    private String material_ownMaterialNumber(){
+    private String material_ownMaterialNumber() {
         return material.getOwnMaterialNumber();
     }
 
     @ToString.Include
-    private String partner_partnerBpnl(){
+    private String partner_partnerBpnl() {
         return partner.getBpnl();
+    }
+
+    public String getNonNullSupplierOrderId() {
+        return supplierOrderId == null ? "" : supplierOrderId;
+    }
+
+    public String getNonNullCustomerOrderId() {
+        return customerOrderId == null ? "" : customerOrderId;
+    }
+
+    public String getNonNullCustomerOrderPositionId() {
+        return customerOrderPositionId == null ? "" : customerOrderPositionId;
     }
 
 }
