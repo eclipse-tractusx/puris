@@ -61,7 +61,6 @@ public class PartnerController {
         @ApiResponse(responseCode = "400", description = "Request body was malformed, didn't meet the minimum constraints or wrongfully contained a UUID."),
         @ApiResponse(responseCode = "409", description = "The BPNL specified in the request body is already assigned. ")
     })
-    @CrossOrigin
     public ResponseEntity<?> createPartner(@RequestBody PartnerDto partnerDto) {
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
         // Any given UUID is wrong by default since we're creating a new Partner entity
@@ -92,7 +91,6 @@ public class PartnerController {
     }
 
     @PutMapping("putAddress")
-    @CrossOrigin
     @Operation(description = "Updates an existing Partner by adding a new Address. If that Partner already has " +
         "an Address with the BPNA given in the request body, that existing Address will be overwritten. ")
     @ApiResponses(value = {
@@ -138,7 +136,6 @@ public class PartnerController {
         @ApiResponse(responseCode = "404", description = "Partner not found."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
-    @CrossOrigin
     public ResponseEntity<?> addSite(
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
@@ -168,8 +165,6 @@ public class PartnerController {
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }
 
-
-    @CrossOrigin
     @GetMapping
     @Operation(description = "Returns the requested PartnerDto.")
     @ApiResponses(value = {
@@ -196,12 +191,20 @@ public class PartnerController {
         }
     }
 
-    @CrossOrigin
     @GetMapping("/all")
     @Operation(description = "Returns a list of all Partners. ")
     public ResponseEntity<List<PartnerDto>> listPartners() {
         return new ResponseEntity<>(partnerService.findAll().
             stream().map(partner -> modelMapper.map(partner, PartnerDto.class)).collect(Collectors.toList()),
+            HttpStatusCode.valueOf(200));
+    }
+
+    @GetMapping("/ownSites")
+    @Operation(description = "Returns all sites of the puris partner using the puris system.")
+    public ResponseEntity<List<SiteDto>> getOwnSites() {
+        return new ResponseEntity<>(partnerService.getOwnPartnerEntity().
+            getSites().
+            stream().map(site -> modelMapper.map(site, SiteDto.class)).collect(Collectors.toList()),
             HttpStatusCode.valueOf(200));
     }
 
