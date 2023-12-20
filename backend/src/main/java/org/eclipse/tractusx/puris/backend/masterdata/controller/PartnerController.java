@@ -35,10 +35,12 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -202,10 +204,17 @@ public class PartnerController {
     @GetMapping("/ownSites")
     @Operation(description = "Returns all sites of the puris partner using the puris system.")
     public ResponseEntity<List<SiteDto>> getOwnSites() {
+        Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
+
+        if (ownPartnerEntity == null || ownPartnerEntity.getSites() == null ||
+                ownPartnerEntity.getSites().isEmpty()) {
+            return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
+        }
+
         return new ResponseEntity<>(partnerService.getOwnPartnerEntity().
             getSites().
             stream().map(site -> modelMapper.map(site, SiteDto.class)).collect(Collectors.toList()),
-            HttpStatusCode.valueOf(200));
+            HttpStatus.OK);
     }
 
 }
