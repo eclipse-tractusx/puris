@@ -45,13 +45,13 @@ import java.util.TreeSet;
 @Setter
 @ToString
 public class Site implements Comparable<Site> {
-
+    public static final String BPNS_REGEX = "^BPNS[0-9a-zA-Z]{12}$";
     @Id
     @NotNull
     /**
      * The BPNS of this Site.
      */
-    @Pattern(regexp = "^BPNS[0-9a-zA-Z]{12}$")
+    @Pattern(regexp = BPNS_REGEX)
     private String bpns;
     /**
      * A human-readable, distinctive name of this site.
