@@ -44,15 +44,15 @@ public class ItemStockSammMapper {
     @Autowired
     private MaterialPartnerRelationService mprService;
 
-    public ItemStockSAMM materialItemStocksToSAMM(List<MaterialItemStock> materialItemStocks) {
+    public ItemStockSamm materialItemStocksToSamm(List<MaterialItemStock> materialItemStocks) {
         return listToSamm(materialItemStocks, DirectionCharacteristic.INBOUND);
     }
 
-    public ItemStockSAMM productItemStocksToSAMM(List<ProductItemStock> productItemStocks) {
+    public ItemStockSamm productItemStocksToSamm(List<ProductItemStock> productItemStocks) {
         return listToSamm(productItemStocks, DirectionCharacteristic.OUTBOUND);
     }
 
-    private ItemStockSAMM listToSamm(List<? extends ItemStock> itemStocks, DirectionCharacteristic directionCharacteristic) {
+    private ItemStockSamm listToSamm(List<? extends ItemStock> itemStocks, DirectionCharacteristic directionCharacteristic) {
         if (itemStocks == null || itemStocks.isEmpty()) {
             log.warn("Can't map empty list");
             return null;
@@ -74,7 +74,7 @@ public class ItemStockSammMapper {
                 itemStock -> new PositionsMappingHelper(itemStock.getLastUpdatedOnDateTime(),
                     itemStock.getNonNullCustomerOrderId(), itemStock.getNonNullSupplierOrderId(),
                     itemStock.getNonNullCustomerOrderPositionId())));
-        ItemStockSAMM samm = new ItemStockSAMM();
+        ItemStockSamm samm = new ItemStockSamm();
         samm.setMaterialGlobalAssetId(material.getMaterialNumberCx());
 
         String partnerMaterialNumber = mprService.find(material, partner).getPartnerMaterialNumber();
@@ -112,8 +112,8 @@ public class ItemStockSammMapper {
                                           String customerOrderPositionId) {
     }
 
-    public ItemStockSAMM toItemStockSAMM(MaterialItemStock materialItemStock) {
-        ItemStockSAMM samm = new ItemStockSAMM();
+    public ItemStockSamm toItemStockSamm(MaterialItemStock materialItemStock) {
+        ItemStockSamm samm = new ItemStockSamm();
         samm.setDirection(DirectionCharacteristic.INBOUND);
         samm.setPositions(new ArrayList<>());
         samm.setMaterialGlobalAssetId(materialItemStock.getMaterial().getMaterialNumberCx());
@@ -123,7 +123,7 @@ public class ItemStockSammMapper {
         return createPosition(materialItemStock, samm);
     }
 
-    private static ItemStockSAMM createPosition(ItemStock itemStock, ItemStockSAMM samm) {
+    private static ItemStockSamm createPosition(ItemStock itemStock, ItemStockSamm samm) {
         Position position = new Position();
         samm.setPositions(List.of(position));
         position.setLastUpdatedOnDateTime(itemStock.getLastUpdatedOnDateTime());
@@ -141,8 +141,8 @@ public class ItemStockSammMapper {
         return samm;
     }
 
-    public ItemStockSAMM toItemStockSamm(ProductItemStock productItemStock) {
-        ItemStockSAMM samm = new ItemStockSAMM();
+    public ItemStockSamm toItemStockSamm(ProductItemStock productItemStock) {
+        ItemStockSamm samm = new ItemStockSamm();
         samm.setDirection(DirectionCharacteristic.OUTBOUND);
         samm.setPositions(new ArrayList<>());
         samm.setMaterialGlobalAssetId(productItemStock.getMaterial().getMaterialNumberCx());
@@ -152,7 +152,7 @@ public class ItemStockSammMapper {
         return createPosition(productItemStock, samm);
     }
 
-    public List<ReportedProductItemStock> sammToReportedProductItemStock(ItemStockSAMM samm, Partner partner) {
+    public List<ReportedProductItemStock> sammToReportedProductItemStock(ItemStockSamm samm, Partner partner) {
         String matNbrCustomer = samm.getMaterialNumberCustomer();
         String matNbrSupplier = samm.getMaterialNumberSupplier(); // should be ownMaterialNumber
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
@@ -241,7 +241,7 @@ public class ItemStockSammMapper {
         return outputList;
     }
 
-    public List<ReportedMaterialItemStock> sammToReportedMaterialItemStock(ItemStockSAMM samm, Partner partner) {
+    public List<ReportedMaterialItemStock> sammToReportedMaterialItemStock(ItemStockSamm samm, Partner partner) {
         String matNbrCustomer = samm.getMaterialNumberCustomer(); // should be ownMaterialNumber
         String matNbrSupplier = samm.getMaterialNumberSupplier();
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();

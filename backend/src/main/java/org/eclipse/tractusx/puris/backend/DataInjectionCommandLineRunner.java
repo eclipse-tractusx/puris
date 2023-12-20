@@ -267,13 +267,13 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .build();
         thirdMaterialItemStock = materialItemStockService.create(thirdMaterialItemStock);
 
-        var samm = itemStockSammMapper.materialItemStocksToSAMM(List.of(createdMaterialItemStock, otherMaterialItemStock, thirdMaterialItemStock));
+        var samm = itemStockSammMapper.materialItemStocksToSamm(List.of(createdMaterialItemStock, otherMaterialItemStock, thirdMaterialItemStock));
         var node = objectMapper.readTree(objectMapper.writeValueAsString(samm));
         log.info("Created SAMM\n" + node.toPrettyString());
 
         mySelf.getSites().remove(newSite);
         partnerService.update(mySelf);
-        ItemStockSAMM itemStockSAMM = new ItemStockSAMM();
+        ItemStockSamm itemStockSAMM = new ItemStockSamm();
         itemStockSAMM.setMaterialNumberSupplier(semiconductorMatNbrSupplier);
         itemStockSAMM.setMaterialNumberCustomer(semiconductorMatNbrCustomer);
         itemStockSAMM.setDirection(DirectionCharacteristic.OUTBOUND);

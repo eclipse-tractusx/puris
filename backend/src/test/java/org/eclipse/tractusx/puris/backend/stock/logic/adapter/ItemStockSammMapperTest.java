@@ -47,7 +47,7 @@ import static org.mockito.Mockito.when;
 public class ItemStockSammMapperTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ItemStockSammMapperTest.class);
-    private static ItemStockSAMM SAMM_FROM_CUSTOMER_PARTNER;
+    private static ItemStockSamm SAMM_FROM_CUSTOMER_PARTNER;
     final static String CUSTOMER_MAT_NUMBER = "MNR-7307-AU340474.002";
     final static String SUPPLIER_MAT_NUMBER = "MNR-8101-ID146955.001";
     final static String CX_MAT_NUMBER = UUID.randomUUID().toString();
@@ -141,7 +141,7 @@ public class ItemStockSammMapperTest {
         // These should result in two positions
         // - one WITHOUT orderPositionReference AND two allocatedStocks
         // - one WITH orderPosition AND one allocatedStocks
-        ItemStockSAMM materialStockSamm = itemStockSammMapper.toItemStockSAMM(materialItemStock);
+        ItemStockSamm materialStockSamm = itemStockSammMapper.toItemStockSamm(materialItemStock);
 
         // Then
         assertNotNull(materialStockSamm);
@@ -178,7 +178,7 @@ public class ItemStockSammMapperTest {
         // are INBOUND, then we have to set the DirectionCharacteristic accordingly.
 
         // Given
-        ItemStockSAMM inboundProductStockSamm = new ItemStockSAMM();
+        ItemStockSamm inboundProductStockSamm = new ItemStockSamm();
 
         inboundProductStockSamm.setDirection(DirectionCharacteristic.INBOUND);
         inboundProductStockSamm.setMaterialNumberCustomer(CUSTOMER_MAT_NUMBER);
@@ -395,7 +395,7 @@ public class ItemStockSammMapperTest {
                 throw new RuntimeException(e);
             }
         });
-        var itemStockSamm = objectMapper.readValue(sammJsonString, ItemStockSAMM.class);
+        var itemStockSamm = objectMapper.readValue(sammJsonString, ItemStockSamm.class);
         assertEquals(SAMM_FROM_CUSTOMER_PARTNER, itemStockSamm);
         var list = itemStockSammMapper.sammToReportedProductItemStock(itemStockSamm, supplierPartner);
         assertNotNull(list);
