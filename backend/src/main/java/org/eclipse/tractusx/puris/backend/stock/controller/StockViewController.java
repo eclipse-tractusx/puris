@@ -95,7 +95,6 @@ public class StockViewController {
     @GetMapping("materials")
     @ResponseBody
     @Operation(description = "Returns a list of all materials (excluding products)")
-    @CrossOrigin
     public List<FrontendMaterialDto> getMaterials() {
         return materialService.findAllMaterials()
             .stream()
@@ -112,7 +111,6 @@ public class StockViewController {
                 "  \"BPNL1234567890ZZ\": \"MNR-8101-ID146955.001\"," +
                 "  \"BPNL4444444444XX\": \"MNR-7307-AU340474.002\"}")})),
         @ApiResponse(responseCode = "400", description = "Invalid parameter")})
-    @CrossOrigin
     public ResponseEntity<Map<String, String>> getMaterialNumbers(@RequestParam String ownMaterialNumber) {
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
@@ -123,7 +121,6 @@ public class StockViewController {
     @GetMapping("products")
     @ResponseBody
     @Operation(description = "Returns a list of all products (excluding materials)")
-    @CrossOrigin
     public List<FrontendMaterialDto> getProducts() {
         return materialService.findAllProducts()
             .stream()
@@ -131,7 +128,7 @@ public class StockViewController {
             .collect(Collectors.toList());
     }
 
-    @CrossOrigin
+
     @GetMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Returns a list of all product-stocks")
@@ -141,7 +138,6 @@ public class StockViewController {
             .collect(Collectors.toList());
     }
 
-    @CrossOrigin
     @PostMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Creates a new product-stock")
@@ -160,7 +156,6 @@ public class StockViewController {
         return convertToDto(createdProductStock);
     }
 
-    @CrossOrigin
     @PutMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Updates an existing product-stock")
@@ -195,7 +190,6 @@ public class StockViewController {
         return productStock;
     }
 
-    @CrossOrigin
     @GetMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Returns a list of all material-stocks")
@@ -207,7 +201,6 @@ public class StockViewController {
         return allMaterialStocks;
     }
 
-    @CrossOrigin
     @PostMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Creates a new material-stock")
@@ -221,7 +214,6 @@ public class StockViewController {
         return convertToDto(createdMaterialStock);
     }
 
-    @CrossOrigin
     @PutMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Updates an existing material-stock")
@@ -253,7 +245,6 @@ public class StockViewController {
         return stock;
     }
 
-    @CrossOrigin
     @GetMapping("partner-product-stocks")
     @Operation(description = "Returns a list of all partner-product-stocks that refer to the given material number")
     @ApiResponses(value = {
@@ -288,7 +279,6 @@ public class StockViewController {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
-    @CrossOrigin
     public ResponseEntity<List<PartnerDto>> getCustomerPartnersOrderingMaterial(@RequestParam String ownMaterialNumber) {
         if(!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
@@ -308,7 +298,6 @@ public class StockViewController {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
-    @CrossOrigin
     public ResponseEntity<List<PartnerDto>> triggerPartnerProductStockUpdateForMaterial(@RequestParam String ownMaterialNumber) {
         if(!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));

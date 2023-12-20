@@ -41,10 +41,11 @@ import lombok.ToString;
 @ToString
 public class Address implements Comparable<Address> {
 
+    public static final String BPNA_REGEX = "^BPNA[0-9a-zA-Z]{12}$";
     /**
      * The BPNA of this Address.
      */
-    @Pattern(regexp = "^BPNA[0-9a-zA-Z]{12}$")
+    @Pattern(regexp = BPNA_REGEX)
     private String bpna;
 
     /**

@@ -37,12 +37,10 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -69,6 +67,11 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private ProductStockService productStockService;
+
+    @Autowired
+    private MaterialItemStockService materialItemStockService;
+    @Autowired
+    private ReportedMaterialItemStockService reportedMaterialItemStockService;
 
     @Autowired
     private PartnerProductStockService partnerProductStockService;
@@ -113,7 +116,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
      */
     private void createOwnPartnerEntity() {
         Partner mySelf;
-        if(variablesService.getOwnDefaultBpns()!= null && variablesService.getOwnDefaultBpns().length()!=0) {
+        if (variablesService.getOwnDefaultBpns() != null && variablesService.getOwnDefaultBpns().length() != 0) {
             mySelf = new Partner(variablesService.getOwnName(),
                 variablesService.getEdcProtocolUrl(),
                 variablesService.getOwnBpnl(),
@@ -135,7 +138,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         }
         mySelf = partnerService.create(mySelf);
         log.info("Successfully created own Partner Entity: " + (partnerService.findByBpnl(mySelf.getBpnl()) != null));
-        if(mySelf != null) {
+        if (mySelf != null) {
             log.info(mySelf.toString());
         }
     }
@@ -219,6 +222,34 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info("SAMM-DTO:\n" + objectMapper.writeValueAsString(productStockSammDto));
 
         log.info("Own Street and Number: " + variablesService.getOwnDefaultStreetAndNumber());
+        Partner mySelf = partnerService.getOwnPartnerEntity();
+        var builder = MaterialItemStock.builder();
+        var materialItemStock = builder.partner(supplierPartner)
+            .material(semiconductorMaterial)
+            .lastUpdatedOnDateTime(new Date())
+            .locationBpna(mySelf.getSites().first().getAddresses().first().getBpna())
+            .locationBpns(mySelf.getSites().first().getBpns())
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
+            .quantity(20)
+            .build();
+        var createdMaterialItemStock = materialItemStockService.create(materialItemStock);
+        log.info("Created MaterialItemStock: \n" + createdMaterialItemStock.toString());
+
+        var builder2 = ReportedMaterialItemStock.builder();
+        var reportedMaterialItemStock =
+            builder2
+                .material(semiconductorMaterial)
+                .partner(supplierPartner)
+                .lastUpdatedOnDateTime(new Date())
+                .locationBpns(supplierPartner.getSites().first().getBpns())
+                .locationBpna(supplierPartner.getSites().first().getAddresses().first().getBpna())
+                .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
+                .quantity(50)
+                .build();
+
+        var createdReportedMaterialItemStock = reportedMaterialItemStockService.create(reportedMaterialItemStock);
+        log.info("Created ReportedMaterialItemStock: \n" + createdReportedMaterialItemStock);
+
     }
 
     /**
@@ -265,7 +296,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info(String.format("Found productStocks by material number and allocated to customer " +
             "bpnl: %s", foundProductStocks));
     }
-
 
     /**
      * creates a new customer Partner entity, stores it to
