@@ -44,7 +44,6 @@ public class ItemStockSammMapper {
     @Autowired
     private MaterialPartnerRelationService mprService;
 
-
     public ItemStockSAMM materialItemStocksToSAMM(List<MaterialItemStock> materialItemStocks) {
         return listToSamm(materialItemStocks, DirectionCharacteristic.INBOUND);
     }
@@ -61,12 +60,12 @@ public class ItemStockSammMapper {
         Partner partner = itemStocks.get(0).getPartner();
         Material material = itemStocks.get(0).getMaterial();
         if (itemStocks.stream().anyMatch(stock -> !stock.getPartner().equals(partner))) {
-            log.warn("Can't map item stock list with different materials");
+            log.warn("Can't map item stock list with different partners");
             return null;
         }
 
         if (itemStocks.stream().anyMatch(stock -> !stock.getMaterial().equals(material))) {
-            log.warn("Can't map item stock list with different partners");
+            log.warn("Can't map item stock list with different materials");
             return null;
         }
         var groupedByPositionAttributes = itemStocks
@@ -112,7 +111,6 @@ public class ItemStockSammMapper {
     private record PositionsMappingHelper(Date date, String customerOrderId, String supplierOrderId,
                                           String customerOrderPositionId) {
     }
-
 
     public ItemStockSAMM toItemStockSAMM(MaterialItemStock materialItemStock) {
         ItemStockSAMM samm = new ItemStockSAMM();

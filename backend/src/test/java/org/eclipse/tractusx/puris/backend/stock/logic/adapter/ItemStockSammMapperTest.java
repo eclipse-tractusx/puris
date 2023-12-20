@@ -40,8 +40,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -150,13 +149,12 @@ public class ItemStockSammMapperTest {
         assertEquals(DirectionCharacteristic.INBOUND, materialStockSamm.getDirection());
         assertEquals(CUSTOMER_MAT_NUMBER, materialStockSamm.getMaterialNumberCustomer());
         assertEquals(SUPPLIER_MAT_NUMBER, materialStockSamm.getMaterialNumberSupplier());
-        assertEquals(null, materialStockSamm.getMaterialGlobalAssetId());
+        assertNull(materialStockSamm.getMaterialGlobalAssetId());
 
-        // TODO: This crashes. I assume because the position is not set
         assertEquals(1, materialStockSamm.getPositions().size());
 
         Position position = materialStockSamm.getPositions().stream().findFirst().get();
-        assertEquals(null, position.getOrderPositionReference());
+        assertNull(position.getOrderPositionReference());
 
         assertEquals(1, position.getAllocatedStocks().size());
 
@@ -179,9 +177,7 @@ public class ItemStockSammMapperTest {
         // Since from the customer's point of view, the items he received from his supplier
         // are INBOUND, then we have to set the DirectionCharacteristic accordingly.
 
-
         // Given
-
         ItemStockSAMM inboundProductStockSamm = new ItemStockSAMM();
 
         inboundProductStockSamm.setDirection(DirectionCharacteristic.INBOUND);
@@ -349,7 +345,6 @@ public class ItemStockSammMapperTest {
     @Order(3)
     void test_unmarshalling() {
         // Setup from the suppliers point of view
-
         Material material = new Material();
         material.setProductFlag(true);
         material.setOwnMaterialNumber(SUPPLIER_MAT_NUMBER);
@@ -375,7 +370,6 @@ public class ItemStockSammMapperTest {
     void test_deserializationFromJson() throws Exception {
         // Setup from the suppliers point of view
 
-
         Material material = new Material();
         material.setProductFlag(true);
         material.setOwnMaterialNumber(SUPPLIER_MAT_NUMBER);
@@ -393,7 +387,6 @@ public class ItemStockSammMapperTest {
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-
         String sammJsonString = objectMapper.writeValueAsString(SAMM_FROM_CUSTOMER_PARTNER);
         LOG.info(() -> {
             try {
@@ -406,8 +399,6 @@ public class ItemStockSammMapperTest {
         assertEquals(SAMM_FROM_CUSTOMER_PARTNER, itemStockSamm);
         var list = itemStockSammMapper.sammToReportedProductItemStock(itemStockSamm, supplierPartner);
         assertNotNull(list);
-//        assertEquals(5, list.size());
-
     }
 
     private List<? extends ItemStock> filterReportedItemStock(List<? extends ItemStock> reportedProductItemStocks, AllocatedStock allocatedStock, Position position, String ownMaterialNumber) {
@@ -418,7 +409,7 @@ public class ItemStockSammMapperTest {
                 .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
                 .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
                 .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
-                .filter(item -> item.getMaterial().getOwnMaterialNumber() == ownMaterialNumber)
+                .filter(item -> item.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
                 .filter(item -> item.getLocationBpna().equals(allocatedStock.getStockLocationBPNA()))
                 .filter(item -> item.getLocationBpns().equals(allocatedStock.getStockLocationBPNS()))
                 .filter(item -> item.getLastUpdatedOnDateTime() == position.getLastUpdatedOnDateTime())
@@ -432,59 +423,15 @@ public class ItemStockSammMapperTest {
                 .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
                 .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
                 .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
-                .filter(item -> item.getMaterial().getOwnMaterialNumber() == ownMaterialNumber)
+                .filter(item -> item.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
                 .filter(item -> item.getLocationBpna().equals(allocatedStock.getStockLocationBPNA()))
                 .filter(item -> item.getLocationBpns().equals(allocatedStock.getStockLocationBPNS()))
                 .filter(item -> item.getLastUpdatedOnDateTime() == position.getLastUpdatedOnDateTime())
-                .filter(item -> item.getCustomerOrderId() == position.getOrderPositionReference().getCustomerOrderId())
-                .filter(item -> item.getSupplierOrderId() == position.getOrderPositionReference().getSupplierOrderId())
-                .filter(item -> item.getCustomerOrderPositionId() == position.getOrderPositionReference().getCustomerOrderPositionId())
+                .filter(item -> item.getCustomerOrderId().equals(position.getOrderPositionReference().getCustomerOrderId()))
+                .filter(item -> item.getSupplierOrderId().equals(position.getOrderPositionReference().getSupplierOrderId()))
+                .filter(item -> item.getCustomerOrderPositionId().equals(position.getOrderPositionReference().getCustomerOrderPositionId()))
                 .collect(Collectors.toList());
             return potentialStocks;
         }
     }
-
-    private static String sampleSAMM = "{\n" +
-        "\"positions\" : [ {\n" +
-        "\"orderPositionReference\" : null,\n" +
-        "\"lastUpdatedOnDateTime\" : \"2023-12-20T11:35:43.034+00:00\",\n" +
-        "\"allocatedStocks\" : [ {\n" +
-        "\"quantityOnAllocatedStock\" : {\n" +
-        "\"value\" : 23.0,\n" +
-        "\"unit\" : \"unit:piece\"\n" +
-        "},\n" +
-        "\"stockLocationBPNS\" : \"BPNS4444444444DD\",\n" +
-        "\"isBlocked\" : true,\n" +
-        "\"stockLocationBPNA\" : \"BPNA4444444444DD\"\n" +
-        "} ]\n" +
-        "}, {\n" +
-        "\"orderPositionReference\" : null,\n" +
-        "\"lastUpdatedOnDateTime\" : \"2023-12-20T11:35:42.959+00:00\",\n" +
-        "\"allocatedStocks\" : [ {\n" +
-        "\"quantityOnAllocatedStock\" : {\n" +
-        "\"value\" : 20.0,\n" +
-        "\"unit\" : \"unit:piece\"\n" +
-        "},\n" +
-        "\"stockLocationBPNS\" : \"BPNS4444444444XX\",\n" +
-        "\"isBlocked\" : false,\n" +
-        "\"stockLocationBPNA\" : \"BPNA4444444444AA\"\n" +
-        "} ]\n" +
-        "}, {\n" +
-        "\"orderPositionReference\" : null,\n" +
-        "\"lastUpdatedOnDateTime\" : \"2023-12-20T11:35:43.016+00:00\",\n" +
-        "\"allocatedStocks\" : [ {\n" +
-        "\"quantityOnAllocatedStock\" : {\n" +
-        "\"value\" : 12.0,\n" +
-        "\"unit\" : \"unit:piece\"\n" +
-        "},\n" +
-        "\"stockLocationBPNS\" : \"BPNS4444444444DD\",\n" +
-        "\"isBlocked\" : false,\n" +
-        "\"stockLocationBPNA\" : \"BPNA4444444444DD\"\n" +
-        "} ]\n" +
-        "} ],\n" +
-        "\"materialNumberCustomer\" : \"MNR-7307-AU340474.002\",\n" +
-        "\"materialGlobalAssetId\" : null,\n" +
-        "\"materialNumberSupplier\" : \"MNR-8101-ID146955.001\",\n" +
-        "\"direction\" : \"INBOUND\"\n" +
-        "}\n";
 }
