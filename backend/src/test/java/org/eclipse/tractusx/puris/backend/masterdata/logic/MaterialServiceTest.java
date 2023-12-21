@@ -17,7 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.masterdata.logic;
+package org.eclipse.tractusx.puris.backend.masterdata.logic;
 
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;

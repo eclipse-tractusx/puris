@@ -22,6 +22,7 @@
 package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
@@ -49,7 +50,18 @@ import java.util.*;
 public class Partner {
 
     public final static String BPNL_REGEX = "^BPNL[0-9a-zA-Z]{12}$";
-    public final static String EDC_REGEX = "^http[s]?://([a-z0-9][a-z0-9\\-]+[a-z0-9])(\\.[a-z0-9\\-]+)*(:[0-9]{1,4})?(/[a-z0-9\\-]+)+[/]?$";
+    /**
+     * The EDC Url should state to the procotol url of the edc.
+     *
+     * The pattern should match on http and https proctocol urls independent of their path. Following edc regexes are
+     * considered to be valid:
+     * <li>https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp - common ingress with path</li>
+     * <li>https://isst-edc-supplier.int.demo.catena-x.net - ingress stating directly to protocol path</li>
+     * <li>http://customer-control-plane:8184/api/v1/dsp - e.g. local development</li>
+     * <li>http://127.0.0.1:8081/api/v1/dsp - e.g. local development/li>
+     *
+     */
+    public final static String EDC_REGEX = "^http[s]?://([a-z0-9][a-z0-9\\-]+[a-z0-9])(\\.[a-z0-9\\-]+)*(:[0-9]{1,4})?(/[a-z0-9\\-]+)*[/]?$";
 
     @Id
     @GeneratedValue
@@ -57,7 +69,7 @@ public class Partner {
     /**
      * A human-readable, distinctive name of this partner.
      */
-    @Pattern(regexp = "^[a-zA-Z0-9 \\-]{1,255}$")
+    @Pattern(regexp = "^[a-zßA-Z0-9 \\-.]{1,255}$")
     private String name;
     /**
      * The EDC-URL of the partner.
@@ -70,6 +82,7 @@ public class Partner {
     @Pattern(regexp = BPNL_REGEX)
     private String bpnl;
     @ElementCollection
+    @Valid
     /**
      * Contains all Addresses (BPNAs) that are directly assigned to this
      * Partner's BPNL.
