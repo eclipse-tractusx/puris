@@ -61,7 +61,7 @@ public class Partner {
      * <li>http://127.0.0.1:8081/api/v1/dsp - e.g. local development/li>
      *
      */
-    public final static String EDC_REGEX = "^http[s]?://([a-z0-9][a-z0-9\\\\.-]+[a-z0-9])(\\\\.[a-z0-9\\\\-]+)*(:[0-9]{1,4})?(/[a-z0-9\\\\-]+)*[/]?$";
+    public final static String EDC_REGEX = "^http[s]?://([a-z0-9][a-z0-9\\-]+[a-z0-9])(\\.[a-z0-9\\-]+)*(:[0-9]{1,4})?(/[a-z0-9\\-]+)*[/]?$";
 
     @Id
     @GeneratedValue
