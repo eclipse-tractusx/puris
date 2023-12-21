@@ -145,6 +145,7 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.puris.keycloak.disabled | bool | `true` | Disable the Keycloak integration. |
 | frontend.puris.keycloak.realm | string | `"Catena-X"` | Name of the Realm of the keycloak instance. |
 | frontend.puris.keycloak.redirectUrlFrontend | string | `"https://your-frontend-url.com"` | URL to use as keycloak redirect url. |
+| frontend.puris.keycloak.url | string | `"https://idp.com/auth"` | The URL to the IDP that should be used. |
 | frontend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":10,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
 | frontend.readinessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a readiness probe |
 | frontend.readinessProbe.initialDelaySeconds | int | `10` | Delay in seconds after which an initial readiness probe is checked |
