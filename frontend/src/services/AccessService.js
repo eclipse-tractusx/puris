@@ -24,7 +24,10 @@ const getViewsWithAccess = () => {
     let views = [];
 
     if (!AuthenticationService.isEnabled) {
-        return ALL_ROUTES.filter(route=> route.name !== "Unauthorized");
+        return ALL_ROUTES.filter(
+            (route) =>
+                route.name !== "Unauthorized" && route.name !== "aboutLicense"
+        );
     }
 
     ALL_ROUTES.forEach((item) => {
