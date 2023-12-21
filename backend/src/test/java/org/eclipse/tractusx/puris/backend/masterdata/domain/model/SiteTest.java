@@ -44,11 +44,9 @@ public class SiteTest {
 
     @ParameterizedTest
     @ValueSource(strings ={
-        "123 Main St 12",
-        "Main St 12",
-        "Wall Street 101",
-        "Musterstraße 35b",
-        "Test Str. 5"
+        "New Company Inc.",
+        "Help-Desk Company",
+        "Volkswagen AG"
     })
     public void test_validNameRegex(String name) {
         Site site = new Site("BPNS1234567890SS", name, "BPNA1234567890AA", "123 Main St 12", "12345 New York", "USA");

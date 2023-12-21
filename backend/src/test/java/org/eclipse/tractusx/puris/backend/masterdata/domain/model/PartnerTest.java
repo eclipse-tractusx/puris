@@ -55,31 +55,44 @@ public class PartnerTest {
         assertEquals("name", violation.getPropertyPath().toString());
     }
 
-    @Test
-    public void test_invalidBpnRegexes() {
-        Partner partner = new Partner("ABC Company", "https://www.example.com", "BPN1234567890LE",
-            "BPNS1234567890EE", "Site A", "BPNA123", "123 Main St 12", "12345 New York", "USA");
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "BPNL1234567890E",
+        "BPNLE",
+        "BPNS12345E6666A",
+        "BPNA5555555555AA"
+    })
+    public void test_invalidBpnlRegex(String bpnl) {
+        Partner partner = new Partner("ABC Company", "https://www.example.com", bpnl,
+            "BPNS1234567890EE", "Site A", "BPNA1234567890AA", "123 Main St 12", "12345 New York", "USA");
 
         Set<ConstraintViolation<Partner>> violations = validator.validate(partner);
 
         assertEquals(1, violations.size());
         ConstraintViolation<Partner> violation = violations.iterator().next();
         assertEquals("bpnl", violation.getPropertyPath().toString());
+    }
 
-        Set<ConstraintViolation<Address>> addressViolations = validator.validate(
-            partner.getSites().first().getAddresses().first()
-        );
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "BPNL1234567890LE",
+        "BPNL5555555555AA"
+    })
+    public void test_validBpnlRegex(String bpnl) {
+        Partner partner = new Partner("ABC Company", "https://www.example.com", bpnl,
+            "BPNS1234567890EE", "Site A", "BPNA1234567890AA", "123 Main St 12", "12345 New York", "USA");
 
-        assertEquals(1, addressViolations.size());
-        ConstraintViolation<Address> addressViolation = addressViolations.iterator().next();
-        assertEquals("bpna", addressViolation.getPropertyPath().toString());
+        Set<ConstraintViolation<Partner>> violations = validator.validate(partner);
+
+        assertEquals(0, violations.size());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
         "https://isst-edc-supplier.int.demo.catena-x.net",
         "http://customer-control-plane:8184/api/v1/dsp",
-        "https://localhost:8181/api/v1/dsp"
+        "https://localhost:8181/api/v1/dsp",
+        "http://127.0.0.1:8081/api/v1/dsp"
     })
     public void test_validEdcRegex(String edcUrl) {
         Partner partner = new Partner("ABC Company", edcUrl, "BPNL1234567890LE",
@@ -88,6 +101,22 @@ public class PartnerTest {
         Set<ConstraintViolation<Partner>> violations = validator.validate(partner);
 
         assertEquals(0, violations.size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "www.hostname.de",
+        "invalid@email.de"
+    })
+    public void test_invalidEdcRegex(String edcUrl) {
+        Partner partner = new Partner("ABC Company", edcUrl, "BPNL1234567890LE",
+            "BPNS1234567890ZZ", "Site A", "BPNA1234567890ZZ", "123 Main Str.", "12345 New York", "USA");
+
+        Set<ConstraintViolation<Partner>> violations = validator.validate(partner);
+
+        assertEquals(1, violations.size());
+        ConstraintViolation<Partner> violation = violations.iterator().next();
+        assertEquals("edcUrl", violation.getPropertyPath().toString());
     }
 
 }

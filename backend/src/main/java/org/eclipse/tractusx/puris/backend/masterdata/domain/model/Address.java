@@ -61,7 +61,7 @@ public class Address implements Comparable<Address> {
     /**
      * The country of this Address.
      */
-    @Pattern(regexp = "^[a-zA-Z]+$")
+    @Pattern(regexp = "^[a-zA-Z ]+$")
     private String country;
 
     /**
