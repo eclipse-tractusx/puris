@@ -25,10 +25,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +33,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -46,66 +44,122 @@ public class ItemStockSammMapper {
     @Autowired
     private MaterialPartnerRelationService mprService;
 
-    public ItemStockSAMM toItemStockSAMM(MaterialItemStock materialItemStock) {
-        ItemStockSAMM samm = new ItemStockSAMM();
+    public ItemStockSamm materialItemStocksToItemStockSamm(List<MaterialItemStock> materialItemStocks) {
+        return listToItemStockSamm(materialItemStocks, DirectionCharacteristic.INBOUND);
+    }
+
+    public ItemStockSamm productItemStocksToItemStockSamm(List<ProductItemStock> productItemStocks) {
+        return listToItemStockSamm(productItemStocks, DirectionCharacteristic.OUTBOUND);
+    }
+
+    private ItemStockSamm listToItemStockSamm(List<? extends ItemStock> itemStocks, DirectionCharacteristic directionCharacteristic) {
+        if (itemStocks == null || itemStocks.isEmpty()) {
+            log.warn("Can't map empty list");
+            return null;
+        }
+        Partner partner = itemStocks.get(0).getPartner();
+        Material material = itemStocks.get(0).getMaterial();
+        if (itemStocks.stream().anyMatch(stock -> !stock.getPartner().equals(partner))) {
+            log.warn("Can't map item stock list with different partners");
+            return null;
+        }
+
+        if (itemStocks.stream().anyMatch(stock -> !stock.getMaterial().equals(material))) {
+            log.warn("Can't map item stock list with different materials");
+            return null;
+        }
+        var groupedByPositionAttributes = itemStocks
+            .stream()
+            .collect(Collectors.groupingBy(
+                itemStock -> new PositionsMappingHelper(itemStock.getLastUpdatedOnDateTime(),
+                    itemStock.getNonNullCustomerOrderId(), itemStock.getNonNullSupplierOrderId(),
+                    itemStock.getNonNullCustomerOrderPositionId())));
+        ItemStockSamm samm = new ItemStockSamm();
+        samm.setMaterialGlobalAssetId(material.getMaterialNumberCx());
+
+        String partnerMaterialNumber = mprService.find(material, partner).getPartnerMaterialNumber();
+        String customerMatNbr = directionCharacteristic ==
+            DirectionCharacteristic.INBOUND ? material.getOwnMaterialNumber() : partnerMaterialNumber;
+        String supplierMatNbr = directionCharacteristic ==
+            DirectionCharacteristic.INBOUND ? partnerMaterialNumber : material.getOwnMaterialNumber();
+        samm.setMaterialNumberCustomer(customerMatNbr);
+        samm.setMaterialNumberSupplier(supplierMatNbr);
+        samm.setDirection(directionCharacteristic);
+        var posList = new ArrayList<Position>();
+        samm.setPositions(posList);
+        for (var mappingHelperListEntry : groupedByPositionAttributes.entrySet()) {
+            var key = mappingHelperListEntry.getKey();
+            var stock = mappingHelperListEntry.getValue().get(0);
+            Position position = new Position();
+            posList.add(position);
+            position.setLastUpdatedOnDateTime(key.date());
+            if (!key.customerOrderId.isEmpty() || !key.supplierOrderId.isEmpty() || !key.customerOrderPositionId.isEmpty()) {
+                // get opr from stock as this is nullable and prevents mapping empty strings to the samm.
+                OrderPositionReference opr = new OrderPositionReference(stock.getSupplierOrderId(), stock.getCustomerOrderId(),
+                    stock.getCustomerOrderPositionId());
+                position.setOrderPositionReference(opr);
+            }
+            var allocatedStocksList = new ArrayList<AllocatedStock>();
+            position.setAllocatedStocks(allocatedStocksList);
+            for (var v : mappingHelperListEntry.getValue()) {
+                ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(v.getQuantity(), v.getMeasurementUnit());
+                AllocatedStock allocatedStock = new AllocatedStock(itemQuantityEntity, v.getLocationBpns(), v.isBlocked(), v.getLocationBpna());
+                allocatedStocksList.add(allocatedStock);
+            }
+        }
+        return samm;
+    }
+
+    private record PositionsMappingHelper(Date date, String customerOrderId, String supplierOrderId,
+                                          String customerOrderPositionId) {
+    }
+
+    public ItemStockSamm toItemStockSamm(MaterialItemStock materialItemStock) {
+        ItemStockSamm samm = new ItemStockSamm();
         samm.setDirection(DirectionCharacteristic.INBOUND);
         samm.setPositions(new ArrayList<>());
         samm.setMaterialGlobalAssetId(materialItemStock.getMaterial().getMaterialNumberCx());
         samm.setMaterialNumberCustomer(materialItemStock.getMaterial().getOwnMaterialNumber());
         samm.setMaterialNumberSupplier(mprService.find(materialItemStock.getMaterial(),
             materialItemStock.getPartner()).getPartnerMaterialNumber());
-        var posList = new ArrayList<Position>();
-        samm.setPositions(posList);
+        return createPosition(materialItemStock, samm);
+    }
+
+    private static ItemStockSamm createPosition(ItemStock itemStock, ItemStockSamm samm) {
         Position position = new Position();
-        if (materialItemStock.getCustomerOrderId() != null || materialItemStock.getCustomerOrderPositionId() != null
-            || materialItemStock.getSupplierOrderId() != null) {
-            OrderPositionReference opr = new OrderPositionReference(materialItemStock.getSupplierOrderId(),
-                materialItemStock.getCustomerOrderId(), materialItemStock.getCustomerOrderPositionId());
+        samm.setPositions(List.of(position));
+        position.setLastUpdatedOnDateTime(itemStock.getLastUpdatedOnDateTime());
+        if (itemStock.getCustomerOrderId() != null || itemStock.getCustomerOrderPositionId() != null
+            || itemStock.getSupplierOrderId() != null) {
+            OrderPositionReference opr = new OrderPositionReference(itemStock.getSupplierOrderId(),
+                itemStock.getCustomerOrderId(), itemStock.getCustomerOrderPositionId());
             position.setOrderPositionReference(opr);
         }
-        ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(materialItemStock.getQuantity(),
-            materialItemStock.getMeasurementUnit());
-        AllocatedStock allocatedStock = new AllocatedStock(itemQuantityEntity, materialItemStock.getLocationBpns(),
-            materialItemStock.isBlocked(), materialItemStock.getLocationBpna());
-        var allocatedStocksList = new ArrayList<AllocatedStock>();
-        allocatedStocksList.add(allocatedStock);
-        position.setAllocatedStocks(allocatedStocksList);
+        ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(itemStock.getQuantity(),
+            itemStock.getMeasurementUnit());
+        AllocatedStock allocatedStock = new AllocatedStock(itemQuantityEntity, itemStock.getLocationBpns(),
+            itemStock.isBlocked(), itemStock.getLocationBpna());
+        position.setAllocatedStocks(List.of(allocatedStock));
         return samm;
     }
 
-    public ItemStockSAMM toItemStockSamm(ProductItemStock productItemStock) {
-        ItemStockSAMM samm = new ItemStockSAMM();
+    public ItemStockSamm toItemStockSamm(ProductItemStock productItemStock) {
+        ItemStockSamm samm = new ItemStockSamm();
         samm.setDirection(DirectionCharacteristic.OUTBOUND);
         samm.setPositions(new ArrayList<>());
         samm.setMaterialGlobalAssetId(productItemStock.getMaterial().getMaterialNumberCx());
         samm.setMaterialNumberSupplier(productItemStock.getMaterial().getOwnMaterialNumber());
         samm.setMaterialNumberCustomer(mprService.find(productItemStock.getMaterial(),
             productItemStock.getPartner()).getPartnerMaterialNumber());
-        var posList = new ArrayList<Position>();
-        samm.setPositions(posList);
-        Position position = new Position();
-        if (productItemStock.getCustomerOrderId() != null || productItemStock.getCustomerOrderPositionId() != null
-            || productItemStock.getSupplierOrderId() != null) {
-            OrderPositionReference opr = new OrderPositionReference(productItemStock.getSupplierOrderId(),
-                productItemStock.getCustomerOrderId(), productItemStock.getCustomerOrderPositionId());
-            position.setOrderPositionReference(opr);
-        }
-        ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(productItemStock.getQuantity(),
-            productItemStock.getMeasurementUnit());
-        AllocatedStock allocatedStock = new AllocatedStock(itemQuantityEntity, productItemStock.getLocationBpns(),
-            productItemStock.isBlocked(), productItemStock.getLocationBpna());
-        var allocatedStocksList = new ArrayList<AllocatedStock>();
-        allocatedStocksList.add(allocatedStock);
-        position.setAllocatedStocks(allocatedStocksList);
-        return samm;
+        return createPosition(productItemStock, samm);
     }
 
-    public List<ReportedProductItemStock> sammToReportedProductItemStock(ItemStockSAMM samm, Partner partner) {
+    public List<ReportedProductItemStock> itemStockSammToReportedProductItemStock(ItemStockSamm samm, Partner partner) {
         String matNbrCustomer = samm.getMaterialNumberCustomer();
         String matNbrSupplier = samm.getMaterialNumberSupplier(); // should be ownMaterialNumber
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
         ArrayList<ReportedProductItemStock> outputList = new ArrayList<>();
-        if(samm.getDirection() != DirectionCharacteristic.INBOUND) {
+        if (samm.getDirection() != DirectionCharacteristic.INBOUND) {
             log.warn("Direction should be INBOUND, aborting");
             return outputList;
         }
@@ -143,13 +197,16 @@ public class ItemStockSammMapper {
         // Use MatNbrSupplier
         if (material == null && matNbrSupplier != null) {
             material = materialService.findByOwnMaterialNumber(matNbrSupplier);
-            if (matNbrCatenaX != null) {
-                log.warn("Unknown CatenaXNumber for Material " + material.getOwnMaterialNumber());
-            }
-            var mpr = mprService.find(material, partner);
-            if (mpr != null) {
-                if (!mpr.getPartnerMaterialNumber().equals(matNbrCustomer)) {
-                    log.warn("Unknown MaterialNumberCustomer " + matNbrCustomer + " for Material " + material.getOwnMaterialNumber());
+
+            if (material != null) {
+                if (matNbrCatenaX != null) {
+                    log.warn("Unknown CatenaXNumber for Material " + material.getOwnMaterialNumber());
+                }
+                var mpr = mprService.find(material, partner);
+                if (mpr != null) {
+                    if (!mpr.getPartnerMaterialNumber().equals(matNbrCustomer)) {
+                        log.warn("Unknown MaterialNumberCustomer " + matNbrCustomer + " for Material " + material.getOwnMaterialNumber());
+                    }
                 }
             }
         }
@@ -186,12 +243,12 @@ public class ItemStockSammMapper {
         return outputList;
     }
 
-    public List<ReportedMaterialItemStock> sammToReportedMaterialItemStock(ItemStockSAMM samm, Partner partner) {
+    public List<ReportedMaterialItemStock> itemStockSammToReportedMaterialItemStock(ItemStockSamm samm, Partner partner) {
         String matNbrCustomer = samm.getMaterialNumberCustomer(); // should be ownMaterialNumber
         String matNbrSupplier = samm.getMaterialNumberSupplier();
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
         ArrayList<ReportedMaterialItemStock> outputList = new ArrayList<>();
-        if(samm.getDirection() != DirectionCharacteristic.OUTBOUND) {
+        if (samm.getDirection() != DirectionCharacteristic.OUTBOUND) {
             log.warn("Direction should be OUTBOUND, aborting");
             return outputList;
         }
@@ -216,13 +273,15 @@ public class ItemStockSammMapper {
         // Use MatNbrCustomer
         if (material == null && matNbrCustomer != null) {
             material = materialService.findByOwnMaterialNumber(matNbrCustomer);
-            if (matNbrCatenaX != null) {
-                log.warn("Unknown CatenaXNumber for Material " + material.getOwnMaterialNumber());
-            }
-            var mpr = mprService.find(material, partner);
-            if (mpr != null) {
-                if (!mpr.getPartnerMaterialNumber().equals(matNbrSupplier)) {
-                    log.warn("Unknown MaterialNumberSupplier " + matNbrSupplier + " for Material " + material.getOwnMaterialNumber());
+            if (material != null) {
+                if (matNbrCatenaX != null) {
+                    log.warn("Unknown CatenaXNumber for Material " + material.getOwnMaterialNumber());
+                }
+                var mpr = mprService.find(material, partner);
+                if (mpr != null) {
+                    if (!mpr.getPartnerMaterialNumber().equals(matNbrSupplier)) {
+                        log.warn("Unknown MaterialNumberSupplier " + matNbrSupplier + " for Material " + material.getOwnMaterialNumber());
+                    }
                 }
             }
         }

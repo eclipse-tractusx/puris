@@ -38,7 +38,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ItemStockSAMM {
+public class ItemStockSamm {
 
     @NotNull
     private List<Position> positions;
@@ -55,7 +55,7 @@ public class ItemStockSAMM {
     private DirectionCharacteristic direction;
 
     @JsonCreator
-    public ItemStockSAMM(@JsonProperty(value = "positions") List<Position> positions,
+    public ItemStockSamm(@JsonProperty(value = "positions") List<Position> positions,
                          @JsonProperty(value = "materialNumberCustomer") String materialNumberCustomer,
                          @JsonProperty(value = "materialGlobalAssetId") String materialGlobalAssetId,
                          @JsonProperty(value = "materialNumberSupplier") String materialNumberSupplier,
@@ -76,7 +76,7 @@ public class ItemStockSAMM {
             return false;
         }
 
-        final ItemStockSAMM that = (ItemStockSAMM) o;
+        final ItemStockSamm that = (ItemStockSamm) o;
         return Objects.equals(positions, that.positions)
             && Objects.equals(materialNumberCustomer, that.materialNumberCustomer)
             && Objects.equals(materialGlobalAssetId, that.materialGlobalAssetId)

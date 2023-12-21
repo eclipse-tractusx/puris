@@ -28,16 +28,15 @@ import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.*;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ItemStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
@@ -45,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -71,7 +71,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     @Autowired
     private MaterialItemStockService materialItemStockService;
     @Autowired
-    private ReportedMaterialItemStockService reportedMaterialItemStockService;
+    private ItemStockSammMapper itemStockSammMapper;
 
     @Autowired
     private PartnerProductStockService partnerProductStockService;
@@ -234,22 +234,83 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .build();
         var createdMaterialItemStock = materialItemStockService.create(materialItemStock);
         log.info("Created MaterialItemStock: \n" + createdMaterialItemStock.toString());
+        Site newSite = new Site();
+        newSite.setBpns("BPNS4444444444DD");
+        newSite.setName("Dummy Site");
+        Address address = new Address("BPNA4444444444DD", "Feldweg 1", "54545 Neustadt", "Germany");
+        newSite.getAddresses().add(address);
+        mySelf.getSites().add(newSite);
+        partnerService.update(mySelf);
 
-        var builder2 = ReportedMaterialItemStock.builder();
-        var reportedMaterialItemStock =
-            builder2
-                .material(semiconductorMaterial)
+        builder = MaterialItemStock.builder();
+        var otherMaterialItemStock =
+            builder
                 .partner(supplierPartner)
+                .material(semiconductorMaterial)
                 .lastUpdatedOnDateTime(new Date())
-                .locationBpns(supplierPartner.getSites().first().getBpns())
-                .locationBpna(supplierPartner.getSites().first().getAddresses().first().getBpna())
+                .locationBpns(newSite.getBpns())
+                .locationBpna(address.getBpna())
                 .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
-                .quantity(50)
+                .quantity(12)
                 .build();
+        otherMaterialItemStock = materialItemStockService.create(otherMaterialItemStock);
 
-        var createdReportedMaterialItemStock = reportedMaterialItemStockService.create(reportedMaterialItemStock);
-        log.info("Created ReportedMaterialItemStock: \n" + createdReportedMaterialItemStock);
+        var thirdMaterialItemStock = MaterialItemStock.builder()
+            .partner(supplierPartner)
+            .material(semiconductorMaterial)
+            .lastUpdatedOnDateTime(new Date())
+            .locationBpna(address.getBpna())
+            .locationBpns(newSite.getBpns())
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
+            .quantity(23)
+            .isBlocked(true)
+            .build();
+        thirdMaterialItemStock = materialItemStockService.create(thirdMaterialItemStock);
 
+        var samm = itemStockSammMapper.materialItemStocksToItemStockSamm(List.of(createdMaterialItemStock, otherMaterialItemStock, thirdMaterialItemStock));
+        var node = objectMapper.readTree(objectMapper.writeValueAsString(samm));
+        log.info("Created SAMM\n" + node.toPrettyString());
+
+        mySelf.getSites().remove(newSite);
+        partnerService.update(mySelf);
+        ItemStockSamm itemStockSAMM = new ItemStockSamm();
+        itemStockSAMM.setMaterialNumberSupplier(semiconductorMatNbrSupplier);
+        itemStockSAMM.setMaterialNumberCustomer(semiconductorMatNbrCustomer);
+        itemStockSAMM.setDirection(DirectionCharacteristic.OUTBOUND);
+        var posList = new ArrayList<Position>();
+        itemStockSAMM.setPositions(posList);
+        var pos1 = new Position();
+        posList.add(pos1);
+        pos1.setLastUpdatedOnDateTime(new Date());
+        ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(31.0, ItemUnitEnumeration.UNIT_PIECE);
+        var allocatedStocks = new ArrayList<AllocatedStock>();
+        pos1.setAllocatedStocks(allocatedStocks);
+        var allocatedStock = new AllocatedStock(itemQuantityEntity, "BPNS123456789012", true, "BPNA123456789012");
+        allocatedStocks.add(allocatedStock);
+        itemQuantityEntity = new ItemQuantityEntity(67.0, ItemUnitEnumeration.UNIT_KILOGRAM);
+        allocatedStock = new AllocatedStock(itemQuantityEntity, "BPNS123456789012", false, "BPNA123456789012");
+        allocatedStocks.add(allocatedStock);
+        var pos2 = new Position();
+        pos2.setLastUpdatedOnDateTime(new Date());
+        var opr = new OrderPositionReference("123", "234", "345");
+        pos2.setOrderPositionReference(opr);
+        allocatedStocks = new ArrayList<>();
+        pos2.setAllocatedStocks(allocatedStocks);
+        itemQuantityEntity = new ItemQuantityEntity(43.1, ItemUnitEnumeration.UNIT_KILOGRAM);
+        allocatedStock = new AllocatedStock(itemQuantityEntity, "BPNS1234567890AB", true, "BPNS1234567890CD");
+        allocatedStocks.add(allocatedStock);
+        itemQuantityEntity = new ItemQuantityEntity(83.7, ItemUnitEnumeration.UNIT_CUBIC_CENTIMETRE);
+        allocatedStock = new AllocatedStock(itemQuantityEntity, "BPNS1234567890EF", false, "BPNS1234567890GH");
+        allocatedStocks.add(allocatedStock);
+        posList.add(pos2);
+
+        log.info("Sample SAMM: " + objectMapper.readTree(objectMapper.writeValueAsString(itemStockSAMM)));
+
+        log.info("To MaterialItemStockList: ");
+        var list = itemStockSammMapper.itemStockSammToReportedMaterialItemStock(itemStockSAMM, supplierPartner);
+        for (var s : list) {
+            log.info(s.toString());
+        }
     }
 
     /**
