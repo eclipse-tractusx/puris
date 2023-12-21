@@ -106,7 +106,7 @@ public class Material {
     /**
      * Informal name or description of the material.
      */
-    @Pattern(regexp = "^[a-zA-Z0-9 \\-]{1,255}$")
+    @Pattern(regexp = "^[a-zA-Z0-9 \\-.]{1,255}$")
     private String name;
 
     @OneToMany(mappedBy = "material")

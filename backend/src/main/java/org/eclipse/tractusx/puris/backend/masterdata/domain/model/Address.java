@@ -51,12 +51,12 @@ public class Address implements Comparable<Address> {
     /**
      * The street and house number of this Address.
      */
-    @Pattern(regexp = "^[a-zA-Z ]+ [0-9]+[a-zA-Z]$")
+    @Pattern(regexp = "^[0-9a-zA-Z .-]+ [0-9]+[a-zA-Z]?$")
     private String streetAndNumber;
     /**
      * The zip code and city of this Address.
      */
-    @Pattern(regexp = "^[0-9]{1,5} [a-zA-Z]+$")
+    @Pattern(regexp = "^[0-9]{1,5} [a-zA-Z ]+$")
     private String zipCodeAndCity;
     /**
      * The country of this Address.
