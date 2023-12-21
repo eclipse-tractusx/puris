@@ -44,15 +44,15 @@ public class ItemStockSammMapper {
     @Autowired
     private MaterialPartnerRelationService mprService;
 
-    public ItemStockSamm materialItemStocksToSamm(List<MaterialItemStock> materialItemStocks) {
-        return listToSamm(materialItemStocks, DirectionCharacteristic.INBOUND);
+    public ItemStockSamm materialItemStocksToItemStockSamm(List<MaterialItemStock> materialItemStocks) {
+        return listToItemStockSamm(materialItemStocks, DirectionCharacteristic.INBOUND);
     }
 
-    public ItemStockSamm productItemStocksToSamm(List<ProductItemStock> productItemStocks) {
-        return listToSamm(productItemStocks, DirectionCharacteristic.OUTBOUND);
+    public ItemStockSamm productItemStocksToItemStockSamm(List<ProductItemStock> productItemStocks) {
+        return listToItemStockSamm(productItemStocks, DirectionCharacteristic.OUTBOUND);
     }
 
-    private ItemStockSamm listToSamm(List<? extends ItemStock> itemStocks, DirectionCharacteristic directionCharacteristic) {
+    private ItemStockSamm listToItemStockSamm(List<? extends ItemStock> itemStocks, DirectionCharacteristic directionCharacteristic) {
         if (itemStocks == null || itemStocks.isEmpty()) {
             log.warn("Can't map empty list");
             return null;
@@ -89,12 +89,14 @@ public class ItemStockSammMapper {
         samm.setPositions(posList);
         for (var mappingHelperListEntry : groupedByPositionAttributes.entrySet()) {
             var key = mappingHelperListEntry.getKey();
+            var stock = mappingHelperListEntry.getValue().get(0);
             Position position = new Position();
             posList.add(position);
             position.setLastUpdatedOnDateTime(key.date());
             if (!key.customerOrderId.isEmpty() || !key.supplierOrderId.isEmpty() || !key.customerOrderPositionId.isEmpty()) {
-                OrderPositionReference opr = new OrderPositionReference(key.supplierOrderId, key.customerOrderId,
-                    key.customerOrderPositionId);
+                // get opr from stock as this is nullable and prevents mapping empty strings to the samm.
+                OrderPositionReference opr = new OrderPositionReference(stock.getSupplierOrderId(), stock.getCustomerOrderId(),
+                    stock.getCustomerOrderPositionId());
                 position.setOrderPositionReference(opr);
             }
             var allocatedStocksList = new ArrayList<AllocatedStock>();
@@ -152,7 +154,7 @@ public class ItemStockSammMapper {
         return createPosition(productItemStock, samm);
     }
 
-    public List<ReportedProductItemStock> sammToReportedProductItemStock(ItemStockSamm samm, Partner partner) {
+    public List<ReportedProductItemStock> itemStockSammToReportedProductItemStock(ItemStockSamm samm, Partner partner) {
         String matNbrCustomer = samm.getMaterialNumberCustomer();
         String matNbrSupplier = samm.getMaterialNumberSupplier(); // should be ownMaterialNumber
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
@@ -241,7 +243,7 @@ public class ItemStockSammMapper {
         return outputList;
     }
 
-    public List<ReportedMaterialItemStock> sammToReportedMaterialItemStock(ItemStockSamm samm, Partner partner) {
+    public List<ReportedMaterialItemStock> itemStockSammToReportedMaterialItemStock(ItemStockSamm samm, Partner partner) {
         String matNbrCustomer = samm.getMaterialNumberCustomer(); // should be ownMaterialNumber
         String matNbrSupplier = samm.getMaterialNumberSupplier();
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();

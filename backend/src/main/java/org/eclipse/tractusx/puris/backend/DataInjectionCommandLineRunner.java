@@ -267,7 +267,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .build();
         thirdMaterialItemStock = materialItemStockService.create(thirdMaterialItemStock);
 
-        var samm = itemStockSammMapper.materialItemStocksToSamm(List.of(createdMaterialItemStock, otherMaterialItemStock, thirdMaterialItemStock));
+        var samm = itemStockSammMapper.materialItemStocksToItemStockSamm(List.of(createdMaterialItemStock, otherMaterialItemStock, thirdMaterialItemStock));
         var node = objectMapper.readTree(objectMapper.writeValueAsString(samm));
         log.info("Created SAMM\n" + node.toPrettyString());
 
@@ -307,7 +307,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info("Sample SAMM: " + objectMapper.readTree(objectMapper.writeValueAsString(itemStockSAMM)));
 
         log.info("To MaterialItemStockList: ");
-        var list = itemStockSammMapper.sammToReportedMaterialItemStock(itemStockSAMM, supplierPartner);
+        var list = itemStockSammMapper.itemStockSammToReportedMaterialItemStock(itemStockSAMM, supplierPartner);
         for (var s : list) {
             log.info(s.toString());
         }
