@@ -22,6 +22,8 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
@@ -41,10 +43,28 @@ public class MaterialStockServiceImpl implements MaterialStockService {
     MaterialStockRepository materialStockRepository;
 
     @Autowired
+    MaterialRepository materialRepository;
+
+    @Autowired
     MaterialPartnerRelationService mprService;
 
     @Override
     public MaterialStock create(MaterialStock materialStock) {
+        // avoid unintentional overwriting of an existing ProductStock
+        materialStock.setUuid(null);
+
+        // validate, if material is missing
+        if (materialStock.getMaterial() == null || materialStock.getMaterial().getOwnMaterialNumber() == null){
+            log.error("Can't create material stock due to missing material or material uuid");
+            return null;
+        }
+        Optional<Material> existingMaterial = materialRepository.findById(materialStock.getMaterial().getOwnMaterialNumber());
+
+        if (existingMaterial.isEmpty()) {
+            log.error(String.format("Material %s not found", materialStock.getMaterial().getOwnMaterialNumber()));
+            return null;
+        }
+
         return materialStockRepository.save(materialStock);
     }
 
@@ -58,10 +78,7 @@ public class MaterialStockServiceImpl implements MaterialStockService {
 
         Optional<MaterialStock> foundMaterialStock = materialStockRepository.findById(materialStockUuid);
 
-        if (!foundMaterialStock.isPresent()) {
-            return null;
-        }
-        return foundMaterialStock.get();
+        return foundMaterialStock.orElse(null);
     }
 
     @Override
