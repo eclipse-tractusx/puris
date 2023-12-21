@@ -72,7 +72,7 @@ import java.util.Set;
 @Builder
 public class Material {
 
-    public final static String MATERIAL_NUMBER_REGEX = "^[a-zA-Z0-9\\-\\.]{1,255}$";
+    public final static String MATERIAL_NUMBER_REGEX = "^[a-zA-Z0-9\\-.]{1,255}$";
 
     /**
      * If true, then the Material is a material (input for production / something I buy).
@@ -106,7 +106,7 @@ public class Material {
     /**
      * Informal name or description of the material.
      */
-    @Pattern(regexp = "^[a-zA-Z0-9 \\-.]{1,255}$")
+    @Pattern(regexp = "^[a-zßA-Z0-9 \\-.]{1,255}$")
     private String name;
 
     @OneToMany(mappedBy = "material")

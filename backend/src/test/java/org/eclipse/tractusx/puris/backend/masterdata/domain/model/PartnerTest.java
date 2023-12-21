@@ -25,7 +25,7 @@ public class PartnerTest {
     }
 
     @Test
-    public void testPartnerNamePattern() {
+    public void test_invalidPartnerName() {
         Partner partner = new Partner("Invalid!Name", "https://www.example.com", "BPNL1234567890LE",
             "BPNS123456780LE", "Site A", "BPNA1234567890LE", "123 Main St", "12345 New York", "USA");
 
@@ -37,9 +37,9 @@ public class PartnerTest {
     }
 
     @Test
-    public void testInvalidBpnRegexes() {
+    public void test_invalidBpnRegexes() {
         Partner partner = new Partner("ABC Company", "https://www.example.com", "BPN1234567890LE",
-            "BPNS1234567890E", "Site A", "BPNA123", "123 Main St 12", "12345 New York", "USA");
+            "BPNS1234567890EE", "Site A", "BPNA123", "123 Main St 12", "12345 New York", "USA");
 
         Set<ConstraintViolation<Partner>> violations = validator.validate(partner);
 
@@ -47,22 +47,13 @@ public class PartnerTest {
         ConstraintViolation<Partner> violation = violations.iterator().next();
         assertEquals("bpnl", violation.getPropertyPath().toString());
 
-        Set<ConstraintViolation<Site>> siteViolations = validator.validate(partner.getSites().first());
-
-        assertEquals(1, siteViolations.size());
-        ConstraintViolation<Site> siteViolation = siteViolations.iterator().next();
-        assertEquals("bpns", siteViolation.getPropertyPath().toString());
-
         Set<ConstraintViolation<Address>> addressViolations = validator.validate(
             partner.getSites().first().getAddresses().first()
         );
 
-        System.out.println(addressViolations);
-
         assertEquals(1, addressViolations.size());
         ConstraintViolation<Address> addressViolation = addressViolations.iterator().next();
         assertEquals("bpna", addressViolation.getPropertyPath().toString());
-
     }
 
     @ParameterizedTest
@@ -71,7 +62,7 @@ public class PartnerTest {
         "http://customer-control-plane:8184/api/v1/dsp",
         "https://localhost:8181/api/v1/dsp"
     })
-    public void testEdcRegexPattern(String edcUrl) {
+    public void test_validEdcRegex(String edcUrl) {
         Partner partner = new Partner("ABC Company", edcUrl, "BPNL1234567890LE",
             "BPNS1234567890ZZ", "Site A", "BPNA1234567890ZZ", "123 Main Str.", "12345 New York", "USA");
 

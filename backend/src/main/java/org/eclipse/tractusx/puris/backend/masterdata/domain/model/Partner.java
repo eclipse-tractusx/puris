@@ -58,7 +58,7 @@ public class Partner {
     /**
      * A human-readable, distinctive name of this partner.
      */
-    @Pattern(regexp = "^[a-zA-Z0-9 \\-.]{1,255}$")
+    @Pattern(regexp = "^[a-zßA-Z0-9 \\-.]{1,255}$")
     private String name;
     /**
      * The EDC-URL of the partner.

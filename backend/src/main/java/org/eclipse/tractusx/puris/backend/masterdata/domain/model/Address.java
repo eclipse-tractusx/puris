@@ -51,12 +51,12 @@ public class Address implements Comparable<Address> {
     /**
      * The street and house number of this Address.
      */
-    @Pattern(regexp = "^[0-9a-zA-Z .-]+ [0-9]+[a-zA-Z]?$")
+    @Pattern(regexp = "^[0-9a-zßA-Z .-]+ [0-9]+[a-zA-Z]?$")
     private String streetAndNumber;
     /**
      * The zip code and city of this Address.
      */
-    @Pattern(regexp = "^[0-9]{1,5} [a-zA-Z ]+$")
+    @Pattern(regexp = "^[0-9]{1,5} [a-zßA-Z ]+$")
     private String zipCodeAndCity;
     /**
      * The country of this Address.
@@ -68,10 +68,10 @@ public class Address implements Comparable<Address> {
      * Use this constructor to generate a new Address, consisting of the BPNA, street and
      * number, zip code and city and country.
      *
-     * @param bpna
-     * @param streetAndNumber
-     * @param zipCodeAndCity
-     * @param country
+     * @param bpna to identify the address
+     * @param streetAndNumber to identify the address
+     * @param zipCodeAndCity to identify the city
+     * @param country to identify the country
      */
     public Address(String bpna, String streetAndNumber, String zipCodeAndCity, String country) {
         this.bpna = bpna;
