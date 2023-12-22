@@ -32,17 +32,14 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class ProductItemStockService extends ItemStockService<ProductItemStock> {
 
-
     public ProductItemStockService(PartnerService partnerService, MaterialPartnerRelationService mprService,
                                    ProductItemStockRepository repository) {
         super(partnerService, mprService, repository);
     }
 
-
+    @Override
     public boolean validate(ProductItemStock productItemStock) {
         return basicValidation(productItemStock) && validateLocalStock(productItemStock)
             && validateProductItemStock(productItemStock);
     }
-
-
 }
