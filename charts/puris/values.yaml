@@ -190,6 +190,8 @@ frontend:
         keycloak:
             # -- Disable the Keycloak integration.
             disabled: true
+            # -- The URL to the IDP that should be used.
+            url: "https://idp.com/auth"
             # -- Name of the Realm of the keycloak instance.
             realm: "Catena-X"
             # -- Name of the client which is used for the application.
