@@ -37,19 +37,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
-
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-
 @WebMvcTest(MaterialController.class)
 @Import({ SecurityConfig.class, ApiKeyAuthenticationProvider.class })
 public class MaterialControllerTest {
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -57,22 +54,24 @@ public class MaterialControllerTest {
     private MaterialService materialService;
 
     private final ModelMapper modelMapper = new ModelMapper();
+    private final String materialNumber = "MNR-7307-AU340474.001";
+    private final String bpnl = "BPNL2222222222RR";
+    private final String edcUrl = "https://example.com";
 
     @Test
     @WithMockApiKey
     void createMaterialTest() throws Exception {
         // given
         MaterialEntityDto materialDto = new MaterialEntityDto();
-        materialDto.setOwnMaterialNumber("123");
+        materialDto.setOwnMaterialNumber(materialNumber);
         materialDto.setMaterialFlag(true);
         materialDto.setMaterialNumberCx(null);
-        materialDto.setName("TestMat");
+        materialDto.setName("TestMaterialDto");
         materialDto.setProductFlag(false);
-
 
         // when
         Material createdMaterial =  modelMapper.map(materialDto,Material.class);
-        when(materialService.findByOwnMaterialNumber("123")).thenReturn(null);
+        when(materialService.findByOwnMaterialNumber(materialNumber)).thenReturn(null);
         when(materialService.create(createdMaterial)).thenReturn(createdMaterial);
 
         // then
@@ -89,11 +88,11 @@ public class MaterialControllerTest {
     void updateMaterialTest() throws Exception {
         // given
         MaterialEntityDto materialDto = new MaterialEntityDto();
-        materialDto.setOwnMaterialNumber("123");
+        materialDto.setOwnMaterialNumber(materialNumber);
 
         // when
         Material existingMaterial = modelMapper.map(materialDto,Material.class);
-        when(materialService.findByOwnMaterialNumber("123")).thenReturn(existingMaterial);
+        when(materialService.findByOwnMaterialNumber(materialNumber)).thenReturn(existingMaterial);
         when(materialService.update(existingMaterial)).thenReturn(existingMaterial);
 
         // then
@@ -109,46 +108,41 @@ public class MaterialControllerTest {
     @WithMockApiKey
     void getMaterialTest() throws Exception {
         // given
-        String ownMaterialNumber = "MNR-7307-AU340474.002";
         MaterialEntityDto dto = new MaterialEntityDto();
         dto.setMaterialFlag(true);
         dto.setMaterialNumberCx(null);
-        dto.setName("TestMat");
+        dto.setName("TestMaterialDto");
         dto.setProductFlag(false);
-        dto.setOwnMaterialNumber(ownMaterialNumber);
+        dto.setOwnMaterialNumber(materialNumber);
 
         // when
         Material foundMaterial = modelMapper.map(dto, Material.class);
-        when(materialService.findByOwnMaterialNumber(ownMaterialNumber)).thenReturn(foundMaterial);
-
+        when(materialService.findByOwnMaterialNumber(materialNumber)).thenReturn(foundMaterial);
 
         // then
         mockMvc.perform(get("/materials")
-                .param("ownMaterialNumber", ownMaterialNumber))
+                .param("ownMaterialNumber", materialNumber))
             .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.ownMaterialNumber").value(ownMaterialNumber));
+            .andExpect(MockMvcResultMatchers.jsonPath("$.ownMaterialNumber").value(materialNumber));
 
-        verify(materialService).findByOwnMaterialNumber(ownMaterialNumber);
+        verify(materialService).findByOwnMaterialNumber(materialNumber);
     }
 
 
     @Test
     @WithMockApiKey
     void listMaterialsTest() throws Exception {
-
         // given
         MaterialEntityDto dto1 = new MaterialEntityDto();
-        dto1.setOwnMaterialNumber("testMat1");
+        dto1.setOwnMaterialNumber(materialNumber);
         MaterialEntityDto dto2 = new MaterialEntityDto();
-        dto2.setOwnMaterialNumber("testMat2");
-
+        dto2.setOwnMaterialNumber("MNR-7307-AU340474.002");
 
         // when
         Material material1 = modelMapper.map(dto1, Material.class);
         Material material2 = modelMapper.map(dto2, Material.class);
         List<Material> materialList = Arrays.asList(material1, material2);
         when(materialService.findAll()).thenReturn(materialList);
-
 
         // then
         mockMvc.perform(MockMvcRequestBuilders.get("/materials/all")

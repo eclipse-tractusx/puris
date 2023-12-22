@@ -38,10 +38,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
 import java.util.HashSet;
 import java.util.UUID;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -66,28 +64,27 @@ public class MaterialPartnerRelationsControllerTest {
     @MockBean
     private MaterialPartnerRelationService mprService;
 
+    private final String materialNumber = "MNR-7307-AU340474.001";
+    private final String bpnl = "BPNL2222222222RR";
+    private final String edcUrl = "https://example.com";
+    private final Material material = Material.builder()
+        .ownMaterialNumber(materialNumber)
+        .materialFlag(true)
+        .materialNumberCx(String.valueOf(UUID.randomUUID()))
+        .name("TestMaterial")
+        .productFlag(true)
+        .build();
+
     @Test
     @WithMockApiKey
     public void createMaterialPartnerRelationTest() throws Exception {
         // given
-        String materialNumber = "MNR-7307-AU340474.002";
-        String partnerMaterialNumber = "MNR-8101-ID146955.001";
-        String bpnl = "BPNL2222222222RR";
-
-        Material material = new Material();
-        material.setOwnMaterialNumber(materialNumber);
-        material.setMaterialFlag(true);
-        material.setMaterialNumberCx(String.valueOf(UUID.randomUUID()));
-        material.setName("name");
-        material.setProductFlag(true);
-
-
         Partner partner = new Partner();
         partner.setBpnl(bpnl);
-        partner.setEdcUrl("https://example.com");
-        partner.setName("name2");
+        partner.setEdcUrl(edcUrl);
+        partner.setName("TestPartner");
 
-
+        String partnerMaterialNumber = "MNR-8101-ID146955.001";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
         HashSet<MaterialPartnerRelation> set = new HashSet<>();
@@ -111,7 +108,6 @@ public class MaterialPartnerRelationsControllerTest {
                 .param("partnerBuys", "true"))
             .andExpect(status().isOk());
 
-
         verify(materialService).findByOwnMaterialNumber(materialNumber);
         verify(partnerService).findByBpnl(bpnl);
         verify(mprService).find(material, partner);
@@ -122,73 +118,42 @@ public class MaterialPartnerRelationsControllerTest {
     @WithMockApiKey
     public void createMaterialPartnerRelationTestPatternMatchShouldFail() throws Exception {
         // given
-        String materialNumber = "MNR-8101-ID146955.001";
-        String partnerMaterialNumber = "MNR-8101-ID146955.002";
-        String bpnl = "WrongPattern";
-
-        Material material = new Material();
-        material.setOwnMaterialNumber(materialNumber);
-        material.setMaterialFlag(true);
-        material.setMaterialNumberCx(String.valueOf(UUID.randomUUID()));
-        material.setName("name");
-        material.setProductFlag(true);
-
-
+        String bpnlWrong = "WrongPattern";
         Partner partner = new Partner();
-        partner.setBpnl(bpnl);
-        partner.setEdcUrl("https://example.com");
-        partner.setName("name2");
+        partner.setBpnl(bpnlWrong);
+        partner.setEdcUrl(edcUrl);
+        partner.setName("TestPartner");
 
-
+        String partnerMaterialNumber = "MNR-8101-ID146955.002";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
-        HashSet<MaterialPartnerRelation> set = new HashSet<>();
-        set.add(newMpr);
-
-        material.setMaterialPartnerRelations(set);
-        partner.setMaterialPartnerRelations(set);
 
         // when
         when(materialService.findByOwnMaterialNumber(materialNumber)).thenReturn(material);
-        when(partnerService.findByBpnl(bpnl)).thenReturn(partner);
+        when(partnerService.findByBpnl(bpnlWrong)).thenReturn(partner);
         when(mprService.find(material, partner)).thenReturn(null);
         when(mprService.create(any(MaterialPartnerRelation.class))).thenReturn(newMpr);
 
         // then
         mockMvc.perform(post("/materialpartnerrelations")
                 .param("ownMaterialNumber", materialNumber)
-                .param("partnerBpnl", bpnl)
+                .param("partnerBpnl", bpnlWrong)
                 .param("partnerMaterialNumber", partnerMaterialNumber)
                 .param("partnerSupplies", "true")
                 .param("partnerBuys", "true"))
             .andExpect(status().is4xxClientError());
-
-
-
     }
-
 
     @Test
     @WithMockApiKey
     public void updateMaterialPartnerRelationTest() throws Exception {
         // given
-        String materialNumber = "MNR-7307-AU340474.002";
-        String partnerMaterialNumber = "MNR-8101-ID146955.001";
-        String partnerMaterialNumber2 = "MNR-8101-ID146955.002";
-        String bpnl = "BPNL2222222222RR";
-
         Partner partner = new Partner();
         partner.setBpnl(bpnl);
-        partner.setEdcUrl("https://example.com");
+        partner.setEdcUrl(edcUrl);
         partner.setName("PartnerName");
 
-        Material material = new Material();
-        material.setOwnMaterialNumber(materialNumber);
-        material.setMaterialFlag(true);
-        material.setMaterialNumberCx(String.valueOf(UUID.randomUUID()));
-        material.setName("MaterialName");
-        material.setProductFlag(true);
-
+        String partnerMaterialNumber = "MNR-8101-ID146955.001";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
         HashSet<MaterialPartnerRelation> set = new HashSet<>();
@@ -196,13 +161,9 @@ public class MaterialPartnerRelationsControllerTest {
         material.setMaterialPartnerRelations(set);
         partner.setMaterialPartnerRelations(set);
 
+        String partnerMaterialNumber2 = "MNR-8101-ID146955.002";
         MaterialPartnerRelation newMpr2 = new MaterialPartnerRelation(material, partner, partnerMaterialNumber2,
             true, true);
-        HashSet<MaterialPartnerRelation> set2 = new HashSet<>();
-        set.add(newMpr2);
-        material.setMaterialPartnerRelations(set2);
-        partner.setMaterialPartnerRelations(set2);
-
 
         // when
         when(partnerService.findByBpnl(anyString())).thenReturn(partner);
@@ -228,23 +189,13 @@ public class MaterialPartnerRelationsControllerTest {
     @WithMockApiKey
     public void updateMaterialPartnerRelationTestWrongPatternShouldFail() throws Exception {
         // given
-        String materialNumber = "MNR-7307-AU340474.002";
-        String partnerMaterialNumber = "MNR-8101-ID146955.001";
-        String partnerMaterialNumber2 = "MNR-8101-ID146955.002";
-        String bpnl = "Wrong pattern";
-
+        String bpnlWrong = "WrongPattern";
         Partner partner = new Partner();
-        partner.setBpnl(bpnl);
-        partner.setEdcUrl("https://example.com");
-        partner.setName("PartnerName");
+        partner.setBpnl(bpnlWrong);
+        partner.setEdcUrl(edcUrl);
+        partner.setName("TestPartner");
 
-        Material material = new Material();
-        material.setOwnMaterialNumber(materialNumber);
-        material.setMaterialFlag(true);
-        material.setMaterialNumberCx(String.valueOf(UUID.randomUUID()));
-        material.setName("MaterialName");
-        material.setProductFlag(true);
-
+        String partnerMaterialNumber = "MNR-8101-ID146955.001";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
         HashSet<MaterialPartnerRelation> set = new HashSet<>();
@@ -252,13 +203,13 @@ public class MaterialPartnerRelationsControllerTest {
         material.setMaterialPartnerRelations(set);
         partner.setMaterialPartnerRelations(set);
 
+        String partnerMaterialNumber2 = "MNR-8101-ID146955.002";
         MaterialPartnerRelation newMpr2 = new MaterialPartnerRelation(material, partner, partnerMaterialNumber2,
             true, true);
         HashSet<MaterialPartnerRelation> set2 = new HashSet<>();
         set.add(newMpr2);
         material.setMaterialPartnerRelations(set2);
         partner.setMaterialPartnerRelations(set2);
-
 
         // when
         when(partnerService.findByBpnl(anyString())).thenReturn(partner);
@@ -269,7 +220,7 @@ public class MaterialPartnerRelationsControllerTest {
         // then
         mockMvc.perform(put("/materialpartnerrelations")
                 .param("ownMaterialNumber", materialNumber)
-                .param("partnerBpnl", bpnl)
+                .param("partnerBpnl", bpnlWrong)
                 .param("partnerMaterialNumber", partnerMaterialNumber2)
                 .param("partnerSupplies", "true")
                 .param("partnerBuys", "true")

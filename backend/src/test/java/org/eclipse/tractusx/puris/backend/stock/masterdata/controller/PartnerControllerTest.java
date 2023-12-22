@@ -31,6 +31,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.AddressDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.SiteDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import java.util.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -54,21 +54,27 @@ public class PartnerControllerTest {
 
     @MockBean
     private PartnerService partnerService;
+
     private final ModelMapper modelMapper = new ModelMapper();
+    private final String bpnl = "BPNL2222222222RR";
+    private final String edcUrl = "https://example.com";
+    private final String partnerBpnl = "BPNL3333333333RR";
+    private final String bpna = "testBpna";
+    private final String bpns = "testBpns";
+
 
     @Test
     @WithMockApiKey
     void createPartnerTest() throws Exception {
         // given
         PartnerDto partnerDto = new PartnerDto();
-        partnerDto.setBpnl("123");
-        partnerDto.setName("TestName");
-        partnerDto.setEdcUrl("https://exampleTest.com");
-
+        partnerDto.setBpnl(bpnl);
+        partnerDto.setName("TestPartner");
+        partnerDto.setEdcUrl(edcUrl);
 
         // when
         Partner createdPartner = modelMapper.map(partnerDto, Partner.class);
-        when(partnerService.findByBpnl("123")).thenReturn(null);
+        when(partnerService.findByBpnl(bpnl)).thenReturn(null);
         when(partnerService.create(createdPartner)).thenReturn(createdPartner);
 
         // then
@@ -84,17 +90,16 @@ public class PartnerControllerTest {
     @WithMockApiKey
     void addAddressTest() throws Exception {
         // given
-        String partnerBpnl = "BPNL2222222222RR";
         AddressDto addressDto = new AddressDto();
-        addressDto.setBpna("testBpna");
+        addressDto.setBpna(bpna);
         addressDto.setCountry("DE");
         addressDto.setStreetAndNumber("Grove Street");
         addressDto.setZipCodeAndCity("San Andreas");
 
         Partner existingPartner = new Partner();
         existingPartner.setBpnl(partnerBpnl);
-        existingPartner.setName("TestName");
-        existingPartner.setEdcUrl("testUrl.com");
+        existingPartner.setName("TestPartner");
+        existingPartner.setEdcUrl(edcUrl);
 
         // when
         when(partnerService.findByBpnl(partnerBpnl)).thenReturn(existingPartner);
@@ -115,19 +120,16 @@ public class PartnerControllerTest {
     @WithMockApiKey
     void addSiteTest() throws Exception {
         // given
-        String partnerBpnl = "BPNL2222222222RR";
         SiteDto siteDto = new SiteDto();
-        siteDto.setName("WebsiteTest");
-        siteDto.setBpns("testBpns");
-
+        siteDto.setName("TestSite");
+        siteDto.setBpns(bpns);
 
         Partner existingPartner = new Partner();
         existingPartner.setBpnl(partnerBpnl);
-        existingPartner.setName("TestName");
-        existingPartner.setEdcUrl("testUrl.com");
+        existingPartner.setName("TestPartner");
+        existingPartner.setEdcUrl(edcUrl);
 
         // when
-
         when(partnerService.findByBpnl(partnerBpnl)).thenReturn(existingPartner);
         Site newSite = modelMapper.map(siteDto, Site.class);
         when(partnerService.update(existingPartner)).thenReturn(existingPartner);
@@ -146,11 +148,10 @@ public class PartnerControllerTest {
     @WithMockApiKey
     void getPartnerTest() throws Exception {
         // given
-        String partnerBpnl = "BPNL2222222222RR";
         Partner partner = new Partner();
         partner.setBpnl(partnerBpnl);
-        partner.setName("TestName");
-        partner.setEdcUrl("example.com");
+        partner.setName("TestPartner");
+        partner.setEdcUrl(edcUrl);
 
         // when
         when(partnerService.findByBpnl(partnerBpnl)).thenReturn(partner);
@@ -170,9 +171,9 @@ public class PartnerControllerTest {
     void listPartnersTest() throws Exception {
         // given
         Partner partner1 = new Partner();
-        partner1.setBpnl("partner1Bpnl");
+        partner1.setBpnl(partnerBpnl);
         Partner partner2 = new Partner();
-        partner2.setBpnl("partner2Bpnl");
+        partner2.setBpnl("BPNL4444444444RR");
         List<Partner> partnerList = Arrays.asList(partner1, partner2);
 
         // when
@@ -196,16 +197,15 @@ public class PartnerControllerTest {
     void getOwnSitesWithSitesTest() throws Exception {
         // given
         Partner ownPartnerEntity = new Partner();
-        ownPartnerEntity.setBpnl("partnerBpnl");
+        ownPartnerEntity.setBpnl(partnerBpnl);
         TreeSet<Site> treeSet = new TreeSet<>();
         Site site1 = new Site();
-        site1.setBpns("testBpns");
-        site1.setName("testName");
-
+        site1.setBpns(bpns);
+        site1.setName("testSite1");
 
         Site site2 = new Site();
         site2.setBpns("testBpns2");
-        site2.setName("testName2");
+        site2.setName("testSite2");
 
         treeSet.add(site1);
         treeSet.add(site2);
@@ -215,7 +215,6 @@ public class PartnerControllerTest {
         when(partnerService.getOwnPartnerEntity()).thenReturn(ownPartnerEntity);
         SiteDto dto1 = modelMapper.map(site1, SiteDto.class);
         SiteDto dto2 = modelMapper.map(site2, SiteDto.class);
-
 
         // then
         mockMvc.perform(get("/partners/ownSites")
@@ -233,7 +232,6 @@ public class PartnerControllerTest {
         // given
         Partner ownPartnerEntity = new Partner();
         ownPartnerEntity.setSites(null);
-
 
         // when
         when(partnerService.getOwnPartnerEntity()).thenReturn(ownPartnerEntity);
