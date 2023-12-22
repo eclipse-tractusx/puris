@@ -61,8 +61,8 @@ public class PartnerControllerTest {
     private final String bpnl = "BPNL2222222222RR";
     private final String edcUrl = "https://example.com";
     private final String partnerBpnl = "BPNL3333333333RR";
-    private final String bpna = "testBpna";
-    private final String bpns = "testBpns";
+    private final String bpna = "BPNA1234567890AA";
+    private final String bpns = "BPNS1234567890SS";
     private final PartnerDto partnerDto = new PartnerDto(UUID.randomUUID(), "TestPartner", edcUrl, bpnl, null, null);
     private final Partner existingPartner = new Partner("TestPartner", edcUrl, bpnl, bpns, "TestSite", bpna, "Test Street", "Test City", "DE");
 
@@ -191,7 +191,7 @@ public class PartnerControllerTest {
         site1.setName("testSite1");
 
         Site site2 = new Site();
-        site2.setBpns("testBpns2");
+        site2.setBpns("BPNS2234567890SS");
         site2.setName("testSite2");
 
         treeSet.add(site1);

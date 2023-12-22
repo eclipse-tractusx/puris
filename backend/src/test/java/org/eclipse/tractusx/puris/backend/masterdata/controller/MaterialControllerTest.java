@@ -57,8 +57,6 @@ public class MaterialControllerTest {
 
     private final ModelMapper modelMapper = new ModelMapper();
     private final String materialNumber = "MNR-7307-AU340474.001";
-    private final String bpnl = "BPNL2222222222RR";
-    private final String edcUrl = "https://example.com";
     private final MaterialEntityDto materialDto = new MaterialEntityDto(false, false, materialNumber, String.valueOf(UUID.randomUUID()),"TestMaterialDto");
 
     @Test

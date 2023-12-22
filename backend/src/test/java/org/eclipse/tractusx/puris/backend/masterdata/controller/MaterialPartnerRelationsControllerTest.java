@@ -67,8 +67,8 @@ public class MaterialPartnerRelationsControllerTest {
     private final String materialNumber = "MNR-7307-AU340474.001";
     private final String bpnl = "BPNL2222222222RR";
     private final String edcUrl = "https://example.com";
-    private final String bpna = "testBpna";
-    private final String bpns = "testBpns";
+    private final String bpna = "BPNA1234567890AA";
+    private final String bpns = "BPNS1234567890SS";
     private final Partner partner = new Partner("TestPartner", edcUrl, bpnl, bpns, "TestSite", bpna, "Test Street", "Test City", "DE");
     private final Material material = Material.builder()
         .ownMaterialNumber(materialNumber)
