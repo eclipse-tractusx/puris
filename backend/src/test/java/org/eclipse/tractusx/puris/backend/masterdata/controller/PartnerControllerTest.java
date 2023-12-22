@@ -17,7 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.masterdata.controller;
+package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
@@ -41,12 +41,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
 import java.util.*;
+
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @WebMvcTest(PartnerController.class)
-@Import({ SecurityConfig.class, ApiKeyAuthenticationProvider.class })
+@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class})
 public class PartnerControllerTest {
 
     @Autowired
@@ -61,17 +63,12 @@ public class PartnerControllerTest {
     private final String partnerBpnl = "BPNL3333333333RR";
     private final String bpna = "testBpna";
     private final String bpns = "testBpns";
-
+    private final PartnerDto partnerDto = new PartnerDto(UUID.randomUUID(), "TestPartner", edcUrl, bpnl, null, null);
+    private final Partner existingPartner = new Partner("TestPartner", edcUrl, bpnl, bpns, "TestSite", bpna, "Test Street", "Test City", "DE");
 
     @Test
     @WithMockApiKey
     void createPartnerTest() throws Exception {
-        // given
-        PartnerDto partnerDto = new PartnerDto();
-        partnerDto.setBpnl(bpnl);
-        partnerDto.setName("TestPartner");
-        partnerDto.setEdcUrl(edcUrl);
-
         // when
         Partner createdPartner = modelMapper.map(partnerDto, Partner.class);
         when(partnerService.findByBpnl(bpnl)).thenReturn(null);
@@ -93,13 +90,8 @@ public class PartnerControllerTest {
         AddressDto addressDto = new AddressDto();
         addressDto.setBpna(bpna);
         addressDto.setCountry("DE");
-        addressDto.setStreetAndNumber("Grove Street");
-        addressDto.setZipCodeAndCity("San Andreas");
-
-        Partner existingPartner = new Partner();
-        existingPartner.setBpnl(partnerBpnl);
-        existingPartner.setName("TestPartner");
-        existingPartner.setEdcUrl(edcUrl);
+        addressDto.setStreetAndNumber("Test Street 2");
+        addressDto.setZipCodeAndCity("Test City 2");
 
         // when
         when(partnerService.findByBpnl(partnerBpnl)).thenReturn(existingPartner);
@@ -124,11 +116,6 @@ public class PartnerControllerTest {
         siteDto.setName("TestSite");
         siteDto.setBpns(bpns);
 
-        Partner existingPartner = new Partner();
-        existingPartner.setBpnl(partnerBpnl);
-        existingPartner.setName("TestPartner");
-        existingPartner.setEdcUrl(edcUrl);
-
         // when
         when(partnerService.findByBpnl(partnerBpnl)).thenReturn(existingPartner);
         Site newSite = modelMapper.map(siteDto, Site.class);
@@ -147,15 +134,9 @@ public class PartnerControllerTest {
     @Test
     @WithMockApiKey
     void getPartnerTest() throws Exception {
-        // given
-        Partner partner = new Partner();
-        partner.setBpnl(partnerBpnl);
-        partner.setName("TestPartner");
-        partner.setEdcUrl(edcUrl);
-
         // when
-        when(partnerService.findByBpnl(partnerBpnl)).thenReturn(partner);
-        PartnerDto partnerDto = modelMapper.map(partner, PartnerDto.class);
+        when(partnerService.findByBpnl(partnerBpnl)).thenReturn(existingPartner);
+        PartnerDto partnerDto = modelMapper.map(existingPartner, PartnerDto.class);
 
         // then
         mockMvc.perform(get("/partners")
@@ -223,7 +204,7 @@ public class PartnerControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].bpns").exists())
             .andExpect(MockMvcResultMatchers.jsonPath("$[1].bpns").exists());
 
-        verify(partnerService,times(2)).getOwnPartnerEntity();
+        verify(partnerService, times(2)).getOwnPartnerEntity();
     }
 
     @Test

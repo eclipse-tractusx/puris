@@ -17,7 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.masterdata.controller;
+package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
@@ -39,6 +39,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -57,18 +59,11 @@ public class MaterialControllerTest {
     private final String materialNumber = "MNR-7307-AU340474.001";
     private final String bpnl = "BPNL2222222222RR";
     private final String edcUrl = "https://example.com";
+    private final MaterialEntityDto materialDto = new MaterialEntityDto(false, false, materialNumber, String.valueOf(UUID.randomUUID()),"TestMaterialDto");
 
     @Test
     @WithMockApiKey
     void createMaterialTest() throws Exception {
-        // given
-        MaterialEntityDto materialDto = new MaterialEntityDto();
-        materialDto.setOwnMaterialNumber(materialNumber);
-        materialDto.setMaterialFlag(true);
-        materialDto.setMaterialNumberCx(null);
-        materialDto.setName("TestMaterialDto");
-        materialDto.setProductFlag(false);
-
         // when
         Material createdMaterial =  modelMapper.map(materialDto,Material.class);
         when(materialService.findByOwnMaterialNumber(materialNumber)).thenReturn(null);
@@ -86,10 +81,6 @@ public class MaterialControllerTest {
     @Test
     @WithMockApiKey
     void updateMaterialTest() throws Exception {
-        // given
-        MaterialEntityDto materialDto = new MaterialEntityDto();
-        materialDto.setOwnMaterialNumber(materialNumber);
-
         // when
         Material existingMaterial = modelMapper.map(materialDto,Material.class);
         when(materialService.findByOwnMaterialNumber(materialNumber)).thenReturn(existingMaterial);
@@ -107,16 +98,8 @@ public class MaterialControllerTest {
     @Test
     @WithMockApiKey
     void getMaterialTest() throws Exception {
-        // given
-        MaterialEntityDto dto = new MaterialEntityDto();
-        dto.setMaterialFlag(true);
-        dto.setMaterialNumberCx(null);
-        dto.setName("TestMaterialDto");
-        dto.setProductFlag(false);
-        dto.setOwnMaterialNumber(materialNumber);
-
         // when
-        Material foundMaterial = modelMapper.map(dto, Material.class);
+        Material foundMaterial = modelMapper.map(materialDto, Material.class);
         when(materialService.findByOwnMaterialNumber(materialNumber)).thenReturn(foundMaterial);
 
         // then
@@ -133,13 +116,11 @@ public class MaterialControllerTest {
     @WithMockApiKey
     void listMaterialsTest() throws Exception {
         // given
-        MaterialEntityDto dto1 = new MaterialEntityDto();
-        dto1.setOwnMaterialNumber(materialNumber);
         MaterialEntityDto dto2 = new MaterialEntityDto();
         dto2.setOwnMaterialNumber("MNR-7307-AU340474.002");
 
         // when
-        Material material1 = modelMapper.map(dto1, Material.class);
+        Material material1 = modelMapper.map(materialDto, Material.class);
         Material material2 = modelMapper.map(dto2, Material.class);
         List<Material> materialList = Arrays.asList(material1, material2);
         when(materialService.findAll()).thenReturn(materialList);

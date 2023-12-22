@@ -19,7 +19,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.masterdata.controller;
+package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
@@ -67,6 +67,9 @@ public class MaterialPartnerRelationsControllerTest {
     private final String materialNumber = "MNR-7307-AU340474.001";
     private final String bpnl = "BPNL2222222222RR";
     private final String edcUrl = "https://example.com";
+    private final String bpna = "testBpna";
+    private final String bpns = "testBpns";
+    private final Partner partner = new Partner("TestPartner", edcUrl, bpnl, bpns, "TestSite", bpna, "Test Street", "Test City", "DE");
     private final Material material = Material.builder()
         .ownMaterialNumber(materialNumber)
         .materialFlag(true)
@@ -79,11 +82,6 @@ public class MaterialPartnerRelationsControllerTest {
     @WithMockApiKey
     public void createMaterialPartnerRelationTest() throws Exception {
         // given
-        Partner partner = new Partner();
-        partner.setBpnl(bpnl);
-        partner.setEdcUrl(edcUrl);
-        partner.setName("TestPartner");
-
         String partnerMaterialNumber = "MNR-8101-ID146955.001";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
@@ -148,11 +146,6 @@ public class MaterialPartnerRelationsControllerTest {
     @WithMockApiKey
     public void updateMaterialPartnerRelationTest() throws Exception {
         // given
-        Partner partner = new Partner();
-        partner.setBpnl(bpnl);
-        partner.setEdcUrl(edcUrl);
-        partner.setName("PartnerName");
-
         String partnerMaterialNumber = "MNR-8101-ID146955.001";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
