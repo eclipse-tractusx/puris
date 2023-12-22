@@ -69,6 +69,12 @@ public class PartnerControllerTest {
     @Test
     @WithMockApiKey
     void createPartnerTest() throws Exception {
+        // given
+        PartnerDto partnerDto = new PartnerDto();
+        partnerDto.setBpnl(bpnl);
+        partnerDto.setName("TestPartnerDto");
+        partnerDto.setEdcUrl(edcUrl);
+
         // when
         Partner createdPartner = modelMapper.map(partnerDto, Partner.class);
         when(partnerService.findByBpnl(bpnl)).thenReturn(null);
@@ -142,7 +148,7 @@ public class PartnerControllerTest {
         mockMvc.perform(get("/partners")
                 .param("partnerBpnl", partnerBpnl))
             .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.bpnl").value(partnerBpnl));
+            .andExpect(MockMvcResultMatchers.jsonPath("$.bpnl").value(bpnl));
 
         verify(partnerService).findByBpnl(partnerBpnl);
     }
