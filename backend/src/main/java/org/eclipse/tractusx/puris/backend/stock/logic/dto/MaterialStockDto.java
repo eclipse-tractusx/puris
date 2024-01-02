@@ -27,7 +27,6 @@ import lombok.Setter;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 
 import java.util.Date;
 
@@ -36,9 +35,9 @@ import java.util.Date;
 @AllArgsConstructor
 public class MaterialStockDto extends StockDto {
 
-    public MaterialStockDto(MaterialDto material, double quantity, MeasurementUnit measurementUnit, String locationId,
-                            LocationIdTypeEnum locationIdType, Date lastUpdatedOn) {
-        super(material, quantity, measurementUnit, locationId, locationIdType, lastUpdatedOn);
+    public MaterialStockDto(MaterialDto material, double quantity, MeasurementUnit measurementUnit, String stockLocationBpns,
+                            String stockLocationBpna, Date lastUpdatedOn) {
+        super(material, quantity, measurementUnit, stockLocationBpns, stockLocationBpna, lastUpdatedOn);
         this.setType(DT_StockTypeEnum.MATERIAL);
     }
 }

@@ -50,7 +50,9 @@ public abstract class StockDto implements Serializable {
 
     private MeasurementUnit measurementUnit;
 
-    private String locationId;
+    private String stockLocationBpns;
+
+    private String stockLocationBpna;
 
     private LocationIdTypeEnum locationIdType;
 
@@ -58,13 +60,13 @@ public abstract class StockDto implements Serializable {
 
     private Date lastUpdatedOn;
 
-    public StockDto(MaterialDto material, double quantity, MeasurementUnit measurementUnit, String locationId,
-                    LocationIdTypeEnum locationIdType, Date lastUpdatedOn) {
+    public StockDto(MaterialDto material, double quantity, MeasurementUnit measurementUnit, String stockLocationBpns,
+                    String stockLocationBpna, Date lastUpdatedOn) {
         this.material = material;
         this.quantity = quantity;
         this.measurementUnit = measurementUnit;
-        this.locationId = locationId;
-        this.locationIdType = locationIdType;
+        this.stockLocationBpns = stockLocationBpns;
+        this.stockLocationBpna = stockLocationBpna;
         this.lastUpdatedOn = lastUpdatedOn;
     }
 }

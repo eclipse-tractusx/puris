@@ -135,11 +135,7 @@ public class PartnerServiceImpl implements PartnerService {
 
     @Override
     public List<Partner> findAllSupplierPartnersForMaterialId(String ownMaterialNumber) {
-        var searchResult = materialRepository.findById(ownMaterialNumber);
-        if (searchResult.isPresent()) {
-            return mprService.findAllSuppliersForMaterial(searchResult.get());
-        }
-        return List.of();
+        return mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
     }
 
     @Override
