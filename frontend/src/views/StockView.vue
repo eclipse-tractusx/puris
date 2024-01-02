@@ -30,7 +30,7 @@
                 class="flex flex-row"
             >
                 <!-- First Column -->
-                <div class="basis-1/3 mr-28 flex flex-col">
+                <div class="basis-1/2 mr-28 flex flex-col">
                     <div class="flex flex-row justify-start space-x-3">
                         <div class="space-x-2">
                             <input
@@ -126,7 +126,7 @@
                 </div>
 
                 <!-- Second Column -->
-                <div class="basis-1/3 flex flex-col justify-end">
+                <div class="basis-1/2 flex flex-col justify-end">
                     <div>
                         <input
                             type="checkbox"
@@ -175,6 +175,41 @@
                                 {{ address.zipCodeAndCity }}
                             </option>
                         </select>
+                    </div>
+                    <div class="flex flex-row justify-between">
+                        <div class="grow mr-4">
+                            <label for="customerOrderNumber"
+                                >Customer Order Number</label
+                            >
+                            <input
+                                class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                id="customerOrderNumber"
+                                v-model="this.changedStock.customerOrderNumber"
+                            />
+                        </div>
+                        <div class="grow">
+                            <label for="customerOrderPositionNumber"
+                                >Customer Order Position Number</label
+                            >
+                            <input
+                                class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                id="customerOrderPositionNumber"
+                                v-model="
+                                    this.changedStock
+                                        .customerOrderPositionNumber
+                                "
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label for="supplierOrderNumber"
+                            >Supplier Order Number</label
+                        >
+                        <input
+                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                            id="supplierOrderNumber"
+                            v-model="this.changedStock.supplierOrderNumber"
+                        />
                     </div>
                     <!-- Empty div -->
                     <div style="height: 54.5px"></div>
@@ -238,6 +273,9 @@ export default {
                 isBlocked: false,
                 bpns: "",
                 bpna: "",
+                customerOrderNumber: "",
+                customerOrderPositionNumber: "",
+                supplierOrderNumber: "",
             },
             site: {
                 bpns: "BPNS12345678910ZZZ",
