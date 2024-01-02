@@ -24,10 +24,14 @@
             :id="id"
             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
             :disabled="disabled"
-            v-model="selectedValue"
-            @change="updateSelectedValue($event.target.value)"
+            :value="value"
+            @change="updateSelectedValue"
         >
-            <option v-for="option in options" :value="option.value" :key="option.value">
+            <option
+                v-for="option in options"
+                :value="option.value"
+                :key="option.value"
+            >
                 {{ option.ownMaterialNumber }}
             </option>
         </select>
@@ -39,42 +43,33 @@ export default {
     props: {
         id: {
             type: String,
-            required: true
+            required: true,
         },
         label: {
             type: String,
-            required: true
+            required: true,
         },
         value: {
-            required: true
+            required: true,
         },
         disabled: {
             type: Boolean,
-            default: false
+            default: false,
         },
         options: {
             type: Array,
-            required: true
-        }
-    },
-    computed: {
-        selectedValue: {
-            get() {
-                return this.value;
-            },
-            set(newValue) {
-                this.$emit('input', newValue);
-            }
-        }
+            required: true,
+        },
     },
     methods: {
-        updateSelectedValue(newValue) {
-            this.selectedValue = newValue;
-        }
-    }
+        updateSelectedValue(event) {
+            const newValue = event.target.value;
+            if (newValue !== this.value) {
+                this.$emit("input", newValue);
+            }
+        },
+    },
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

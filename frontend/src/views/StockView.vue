@@ -59,7 +59,7 @@
                             :value="changedStock.materialId"
                             :disabled="changedStock.type === 'Product'"
                             :options="bdMaterials"
-                            @change="onMaterialChange($event.target.value)"
+                            @input="onMaterialChange"
                         />
                     </div>
                     <div>
@@ -69,7 +69,7 @@
                             :value="changedStock.productId"
                             :disabled="changedStock.type === 'Material'"
                             :options="bdProducts"
-                            @change="onProductChange($event.target.value)"
+                            @input="onProductChange"
                         />
                     </div>
                     <div>
@@ -494,6 +494,13 @@ export default {
                 .catch((err) => console.log(err));
         },
         onProductChange(productId) {
+            // block events emitted
+            if (typeof productId !== "string") {
+                return;
+            }
+
+            this.changedStock.productId = productId;
+
             fetch(this.backendURL + this.endpointCustomer + productId, {
                 headers: {
                     "X-API-KEY": this.backendApiKey,
@@ -502,9 +509,15 @@ export default {
                 .then((res) => res.json())
                 .then((data) => (this.bdCustomers = data))
                 .catch((err) => console.log(err));
-            this.changedStock.productId = productId;
         },
         onMaterialChange(materialId) {
+            // block events emitted
+            if (typeof materialId !== "string") {
+                return;
+            }
+
+            this.changedStock.materialId = materialId;
+
             fetch(this.backendURL + this.endpointSupplier + materialId, {
                 headers: {
                     "X-API-KEY": this.backendApiKey,
@@ -513,7 +526,6 @@ export default {
                 .then((res) => res.json())
                 .then((data) => (this.bdSuppliers = data))
                 .catch((err) => console.log(err));
-            this.changedStock.materialId = materialId;
         },
     },
 };
