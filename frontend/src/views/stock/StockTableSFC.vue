@@ -24,7 +24,14 @@
     <div class="">
       <h2 class="text-center bold text-3xl">{{ title }}</h2>
         <h3 class="bold text-2xl">Your Stocks</h3>
-        <p><i>Info: These are the {{ title }} at your site.</i></p>
+        <p v-if="this.ownRole==='customer'">
+            <i>Info: These are your material stocks (your inputs) at your site.
+            <b>Please select one of the material stocks to see the stocks your supplier still got on stock.</b></i>
+        </p>
+        <p v-if="this.ownRole==='supplier'">
+            <i>Info: These are your product stocks (your outputs) at your site.
+            <b>Please select one of the product stocks to see the stocks your customer still got on stock.</b></i>
+        </p>
       <table class="">
         <tr class="text-left">
           <th>Material (ID)</th>
@@ -78,6 +85,7 @@ export default {
   props: {
     title: {type: String, required: true, default: "Stock"},
     stocks: {type: Array, required: true},
+      ownRole: {type: String, required: true, default: "customer"},
     partnerRole: {type: String, required: true, default: ""},
   },
 
@@ -97,7 +105,7 @@ export default {
     },
     getUomValueForUomKey(key){
         return UnitOfMeasureUtils.findUomValueByKey(key);
-    }
+    },
   },
 };
 </script>

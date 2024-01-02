@@ -224,11 +224,13 @@
                 <StockTableSFC
                     title="Material Stocks"
                     :stocks="this.bdMaterialStocks"
+                    :ownRole="'customer'"
                     :partnerRole="'supplier'"
                 />
                 <StockTableSFC
                     title="Product Stocks"
                     :stocks="this.bdProductStocks"
+                    :ownRole="'supplier'"
                     :partnerRole="'customer'"
                 />
             </div>
