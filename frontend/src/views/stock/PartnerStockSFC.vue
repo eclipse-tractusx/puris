@@ -35,9 +35,14 @@
               Update Partner Stocks
           </button>
       </div>
-      <p>
-          <i>Info: These are the {{ title }} at your site.
-              <b>Please select one of the stocks, to see the related stocks of your partner.</b></i>
+      <p v-if="this.partnerRole === 'supplier'">
+          <i>Info: These are your suppliers' stocks (your potential inputs) at his site that not yet sent to you.</i>
+      </p>
+      <p v-else-if="this.partnerRole === 'customer'">
+          <i>
+              Info: These are your customers' stocks (your recent outputs) at his site that have not yet been used for
+              production.
+          </i>
       </p>
       <div class="overflow-x-auto min-h-60 max-h-80">
     <table class="mt-2 w-full">
@@ -180,6 +185,4 @@ export default {
 .empty-row {
     height: 5vh;
 }
-
-
 </style>
