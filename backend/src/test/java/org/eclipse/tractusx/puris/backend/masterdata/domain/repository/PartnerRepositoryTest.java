@@ -25,8 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import java.util.SortedSet;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
@@ -53,8 +51,6 @@ public class PartnerRepositoryTest {
         Partner createdSupplierPartner = partnerRepository.save(supplierPartnerEntity);
 
         assertEquals(1, createdSupplierPartner.getSites().size());
-
-        SortedSet sites = createdSupplierPartner.getSites();
 
         Site newSite = new Site(
             "BPNS1234567890SS",
