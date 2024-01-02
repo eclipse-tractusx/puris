@@ -24,7 +24,7 @@
             View and Manage Stocks
         </h1>
 
-        <div>
+        <div class="divide-y-4">
             <form
                 @submit.prevent="addOrUpdateStock(this.changedStock)"
                 class="flex flex-row"
@@ -219,7 +219,7 @@
             <!-- separator -->
             <div
                 id="materialAndProductStockTables"
-                class="flex flex-col space-y-2 max-w-max"
+                class="flex flex-col space-y-2 max-w-max divide-y-4"
             >
                 <StockTableSFC
                     title="Material Stocks"

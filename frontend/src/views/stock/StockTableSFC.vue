@@ -19,10 +19,12 @@
  SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="flex flex-row">
+  <div class="flex flex-col">
     <!--class="grid grid-rows-1 grid-flow-col gap-4"> -->
-    <div class="basis-1/2 pr-5">
+    <div class="">
       <h2 class="text-center bold text-3xl">{{ title }}</h2>
+        <h3 class="bold text-2xl">Your Stocks</h3>
+        <p><i>Info: These are the {{ title }} at your site.</i></p>
       <table class="">
         <tr class="text-left">
           <th>Material (ID)</th>
@@ -31,6 +33,8 @@
           <th>Is Blocked</th>
           <th>BPNS</th>
           <th>BPNA</th>
+          <th>Customer Order Number<br> Customer Order Pos. Number</th>
+          <th>Supplier Order Number</th>
         </tr>
         <tr
             v-for="stock in stocks"
@@ -45,10 +49,12 @@
           <td>{{stock.isBlocked}}</td>
           <td>{{stock.stockLocationBpns}}</td>
           <td>{{stock.stockLocationBpna}}</td>
+          <td>{{stock.customerOrderNumber}}<br>{{stock.customerOrderPositionNumber}}</td>
+          <td>{{stock.supplierOrderNumber}}</td>
         </tr>
       </table>
     </div>
-    <div class="basis-1/2">
+    <div class="">
       <PartnerStockSFC
           :selectedMaterialOrProductId="this.selectedMaterialId"
           :partnerRole="this.partnerRole"
