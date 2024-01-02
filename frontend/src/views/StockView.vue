@@ -19,7 +19,7 @@
  SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-    <main class="flex flex-col">
+    <main class="flex flex-col mb-7">
         <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
             View and Manage Stocks
         </h1>

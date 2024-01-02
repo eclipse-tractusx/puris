@@ -19,16 +19,14 @@
  SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="mt-6" v-if="this.selectedMaterialOrProductId === ''">
-    <h3 class="bold text-2xl">
-      Your {{ this.partnerRole }}s' stocks for no material.
-    </h3>
-  </div>
-  <div v-else class="flex flex-col mt-6">
+  <div class="flex flex-col mt-6">
       <div class="flex flex-row justify-between items-center">
-          <h3 class="bold text-2xl">
+          <h3 class="bold text-2xl" v-if="this.selectedMaterialOrProductId === ''">
               Your {{ this.partnerRole }}s' stocks for
               {{ this.selectedMaterialOrProductId }}.
+          </h3>
+          <h3 class="bold text-2xl" v-else>
+              Your {{ this.partnerRole }}s' stocks for no material.
           </h3>
           <button
               class="btn-primary"
@@ -37,7 +35,13 @@
               Update Partner Stocks
           </button>
       </div>
-    <table class="mt-2">
+      <p>
+          <i>Info: These are the {{ title }} at your site.
+              <b>Please select one of the stocks, to see the related stocks of your partner.</b></i>
+      </p>
+      <div class="overflow-x-auto min-h-60 max-h-80">
+    <table class="mt-2 w-full">
+        <thead>
       <tr class="text-left">
         <th>Supplier</th>
         <th>Quantity</th>
@@ -48,20 +52,36 @@
         <th>Customer Order Number<br>Customer Order Pos. Number</th>
         <th>Supplier Order Number</th>
       </tr>
-      <tr
+        </thead>
+        <tbody>
+        <tr v-for="row in tableRows" :key="row.index" :class="{'empty-row': row.isEmpty}">
+        <template v-if="row.isEmpty">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </template>
+      <template v-else
           v-for="stock in availableMaterialsOrProducts"
           :key="stock.supplierPartner.bpnl"
       >
-        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.supplierPartner.name }}<br>({{ stock.supplierPartner.bpnl }})</td>
-        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.quantity }} {{ getUomValueForUomKey(stock.measurementUnit) }}</td>
-        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.isBlocked }}</td>
-          <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.stockLocationBpns }}</td>
-          <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.stockLocationBpna }}</td>
-          <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.lastUpdatedOn }}</td>
-          <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.customerOrderNumber }}<br>{{stock.customerOrderPositionNumber}}</td>
-          <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.supplierOrderNumber }}</td>
-      </tr>
+        <td>{{ stock.supplierPartner.name }}<br>({{ stock.supplierPartner.bpnl }})</td>
+        <td>{{ stock.quantity }} {{ getUomValueForUomKey(stock.measurementUnit) }}</td>
+        <td>{{ stock.isBlocked }}</td>
+          <td>{{ stock.stockLocationBpns }}</td>
+          <td>{{ stock.stockLocationBpna }}</td>
+          <td>{{ stock.lastUpdatedOn }}</td>
+          <td>{{ stock.customerOrderNumber }}<br>{{stock.customerOrderPositionNumber}}</td>
+          <td>{{ stock.supplierOrderNumber }}</td>
+      </template>
+        </tr>
+        </tbody>
     </table>
+      </div>
   </div>
 </template>
 
@@ -84,6 +104,24 @@ export default {
       availableMaterialsOrProducts: [],
     };
   },
+    computed: {
+        tableRows() {
+            if (this.availableMaterialsOrProducts.length === 0) {
+                // Generate three empty rows
+                return Array.from({length: 3}, (_, index) => ({
+                    index,
+                    isEmpty: true,
+                }));
+            } else {
+                // Generate rows with data
+                return this.availableMaterialsOrProducts.map((stock, index) => ({
+                    index,
+                    stock,
+                    isEmpty: false,
+                }));
+            }
+        },
+    },
   created() {
     if (this.selectedMaterialOrProductId !== "") {
       if (this.partnerRole === "supplier") {
@@ -138,4 +176,10 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.empty-row {
+    height: 5vh;
+}
+
+
+</style>
