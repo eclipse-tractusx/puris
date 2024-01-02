@@ -19,77 +19,125 @@
  SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="flex flex-col">
-    <div class="">
-      <h2 class="text-center bold text-3xl">{{ title }}</h2>
-        <h3 class="bold text-2xl">Your Stocks</h3>
-        <p v-if="this.ownRole==='customer'">
-            <i>Info: These are your material stocks (your inputs) at your site.
-            <b>Please select one of the material stocks to see the stocks your supplier still got on stock.</b></i>
-        </p>
-        <p v-if="this.ownRole==='supplier'">
-            <i>Info: These are your product stocks (your outputs) at your site.
-            <b>Please select one of the product stocks to see the stocks your customer still got on stock.</b></i>
-        </p>
-      <table class="w-full">
-          <thead>
-        <tr class="text-left">
-          <th>Material (ID)</th>
-          <th>Quantity</th>
-          <th>Allocated to Partner</th>
-          <th>Is Blocked</th>
-          <th>BPNS</th>
-          <th>BPNA</th>
-          <th>Customer Order Number<br> Customer Order Pos. Number</th>
-          <th>Supplier Order Number</th>
-        </tr>
-          </thead>
-            <tbody>
-              <template v-for="row in tableRows" :key="row.index" >
-                  <tr
-                      :class="{
-                          'empty-row': row.isEmpty,
-                          'highlight': !row.isEmpty && row.stock.material.materialNumberCustomer === selectedMaterialId
-                      }"
-                      @click="row.isEmpty ? null : selectStock(row.stock.material.materialNumberCustomer, row.stock.uuid)"
-                  >
-                      <template v-if="row.isEmpty">
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                      </template>
-                      <template v-else>
-                          <td>{{ row.stock.material.name }}<br>({{ row.stock.material.materialNumberCustomer }})</td>
-                          <td>{{ row.stock.quantity }} {{ getUomValueForUomKey(row.stock.measurementUnit) }}</td>
-                          <td v-if="row.stock.type == 'PRODUCT'">{{ row.stock.allocatedToPartner.name }}<br>({{ row.stock.allocatedToPartner.bpnl }})</td>
-                          <td v-if="row.stock.type == 'MATERIAL'"></td>
-                          <td>{{row.stock.isBlocked}}</td>
-                          <td>{{row.stock.stockLocationBpns}}</td>
-                          <td>{{row.stock.stockLocationBpna}}</td>
-                          <td>{{row.stock.customerOrderNumber}}<br>{{row.stock.customerOrderPositionNumber}}</td>
-                          <td>{{row.stock.supplierOrderNumber}}</td>
-                      </template>
-                  </tr>
-              </template>
-          </tbody>
-      </table>
-    </div>
-    <div class="">
-      <PartnerStockSFC
-          :selectedMaterialOrProductId="this.selectedMaterialId"
-          :partnerRole="this.partnerRole"
-          :key="this.selectedMaterialId"
-      />
-      <!--
+    <div class="flex flex-col">
+        <div class="">
+            <h2 class="text-center bold text-3xl">{{ title }}</h2>
+            <h3 class="bold text-2xl">Your Stocks</h3>
+            <p v-if="this.ownRole === 'customer'">
+                <i
+                    >Info: These are your material stocks (your inputs) at your
+                    site.
+                    <b
+                        >Please select one of the material stocks to see the
+                        stocks your supplier still got on stock.</b
+                    ></i
+                >
+            </p>
+            <p v-if="this.ownRole === 'supplier'">
+                <i
+                    >Info: These are your product stocks (your outputs) at your
+                    site.
+                    <b
+                        >Please select one of the product stocks to see the
+                        stocks your customer still got on stock.</b
+                    ></i
+                >
+            </p>
+            <table class="w-full">
+                <thead>
+                    <tr class="text-left">
+                        <th>Material (ID)</th>
+                        <th>Quantity</th>
+                        <th>Allocated to Partner</th>
+                        <th>Is Blocked</th>
+                        <th>BPNS</th>
+                        <th>BPNA</th>
+                        <th>
+                            Customer Order Number<br />
+                            Customer Order Pos. Number
+                        </th>
+                        <th>Supplier Order Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template v-for="row in tableRows" :key="row.index">
+                        <tr
+                            :class="{
+                                'empty-row': row.isEmpty,
+                                highlight:
+                                    !row.isEmpty &&
+                                    row.stock.material
+                                        .materialNumberCustomer ===
+                                        selectedMaterialId,
+                            }"
+                            @click="
+                                row.isEmpty
+                                    ? null
+                                    : selectStock(
+                                          row.stock.material
+                                              .materialNumberCustomer,
+                                          row.stock.uuid
+                                      )
+                            "
+                        >
+                            <template v-if="row.isEmpty">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </template>
+                            <template v-else>
+                                <td>
+                                    {{ row.stock.material.name }}<br />({{
+                                        row.stock.material
+                                            .materialNumberCustomer
+                                    }})
+                                </td>
+                                <td>
+                                    {{ row.stock.quantity }}
+                                    {{
+                                        getUomValueForUomKey(
+                                            row.stock.measurementUnit
+                                        )
+                                    }}
+                                </td>
+                                <td v-if="row.stock.type === 'PRODUCT'">
+                                    {{ row.stock.allocatedToPartner.name
+                                    }}<br />({{
+                                        row.stock.allocatedToPartner.bpnl
+                                    }})
+                                </td>
+                                <td v-if="row.stock.type === 'MATERIAL'"></td>
+                                <td>{{ row.stock.isBlocked }}</td>
+                                <td>{{ row.stock.stockLocationBpns }}</td>
+                                <td>{{ row.stock.stockLocationBpna }}</td>
+                                <td>
+                                    {{ row.stock.customerOrderNumber }}<br />{{
+                                        row.stock.customerOrderPositionNumber
+                                    }}
+                                </td>
+                                <td>{{ row.stock.supplierOrderNumber }}</td>
+                            </template>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <div class="">
+            <PartnerStockSFC
+                :selectedMaterialOrProductId="this.selectedMaterialId"
+                :partnerRole="this.partnerRole"
+                :key="this.selectedMaterialId"
+            />
+            <!--
       <h2 class="text-center bold text-3xl">You're currently seeing your suppliers' stocks for {{this.selectedMaterial.name}} [{{ this.selectedMaterial.id }}]</h2>
       -->
+        </div>
     </div>
-  </div>
 </template>
 
 <script>
@@ -97,28 +145,28 @@ import PartnerStockSFC from "@/views/stock/PartnerStockSFC.vue";
 import UnitOfMeasureUtils from "@/services/UnitOfMeasureUtils";
 
 export default {
-  name: "StockTableSFC",
-  components: {PartnerStockSFC},
+    name: "StockTableSFC",
+    components: { PartnerStockSFC },
 
-  props: {
-    title: {type: String, required: true, default: "Stock"},
-    stocks: {type: Array, required: true},
-      ownRole: {type: String, required: true, default: "customer"},
-    partnerRole: {type: String, required: true, default: ""},
-  },
+    props: {
+        title: { type: String, required: true, default: "Stock" },
+        stocks: { type: Array, required: true },
+        ownRole: { type: String, required: true, default: "customer" },
+        partnerRole: { type: String, required: true, default: "" },
+    },
 
-  data() {
-    return {
-      selectedMaterialId: "",
-      selectedStockUuid: "",
-      materialNumberCustomer : ""
-    };
-  },
+    data() {
+        return {
+            selectedMaterialId: "",
+            selectedStockUuid: "",
+            materialNumberCustomer: "",
+        };
+    },
     computed: {
         tableRows() {
             if (this.stocks.length === 0) {
                 // Generate three empty rows
-                return Array.from({length: 3}, (_, index) => ({
+                return Array.from({ length: 3 }, (_, index) => ({
                     index,
                     isEmpty: true,
                 }));
@@ -132,24 +180,22 @@ export default {
             }
         },
     },
-  methods: {
-    selectStock(materialId, stockUuid) {
-        console.info("Called Select Stock with material Id and stockUuid: " + materialId + " , " + stockUuid);
-      if(this.partnerRole == 'customer')
-        return;
-      this.selectedMaterialId = materialId;
-      this.selectedStockUuid = stockUuid;
+    methods: {
+        selectStock(materialId, stockUuid) {
+            if (this.partnerRole === "customer") return;
+            this.selectedMaterialId = materialId;
+            this.selectedStockUuid = stockUuid;
+        },
+        getUomValueForUomKey(key) {
+            return UnitOfMeasureUtils.findUomValueByKey(key);
+        },
     },
-    getUomValueForUomKey(key){
-        return UnitOfMeasureUtils.findUomValueByKey(key);
-    },
-  },
 };
 </script>
 
 <style scoped>
 .highlight {
-  background-color: orange;
+    background-color: orange;
 }
 
 .empty-row {
