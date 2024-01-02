@@ -20,7 +20,6 @@
 -->
 <template>
   <div class="flex flex-col">
-    <!--class="grid grid-rows-1 grid-flow-col gap-4"> -->
     <div class="">
       <h2 class="text-center bold text-3xl">{{ title }}</h2>
         <h3 class="bold text-2xl">Your Stocks</h3>
@@ -32,7 +31,8 @@
             <i>Info: These are your product stocks (your outputs) at your site.
             <b>Please select one of the product stocks to see the stocks your customer still got on stock.</b></i>
         </p>
-      <table class="">
+      <table class="w-full">
+          <thead>
         <tr class="text-left">
           <th>Material (ID)</th>
           <th>Quantity</th>
@@ -43,22 +43,40 @@
           <th>Customer Order Number<br> Customer Order Pos. Number</th>
           <th>Supplier Order Number</th>
         </tr>
-        <tr
-            v-for="stock in stocks"
-            :key="stock.uuid"
-            @click="selectStock(stock.material.materialNumberCustomer, stock.uuid)"
-            :class="{ highlight: stock.material.materialNumberCustomer === selectedMaterialId }"
-        >
-          <td>{{ stock.material.name }}<br>({{ stock.material.materialNumberCustomer }})</td>
-          <td>{{ stock.quantity }} {{ getUomValueForUomKey(stock.measurementUnit) }}</td>
-          <td v-if="stock.type == 'PRODUCT'">{{ stock.allocatedToPartner.name }}<br>({{ stock.allocatedToPartner.bpnl }})</td>
-          <td v-if="stock.type == 'MATERIAL'"></td>
-          <td>{{stock.isBlocked}}</td>
-          <td>{{stock.stockLocationBpns}}</td>
-          <td>{{stock.stockLocationBpna}}</td>
-          <td>{{stock.customerOrderNumber}}<br>{{stock.customerOrderPositionNumber}}</td>
-          <td>{{stock.supplierOrderNumber}}</td>
-        </tr>
+          </thead>
+            <tbody>
+              <template v-for="row in tableRows" :key="row.index" >
+                  <tr
+                      :class="{
+                          'empty-row': row.isEmpty,
+                          'highlight': !row.isEmpty && row.stock.material.materialNumberCustomer === selectedMaterialId
+                      }"
+                      @click="row.isEmpty ? null : selectStock(row.stock.material.materialNumberCustomer, row.stock.uuid)"
+                  >
+                      <template v-if="row.isEmpty">
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                      </template>
+                      <template v-else>
+                          <td>{{ row.stock.material.name }}<br>({{ row.stock.material.materialNumberCustomer }})</td>
+                          <td>{{ row.stock.quantity }} {{ getUomValueForUomKey(row.stock.measurementUnit) }}</td>
+                          <td v-if="row.stock.type == 'PRODUCT'">{{ row.stock.allocatedToPartner.name }}<br>({{ row.stock.allocatedToPartner.bpnl }})</td>
+                          <td v-if="row.stock.type == 'MATERIAL'"></td>
+                          <td>{{row.stock.isBlocked}}</td>
+                          <td>{{row.stock.stockLocationBpns}}</td>
+                          <td>{{row.stock.stockLocationBpna}}</td>
+                          <td>{{row.stock.customerOrderNumber}}<br>{{row.stock.customerOrderPositionNumber}}</td>
+                          <td>{{row.stock.supplierOrderNumber}}</td>
+                      </template>
+                  </tr>
+              </template>
+          </tbody>
       </table>
     </div>
     <div class="">
@@ -96,8 +114,27 @@ export default {
       materialNumberCustomer : ""
     };
   },
+    computed: {
+        tableRows() {
+            if (this.stocks.length === 0) {
+                // Generate three empty rows
+                return Array.from({length: 3}, (_, index) => ({
+                    index,
+                    isEmpty: true,
+                }));
+            } else {
+                // Generate rows with data
+                return this.stocks.map((stock, index) => ({
+                    index,
+                    stock,
+                    isEmpty: false,
+                }));
+            }
+        },
+    },
   methods: {
     selectStock(materialId, stockUuid) {
+        console.info("Called Select Stock with material Id and stockUuid: " + materialId + " , " + stockUuid);
       if(this.partnerRole == 'customer')
         return;
       this.selectedMaterialId = materialId;
@@ -115,7 +152,7 @@ export default {
   background-color: orange;
 }
 
-table {
-  width: 100%;
+.empty-row {
+    height: 5vh;
 }
 </style>
