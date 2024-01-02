@@ -30,6 +30,8 @@ public interface PartnerService {
 
     Partner create(Partner partner);
 
+    void prepareApiAssetsForPartner(Partner partner);
+
     Partner findByUuid(UUID partnerUuid);
 
     List<Partner> findAllCustomerPartnersForMaterialId(String ownMaterialNumber);

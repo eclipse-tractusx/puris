@@ -105,8 +105,7 @@ public class EdcAdapterService {
 
     /**
      * Call this method at startup to register the necessary request and
-     * response apis, including unrestricted policy- and contract-definitions
-     * that allow any external Partner to contract them.
+     * response apis.
      *
      * @return true if all registrations were successful, otherwise false
      */
@@ -115,54 +114,67 @@ public class EdcAdapterService {
         log.info("Registration of product-stock request api successful " + (result = registerApiAsset(DT_ApiMethodEnum.REQUEST)));
         if (!result) return false;
         log.info("Registration of product-stock response api successful " + (result = registerApiAsset(DT_ApiMethodEnum.RESPONSE)));
-        if (!result) return false;
-        log.info("Registration of policy successful " + (result = registerPublicPolicy()));
-        if (!result) return false;
-        log.info("Registration of contract definition successful " + (result = registerPublicContractDefinition()));
         return result;
     }
 
+
     /**
-     * Util method to register a public contract definition without restrictions
-     * regarding the asset selector. Will therefore be applicable to all assets
-     * that were registered previously. Must be called after registerPublicPolicy()
-     *
-     * @return true if successful
+     * Utility method to register policy- and contract-definitions for both the
+     * REQUEST and the RESPONSE-Api specifically for the given partner.
+     * @param partner the partner
+     * @return true, if all registrations ran successfully
      */
-    private boolean registerPublicContractDefinition() {
-        var body = edcRequestBodyBuilder.buildContractDefinitionWithPublicPolicyBody();
+    public boolean createPolicyAndContractDefForPartner(Partner partner) {
+        boolean result = createPolicyDefinitionForPartner(partner);
+        result &= createContractDefinitionForPartner(partner, DT_ApiMethodEnum.REQUEST);
+        return result & createContractDefinitionForPartner(partner, DT_ApiMethodEnum.RESPONSE);
+    }
+
+    /**
+     * Registers a contract definition using a policy that
+     * allows only the given partner's BPNL for the given Api Method.
+     * Prior to this method you must always have successfully completed the
+     * createPolicyDefinitionForPartner - method first.
+     *
+     * @param partner the partner
+     * @param apiMethod the api method
+     * @return true, if registration ran successfully
+     */
+    private boolean createContractDefinitionForPartner(Partner partner, DT_ApiMethodEnum apiMethod) {
+        var body = edcRequestBodyBuilder.buildContractDefinitionWithBpnRestrictedPolicy(partner, apiMethod);
         try {
             var response = sendPostRequest(body, List.of("v2", "contractdefinitions"));
             boolean result = response.isSuccessful();
-            if (!result) {
-                log.warn("Contract definition registration failed \n" + response.body().string());
+            if(!result) {
+                log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and "
+                    + apiMethod + "\n" + response.body().string());
             }
             response.body().close();
             return result;
         } catch (Exception e) {
-            log.error("Failed to register contract definition ", e);
             return false;
         }
     }
 
     /**
-     * Util method to register a policy without any restrictions to
-     * your control plane. Should be called after asset creation.
+     * Registers a policy definitions that allows only the given partner's
+     * BPNL.
      *
-     * @return true if successful
+     * @param partner the partner
+     * @return true, if registration ran successfully
      */
-    private boolean registerPublicPolicy() {
-        var body = edcRequestBodyBuilder.buildPublicPolicyBody();
+    private boolean createPolicyDefinitionForPartner(Partner partner) {
+        var body = edcRequestBodyBuilder.buildBpnRestrictedPolicy(partner);
         try {
             var response = sendPostRequest(body, List.of("v2", "policydefinitions"));
             boolean result = response.isSuccessful();
-            if (!result) {
-                log.warn("Policy registration failed \n" + response.body().string());
+            if(!result){
+                log.warn("Policy Registration failed \n" + response.body().string());
             }
             response.body().close();
             return result;
         } catch (Exception e) {
-            log.error("Failed to register policy definition ", e);
+            log.error("Failed to register policy definition for partner " + partner.getBpnl(), e);
             return false;
         }
     }
