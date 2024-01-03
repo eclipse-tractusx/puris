@@ -145,7 +145,7 @@ public class ItemStockRequestApiService {
         for (var materialRequest : requestMessage.getContent().getItemStock()) {
             Material material = null;
             if (materialRequest.getMaterialGlobalAssetId() != null) {
-                material = materialService.findByMaterialNumberCx(material.getMaterialNumberCx());
+                material = materialService.findByMaterialNumberCx(materialRequest.getMaterialGlobalAssetId());
             }
             if (material == null && materialRequest.getMaterialNumberCustomer() != null) {
                 material = materialService.findByOwnMaterialNumber(materialRequest.getMaterialNumberCustomer());
