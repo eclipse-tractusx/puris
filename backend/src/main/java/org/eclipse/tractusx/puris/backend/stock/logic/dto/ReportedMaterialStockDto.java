@@ -34,15 +34,15 @@ import java.util.Date;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PartnerProductStockDto extends StockDto {
+public class ReportedMaterialStockDto extends StockDto {
 
-    public PartnerProductStockDto(MaterialDto material, double quantity, ItemUnitEnumeration measurementUnit, String stockLocationBpns,
-                                  String stockLocationBpna, PartnerDto partner, Date lastUpdatedOn, boolean isBlocked) {
+    public ReportedMaterialStockDto(MaterialDto material, double quantity, ItemUnitEnumeration measurementUnit, String stockLocationBpns,
+                                    String stockLocationBpna, PartnerDto partner, Date lastUpdatedOn, boolean isBlocked) {
         super(material, quantity, measurementUnit, stockLocationBpns, stockLocationBpna, lastUpdatedOn, partner, isBlocked);
         this.setType(DT_StockTypeEnum.PRODUCT);
     }
 
-    public PartnerProductStockDto(MaterialDto material, double quantity, ItemUnitEnumeration measurementUnit, String stockLocationBpns, String stockLocationBpna, String customerOrderNumber, String customerOrderPositionNumber, String supplierOrderNumber, Date lastUpdatedOn, PartnerDto partner, boolean isBlocked) {
+    public ReportedMaterialStockDto(MaterialDto material, double quantity, ItemUnitEnumeration measurementUnit, String stockLocationBpns, String stockLocationBpna, String customerOrderNumber, String customerOrderPositionNumber, String supplierOrderNumber, Date lastUpdatedOn, PartnerDto partner, boolean isBlocked) {
         super(material, quantity, measurementUnit, stockLocationBpns, stockLocationBpna, customerOrderNumber, customerOrderPositionNumber, supplierOrderNumber, lastUpdatedOn, partner, isBlocked);
         this.setType(DT_StockTypeEnum.PRODUCT);
     }

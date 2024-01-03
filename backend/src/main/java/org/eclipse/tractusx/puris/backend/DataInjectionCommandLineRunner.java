@@ -76,6 +76,9 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private ReportedMaterialItemStockService reportedMaterialItemStockService;
+
+    @Autowired
+    private ReportedProductItemStockService reportedProductItemStockService;
     
     @Autowired
     private ItemStockSammMapper itemStockSammMapper;
@@ -362,13 +365,29 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .locationBpna(supplierPartner.getSites().first().getAddresses().first().getBpna())
             .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
             .quantity(25)
+            .customerOrderId("2023-ORD-4711")
+            .customerOrderPositionId("POS-1")
+            .supplierOrderId("2023-SUPPLIER-ORD")
+            .isBlocked(true)
+            .build();
+        reportedMaterialItemStock = reportedMaterialItemStockService.create(reportedMaterialItemStock);
+        log.info("Created ReportedMaterialItemStock: {}", reportedMaterialItemStock.toString());
+
+        ReportedProductItemStock reportedProductItemStock = ReportedProductItemStock.builder()
+            .partner(nonScenarioCustomer)
+            .material(centralControlUnitEntity)
+            .lastUpdatedOnDateTime(new Date())
+            .locationBpns(nonScenarioCustomer.getSites().first().getBpns())
+            .locationBpna(nonScenarioCustomer.getSites().first().getAddresses().first().getBpna())
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
+            .quantity(25)
             .customerOrderId("2023-CUSTOMER-4712")
             .customerOrderPositionId("CUS-POS-1")
             .supplierOrderId("2023-MY-ORD")
             .isBlocked(true)
             .build();
-        reportedMaterialItemStock = reportedMaterialItemStockService.create(reportedMaterialItemStock);
-        log.info("Created ReportedMaterialItemStock: {}", reportedMaterialItemStock.toString());
+        reportedProductItemStock = reportedProductItemStockService.create(reportedProductItemStock);
+        log.info("Created ReportedProductItemStock: {}", reportedProductItemStock.toString());
     }
 
     /**

@@ -120,7 +120,7 @@ public class ProductStockSammMapper {
      *
      * @param samm    a ProductStockSammDto received from a supplier
      * @param partner the partner you received the message from
-     * @return a PartnerProductStockDto
+     * @return a ReportedMaterialStockDto
      */
     public List<PartnerProductStock> sammToPartnerProductStocks(ProductStockSammDto samm, Partner partner) {
         ArrayList<PartnerProductStock> output = new ArrayList<>();

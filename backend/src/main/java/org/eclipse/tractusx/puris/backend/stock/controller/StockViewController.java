@@ -38,14 +38,9 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.FrontendMaterialDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.MaterialStockDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestApiService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedMaterialItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.*;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
@@ -75,6 +70,9 @@ public class StockViewController {
 
     @Autowired
     private ReportedMaterialItemStockService reportedMaterialItemStockService;
+
+    @Autowired
+    private ReportedProductItemStockService reportedProductItemStockService;
 
     @Autowired
     private ProductStockRequestApiService productStockRequestApiService;
@@ -338,7 +336,7 @@ public class StockViewController {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
-    public ResponseEntity<List<PartnerProductStockDto>> getPartnerProductStocks(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<ReportedMaterialStockDto>> getPartnerProductStocks(@RequestParam String ownMaterialNumber) {
         if(!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
@@ -352,8 +350,47 @@ public class StockViewController {
             .collect(Collectors.toList()));
     }
 
-    private PartnerProductStockDto convertToDto(ReportedMaterialItemStock entity) {
-        PartnerProductStockDto dto = modelMapper.map(entity, PartnerProductStockDto.class);
+    private ReportedMaterialStockDto convertToDto(ReportedMaterialItemStock entity) {
+        ReportedMaterialStockDto dto = modelMapper.map(entity, ReportedMaterialStockDto.class);
+        dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
+        dto.getMaterial().setMaterialNumberCustomer(entity.getMaterial().getOwnMaterialNumber());
+        var materialPartnerRelation = mprService.find(entity.getMaterial().getOwnMaterialNumber(),
+            entity.getPartner().getUuid());
+        dto.getMaterial().setMaterialNumberSupplier(materialPartnerRelation.getPartnerMaterialNumber());
+
+        dto.setStockLocationBpns(variablesService.getOwnDefaultBpns());
+        dto.setStockLocationBpna(variablesService.getOwnDefaultBpna());
+
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
+
+        return dto;
+    }
+
+    @GetMapping("customer-material-stocks")
+    @Operation(description = "Returns a list of all product the partner reported he has at his site." +
+        " Only material stocks for the given material number are returned.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+    })
+    public ResponseEntity<List<ReportedProductStockDto>> getCustomerProductStocks(@RequestParam String ownMaterialNumber) {
+        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        log.info("Following materials have been found {}", reportedProductItemStockService.findAll());
+
+        return ResponseEntity.ok(reportedProductItemStockService.
+            findAll()
+            .stream()
+            .filter(stock -> stock.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
+            .map(this::convertToDto)
+            .collect(Collectors.toList()));
+    }
+
+    private ReportedProductStockDto convertToDto(ReportedProductItemStock entity) {
+        ReportedProductStockDto dto = modelMapper.map(entity, ReportedProductStockDto.class);
         dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
         dto.getMaterial().setMaterialNumberCustomer(entity.getMaterial().getOwnMaterialNumber());
         var materialPartnerRelation = mprService.find(entity.getMaterial().getOwnMaterialNumber(),
