@@ -25,12 +25,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
-
-import java.util.Date;
 
 @Getter
 @Setter
@@ -38,14 +32,4 @@ import java.util.Date;
 @ToString(callSuper = true)
 public class ProductStockDto extends StockDto {
 
-    public ProductStockDto(MaterialDto material, double quantity, ItemUnitEnumeration measurementUnit, String stockLocationBpns,
-                           String stockLocationBpna, PartnerDto partnerDto, Date lastUpdatedOn, boolean isBlocked) {
-        super(material, quantity, measurementUnit, stockLocationBpns, stockLocationBpna, lastUpdatedOn, partnerDto, isBlocked);
-        this.setType(DT_StockTypeEnum.PRODUCT);
-    }
-
-    public ProductStockDto(MaterialDto material, double quantity, ItemUnitEnumeration measurementUnit, String stockLocationBpns, String stockLocationBpna, String customerOrderNumber, String customerOrderPositionNumber, String supplierOrderNumber, Date lastUpdatedOn, PartnerDto partner, boolean isBlocked) {
-        super(material, quantity, measurementUnit, stockLocationBpns, stockLocationBpna, customerOrderNumber, customerOrderPositionNumber, supplierOrderNumber, lastUpdatedOn, partner, isBlocked);
-        this.setType(DT_StockTypeEnum.PRODUCT);
-    }
 }
