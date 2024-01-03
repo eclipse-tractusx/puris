@@ -132,6 +132,8 @@ export default {
                 .VITE_ENDPOINT_PARTNER_PRODUCT_STOCKS,
             endpointUpdatePartnerProductStock: import.meta.env
                 .VITE_ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK,
+            endpointPartnerReportedMaterialStocks: import.meta.env
+                .VITE_ENDPOINT_CUSTOMER_PRODUCT_STOCKS,
             availableMaterialsOrProducts: [],
         };
     },
@@ -159,10 +161,9 @@ export default {
         if (this.selectedMaterialOrProductId !== "") {
             if (this.partnerRole === "supplier") {
                 this.getAvailableMaterials();
+            } else if (this.partnerRole === "customer") {
+                this.getAvailableProducts();
             }
-            // else if (this.partnerRole === "customer") {
-            //   this.getAvailableProducts();
-            // }
         }
     },
     methods: {
@@ -181,12 +182,22 @@ export default {
                 .then((data) => (this.availableMaterialsOrProducts = data))
                 .catch((err) => console.log(err));
         },
-        // getAvailableProducts() {
-        //   fetch(this.backendURL + this.endpointPartnerProductStocks)
-        //     .then(res => res.json())
-        //     .then(data => this.availableMaterialsOrProducts = data)
-        //     .catch(err => console.log(err));
-        // },
+        getAvailableProducts() {
+            console.info(this.selectedMaterialOrProductId);
+            fetch(
+                this.backendURL +
+                    this.endpointPartnerReportedMaterialStocks +
+                    this.selectedMaterialOrProductId,
+                {
+                    headers: {
+                        "X-API-KEY": this.backendApiKey,
+                    },
+                }
+            )
+                .then((res) => res.json())
+                .then((data) => (this.availableMaterialsOrProducts = data))
+                .catch((err) => console.log(err));
+        },
         updateMaterialOrProduct() {
             fetch(
                 this.backendURL +

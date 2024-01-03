@@ -81,10 +81,16 @@
                                 <td></td>
                             </template>
                             <template v-else>
-                                <td>
+                                <td v-if="this.ownRole === 'customer'">
                                     {{ row.stock.material.name }}<br />({{
                                         row.stock.material
                                             .materialNumberCustomer
+                                    }})
+                                </td>
+                                <td v-if="this.ownRole === 'supplier'">
+                                    {{ row.stock.material.name }}<br />({{
+                                        row.stock.material
+                                            .materialNumberSupplier
                                     }})
                                 </td>
                                 <td>
@@ -170,13 +176,18 @@ export default {
     },
     methods: {
         selectStock(rowIndex) {
-            if (this.partnerRole === "customer") return;
+            let materialId;
             if (this.ownRole === "customer") {
-                this.selectedMaterialId =
-                    this.tableRows[
-                        rowIndex
-                    ].stock.material.materialNumberCustomer;
-            }
+                materialId =
+                    this.tableRows[rowIndex].stock.material
+                        .materialNumberCustomer;
+            } else if (this.ownRole === "supplier") {
+                materialId =
+                    this.tableRows[rowIndex].stock.material
+                        .materialNumberSupplier;
+            } else return;
+
+            this.selectedMaterialId = materialId;
             this.selectedRowIndex = rowIndex;
         },
         getUomValueForUomKey(key) {
