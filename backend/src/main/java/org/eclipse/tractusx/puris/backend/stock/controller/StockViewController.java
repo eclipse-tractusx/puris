@@ -36,13 +36,14 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestApiService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
@@ -72,7 +73,7 @@ public class StockViewController {
     private ProductStockService productStockService;
 
     @Autowired
-    private MaterialStockService materialStockService;
+    private MaterialItemStockService materialItemStockService;
 
     @Autowired
     private PartnerProductStockService partnerProductStockService;
@@ -171,7 +172,7 @@ public class StockViewController {
         }
 
         existingProductStock.setQuantity(productStockDto.getQuantity());
-        existingProductStock.setMeasurementUnit(productStockDto.getMeasurementUnit());
+        existingProductStock.setMeasurementUnit(MeasurementUnit.piece);
         existingProductStock.setLastUpdatedOn(new Date());
 
         existingProductStock = productStockService.update(existingProductStock);
@@ -198,7 +199,7 @@ public class StockViewController {
         Material material = materialService.findByOwnMaterialNumber(dto.getMaterial().getMaterialNumberSupplier());
         productStock.setMaterial(material);
 
-        PartnerDto allocationPartner = dto.getAllocatedToPartner();
+        PartnerDto allocationPartner = dto.getPartner();
 
         Partner existingPartner;
         if(allocationPartner.getUuid() != null){
@@ -227,7 +228,7 @@ public class StockViewController {
     @ResponseBody
     @Operation(description = "Returns a list of all material-stocks")
     public List<MaterialStockDto> getMaterialStocks() {
-        List<MaterialStockDto> allMaterialStocks = materialStockService.findAll().stream()
+        List<MaterialStockDto> allMaterialStocks = materialItemStockService.findAll().stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
         log.info(allMaterialStocks.toString());
@@ -239,10 +240,10 @@ public class StockViewController {
     @Operation(description = "Creates a new material-stock")
     public MaterialStockDto createMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
 
-        MaterialStock materialStockToCreate = convertToEntity(materialStockDto);
-        materialStockToCreate.setLastUpdatedOn(new Date());
+        MaterialItemStock materialStockToCreate = convertToEntity(materialStockDto);
+        materialStockToCreate.setLastUpdatedOnDateTime(new Date());
 
-        MaterialStock createdMaterialStock = materialStockService.create(materialStockToCreate);
+        MaterialItemStock createdMaterialStock = materialItemStockService.create(materialStockToCreate);
 
         return convertToDto(createdMaterialStock);
     }
@@ -251,7 +252,7 @@ public class StockViewController {
     @ResponseBody
     @Operation(description = "Updates an existing material-stock")
     public MaterialStockDto updateMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
-        MaterialStock existingMaterialStock = materialStockService.findByUuid(materialStockDto.getUuid());
+        MaterialItemStock existingMaterialStock = materialItemStockService.findById(materialStockDto.getUuid());
         if (existingMaterialStock == null || existingMaterialStock.getUuid() == null) {
             log.warn("unable to find existing stock, exiting");
             return null;
@@ -259,35 +260,38 @@ public class StockViewController {
 
         existingMaterialStock.setQuantity(materialStockDto.getQuantity());
         existingMaterialStock.setMeasurementUnit(materialStockDto.getMeasurementUnit());
-        existingMaterialStock.setLastUpdatedOn(new Date());
+        existingMaterialStock.setLastUpdatedOnDateTime(new Date());
 
-        existingMaterialStock = materialStockService.update(existingMaterialStock);
+        existingMaterialStock = materialItemStockService.update(existingMaterialStock);
 
         return convertToDto(existingMaterialStock);
     }
 
-    private MaterialStockDto convertToDto(MaterialStock entity) {
+    private MaterialStockDto convertToDto(MaterialItemStock entity) {
         MaterialStockDto dto = modelMapper.map(entity, MaterialStockDto.class);
         dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
         dto.getMaterial().setMaterialNumberCustomer(entity.getMaterial().getOwnMaterialNumber());
 
         dto.setStockLocationBpns(variablesService.getOwnDefaultBpns());
         dto.setStockLocationBpna(variablesService.getOwnDefaultBpna());
-        log.info(dto.toString());
 
-        Partner myself = partnerService.getOwnPartnerEntity();
-        setBpnaAndBpnsOnStockDtoBasedOnPartner(entity, dto, myself);
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
 
         return dto;
     }
 
-    private MaterialStock convertToEntity(MaterialStockDto dto) {
-        MaterialStock materialStock = modelMapper.map(dto, MaterialStock.class);
+    private MaterialItemStock convertToEntity(MaterialStockDto dto) {
+        MaterialItemStock materialStock = modelMapper.map(dto, MaterialItemStock.class);
         materialStock.getMaterial().setOwnMaterialNumber(dto.getMaterial().getMaterialNumberCustomer());
 
-        // always set to bpna and find corresponding site
-        materialStock.setLocationId(dto.getStockLocationBpna());
-        materialStock.setLocationIdType(LocationIdTypeEnum.B_P_N_A);
+        materialStock.setLocationBpna(dto.getStockLocationBpna());
+        materialStock.setLocationBpns(dto.getStockLocationBpns());
+
+        materialStock.setCustomerOrderId(dto.getCustomerOrderNumber().isEmpty() ? "" : dto.getCustomerOrderNumber());
+        materialStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber().isEmpty() ? "" : dto.getCustomerOrderPositionNumber());
+        materialStock.setSupplierOrderId(dto.getSupplierOrderNumber().isEmpty() ? "" : dto.getSupplierOrderNumber());
 
         return materialStock;
     }
@@ -335,14 +339,14 @@ public class StockViewController {
             Optional<Site> siteForAddress = partner.getSites()
                 .stream().filter(site -> site.getAddresses().stream().anyMatch(addr -> addr.getBpna().equals(entity.getLocationId()))).findFirst();
 
-            if (!siteForAddress.isEmpty()){
+            if (siteForAddress.isPresent()){
                 dto.setStockLocationBpns(siteForAddress.get().getBpns());
                 dto.setStockLocationBpna(entity.getLocationId());
             }
         }else{
             dto.setStockLocationBpns(entity.getLocationId());
             Optional<Site> siteOfPartner = partner.getSites().stream().filter(site -> site.getBpns().equals(entity.getLocationId())).findFirst();
-            if(!siteOfPartner.isEmpty()){
+            if(siteOfPartner.isPresent()){
                 dto.setStockLocationBpna(siteOfPartner.get().getAddresses().first().getBpna());
             }else{
                 throw new IllegalStateException(String.format("Partner %s with Site %s has no Address.", partner.getBpnl(), siteOfPartner.get().getBpns()));

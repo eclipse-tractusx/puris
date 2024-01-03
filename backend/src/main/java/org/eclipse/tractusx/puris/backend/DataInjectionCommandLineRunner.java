@@ -266,6 +266,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 .locationBpna(address.getBpna())
                 .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
                 .quantity(12)
+                .customerOrderId("2023-ORD-4711")
+                .customerOrderPositionId("POS-1")
                 .build();
         otherMaterialItemStock = materialItemStockService.create(otherMaterialItemStock);
 
@@ -277,6 +279,9 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .locationBpns(newSite.getBpns())
             .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
             .quantity(23)
+            .customerOrderId("2023-ORD-4712")
+            .customerOrderPositionId("POS-1")
+            .supplierOrderId("2023-SUPPLIER-ORD")
             .isBlocked(true)
             .build();
         thirdMaterialItemStock = materialItemStockService.create(thirdMaterialItemStock);
