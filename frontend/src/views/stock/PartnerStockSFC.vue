@@ -128,12 +128,12 @@ export default {
         return {
             backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
             backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
-            endpointPartnerProductStocks: import.meta.env
-                .VITE_ENDPOINT_PARTNER_PRODUCT_STOCKS,
-            endpointUpdatePartnerProductStock: import.meta.env
-                .VITE_ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK,
-            endpointPartnerReportedMaterialStocks: import.meta.env
-                .VITE_ENDPOINT_CUSTOMER_PRODUCT_STOCKS,
+            endpointGetReportedMaterialStocks: import.meta.env
+                .VITE_ENDPOINT_REPORTED_MATERIAL_STOCKS,
+            endpointGetReportedProductStocks: import.meta.env
+                .VITE_ENDPOINT_REPORTED_PRODUCT_STOCKS,
+            endpointUpdateReportedMaterialStocks: import.meta.env
+                .VITE_ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS,
             availableMaterialsOrProducts: [],
         };
     },
@@ -170,7 +170,7 @@ export default {
         getAvailableMaterials() {
             fetch(
                 this.backendURL +
-                    this.endpointPartnerProductStocks +
+                    this.endpointGetReportedMaterialStocks +
                     this.selectedMaterialOrProductId,
                 {
                     headers: {
@@ -186,7 +186,7 @@ export default {
             console.info(this.selectedMaterialOrProductId);
             fetch(
                 this.backendURL +
-                    this.endpointPartnerReportedMaterialStocks +
+                    this.endpointGetReportedProductStocks +
                     this.selectedMaterialOrProductId,
                 {
                     headers: {
@@ -199,9 +199,10 @@ export default {
                 .catch((err) => console.log(err));
         },
         updateMaterialOrProduct() {
+            if (this.partnerRole === "customer") return;
             fetch(
                 this.backendURL +
-                    this.endpointUpdatePartnerProductStock +
+                    this.endpointUpdateReportedMaterialStock +
                     this.selectedMaterialOrProductId,
                 {
                     headers: {

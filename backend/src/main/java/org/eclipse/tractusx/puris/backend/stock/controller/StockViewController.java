@@ -330,18 +330,18 @@ public class StockViewController {
         return materialStock;
     }
 
-    @GetMapping("partner-product-stocks")
-    @Operation(description = "Returns a list of all partner-product-stocks that refer to the given material number")
+    @GetMapping("reported-material-stocks")
+    @Operation(description = "Returns a list of all materials the partner (supplier) reported he has at his site." +
+        " Only stocks for the given material number are returned.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
-    public ResponseEntity<List<ReportedMaterialStockDto>> getPartnerProductStocks(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<ReportedMaterialStockDto>> getSupplierMaterialStocks(@RequestParam String ownMaterialNumber) {
         if(!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-        log.info("Following materials have been found {}", reportedMaterialItemStockService.findAll());
-
+        
         return ResponseEntity.ok(reportedMaterialItemStockService.
             findAll()
             .stream()
@@ -368,9 +368,9 @@ public class StockViewController {
         return dto;
     }
 
-    @GetMapping("customer-material-stocks")
-    @Operation(description = "Returns a list of all product the partner reported he has at his site." +
-        " Only material stocks for the given material number are returned.")
+    @GetMapping("reported-product-stocks")
+    @Operation(description = "Returns a list of all products the partner (customer) reported he has at his site." +
+        " Only stocks for the given material number are returned.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
@@ -379,8 +379,6 @@ public class StockViewController {
         if(!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-        log.info("Following materials have been found {}", reportedProductItemStockService.findAll());
-
         return ResponseEntity.ok(reportedProductItemStockService.
             findAll()
             .stream()
@@ -437,17 +435,17 @@ public class StockViewController {
             .collect(Collectors.toList()));
     }
 
-    @GetMapping("update-partner-product-stock")
+    @GetMapping("update-reported-material-stocks")
     @Operation(description = "For the given material, all known suppliers will be requested to report their" +
-        "current product-stocks. The response body contains a list of those supplier partners that were sent a request." +
+        "current stocks for our input material. The response body contains a list of those supplier partners that were sent a request." +
         "Please note that these requests are handled asynchronously by the partners, so there are no guarantees, if and " +
         "when the corresponding responses will be available. As soon as a response arrives, it will be available via a " +
-        "call to the GET partner-product-stocks endpoint.")
+        "call to the GET reported-material-stocks endpoint.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
-    public ResponseEntity<List<PartnerDto>> triggerPartnerProductStockUpdateForMaterial(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<PartnerDto>> triggerReportedMaterialStockUpdateForMaterialNumber(@RequestParam String ownMaterialNumber) {
         if(!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
