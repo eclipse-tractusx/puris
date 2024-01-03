@@ -70,6 +70,10 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private MaterialItemStockService materialItemStockService;
+    
+    @Autowired
+    private ProductItemStockService productItemStockService;
+    
     @Autowired
     private ItemStockSammMapper itemStockSammMapper;
 
@@ -330,6 +334,22 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         for (var s : list) {
             log.info(s.toString());
         }
+        
+        ProductItemStock productItemStock = ProductItemStock.builder()
+            .partner(nonScenarioCustomer)
+            .material(centralControlUnitEntity)
+            .lastUpdatedOnDateTime(new Date())
+            .locationBpns(mySelf.getSites().first().getBpns())
+            .locationBpna(mySelf.getSites().first().getAddresses().first().getBpna())
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
+            .quantity(25)
+            .customerOrderId("2023-CUSTOMER-4712")
+            .customerOrderPositionId("CUS-POS-1")
+            .supplierOrderId("2023-MY-ORD")
+            .isBlocked(true)
+            .build();
+         productItemStock = productItemStockService.create(productItemStock);
+         log.info("Created ProductItemStock: {}", productItemStock.toString());
     }
 
     /**

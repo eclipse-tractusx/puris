@@ -38,15 +38,14 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialServi
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestApiService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
@@ -70,7 +69,7 @@ import java.util.stream.Collectors;
 public class StockViewController {
 
     @Autowired
-    private ProductStockService productStockService;
+    private ProductItemStockService productItemStockService;
 
     @Autowired
     private MaterialItemStockService materialItemStockService;
@@ -139,7 +138,7 @@ public class StockViewController {
     @ResponseBody
     @Operation(description = "Returns a list of all product-stocks")
     public List<ProductStockDto> getProductStocks() {
-        return productStockService.findAll().stream()
+        return productItemStockService.findAll().stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
     }
@@ -149,11 +148,11 @@ public class StockViewController {
     @Operation(description = "Creates a new product-stock")
     public ProductStockDto createProductStocks(@RequestBody ProductStockDto productStockDto) {
 
-        ProductStock productStockToCreate = convertToEntity(productStockDto);
+        ProductItemStock productStockToCreate = convertToEntity(productStockDto);
 
-        productStockToCreate.setLastUpdatedOn(new Date());
+        productStockToCreate.setLastUpdatedOnDateTime(new Date());
 
-        ProductStock createdProductStock = productStockService.create(productStockToCreate);
+        ProductItemStock createdProductStock = productItemStockService.create(productStockToCreate);
         if (createdProductStock == null) {
             return null;
         }
@@ -166,36 +165,46 @@ public class StockViewController {
     @ResponseBody
     @Operation(description = "Updates an existing product-stock")
     public ProductStockDto updateProductStocks(@RequestBody ProductStockDto productStockDto) {
-        ProductStock existingProductStock = productStockService.findByUuid(productStockDto.getUuid());
+        ProductItemStock existingProductStock = productItemStockService.findById(productStockDto.getUuid());
         if (existingProductStock.getUuid() == null) {
             return null;
         }
 
         existingProductStock.setQuantity(productStockDto.getQuantity());
-        existingProductStock.setMeasurementUnit(MeasurementUnit.piece);
-        existingProductStock.setLastUpdatedOn(new Date());
+        existingProductStock.setMeasurementUnit(productStockDto.getMeasurementUnit());
+        existingProductStock.setLastUpdatedOnDateTime(new Date());
 
-        existingProductStock = productStockService.update(existingProductStock);
+        existingProductStock = productItemStockService.update(existingProductStock);
         log.info("Updated product-stock: " + existingProductStock);
 
         return convertToDto(existingProductStock);
     }
 
-    private ProductStockDto convertToDto(ProductStock entity) {
+    private ProductStockDto convertToDto(ProductItemStock entity) {
         ProductStockDto dto = modelMapper.map(entity, ProductStockDto.class);
         dto.getMaterial().setMaterialNumberSupplier(entity.getMaterial().getOwnMaterialNumber());
         var materialPartnerRelation =
-            mprService.find(entity.getMaterial().getOwnMaterialNumber(), entity.getAllocatedToCustomerPartner().getUuid());
+            mprService.find(entity.getMaterial().getOwnMaterialNumber(), entity.getPartner().getUuid());
         dto.getMaterial().setMaterialNumberCustomer(materialPartnerRelation.getPartnerMaterialNumber());
 
-        Partner myself = partnerService.getOwnPartnerEntity();
-        setBpnaAndBpnsOnStockDtoBasedOnPartner(entity, dto, myself);
+        dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
+
+        dto.setStockLocationBpns(entity.getLocationBpns());
+        dto.setStockLocationBpna(entity.getLocationBpna());
+
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
+
+
+//        Partner myself = partnerService.getOwnPartnerEntity();
+//        setBpnaAndBpnsOnStockDtoBasedOnPartner(entity, dto, myself);
 
         return dto;
     }
 
-    private ProductStock convertToEntity(ProductStockDto dto) {
-        ProductStock productStock = modelMapper.map(dto, ProductStock.class);
+    private ProductItemStock convertToEntity(ProductStockDto dto) {
+        ProductItemStock productStock = modelMapper.map(dto, ProductItemStock.class);
         Material material = materialService.findByOwnMaterialNumber(dto.getMaterial().getMaterialNumberSupplier());
         productStock.setMaterial(material);
 
@@ -216,11 +225,16 @@ public class StockViewController {
                 allocationPartner.getBpnl())
             );
         }
-        productStock.setAllocatedToCustomerPartner(existingPartner);
 
-        // always set to bpna and find corresponding site
-        productStock.setLocationId(dto.getStockLocationBpna());
-        productStock.setLocationIdType(LocationIdTypeEnum.B_P_N_A);
+        productStock.setPartner(existingPartner);
+
+        productStock.setLocationBpna(dto.getStockLocationBpna());
+        productStock.setLocationBpns(dto.getStockLocationBpns());
+
+        productStock.setCustomerOrderId(dto.getCustomerOrderNumber().isEmpty() ? null : dto.getCustomerOrderNumber());
+        productStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber().isEmpty() ? null : dto.getCustomerOrderPositionNumber());
+        productStock.setSupplierOrderId(dto.getSupplierOrderNumber().isEmpty() ? null : dto.getSupplierOrderNumber());
+
         return productStock;
     }
 
@@ -244,7 +258,7 @@ public class StockViewController {
         materialStockToCreate.setLastUpdatedOnDateTime(new Date());
 
         MaterialItemStock createdMaterialStock = materialItemStockService.create(materialStockToCreate);
-
+        // todo: test creating material stock -> finding partner not yet done
         return convertToDto(createdMaterialStock);
     }
 
@@ -271,6 +285,7 @@ public class StockViewController {
         MaterialStockDto dto = modelMapper.map(entity, MaterialStockDto.class);
         dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
         dto.getMaterial().setMaterialNumberCustomer(entity.getMaterial().getOwnMaterialNumber());
+        // todo: set material number supplier
 
         dto.setStockLocationBpns(variablesService.getOwnDefaultBpns());
         dto.setStockLocationBpna(variablesService.getOwnDefaultBpna());
@@ -286,12 +301,14 @@ public class StockViewController {
         MaterialItemStock materialStock = modelMapper.map(dto, MaterialItemStock.class);
         materialStock.getMaterial().setOwnMaterialNumber(dto.getMaterial().getMaterialNumberCustomer());
 
+        // todo: set material numbers?
+
         materialStock.setLocationBpna(dto.getStockLocationBpna());
         materialStock.setLocationBpns(dto.getStockLocationBpns());
 
-        materialStock.setCustomerOrderId(dto.getCustomerOrderNumber().isEmpty() ? "" : dto.getCustomerOrderNumber());
-        materialStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber().isEmpty() ? "" : dto.getCustomerOrderPositionNumber());
-        materialStock.setSupplierOrderId(dto.getSupplierOrderNumber().isEmpty() ? "" : dto.getSupplierOrderNumber());
+        materialStock.setCustomerOrderId(dto.getCustomerOrderNumber().isEmpty() ? null : dto.getCustomerOrderNumber());
+        materialStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber().isEmpty() ? null : dto.getCustomerOrderPositionNumber());
+        materialStock.setSupplierOrderId(dto.getSupplierOrderNumber().isEmpty() ? null : dto.getSupplierOrderNumber());
 
         return materialStock;
     }

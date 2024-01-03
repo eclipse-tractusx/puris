@@ -488,12 +488,13 @@ export default {
                     // Create new product stock
                     // 1. Determine product
                     const existingProduct = this.bdProducts.filter(
-                        (p) => p.ownMaterialNumber === changedStock.productId
+                        (p) =>
+                            p.ownMaterialNumber === this.changedStock.productId
                     )[0];
 
                     // 2. Determine partner
                     const existingCustomer = this.bdCustomers.filter(
-                        (c) => c.uuid === changedStock.allocatedToPartner
+                        (c) => c.uuid === this.changedStock.partner
                     )[0];
 
                     // 3. Create Stock
