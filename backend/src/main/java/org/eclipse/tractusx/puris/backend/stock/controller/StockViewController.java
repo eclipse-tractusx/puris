@@ -31,21 +31,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.*;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.FrontendMaterialDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.MaterialStockDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.PartnerProductStockDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestApiService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedMaterialItemStockService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
@@ -55,7 +55,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -75,7 +74,7 @@ public class StockViewController {
     private MaterialItemStockService materialItemStockService;
 
     @Autowired
-    private PartnerProductStockService partnerProductStockService;
+    private ReportedMaterialItemStockService reportedMaterialItemStockService;
 
     @Autowired
     private ProductStockRequestApiService productStockRequestApiService;
@@ -343,52 +342,32 @@ public class StockViewController {
         if(!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-        return ResponseEntity.ok(partnerProductStockService.
-            findAllByOwnMaterialNumber(ownMaterialNumber)
+        log.info("Following materials have been found {}", reportedMaterialItemStockService.findAll());
+
+        return ResponseEntity.ok(reportedMaterialItemStockService.
+            findAll()
             .stream()
+                .filter(stock -> stock.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
             .map(this::convertToDto)
             .collect(Collectors.toList()));
     }
 
-    private PartnerProductStockDto convertToDto(PartnerProductStock entity) {
+    private PartnerProductStockDto convertToDto(ReportedMaterialItemStock entity) {
         PartnerProductStockDto dto = modelMapper.map(entity, PartnerProductStockDto.class);
         dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
         dto.getMaterial().setMaterialNumberCustomer(entity.getMaterial().getOwnMaterialNumber());
         var materialPartnerRelation = mprService.find(entity.getMaterial().getOwnMaterialNumber(),
-            entity.getSupplierPartner().getUuid());
+            entity.getPartner().getUuid());
         dto.getMaterial().setMaterialNumberSupplier(materialPartnerRelation.getPartnerMaterialNumber());
 
-        Partner customerPartner = partnerService.findByBpnl(entity.getSupplierPartner().getBpnl());
-        setBpnaAndBpnsOnStockDtoBasedOnPartner(entity, dto, customerPartner);
+        dto.setStockLocationBpns(variablesService.getOwnDefaultBpns());
+        dto.setStockLocationBpna(variablesService.getOwnDefaultBpna());
+
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
 
         return dto;
-    }
-
-    /**
-     * helper method to lookup and set the corresponding bpna or bpns on dto
-     *
-     * @param entity Stock to set the data from
-     * @param dto StockDto to set the data on
-     * @param partner holding the stock
-     */
-    private void setBpnaAndBpnsOnStockDtoBasedOnPartner(Stock entity, StockDto dto, Partner partner){
-        if (entity.getLocationIdType() == LocationIdTypeEnum.B_P_N_A){
-            Optional<Site> siteForAddress = partner.getSites()
-                .stream().filter(site -> site.getAddresses().stream().anyMatch(addr -> addr.getBpna().equals(entity.getLocationId()))).findFirst();
-
-            if (siteForAddress.isPresent()){
-                dto.setStockLocationBpns(siteForAddress.get().getBpns());
-                dto.setStockLocationBpna(entity.getLocationId());
-            }
-        }else{
-            dto.setStockLocationBpns(entity.getLocationId());
-            Optional<Site> siteOfPartner = partner.getSites().stream().filter(site -> site.getBpns().equals(entity.getLocationId())).findFirst();
-            if(siteOfPartner.isPresent()){
-                dto.setStockLocationBpna(siteOfPartner.get().getAddresses().first().getBpna());
-            }else{
-                throw new IllegalStateException(String.format("Partner %s with Site %s has no Address.", partner.getBpnl(), siteOfPartner.get().getBpns()));
-            }
-        }
     }
 
     @GetMapping("customer")
