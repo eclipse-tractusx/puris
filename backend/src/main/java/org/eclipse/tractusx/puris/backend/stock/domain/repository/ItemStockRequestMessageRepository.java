@@ -20,16 +20,13 @@
 
 package org.eclipse.tractusx.puris.backend.stock.domain.repository;
 
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStockRequestMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface ProductItemStockRepository extends JpaRepository<ProductItemStock, UUID> {
-    List<ProductItemStock> findByPartnerAndMaterial(Partner partner, Material material);
+public interface ItemStockRequestMessageRepository extends JpaRepository<ItemStockRequestMessage, UUID> {
+
 }
