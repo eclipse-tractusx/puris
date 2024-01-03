@@ -26,6 +26,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @SpringBootApplication
 public class PurisApplication {
 
@@ -41,6 +44,11 @@ public class PurisApplication {
                 .setFieldMatchingEnabled(true)
                 .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE);
         return new ModelMapper();
+    }
+
+    @Bean
+    public ExecutorService getExecutorService() {
+        return Executors.newCachedThreadPool();
     }
 
 }
