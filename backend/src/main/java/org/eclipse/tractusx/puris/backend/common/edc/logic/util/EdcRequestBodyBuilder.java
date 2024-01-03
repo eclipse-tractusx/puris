@@ -102,6 +102,13 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+    /**
+     * Creates a request body in order to register a policy that
+     * allows only the BPNL of the given partner.
+     *
+     * @param partner the partner
+     * @return the request body
+     */
     public JsonNode buildBpnRestrictedPolicy(Partner partner) {
         var body = MAPPER.createObjectNode();
         var context = MAPPER.createObjectNode();
@@ -127,9 +134,17 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+    /**
+     * Creates a request body in order to register a contract definition for the given partner and the given
+     * api method that uses the BPNL-restricted policy created with the buildBpnRestrictedPolicy - method.
+     *
+     * @param partner the partner
+     * @param apiMethod the api method
+     * @return the request body
+     */
     public JsonNode buildContractDefinitionWithBpnRestrictedPolicy(Partner partner, DT_ApiMethodEnum apiMethod) {
         var body = getEdcContextObject();
-        body.put("@id", partner.getBpnl()+"_contractdefintion_for"+apiMethod);
+        body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + apiMethod);
         body.put("accessPolicyId", getBpnPolicyId(partner));
         body.put("contractPolicyId", getBpnPolicyId(partner));
         var assetsSelector = MAPPER.createObjectNode();
@@ -141,6 +156,14 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+    /**
+     * This method helps to ensure that the buildContractDefinitionWithBpnRestrictedPolicy uses the
+     * same policy-id as the one that is created with the buildContractDefinitionWithBpnRestrictedPolicy
+     * - method.
+     *
+     * @param partner the partner
+     * @return the policy-id
+     */
     private String getBpnPolicyId(Partner partner) {
         return partner.getBpnl() + "_policy";
     }
