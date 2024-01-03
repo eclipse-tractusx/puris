@@ -95,13 +95,11 @@
                                         )
                                     }}
                                 </td>
-                                <td v-if="row.stock.type === 'PRODUCT'">
-                                    {{ row.stock.allocatedToPartner.name
-                                    }}<br />({{
-                                        row.stock.allocatedToPartner.bpnl
+                                <td>
+                                    {{ row.stock.partner.name }}<br />({{
+                                        row.stock.partner.bpnl
                                     }})
                                 </td>
-                                <td v-if="row.stock.type === 'MATERIAL'"></td>
                                 <td>{{ row.stock.isBlocked }}</td>
                                 <td>{{ row.stock.stockLocationBpns }}</td>
                                 <td>{{ row.stock.stockLocationBpna }}</td>

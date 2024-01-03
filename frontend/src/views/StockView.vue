@@ -79,7 +79,7 @@
                         <select
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="allocatedToPartner"
-                            v-model="this.changedStock.allocatedToPartner"
+                            v-model="this.changedStock.partner"
                         >
                             <option
                                 v-for="option in partnerOptions"
@@ -271,17 +271,13 @@ export default {
                 type: "Material",
                 quantity: "",
                 measurementUnit: "",
-                allocatedToPartner: "",
+                partner: "",
                 isBlocked: false,
                 bpns: "",
                 bpna: "",
                 customerOrderNumber: "",
                 customerOrderPositionNumber: "",
                 supplierOrderNumber: "",
-            },
-            site: {
-                bpns: "BPNS12345678910ZZZ",
-                name: "Wolfsburg Hauptwerk",
             },
             unitsOfMeasureJson: stockViewUom,
         };
@@ -350,9 +346,17 @@ export default {
                     (stock) =>
                         stock.material.materialNumberCustomer ===
                             this.changedStock.materialId &&
+                        stock.partner.uuid === this.changedStock.partner &&
                         stock.stockLocationBpns ===
                             this.changedStock.bpns.bpns &&
-                        stock.stockLocationBpna === this.changedStock.bpna
+                        stock.stockLocationBpna === this.changedStock.bpna &&
+                        stock.isBlocked === this.changedStock.isBlocked &&
+                        stock.customerOrderNumber ===
+                            this.changedStock.customerOrderNumber &&
+                        stock.customerOrderPositionNumber ===
+                            this.changedStock.customerOrderPositionNumber &&
+                        stock.supplierOrderNumber ===
+                            this.changedStock.supplierOrderNumber
                 );
 
                 if (existingMaterialStocks.length === 1) {
@@ -388,9 +392,15 @@ export default {
                         quantity: this.changedStock.quantity,
                         measurementUnit: this.changedStock.measurementUnit,
                         type: "MATERIAL",
-                        atSiteBpnl: this.site.bpns,
                         stockLocationBpna: this.changedStock.bpna,
                         stockLocationBpns: this.changedStock.bpns,
+                        isBlocked: this.changedStock.isBlocked,
+                        customerOrderNumber:
+                            this.changedStock.customerOrderNumber,
+                        customerOrderPositionNumber:
+                            this.changedStock.customerOrderPositionNumber,
+                        supplierOrderNumber:
+                            this.changedStock.supplierOrderNumber,
                     };
 
                     var newMaterialStock = JSON.parse(JSON.stringify(newStock));
@@ -408,11 +418,56 @@ export default {
                     (stock) =>
                         stock.material.materialNumberSupplier ===
                             this.changedStock.productId &&
-                        stock.allocatedToPartner.uuid ===
-                            this.changedStock.allocatedToPartner &&
+                        stock.partner.uuid === this.changedStock.partner &&
+                        stock.isBlocked === this.changedStock.isBlocked &&
                         stock.stockLocationBpns ===
                             this.changedStock.bpns.bpns &&
-                        stock.stockLocationBpna === this.changedStock.bpna
+                        stock.stockLocationBpna === this.changedStock.bpna &&
+                        stock.customerOrderNumber ===
+                            this.changedStock.customerOrderNumber &&
+                        stock.customerOrderPositionNumber ===
+                            this.changedStock.customerOrderPositionNumber &&
+                        stock.supplierOrderNumber ===
+                            this.changedStock.supplierOrderNumber
+                );
+
+                const stock = this.bdProductStocks[0];
+
+                console.info("Material ID match: ");
+                console.info(
+                    stock.material.materialNumberCustomer ===
+                        this.changedStock.materialId
+                );
+                console.info("partner match: ");
+                console.info(stock.partner.uuid === this.changedStock.partner);
+                console.info("bpns match: ");
+                console.info(
+                    stock.stockLocationBpns === this.changedStock.bpns.bpns
+                );
+                console.info("bpna match: ");
+                console.info(
+                    stock.stockLocationBpna === this.changedStock.bpna
+                );
+                console.info("blocked match: ");
+                console.info(stock.isBlocked === this.changedStock.isBlocked);
+                console.info("customerOrder match: ");
+                console.info(
+                    stock.customerOrderNumber ===
+                        this.changedStock.customerOrderNumber
+                );
+
+                console.info(stock.customerOrderNumber);
+                console.info(this.changedStock.customerOrderNumber);
+
+                console.info("customerOrderPos match: ");
+                console.info(
+                    stock.customerOrderPositionNumber ===
+                        this.changedStock.customerOrderPositionNumber
+                );
+                console.info("supplierOrder match: ");
+                console.info(
+                    stock.supplierOrderNumber ===
+                        this.changedStock.supplierOrderNumber
                 );
 
                 if (existingProductStocks.length === 1) {
@@ -450,10 +505,17 @@ export default {
                         },
                         quantity: this.changedStock.quantity,
                         measurementUnit: this.changedStock.measurementUnit,
-                        allocatedToPartner: existingCustomer,
+                        partner: existingCustomer,
                         type: "PRODUCT",
                         stockLocationBpna: this.changedStock.bpna,
                         stockLocationBpns: this.changedStock.bpns.bpns,
+                        isBlocked: this.changedStock.isBlocked,
+                        customerOrderNumber:
+                            this.changedStock.customerOrderNumber,
+                        customerOrderPositionNumber:
+                            this.changedStock.customerOrderPositionNumber,
+                        supplierOrderNumber:
+                            this.changedStock.supplierOrderNumber,
                     };
 
                     const newProductStock = JSON.parse(
@@ -485,6 +547,7 @@ export default {
             })
                 .then((res) => res.json())
                 .then((data) => (this.bdMaterialStocks = data))
+                .then(() => console.info(this.bdMaterialStocks))
                 .catch((err) => console.log(err));
         },
         fetchProductStocks() {

@@ -83,11 +83,11 @@
                         <template
                             v-else
                             v-for="stock in availableMaterialsOrProducts"
-                            :key="stock.supplierPartner.bpnl"
+                            :key="stock.partner.bpnl"
                         >
                             <td>
-                                {{ stock.supplierPartner.name }}<br />({{
-                                    stock.supplierPartner.bpnl
+                                {{ stock.partner.name }}<br />({{
+                                    stock.partner.bpnl
                                 }})
                             </td>
                             <td>
