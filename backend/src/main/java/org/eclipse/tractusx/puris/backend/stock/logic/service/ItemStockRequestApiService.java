@@ -43,6 +43,10 @@ import java.util.UUID;
 
 @Service
 @Slf4j
+/**
+ * This class is a Service that handles requests and responses
+ * for MaterialItemStocks or ProductItemStocks.
+ */
 public class ItemStockRequestApiService {
     @Autowired
     private PartnerService partnerService;
@@ -65,6 +69,13 @@ public class ItemStockRequestApiService {
     @Autowired
     private ItemStockRequestMessageService itemStockRequestMessageService;
 
+    /**
+     * This method receives a request message from a customer and
+     * assembles and sends a response from your local ProductItemStocks
+     * to this customer.
+     *
+     * @param requestMessage the RequestMessage
+     */
     public void handleRequestFromCustomer(ItemStockRequestMessageDto requestMessage) {
         var requestMessageHeader = requestMessage.getHeader();
         Partner customerPartner = partnerService.findByBpnl(requestMessageHeader.getSenderBpn());
@@ -112,6 +123,13 @@ public class ItemStockRequestApiService {
     }
 
 
+    /**
+     * This method receives a request message from a supplier and
+     * assembles and sends a response from your local MaterialItemStocks
+     * to this customer.
+     *
+     * @param requestMessage the RequestMessage
+     */
     public void handleRequestFromSupplier(ItemStockRequestMessageDto requestMessage) {
         var requestMessageHeader = requestMessage.getHeader();
         Partner supplierPartner = partnerService.findByBpnl(requestMessageHeader.getSenderBpn());
@@ -124,24 +142,24 @@ public class ItemStockRequestApiService {
         }
         ItemStockResponseDto responseDto = new ItemStockResponseDto();
         responseDto.getHeader().setRelatedMessageId(requestMessageHeader.getMessageId());
-        for(var materialRequest : requestMessage.getContent().getItemStock()) {
+        for (var materialRequest : requestMessage.getContent().getItemStock()) {
             Material material = null;
-            if(materialRequest.getMaterialGlobalAssetId() != null) {
+            if (materialRequest.getMaterialGlobalAssetId() != null) {
                 material = materialService.findByMaterialNumberCx(material.getMaterialNumberCx());
             }
-            if(material == null && materialRequest.getMaterialNumberCustomer() != null) {
+            if (material == null && materialRequest.getMaterialNumberCustomer() != null) {
                 material = materialService.findByOwnMaterialNumber(materialRequest.getMaterialNumberCustomer());
             }
-            if(material == null && materialRequest.getMaterialNumberSupplier() != null) {
+            if (material == null && materialRequest.getMaterialNumberSupplier() != null) {
                 var foundMaterials = mprService.findAllByPartnerMaterialNumber(materialRequest.getMaterialNumberSupplier());
                 foundMaterials = foundMaterials.stream()
                     .filter(Material::isMaterialFlag)
-                    .filter(m->mprService.partnerSuppliesMaterial(m, supplierPartner))
+                    .filter(m -> mprService.partnerSuppliesMaterial(m, supplierPartner))
                     .toList();
-                if(!foundMaterials.isEmpty()) {
+                if (!foundMaterials.isEmpty()) {
                     material = foundMaterials.get(0);
                 }
-                if(foundMaterials.size()>1) {
+                if (foundMaterials.size() > 1) {
                     log.warn("Ambiguous material definition in request \n" + materialRequest);
                     log.warn("Arbitrarily choosing " + material.getOwnMaterialNumber());
                 }
@@ -157,9 +175,17 @@ public class ItemStockRequestApiService {
 
     }
 
+    /**
+     * Convenience method to bundle the common parts in the workflow of
+     * the handleRequestFromCustomer and handleRequestFromSupplier methods.
+     * The responseDto object's content is expected to be filled in advance.
+     *
+     * @param partner     the given Partner
+     * @param responseDto
+     */
     private void sendResponse(Partner partner, ItemStockResponseDto responseDto) {
         var data = edcAdapterService.getContractForResponseApi(partner);
-        if(data == null) {
+        if (data == null) {
             log.error("Failed to contract response api from " + partner.getEdcUrl());
             return;
         }
@@ -186,13 +212,20 @@ public class ItemStockRequestApiService {
     }
 
 
+    /**
+     * This method creates and sends a request to the given supplier-partner
+     * in order to receive his current ItemStocks for the given materials.
+     *
+     * @param supplierPartner the supplier Partner
+     * @param materials       the materials
+     */
     public void doRequestForMaterialItemStocks(Partner supplierPartner, Material... materials) {
         Partner mySelf = partnerService.getOwnPartnerEntity();
         ItemStockRequestMessage itemStockRequestMessage = new ItemStockRequestMessage();
         itemStockRequestMessage.setReceiverBpn(supplierPartner.getBpnl());
         itemStockRequestMessage.setSenderBpn(mySelf.getBpnl());
         itemStockRequestMessage.setDirection(DirectionCharacteristic.INBOUND);
-        for(var material : materials) {
+        for (var material : materials) {
             ItemStockRequestMessage.Request request = new ItemStockRequestMessage.Request();
             request.setMaterialGlobalAssetId(material.getMaterialNumberCx());
             request.setMaterialNumberCustomer(material.getOwnMaterialNumber());
@@ -202,13 +235,20 @@ public class ItemStockRequestApiService {
         sendRequest(supplierPartner, itemStockRequestMessage);
     }
 
+    /**
+     * This method creates and sends a request to the given customer-partner
+     * in order to receive his current ItemStocks for the given materials.
+     *
+     * @param customerPartner the supplier Partner
+     * @param materials       the materials
+     */
     public void doRequestForProductItemStocks(Partner customerPartner, Material... materials) {
         Partner mySelf = partnerService.getOwnPartnerEntity();
         ItemStockRequestMessage itemStockRequestMessage = new ItemStockRequestMessage();
         itemStockRequestMessage.setReceiverBpn(customerPartner.getBpnl());
         itemStockRequestMessage.setSenderBpn(mySelf.getBpnl());
         itemStockRequestMessage.setDirection(DirectionCharacteristic.OUTBOUND);
-        for(var material : materials) {
+        for (var material : materials) {
             ItemStockRequestMessage.Request request = new ItemStockRequestMessage.Request();
             request.setMaterialGlobalAssetId(material.getMaterialNumberCx());
             request.setMaterialNumberSupplier(material.getOwnMaterialNumber());
@@ -219,11 +259,20 @@ public class ItemStockRequestApiService {
 
     }
 
+    /**
+     * Convenience method to bundle the common parts in the workflow of
+     * the doRequestForMaterialItemStocks and doRequestForProductItemStocks methods.
+     *
+     * @param partner                 the partner
+     * @param itemStockRequestMessage the itemStockRequestMessage
+     */
     private void sendRequest(Partner partner, ItemStockRequestMessage itemStockRequestMessage) {
         itemStockRequestMessage = itemStockRequestMessageService.create(itemStockRequestMessage);
-        String [] data = edcAdapterService.getContractForRequestApi(partner);
-        if(data == null) {
+        String[] data = edcAdapterService.getContractForRequestApi(partner);
+        if (data == null) {
             log.error("Failed to obtain request api from " + partner.getEdcUrl());
+            itemStockRequestMessage.setState(DT_RequestStateEnum.Error);
+            itemStockRequestMessageService.update(itemStockRequestMessage);
             return;
         }
         String authKey = data[0];
@@ -235,7 +284,7 @@ public class ItemStockRequestApiService {
             var requestDto = ItemStockRequestMessageDto.convertToDto(itemStockRequestMessage);
             var response = edcAdapterService.postProxyPullRequest(endpoint, authKey, authCode,
                 objectMapper.writeValueAsString(requestDto));
-            if(response.isSuccessful()) {
+            if (response.isSuccessful()) {
                 itemStockRequestMessage.setState(DT_RequestStateEnum.Requested);
 
             } else {

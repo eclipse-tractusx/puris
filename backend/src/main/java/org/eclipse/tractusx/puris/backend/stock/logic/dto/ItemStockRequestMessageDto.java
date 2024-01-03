@@ -34,6 +34,10 @@ import java.util.UUID;
 @Getter
 @Setter
 @ToString
+/**
+ * This class represents a request message as it is sent
+ * to the counterparty.
+ */
 public class ItemStockRequestMessageDto {
 
     private HeaderDto header = new HeaderDto();
@@ -66,6 +70,13 @@ public class ItemStockRequestMessageDto {
         private String materialNumberSupplier;
     }
 
+    /**
+     * Create an ItemStockRequestMessageDto from the
+     * given ItemStockRequestMessage
+     *
+     * @param itemStockRequestMessage the ItemStockRequestMessage
+     * @return the corresponding Dto
+     */
     public static ItemStockRequestMessageDto convertToDto(ItemStockRequestMessage itemStockRequestMessage) {
         ItemStockRequestMessageDto dto = new ItemStockRequestMessageDto();
         var header = dto.getHeader();
@@ -87,6 +98,13 @@ public class ItemStockRequestMessageDto {
         return dto;
     }
 
+    /**
+     * Create an ItemStockRequestMessage from the given
+     * ItemStockRequestMessageDto
+     *
+     * @param dto the Dto
+     * @return the corresponding entity
+     */
     public static ItemStockRequestMessage convertToEntity(ItemStockRequestMessageDto dto) {
         ItemStockRequestMessage entity = new ItemStockRequestMessage();
         entity.setMessageId(dto.getHeader().messageId);

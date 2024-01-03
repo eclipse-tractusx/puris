@@ -39,6 +39,10 @@ import java.util.*;
 @Entity
 @ToString
 @NoArgsConstructor
+/**
+ * An instance of this class represents the data received in a
+ * call to the itemstockrequest api.
+ */
 public class ItemStockRequestMessage {
 
     public final static String CONTEXT = "RES-PURIS-ItemStockRequest:1.0";
@@ -71,12 +75,12 @@ public class ItemStockRequestMessage {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ItemStockRequestMessage that)) return false;
-        return Objects.equals(messageId, that.messageId) && Objects.equals(context, that.context) && Objects.equals(version, that.version) && Objects.equals(senderBpn, that.senderBpn) && Objects.equals(receiverBpn, that.receiverBpn) && Objects.equals(sentDateTime, that.sentDateTime) && direction == that.direction && Objects.equals(itemStock, that.itemStock);
+        return Objects.equals(messageId, that.messageId) && Objects.equals(context, that.context) && Objects.equals(version, that.version) && Objects.equals(senderBpn, that.senderBpn) && Objects.equals(receiverBpn, that.receiverBpn) && Objects.equals(sentDateTime, that.sentDateTime) && direction == that.direction && Objects.equals(itemStock, that.itemStock) && state == that.state;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(messageId, context, version, senderBpn, receiverBpn, sentDateTime, direction, itemStock);
+        return Objects.hash(messageId, context, version, senderBpn, receiverBpn, sentDateTime, direction, itemStock, state);
     }
 
     @Getter
