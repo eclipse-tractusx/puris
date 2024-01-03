@@ -27,7 +27,7 @@ import lombok.Setter;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
 
 import java.util.Date;
 
@@ -36,12 +36,14 @@ import java.util.Date;
 @NoArgsConstructor
 public class PartnerProductStockDto extends StockDto {
 
-    private PartnerDto supplierPartner;
-
-    public PartnerProductStockDto(MaterialDto material, double quantity, MeasurementUnit measurementUnit, String stockLocationBpns,
-                                  String stockLocationBpna, PartnerDto supplierPartner, Date lastUpdatedOn) {
-        super(material, quantity, measurementUnit, stockLocationBpns, stockLocationBpna, lastUpdatedOn);
+    public PartnerProductStockDto(MaterialDto material, double quantity, ItemUnitEnumeration measurementUnit, String stockLocationBpns,
+                                  String stockLocationBpna, PartnerDto partner, Date lastUpdatedOn, boolean isBlocked) {
+        super(material, quantity, measurementUnit, stockLocationBpns, stockLocationBpna, lastUpdatedOn, partner, isBlocked);
         this.setType(DT_StockTypeEnum.PRODUCT);
-        this.supplierPartner = supplierPartner;
+    }
+
+    public PartnerProductStockDto(MaterialDto material, double quantity, ItemUnitEnumeration measurementUnit, String stockLocationBpns, String stockLocationBpna, String customerOrderNumber, String customerOrderPositionNumber, String supplierOrderNumber, Date lastUpdatedOn, PartnerDto partner, boolean isBlocked) {
+        super(material, quantity, measurementUnit, stockLocationBpns, stockLocationBpna, customerOrderNumber, customerOrderPositionNumber, supplierOrderNumber, lastUpdatedOn, partner, isBlocked);
+        this.setType(DT_StockTypeEnum.PRODUCT);
     }
 }
