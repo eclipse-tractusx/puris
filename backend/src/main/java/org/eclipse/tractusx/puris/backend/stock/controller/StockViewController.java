@@ -245,7 +245,6 @@ public class StockViewController {
         List<MaterialStockDto> allMaterialStocks = materialItemStockService.findAll().stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
-        log.info(allMaterialStocks.toString());
         return allMaterialStocks;
     }
 
@@ -258,7 +257,10 @@ public class StockViewController {
         materialStockToCreate.setLastUpdatedOnDateTime(new Date());
 
         MaterialItemStock createdMaterialStock = materialItemStockService.create(materialStockToCreate);
-        // todo: test creating material stock -> finding partner not yet done
+        if (createdMaterialStock == null){
+            throw new IllegalStateException("MaterialStock could not be created");
+        }
+
         return convertToDto(createdMaterialStock);
     }
 
@@ -299,9 +301,27 @@ public class StockViewController {
 
     private MaterialItemStock convertToEntity(MaterialStockDto dto) {
         MaterialItemStock materialStock = modelMapper.map(dto, MaterialItemStock.class);
-        materialStock.getMaterial().setOwnMaterialNumber(dto.getMaterial().getMaterialNumberCustomer());
 
-        // todo: set material numbers?
+        Material material = materialService.findByOwnMaterialNumber(dto.getMaterial().getMaterialNumberCustomer());
+        materialStock.setMaterial(material);
+
+        PartnerDto partnerDto = dto.getPartner();
+
+        Partner existingPartner;
+        if(partnerDto.getUuid() != null){
+            existingPartner = partnerService.findByUuid(partnerDto.getUuid());
+        }else{
+            existingPartner = partnerService.findByBpnl(partnerDto.getBpnl());
+        }
+
+        if (existingPartner == null){
+            throw new IllegalStateException(String.format(
+                "Partner for uuid %s and bpnl %s could not be found",
+                partnerDto.getUuid(),
+                partnerDto.getBpnl())
+            );
+        }
+        materialStock.setPartner(existingPartner);
 
         materialStock.setLocationBpna(dto.getStockLocationBpna());
         materialStock.setLocationBpns(dto.getStockLocationBpns());

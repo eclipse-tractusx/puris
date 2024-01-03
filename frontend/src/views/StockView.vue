@@ -132,8 +132,8 @@
                             type="checkbox"
                             id="isBlocked"
                             name="isBlockedCheckbox"
-                            value="isBlocked"
                             class="mr-2"
+                            v-model="this.changedStock.isBlocked"
                         />
                         <label for="isBlocked">Is Blocked </label>
                     </div>
@@ -378,11 +378,15 @@ export default {
                     // 1. Determine product
                     const existingMaterial = this.bdMaterials.filter(
                         (m) =>
-                            m.materialNumberCustomer ===
-                            this.changedStock.materialId
+                            m.ownMaterialNumber === this.changedStock.materialId
                     )[0];
 
-                    // 2. Create Stock
+                    // 2. Determine partner
+                    const existingSupplier = this.bdSuppliers.filter(
+                        (s) => s.uuid === this.changedStock.partner
+                    )[0];
+
+                    // 3. Create Stock
                     const newStock = {
                         uuid: null,
                         material: {
@@ -391,9 +395,10 @@ export default {
                         },
                         quantity: this.changedStock.quantity,
                         measurementUnit: this.changedStock.measurementUnit,
+                        partner: existingSupplier,
                         type: "MATERIAL",
                         stockLocationBpna: this.changedStock.bpna,
-                        stockLocationBpns: this.changedStock.bpns,
+                        stockLocationBpns: this.changedStock.bpns.bpns,
                         isBlocked: this.changedStock.isBlocked,
                         customerOrderNumber:
                             this.changedStock.customerOrderNumber,
@@ -429,45 +434,6 @@ export default {
                             this.changedStock.customerOrderPositionNumber &&
                         stock.supplierOrderNumber ===
                             this.changedStock.supplierOrderNumber
-                );
-
-                const stock = this.bdProductStocks[0];
-
-                console.info("Material ID match: ");
-                console.info(
-                    stock.material.materialNumberCustomer ===
-                        this.changedStock.materialId
-                );
-                console.info("partner match: ");
-                console.info(stock.partner.uuid === this.changedStock.partner);
-                console.info("bpns match: ");
-                console.info(
-                    stock.stockLocationBpns === this.changedStock.bpns.bpns
-                );
-                console.info("bpna match: ");
-                console.info(
-                    stock.stockLocationBpna === this.changedStock.bpna
-                );
-                console.info("blocked match: ");
-                console.info(stock.isBlocked === this.changedStock.isBlocked);
-                console.info("customerOrder match: ");
-                console.info(
-                    stock.customerOrderNumber ===
-                        this.changedStock.customerOrderNumber
-                );
-
-                console.info(stock.customerOrderNumber);
-                console.info(this.changedStock.customerOrderNumber);
-
-                console.info("customerOrderPos match: ");
-                console.info(
-                    stock.customerOrderPositionNumber ===
-                        this.changedStock.customerOrderPositionNumber
-                );
-                console.info("supplierOrder match: ");
-                console.info(
-                    stock.supplierOrderNumber ===
-                        this.changedStock.supplierOrderNumber
                 );
 
                 if (existingProductStocks.length === 1) {
