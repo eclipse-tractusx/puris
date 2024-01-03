@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 
@@ -48,9 +49,9 @@ public class ItemStockRequestMessage {
     @GeneratedValue
     private UUID messageId;
     @NotNull
-    private String context;
+    private String context = CONTEXT;
     @NotNull
-    private String version;
+    private String version = VERSION;
     @NotNull
     @Pattern(regexp = Partner.BPNL_REGEX)
     private String senderBpn;
@@ -63,6 +64,8 @@ public class ItemStockRequestMessage {
     private DirectionCharacteristic direction;
     @ElementCollection
     private List<Request> itemStock = new ArrayList<>();
+    @NotNull
+    private DT_RequestStateEnum state = DT_RequestStateEnum.Working;
 
     @Override
     public boolean equals(Object o) {

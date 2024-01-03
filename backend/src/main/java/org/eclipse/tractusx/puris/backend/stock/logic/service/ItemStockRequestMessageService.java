@@ -39,12 +39,6 @@ public class ItemStockRequestMessageService {
             log.error("MessageId already exists, could not create entity \n" + itemStockRequestMessage);
             return null;
         }
-        if (itemStockRequestMessage.getVersion() == null) {
-            itemStockRequestMessage.setVersion(ItemStockRequestMessage.VERSION);
-        }
-        if (itemStockRequestMessage.getContext() == null) {
-            itemStockRequestMessage.setContext(ItemStockRequestMessage.CONTEXT);
-        }
         return repository.save(itemStockRequestMessage);
     }
 
