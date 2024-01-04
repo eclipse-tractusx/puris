@@ -25,7 +25,7 @@ on:
             node_image:
                 description: 'kindest/node image for k8s kind cluster'
                 # k8s version from 3.1 release as default
-                default: 'kindest/node:1.27.3'
+                default: 'kindest/node:v1.27.3'
                 required: false
                 type: string
             helm_version:
@@ -49,7 +49,7 @@ jobs:
                   # upgrade version, default (v0.17.0) uses node image v1.21.1 and doesn't work with more recent node image versions
                   version: v0.20.0
                   # default value for event_name != workflow_dispatch
-                  node_image: ${{ github.event.inputs.node_image || 'kindest/node:1.27.3' }}
+                  node_image: ${{ github.event.inputs.node_image || 'kindest/node:v1.27.3' }}
 
             - name: Build image
               uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 #v5.1
