@@ -126,7 +126,6 @@ public class StockViewController {
             .collect(Collectors.toList());
     }
 
-
     @GetMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Returns a list of all product-stocks")
@@ -189,10 +188,6 @@ public class StockViewController {
         dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
         dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
 
-
-//        Partner myself = partnerService.getOwnPartnerEntity();
-//        setBpnaAndBpnsOnStockDtoBasedOnPartner(entity, dto, myself);
-
         return dto;
     }
 
@@ -203,18 +198,11 @@ public class StockViewController {
 
         PartnerDto allocationPartner = dto.getPartner();
 
-        Partner existingPartner;
-        if(allocationPartner.getUuid() != null){
-
-            existingPartner = partnerService.findByUuid(allocationPartner.getUuid());
-        }else{
-            existingPartner = partnerService.findByBpnl(allocationPartner.getBpnl());
-        }
+        Partner existingPartner = partnerService.findByBpnl(allocationPartner.getBpnl());
 
         if (existingPartner == null){
             throw new IllegalStateException(String.format(
-                "Partner for uuid %s and bpnl %s could not be found",
-                allocationPartner.getUuid(),
+                "Partner for bpnl %s could not be found",
                 allocationPartner.getBpnl())
             );
         }
@@ -280,7 +268,9 @@ public class StockViewController {
         MaterialStockDto dto = modelMapper.map(entity, MaterialStockDto.class);
         dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
         dto.getMaterial().setMaterialNumberCustomer(entity.getMaterial().getOwnMaterialNumber());
-        // todo: set material number supplier
+        var materialPartnerRelation = mprService.find(entity.getMaterial().getOwnMaterialNumber(),
+            entity.getPartner().getUuid());
+        dto.getMaterial().setMaterialNumberSupplier(materialPartnerRelation.getPartnerMaterialNumber());
 
         dto.setStockLocationBpns(entity.getLocationBpns());
         dto.setStockLocationBpna(entity.getLocationBpna());
@@ -300,17 +290,11 @@ public class StockViewController {
 
         PartnerDto partnerDto = dto.getPartner();
 
-        Partner existingPartner;
-        if(partnerDto.getUuid() != null){
-            existingPartner = partnerService.findByUuid(partnerDto.getUuid());
-        }else{
-            existingPartner = partnerService.findByBpnl(partnerDto.getBpnl());
-        }
+        Partner existingPartner = partnerService.findByBpnl(partnerDto.getBpnl());
 
         if (existingPartner == null){
             throw new IllegalStateException(String.format(
-                "Partner for uuid %s and bpnl %s could not be found",
-                partnerDto.getUuid(),
+                "Partner for bpnl %s could not be found",
                 partnerDto.getBpnl())
             );
         }
