@@ -28,7 +28,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
@@ -88,9 +87,6 @@ public class StockViewController {
 
     @Autowired
     private ModelMapper modelMapper;
-
-    @Autowired
-    private VariablesService variablesService;
 
     private final Pattern materialPattern = Pattern.compile(Material.MATERIAL_NUMBER_REGEX);
 
@@ -286,8 +282,8 @@ public class StockViewController {
         dto.getMaterial().setMaterialNumberCustomer(entity.getMaterial().getOwnMaterialNumber());
         // todo: set material number supplier
 
-        dto.setStockLocationBpns(variablesService.getOwnDefaultBpns());
-        dto.setStockLocationBpna(variablesService.getOwnDefaultBpna());
+        dto.setStockLocationBpns(entity.getLocationBpns());
+        dto.setStockLocationBpna(entity.getLocationBpna());
 
         dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
         dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
@@ -358,8 +354,8 @@ public class StockViewController {
             entity.getPartner().getUuid());
         dto.getMaterial().setMaterialNumberSupplier(materialPartnerRelation.getPartnerMaterialNumber());
 
-        dto.setStockLocationBpns(variablesService.getOwnDefaultBpns());
-        dto.setStockLocationBpna(variablesService.getOwnDefaultBpna());
+        dto.setStockLocationBpns(entity.getLocationBpns());
+        dto.setStockLocationBpna(entity.getLocationBpna());
 
         dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
         dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
@@ -395,8 +391,8 @@ public class StockViewController {
             entity.getPartner().getUuid());
         dto.getMaterial().setMaterialNumberSupplier(materialPartnerRelation.getPartnerMaterialNumber());
 
-        dto.setStockLocationBpns(variablesService.getOwnDefaultBpns());
-        dto.setStockLocationBpna(variablesService.getOwnDefaultBpna());
+        dto.setStockLocationBpns(entity.getLocationBpns());
+        dto.setStockLocationBpna(entity.getLocationBpna());
 
         dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
         dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
