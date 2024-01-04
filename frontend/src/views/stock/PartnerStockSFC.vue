@@ -1,7 +1,7 @@
 <!--
- Copyright (c) 2023 Volkswagen AG
- Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
- Copyright (c) 2023 Contributors to the Eclipse Foundation
+ Copyright (c) 2023, 2024 Volkswagen AG
+ Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
  See the NOTICE file(s) distributed with this work for additional
  information regarding copyright ownership.
@@ -39,21 +39,29 @@
       <tr class="text-left">
         <th>Supplier</th>
         <th>Quantity</th>
+        <th>Is Blocked</th>
+        <th>BPNS</th>
+        <th>BPNA</th>
         <th>Last updated on</th>
       </tr>
       <tr
           v-for="stock in availableMaterialsOrProducts"
           :key="stock.supplierPartner.bpnl"
       >
-        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.supplierPartner.name }} ({{ stock.supplierPartner.bpnl }})</td>
-        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.quantity }} pieces</td>
-        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.lastUpdatedOn }}</td>
+        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.supplierPartner.name }}<br>({{ stock.supplierPartner.bpnl }})</td>
+        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.quantity }} {{ getUomValueForUomKey(stock.measurementUnit) }}</td>
+        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.isBlocked }}</td>
+          <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.stockLocationBpns }}</td>
+          <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.stockLocationBpna }}</td>
+          <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.lastUpdatedOn }}</td>
       </tr>
     </table>
   </div>
 </template>
 
 <script>
+import UnitOfMeasureUtils from "@/services/UnitOfMeasureUtils";
+
 export default {
   name: "PartnerStockSFC",
 
@@ -117,6 +125,9 @@ export default {
         .then((data) => console.log(data))
         .catch((err) => console.log(err));
     },
+      getUomValueForUomKey(key){
+          return UnitOfMeasureUtils.findUomValueByKey(key);
+      }
   },
 };
 </script>

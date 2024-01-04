@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -151,6 +151,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private void setupCustomerRole() throws JsonProcessingException {
         Partner supplierPartner = createAndGetSupplierPartner();
         Material semiconductorMaterial = getNewSemiconductorMaterialForCustomer();
+        Partner mySelf = partnerService.getOwnPartnerEntity();
 
         semiconductorMaterial = materialService.create(semiconductorMaterial);
         log.info(String.format("Created material: %s", semiconductorMaterial));
@@ -197,13 +198,25 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             semiconductorMaterial,
             5,
             MeasurementUnit.piece,
-            "BPNS4444444444XX",
+            mySelf.getSites().first().getBpns(),
             LocationIdTypeEnum.B_P_N_S,
             new Date()
         );
         materialStockEntity = materialStockService.create(materialStockEntity);
         log.info(String.format("Created materialStock: %s", materialStockEntity));
 
+        // Create Product Stock
+        ProductStock productStockEntity = new ProductStock(
+            centralControlUnitEntity,
+            20,
+            MeasurementUnit.piece,
+            mySelf.getSites().first().getBpns(),
+            LocationIdTypeEnum.B_P_N_S,
+            new Date(),
+            nonScenarioCustomer
+        );
+        productStockEntity = productStockService.create(productStockEntity);
+        log.info(String.format("Created productStock: %s", productStockEntity));
 
         // Create PartnerProductStock
         semiconductorMaterial = materialService.findByOwnMaterialNumber(semiconductorMaterial.getOwnMaterialNumber());
@@ -222,7 +235,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info("SAMM-DTO:\n" + objectMapper.writeValueAsString(productStockSammDto));
 
         log.info("Own Street and Number: " + variablesService.getOwnDefaultStreetAndNumber());
-        Partner mySelf = partnerService.getOwnPartnerEntity();
+
+        log.info(mySelf.toString());
         var builder = MaterialItemStock.builder();
         var materialItemStock = builder.partner(supplierPartner)
             .material(semiconductorMaterial)
@@ -240,7 +254,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         Address address = new Address("BPNA4444444444DD", "Feldweg 1", "54545 Neustadt", "Germany");
         newSite.getAddresses().add(address);
         mySelf.getSites().add(newSite);
-        partnerService.update(mySelf);
+        mySelf = partnerService.update(mySelf);
 
         builder = MaterialItemStock.builder();
         var otherMaterialItemStock =
@@ -272,7 +286,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info("Created SAMM\n" + node.toPrettyString());
 
         mySelf.getSites().remove(newSite);
-        partnerService.update(mySelf);
+        mySelf = partnerService.update(mySelf);
         ItemStockSamm itemStockSAMM = new ItemStockSamm();
         itemStockSAMM.setMaterialNumberSupplier(semiconductorMatNbrSupplier);
         itemStockSAMM.setMaterialNumberCustomer(semiconductorMatNbrCustomer);
@@ -319,6 +333,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private void setupSupplierRole() {
         Partner customerPartner = createAndGetCustomerPartner();
         Material semiconductorMaterial = getNewSemiconductorMaterialForSupplier();
+        Partner mySelf = partnerService.getOwnPartnerEntity();
 
         semiconductorMaterial = materialService.create(semiconductorMaterial);
         log.info(String.format("Created product: %s", semiconductorMaterial));
@@ -344,7 +359,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             semiconductorMaterial,
             20,
             MeasurementUnit.piece,
-            "BPNS1234567890ZZ",
+            mySelf.getSites().first().getBpns(),
             LocationIdTypeEnum.B_P_N_S,
             new Date(),
             customerPartner
@@ -419,6 +434,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             "Non-Scenario Customer",
             "http://nonscenario-customer.com/api/v1/dsp",
             "BPNL2222222222RR",
+            "BPNS2222222222XY",
+            "Non Scneario Site",
             "BPNA2222222222XZ",
             "Fichtenweg 23",
             "65432 Waldhausen",

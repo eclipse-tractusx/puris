@@ -1,7 +1,7 @@
 <!--
- Copyright (c) 2023 Volkswagen AG
- Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
- Copyright (c) 2023 Contributors to the Eclipse Foundation
+ Copyright (c) 2023, 2024 Volkswagen AG
+ Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
  See the NOTICE file(s) distributed with this work for additional
  information regarding copyright ownership.
@@ -25,10 +25,12 @@
       <h2 class="text-center bold text-3xl">{{ title }}</h2>
       <table class="">
         <tr class="text-left">
-          <th>ID</th>
-          <th>Name</th>
+          <th>Material (ID)</th>
           <th>Quantity</th>
-          <th v-if="partnerRole=='customer'">Allocated to customer</th>
+          <th>Allocated to Partner</th>
+          <th>Is Blocked</th>
+          <th>BPNS</th>
+          <th>BPNA</th>
         </tr>
         <tr
             v-for="stock in stocks"
@@ -36,10 +38,13 @@
             @click="selectStock(stock.material.materialNumberCustomer, stock.uuid)"
             :class="{ highlight: stock.material.materialNumberCustomer === selectedMaterialId }"
         >
-          <td>{{ stock.material.materialNumberCustomer }}</td>
-          <td>{{ stock.material.name }}</td>
-          <td>{{ stock.quantity }} pieces</td>
-          <td v-if="partnerRole=='customer'">{{ stock.allocatedToCustomerPartner.name }}</td>
+          <td>{{ stock.material.name }}<br>({{ stock.material.materialNumberCustomer }})</td>
+          <td>{{ stock.quantity }} {{ getUomValueForUomKey(stock.measurementUnit) }}</td>
+          <td v-if="stock.type == 'PRODUCT'">{{ stock.allocatedToPartner.name }}<br>({{ stock.allocatedToPartner.bpnl }})</td>
+          <td v-if="stock.type == 'MATERIAL'"></td>
+          <td>{{stock.isBlocked}}</td>
+          <td>{{stock.stockLocationBpns}}</td>
+          <td>{{stock.stockLocationBpna}}</td>
         </tr>
       </table>
     </div>
@@ -58,6 +63,7 @@
 
 <script>
 import PartnerStockSFC from "@/views/stock/PartnerStockSFC.vue";
+import UnitOfMeasureUtils from "@/services/UnitOfMeasureUtils";
 
 export default {
   name: "StockTableSFC",
@@ -83,6 +89,9 @@ export default {
       this.selectedMaterialId = materialId;
       this.selectedStockUuid = stockUuid;
     },
+    getUomValueForUomKey(key){
+        return UnitOfMeasureUtils.findUomValueByKey(key);
+    }
   },
 };
 </script>
