@@ -61,16 +61,16 @@ class StockViewControllerTest {
     private MaterialService materialService;
 
     @MockBean
-    private ProductStockService productStockService;
-
-    @MockBean
     private ProductItemStockService productItemStockService;
 
     @MockBean
-    private MaterialStockService materialStockService;
+    private MaterialItemStockService materialItemStockService;
 
     @MockBean
-    private PartnerProductStockService partnerProductStockService;
+    private ReportedMaterialItemStockService reportedMaterialItemStockService;
+    
+    @MockBean
+    private ReportedProductItemStockService reportedProductItemStockService;
 
     @MockBean
     private ProductStockRequestApiService productStockRequestApiService;
