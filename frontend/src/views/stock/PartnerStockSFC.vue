@@ -25,11 +25,11 @@
                 class="bold text-2xl"
                 v-if="this.selectedMaterialOrProductId === ''"
             >
-                Your {{ this.partnerRole }}s' stocks for
-                {{ this.selectedMaterialOrProductId }}.
+                Your {{ this.partnerRole }}s' stocks for no material.
             </h3>
             <h3 class="bold text-2xl" v-else>
-                Your {{ this.partnerRole }}s' stocks for no material.
+                Your {{ this.partnerRole }}s' stocks for
+                {{ this.selectedMaterialOrProductId }}.
             </h3>
             <button class="btn-primary" @click="updateMaterialOrProduct()">
                 Update Partner Stocks
