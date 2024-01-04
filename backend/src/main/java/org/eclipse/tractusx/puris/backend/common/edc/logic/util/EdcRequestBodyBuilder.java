@@ -19,15 +19,10 @@ import java.util.Map;
 @Slf4j
 public class EdcRequestBodyBuilder {
 
-
     @Autowired
     private VariablesService variablesService;
-
     @Autowired
     private ObjectMapper MAPPER;
-
-    private final String publicPolicyId = "policy1";
-    private final String publicContractDefinitionId = "contractdef1";
     private final String EDC_NAMESPACE = "https://w3id.org/edc/v0.0.1/ns/";
     private final String VOCAB_KEY = "@vocab";
     private final String ODRL_NAMESPACE = "http://www.w3.org/ns/odrl/2/";
@@ -107,43 +102,70 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
-
     /**
-     * Creates a request body for registering a public policy in DSP protocol that contains no
-     * restrictions whatsoever.
+     * Creates a request body in order to register a policy that
+     * allows only the BPNL of the given partner.
      *
-     * @return The request body
+     * @param partner the partner
+     * @return the request body
      */
-    public JsonNode buildPublicPolicyBody() {
+    public JsonNode buildBpnRestrictedPolicy(Partner partner) {
         var body = MAPPER.createObjectNode();
         var context = MAPPER.createObjectNode();
         context.put("odrl", ODRL_NAMESPACE);
         body.set("@context", context);
-        body.put("@type", "PolicyDefinitionRequestDto");
-        body.put("@id", publicPolicyId);
+        body.put("@id", getBpnPolicyId(partner));
         var policy = MAPPER.createObjectNode();
-        policy.put("@type", "set");
-        var emptyArray = MAPPER.createArrayNode();
-        policy.set("odrl:permission", emptyArray);
-        policy.set("odrl:prohibition", emptyArray);
-        policy.set("odrl:obligation", emptyArray);
         body.set("policy", policy);
+        policy.put("@type", "Policy");
+        var permissionsArray = MAPPER.createArrayNode();
+        policy.set("odrl:permission", permissionsArray);
+        var permissionsObject = MAPPER.createObjectNode();
+        permissionsArray.add(permissionsObject);
+        permissionsObject.put("odrl:action", "USE");
+        var constraintObject = MAPPER.createObjectNode();
+        permissionsObject.set("odrl:constraint", constraintObject);
+        constraintObject.put("@type", "LogicalConstraint");
+        constraintObject.put("odrl:leftOperand", "BusinessPartnerNumber");
+        var operatorObject = MAPPER.createObjectNode();
+        constraintObject.set("odrl:operator", operatorObject);
+        operatorObject.put("@id", "odrl:eq");
+        constraintObject.put("odrl:rightOperand", partner.getBpnl());
         return body;
     }
 
     /**
-     * Creates the request body for registering a public contract definition.
-     * Relies on the policy that is created via the buildPublicPolicy() method.
+     * Creates a request body in order to register a contract definition for the given partner and the given
+     * api method that uses the BPNL-restricted policy created with the buildBpnRestrictedPolicy - method.
      *
-     * @return The request body
+     * @param partner the partner
+     * @param apiMethod the api method
+     * @return the request body
      */
-    public JsonNode buildContractDefinitionWithPublicPolicyBody() {
+    public JsonNode buildContractDefinitionWithBpnRestrictedPolicy(Partner partner, DT_ApiMethodEnum apiMethod) {
         var body = getEdcContextObject();
-        body.put("@id", publicContractDefinitionId);
-        body.put("accessPolicyId", publicPolicyId);
-        body.put("contractPolicyId", publicPolicyId);
-        body.set("assetsSelector", MAPPER.createArrayNode());
+        body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + apiMethod);
+        body.put("accessPolicyId", getBpnPolicyId(partner));
+        body.put("contractPolicyId", getBpnPolicyId(partner));
+        var assetsSelector = MAPPER.createObjectNode();
+        body.set("assetsSelector", assetsSelector);
+        assetsSelector.put("@type", "CriterionDto");
+        assetsSelector.put("operandLeft", EDC_NAMESPACE + "id");
+        assetsSelector.put("operator", "=");
+        assetsSelector.put("operandRight", variablesService.getApiAssetId(apiMethod));
         return body;
+    }
+
+    /**
+     * This method helps to ensure that the buildContractDefinitionWithBpnRestrictedPolicy uses the
+     * same policy-id as the one that is created with the buildContractDefinitionWithBpnRestrictedPolicy
+     * - method.
+     *
+     * @param partner the partner
+     * @return the policy-id
+     */
+    private String getBpnPolicyId(Partner partner) {
+        return partner.getBpnl() + "_policy";
     }
 
     /**

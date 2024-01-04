@@ -1,7 +1,7 @@
 <!--
- Copyright (c) 2023 Volkswagen AG
- Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
- Copyright (c) 2023 Contributors to the Eclipse Foundation
+ Copyright (c) 2023, 2024 Volkswagen AG
+ Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
  See the NOTICE file(s) distributed with this work for additional
  information regarding copyright ownership.
@@ -19,123 +19,218 @@
  SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-    <main class="flex flex-col">
+    <main class="flex flex-col mb-7">
         <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
             View and Manage Stocks
         </h1>
 
-        <div>
+        <div class="divide-y-4">
             <form
                 @submit.prevent="addOrUpdateStock(this.changedStock)"
-                class="w-max max-w-lg"
+                class="flex flex-row"
             >
-                <div class="flex flex-row justify-start space-x-3">
-                    <div class="space-x-2">
-                        <input
-                            type="radio"
-                            v-model="this.changedStock.type"
-                            value="Material"
-                            @change="toggleMaterialOrProduct(changedStock)"
+                <!-- First Column -->
+                <div class="basis-1/2 mr-28 flex flex-col">
+                    <div class="flex flex-row justify-start space-x-3">
+                        <div class="space-x-2">
+                            <input
+                                type="radio"
+                                v-model="stockType"
+                                value="Material"
+                                @change="toggleMaterialOrProduct"
+                            />
+                            <label>Material</label>
+                        </div>
+
+                        <div class="space-x-2">
+                            <input
+                                type="radio"
+                                v-model="stockType"
+                                value="Product"
+                                @change="toggleMaterialOrProduct"
+                            />
+                            <label>Product</label>
+                        </div>
+                    </div>
+                    <div>
+                        <DisableableSelectInput
+                            id="materialSelect"
+                            label="Material"
+                            :value="changedStock.materialId"
+                            :disabled="changedStock.type === 'Product'"
+                            :options="bdMaterials"
+                            @input="onMaterialChange"
                         />
-                        <label>Material</label>
+                    </div>
+                    <div>
+                        <DisableableSelectInput
+                            id="productSelect"
+                            label="Product"
+                            :value="changedStock.productId"
+                            :disabled="changedStock.type === 'Material'"
+                            :options="bdProducts"
+                            @input="onProductChange"
+                        />
+                    </div>
+                    <div>
+                        <label for="allocatedToPartner">
+                            Allocated to Partner
+                        </label>
+                        <select
+                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                            id="allocatedToPartner"
+                            v-model="this.changedStock.allocatedToPartner"
+                        >
+                            <option
+                                v-for="option in partnerOptions"
+                                :value="option.value"
+                                :key="option.value"
+                            >
+                                {{ option.label }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="flex flex-row">
+                        <div class="flex flex-col basis-2/3 mr-4">
+                            <label for="Quantity">Quantity</label>
+                            <input
+                                class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                type="number"
+                                id="quantityInput"
+                                v-model="this.changedStock.quantity"
+                            />
+                        </div>
+                        <div class="flex flex-col basis-1/3">
+                            <label for="measurementUnit">UOM</label>
+                            <select
+                                class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                id="measurementUnit"
+                                v-model="this.changedStock.measurementUnit"
+                            >
+                                <option
+                                    v-for="item in unitsOfMeasureJson"
+                                    :value="item.key"
+                                    :key="item.key"
+                                >
+                                    {{ item.value }}
+                                </option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="space-x-2">
-                        <input
-                            type="radio"
-                            v-model="this.changedStock.type"
-                            value="Product"
-                            @change="toggleMaterialOrProduct(changedStock)"
-                        />
-                        <label>Product</label>
+                    <div class="text-center">
+                        <button class="btn-primary" id="stockBtn">
+                            Add or Update
+                        </button>
                     </div>
                 </div>
 
-                <div>
-                    <label for="material">Material</label>
-                    <select
-                        class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                        id="materialSelect"
-                        v-model="this.changedStock.materialId"
-                        :disabled="this.changedStock.type === 'Product'"
-                    >
-                        <option
-                            v-for="material in this.bdMaterials"
-                            :value="material.ownMaterialNumber"
+                <!-- Second Column -->
+                <div class="basis-1/2 flex flex-col justify-end">
+                    <div>
+                        <input
+                            type="checkbox"
+                            id="isBlocked"
+                            name="isBlockedCheckbox"
+                            value="isBlocked"
+                            class="mr-2"
+                        />
+                        <label for="isBlocked">Is Blocked </label>
+                    </div>
+                    <div>
+                        <label for="stockLocationBPNS">
+                            Stock Location BPNS
+                        </label>
+                        <select
+                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                            id="stockLocationBPNS"
+                            v-model="this.changedStock.bpns"
                         >
-                            {{ material.ownMaterialNumber }} ({{
-                                material.description
-                            }})
-                        </option>
-                    </select>
-                </div>
-                <div>
-                    <label for="product">Product</label>
-                    <select
-                        class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                        id="productSelect"
-                        v-model="this.changedStock.productId"
-                        :disabled="this.changedStock.type === 'Material'"
-                        @change="onProductChange(this.changedStock.productId)"
-                    >
-                        <option
-                            v-for="product in this.bdProducts"
-                            :value="product.ownMaterialNumber"
+                            <option
+                                v-for="site in bdSitesWithAddresses"
+                                :value="site"
+                                :key="site.bpns"
+                            >
+                                {{ site.bpns }} - {{ site.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="stockLocationBPNA">
+                            Stock Location BPNA
+                        </label>
+                        <select
+                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                            id="stockLocationBPNA"
+                            v-model="this.changedStock.bpna"
                         >
-                            {{ product.ownMaterialNumber }} ({{
-                                product.description
-                            }})
-                        </option>
-                    </select>
-                </div>
-                <div>
-                    <label for="allocatedToCustomer"
-                        >Allocated to Customer</label
-                    >
-                    <select
-                        class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                        id="allocatedToCustomer"
-                        v-model="this.changedStock.allocatedToCustomer"
-                        :disabled="this.changedStock.type === 'Material'"
-                    >
-                        <option
-                            v-for="customer in this.bdCustomers"
-                            :value="customer.uuid"
-                        >
-                            {{ customer.name }}
-                        </option>
-                    </select>
-                </div>
-                <div>
-                    <label for="Quantity">Quantity</label>
-                    <input
-                        class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                        type="number"
-                        id="quantityInput"
-                        v-model="this.changedStock.quantity"
-                    />
-                </div>
-
-                <div class="text-center">
-                    <button class="btn-primary" id="stockBtn">
-                        Add or Update
-                    </button>
+                            <option
+                                v-for="address in this.changedStock.bpns
+                                    .addresses"
+                                :value="address.bpna"
+                                :key="address.bpna"
+                            >
+                                {{ address.bpna }} -
+                                {{ address.streetAndNumber }} -
+                                {{ address.zipCodeAndCity }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="flex flex-row justify-between">
+                        <div class="grow mr-4">
+                            <label for="customerOrderNumber">
+                                Customer Order Number
+                            </label>
+                            <input
+                                class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                id="customerOrderNumber"
+                                v-model="this.changedStock.customerOrderNumber"
+                            />
+                        </div>
+                        <div class="grow">
+                            <label for="customerOrderPositionNumber">
+                                Customer Order Position Number
+                            </label>
+                            <input
+                                class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                id="customerOrderPositionNumber"
+                                v-model="
+                                    this.changedStock
+                                        .customerOrderPositionNumber
+                                "
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label for="supplierOrderNumber">
+                            Supplier Order Number
+                        </label>
+                        <input
+                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                            id="supplierOrderNumber"
+                            v-model="this.changedStock.supplierOrderNumber"
+                        />
+                    </div>
+                    <!-- Empty div -->
+                    <div style="height: 54.5px"></div>
                 </div>
             </form>
 
             <!-- separator -->
             <div
                 id="materialAndProductStockTables"
-                class="flex flex-col space-y-2 max-w-max"
+                class="flex flex-col space-y-2 max-w-max divide-y-4"
             >
                 <StockTableSFC
                     title="Material Stocks"
                     :stocks="this.bdMaterialStocks"
+                    :ownRole="'customer'"
                     :partnerRole="'supplier'"
                 />
                 <StockTableSFC
                     title="Product Stocks"
                     :stocks="this.bdProductStocks"
+                    :ownRole="'supplier'"
                     :partnerRole="'customer'"
                 />
             </div>
@@ -145,10 +240,12 @@
 
 <script>
 import StockTableSFC from "@/views/stock/StockTableSFC.vue";
+import stockViewUom from "@/assets/stockViewUom.json";
+import DisableableSelectInput from "@/components/DisableableSelectInput.vue";
 
 export default {
     name: "StockView",
-    components: { StockTableSFC },
+    components: { DisableableSelectInput, StockTableSFC },
     data() {
         return {
             backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
@@ -159,27 +256,60 @@ export default {
                 .VITE_ENDPOINT_MATERIAL_STOCKS,
             endpointProductStocks: import.meta.env.VITE_ENDPOINT_PRODUCT_STOCKS,
             endpointCustomer: import.meta.env.VITE_ENDPOINT_CUSTOMER,
+            endpointSupplier: import.meta.env.VITE_ENDPOINT_SUPPLIER,
+            endpointBPNS: import.meta.env.VITE_ENDPOINT_PARTNER_OWNSITES,
             bdMaterials: [],
             bdProducts: [],
             bdMaterialStocks: [],
             bdProductStocks: [],
             bdCustomers: [],
+            bdSuppliers: [],
+            bdSitesWithAddresses: [],
             changedStock: {
                 materialId: "",
                 productId: "",
                 type: "Material",
                 quantity: "",
-                unitOfMeasure: "",
-                allocatedToCustomer: "",
+                measurementUnit: "",
+                allocatedToPartner: "",
+                isBlocked: false,
+                bpns: "",
+                bpna: "",
+                customerOrderNumber: "",
+                customerOrderPositionNumber: "",
+                supplierOrderNumber: "",
             },
             site: {
                 bpns: "BPNS12345678910ZZZ",
                 name: "Wolfsburg Hauptwerk",
             },
+            unitsOfMeasureJson: stockViewUom,
         };
     },
+    computed: {
+        stockType: {
+            get() {
+                return this.changedStock.type;
+            },
+            set(value) {
+                this.changedStock.type = value;
+            },
+        },
+        partnerOptions() {
+            if (this.changedStock.type === "Product") {
+                return this.bdCustomers.map((customer) => ({
+                    value: customer.uuid,
+                    label: customer.name,
+                }));
+            } else {
+                return this.bdSuppliers.map((supplier) => ({
+                    value: supplier.uuid,
+                    label: supplier.name,
+                }));
+            }
+        },
+    },
     mounted() {
-        console.log("backendURL in StockView: " + this.backendURL);
         fetch(this.backendURL + this.endpointMaterials, {
             headers: {
                 "X-API-KEY": this.backendApiKey,
@@ -198,6 +328,17 @@ export default {
             .then((data) => (this.bdProducts = data))
             .catch((err) => console.log(err));
 
+        fetch(this.backendURL + this.endpointBPNS, {
+            headers: {
+                "X-API-KEY": this.backendApiKey,
+            },
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                this.bdSitesWithAddresses = data;
+            })
+            .catch((err) => console.log(err));
+
         this.fetchMaterialStocks();
 
         this.fetchProductStocks();
@@ -205,112 +346,135 @@ export default {
     methods: {
         addOrUpdateStock(changedStock) {
             if (changedStock.type === "Material") {
-                var existingMaterialStocks = this.bdMaterialStocks.filter(
+                let existingMaterialStocks = this.bdMaterialStocks.filter(
                     (stock) =>
                         stock.material.materialNumberCustomer ===
-                        changedStock.materialId
+                            this.changedStock.materialId &&
+                        stock.stockLocationBpns ===
+                            this.changedStock.bpns.bpns &&
+                        stock.stockLocationBpna === this.changedStock.bpna
                 );
 
                 if (existingMaterialStocks.length === 1) {
                     // Update existing material stock
-                    var existingMaterialStock = existingMaterialStocks[0];
-                    existingMaterialStock.quantity = changedStock.quantity;
+                    let existingMaterialStock = existingMaterialStocks[0];
+                    existingMaterialStock.quantity = this.changedStock.quantity;
+                    existingMaterialStock.measurementUnit =
+                        this.changedStock.measurementUnit;
 
                     this.putData(
                         this.backendURL + this.endpointMaterialStocks,
-                        existingMaterialStock
+                        existingMaterialStock,
+                        () => {
+                            this.fetchMaterialStocks();
+                        }
                     );
-                    this.fetchMaterialStocks();
                 } else {
                     // Create new material stock
                     // 1. Determine product
-                    var existingMaterial = this.bdMaterials.filter(
+                    const existingMaterial = this.bdMaterials.filter(
                         (m) =>
-                            m.materialNumberCustomer === changedStock.materialId
+                            m.materialNumberCustomer ===
+                            this.changedStock.materialId
                     )[0];
 
                     // 2. Create Stock
-                    var newStock = {
-                        uuid: "",
+                    const newStock = {
+                        uuid: null,
                         material: {
                             materialNumberCustomer:
                                 existingMaterial.ownMaterialNumber,
                         },
-                        quantity: changedStock.quantity,
-                        unitOfMeasure: existingMaterial.unitOfMeasure,
-                        allocatedToCustomerPartner: existingCustomer,
+                        quantity: this.changedStock.quantity,
+                        measurementUnit: this.changedStock.measurementUnit,
                         type: "MATERIAL",
                         atSiteBpnl: this.site.bpns,
+                        stockLocationBpna: this.changedStock.bpna,
+                        stockLocationBpns: this.changedStock.bpns,
                     };
 
                     var newMaterialStock = JSON.parse(JSON.stringify(newStock));
 
                     this.postData(
                         this.backendURL + this.endpointMaterialStocks,
-                        newMaterialStock
+                        newMaterialStock,
+                        () => {
+                            this.fetchMaterialStocks();
+                        }
                     );
-                    this.fetchMaterialStocks();
                 }
             } else if (changedStock.type === "Product") {
-                var existingProductStocks = this.bdProductStocks.filter(
+                let existingProductStocks = this.bdProductStocks.filter(
                     (stock) =>
                         stock.material.materialNumberSupplier ===
-                            changedStock.productId &&
-                        stock.allocatedToCustomerPartner.uuid ===
-                            changedStock.allocatedToCustomer
+                            this.changedStock.productId &&
+                        stock.allocatedToPartner.uuid ===
+                            this.changedStock.allocatedToPartner &&
+                        stock.stockLocationBpns ===
+                            this.changedStock.bpns.bpns &&
+                        stock.stockLocationBpna === this.changedStock.bpna
                 );
 
                 if (existingProductStocks.length === 1) {
                     // Update existing product stock
-                    var existingProductStock = existingProductStocks[0];
-                    existingProductStock.quantity = changedStock.quantity;
+                    let existingProductStock = existingProductStocks[0];
+                    existingProductStock.quantity = this.changedStock.quantity;
+                    existingProductStock.measurementUnit =
+                        this.changedStock.measurementUnit;
 
                     this.putData(
                         this.backendURL + this.endpointProductStocks,
-                        existingProductStock
+                        existingProductStock,
+                        () => {
+                            this.fetchProductStocks();
+                        }
                     );
-                    this.fetchProductStocks();
                 } else {
                     // Create new product stock
                     // 1. Determine product
-                    var existingProduct = this.bdProducts.filter(
+                    const existingProduct = this.bdProducts.filter(
                         (p) => p.ownMaterialNumber === changedStock.productId
                     )[0];
 
                     // 2. Determine partner
-                    var existingCustomer = this.bdCustomers.filter(
-                        (c) => c.uuid === changedStock.allocatedToCustomer
+                    const existingCustomer = this.bdCustomers.filter(
+                        (c) => c.uuid === changedStock.allocatedToPartner
                     )[0];
 
                     // 3. Create Stock
-                    newStock = {
-                        uuid: "",
+                    const newStock = {
+                        uuid: null,
                         material: {
                             materialNumberSupplier:
                                 existingProduct.ownMaterialNumber,
                         },
-                        quantity: changedStock.quantity,
-                        unitOfMeasure: existingProduct.unitOfMeasure,
-                        allocatedToCustomerPartner: existingCustomer,
+                        quantity: this.changedStock.quantity,
+                        measurementUnit: this.changedStock.measurementUnit,
+                        allocatedToPartner: existingCustomer,
                         type: "PRODUCT",
-                        atSiteBpnl: this.site.bpns,
+                        stockLocationBpna: this.changedStock.bpna,
+                        stockLocationBpns: this.changedStock.bpns.bpns,
                     };
 
-                    var newProductStock = JSON.parse(JSON.stringify(newStock));
+                    const newProductStock = JSON.parse(
+                        JSON.stringify(newStock)
+                    );
 
                     this.postData(
                         this.backendURL + this.endpointProductStocks,
-                        newProductStock
+                        newProductStock,
+                        () => {
+                            this.fetchProductStocks();
+                        }
                     );
-                    this.fetchProductStocks();
                 }
             }
         },
-        toggleMaterialOrProduct(changedStock) {
-            if (changedStock.type === "Material") {
-                changedStock.productId = "";
-            } else if (changedStock.type === "Product") {
-                changedStock.materialId = "";
+        toggleMaterialOrProduct() {
+            if (this.stockType === "Material") {
+                this.changedStock.productId = "";
+            } else if (this.stockType === "Product") {
+                this.changedStock.materialId = "";
             }
         },
         fetchMaterialStocks() {
@@ -333,7 +497,7 @@ export default {
                 .then((data) => (this.bdProductStocks = data))
                 .catch((err) => console.log(err));
         },
-        putData(address, data) {
+        putData(address, data, callback = null) {
             fetch(address, {
                 method: "PUT",
                 headers: {
@@ -344,9 +508,14 @@ export default {
             })
                 .then((res) => res.json())
                 .then((data) => console.log(data))
+                .then((data) => {
+                    if (callback && typeof callback === "function") {
+                        callback(data);
+                    }
+                })
                 .catch((err) => console.log(err));
         },
-        postData(address, data) {
+        postData(address, data, callback = null) {
             fetch(address, {
                 method: "POST",
                 headers: {
@@ -357,9 +526,21 @@ export default {
             })
                 .then((res) => res.json())
                 .then((data) => console.log(data))
+                .then((data) => {
+                    if (callback && typeof callback === "function") {
+                        callback(data);
+                    }
+                })
                 .catch((err) => console.log(err));
         },
         onProductChange(productId) {
+            // block events emitted
+            if (typeof productId !== "string") {
+                return;
+            }
+
+            this.changedStock.productId = productId;
+
             fetch(this.backendURL + this.endpointCustomer + productId, {
                 headers: {
                     "X-API-KEY": this.backendApiKey,
@@ -367,6 +548,23 @@ export default {
             })
                 .then((res) => res.json())
                 .then((data) => (this.bdCustomers = data))
+                .catch((err) => console.log(err));
+        },
+        onMaterialChange(materialId) {
+            // block events emitted
+            if (typeof materialId !== "string") {
+                return;
+            }
+
+            this.changedStock.materialId = materialId;
+
+            fetch(this.backendURL + this.endpointSupplier + materialId, {
+                headers: {
+                    "X-API-KEY": this.backendApiKey,
+                },
+            })
+                .then((res) => res.json())
+                .then((data) => (this.bdSuppliers = data))
                 .catch((err) => console.log(err));
         },
     },

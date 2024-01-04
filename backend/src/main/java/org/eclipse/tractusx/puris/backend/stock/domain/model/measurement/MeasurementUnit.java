@@ -46,13 +46,20 @@ public enum MeasurementUnit {
     cubicCentimetre,
     cubicMetre,
     cubicInch,
+    cubicFoot,
+    cubicYard,
     millilitre,
     litre,
     hectolitre,
+    secondUnitOfTime,
+    minuteUnitOfTime,
+    hourUnitOfTime,
+    day,
     piece,
     set,
     pair,
     page,
+    cycle,
     kilowattHour;
 
     /**

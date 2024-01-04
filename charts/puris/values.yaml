@@ -181,15 +181,21 @@ frontend:
         endpointMaterialStocks: stockView/material-stocks
         # -- The endpoint for product stocks for the stock view
         endpointProductStocks: stockView/product-stocks
-        # -- The endpoint for the customers own material number for the stock view
+        # -- The endpoint for the customers who buy a material identified via the own material number for the stock view
         endpointCustomer: stockView/customer?ownMaterialNumber=
+        # -- The endpoint for the suppliers who buy a material identified via the own material number for the stock view
+        endpointSupplier: stockView/supplier?ownMaterialNumber=
         # -- The endpoint for the partners product stocks and their material numbers for the stock view
         endpointPartnerProductStocks: stockView/partner-product-stocks?ownMaterialNumber=
         # -- The endpoint for updating the partners product stocks and their material numbers for the stock view
         endpointUpdatePartnerProductStocks: stockView/update-partner-product-stock?ownMaterialNumber=
+        # -- The endpoint for the partners BPNS
+        endpointPartnerOwnSites: partners/ownSites
         keycloak:
             # -- Disable the Keycloak integration.
             disabled: true
+            # -- The URL to the IDP that should be used.
+            url: "https://idp.com/auth"
             # -- Name of the Realm of the keycloak instance.
             realm: "Catena-X"
             # -- Name of the client which is used for the application.

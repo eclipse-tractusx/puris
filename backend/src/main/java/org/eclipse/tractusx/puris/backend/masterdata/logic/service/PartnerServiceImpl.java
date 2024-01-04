@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,8 +21,10 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.PartnerRepository;
@@ -33,6 +35,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 @Service
@@ -51,6 +55,12 @@ public class PartnerServiceImpl implements PartnerService {
     @Autowired
     private VariablesService variablesService;
 
+    @Autowired
+    private ExecutorService executorService;
+
+    @Autowired
+    private EdcAdapterService edcAdapterService;
+
     private final Pattern bpnlPattern = Pattern.compile("^BPNL[0-9a-zA-Z]{12}$");
     private final Pattern bpnsPattern = Pattern.compile("^BPNS[0-9a-zA-Z]{12}$");
     private final Pattern bpnaPattern = Pattern.compile("^BPNA[0-9a-zA-Z]{12}$");
@@ -61,17 +71,40 @@ public class PartnerServiceImpl implements PartnerService {
             log.error("Could not create Partner " + partner.getBpnl() + " because of constraint violation");
             return null;
         }
-        if (partner.getUuid() == null) {
+        if (partner.getUuid() == null && partnerRepository.findFirstByBpnl(partner.getBpnl()).isEmpty()) {
+            prepareApiAssetsForPartner(partner);
             return partnerRepository.save(partner);
-        }
-        var searchResult = partnerRepository.findById(partner.getUuid());
-        if (searchResult.isEmpty()) {
-            if (partnerRepository.findFirstByBpnl(partner.getBpnl()).isEmpty()) {
-                return partnerRepository.save(partner);
-            }
         }
         log.error("Could not create Partner " + partner.getBpnl() + " because it already existed before");
         return null;
+    }
+
+    @Override
+    public void prepareApiAssetsForPartner(Partner partner) {
+        executorService.submit(new RegistrationTask(partner));
+    }
+
+    @AllArgsConstructor
+    private class RegistrationTask implements Callable<Boolean> {
+        private Partner partner;
+
+        @Override
+        public Boolean call() throws Exception {
+            if (edcAdapterService.createPolicyAndContractDefForPartner(partner)) {
+                log.info("Policy / ContractDef Registration successful for partner " + partner.getBpnl());
+                return true;
+            } else {
+                log.warn("Policy / ContractDef Registration failed for partner " + partner.getBpnl());
+                log.warn("Retrying in 3 seconds");
+                Thread.sleep(3000);
+                if (edcAdapterService.createPolicyAndContractDefForPartner(partner)) {
+                    log.info("Retry successful");
+                    return true;
+                }
+                log.warn("Retry failed");
+                return false;
+            }
+        }
     }
 
 
@@ -107,7 +140,7 @@ public class PartnerServiceImpl implements PartnerService {
                 validData = validData && validBpna;
                 addressCount++;
             }
-            if(site.getAddresses().isEmpty()) {
+            if (site.getAddresses().isEmpty()) {
                 validData = false;
                 log.error("Site " + site.getBpns() + " has no addresses");
             }
@@ -117,7 +150,7 @@ public class PartnerServiceImpl implements PartnerService {
             validData = validData && validBpna;
             addressCount++;
         }
-        if (addressCount<1) {
+        if (addressCount < 1) {
             log.error("No BPNA given for Partner " + partner.getBpnl());
         }
         return validData && addressCount > 0;
@@ -135,11 +168,7 @@ public class PartnerServiceImpl implements PartnerService {
 
     @Override
     public List<Partner> findAllSupplierPartnersForMaterialId(String ownMaterialNumber) {
-        var searchResult = materialRepository.findById(ownMaterialNumber);
-        if (searchResult.isPresent()) {
-            return mprService.findAllSuppliersForMaterial(searchResult.get());
-        }
-        return List.of();
+        return mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
     }
 
     @Override
@@ -153,10 +182,9 @@ public class PartnerServiceImpl implements PartnerService {
             log.error("Could not update Partner " + partner.getBpnl() + " because of constraint violation");
             return null;
         }
-
         Optional<Partner> existingPartner =
             partnerRepository.findById(partner.getUuid());
-        if (existingPartner.isPresent()) {
+        if (existingPartner.isPresent() && existingPartner.get().getBpnl().equals(partner.getBpnl())) {
             return partnerRepository.save(partner);
         }
         log.error("Could not update Partner " + partner.getBpnl() + " because it didn't exist before");

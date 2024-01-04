@@ -48,14 +48,20 @@ spec:
               value: "{{ .Values.frontend.puris.endpointProductStocks }}"
             - name: ENDPOINT_CUSTOMER
               value: "{{ .Values.frontend.puris.endpointCustomer }}"
+            - name: ENDPOINT_SUPPLIER
+              value: "{{ .Values.frontend.puris.endpointSupplier }}"
             - name: ENDPOINT_PARTNER_PRODUCT_STOCKS
               value: "{{ .Values.frontend.puris.endpointPartnerProductStocks }}"
             - name: ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK
               value: "{{ .Values.frontend.puris.endpointUpdatePartnerProductStocks }}"
+            - name: ENDPOINT_PARTNER_OWNSITES
+              value: "{{ .Values.frontend.puris.endpointPartnerOwnSites }}"
             - name: BACKEND_API_KEY
               value: "test"
             - name: IDP_DISABLE
               value: "{{ .Values.frontend.puris.keycloak.disabled }}"
+            - name: IDP_URL
+              value: "{{ .Values.frontend.puris.keycloak.url }}"
             - name: IDP_REALM
               value: "{{ .Values.frontend.puris.keycloak.realm }}"
             - name: IDP_CLIENT_ID

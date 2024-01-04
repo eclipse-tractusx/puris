@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -50,7 +50,9 @@ public abstract class StockDto implements Serializable {
 
     private MeasurementUnit measurementUnit;
 
-    private String locationId;
+    private String stockLocationBpns;
+
+    private String stockLocationBpna;
 
     private LocationIdTypeEnum locationIdType;
 
@@ -58,13 +60,13 @@ public abstract class StockDto implements Serializable {
 
     private Date lastUpdatedOn;
 
-    public StockDto(MaterialDto material, double quantity, MeasurementUnit measurementUnit, String locationId,
-                    LocationIdTypeEnum locationIdType, Date lastUpdatedOn) {
+    public StockDto(MaterialDto material, double quantity, MeasurementUnit measurementUnit, String stockLocationBpns,
+                    String stockLocationBpna, Date lastUpdatedOn) {
         this.material = material;
         this.quantity = quantity;
         this.measurementUnit = measurementUnit;
-        this.locationId = locationId;
-        this.locationIdType = locationIdType;
+        this.stockLocationBpns = stockLocationBpns;
+        this.stockLocationBpna = stockLocationBpna;
         this.lastUpdatedOn = lastUpdatedOn;
     }
 }

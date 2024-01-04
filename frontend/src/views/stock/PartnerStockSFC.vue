@@ -1,7 +1,7 @@
 <!--
- Copyright (c) 2023 Volkswagen AG
- Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
- Copyright (c) 2023 Contributors to the Eclipse Foundation
+ Copyright (c) 2023, 2024 Volkswagen AG
+ Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
  See the NOTICE file(s) distributed with this work for additional
  information regarding copyright ownership.
@@ -19,106 +19,198 @@
  SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div v-if="this.selectedMaterialOrProductId === ''">
-    <h2 class="text-center bold text-3xl">
-      Your {{ this.partnerRole }}s' stocks for no material.
-    </h2>
-  </div>
-  <div v-else class="grid">
-    <h2 class="text-center bold text-3xl">
-      Your {{ this.partnerRole }}s' stocks for
-      {{ this.selectedMaterialOrProductId }}.
-    </h2>
-    <button
-      class="btn-primary place-self-end"
-      @click="updateMaterialOrProduct()"
-    >
-      Update
-    </button>
-    <table class="">
-      <tr class="text-left">
-        <th>Supplier</th>
-        <th>Quantity</th>
-        <th>Last updated on</th>
-      </tr>
-      <tr
-          v-for="stock in availableMaterialsOrProducts"
-          :key="stock.supplierPartner.bpnl"
-      >
-        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.supplierPartner.name }} ({{ stock.supplierPartner.bpnl }})</td>
-        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.quantity }} pieces</td>
-        <td v-if="this.selectedMaterialOrProductId == stock.material.materialNumberCustomer">{{ stock.lastUpdatedOn }}</td>
-      </tr>
-    </table>
-  </div>
+    <div class="flex flex-col mt-6">
+        <div class="flex flex-row justify-between items-center">
+            <h3
+                class="bold text-2xl"
+                v-if="this.selectedMaterialOrProductId === ''"
+            >
+                Your {{ this.partnerRole }}s' stocks for no material.
+            </h3>
+            <h3 class="bold text-2xl" v-else>
+                Your {{ this.partnerRole }}s' stocks for
+                {{ this.selectedMaterialOrProductId }}.
+            </h3>
+            <button class="btn-primary" @click="updateMaterialOrProduct()">
+                Update Partner Stocks
+            </button>
+        </div>
+        <p v-if="this.partnerRole === 'supplier'">
+            <i>
+                Info: These are your suppliers' stocks (your potential inputs)
+                at his site that not yet sent to you.
+            </i>
+        </p>
+        <p v-else-if="this.partnerRole === 'customer'">
+            <i>
+                Info: These are your customers' stocks (your recent outputs) at
+                his site that have not yet been used for production.
+            </i>
+        </p>
+        <div class="overflow-x-auto min-h-60 max-h-80">
+            <table class="mt-2 w-full">
+                <thead>
+                    <tr class="text-left">
+                        <th>Supplier</th>
+                        <th>Quantity</th>
+                        <th>Is Blocked</th>
+                        <th>BPNS</th>
+                        <th>BPNA</th>
+                        <th>Last updated on</th>
+                        <th>
+                            Customer Order Number<br />Customer Order Pos.
+                            Number
+                        </th>
+                        <th>Supplier Order Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for="row in tableRows"
+                        :key="row.index"
+                        :class="{ 'empty-row': row.isEmpty }"
+                    >
+                        <template v-if="row.isEmpty">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </template>
+                        <template
+                            v-else
+                            v-for="stock in availableMaterialsOrProducts"
+                            :key="stock.supplierPartner.bpnl"
+                        >
+                            <td>
+                                {{ stock.supplierPartner.name }}<br />({{
+                                    stock.supplierPartner.bpnl
+                                }})
+                            </td>
+                            <td>
+                                {{ stock.quantity }}
+                                {{
+                                    getUomValueForUomKey(stock.measurementUnit)
+                                }}
+                            </td>
+                            <td>{{ stock.isBlocked }}</td>
+                            <td>{{ stock.stockLocationBpns }}</td>
+                            <td>{{ stock.stockLocationBpna }}</td>
+                            <td>{{ stock.lastUpdatedOn }}</td>
+                            <td>
+                                {{ stock.customerOrderNumber }}<br />{{
+                                    stock.customerOrderPositionNumber
+                                }}
+                            </td>
+                            <td>{{ stock.supplierOrderNumber }}</td>
+                        </template>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </template>
 
 <script>
-export default {
-  name: "PartnerStockSFC",
+import UnitOfMeasureUtils from "@/services/UnitOfMeasureUtils";
 
-  props: {
-    selectedMaterialOrProductId: { type: String, required: true },
-    partnerRole: { type: String, required: true },
-  },
-  data() {
-    return {
-      backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
-      backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
-      endpointPartnerProductStocks: import.meta.env.VITE_ENDPOINT_PARTNER_PRODUCT_STOCKS,
-      endpointUpdatePartnerProductStock: import.meta.env.VITE_ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK,
-      availableMaterialsOrProducts: [],
-    };
-  },
-  created() {
-    if (this.selectedMaterialOrProductId !== "") {
-      if (this.partnerRole === "supplier") {
-        this.getAvailableMaterials();
-      }
+export default {
+    name: "PartnerStockSFC",
+
+    props: {
+        selectedMaterialOrProductId: { type: String, required: true },
+        partnerRole: { type: String, required: true },
+    },
+    data() {
+        return {
+            backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
+            backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
+            endpointPartnerProductStocks: import.meta.env
+                .VITE_ENDPOINT_PARTNER_PRODUCT_STOCKS,
+            endpointUpdatePartnerProductStock: import.meta.env
+                .VITE_ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK,
+            availableMaterialsOrProducts: [],
+        };
+    },
+    computed: {
+        tableRows() {
+            if (this.availableMaterialsOrProducts.length === 0) {
+                // Generate three empty rows
+                return Array.from({ length: 3 }, (_, index) => ({
+                    index,
+                    isEmpty: true,
+                }));
+            } else {
+                // Generate rows with data
+                return this.availableMaterialsOrProducts.map(
+                    (stock, index) => ({
+                        index,
+                        stock,
+                        isEmpty: false,
+                    })
+                );
+            }
+        },
+    },
+    created() {
+        if (this.selectedMaterialOrProductId !== "") {
+            if (this.partnerRole === "supplier") {
+                this.getAvailableMaterials();
+            }
             // else if (this.partnerRole === "customer") {
             //   this.getAvailableProducts();
             // }
-    }
-  },
-  methods: {
-    getAvailableMaterials() {
-      fetch(
-        this.backendURL +
-        this.endpointPartnerProductStocks +
-        this.selectedMaterialOrProductId,
-        {
-          headers: {
-            "X-API-KEY": this.backendApiKey,
-          },
         }
-      )
-        .then((res) => res.json())
-        .then((data) => (this.availableMaterialsOrProducts = data))
-        .catch((err) => console.log(err));
     },
-    // getAvailableProducts() {
-    //   fetch(this.backendURL + this.endpointPartnerProductStocks)
-    //     .then(res => res.json())
-    //     .then(data => this.availableMaterialsOrProducts = data)
-    //     .catch(err => console.log(err));
-    // },
-    updateMaterialOrProduct() {
-      fetch(
-        this.backendURL +
-        this.endpointUpdatePartnerProductStock +
-        this.selectedMaterialOrProductId,
-        {
-          headers: {
-            "X-API-KEY": this.backendApiKey,
-          },
-        }
-      )
-        .then((res) => res.json())
-        .then((data) => console.log(data))
-        .catch((err) => console.log(err));
+    methods: {
+        getAvailableMaterials() {
+            fetch(
+                this.backendURL +
+                    this.endpointPartnerProductStocks +
+                    this.selectedMaterialOrProductId,
+                {
+                    headers: {
+                        "X-API-KEY": this.backendApiKey,
+                    },
+                }
+            )
+                .then((res) => res.json())
+                .then((data) => (this.availableMaterialsOrProducts = data))
+                .catch((err) => console.log(err));
+        },
+        // getAvailableProducts() {
+        //   fetch(this.backendURL + this.endpointPartnerProductStocks)
+        //     .then(res => res.json())
+        //     .then(data => this.availableMaterialsOrProducts = data)
+        //     .catch(err => console.log(err));
+        // },
+        updateMaterialOrProduct() {
+            fetch(
+                this.backendURL +
+                    this.endpointUpdatePartnerProductStock +
+                    this.selectedMaterialOrProductId,
+                {
+                    headers: {
+                        "X-API-KEY": this.backendApiKey,
+                    },
+                }
+            )
+                .then((res) => res.json())
+                .then((data) => console.log(data))
+                .catch((err) => console.log(err));
+        },
+        getUomValueForUomKey(key) {
+            return UnitOfMeasureUtils.findUomValueByKey(key);
+        },
     },
-  },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.empty-row {
+    height: 5vh;
+}
+</style>

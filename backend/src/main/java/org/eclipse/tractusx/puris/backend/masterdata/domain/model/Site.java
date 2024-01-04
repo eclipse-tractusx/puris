@@ -56,7 +56,7 @@ public class Site implements Comparable<Site> {
     /**
      * A human-readable, distinctive name of this site.
      */
-    @Pattern(regexp = "^[a-zA-Z0-9 \\-]{1,255}$")
+    @Pattern(regexp = "^[a-zßA-Z0-9 \\-.]{1,255}$")
     private String name;
     @ElementCollection
     /**

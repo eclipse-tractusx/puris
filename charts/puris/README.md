@@ -134,17 +134,20 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.podSecurityContext | object | `{}` | Added security contexts for a pod |
 | frontend.puris.appName | string | `"PURIS"` | The name of the app displayed in the frontend |
 | frontend.puris.baseUrl | string | `"your-backend-host-address.com"` | The base URL for the backend base URL without further endpoints |
-| frontend.puris.endpointCustomer | string | `"stockView/customer?ownMaterialNumber="` | The endpoint for the customers own material number for the stock view |
+| frontend.puris.endpointCustomer | string | `"stockView/customer?ownMaterialNumber="` | The endpoint for the customers who buy a material identified via the own material number for the stock view |
 | frontend.puris.endpointMaterialStocks | string | `"stockView/material-stocks"` | The endpoint for material stocks for the stock view |
 | frontend.puris.endpointMaterials | string | `"stockView/materials"` | The endpoint for materials for the stock view |
+| frontend.puris.endpointPartnerOwnSites | string | `"partners/ownSites"` | The endpoint for the partners BPNS |
 | frontend.puris.endpointPartnerProductStocks | string | `"stockView/partner-product-stocks?ownMaterialNumber="` | The endpoint for the partners product stocks and their material numbers for the stock view |
 | frontend.puris.endpointProductStocks | string | `"stockView/product-stocks"` | The endpoint for product stocks for the stock view |
 | frontend.puris.endpointProducts | string | `"stockView/products"` | The endpoint for products for the stock view |
+| frontend.puris.endpointSupplier | string | `"stockView/supplier?ownMaterialNumber="` | The endpoint for the suppliers who buy a material identified via the own material number for the stock view |
 | frontend.puris.endpointUpdatePartnerProductStocks | string | `"stockView/update-partner-product-stock?ownMaterialNumber="` | The endpoint for updating the partners product stocks and their material numbers for the stock view |
 | frontend.puris.keycloak.clientId | string | `"appXYZ"` | Name of the client which is used for the application. |
 | frontend.puris.keycloak.disabled | bool | `true` | Disable the Keycloak integration. |
 | frontend.puris.keycloak.realm | string | `"Catena-X"` | Name of the Realm of the keycloak instance. |
 | frontend.puris.keycloak.redirectUrlFrontend | string | `"https://your-frontend-url.com"` | URL to use as keycloak redirect url. |
+| frontend.puris.keycloak.url | string | `"https://idp.com/auth"` | The URL to the IDP that should be used. |
 | frontend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":10,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
 | frontend.readinessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a readiness probe |
 | frontend.readinessProbe.initialDelaySeconds | int | `10` | Delay in seconds after which an initial readiness probe is checked |

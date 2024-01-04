@@ -84,6 +84,8 @@ public abstract class ItemStockService<T extends ItemStock> {
         return repository.findAll();
     }
 
+    public abstract List<T> findByPartnerAndMaterial(Partner partner, Material material);
+
     public abstract boolean validate(T itemStock);
 
     protected boolean basicValidation(ItemStock itemStock) {

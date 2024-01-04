@@ -35,8 +35,10 @@ services:
             - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
             - ENDPOINT_PRODUCT_STOCKS=stockView/product-stocks
             - ENDPOINT_CUSTOMER=stockView/customer?ownMaterialNumber=
+            - ENDPOINT_SUPPLIER=stockView/supplier?ownMaterialNumber=
             - ENDPOINT_PARTNER_PRODUCT_STOCKS=stockView/partner-product-stocks?ownMaterialNumber=
             - ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK=stockView/update-partner-product-stock?ownMaterialNumber=
+            - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
             - IDP_DISABLE=true
         networks:
             - miw-net
@@ -140,8 +142,10 @@ services:
             - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
             - ENDPOINT_PRODUCT_STOCKS=stockView/product-stocks
             - ENDPOINT_CUSTOMER=stockView/customer?ownMaterialNumber=
+            - ENDPOINT_SUPPLIER=stockView/supplier?ownMaterialNumber=
             - ENDPOINT_PARTNER_PRODUCT_STOCKS=stockView/partner-product-stocks?ownMaterialNumber=
             - ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK=stockView/update-partner-product-stock?ownMaterialNumber=
+            - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
             - IDP_DISABLE=true
         networks:
             - miw-net
