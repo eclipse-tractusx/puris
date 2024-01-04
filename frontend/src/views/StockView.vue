@@ -19,18 +19,18 @@
  SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-    <main class="flex flex-col">
+    <main class="flex flex-col mb-7">
         <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
             View and Manage Stocks
         </h1>
 
-        <div>
+        <div class="divide-y-4">
             <form
                 @submit.prevent="addOrUpdateStock(this.changedStock)"
                 class="flex flex-row"
             >
                 <!-- First Column -->
-                <div class="basis-1/3 mr-28 flex flex-col">
+                <div class="basis-1/2 mr-28 flex flex-col">
                     <div class="flex flex-row justify-start space-x-3">
                         <div class="space-x-2">
                             <input
@@ -73,9 +73,9 @@
                         />
                     </div>
                     <div>
-                        <label for="allocatedToPartner"
-                            >Allocated to Partner</label
-                        >
+                        <label for="allocatedToPartner">
+                            Allocated to Partner
+                        </label>
                         <select
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="allocatedToPartner"
@@ -126,7 +126,7 @@
                 </div>
 
                 <!-- Second Column -->
-                <div class="basis-1/3 flex flex-col justify-end">
+                <div class="basis-1/2 flex flex-col justify-end">
                     <div>
                         <input
                             type="checkbox"
@@ -138,9 +138,9 @@
                         <label for="isBlocked">Is Blocked </label>
                     </div>
                     <div>
-                        <label for="stockLocationBPNS"
-                            >Stock Location BPNS</label
-                        >
+                        <label for="stockLocationBPNS">
+                            Stock Location BPNS
+                        </label>
                         <select
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="stockLocationBPNS"
@@ -156,9 +156,9 @@
                         </select>
                     </div>
                     <div>
-                        <label for="stockLocationBPNA"
-                            >Stock Location BPNA</label
-                        >
+                        <label for="stockLocationBPNA">
+                            Stock Location BPNA
+                        </label>
                         <select
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="stockLocationBPNA"
@@ -176,6 +176,41 @@
                             </option>
                         </select>
                     </div>
+                    <div class="flex flex-row justify-between">
+                        <div class="grow mr-4">
+                            <label for="customerOrderNumber">
+                                Customer Order Number
+                            </label>
+                            <input
+                                class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                id="customerOrderNumber"
+                                v-model="this.changedStock.customerOrderNumber"
+                            />
+                        </div>
+                        <div class="grow">
+                            <label for="customerOrderPositionNumber">
+                                Customer Order Position Number
+                            </label>
+                            <input
+                                class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                id="customerOrderPositionNumber"
+                                v-model="
+                                    this.changedStock
+                                        .customerOrderPositionNumber
+                                "
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label for="supplierOrderNumber">
+                            Supplier Order Number
+                        </label>
+                        <input
+                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                            id="supplierOrderNumber"
+                            v-model="this.changedStock.supplierOrderNumber"
+                        />
+                    </div>
                     <!-- Empty div -->
                     <div style="height: 54.5px"></div>
                 </div>
@@ -184,16 +219,18 @@
             <!-- separator -->
             <div
                 id="materialAndProductStockTables"
-                class="flex flex-col space-y-2 max-w-max"
+                class="flex flex-col space-y-2 max-w-max divide-y-4"
             >
                 <StockTableSFC
                     title="Material Stocks"
                     :stocks="this.bdMaterialStocks"
+                    :ownRole="'customer'"
                     :partnerRole="'supplier'"
                 />
                 <StockTableSFC
                     title="Product Stocks"
                     :stocks="this.bdProductStocks"
+                    :ownRole="'supplier'"
                     :partnerRole="'customer'"
                 />
             </div>
@@ -238,6 +275,9 @@ export default {
                 isBlocked: false,
                 bpns: "",
                 bpna: "",
+                customerOrderNumber: "",
+                customerOrderPositionNumber: "",
+                supplierOrderNumber: "",
             },
             site: {
                 bpns: "BPNS12345678910ZZZ",
