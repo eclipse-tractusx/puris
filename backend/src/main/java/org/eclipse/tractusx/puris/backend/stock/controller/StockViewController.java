@@ -42,13 +42,16 @@ import org.eclipse.tractusx.puris.backend.stock.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -138,11 +141,42 @@ public class StockViewController {
     @PostMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Creates a new product-stock")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Product Stock was created."),
+        @ApiResponse(responseCode = "400", description = "Malformed request body."),
+        @ApiResponse(responseCode = "409", description = "Product Stock is not valid or does already exist."),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+    })
     public ProductStockDto createProductStocks(@RequestBody ProductStockDto productStockDto) {
+        if (productStockDto.getMaterial().getMaterialNumberCustomer() == null ||
+            productStockDto.getMaterial().getMaterialNumberCustomer().isEmpty()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock misses material identification.");
+        }
 
         ProductItemStock productStockToCreate = convertToEntity(productStockDto);
 
         productStockToCreate.setLastUpdatedOnDateTime(new Date());
+
+        if (!productItemStockService.validate(productStockToCreate)){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Product Stock is invalid.");
+        }
+
+        List<ProductItemStock> existingProductItemStocks = productItemStockService.findByPartnerAndMaterial(
+            productStockToCreate.getPartner(),
+            productStockToCreate.getMaterial());
+
+        boolean stockDoesExist = existingProductItemStocks.stream().filter( stock ->
+            stock.isBlocked() == productStockToCreate.isBlocked() &&
+            stock.getLocationBpns().equals(productStockToCreate.getLocationBpns()) &&
+            stock.getLocationBpna().equals(productStockToCreate.getLocationBpna()) &&
+            Objects.equals(stock.getCustomerOrderId(), productStockToCreate.getCustomerOrderId()) &&
+            Objects.equals(stock.getCustomerOrderPositionId(), productStockToCreate.getCustomerOrderPositionId()) &&
+            Objects.equals(stock.getSupplierOrderId(), productStockToCreate.getSupplierOrderId())
+        ).anyMatch(stock -> true);
+
+        if (stockDoesExist){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Product Stock does already exist. Use PUT instead.");
+        }
 
         ProductItemStock createdProductStock = productItemStockService.create(productStockToCreate);
         if (createdProductStock == null) {
@@ -155,11 +189,16 @@ public class StockViewController {
 
     @PutMapping("product-stocks")
     @ResponseBody
-    @Operation(description = "Updates an existing product-stock")
+    @Operation(description = "Updates an existing productstock")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Product Stock was updated."),
+        @ApiResponse(responseCode = "400", description = "Malformed request body."),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+    })
     public ProductStockDto updateProductStocks(@RequestBody ProductStockDto productStockDto) {
         ProductItemStock existingProductStock = productItemStockService.findById(productStockDto.getUuid());
-        if (existingProductStock.getUuid() == null) {
-            return null;
+        if (existingProductStock == null || existingProductStock.getUuid() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock misses material identification.");
         }
 
         existingProductStock.setQuantity(productStockDto.getQuantity());
@@ -232,10 +271,41 @@ public class StockViewController {
     @PostMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Creates a new material-stock")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Material Stock was created."),
+        @ApiResponse(responseCode = "400", description = "Malformed request body."),
+        @ApiResponse(responseCode = "409", description = "Material Stock is not valid or does already exist."),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+    })
     public MaterialStockDto createMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
+
+        if (materialStockDto.getMaterial().getMaterialNumberCustomer() == null ||
+            materialStockDto.getMaterial().getMaterialNumberCustomer().isEmpty()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock misses material identification.");
+        }
 
         MaterialItemStock materialStockToCreate = convertToEntity(materialStockDto);
         materialStockToCreate.setLastUpdatedOnDateTime(new Date());
+
+        if (!materialItemStockService.validate(materialStockToCreate)){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Material Stock is invalid.");
+        }
+
+        List<MaterialItemStock> existingMaterialItemStocks = materialItemStockService.findByPartnerAndMaterial(materialStockToCreate.getPartner(),
+            materialStockToCreate.getMaterial());
+
+        boolean stockDoesExist = existingMaterialItemStocks.stream().filter( stock ->
+            stock.isBlocked() == materialStockToCreate.isBlocked() &&
+            stock.getLocationBpns().equals(materialStockToCreate.getLocationBpns()) &&
+            stock.getLocationBpna().equals(materialStockToCreate.getLocationBpna()) &&
+            Objects.equals(stock.getCustomerOrderId(), materialStockToCreate.getCustomerOrderId()) &&
+            Objects.equals(stock.getCustomerOrderPositionId(), materialStockToCreate.getCustomerOrderPositionId()) &&
+            Objects.equals(stock.getSupplierOrderId(), materialStockToCreate.getSupplierOrderId())
+        ).anyMatch(stock -> true);
+
+        if (stockDoesExist){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Material Stock does already exist. Use PUT instead.");
+        }
 
         MaterialItemStock createdMaterialStock = materialItemStockService.create(materialStockToCreate);
         if (createdMaterialStock == null){
@@ -248,11 +318,15 @@ public class StockViewController {
     @PutMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Updates an existing material-stock")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Material Stock was updated."),
+        @ApiResponse(responseCode = "400", description = "Malformed request body."),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+    })
     public MaterialStockDto updateMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
         MaterialItemStock existingMaterialStock = materialItemStockService.findById(materialStockDto.getUuid());
         if (existingMaterialStock == null || existingMaterialStock.getUuid() == null) {
-            log.warn("unable to find existing stock, exiting");
-            return null;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock misses material identification.");
         }
 
         existingMaterialStock.setQuantity(materialStockDto.getQuantity());
