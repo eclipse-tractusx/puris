@@ -24,24 +24,24 @@
             <h2 class="text-center bold text-3xl">{{ title }}</h2>
             <h3 class="bold text-2xl">Your Stocks</h3>
             <p v-if="this.ownRole === 'customer'">
-                <i
-                    >Info: These are your material stocks (your inputs) at your
+                <i>
+                    Info: These are your material stocks (your inputs) at your
                     site.
-                    <b
-                        >Please select one of the material stocks to see the
-                        stocks your supplier still got on stock.</b
-                    ></i
-                >
+                    <b>
+                        Please select one of the material stocks to see the
+                        stocks your supplier still got on stock.
+                    </b>
+                </i>
             </p>
             <p v-if="this.ownRole === 'supplier'">
-                <i
-                    >Info: These are your product stocks (your outputs) at your
+                <i>
+                    Info: These are your product stocks (your outputs) at your
                     site.
-                    <b
-                        >Please select one of the product stocks to see the
-                        stocks your customer still got on stock.</b
-                    ></i
-                >
+                    <b>
+                        Please select one of the product stocks to see the
+                        stocks your customer still got on stock.
+                    </b>
+                </i>
             </p>
             <table class="w-full">
                 <thead>
@@ -66,16 +66,9 @@
                                 'empty-row': row.isEmpty,
                                 highlight:
                                     !row.isEmpty &&
-                                    row.index ===
-                                    this.selectedRowIndex,
+                                    row.index === this.selectedRowIndex,
                             }"
-                            @click="
-                                row.isEmpty
-                                    ? null
-                                    : selectStock(
-                                          row.index
-                                      )
-                            "
+                            @click="row.isEmpty ? null : selectStock(row.index)"
                         >
                             <template v-if="row.isEmpty">
                                 <td></td>
@@ -180,8 +173,11 @@ export default {
     methods: {
         selectStock(rowIndex) {
             if (this.partnerRole === "customer") return;
-            if (this.ownRole === "customer"){
-                this.selectedMaterialId = this.tableRows[rowIndex].stock.material.materialNumberCustomer;
+            if (this.ownRole === "customer") {
+                this.selectedMaterialId =
+                    this.tableRows[
+                        rowIndex
+                    ].stock.material.materialNumberCustomer;
             }
             this.selectedRowIndex = rowIndex;
         },

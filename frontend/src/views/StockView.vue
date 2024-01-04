@@ -73,9 +73,9 @@
                         />
                     </div>
                     <div>
-                        <label for="allocatedToPartner"
-                            >Allocated to Partner</label
-                        >
+                        <label for="allocatedToPartner">
+                            Allocated to Partner
+                        </label>
                         <select
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="allocatedToPartner"
@@ -138,9 +138,9 @@
                         <label for="isBlocked">Is Blocked </label>
                     </div>
                     <div>
-                        <label for="stockLocationBPNS"
-                            >Stock Location BPNS</label
-                        >
+                        <label for="stockLocationBPNS">
+                            Stock Location BPNS
+                        </label>
                         <select
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="stockLocationBPNS"
@@ -156,9 +156,9 @@
                         </select>
                     </div>
                     <div>
-                        <label for="stockLocationBPNA"
-                            >Stock Location BPNA</label
-                        >
+                        <label for="stockLocationBPNA">
+                            Stock Location BPNA
+                        </label>
                         <select
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="stockLocationBPNA"
@@ -178,9 +178,9 @@
                     </div>
                     <div class="flex flex-row justify-between">
                         <div class="grow mr-4">
-                            <label for="customerOrderNumber"
-                                >Customer Order Number</label
-                            >
+                            <label for="customerOrderNumber">
+                                Customer Order Number
+                            </label>
                             <input
                                 class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                                 id="customerOrderNumber"
@@ -188,9 +188,9 @@
                             />
                         </div>
                         <div class="grow">
-                            <label for="customerOrderPositionNumber"
-                                >Customer Order Position Number</label
-                            >
+                            <label for="customerOrderPositionNumber">
+                                Customer Order Position Number
+                            </label>
                             <input
                                 class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                                 id="customerOrderPositionNumber"
@@ -202,9 +202,9 @@
                         </div>
                     </div>
                     <div>
-                        <label for="supplierOrderNumber"
-                            >Supplier Order Number</label
-                        >
+                        <label for="supplierOrderNumber">
+                            Supplier Order Number
+                        </label>
                         <input
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="supplierOrderNumber"

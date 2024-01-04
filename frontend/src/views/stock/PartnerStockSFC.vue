@@ -36,10 +36,10 @@
             </button>
         </div>
         <p v-if="this.partnerRole === 'supplier'">
-            <i
-                >Info: These are your suppliers' stocks (your potential inputs)
-                at his site that not yet sent to you.</i
-            >
+            <i>
+                Info: These are your suppliers' stocks (your potential inputs)
+                at his site that not yet sent to you.
+            </i>
         </p>
         <p v-else-if="this.partnerRole === 'customer'">
             <i>
