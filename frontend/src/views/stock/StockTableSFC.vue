@@ -66,17 +66,14 @@
                                 'empty-row': row.isEmpty,
                                 highlight:
                                     !row.isEmpty &&
-                                    row.stock.material
-                                        .materialNumberCustomer ===
-                                        selectedMaterialId,
+                                    row.index ===
+                                    this.selectedRowIndex,
                             }"
                             @click="
                                 row.isEmpty
                                     ? null
                                     : selectStock(
-                                          row.stock.material
-                                              .materialNumberCustomer,
-                                          row.stock.uuid
+                                          row.index
                                       )
                             "
                         >
@@ -158,7 +155,7 @@ export default {
     data() {
         return {
             selectedMaterialId: "",
-            selectedStockUuid: "",
+            selectedRowIndex: "",
             materialNumberCustomer: "",
         };
     },
@@ -181,10 +178,12 @@ export default {
         },
     },
     methods: {
-        selectStock(materialId, stockUuid) {
+        selectStock(rowIndex) {
             if (this.partnerRole === "customer") return;
-            this.selectedMaterialId = materialId;
-            this.selectedStockUuid = stockUuid;
+            if (this.ownRole === "customer"){
+                this.selectedMaterialId = this.tableRows[rowIndex].stock.material.materialNumberCustomer;
+            }
+            this.selectedRowIndex = rowIndex;
         },
         getUomValueForUomKey(key) {
             return UnitOfMeasureUtils.findUomValueByKey(key);
