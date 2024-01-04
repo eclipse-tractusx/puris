@@ -30,10 +30,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.FrontendMaterialDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestApiService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +62,9 @@ class StockViewControllerTest {
 
     @MockBean
     private ProductStockService productStockService;
+
+    @MockBean
+    private ProductItemStockService productItemStockService;
 
     @MockBean
     private MaterialStockService materialStockService;
