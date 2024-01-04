@@ -60,3 +60,68 @@ eclipseDashTool package-lock.json -project automotive.tractusx -summary ../DEPEN
 2. Looks-up the "to replace string" from `config.json` (e.g., for `BACKEND_BASE_URL`, it will search for `$BACKEND_BASE-URL` in the built files)
 3. Does the replacement in the built files
 4. Starts nginx
+
+# Testing Helm Charts with local images
+
+When changing the helm charts due to changes of e.g. environment variables, one should test locally whether the changes
+work.
+
+First thing one should check is whether the templates may be resolved / substituted correctly and if your changes are 
+defaulted correctly:
+```shell
+cd charts/puris
+helm template .
+>> no error is thrown, chart is resolved, changes are done correctly
+```
+
+Now build your images as explained in the respective install.mds.
+- [backend](../backend/INSTALL.md)
+- [frontend](../frontend/INSTALL.md)
+
+Now you need to update your Chart.yml and values.yml:
+- Chart.yml: change `appVersion` to your build tag (e.g., `dev`)
+- values.yml: for both frontend and backend change the image
+  - `repository` should be set to the image name used during docker build (e.g., `puris-backend`, `puris-frontend`)
+  - `pullPolicy` should be set to `Never`
+
+Now depending on your runtime environment you need to load the images into it (we assume, you built puris-backend:dev 
+and (puris-frontend:dev):
+```shell
+# minikube 
+minikube image load puris-backend:dev
+minikube image load puris-frontend:dev
+# validate that your image is listed and compare digest with local image
+minikube image ls --format table | grep puris-backend
+docker image ls | grep puris-backend
+minikube image ls --format table | grep puris-frontend
+docker image ls | grep puris-frontend
+```
+```shell
+# kind
+kind load puris-backend:dev
+kind load puris-frontend:dev
+# validate that your image is listed and compare digest with local image
+docker ps 
+>> locate the container-id of you kind cluster
+docker exec -it {container-id} crictl images | grep puris-backend
+docker image ls | grep puris-backend
+docker exec -it {container-id} crictl images | grep puris-frontend
+docker image ls | grep puris-frontend
+```
+**ATTENTION: MAKE SURE THAT THE IMAGE ID IN YOUR KUBERNETES ENVIRONMENT IS THE SAME AS IN YOUR LOCAL DOCKER.**
+
+Else you can delete images as follows:
+
+```shell
+# minikube
+minikube image delete puris-backend:dev
+minikube image delete puris-frontend:dev
+```
+
+```shell
+# kind
+ocker ps 
+>> locate the container-id of you kind cluster
+docker exec -it {container-id} crictl rmi puris-backend:dev
+docker exec -it {container-id} crictl rmi puris-frontend:dev
+```
