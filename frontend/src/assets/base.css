@@ -89,6 +89,10 @@ tr:nth-child(odd) {
   background-color: lightgray;
 }
 
+input:disabled, select:disabled {
+    background-color: var(--color-background);
+}
+
 @layer components {
   .btn-primary {
     @apply my-2 bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700;
