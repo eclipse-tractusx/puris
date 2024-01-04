@@ -20,6 +20,7 @@
 package org.eclipse.tractusx.puris.backend.common.security;
 
 
+import jakarta.servlet.DispatcherType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationFilter;
@@ -70,6 +71,7 @@ public class SecurityConfig {
                 (authorizeHttpRequests) -> authorizeHttpRequests
                     .requestMatchers("/stockView/**", "/partners/**",  "/materials/**", "/materialpartnerrelations/**", "/product-stock/**", "/edrendpoint/**").authenticated()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/health/**").permitAll()
+                    .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
             )
             .httpBasic(
                 AbstractHttpConfigurer::disable
