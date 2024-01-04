@@ -79,7 +79,7 @@
                         <select
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="allocatedToPartner"
-                            v-model="this.changedStock.partner"
+                            v-model="this.changedStock.partnerBpnl"
                         >
                             <option
                                 v-for="option in partnerOptions"
@@ -271,7 +271,7 @@ export default {
                 type: "Material",
                 quantity: "",
                 measurementUnit: "",
-                partner: "",
+                partnerBpnl: "",
                 isBlocked: false,
                 bpns: "",
                 bpna: "",
@@ -294,12 +294,12 @@ export default {
         partnerOptions() {
             if (this.changedStock.type === "Product") {
                 return this.bdCustomers.map((customer) => ({
-                    value: customer.uuid,
+                    value: customer.bpnl,
                     label: customer.name,
                 }));
             } else {
                 return this.bdSuppliers.map((supplier) => ({
-                    value: supplier.uuid,
+                    value: supplier.bpnl,
                     label: supplier.name,
                 }));
             }
@@ -346,7 +346,7 @@ export default {
                     (stock) =>
                         stock.material.materialNumberCustomer ===
                             this.changedStock.materialId &&
-                        stock.partner.uuid === this.changedStock.partner &&
+                        stock.partner.bpnl === this.changedStock.partnerBpnl &&
                         stock.stockLocationBpns ===
                             this.changedStock.bpns.bpns &&
                         stock.stockLocationBpna === this.changedStock.bpna &&
@@ -383,12 +383,11 @@ export default {
 
                     // 2. Determine partner
                     const existingSupplier = this.bdSuppliers.filter(
-                        (s) => s.uuid === this.changedStock.partner
+                        (s) => s.bpnl === this.changedStock.partnerBpnl
                     )[0];
 
                     // 3. Create Stock
                     const newStock = {
-                        uuid: null,
                         material: {
                             materialNumberCustomer:
                                 existingMaterial.ownMaterialNumber,
@@ -423,7 +422,7 @@ export default {
                     (stock) =>
                         stock.material.materialNumberSupplier ===
                             this.changedStock.productId &&
-                        stock.partner.uuid === this.changedStock.partner &&
+                        stock.partner.bpnl === this.changedStock.partnerBpnl &&
                         stock.isBlocked === this.changedStock.isBlocked &&
                         stock.stockLocationBpns ===
                             this.changedStock.bpns.bpns &&
@@ -460,12 +459,12 @@ export default {
 
                     // 2. Determine partner
                     const existingCustomer = this.bdCustomers.filter(
-                        (c) => c.uuid === this.changedStock.partner
+                        (c) => c.bpnl === this.changedStock.partnerBpnl
                     )[0];
+                    console.log(existingCustomer);
 
                     // 3. Create Stock
                     const newStock = {
-                        uuid: null,
                         material: {
                             materialNumberSupplier:
                                 existingProduct.ownMaterialNumber,
