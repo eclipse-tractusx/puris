@@ -449,7 +449,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             "BPNL4444444444XX",
             "BPNS4444444444XX",
             "Hauptwerk Musterhausen",
-            "BPNA4444444444ZZ",
+            "BPNA4444444444AA",
             "Musterstraße 35b",
             "77777 Musterhausen",
             "Germany"
