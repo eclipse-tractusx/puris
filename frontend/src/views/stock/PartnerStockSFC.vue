@@ -202,7 +202,7 @@ export default {
             if (this.partnerRole === "customer") return;
             fetch(
                 this.backendURL +
-                    this.endpointUpdateReportedMaterialStock +
+                    this.endpointUpdateReportedMaterialStocks +
                     this.selectedMaterialOrProductId,
                 {
                     headers: {
