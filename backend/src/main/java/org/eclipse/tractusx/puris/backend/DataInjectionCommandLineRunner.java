@@ -70,6 +70,16 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private MaterialItemStockService materialItemStockService;
+    
+    @Autowired
+    private ProductItemStockService productItemStockService;
+
+    @Autowired
+    private ReportedMaterialItemStockService reportedMaterialItemStockService;
+
+    @Autowired
+    private ReportedProductItemStockService reportedProductItemStockService;
+    
     @Autowired
     private ItemStockSammMapper itemStockSammMapper;
 
@@ -266,6 +276,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 .locationBpna(address.getBpna())
                 .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
                 .quantity(12)
+                .customerOrderId("2023-ORD-4711")
+                .customerOrderPositionId("POS-1")
                 .build();
         otherMaterialItemStock = materialItemStockService.create(otherMaterialItemStock);
 
@@ -277,6 +289,9 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .locationBpns(newSite.getBpns())
             .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
             .quantity(23)
+            .customerOrderId("2023-ORD-4712")
+            .customerOrderPositionId("POS-1")
+            .supplierOrderId("2023-SUPPLIER-ORD")
             .isBlocked(true)
             .build();
         thirdMaterialItemStock = materialItemStockService.create(thirdMaterialItemStock);
@@ -325,6 +340,54 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         for (var s : list) {
             log.info(s.toString());
         }
+        
+        ProductItemStock productItemStock = ProductItemStock.builder()
+            .partner(nonScenarioCustomer)
+            .material(centralControlUnitEntity)
+            .lastUpdatedOnDateTime(new Date())
+            .locationBpns(mySelf.getSites().first().getBpns())
+            .locationBpna(mySelf.getSites().first().getAddresses().first().getBpna())
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
+            .quantity(25)
+            .customerOrderId("2023-CUSTOMER-4712")
+            .customerOrderPositionId("CUS-POS-1")
+            .supplierOrderId("2023-MY-ORD")
+            .isBlocked(true)
+            .build();
+         productItemStock = productItemStockService.create(productItemStock);
+         log.info("Created ProductItemStock: {}", productItemStock.toString());
+
+        ReportedMaterialItemStock reportedMaterialItemStock = ReportedMaterialItemStock.builder()
+            .partner(supplierPartner)
+            .material(semiconductorMaterial)
+            .lastUpdatedOnDateTime(new Date())
+            .locationBpns(supplierPartner.getSites().first().getBpns())
+            .locationBpna(supplierPartner.getSites().first().getAddresses().first().getBpna())
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
+            .quantity(25)
+            .customerOrderId("2023-ORD-4711")
+            .customerOrderPositionId("POS-1")
+            .supplierOrderId("2023-SUPPLIER-ORD")
+            .isBlocked(true)
+            .build();
+        reportedMaterialItemStock = reportedMaterialItemStockService.create(reportedMaterialItemStock);
+        log.info("Created ReportedMaterialItemStock: {}", reportedMaterialItemStock.toString());
+
+        ReportedProductItemStock reportedProductItemStock = ReportedProductItemStock.builder()
+            .partner(nonScenarioCustomer)
+            .material(centralControlUnitEntity)
+            .lastUpdatedOnDateTime(new Date())
+            .locationBpns(nonScenarioCustomer.getSites().first().getBpns())
+            .locationBpna(nonScenarioCustomer.getSites().first().getAddresses().first().getBpna())
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
+            .quantity(25)
+            .customerOrderId("2023-CUSTOMER-4712")
+            .customerOrderPositionId("CUS-POS-1")
+            .supplierOrderId("2023-MY-ORD")
+            .isBlocked(true)
+            .build();
+        reportedProductItemStock = reportedProductItemStockService.create(reportedProductItemStock);
+        log.info("Created ReportedProductItemStock: {}", reportedProductItemStock.toString());
     }
 
     /**
@@ -386,7 +449,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             "BPNL4444444444XX",
             "BPNS4444444444XX",
             "Hauptwerk Musterhausen",
-            "BPNA4444444444ZZ",
+            "BPNA4444444444AA",
             "Musterstraße 35b",
             "77777 Musterhausen",
             "Germany"
