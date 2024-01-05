@@ -24,6 +24,13 @@ The API implementations are provided and consumed via the EDC.
         1. Provider queries API for information of interest based on the standardized API description.
         1. Consumer receives request, determines data for response and starts with step 2 for the response interface.
 
+The workflow with simplified EDC communication may be seen in the following sequence diagram.
+EDC flow is the same to use the request and response api. Central Services, such as the Managed Identity Wallet are 
+ommitted.
+
+![Overview of request and response with EDC](puml/06-api-flow-detailed.svg)
+
+
 ## Scenario: Interact with data in web-ui
 
 When reloading the UI, the latest data is pulled from the backend. Whenever an update on the information is performed,
