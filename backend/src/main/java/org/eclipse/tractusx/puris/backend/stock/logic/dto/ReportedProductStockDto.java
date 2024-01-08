@@ -1,7 +1,5 @@
 /*
  * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
- * (represented by Fraunhofer ISST)
  * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,13 +19,13 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
-public class MaterialStockDto extends StockDto {
+@NoArgsConstructor
+public class ReportedProductStockDto extends StockDto {
 
 }

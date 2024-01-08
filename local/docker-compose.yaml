@@ -1,7 +1,7 @@
 #
-# Copyright (c) 2023 Volkswagen AG
-# Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-# Copyright (c) 2023 Contributors to the Eclipse Foundation
+# Copyright (c) 2023, 2024 Volkswagen AG
+# Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -35,8 +35,11 @@ services:
             - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
             - ENDPOINT_PRODUCT_STOCKS=stockView/product-stocks
             - ENDPOINT_CUSTOMER=stockView/customer?ownMaterialNumber=
-            - ENDPOINT_PARTNER_PRODUCT_STOCKS=stockView/partner-product-stocks?ownMaterialNumber=
-            - ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK=stockView/update-partner-product-stock?ownMaterialNumber=
+            - ENDPOINT_SUPPLIER=stockView/supplier?ownMaterialNumber=
+            - ENDPOINT_REPORTED_MATERIAL_STOCKS=stockView/reported-material-stocks?ownMaterialNumber=
+            - ENDPOINT_REPORTED_PRODUCT_STOCKS=stockView/reported-product-stocks?ownMaterialNumber=
+            - ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS=stockView/update-reported-material-stocks?ownMaterialNumber=
+            - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
             - IDP_DISABLE=true
         networks:
             - miw-net
@@ -140,8 +143,11 @@ services:
             - ENDPOINT_MATERIAL_STOCKS=stockView/material-stocks
             - ENDPOINT_PRODUCT_STOCKS=stockView/product-stocks
             - ENDPOINT_CUSTOMER=stockView/customer?ownMaterialNumber=
-            - ENDPOINT_PARTNER_PRODUCT_STOCKS=stockView/partner-product-stocks?ownMaterialNumber=
-            - ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK=stockView/update-partner-product-stock?ownMaterialNumber=
+            - ENDPOINT_SUPPLIER=stockView/supplier?ownMaterialNumber=
+            - ENDPOINT_REPORTED_MATERIAL_STOCKS=stockView/reported-material-stocks?ownMaterialNumber=
+            - ENDPOINT_REPORTED_PRODUCT_STOCKS=stockView/reported-product-stocks?ownMaterialNumber=
+            - ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS=stockView/update-reported-material-stocks?ownMaterialNumber=
+            - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
             - IDP_DISABLE=true
         networks:
             - miw-net

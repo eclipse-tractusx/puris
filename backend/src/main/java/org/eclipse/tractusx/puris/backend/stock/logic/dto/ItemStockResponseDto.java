@@ -31,6 +31,10 @@ import java.util.UUID;
 
 @Getter
 @Setter
+/**
+ * This class represents a response message as it is sent
+ * to the counterparty.
+ */
 public class ItemStockResponseDto {
 
     private HeaderDto header = new HeaderDto();

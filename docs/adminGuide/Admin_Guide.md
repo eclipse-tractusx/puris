@@ -229,3 +229,9 @@ overwrite the existing stocks.
 |----------------|----------------------------|---------------------------------------|
 | Product Stock  | /stockView/product-stocks  | Add stocks allocated to your customer |
 | Material Stock | /stockView/material-stocks | Add stocks allocated to your supplier |
+
+## Postgres
+
+The PURIS Backend uses a postgres Database. The helm installation already has a dependency that may be installed with 
+the chart. Optionally it may be disabled to use your own installation. Refer to the overall 
+[INSTALL.md](../../INSTALL.md) for further information.

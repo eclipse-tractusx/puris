@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -29,10 +29,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.FrontendMaterialDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestApiService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,13 +60,16 @@ class StockViewControllerTest {
     private MaterialService materialService;
 
     @MockBean
-    private ProductStockService productStockService;
+    private ProductItemStockService productItemStockService;
 
     @MockBean
-    private MaterialStockService materialStockService;
+    private MaterialItemStockService materialItemStockService;
 
     @MockBean
-    private PartnerProductStockService partnerProductStockService;
+    private ReportedMaterialItemStockService reportedMaterialItemStockService;
+
+    @MockBean
+    private ReportedProductItemStockService reportedProductItemStockService;
 
     @MockBean
     private ProductStockRequestApiService productStockRequestApiService;

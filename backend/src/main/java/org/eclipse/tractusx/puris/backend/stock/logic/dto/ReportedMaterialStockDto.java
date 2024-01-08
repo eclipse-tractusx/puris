@@ -21,13 +21,13 @@
  */
 package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
-public class MaterialStockDto extends StockDto {
+@NoArgsConstructor
+public class ReportedMaterialStockDto extends StockDto {
 
 }

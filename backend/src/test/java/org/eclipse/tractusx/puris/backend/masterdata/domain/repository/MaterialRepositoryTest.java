@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,12 +39,12 @@ public class MaterialRepositoryTest {
     @Test
     void findAllByMaterialFlagTrue_ReturnsListOfMaterials() {
         // Given
-        Material material1 = new Material(true, false, "MNR-123", "uuid-value", "Test Material 1", new HashSet<>());
+        Material material1 = new Material(true, false, "MNR-123", UUID.randomUUID().toString(), "Test Material 1", new HashSet<>());
 
-        Material material2 = new Material(true, false, "MNR-234", "uuid-value-2", "Test Material 2", new HashSet<>());
+        Material material2 = new Material(true, false, "MNR-234", UUID.randomUUID().toString(), "Test Material 2", new HashSet<>());
 
         // would be more realistic with relationship, but didn't add it here as we just want to test the MaterialRepo
-        Material product = new Material(false, true, "MNR-456", "uuid-value-2", "Test Product 1", new HashSet<>());
+        Material product = new Material(false, true, "MNR-456", UUID.randomUUID().toString(), "Test Product 1", new HashSet<>());
 
         materialRepository.save(material1);
         materialRepository.save(material2);

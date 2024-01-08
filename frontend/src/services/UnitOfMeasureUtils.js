@@ -1,8 +1,6 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
- * (represented by Fraunhofer ISST)
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,15 +17,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.logic.dto;
+import stockViewUom from "@/assets/stockViewUom.json";
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-@AllArgsConstructor
-public class MaterialStockDto extends StockDto {
-
+const findUomValueByKey = (key) => {
+    for (let i = 0; i < stockViewUom.length; i++) {
+        if (stockViewUom[i].key === key) {
+            return stockViewUom[i].value;
+        }
+    }
+    return null; // Return null if the key is not found
 }
+
+const UomHelper = {
+    findUomValueByKey,
+}
+
+export default UomHelper;
