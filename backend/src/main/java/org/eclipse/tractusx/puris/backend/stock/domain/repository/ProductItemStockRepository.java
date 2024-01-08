@@ -23,13 +23,51 @@ package org.eclipse.tractusx.puris.backend.stock.domain.repository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
 
 @Repository
-public interface ProductItemStockRepository extends JpaRepository<ProductItemStock, UUID> {
+public interface ProductItemStockRepository extends ItemStockRepository<ProductItemStock> {
     List<ProductItemStock> findByPartnerAndMaterial(Partner partner, Material material);
+
+    List<ProductItemStock> findByPartner(Partner partner);
+
+    List<ProductItemStock> findByMaterial(Material material);
+
+    List<ProductItemStock> findByMaterial_OwnMaterialNumber(String ownMaterialNumber);
+
+    List<ProductItemStock> findByPartner_Bpnl(String partnerBpnl);
+
+    List<ProductItemStock> findByPartner_BpnlAndMaterial_OwnMaterialNumber(String partnerBpnl, String ownMaterialNumber);
+
+    @Override
+    default List<ProductItemStock> find(Partner partner, Material material) {
+        return findByPartnerAndMaterial(partner, material);
+    }
+
+    @Override
+    default List<ProductItemStock> find(Partner partner) {
+        return findByPartner(partner);
+    }
+
+    @Override
+    default List<ProductItemStock> find(Material material) {
+        return findByMaterial(material);
+    }
+
+    @Override
+    default List<ProductItemStock> findOwnMatNbr(String ownMaterialNumber) {
+        return findByMaterial_OwnMaterialNumber(ownMaterialNumber);
+    }
+
+    @Override
+    default List<ProductItemStock> findPartnerBpnl(String partnerBpnl) {
+        return findByMaterial_OwnMaterialNumber(partnerBpnl);
+    }
+
+    @Override
+    default List<ProductItemStock> findPartnerBpnlAndOwnMatNbr(String partnerBpnl, String ownMaterialNumber) {
+        return findByPartner_BpnlAndMaterial_OwnMaterialNumber(partnerBpnl, ownMaterialNumber);
+    }
 }
