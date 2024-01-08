@@ -36,4 +36,35 @@ public interface ItemStockRepository<T extends ItemStock> extends JpaRepository<
         throw new UnsupportedOperationException("Implementation needed");
     }
 
+    default List<T> find(Partner partner) {
+        // default implementation prevents Jpa from trying to
+        // auto-generate this method.
+        throw new UnsupportedOperationException("Implementation needed");
+    }
+
+    default List<T> find(Material material) {
+        // default implementation prevents Jpa from trying to
+        // auto-generate this method.
+        throw new UnsupportedOperationException("Implementation needed");
+    }
+
+    default List<T> findOwnMatNbr(String ownMaterialNumber) {
+        // default implementation prevents Jpa from trying to
+        // auto-generate this method.
+        throw new UnsupportedOperationException("Implementation needed");
+    }
+
+    default List<T> findPartnerBpnl(String partnerBpnl) {
+        // default implementation prevents Jpa from trying to
+        // auto-generate this method.
+        throw new UnsupportedOperationException("Implementation needed");
+    }
+
+    default List<T> findPartnerBpnlAndOwnMatNbr(String partnerBpnl, String ownMaterialNumber) {
+        // default implementation prevents Jpa from trying to
+        // auto-generate this method.
+        throw new UnsupportedOperationException("Implementation needed");
+    }
+
+
 }

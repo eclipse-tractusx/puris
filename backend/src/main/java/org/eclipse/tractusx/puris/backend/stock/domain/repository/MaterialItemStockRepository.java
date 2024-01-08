@@ -26,12 +26,50 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+
 @Repository
 public interface MaterialItemStockRepository extends ItemStockRepository<MaterialItemStock> {
     List<MaterialItemStock> findByPartnerAndMaterial(Partner partner, Material material);
 
+    List<MaterialItemStock> findByPartner(Partner partner);
+
+    List<MaterialItemStock> findByMaterial(Material material);
+
+    List<MaterialItemStock> findByMaterial_OwnMaterialNumber(String ownMaterialNumber);
+
+    List<MaterialItemStock> findByPartner_Bpnl(String partnerBpnl);
+
+    List<MaterialItemStock> findByPartner_BpnlAndMaterial_OwnMaterialNumber(String partnerBpnl, String ownMaterialNumber);
+
     @Override
-    default List<MaterialItemStock> find(Partner partner, Material material){
+    default List<MaterialItemStock> find(Partner partner, Material material) {
         return findByPartnerAndMaterial(partner, material);
     }
+
+    @Override
+    default List<MaterialItemStock> find(Partner partner) {
+        return findByPartner(partner);
+    }
+
+    @Override
+    default List<MaterialItemStock> find(Material material) {
+        return findByMaterial(material);
+    }
+
+    @Override
+    default List<MaterialItemStock> findOwnMatNbr(String ownMaterialNumber) {
+        return findByMaterial_OwnMaterialNumber(ownMaterialNumber);
+    }
+
+    @Override
+    default List<MaterialItemStock> findPartnerBpnl(String partnerBpnl) {
+        return findByMaterial_OwnMaterialNumber(partnerBpnl);
+    }
+
+    @Override
+    default List<MaterialItemStock> findPartnerBpnlAndOwnMatNbr(String partnerBpnl, String ownMaterialNumber) {
+        return findByPartner_BpnlAndMaterial_OwnMaterialNumber(partnerBpnl, ownMaterialNumber);
+    }
+
+
 }

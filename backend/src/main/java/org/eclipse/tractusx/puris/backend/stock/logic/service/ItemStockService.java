@@ -54,17 +54,17 @@ public abstract class ItemStockService<T extends ItemStock> {
     }
 
     public final T create(T itemStock) {
-        if(itemStock.getUuid() != null && repository.findById(itemStock.getUuid()).isPresent()) {
+        if (itemStock.getUuid() != null && repository.findById(itemStock.getUuid()).isPresent()) {
             return null;
         }
-        if(!validator.apply(itemStock)) {
+        if (!validator.apply(itemStock)) {
             return null;
         }
         return repository.save(itemStock);
     }
 
     public final T update(T itemStock) {
-        if(itemStock.getUuid() == null || repository.findById(itemStock.getUuid()).isEmpty()) {
+        if (itemStock.getUuid() == null || repository.findById(itemStock.getUuid()).isEmpty()) {
             return null;
         }
         return repository.save(itemStock);
@@ -78,12 +78,32 @@ public abstract class ItemStockService<T extends ItemStock> {
         repository.deleteById(uuid);
     }
 
-    public  final List<T> findAll() {
+    public final List<T> findAll() {
         return repository.findAll();
     }
 
-    public List<T> findByPartnerAndMaterial(Partner partner, Material material){
+    public final List<T> findByPartnerAndMaterial(Partner partner, Material material) {
         return repository.find(partner, material);
+    }
+
+    public final List<T> findByPartner(Partner partner) {
+        return repository.find(partner);
+    }
+
+    public final List<T> findByMaterial(Material material) {
+        return repository.find(material);
+    }
+
+    public final List<T> findByOwnMaterialNumber(String ownMaterialNumber) {
+        return repository.findOwnMatNbr(ownMaterialNumber);
+    }
+
+    public final List<T> findByPartnerBpnl(String partnerBpnl) {
+        return repository.findPartnerBpnl(partnerBpnl);
+    }
+
+    public final List<T> findByPartnerBpnlAndOwnMaterialNumber(String partnerBpnl, String ownMaterialNumber) {
+        return repository.findPartnerBpnlAndOwnMatNbr(partnerBpnl, ownMaterialNumber);
     }
 
     public abstract boolean validate(T itemStock);
@@ -117,10 +137,10 @@ public abstract class ItemStockService<T extends ItemStock> {
             Material material = itemStock.getMaterial();
             MaterialPartnerRelation relation = mprService.find(material, partner);
             Objects.requireNonNull(relation, "Missing MaterialPartnerRelation");
-            if(!material.isMaterialFlag()) {
+            if (!material.isMaterialFlag()) {
                 throw new IllegalArgumentException("Material flag is missing");
             }
-            if(!relation.isPartnerSuppliesMaterial()) {
+            if (!relation.isPartnerSuppliesMaterial()) {
                 throw new IllegalArgumentException("Partner does not supply material");
             }
         } catch (Exception e) {

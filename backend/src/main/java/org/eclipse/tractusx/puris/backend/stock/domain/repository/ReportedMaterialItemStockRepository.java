@@ -31,8 +31,43 @@ import java.util.List;
 public interface ReportedMaterialItemStockRepository extends ItemStockRepository<ReportedMaterialItemStock> {
     List<ReportedMaterialItemStock> findByPartnerAndMaterial(Partner partner, Material material);
 
+    List<ReportedMaterialItemStock> findByPartner(Partner partner);
+
+    List<ReportedMaterialItemStock> findByMaterial(Material material);
+
+    List<ReportedMaterialItemStock> findByMaterial_OwnMaterialNumber(String ownMaterialNumber);
+
+    List<ReportedMaterialItemStock> findByPartner_Bpnl(String partnerBpnl);
+
+    List<ReportedMaterialItemStock> findByPartner_BpnlAndMaterial_OwnMaterialNumber(String partnerBpnl, String ownMaterialNumber);
+
     @Override
-    default List<ReportedMaterialItemStock> find(Partner partner, Material material){
+    default List<ReportedMaterialItemStock> find(Partner partner, Material material) {
         return findByPartnerAndMaterial(partner, material);
+    }
+
+    @Override
+    default List<ReportedMaterialItemStock> find(Partner partner) {
+        return findByPartner(partner);
+    }
+
+    @Override
+    default List<ReportedMaterialItemStock> find(Material material) {
+        return findByMaterial(material);
+    }
+
+    @Override
+    default List<ReportedMaterialItemStock> findOwnMatNbr(String ownMaterialNumber) {
+        return findByMaterial_OwnMaterialNumber(ownMaterialNumber);
+    }
+
+    @Override
+    default List<ReportedMaterialItemStock> findPartnerBpnl(String partnerBpnl) {
+        return findByMaterial_OwnMaterialNumber(partnerBpnl);
+    }
+
+    @Override
+    default List<ReportedMaterialItemStock> findPartnerBpnlAndOwnMatNbr(String partnerBpnl, String ownMaterialNumber) {
+        return findByPartner_BpnlAndMaterial_OwnMaterialNumber(partnerBpnl, ownMaterialNumber);
     }
 }

@@ -31,8 +31,43 @@ import java.util.List;
 public interface ProductItemStockRepository extends ItemStockRepository<ProductItemStock> {
     List<ProductItemStock> findByPartnerAndMaterial(Partner partner, Material material);
 
+    List<ProductItemStock> findByPartner(Partner partner);
+
+    List<ProductItemStock> findByMaterial(Material material);
+
+    List<ProductItemStock> findByMaterial_OwnMaterialNumber(String ownMaterialNumber);
+
+    List<ProductItemStock> findByPartner_Bpnl(String partnerBpnl);
+
+    List<ProductItemStock> findByPartner_BpnlAndMaterial_OwnMaterialNumber(String partnerBpnl, String ownMaterialNumber);
+
     @Override
-    default List<ProductItemStock> find(Partner partner, Material material){
+    default List<ProductItemStock> find(Partner partner, Material material) {
         return findByPartnerAndMaterial(partner, material);
+    }
+
+    @Override
+    default List<ProductItemStock> find(Partner partner) {
+        return findByPartner(partner);
+    }
+
+    @Override
+    default List<ProductItemStock> find(Material material) {
+        return findByMaterial(material);
+    }
+
+    @Override
+    default List<ProductItemStock> findOwnMatNbr(String ownMaterialNumber) {
+        return findByMaterial_OwnMaterialNumber(ownMaterialNumber);
+    }
+
+    @Override
+    default List<ProductItemStock> findPartnerBpnl(String partnerBpnl) {
+        return findByMaterial_OwnMaterialNumber(partnerBpnl);
+    }
+
+    @Override
+    default List<ProductItemStock> findPartnerBpnlAndOwnMatNbr(String partnerBpnl, String ownMaterialNumber) {
+        return findByPartner_BpnlAndMaterial_OwnMaterialNumber(partnerBpnl, ownMaterialNumber);
     }
 }
