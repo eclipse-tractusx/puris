@@ -1,0 +1,57 @@
+@startuml
+autonumber
+skinparam sequenceMessageAlign center
+
+box "Data Consumer"
+participant "Business\nApplication" as app_cons
+participant "EDC Consumer" as edc_cons
+end box
+
+box "Data Provider"
+participant "EDC Provider" as edc_prov
+participant "Business\nApplication" as app_prov
+end box
+
+app_cons -> edc_cons: search for request assets at partner
+edc_cons <-> edc_prov: catalog communication
+edc_cons --> app_cons: catalog
+
+app_cons -> app_cons: identify Information Object\nExchange Request asset
+
+app_cons -> edc_cons: negotiate contract for Information\n Object Exchange Request API
+edc_cons <-> edc_prov: negotiation
+edc_cons --> app_cons: contract agreement
+
+note left: Define Endpoint Data Reference Endpoint = \n Business Application
+app_cons -> edc_cons: initialize transfer
+edc_cons <-> edc_prov: initialize transfer
+edc_prov --> app_cons: transfer completed, EDR sent
+
+app_cons -> app_cons: prepare request based on\nEDR endpoint and auth
+
+note right: Request against Endpoint via EDC
+app_cons ->  edc_prov: Request Information Object Exchange (via EDC)
+edc_prov -> app_prov: proxy request
+activate  app_prov
+app_prov --> edc_prov: Accepted
+edc_prov --> app_cons: Accepted
+
+app_prov ->  app_prov: Determine requested Information Object
+
+note right: simplified communication with EDC, same as above
+app_prov -> edc_prov: EDC communication
+edc_prov <-> edc_cons: EDC communication
+edc_cons --> app_prov: transfer completed, EDR sent
+
+note right: Send requested Information Objectvia EDC
+app_prov ->  edc_cons: Response Information Object Exchange (via EDC)
+edc_cons -> app_cons: proxy request
+activate  app_cons
+app_cons --> edc_cons: Accepted
+edc_cons --> app_prov: Accepted
+deactivate app_prov
+
+app_cons -> app_cons: use data
+deactivate app_cons
+
+@enduml

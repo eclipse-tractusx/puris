@@ -1,0 +1,30 @@
+@startuml
+
+
+package "PURIS"{
+
+  [Tractus-X Connector Customer] as edc
+
+  [Postgresql DB] as postgres
+  [PURIS FOSS Backend] as puris_backend
+  [PURIS FOSS Frontend] as puris_frontend
+
+  puris_backend - edc
+  postgres -- puris_backend
+  "Interface internal systems\n" - puris_backend
+  puris_backend -- puris_frontend
+
+}
+
+package "CX" {
+
+  [Keycloak] as keycloak
+  [Managed Identity Wallet] as miw
+
+}
+
+edc -- keycloak
+edc -- miw
+puris_frontend -- keycloak
+
+@enduml
