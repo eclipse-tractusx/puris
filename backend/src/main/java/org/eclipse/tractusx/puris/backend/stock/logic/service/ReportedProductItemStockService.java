@@ -21,15 +21,11 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ReportedProductItemStockRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @Slf4j
@@ -41,12 +37,6 @@ public class ReportedProductItemStockService extends ItemStockService<ReportedPr
                                            ReportedProductItemStockRepository repository) {
         super(partnerService, mprService, repository);
         this.repository = repository;
-    }
-
-
-    @Override
-    public List<ReportedProductItemStock> findByPartnerAndMaterial(Partner partner, Material material) {
-        return repository.findByPartnerAndMaterial(partner, material);
     }
 
     @Override

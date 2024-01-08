@@ -26,7 +26,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.eclipse.tractusx.puris.backend.stock.domain.repository.ItemStockRepository;
 
 import java.util.List;
 import java.util.Objects;
@@ -42,18 +42,16 @@ public abstract class ItemStockService<T extends ItemStock> {
 
     protected final MaterialPartnerRelationService mprService;
 
-    protected final JpaRepository<T, UUID> repository;
+    protected final ItemStockRepository<T> repository;
 
     protected final Function<T, Boolean> validator;
 
-    public ItemStockService(PartnerService partnerService, MaterialPartnerRelationService mprService, JpaRepository<T, UUID> repository) {
+    public ItemStockService(PartnerService partnerService, MaterialPartnerRelationService mprService, ItemStockRepository<T> repository) {
         this.partnerService = partnerService;
         this.mprService = mprService;
         this.repository = repository;
         this.validator = this::validate;
     }
-
-
 
     public final T create(T itemStock) {
         if(itemStock.getUuid() != null && repository.findById(itemStock.getUuid()).isPresent()) {
@@ -84,7 +82,9 @@ public abstract class ItemStockService<T extends ItemStock> {
         return repository.findAll();
     }
 
-    public abstract List<T> findByPartnerAndMaterial(Partner partner, Material material);
+    public List<T> findByPartnerAndMaterial(Partner partner, Material material){
+        return repository.find(partner, material);
+    }
 
     public abstract boolean validate(T itemStock);
 
