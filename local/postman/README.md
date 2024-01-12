@@ -53,12 +53,6 @@ Overall the customer has the following information:
       - Customer Order Number: CNbr-1
       - Customer Order Position Number: C-Pos-1
       - Supplier Order Number: SNbr-1
-  - Reported Material Stock 1:
-      - Partner: Semiconductor Supplier (BPNL1234567890ZZ)
-      - Material: Semiconductor
-      - Quantity: 100 pieces
-      - Blocked: true
-      - Order Position Reference: empty
 
 ### Supplier
 Overall the supplier has the following information:
@@ -101,15 +95,6 @@ Overall the supplier has the following information:
           - Customer Order Number: CNbr-2
           - Customer Order Position Number: C-Pos-2
           - Supplier Order Number: SNbr-2
-  - Reported Product Stock 1:
-      - Partner: Control Unit Creator Inc. (BPNL4444444444XX)
-      - Material: Semiconductor
-      - Quantity: 500 pieces
-      - Blocked: true
-      - Order Position Reference:
-          - Customer Order Number: CNbr-1
-          - Customer Order Position Number: C-Pos-1
-          - Supplier Order Number: SNbr-1
 
 ## Preparations
 
