@@ -6,7 +6,7 @@
  See the NOTICE file(s) distributed with this work for additional
  information regarding copyright ownership.
 
- This program and the accompanying materials are made available under the
+ This program and the accompanying products are made available under the
  terms of the Apache License, Version 2.0 which is available at
  https://www.apache.org/licenses/LICENSE-2.0.
 
@@ -24,22 +24,22 @@
 
             <!-- First content bubble-->
             <div class="grid bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700  w-[100%] overflow-auto p-2.5 outerBox">
+                <div class="mt-2">
+                    <div>
+                        <label for="dropdown-products" class="text-xl ">Products: </label>
+                    </div>
+                    <select v-model="dropdownProducts" id="dropdown-products" @change="getAllCustomers(dropdownProducts)" name="ddp" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                        <option disabled value="" selected hidden>Choose a product</option>
+                        <option v-for="item in fetchedProducts" :value="item" >{{item.ownMaterialNumber + "  (" + item.description + ")"}}</option>
+                    </select>
+                </div>
                 <div>
                     <div>
                         <label for="dropdown-customer" class="text-xl">Customer: </label>
                     </div>
                     <select v-model="dropdownCustomer" id="dropdown-customer" name="ddc" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a customer</option>
-                        <option v-for="item in customer" :value="item">{{item.name}}</option>
-                    </select>
-                </div>
-                <div class="mt-2">
-                    <div>
-                        <label for="dropdown-material" class="text-xl ">Material: </label>
-                    </div>
-                    <select v-model="dropdownMaterial" id="dropdown-material" name="ddm"  class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
-                        <option disabled value="" selected hidden>Choose a material</option>
-                        <option v-for="item in dropdownCustomer.materials " :value="item">{{item.name}}</option>
+                        <option v-for="item in fetchedCustomers" :value="item">{{item.name}}</option>
                     </select>
                 </div>
                 <div class="mt-2">
@@ -48,12 +48,12 @@
                     </div>
                     <select v-model="dropdownBPNS" id="" name="ddbpns"  class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a site</option>
-                        <option v-for="item in dropdownMaterial.bpns" :value="item"> {{item.name}} </option>
+                        <option v-for="item in dropdownCustomer.sites" :value="item"> {{item.name}} </option>
                     </select>
                     <div class="mt-2">
                         <select v-model="dropdownBPNA" id="" name="ddbpna"  class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                             <option disabled value="" selected hidden>Choose an address</option>
-                            <option v-for="item in dropdownBPNS.bpna" :value="item" @click="emptyTotalDemandArray()"> {{item.name}} </option>
+                            <option v-for="item in dropdownBPNS.addresses" :value="item" @click="emptyTotalDemandArray()"> {{item.streetAndNumber + ", " + item.zipCodeAndCity}} </option>
                         </select>
                     </div>
                 </div>
@@ -158,16 +158,25 @@ export default{
 
   data() {
     return{
+        // get environmental endpoints
+        backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
+        backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
+        endpointProducts: import.meta.env.VITE_ENDPOINT_PRODUCTS,
+        endpointCustomers: import.meta.env.VITE_ENDPOINT_CUSTOMER,
         // Customer dropdown
         dropdownCustomer: "",
         // Material dropdown
-        dropdownMaterial: "",
+        dropdownProducts: "",
         // BPNS dropdown
         dropdownBPNS: "",
         // BPNA dropdown
         dropdownBPNA: "",
         // Dates
         datesData: [],
+        // fetched Materials
+        fetchedProducts: [],
+        // fetched Customers
+        fetchedCustomers: [],
         // Temp array for total demand
         totalDemand: [],
         // Customer Json
@@ -182,12 +191,12 @@ export default{
           updatedDate = new Date(currentDate.setDate(currentDate.getDate() + 1))
           this.datesData[i] = updatedDate.getDate() + "." + (updatedDate.getMonth() + 1) + "." + updatedDate.getFullYear();
       }
-
+      this.getAllProducts();
     },
     methods: {
-    addDemands: function(materialObject){
-        var demandActual = materialObject.demandActual;
-        var demandAdditional = materialObject.demandAdditional;
+    addDemands: function(productObject){
+        var demandActual = productObject.demandActual;
+        var demandAdditional = productObject.demandAdditional;
         let demandTotal = [];
 
 
@@ -212,6 +221,42 @@ export default{
     },
     emptyTotalDemandArray: function (){
         this.totalDemand.length = 0;
+    },
+    testMethode: function (){
+        for(const test of this.fetchedProducts){
+            console.log(test.ownMaterialNumber)
+
+            fetch( "http://localhost:8081/catena/stockView/supplier?ownMaterialNumber=" + test.ownMaterialNumber, {
+                headers: {
+                    "X-API-KEY": "test",
+                },
+            })
+                .then((res) => res.json())
+                .then((data) => (this.fetchedCustomers = data) && console.log(data))
+                .catch((err) => console.log(err));
+
+        }
+    },
+    getAllProducts: function (){
+        fetch( this.backendURL + this.endpointProducts, {
+            headers: {
+                "X-API-KEY": this.backendApiKey,
+            },
+        })
+            .then((res) => res.json())
+            .then((data) => (this.fetchedProducts = data) && console.log(data))
+            .catch((err) => console.log(err));
+    },
+    getAllCustomers: function (productNumber){
+        console.log(productNumber)
+        fetch( this.backendURL + this.endpointCustomers + productNumber.ownMaterialNumber,{
+            headers: {
+                "X-API-KEY": this.backendApiKey,
+            },
+        })
+            .then((res) => res.json())
+            .then((data) => (this.fetchedCustomers = data) && console.log(data))
+            .catch((err) => console.log(err));
     },
   }
 };
