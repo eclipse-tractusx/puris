@@ -10,10 +10,112 @@ It creates a setup of a partner and customer that refer to the same material fro
 - Both partners know each other and each other's EDC
 - The setup is ready to trigger the update from customer to supplier
 
+## Test Data
+
+The following lists give an overview about the test data in use. When setting up the data, please consider that the 
+relevant information is the following:
+- Material Numbers (Customer, Supplier, Catena-X)
+- Partner and Site information (BPNL, BPNS, BPNA)
+Note: BPN information depends highly on your environment.
+
+Items (Material or Product) involved:
+- Semiconductor
+  - Name: Semiconductor
+  - Material Number Customer: MNR-7307-AU340474.002
+  - Material Number Supplier: MNR-8101-ID146955.001
+  - Material Number Catena-X: 860fb504-b884-4009-9313-c6fb6cdc776b
+- Control Unit
+  - Name: Central Control Unit
+  - Material Number Customer: MNR-4177-C
+  - Material Number Supplier: MNR-4177-S
+  - Material Number Catena-X: none
+
+### Customer
+Overall the customer has the following information:
+- BPNL: BPNL4444444444XX
+- Name: Control Unit Creator Inc.
+- Site
+  - BPNS: BPNS4444444444XX
+  - Site Name: Control Unit Creator Production Site
+  - Site Address:
+    - BPNA: BPNA4444444444AA
+    - Street and Number: 13th Street 47
+    - Zip Code, City: 10011 New York
+    - Country: USA
+- Materials available: Semiconductor
+- Products available: Control Unit
+  - Material Stock 1:
+    - Partner: Semiconductor Supplier (BPNL1234567890ZZ)
+    - Material: Semiconductor
+    - Quantity: 500 pieces
+    - Blocked: true
+    - Order Position Reference:
+      - Customer Order Number: CNbr-1
+      - Customer Order Position Number: C-Pos-1
+      - Supplier Order Number: SNbr-1
+  - Reported Material Stock 1:
+      - Partner: Semiconductor Supplier (BPNL1234567890ZZ)
+      - Material: Semiconductor
+      - Quantity: 100 pieces
+      - Blocked: true
+      - Order Position Reference: empty
+
+### Supplier
+Overall the supplier has the following information:
+- BPNL: BPNL1234567890ZZ
+- Name: Semiconductor Supplier Inc.
+- Site 1
+  - BPNS: BPNS1234567890ZZ
+  - Site Name: Semiconductor Supplier Inc. Production Site
+  - Site Address: 
+    - BPNA: BPNA1234567890AA
+    - Street and Number: Wall Street 101
+    - Zip Code, City: 10001 New York
+    - Country: USA
+- Site 2
+  - BPNS: BPNS2222222222SS
+  - Site Name: Semiconductor Supplier Inc. Secondary Site
+  - Site Address:
+    - BPNA: BPNA2222222222AA
+    - Street and Number: Sunset Blvd. 345
+    - Zip Code, City: 90001 Los Angeles
+    - Country: USA
+- Materials available: none
+- Products available: Semiconductor
+- Stocks
+    - Product Stock 1:
+        - Partner: Control Unit Creator Inc. (BPNL4444444444XX)
+        - Material: Semiconductor
+        - Quantity: 100 pieces
+        - Blocked: true
+        - Order Position Reference:
+            - Customer Order Number: CNbr-2
+            - Customer Order Position Number: C-Pos-2
+            - Supplier Order Number: SNbr-2
+  - Product Stock 2:
+      - Partner: Control Unit Creator Inc. (BPNL4444444444XX)
+      - Material: Semiconductor
+      - Quantity: 400 pieces
+      - Blocked: false
+      - Order Position Reference:
+          - Customer Order Number: CNbr-2
+          - Customer Order Position Number: C-Pos-2
+          - Supplier Order Number: SNbr-2
+  - Reported Product Stock 1:
+      - Partner: Control Unit Creator Inc. (BPNL4444444444XX)
+      - Material: Semiconductor
+      - Quantity: 500 pieces
+      - Blocked: true
+      - Order Position Reference:
+          - Customer Order Number: CNbr-1
+          - Customer Order Position Number: C-Pos-1
+          - Supplier Order Number: SNbr-1
+
 ## Preparations
+
 To run integration tests import the collection and the environment file to postman.
-Follow the description on collection level to identify the secrets (API KEYS) you need to set in the environment 
-variables. The keys are defined on folder level.
+The environment files has empty fields for the respective key information. The keys are set via environment variables 
+on folder level.
 
 One can use the local deployment to run the integration test locally. Follow the instructions in the 
 [INSTALL.md](../INSTALL.md) until the keys are generated. 

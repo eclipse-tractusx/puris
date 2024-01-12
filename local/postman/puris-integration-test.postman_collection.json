@@ -1,8 +1,8 @@
 {
 	"info": {
-		"_postman_id": "1b4626c9-01e5-42c1-a1de-d386572888df",
+		"_postman_id": "08da5aef-cb4d-46ea-a2e1-a1d47e73c97a",
 		"name": "puris-integration-test",
-		"description": "The collection assumes the following roles:\n\n- Customer PURIS (upper tier) = Provider\n- Supplier PURIS (lower tier) = Consumer\n    \n\nIt creates the opposite partner and the respective view on the semiconductor material or product.\n\nTo run the tests correctly, take the environment and fill the respective secrets:\n\n- PROVIDER_EDC_API_KEY\n    \n- PROVIDER_PURIS_BACKEND_API_KEY\n    \n- CONSUMER_EDC_API_KEY\n    \n- CONSUMER_PURIS_BACKEND_API_KEY\n    \n\nWhen using the another environment, update / create a new environment.",
+		"description": "The collection assumes the following roles:\n\n- Customer PURIS (upper tier)\n    \n- Supplier PURIS (lower tier)\n    \n\nIt creates the opposite partner and the respective view on the semiconductor material or product.\n\nTo run the tests correctly, take the environment and fill the respective secrets:\n\n- CUSTOMER_EDC_API_KEY\n- CUSTOMER_PURIS_BACKEND_API_KEY\n- SUPPLIER_EDC_API_KEY\n- SUPPLIER_PURIS_BACKEND_API_KEY\n    \n\nWhen using the another environment, update / create a new environment.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "26605468"
 	},
@@ -42,9 +42,9 @@
 									"raw": "{\n  \"materialFlag\": true,\n  \"productFlag\": false,\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n  \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n  \"name\": \"Semiconductor\"\n}"
 								},
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/materials",
+									"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/materials",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{CUSTOMER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -80,12 +80,12 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"materialFlag\": false,\n    \"productFlag\": true,\n    \"ownMaterialNumber\": \"MNR-4177-S\",\n    \"materialNumberCx\": null,\n    \"name\": \"central control unit\"\n}"
+									"raw": "{\n    \"materialFlag\": false,\n    \"productFlag\": true,\n    \"ownMaterialNumber\": \"MNR-4177-S\",\n    \"materialNumberCx\": null,\n    \"name\": \"Central Control Unit\"\n}"
 								},
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/materials",
+									"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/materials",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{CUSTOMER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -134,9 +134,9 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/materials/all",
+									"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/materials/all",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{CUSTOMER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -173,12 +173,12 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"name\": \"NewPartner Inc.\",\n  \"edcUrl\": \"{{PROVIDER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\n  \"bpnl\": \"{{CONSUMER_BPN}}\",\n  \"addresses\": [],\n  \"sites\": [\n    {\n      \"bpns\": \"{{CONSUMER_BPNS}}\",\n      \"name\": \"New Partner Global Headquarter\",\n      \"addresses\": [\n        {\n          \"bpna\": \"{{CONSUMER_BPNA}}\",\n          \"streetAndNumber\": \"Wall Street 101\",\n          \"zipCodeAndCity\": \"10001 New York\",\n          \"country\": \"USA\"\n        }\n      ]\n    }\n  ]\n}"
+									"raw": "{\n  \"name\": \"Semiconductor Supplier Inc.\",\n  \"edcUrl\": \"{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\n  \"bpnl\": \"{{SUPPLIER_BPNL}}\",\n  \"addresses\": [],\n  \"sites\": [\n    {\n      \"bpns\": \"{{SUPPLIER_BPNS}}\",\n      \"name\": \"Semiconductor Supplier Inc. Headquarter\",\n      \"addresses\": [\n        {\n          \"bpna\": \"{{SUPPLIER_BPNA}}\",\n          \"streetAndNumber\": \"Wall Street 101\",\n          \"zipCodeAndCity\": \"10001 New York\",\n          \"country\": \"USA\"\n        }\n      ]\n    }\n  ]\n}"
 								},
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/partners",
+									"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/partners",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{CUSTOMER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -203,17 +203,17 @@
 											"    var responseJson = pm.response.json();",
 											"",
 											"    pm.expect(responseJson).to.have.property(\"bpnl\");",
-											"    pm.expect(responseJson.bpnl).to.equal(pm.environment.get(\"CONSUMER_BPN\"));",
+											"    pm.expect(responseJson.bpnl).to.equal(pm.environment.get(\"SUPPLIER_BPNL\"));",
 											"",
 											"    pm.expect(responseJson.sites).to.be.an(\"array\").with.lengthOf(1);",
 											"",
 											"    var site = responseJson.sites[0];",
-											"    pm.expect(site).to.have.property(\"bpns\", pm.environment.get(\"CONSUMER_BPNS\"));",
+											"    pm.expect(site).to.have.property(\"bpns\", pm.environment.get(\"SUPPLIER_BPNS\"));",
 											"",
 											"    pm.expect(site.addresses).to.be.an(\"array\").with.lengthOf(1);",
 											"",
 											"    var address = site.addresses[0];",
-											"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"CONSUMER_BPNA\"));",
+											"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"SUPPLIER_BPNA\"));",
 											"});"
 										],
 										"type": "text/javascript"
@@ -224,9 +224,9 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/partners?partnerBpnl={{CONSUMER_BPN}}",
+									"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/partners?partnerBpnl={{SUPPLIER_BPNL}}",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{CUSTOMER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -235,7 +235,7 @@
 									"query": [
 										{
 											"key": "partnerBpnl",
-											"value": "{{CONSUMER_BPN}}"
+											"value": "{{SUPPLIER_BPNL}}"
 										}
 									]
 								}
@@ -269,12 +269,12 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\"bpns\": \"{{CONSUMER_BPNS2}}\",\n\"name\": \"NewPartner Inc. Secondary Site\",\n\"addresses\": [\n    {\n        \"bpna\": \"{{CONSUMER_BPNA2}}\",\n        \"streetAndNumber\": \"Sunset Blvd. 345\",\n        \"zipCodeAndCity\": \"90001 Los Angeles\",\n        \"country\": \"USA\"\n    }\n]\n}"
+									"raw": "{\n\"bpns\": \"{{SUPPLIER_BPNS2}}\",\n\"name\": \"Semiconductor Supplier Inc. Secondary Site\",\n\"addresses\": [\n    {\n        \"bpna\": \"{{SUPPLIER_BPNA2}}\",\n        \"streetAndNumber\": \"Sunset Blvd. 345\",\n        \"zipCodeAndCity\": \"90001 Los Angeles\",\n        \"country\": \"USA\"\n    }\n]\n}"
 								},
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/partners/putSite?partnerBpnl={{CONSUMER_BPN}}",
+									"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/partners/putSite?partnerBpnl={{SUPPLIER_BPNL}}",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{CUSTOMER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -284,7 +284,7 @@
 									"query": [
 										{
 											"key": "partnerBpnl",
-											"value": "{{CONSUMER_BPN}}"
+											"value": "{{SUPPLIER_BPNL}}"
 										}
 									]
 								}
@@ -310,26 +310,26 @@
 											"    const responseJson = pm.response.json();",
 											"",
 											"    var supplierPartners = responseJson.filter(function (partner) {",
-											"        return partner.bpnl === pm.environment.get(\"CONSUMER_BPN\");",
+											"        return partner.bpnl === pm.environment.get(\"SUPPLIER_BPNL\");",
 											"    });",
 											"",
 											"    const supplierPartner = supplierPartners[0];",
 											"    pm.expect(supplierPartner).to.have.property(\"bpnl\");",
 											"",
-											"    pm.expect(supplierPartner.bpnl).to.equal(pm.environment.get(\"CONSUMER_BPN\"));",
+											"    pm.expect(supplierPartner.bpnl).to.equal(pm.environment.get(\"SUPPLIER_BPNL\"));",
 											"",
 											"    pm.expect(supplierPartner.sites).to.be.an(\"array\").with.lengthOf(2);",
 											"",
 											"    // check only the newly added site as the other one has been checked earlier",
 											"    var sites = supplierPartner.sites.filter(function (site) {",
-											"        return site.bpns === pm.environment.get(\"CONSUMER_BPNS2\");",
+											"        return site.bpns === pm.environment.get(\"SUPPLIER_BPNS2\");",
 											"    });",
 											"",
 											"    const site = sites[0];",
 											"    pm.expect(site.addresses).to.be.an(\"array\").with.lengthOf(1);",
 											"",
 											"    var address = site.addresses[0];",
-											"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"CONSUMER_BPNA2\"));",
+											"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"SUPPLIER_BPNA2\"));",
 											"});"
 										],
 										"type": "text/javascript"
@@ -340,9 +340,9 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/partners/all",
+									"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/partners/all",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{CUSTOMER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -372,9 +372,9 @@
 								"method": "POST",
 								"header": [],
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/materialpartnerrelations?partnerBpnl={{CONSUMER_BPN}}&ownMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}&partnerMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}&partnerSupplies=true&partnerBuys=false",
+									"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/materialpartnerrelations?partnerBpnl={{SUPPLIER_BPNL}}&ownMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}&partnerMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}&partnerSupplies=true&partnerBuys=false",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{CUSTOMER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -383,7 +383,7 @@
 									"query": [
 										{
 											"key": "partnerBpnl",
-											"value": "{{CONSUMER_BPN}}"
+											"value": "{{SUPPLIER_BPNL}}"
 										},
 										{
 											"key": "ownMaterialNumber",
@@ -418,8 +418,8 @@
 											"})",
 											"",
 											"pm.test(\"Verify material partner mapping\", function () {",
-											"    pm.response.to.have.jsonBody(pm.environment.get(\"CONSUMER_BPN\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"))",
-											"        .and.have.jsonBody(pm.environment.get(\"PROVIDER_BPN\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\"));",
+											"    pm.response.to.have.jsonBody(pm.environment.get(\"SUPPLIER_BPNL\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"))",
+											"        .and.have.jsonBody(pm.environment.get(\"CUSTOMER_BPNL\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\"));",
 											"});"
 										],
 										"type": "text/javascript"
@@ -430,9 +430,9 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/stockView/materialnumbers-mapping?ownMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}",
+									"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/stockView/materialnumbers-mapping?ownMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{CUSTOMER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -464,14 +464,14 @@
 											"    const responseJson = pm.response.json();",
 											"",
 											"    const sites = responseJson.filter(function (site) {",
-											"        return site.bpns === pm.environment.get(\"PROVIDER_BPNS\");",
+											"        return site.bpns === pm.environment.get(\"CUSTOMER_BPNS\");",
 											"    });",
 											"",
 											"    const site = sites[0];",
 											"    pm.expect(site.addresses).to.be.an(\"array\").with.lengthOf(1);",
 											"",
 											"    const address = site.addresses[0];",
-											"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"PROVIDER_BPNA\"));",
+											"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"CUSTOMER_BPNA\"));",
 											"});"
 										],
 										"type": "text/javascript"
@@ -482,9 +482,9 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/partners/ownSites",
+									"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/partners/ownSites",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{CUSTOMER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -514,14 +514,14 @@
 											"    pm.expect(responseJson.material.materialNumberCustomer).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\"));",
 											"",
 											"    pm.expect(responseJson).to.have.property(\"stockLocationBpns\");",
-											"    pm.expect(responseJson.stockLocationBpns).to.equal(pm.environment.get(\"PROVIDER_BPNS\"));",
+											"    pm.expect(responseJson.stockLocationBpns).to.equal(pm.environment.get(\"CUSTOMER_BPNS\"));",
 											"",
 											"    pm.expect(responseJson).to.have.property(\"stockLocationBpna\");",
-											"    pm.expect(responseJson.stockLocationBpna).to.equal(pm.environment.get(\"PROVIDER_BPNA\"));",
+											"    pm.expect(responseJson.stockLocationBpna).to.equal(pm.environment.get(\"CUSTOMER_BPNA\"));",
 											"",
 											"    pm.expect(responseJson).to.have.property(\"partner\");",
 											"    pm.expect(responseJson.partner).to.have.property(\"bpnl\");",
-											"    pm.expect(responseJson.partner.bpnl).to.equal(pm.environment.get(\"CONSUMER_BPN\"));",
+											"    pm.expect(responseJson.partner.bpnl).to.equal(pm.environment.get(\"SUPPLIER_BPNL\"));",
 											"});"
 										],
 										"type": "text/javascript"
@@ -533,7 +533,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"material\": {\n        \"materialFlag\": true,\n        \"productFlag\": false,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 5.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{PROVIDER_BPNS}}\",\n    \"stockLocationBpna\": \"{{PROVIDER_BPNA}}\",\n    \"type\": \"MATERIAL\",\n    \"lastUpdatedOn\": \"2023-12-18T13:12:48.466+00:00\",\n    \"isBlocked\": true,\n    \"customerOrderNumber\": \"\",\n    \"customerOrderPositionNumber\": \"\",\n    \"supplierOrderNumber\": \"\",\n    \"partner\":{\n        \"bpnl\": \"{{CONSUMER_BPN}}\"\n    }\n}",
+									"raw": "{\n    \"material\": {\n        \"materialFlag\": true,\n        \"productFlag\": false,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 50.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{CUSTOMER_BPNS}}\",\n    \"stockLocationBpna\": \"{{CUSTOMER_BPNA}}\",\n    \"type\": \"MATERIAL\",\n    \"lastUpdatedOn\": \"2023-12-18T13:12:48.466+00:00\",\n    \"isBlocked\": true,\n    \"customerOrderNumber\": \"\",\n    \"customerOrderPositionNumber\": \"\",\n    \"supplierOrderNumber\": \"\",\n    \"partner\":{\n        \"bpnl\": \"{{SUPPLIER_BPNL}}\"\n    }\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -541,9 +541,9 @@
 									}
 								},
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/stockView/material-stocks",
+									"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/stockView/material-stocks",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{CUSTOMER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -581,7 +581,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"material\": {\n        \"materialFlag\": true,\n        \"productFlag\": false,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 5.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{PROVIDER_BPNS}}\",\n    \"stockLocationBpna\": \"{{PROVIDER_BPNA}}\",\n    \"type\": \"MATERIAL\",\n    \"lastUpdatedOn\": \"2023-12-18T13:12:48.466+00:00\",\n    \"isBlocked\": true,\n    \"customerOrderNumber\": \"\",\n    \"customerOrderPositionNumber\": \"\",\n    \"supplierOrderNumber\": \"\",\n    \"partner\":{\n        \"bpnl\": \"{{CONSUMER_BPN}}\"\n    }\n}",
+									"raw": "{\n    \"material\": {\n        \"materialFlag\": true,\n        \"productFlag\": false,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 5.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{CUSTOMER_BPNS}}\",\n    \"stockLocationBpna\": \"{{CUSTOMER_BPNA}}\",\n    \"type\": \"MATERIAL\",\n    \"lastUpdatedOn\": \"2023-12-18T13:12:48.466+00:00\",\n    \"isBlocked\": true,\n    \"customerOrderNumber\": \"\",\n    \"customerOrderPositionNumber\": \"\",\n    \"supplierOrderNumber\": \"\",\n    \"partner\":{\n        \"bpnl\": \"{{SUPPLIER_BPNL}}\"\n    }\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -589,9 +589,9 @@
 									}
 								},
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/stockView/material-stocks",
+									"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/stockView/material-stocks",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{CUSTOMER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -608,7 +608,7 @@
 						"apikey": [
 							{
 								"key": "value",
-								"value": "{{PROVIDER_PURIS_API_KEY}}",
+								"value": "{{CUSTOMER_PURIS_BACKEND_API_KEY}}",
 								"type": "string"
 							},
 							{
@@ -671,9 +671,9 @@
 									"raw": "{\n  \"materialFlag\": false,\n  \"productFlag\": true,\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n  \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n  \"name\": \"Semiconductor\"\n}"
 								},
 								"url": {
-									"raw": "{{CONSUMER_PURIS_BACKEND}}/catena/materials",
+									"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/materials",
 									"host": [
-										"{{CONSUMER_PURIS_BACKEND}}"
+										"{{SUPPLIER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -714,9 +714,9 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{CONSUMER_PURIS_BACKEND}}/catena/materials/all",
+									"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/materials/all",
 									"host": [
-										"{{CONSUMER_PURIS_BACKEND}}"
+										"{{SUPPLIER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -753,12 +753,12 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"name\": \"Control Unit Creator Inc.\",\n  \"edcUrl\": \"{{PROVIDER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\n  \"bpnl\": \"{{PROVIDER_BPN}}\",\n  \"addresses\": [],\n  \"sites\": [\n    {\n      \"bpns\": \"{{PROVIDER_BPNS}}\",\n      \"name\": \"Control Unit Creator Headquarter\",\n      \"addresses\": [\n        {\n          \"bpna\": \"{{PROVIDER_BPNA}}\",\n          \"streetAndNumber\": \"13th Street 47\",\n          \"zipCodeAndCity\": \"10011 New York\",\n          \"country\": \"USA\"\n        }\n      ]\n    }\n  ]\n}"
+									"raw": "{\n  \"name\": \"Control Unit Creator Inc.\",\n  \"edcUrl\": \"{{CUSTOMER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\n  \"bpnl\": \"{{CUSTOMER_BPNL}}\",\n  \"addresses\": [],\n  \"sites\": [\n    {\n      \"bpns\": \"{{CUSTOMER_BPNS}}\",\n      \"name\": \"Control Unit Creator Headquarter\",\n      \"addresses\": [\n        {\n          \"bpna\": \"{{CUSTOMER_BPNA}}\",\n          \"streetAndNumber\": \"13th Street 47\",\n          \"zipCodeAndCity\": \"10011 New York\",\n          \"country\": \"USA\"\n        }\n      ]\n    }\n  ]\n}"
 								},
 								"url": {
-									"raw": "{{CONSUMER_PURIS_BACKEND}}/catena/partners",
+									"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/partners",
 									"host": [
-										"{{CONSUMER_PURIS_BACKEND}}"
+										"{{SUPPLIER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -783,17 +783,17 @@
 											"    var responseJson = pm.response.json();",
 											"",
 											"    pm.expect(responseJson).to.have.property(\"bpnl\");",
-											"    pm.expect(responseJson.bpnl).to.equal(pm.environment.get(\"PROVIDER_BPN\"));",
+											"    pm.expect(responseJson.bpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
 											"",
 											"    pm.expect(responseJson.sites).to.be.an(\"array\").with.lengthOf(1);",
 											"",
 											"    var site = responseJson.sites[0];",
-											"    pm.expect(site).to.have.property(\"bpns\", pm.environment.get(\"PROVIDER_BPNS\"));",
+											"    pm.expect(site).to.have.property(\"bpns\", pm.environment.get(\"CUSTOMER_BPNS\"));",
 											"",
 											"    pm.expect(site.addresses).to.be.an(\"array\").with.lengthOf(1);",
 											"",
 											"    var address = site.addresses[0];",
-											"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"PROVIDER_BPNA\"));",
+											"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"CUSTOMER_BPNA\"));",
 											"});"
 										],
 										"type": "text/javascript"
@@ -804,9 +804,9 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{CONSUMER_PURIS_BACKEND}}/catena/partners?partnerBpnl={{PROVIDER_BPN}}",
+									"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/partners?partnerBpnl={{CUSTOMER_BPNL}}",
 									"host": [
-										"{{CONSUMER_PURIS_BACKEND}}"
+										"{{SUPPLIER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -815,7 +815,7 @@
 									"query": [
 										{
 											"key": "partnerBpnl",
-											"value": "{{PROVIDER_BPN}}"
+											"value": "{{CUSTOMER_BPNL}}"
 										}
 									]
 								}
@@ -841,9 +841,9 @@
 								"method": "POST",
 								"header": [],
 								"url": {
-									"raw": "{{CONSUMER_PURIS_BACKEND}}/catena/materialpartnerrelations?partnerBpnl={{PROVIDER_BPN}}&ownMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}&partnerMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}&partnerSupplies=false&partnerBuys=true",
+									"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/materialpartnerrelations?partnerBpnl={{CUSTOMER_BPNL}}&ownMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}&partnerMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}&partnerSupplies=false&partnerBuys=true",
 									"host": [
-										"{{CONSUMER_PURIS_BACKEND}}"
+										"{{SUPPLIER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -852,7 +852,7 @@
 									"query": [
 										{
 											"key": "partnerBpnl",
-											"value": "{{PROVIDER_BPN}}"
+											"value": "{{CUSTOMER_BPNL}}"
 										},
 										{
 											"key": "ownMaterialNumber",
@@ -887,8 +887,8 @@
 											"})",
 											"",
 											"pm.test(\"Verify material partner mapping\", function () {",
-											"    pm.response.to.have.jsonBody(pm.environment.get(\"CONSUMER_BPN\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"))",
-											"        .and.have.jsonBody(pm.environment.get(\"PROVIDER_BPN\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\"));",
+											"    pm.response.to.have.jsonBody(pm.environment.get(\"SUPPLIER_BPNL\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"))",
+											"        .and.have.jsonBody(pm.environment.get(\"CUSTOMER_BPNL\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\"));",
 											"});"
 										],
 										"type": "text/javascript"
@@ -899,9 +899,9 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{CONSUMER_PURIS_BACKEND}}/catena/stockView/materialnumbers-mapping?ownMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}",
+									"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/stockView/materialnumbers-mapping?ownMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}",
 									"host": [
-										"{{CONSUMER_PURIS_BACKEND}}"
+										"{{SUPPLIER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -933,14 +933,14 @@
 											"    const responseJson = pm.response.json();",
 											"",
 											"    const sites = responseJson.filter(function (site) {",
-											"        return site.bpns === pm.environment.get(\"PROVIDER_BPNS\");",
+											"        return site.bpns === pm.environment.get(\"SUPPLIER_BPNS\");",
 											"    });",
 											"",
 											"    const site = sites[0];",
 											"    pm.expect(site.addresses).to.be.an(\"array\").with.lengthOf(1);",
 											"",
 											"    const address = site.addresses[0];",
-											"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"PROVIDER_BPNA\"));",
+											"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"SUPPLIER_BPNA\"));",
 											"});"
 										],
 										"type": "text/javascript"
@@ -951,9 +951,9 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{PROVIDER_PURIS_BACKEND}}/catena/partners/ownSites",
+									"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/partners/ownSites",
 									"host": [
-										"{{PROVIDER_PURIS_BACKEND}}"
+										"{{SUPPLIER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -984,7 +984,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"material\": {\n        \"materialFlag\": false,\n        \"productFlag\": true,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberSupplier\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 5.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{CONSUMER_BPNS}}\",\n    \"stockLocationBpna\": \"{{CONSUMER_BPNA}}\",\n    \"type\": \"PRODUCT\",\n    \"lastUpdatedOn\": \"2023-12-18T14:12:48.466+00:00\",\n    \"isBlocked\": false,\n    \"customerOrderNumber\": \"\",\n    \"customerOrderPositionNumber\": \"\",\n    \"supplierOrderNumber\": \"\",\n    \"partner\":{\n        \"bpnl\": \"{{PROVIDER_BPN}}\"\n    }\n}",
+									"raw": "{\n    \"material\": {\n        \"materialFlag\": false,\n        \"productFlag\": true,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberSupplier\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 5.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{SUPPLIER_BPNS}}\",\n    \"stockLocationBpna\": \"{{SUPPLIER_BPNA}}\",\n    \"type\": \"PRODUCT\",\n    \"lastUpdatedOn\": \"2023-12-18T14:12:48.466+00:00\",\n    \"isBlocked\": false,\n    \"customerOrderNumber\": \"\",\n    \"customerOrderPositionNumber\": \"\",\n    \"supplierOrderNumber\": \"\",\n    \"partner\":{\n        \"bpnl\": \"{{CUSTOMER_BPNL}}\"\n    }\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -992,9 +992,9 @@
 									}
 								},
 								"url": {
-									"raw": "{{CONSUMER_PURIS_BACKEND}}/catena/stockView/product-stocks",
+									"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/stockView/product-stocks",
 									"host": [
-										"{{CONSUMER_PURIS_BACKEND}}"
+										"{{SUPPLIER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -1028,14 +1028,14 @@
 											"    pm.expect(stock.material.materialNumberSupplier).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"));",
 											"",
 											"    pm.expect(stock).to.have.property(\"stockLocationBpns\");",
-											"    pm.expect(stock.stockLocationBpns).to.equal(pm.environment.get(\"CONSUMER_BPNS\"));",
+											"    pm.expect(stock.stockLocationBpns).to.equal(pm.environment.get(\"SUPPLIER_BPNS\"));",
 											"",
 											"    pm.expect(stock).to.have.property(\"stockLocationBpna\");",
-											"    pm.expect(stock.stockLocationBpna).to.equal(pm.environment.get(\"CONSUMER_BPNA\"));",
+											"    pm.expect(stock.stockLocationBpna).to.equal(pm.environment.get(\"SUPPLIER_BPNA\"));",
 											"",
 											"    pm.expect(stock).to.have.property(\"partner\");",
 											"    pm.expect(stock.partner).to.have.property(\"bpnl\");",
-											"    pm.expect(stock.partner.bpnl).to.equal(pm.environment.get(\"PROVIDER_BPN\"));",
+											"    pm.expect(stock.partner.bpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
 											"});"
 										],
 										"type": "text/javascript"
@@ -1052,9 +1052,9 @@
 									}
 								],
 								"url": {
-									"raw": "{{CONSUMER_PURIS_BACKEND}}/catena/stockView/product-stocks",
+									"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/stockView/product-stocks",
 									"host": [
-										"{{CONSUMER_PURIS_BACKEND}}"
+										"{{SUPPLIER_PURIS_BACKEND}}"
 									],
 									"path": [
 										"catena",
@@ -1071,7 +1071,7 @@
 						"apikey": [
 							{
 								"key": "value",
-								"value": "{{CONSUMER_PURIS_API_KEY}}",
+								"value": "{{SUPPLIER_PURIS_BACKEND_API_KEY}}",
 								"type": "string"
 							},
 							{
@@ -1142,7 +1142,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"@context\": {},\r\n    \"@type\": \"CatalogRequest\",\r\n    \"protocol\": \"dataspace-protocol-http\",\r\n    \"counterPartyAddress\": \"{{PROVIDER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\r\n    \"querySpec\": {\r\n        \"offset\": 0,\r\n        \"limit\": 100,\r\n        \"filter\": \"\",\r\n        \"range\": {\r\n            \"from\": 0,\r\n            \"to\": 100\r\n        },\r\n        \"filterExpression\": [\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"asset:prop:type\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"data.res.itemStockRequestApi\"\r\n            },\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"https://w3id.org/catenax/ontology/common#version\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"1.0\"\r\n            }\r\n        ]\r\n    }\r\n}\r\n",
+							"raw": "{\r\n    \"@context\": {},\r\n    \"@type\": \"CatalogRequest\",\r\n    \"protocol\": \"dataspace-protocol-http\",\r\n    \"counterPartyAddress\": \"{{CUSTOMER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\r\n    \"querySpec\": {\r\n        \"offset\": 0,\r\n        \"limit\": 100,\r\n        \"filter\": \"\",\r\n        \"range\": {\r\n            \"from\": 0,\r\n            \"to\": 100\r\n        },\r\n        \"filterExpression\": [\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"asset:prop:type\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"data.res.itemStockRequestApi\"\r\n            },\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"https://w3id.org/catenax/ontology/common#version\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"1.0\"\r\n            }\r\n        ]\r\n    }\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1150,9 +1150,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{CONSUMER_EDC}}/{{MANAGEMENT_PATH}}/v2/catalog/request",
+							"raw": "{{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v2/catalog/request",
 							"host": [
-								"{{CONSUMER_EDC}}"
+								"{{SUPPLIER_EDC}}"
 							],
 							"path": [
 								"{{MANAGEMENT_PATH}}",
@@ -1199,7 +1199,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"@context\": {},\r\n    \"@type\": \"CatalogRequest\",\r\n    \"protocol\": \"dataspace-protocol-http\",\r\n    \"counterPartyAddress\": \"{{PROVIDER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\r\n    \"querySpec\": {\r\n        \"offset\": 0,\r\n        \"limit\": 100,\r\n        \"filter\": \"\",\r\n        \"range\": {\r\n            \"from\": 0,\r\n            \"to\": 100\r\n        },\r\n        \"filterExpression\": [\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"asset:prop:type\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"data.res.itemStockResponseApi\"\r\n            },\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"https://w3id.org/catenax/ontology/common#version\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"1.0\" \r\n            }\r\n        ]\r\n    }\r\n}\r\n",
+							"raw": "{\r\n    \"@context\": {},\r\n    \"@type\": \"CatalogRequest\",\r\n    \"protocol\": \"dataspace-protocol-http\",\r\n    \"counterPartyAddress\": \"{{CUSTOMER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\r\n    \"querySpec\": {\r\n        \"offset\": 0,\r\n        \"limit\": 100,\r\n        \"filter\": \"\",\r\n        \"range\": {\r\n            \"from\": 0,\r\n            \"to\": 100\r\n        },\r\n        \"filterExpression\": [\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"asset:prop:type\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"data.res.itemStockResponseApi\"\r\n            },\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"https://w3id.org/catenax/ontology/common#version\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"1.0\" \r\n            }\r\n        ]\r\n    }\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1207,9 +1207,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{CONSUMER_EDC}}/{{MANAGEMENT_PATH}}/v2/catalog/request",
+							"raw": "{{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v2/catalog/request",
 							"host": [
-								"{{CONSUMER_EDC}}"
+								"{{SUPPLIER_EDC}}"
 							],
 							"path": [
 								"{{MANAGEMENT_PATH}}",
@@ -1227,7 +1227,7 @@
 				"apikey": [
 					{
 						"key": "value",
-						"value": "{{CONSUMER_EDC_API_KEY}}",
+						"value": "{{SUPPLIER_EDC_API_KEY}}",
 						"type": "string"
 					},
 					{
