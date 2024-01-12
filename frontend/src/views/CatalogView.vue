@@ -25,15 +25,13 @@ export default {
         return {
             backendUrl: import.meta.env.VITE_BACKEND_BASE_URL,
             backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
-            edc: {
-                url: "",
-            },
+            edcUrl: "",
             catalog: {},
         };
     },
     methods: {
-        getCatalog(url) {
-            const edcEncoded = encodeURIComponent(url);
+        getCatalog() {
+            const edcEncoded = encodeURIComponent(this.edcUrl);
             fetch(this.backendUrl + "edc/catalog?dspUrl=" + edcEncoded, {
                 headers: {
                     "X-API-KEY": this.backendApiKey,
@@ -73,27 +71,27 @@ export default {
         <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
             View EDC Catalog
         </h1>
-        <div class="grid grid-rows-1 grid-flow-col gap-4">
-            <form class="w-max max-w-lg">
-                <div>
-                    <label for="orderName">EDC DSP URL</label>
-                    <input
-                        class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                        type="text"
-                        id="edcUrlInput"
-                        placeholder="Enter url"
-                        v-model="edc.url"
-                    />
-                </div>
-            </form>
-            <button
-                class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                id="orderBtn"
-                type="submit"
-                v-on:click="getCatalog(edc.url)"
-            >
-                Get Catalog
-            </button>
+        <div class="flex items-end gap-4">
+            <div class="flex-grow">
+                <label for="edcUrl">EDC DSP URL</label>
+                <input
+                    class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                    type="text"
+                    id="edcUrlInput"
+                    placeholder="Enter url"
+                    v-model="edcUrl"
+                />
+            </div>
+            <div>
+                <button
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded"
+                    id="catalogBtn"
+                    type="submit"
+                    v-on:click="getCatalog"
+                >
+                    Get Catalog
+                </button>
+            </div>
         </div>
         <ul v-for="offer in catalog" v-bind:key="offer.assetId">
             <li class="list-none">
