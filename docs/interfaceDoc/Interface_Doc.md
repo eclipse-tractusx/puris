@@ -29,4 +29,5 @@ _Note: The port and the path depend on the configuration of the spring backend (
 
 ## Postman
 
-TODO
+There is a [postman collection](../../local/postman/puris-integration-test.postman_collection.json) containing 
+information on how to provide master data and some basic data to test the application.

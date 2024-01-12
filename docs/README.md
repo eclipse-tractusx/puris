@@ -11,4 +11,4 @@ The following table links you to the respective documentations.
 | [DEVELOPMENT.MD](./DEVELOPMENT.md)                         | Information relevant, if you contribute in PURIS development.   |
 | [Administration Guide](./adminGuide/Admin_Guide.md)        | Information relevant, if you want to use the PURIS application. |
 | [Interface Documentation](./interfaceDoc/Interface_Doc.md) | Information about the interfaces.                               |
-| User Manual                                                | TODO                                                            |
+| [User Manual](./userGuide/User_Guide.md)                   | Explanation of the views and how to use them.                   |

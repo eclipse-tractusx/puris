@@ -83,11 +83,11 @@
                         <template
                             v-else
                             v-for="stock in availableMaterialsOrProducts"
-                            :key="stock.supplierPartner.bpnl"
+                            :key="stock.partner.bpnl"
                         >
                             <td>
-                                {{ stock.supplierPartner.name }}<br />({{
-                                    stock.supplierPartner.bpnl
+                                {{ stock.partner.name }}<br />({{
+                                    stock.partner.bpnl
                                 }})
                             </td>
                             <td>
@@ -128,10 +128,12 @@ export default {
         return {
             backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
             backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
-            endpointPartnerProductStocks: import.meta.env
-                .VITE_ENDPOINT_PARTNER_PRODUCT_STOCKS,
-            endpointUpdatePartnerProductStock: import.meta.env
-                .VITE_ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK,
+            endpointGetReportedMaterialStocks: import.meta.env
+                .VITE_ENDPOINT_REPORTED_MATERIAL_STOCKS,
+            endpointGetReportedProductStocks: import.meta.env
+                .VITE_ENDPOINT_REPORTED_PRODUCT_STOCKS,
+            endpointUpdateReportedMaterialStocks: import.meta.env
+                .VITE_ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS,
             availableMaterialsOrProducts: [],
         };
     },
@@ -159,17 +161,16 @@ export default {
         if (this.selectedMaterialOrProductId !== "") {
             if (this.partnerRole === "supplier") {
                 this.getAvailableMaterials();
+            } else if (this.partnerRole === "customer") {
+                this.getAvailableProducts();
             }
-            // else if (this.partnerRole === "customer") {
-            //   this.getAvailableProducts();
-            // }
         }
     },
     methods: {
         getAvailableMaterials() {
             fetch(
                 this.backendURL +
-                    this.endpointPartnerProductStocks +
+                    this.endpointGetReportedMaterialStocks +
                     this.selectedMaterialOrProductId,
                 {
                     headers: {
@@ -181,16 +182,27 @@ export default {
                 .then((data) => (this.availableMaterialsOrProducts = data))
                 .catch((err) => console.log(err));
         },
-        // getAvailableProducts() {
-        //   fetch(this.backendURL + this.endpointPartnerProductStocks)
-        //     .then(res => res.json())
-        //     .then(data => this.availableMaterialsOrProducts = data)
-        //     .catch(err => console.log(err));
-        // },
-        updateMaterialOrProduct() {
+        getAvailableProducts() {
+            console.info(this.selectedMaterialOrProductId);
             fetch(
                 this.backendURL +
-                    this.endpointUpdatePartnerProductStock +
+                    this.endpointGetReportedProductStocks +
+                    this.selectedMaterialOrProductId,
+                {
+                    headers: {
+                        "X-API-KEY": this.backendApiKey,
+                    },
+                }
+            )
+                .then((res) => res.json())
+                .then((data) => (this.availableMaterialsOrProducts = data))
+                .catch((err) => console.log(err));
+        },
+        updateMaterialOrProduct() {
+            if (this.partnerRole === "customer") return;
+            fetch(
+                this.backendURL +
+                    this.endpointUpdateReportedMaterialStocks +
                     this.selectedMaterialOrProductId,
                 {
                     headers: {
