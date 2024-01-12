@@ -41,7 +41,26 @@ export default {
             })
                 .then((response) => response.json())
                 .then((data) => {
-                    this.catalog = data;
+                    this.catalog = data["dcat:dataset"].map((item) => {
+                        return {
+                            assetId: item["@id"],
+                            assetType: item["asset:prop:type"],
+                            assetVersion:
+                                item[
+                                    "https://w3id.org/catenax/ontology/common#version"
+                                ],
+                            permissions:
+                                item["odrl:hasPolicy"] &&
+                                item["odrl:hasPolicy"]["odrl:permission"],
+                            prohibitions:
+                                item["odrl:hasPolicy"] &&
+                                item["odrl:hasPolicy"]["odrl:prohibitions"],
+                            obligations:
+                                item["odrl:hasPolicy"] &&
+                                item["odrl:hasPolicy"]["odrl:obligations"],
+                        };
+                    });
+                    console.info(this.catalog);
                 });
         },
     },
@@ -76,83 +95,102 @@ export default {
                 Get Catalog
             </button>
         </div>
-        <li class="list-none" v-for="offer in catalog['dcat:dataset']">
-            <div
-                class="text-center mx-4 my-8 block p-6 w-full bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
-            >
-                <div>
-                    <h1
-                        class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white"
-                    >
-                        Catalog Item's Asset ID "{{ offer["asset:prop:type"] }}"
-                    </h1>
-                    <h2
-                        class="font-normal text-medium text-gray-700 dark:text-gray-400"
-                    >
-                        Asset Prop type: "{{ offer["asset:prop:type"] }}"
-                    </h2>
+        <ul v-for="offer in catalog" v-bind:key="offer.assetId">
+            <li class="list-none">
+                <div
+                    class="text-center mx-4 my-8 block p-6 w-full bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+                >
                     <div>
-                        Following permissions are defined: <br />
-                        <ul v-if="offer['odrl:permission']">
-                            <li
-                                class="list-none"
-                                v-for="constraint in offer['odrl:permission']"
-                            >
-                                {{ constraint["odrl:or"]["odrl:leftOperand"] }}
-                                {{
-                                    constraint["odrl:or"]["odrl:operator"][
-                                        "@id"
-                                    ]
-                                }}
-                                {{ constraint["odrl:or"]["odrl:rightOperand"] }}
-                            </li>
-                        </ul>
-                        <ul v-else>
-                            None
-                        </ul>
-                    </div>
-                    <div>
-                        Following prohibitions are defined: <br />
-                        <ul v-if="offer['odrl:prohibition']">
-                            <li
-                                class="list-none"
-                                v-for="constraint in offer['odrl:prohibition']"
-                            >
-                                {{ constraint["odrl:or"]["odrl:leftOperand"] }}
-                                {{
-                                    constraint["odrl:or"]["odrl:operator"][
-                                        "@id"
-                                    ]
-                                }}
-                                {{ constraint["odrl:or"]["odrl:rightOperand"] }}
-                            </li>
-                        </ul>
-                        <ul v-else>
-                            None
-                        </ul>
-                    </div>
-                    <div>
-                        Following obligations are defined: <br />
-                        <ul v-if="offer['odrl:obligation']">
-                            <li
-                                class="list-none"
-                                v-for="constraint in offer['odrl:obligation']"
-                            >
-                                {{ constraint["odrl:or"]["odrl:leftOperand"] }}
-                                {{
-                                    constraint["odrl:or"]["odrl:operator"][
-                                        "@id"
-                                    ]
-                                }}
-                                {{ constraint["odrl:or"]["odrl:rightOperand"] }}
-                            </li>
-                        </ul>
-                        <ul v-else>
-                            None
-                        </ul>
+                        <h1
+                            class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white"
+                        >
+                            Catalog Item's Asset ID "{{ offer.assetId }}"
+                        </h1>
+                        <h2
+                            class="font-normal text-medium text-gray-700 dark:text-gray-400"
+                        >
+                            Asset Prop type: "{{ offer.assetType }}:{{
+                                offer.assetVersion
+                            }}"
+                        </h2>
+                        <div>
+                            Following permissions are defined: <br />
+                            <ul v-if="offer.permissions">
+                                <li class="list-none">
+                                    {{
+                                        offer.permissions["odrl:constraint"][
+                                            "odrl:leftOperand"
+                                        ]
+                                    }}
+                                    {{
+                                        offer.permissions["odrl:constraint"][
+                                            "odrl:operator"
+                                        ]["@id"]
+                                    }}
+                                    {{
+                                        offer.permissions["odrl:constraint"][
+                                            "odrl:rightOperand"
+                                        ]
+                                    }}
+                                </li>
+                            </ul>
+                            <ul v-else>
+                                None
+                            </ul>
+                        </div>
+                        <div>
+                            Following prohibitions are defined: <br />
+                            <ul v-if="offer.prohibitions">
+                                <li class="list-none">
+                                    {{
+                                        offer.prohibitions["odrl:constraint"][
+                                            "odrl:leftOperand"
+                                        ]
+                                    }}
+                                    {{
+                                        offer.prohibitions["odrl:constraint"][
+                                            "odrl:operator"
+                                        ]["@id"]
+                                    }}
+                                    {{
+                                        offer.prohibitions["odrl:constraint"][
+                                            "odrl:rightOperand"
+                                        ]
+                                    }}
+                                </li>
+                            </ul>
+                            <ul v-else>
+                                None
+                            </ul>
+                        </div>
+                        <div>
+                            Following obligations are defined: <br />
+                            <ul v-if="offer.obligations">
+                                <li class="list-none">
+                                    {{
+                                        offer.obligations["odrl:constraint"][
+                                            "odrl:leftOperand"
+                                        ]
+                                    }}
+                                    {{
+                                        offer.obligations["odrl:constraint"][
+                                            "odrl:operator"
+                                        ]["@id"]
+                                    }}
+                                    {{
+                                        offer.obligations["odrl:constraint"][
+                                            "odrl:rightOperand"
+                                        ]
+                                    }}
+                                </li>
+                            </ul>
+                            <ul v-else>
+                                None
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </li>
+            </li>
+        </ul>
     </main>
 </template>
