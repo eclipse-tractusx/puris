@@ -59,6 +59,38 @@ public class EdcRequestBodyBuilder {
         return objectNode;
     }
 
+    public JsonNode buildCreateItemStockAssetBody(DT_ApiMethodEnum apiMethod) {
+        var body = MAPPER.createObjectNode();
+        var context = MAPPER.createObjectNode();
+        context.put(VOCAB_KEY, EDC_NAMESPACE);
+        context.put("cx-taxo", CX_TAXO_NAMESPACE);
+        context.put("cx-common", CX_COMMON_NAMESPACE);
+        context.put("dct", DCT_NAMESPACE);
+        body.set("@context", context);
+        body.put("@type", "Asset");
+        body.put("@id", variablesService.getApiAssetId(apiMethod));
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", "cx-taxo:" + apiMethod.CX_TAXO);
+        propertiesObject.put("asset:prop:type", apiMethod.TYPE);
+        propertiesObject.put("cx-common:version", "1.0");
+        propertiesObject.put("description", apiMethod.DESCRIPTION);
+
+        var dataAddress = MAPPER.createObjectNode();
+        String url = apiMethod == DT_ApiMethodEnum.REQUEST ? variablesService.getRequestServerEndpoint() : variablesService.getResponseServerEndpoint();
+        dataAddress.put("baseUrl", url);
+        dataAddress.put("type", "HttpData");
+        dataAddress.put("proxyPath", "true");
+        dataAddress.put("proxyBody", "true");
+        dataAddress.put("proxyMethod", "true");
+        dataAddress.put("authKey", "x-api-key");
+        dataAddress.put("authCode", variablesService.getApiKey());
+        body.set("dataAddress", dataAddress);
+        return body;
+    }
+
     /**
      * Build a request body for a request to register an api method as an asset in DSP protocol.
      *
@@ -138,7 +170,7 @@ public class EdcRequestBodyBuilder {
      * Creates a request body in order to register a contract definition for the given partner and the given
      * api method that uses the BPNL-restricted policy created with the buildBpnRestrictedPolicy - method.
      *
-     * @param partner the partner
+     * @param partner   the partner
      * @param apiMethod the api method
      * @return the request body
      */
@@ -225,7 +257,6 @@ public class EdcRequestBodyBuilder {
         var privateProperties = MAPPER.createObjectNode();
         privateProperties.put("receiverHttpEndpoint", variablesService.getEdrEndpoint());
         body.set("privateProperties", privateProperties);
-        log.info(body.toPrettyString());
         return body;
     }
 

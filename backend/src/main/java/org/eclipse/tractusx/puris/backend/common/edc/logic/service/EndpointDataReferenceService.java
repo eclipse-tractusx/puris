@@ -24,10 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+
 /**
  * This class stores authCodes which are generated in the course of 
  * the contracting for the request or response api. Since authCodes
@@ -45,6 +46,8 @@ public class EndpointDataReferenceService {
     final private HashMap<String, EDR_Dto> nonpersistantRepository = new HashMap<>();
     @Autowired
     private VariablesService variablesService;
+    @Autowired
+    private ExecutorService executorService;
 
     /**
      * Stores transferId and authCode as a key/value-pair. 
@@ -57,7 +60,7 @@ public class EndpointDataReferenceService {
         nonpersistantRepository.put(transferId, edr_Dto);
         final long timer = variablesService.getEdrTokenDeletionTimer() * 60 * 1000;
         // Start timer for deletion
-        new Thread(()-> {
+        executorService.submit(()-> {
             try {
                 Thread.sleep(timer);
             } catch (InterruptedException e) {
@@ -65,7 +68,7 @@ public class EndpointDataReferenceService {
             }
             nonpersistantRepository.remove(transferId);
             log.info("Deleted authcode for transferId " + transferId);
-        }).start();
+        });
     }
 
     /**

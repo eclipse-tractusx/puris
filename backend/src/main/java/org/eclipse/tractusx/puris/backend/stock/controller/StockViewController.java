@@ -80,6 +80,9 @@ public class StockViewController {
     private ProductStockRequestApiService productStockRequestApiService;
 
     @Autowired
+    private ItemStockRequestApiService itemStockRequestApiService;
+
+    @Autowired
     private MaterialService materialService;
 
     @Autowired
@@ -523,7 +526,7 @@ public class StockViewController {
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
 
         for (Partner supplierPartner : allSupplierPartnerEntities) {
-            productStockRequestApiService.doRequest(materialEntity, supplierPartner);
+            itemStockRequestApiService.doRequestForMaterialItemStocks(supplierPartner, materialEntity);
         }
 
         return ResponseEntity.ok(allSupplierPartnerEntities.stream()

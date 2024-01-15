@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -45,6 +45,7 @@ public class ItemStockRequestMessageDto {
 
     @Getter
     @Setter
+    @ToString
     public static class HeaderDto {
         private UUID messageId;
         private String context;
@@ -80,11 +81,11 @@ public class ItemStockRequestMessageDto {
     public static ItemStockRequestMessageDto convertToDto(ItemStockRequestMessage itemStockRequestMessage) {
         ItemStockRequestMessageDto dto = new ItemStockRequestMessageDto();
         var header = dto.getHeader();
-        header.messageId = itemStockRequestMessage.getMessageId();
+        header.messageId = itemStockRequestMessage.getKey().getMessageId();
         header.context = itemStockRequestMessage.getContext();
         header.version = itemStockRequestMessage.getVersion();
-        header.senderBpn = itemStockRequestMessage.getSenderBpn();
-        header.receiverBpn = itemStockRequestMessage.getReceiverBpn();
+        header.senderBpn = itemStockRequestMessage.getKey().getSenderBpn();
+        header.receiverBpn = itemStockRequestMessage.getKey().getReceiverBpn();
         header.sentDateTime = itemStockRequestMessage.getSentDateTime();
         var content = dto.getContent();
         content.direction = itemStockRequestMessage.getDirection();
@@ -107,11 +108,9 @@ public class ItemStockRequestMessageDto {
      */
     public static ItemStockRequestMessage convertToEntity(ItemStockRequestMessageDto dto) {
         ItemStockRequestMessage entity = new ItemStockRequestMessage();
-        entity.setMessageId(dto.getHeader().messageId);
+        entity.setKey(new ItemStockRequestMessage.Key(dto.getHeader().messageId,dto.getHeader().senderBpn, dto.getHeader().receiverBpn));
         entity.setContext(dto.getHeader().context);
         entity.setVersion(dto.getHeader().version);
-        entity.setSenderBpn(dto.getHeader().senderBpn);
-        entity.setReceiverBpn(dto.getHeader().receiverBpn);
         entity.setSentDateTime(dto.getHeader().sentDateTime);
         entity.setDirection(dto.getContent().direction);
         for(var requestDto : dto.content.itemStock){

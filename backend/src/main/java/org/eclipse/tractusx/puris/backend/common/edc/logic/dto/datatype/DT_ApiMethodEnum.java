@@ -27,19 +27,31 @@ public enum DT_ApiMethodEnum {
     /**
      * API is used to perform a request (Request API).
      */
-    REQUEST("Asset to request product-stock information", "request"),
+    REQUEST("Asset to request stock information", "request",
+        "ItemStockRequestApi", "data.res.itemStockRequestApi", "Item Stock Request Status API Endpoint"),
 
     /**
      * API is used to respond to a request (Response API).
      */
-    RESPONSE("Asset to receive product-stock information", "response");
+    RESPONSE("Asset to receive stock information", "response",
+        "ItemStockResponseApi", "data.res.itemStockResponseApi", "Item Stock Response API Endpoint"),
 
-    private DT_ApiMethodEnum(String name, String purpose) {
+    STATUS_REQUEST("Asset to receive status requests regarding a previous request", "status-request",
+        "ItemStockRequestStatusApi", "data.res.itemStockRequestStatusApi", "Item Stock Request Status API Endpoint");
+
+    private DT_ApiMethodEnum(String name, String purpose, String cxTaxo, String type, String description) {
         this.NAME = name;
         this.PURPOSE = purpose;
+        this.CX_TAXO = cxTaxo;
+        this.TYPE = type;
+        this.DESCRIPTION = description;
     }
 
 
     public final String NAME;
     public final String PURPOSE;
+    public final String CX_TAXO;
+    public final String TYPE;
+
+    public final String DESCRIPTION;
 }

@@ -86,6 +86,18 @@ public class VariablesService {
      * during asset creation.
      */
     private String responseApiAssetId;
+    @Value("${puris.statusrequest.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the status-request API
+     * during asset creation.
+     */
+    private String statusRequestApiAssetId;
+    @Value("${puris.statusrequest.serverendpoint}")
+    /**
+     * The url under which this application's status-request endpoint
+     * can be reached by external machines.
+     */
+    private String statusRequestServerEndpoint;
     @Value("${puris.api.key}")
     /**
      * The key for accessing the api.
@@ -160,12 +172,14 @@ public class VariablesService {
      * @return the asset-id
      */
     public String getApiAssetId(DT_ApiMethodEnum method) {
-        if(responseApiAssetId == null || requestApiAssetId == null) {
-            throw new RuntimeException("You must define request.apiassetid and response.apiassetid in properties file");
+        if(responseApiAssetId == null || requestApiAssetId == null || statusRequestApiAssetId == null) {
+            throw new RuntimeException("You must define puris.request.apiassetid, puris.response.apiassetid " +
+                "and puris.statusrequest.apiassetid in properties file");
         }
         switch (method) {
             case REQUEST: return requestApiAssetId;
             case RESPONSE: return responseApiAssetId;
+            case STATUS_REQUEST: return statusRequestApiAssetId;
             default: throw new RuntimeException("Unknown Api Method: " + method);
         }
     }
