@@ -30,37 +30,37 @@ import java.util.UUID;
 
 public interface ItemStockRepository<T extends ItemStock> extends JpaRepository<T, UUID> {
 
-    default List<T> find(Partner partner, Material material) {
+    default List<T> getForPartnerAndMaterial(Partner partner, Material material) {
         // default implementation prevents Jpa from trying to
         // auto-generate this method. 
         throw new UnsupportedOperationException("Implementation needed");
     }
 
-    default List<T> find(Partner partner) {
+    default List<T> getForPartner(Partner partner) {
         // default implementation prevents Jpa from trying to
         // auto-generate this method.
         throw new UnsupportedOperationException("Implementation needed");
     }
 
-    default List<T> find(Material material) {
+    default List<T> getForMaterial(Material material) {
         // default implementation prevents Jpa from trying to
         // auto-generate this method.
         throw new UnsupportedOperationException("Implementation needed");
     }
 
-    default List<T> findOwnMatNbr(String ownMaterialNumber) {
+    default List<T> getForOwnMatNbr(String ownMaterialNumber) {
         // default implementation prevents Jpa from trying to
         // auto-generate this method.
         throw new UnsupportedOperationException("Implementation needed");
     }
 
-    default List<T> findPartnerBpnl(String partnerBpnl) {
+    default List<T> getForPartnerBpnl(String partnerBpnl) {
         // default implementation prevents Jpa from trying to
         // auto-generate this method.
         throw new UnsupportedOperationException("Implementation needed");
     }
 
-    default List<T> findPartnerBpnlAndOwnMatNbr(String partnerBpnl, String ownMaterialNumber) {
+    default List<T> getForPartnerBpnlAndOwnMatNbr(String partnerBpnl, String ownMaterialNumber) {
         // default implementation prevents Jpa from trying to
         // auto-generate this method.
         throw new UnsupportedOperationException("Implementation needed");

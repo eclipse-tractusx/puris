@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -42,32 +42,32 @@ public interface ProductItemStockRepository extends ItemStockRepository<ProductI
     List<ProductItemStock> findByPartner_BpnlAndMaterial_OwnMaterialNumber(String partnerBpnl, String ownMaterialNumber);
 
     @Override
-    default List<ProductItemStock> find(Partner partner, Material material) {
+    default List<ProductItemStock> getForPartnerAndMaterial(Partner partner, Material material) {
         return findByPartnerAndMaterial(partner, material);
     }
 
     @Override
-    default List<ProductItemStock> find(Partner partner) {
+    default List<ProductItemStock> getForPartner(Partner partner) {
         return findByPartner(partner);
     }
 
     @Override
-    default List<ProductItemStock> find(Material material) {
+    default List<ProductItemStock> getForMaterial(Material material) {
         return findByMaterial(material);
     }
 
     @Override
-    default List<ProductItemStock> findOwnMatNbr(String ownMaterialNumber) {
+    default List<ProductItemStock> getForOwnMatNbr(String ownMaterialNumber) {
         return findByMaterial_OwnMaterialNumber(ownMaterialNumber);
     }
 
     @Override
-    default List<ProductItemStock> findPartnerBpnl(String partnerBpnl) {
-        return findByMaterial_OwnMaterialNumber(partnerBpnl);
+    default List<ProductItemStock> getForPartnerBpnl(String partnerBpnl) {
+        return findByPartner_Bpnl(partnerBpnl);
     }
 
     @Override
-    default List<ProductItemStock> findPartnerBpnlAndOwnMatNbr(String partnerBpnl, String ownMaterialNumber) {
+    default List<ProductItemStock> getForPartnerBpnlAndOwnMatNbr(String partnerBpnl, String ownMaterialNumber) {
         return findByPartner_BpnlAndMaterial_OwnMaterialNumber(partnerBpnl, ownMaterialNumber);
     }
 }

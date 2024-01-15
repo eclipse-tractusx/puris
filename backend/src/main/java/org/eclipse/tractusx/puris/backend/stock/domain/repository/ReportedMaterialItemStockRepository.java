@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -42,32 +42,32 @@ public interface ReportedMaterialItemStockRepository extends ItemStockRepository
     List<ReportedMaterialItemStock> findByPartner_BpnlAndMaterial_OwnMaterialNumber(String partnerBpnl, String ownMaterialNumber);
 
     @Override
-    default List<ReportedMaterialItemStock> find(Partner partner, Material material) {
+    default List<ReportedMaterialItemStock> getForPartnerAndMaterial(Partner partner, Material material) {
         return findByPartnerAndMaterial(partner, material);
     }
 
     @Override
-    default List<ReportedMaterialItemStock> find(Partner partner) {
+    default List<ReportedMaterialItemStock> getForPartner(Partner partner) {
         return findByPartner(partner);
     }
 
     @Override
-    default List<ReportedMaterialItemStock> find(Material material) {
+    default List<ReportedMaterialItemStock> getForMaterial(Material material) {
         return findByMaterial(material);
     }
 
     @Override
-    default List<ReportedMaterialItemStock> findOwnMatNbr(String ownMaterialNumber) {
+    default List<ReportedMaterialItemStock> getForOwnMatNbr(String ownMaterialNumber) {
         return findByMaterial_OwnMaterialNumber(ownMaterialNumber);
     }
 
     @Override
-    default List<ReportedMaterialItemStock> findPartnerBpnl(String partnerBpnl) {
-        return findByMaterial_OwnMaterialNumber(partnerBpnl);
+    default List<ReportedMaterialItemStock> getForPartnerBpnl(String partnerBpnl) {
+        return findByPartner_Bpnl(partnerBpnl);
     }
 
     @Override
-    default List<ReportedMaterialItemStock> findPartnerBpnlAndOwnMatNbr(String partnerBpnl, String ownMaterialNumber) {
+    default List<ReportedMaterialItemStock> getForPartnerBpnlAndOwnMatNbr(String partnerBpnl, String ownMaterialNumber) {
         return findByPartner_BpnlAndMaterial_OwnMaterialNumber(partnerBpnl, ownMaterialNumber);
     }
 }

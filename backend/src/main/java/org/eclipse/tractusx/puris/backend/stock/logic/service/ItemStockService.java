@@ -35,7 +35,6 @@ import java.util.function.Function;
 
 
 @Slf4j
-
 public abstract class ItemStockService<T extends ItemStock> {
 
     protected final PartnerService partnerService;
@@ -83,27 +82,27 @@ public abstract class ItemStockService<T extends ItemStock> {
     }
 
     public final List<T> findByPartnerAndMaterial(Partner partner, Material material) {
-        return repository.find(partner, material);
+        return repository.getForPartnerAndMaterial(partner, material);
     }
 
     public final List<T> findByPartner(Partner partner) {
-        return repository.find(partner);
+        return repository.getForPartner(partner);
     }
 
     public final List<T> findByMaterial(Material material) {
-        return repository.find(material);
+        return repository.getForMaterial(material);
     }
 
     public final List<T> findByOwnMaterialNumber(String ownMaterialNumber) {
-        return repository.findOwnMatNbr(ownMaterialNumber);
+        return repository.getForOwnMatNbr(ownMaterialNumber);
     }
 
     public final List<T> findByPartnerBpnl(String partnerBpnl) {
-        return repository.findPartnerBpnl(partnerBpnl);
+        return repository.getForPartnerBpnl(partnerBpnl);
     }
 
     public final List<T> findByPartnerBpnlAndOwnMaterialNumber(String partnerBpnl, String ownMaterialNumber) {
-        return repository.findPartnerBpnlAndOwnMatNbr(partnerBpnl, ownMaterialNumber);
+        return repository.getForPartnerBpnlAndOwnMatNbr(partnerBpnl, ownMaterialNumber);
     }
 
     public abstract boolean validate(T itemStock);
