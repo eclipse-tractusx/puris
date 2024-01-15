@@ -26,7 +26,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.eclipse.tractusx.puris.backend.stock.domain.repository.ItemStockRepository;
 
 import java.util.List;
 import java.util.Objects;
@@ -35,38 +35,35 @@ import java.util.function.Function;
 
 
 @Slf4j
-
 public abstract class ItemStockService<T extends ItemStock> {
 
     protected final PartnerService partnerService;
 
     protected final MaterialPartnerRelationService mprService;
 
-    protected final JpaRepository<T, UUID> repository;
+    protected final ItemStockRepository<T> repository;
 
     protected final Function<T, Boolean> validator;
 
-    public ItemStockService(PartnerService partnerService, MaterialPartnerRelationService mprService, JpaRepository<T, UUID> repository) {
+    public ItemStockService(PartnerService partnerService, MaterialPartnerRelationService mprService, ItemStockRepository<T> repository) {
         this.partnerService = partnerService;
         this.mprService = mprService;
         this.repository = repository;
         this.validator = this::validate;
     }
 
-
-
     public final T create(T itemStock) {
-        if(itemStock.getUuid() != null && repository.findById(itemStock.getUuid()).isPresent()) {
+        if (itemStock.getUuid() != null && repository.findById(itemStock.getUuid()).isPresent()) {
             return null;
         }
-        if(!validator.apply(itemStock)) {
+        if (!validator.apply(itemStock)) {
             return null;
         }
         return repository.save(itemStock);
     }
 
     public final T update(T itemStock) {
-        if(itemStock.getUuid() == null || repository.findById(itemStock.getUuid()).isEmpty()) {
+        if (itemStock.getUuid() == null || repository.findById(itemStock.getUuid()).isEmpty()) {
             return null;
         }
         return repository.save(itemStock);
@@ -80,11 +77,33 @@ public abstract class ItemStockService<T extends ItemStock> {
         repository.deleteById(uuid);
     }
 
-    public  final List<T> findAll() {
+    public final List<T> findAll() {
         return repository.findAll();
     }
 
-    public abstract List<T> findByPartnerAndMaterial(Partner partner, Material material);
+    public final List<T> findByPartnerAndMaterial(Partner partner, Material material) {
+        return repository.getForPartnerAndMaterial(partner, material);
+    }
+
+    public final List<T> findByPartner(Partner partner) {
+        return repository.getForPartner(partner);
+    }
+
+    public final List<T> findByMaterial(Material material) {
+        return repository.getForMaterial(material);
+    }
+
+    public final List<T> findByOwnMaterialNumber(String ownMaterialNumber) {
+        return repository.getForOwnMatNbr(ownMaterialNumber);
+    }
+
+    public final List<T> findByPartnerBpnl(String partnerBpnl) {
+        return repository.getForPartnerBpnl(partnerBpnl);
+    }
+
+    public final List<T> findByPartnerBpnlAndOwnMaterialNumber(String partnerBpnl, String ownMaterialNumber) {
+        return repository.getForPartnerBpnlAndOwnMatNbr(partnerBpnl, ownMaterialNumber);
+    }
 
     public abstract boolean validate(T itemStock);
 
@@ -117,10 +136,10 @@ public abstract class ItemStockService<T extends ItemStock> {
             Material material = itemStock.getMaterial();
             MaterialPartnerRelation relation = mprService.find(material, partner);
             Objects.requireNonNull(relation, "Missing MaterialPartnerRelation");
-            if(!material.isMaterialFlag()) {
+            if (!material.isMaterialFlag()) {
                 throw new IllegalArgumentException("Material flag is missing");
             }
-            if(!relation.isPartnerSuppliesMaterial()) {
+            if (!relation.isPartnerSuppliesMaterial()) {
                 throw new IllegalArgumentException("Partner does not supply material");
             }
         } catch (Exception e) {
