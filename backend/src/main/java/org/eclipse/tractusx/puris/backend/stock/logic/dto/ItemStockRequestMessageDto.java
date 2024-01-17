@@ -20,9 +20,11 @@
 
 package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStockRequestMessage;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 
@@ -48,9 +50,13 @@ public class ItemStockRequestMessageDto {
     @ToString
     public static class HeaderDto {
         private UUID messageId;
+        @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String context;
+        @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String version;
+        @Pattern(regexp = PatternStore.BPNL_STRING)
         private String senderBpn;
+        @Pattern(regexp = PatternStore.BPNL_STRING)
         private String receiverBpn;
         private Date sentDateTime;
     }
@@ -66,8 +72,11 @@ public class ItemStockRequestMessageDto {
     @Setter
     @ToString
     public static class RequestDto {
+        @Pattern(regexp = PatternStore.URN_STRING)
         private String materialGlobalAssetId;
+        @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String materialNumberCustomer;
+        @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String materialNumberSupplier;
     }
 

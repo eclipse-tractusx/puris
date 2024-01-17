@@ -21,6 +21,7 @@
 package org.eclipse.tractusx.puris.backend.common.edc.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +53,9 @@ public class EdcController {
     @GetMapping("/catalog")
     public ResponseEntity<String> getCatalog(@RequestParam String dspUrl) {
         try {
+            if(!PatternStore.URL_PATTERN.matcher(dspUrl).matches()) {
+                return ResponseEntity.badRequest().build();
+            }
             var catalog = edcAdapter.getCatalog(dspUrl);
             return ResponseEntity.ok(catalog.toPrettyString());
         } catch (IOException e) {
@@ -69,6 +73,9 @@ public class EdcController {
     @GetMapping("/assets")
     public ResponseEntity<String> getAssets(@RequestParam String assetId) {
         try {
+            if(!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.matches(assetId)) {
+                return ResponseEntity.badRequest().build();
+            }
             var result = edcAdapter.sendGetRequest(List.of("v3", "assets", assetId));
             var stringData = result.body().string();
             result.body().close();

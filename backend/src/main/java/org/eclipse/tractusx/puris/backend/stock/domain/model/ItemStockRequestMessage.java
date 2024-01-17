@@ -21,12 +21,15 @@
 package org.eclipse.tractusx.puris.backend.stock.domain.model;
 
 import jakarta.annotation.Nullable;
-import jakarta.persistence.*;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 
 import java.io.Serializable;
@@ -71,10 +74,10 @@ public class ItemStockRequestMessage {
         @NotNull
         private UUID messageId;
         @NotNull
-        @Pattern(regexp = Partner.BPNL_REGEX)
+        @Pattern(regexp = PatternStore.BPNL_STRING)
         private String senderBpn;
         @NotNull
-        @Pattern(regexp = Partner.BPNL_REGEX)
+        @Pattern(regexp = PatternStore.BPNL_STRING)
         private String receiverBpn;
 
         @Override

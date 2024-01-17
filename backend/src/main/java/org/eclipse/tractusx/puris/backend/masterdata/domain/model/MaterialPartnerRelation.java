@@ -24,6 +24,7 @@ package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -46,7 +47,7 @@ public class MaterialPartnerRelation {
     @EmbeddedId
     private Key key;
 
-    @Pattern(regexp = Material.MATERIAL_NUMBER_REGEX)
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String partnerMaterialNumber;
     private boolean partnerSuppliesMaterial;
     private boolean partnerBuysMaterial;
@@ -95,7 +96,7 @@ public class MaterialPartnerRelation {
     public static class Key implements Serializable {
 
         @Column(name = "material_ownMaterialNumber")
-        @Pattern(regexp = Material.MATERIAL_NUMBER_REGEX)
+        @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String ownMaterialNumber;
 
         @Column(name = "partner_uuid")

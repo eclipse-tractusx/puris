@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialEntityDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -45,7 +46,7 @@ public class MaterialController {
     @Autowired
     private MaterialService materialService;
     private final ModelMapper modelMapper = new ModelMapper();
-    private final Pattern materialPattern = Pattern.compile(Material.MATERIAL_NUMBER_REGEX);
+    private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
 
     @PostMapping
     @Operation(description = "Creates a new Material entity with the data given in the request body. As a bare minimum, " +

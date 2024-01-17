@@ -27,6 +27,7 @@ import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -45,18 +46,18 @@ import java.util.TreeSet;
 @Setter
 @ToString
 public class Site implements Comparable<Site> {
-    public static final String BPNS_REGEX = "^BPNS[0-9a-zA-Z]{12}$";
+
     @Id
     @NotNull
     /**
      * The BPNS of this Site.
      */
-    @Pattern(regexp = BPNS_REGEX)
+    @Pattern(regexp = PatternStore.BPNS_STRING)
     private String bpns;
     /**
      * A human-readable, distinctive name of this site.
      */
-    @Pattern(regexp = "^[a-zßA-Z0-9 \\-.]{1,255}$")
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String name;
     @ElementCollection
     /**

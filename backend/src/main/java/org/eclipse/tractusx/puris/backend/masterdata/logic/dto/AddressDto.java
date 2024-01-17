@@ -21,7 +21,9 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
 @Getter
 @Setter
@@ -30,9 +32,13 @@ import lombok.*;
 @ToString
 public class AddressDto implements Comparable<AddressDto> {
 
+    @Pattern(regexp = PatternStore.BPNA_STRING)
     private String bpna;
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String streetAndNumber;
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String zipCodeAndCity;
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String country;
 
     @Override

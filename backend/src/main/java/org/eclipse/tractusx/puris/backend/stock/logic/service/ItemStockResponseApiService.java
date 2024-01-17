@@ -58,6 +58,7 @@ public class ItemStockResponseApiService {
      *
      * @param responseDto the Response - Dto
      * @param partner the partner you received the message from
+     * @param initialRequest the initial request that the response is meant to answer to
      */
     public void consumeResponse(ItemStockResponseDto responseDto, Partner partner, ItemStockRequestMessage initialRequest){
         HashSet<ReportedMaterialItemStock> oldReportedMaterialItemStocks = new HashSet<>();
@@ -82,7 +83,7 @@ public class ItemStockResponseApiService {
                         newReportedMaterialItemStocks.add(reportedMaterialItemStock);
                     }
                 }
-                default -> log.error("Missing direction in Samm object: \n" + itemStockSamm);
+                default -> log.error("Missing direction in Samm object");
             }
         }
         // Remove older reported ItemStocks

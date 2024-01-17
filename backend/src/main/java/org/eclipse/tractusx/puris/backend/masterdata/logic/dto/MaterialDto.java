@@ -21,7 +21,9 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -44,6 +46,7 @@ public class MaterialDto implements Serializable {
      * <p>
      * Boolean because there could be companies (tradesmen company) that buy and sell the same material.
      */
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private boolean materialFlag;
 
     /**
@@ -52,13 +55,13 @@ public class MaterialDto implements Serializable {
      * Boolean because there could be companies (tradesmen company) that buy and sell the same material.
      */
     private boolean productFlag;
-
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String materialNumberCustomer;
-
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String materialNumberSupplier;
-
+    @Pattern(regexp = PatternStore.URN_STRING)
     private String materialNumberCx;
-
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String name;
 
     public MaterialDto(boolean materialFlag, boolean productFlag, String materialNumberCustomer, String materialNumberSupplier, String materialNumberCx, String name) {

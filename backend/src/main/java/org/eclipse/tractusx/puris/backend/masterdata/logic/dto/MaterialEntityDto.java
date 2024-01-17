@@ -21,7 +21,9 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,7 +34,10 @@ public class MaterialEntityDto {
 
     private boolean materialFlag;
     private boolean productFlag;
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String ownMaterialNumber;
+    @Pattern(regexp = PatternStore.URN_STRING)
     private String materialNumberCx;
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String name;
 }

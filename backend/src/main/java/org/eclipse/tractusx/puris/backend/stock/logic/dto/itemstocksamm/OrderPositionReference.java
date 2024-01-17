@@ -22,9 +22,11 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
 import java.util.Objects;
 
@@ -38,12 +40,15 @@ import java.util.Objects;
 @ToString
 public class OrderPositionReference {
 
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
 	private String supplierOrderId;
 
 	@NotNull
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
 	private String customerOrderId;
 
 	@NotNull
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
 	private String customerOrderPositionId;
 
 	@JsonCreator

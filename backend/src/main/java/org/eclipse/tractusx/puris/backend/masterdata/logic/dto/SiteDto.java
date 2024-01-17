@@ -21,7 +21,9 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,7 +34,9 @@ import java.util.Set;
 @NoArgsConstructor
 @ToString
 public class SiteDto implements Comparable<SiteDto> {
+    @Pattern(regexp = PatternStore.BPNS_STRING)
     private String bpns;
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String name;
     private Set<AddressDto> addresses = new HashSet<>();
 

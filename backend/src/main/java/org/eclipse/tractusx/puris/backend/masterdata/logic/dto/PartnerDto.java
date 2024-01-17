@@ -21,7 +21,9 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
 import java.io.Serializable;
 import java.util.SortedSet;
@@ -36,9 +38,11 @@ import java.util.UUID;
 public class PartnerDto implements Serializable {
 
     private UUID uuid;
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String name;
-
+    @Pattern(regexp = PatternStore.URL_STRING)
     private String edcUrl;
+    @Pattern(regexp = PatternStore.BPNL_STRING)
     private String bpnl;
 
     private SortedSet<AddressDto> addresses = new TreeSet<>();

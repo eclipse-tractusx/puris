@@ -41,7 +41,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -69,7 +68,6 @@ public class ItemStockRequestApiService {
     private ObjectMapper objectMapper;
     @Autowired
     private ItemStockRequestMessageService itemStockRequestMessageService;
-    private final Pattern bpnlPattern = Pattern.compile(Partner.BPNL_REGEX);
 
     /**
      * This method receives a request message from a customer and

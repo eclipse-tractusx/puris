@@ -26,8 +26,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Address;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
 import java.util.Objects;
 
@@ -50,14 +49,14 @@ public class AllocatedStock {
 	private ItemQuantityEntity quantityOnAllocatedStock;
 
 	@NotNull
-	@Pattern(regexp = Site.BPNS_REGEX)
+	@Pattern(regexp = PatternStore.BPNS_STRING)
 	private String stockLocationBPNS;
 
 	@NotNull
 	private Boolean isBlocked;
 
 	@NotNull
-	@Pattern(regexp = Address.BPNA_REGEX)
+	@Pattern(regexp = PatternStore.BPNA_STRING)
 	private String stockLocationBPNA;
 
 	@JsonCreator

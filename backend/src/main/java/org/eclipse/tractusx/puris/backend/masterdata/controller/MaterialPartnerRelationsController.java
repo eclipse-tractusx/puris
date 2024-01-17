@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -52,9 +53,9 @@ public class MaterialPartnerRelationsController {
     @Autowired
     private MaterialPartnerRelationService mprService;
 
-    private final Pattern materialPattern = Pattern.compile(Material.MATERIAL_NUMBER_REGEX);
+    private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
 
-    private final Pattern bpnlPattern = Pattern.compile(Partner.BPNL_REGEX);
+    private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
     @PostMapping
     @Operation(description = "Creates a new MaterialPartnerRelation with the given parameter data. " +
@@ -86,13 +87,10 @@ public class MaterialPartnerRelationsController {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
-        if (material == null || partnerBpnl == null) {
+        if (material == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-        Partner partner = null;
-        if (partnerBpnl != null) {
-            partner = partnerService.findByBpnl(partnerBpnl);
-        }
+        Partner partner = partnerService.findByBpnl(partnerBpnl);
         if (partner == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }

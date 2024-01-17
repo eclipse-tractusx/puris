@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStockRequestMessage;
@@ -54,7 +55,7 @@ public class ItemStockResponseApiController {
     private ItemStockResponseApiService itemStockResponseApiService;
     @Autowired
     private ExecutorService executorService;
-    private final Pattern bpnlPattern = Pattern.compile(Partner.BPNL_REGEX);
+    private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
 
     @Operation(description = "This endpoint receives the item stock response messages. ")
