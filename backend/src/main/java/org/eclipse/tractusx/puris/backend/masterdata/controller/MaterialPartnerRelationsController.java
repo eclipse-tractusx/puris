@@ -133,7 +133,6 @@ public class MaterialPartnerRelationsController {
 
         if (!bpnlPattern.matcher(partnerBpnl).matches() || !materialPattern.matcher(ownMaterialNumber).matches() ||
             (partnerMaterialNumber !=null && !materialPattern.matcher(partnerMaterialNumber).matches())) {
-            log.info("PARTNER BPNL " + partnerBpnl);
             log.warn("Rejected message parameters. ");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
