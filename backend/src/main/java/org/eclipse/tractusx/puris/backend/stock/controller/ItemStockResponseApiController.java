@@ -23,6 +23,7 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
@@ -55,6 +56,8 @@ public class ItemStockResponseApiController {
     private ItemStockResponseApiService itemStockResponseApiService;
     @Autowired
     private ExecutorService executorService;
+    @Autowired
+    private Validator validator;
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
 
@@ -66,6 +69,11 @@ public class ItemStockResponseApiController {
     })
     @PostMapping("response")
     public ResponseEntity<ResponseReactionMessageDto> postMapping(@RequestBody ItemStockResponseDto responseDto) {
+        if(!validator.validate(responseDto).isEmpty()) {
+            log.warn("Rejected invalid message body");
+            return ResponseEntity.status(400).body(new ResponseReactionMessageDto(responseDto.getHeader().getMessageId()));
+        }
+
         log.info("Received response: \n" + responseDto);
         if (responseDto.getHeader() == null || responseDto.getHeader().getMessageId() == null || responseDto.getHeader().getRelatedMessageId() == null
             || responseDto.getHeader().getReceiverBpn() == null || responseDto.getHeader().getSenderBpn() == null

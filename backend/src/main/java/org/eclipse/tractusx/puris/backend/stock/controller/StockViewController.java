@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
@@ -95,6 +96,9 @@ public class StockViewController {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private Validator validator;
+
     private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
 
     @GetMapping("materials")
@@ -152,6 +156,11 @@ public class StockViewController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public ProductStockDto createProductStocks(@RequestBody ProductStockDto productStockDto) {
+        if(!validator.validate(productStockDto).isEmpty()) {
+            log.warn("Rejected invalid message body");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
         if (productStockDto.getUuid() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock misses material identification.");
         }
@@ -204,6 +213,11 @@ public class StockViewController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public ProductStockDto updateProductStocks(@RequestBody ProductStockDto productStockDto) {
+        if(!validator.validate(productStockDto).isEmpty()) {
+            log.warn("Rejected invalid message body.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
         if (productStockDto.getUuid() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock holds a UUID. Use POST instead.");
         }
@@ -290,6 +304,11 @@ public class StockViewController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public MaterialStockDto createMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
+        if(!validator.validate(materialStockDto).isEmpty()) {
+            log.warn("Rejected invalid message body.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
         if (materialStockDto.getUuid() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock holds a UUID. Use POST instead.");
         }
@@ -339,6 +358,9 @@ public class StockViewController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public MaterialStockDto updateMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
+        if(!validator.validate(materialStockDto).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
         if (materialStockDto.getUuid() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock misses material identification.");
         }

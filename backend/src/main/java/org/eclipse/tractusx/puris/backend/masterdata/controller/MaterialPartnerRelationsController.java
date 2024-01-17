@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
@@ -41,6 +42,7 @@ import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("materialpartnerrelations")
+@Slf4j
 public class MaterialPartnerRelationsController {
 
 
@@ -79,13 +81,12 @@ public class MaterialPartnerRelationsController {
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
             example = "true") @RequestParam boolean partnerBuys) {
 
-        if(!materialPattern.matcher(ownMaterialNumber).matches() || !materialPattern.matcher(partnerMaterialNumber).matches()) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches() || !materialPattern.matcher(partnerMaterialNumber).matches()
+            || !bpnlPattern.matcher(partnerBpnl).matches()) {
+            log.warn("Rejected message parameters. ");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
 
-        if(!bpnlPattern.matcher(partnerBpnl).matches()) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
-        }
         Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (material == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
@@ -130,13 +131,14 @@ public class MaterialPartnerRelationsController {
             example = "true") @RequestParam(required = false) Boolean partnerBuys) {
         MaterialPartnerRelation existingRelation = null;
 
-        if(!bpnlPattern.matcher(partnerBpnl).matches()) {
+        if (!bpnlPattern.matcher(partnerBpnl).matches() || !materialPattern.matcher(ownMaterialNumber).matches() ||
+            (partnerMaterialNumber !=null && !materialPattern.matcher(partnerMaterialNumber).matches())) {
+            log.info("PARTNER BPNL " + partnerBpnl);
+            log.warn("Rejected message parameters. ");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         Partner partner = partnerService.findByBpnl(partnerBpnl);
-        if(!materialPattern.matcher(ownMaterialNumber).matches() || !materialPattern.matcher(partnerMaterialNumber).matches()) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
-        }
+
         Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (partner != null && material != null) {
             existingRelation = mprService.find(material, partner);

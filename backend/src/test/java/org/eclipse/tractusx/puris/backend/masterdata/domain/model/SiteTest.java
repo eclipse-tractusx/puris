@@ -58,8 +58,8 @@ public class SiteTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "invalid name!",
-        "@email"
+        "invalid name\r",
+        "@email\n"
     })
     public void test_invalidNameRegex(String name) {
         Site site = new Site("BPNS1234567890SS", name, "BPNA1234567890AA", "123 Main St 12", "12345 New York", "USA");

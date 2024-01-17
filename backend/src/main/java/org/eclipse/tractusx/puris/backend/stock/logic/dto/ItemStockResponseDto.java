@@ -20,6 +20,7 @@
 
 package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,23 +42,32 @@ import java.util.UUID;
  */
 public class ItemStockResponseDto {
 
+    @NotNull
     private HeaderDto header = new HeaderDto();
+    @NotNull
     private ContentDto content = new ContentDto();
 
     @Getter
     @Setter
     @ToString
     public static class HeaderDto {
+        @NotNull
         private UUID messageId;
+        @NotNull
         private UUID relatedMessageId;
+        @NotNull
         @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String context;
+        @NotNull
         @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String version;
+        @NotNull
         @Pattern(regexp = PatternStore.BPNL_STRING)
         private String senderBpn;
+        @NotNull
         @Pattern(regexp = PatternStore.BPNL_STRING)
         private String receiverBpn;
+        @NotNull
         private Date sentDateTime;
     }
 

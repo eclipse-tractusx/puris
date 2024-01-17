@@ -25,6 +25,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Address;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -48,10 +50,14 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("partners")
+@Slf4j
 public class PartnerController {
 
     @Autowired
     private PartnerService partnerService;
+
+    @Autowired
+    private Validator validator;
     private final ModelMapper modelMapper = new ModelMapper();
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
@@ -65,6 +71,10 @@ public class PartnerController {
         @ApiResponse(responseCode = "409", description = "The BPNL specified in the request body is already assigned. ")
     })
     public ResponseEntity<?> createPartner(@RequestBody PartnerDto partnerDto) {
+        if(!validator.validate(partnerDto).isEmpty()) {
+            log.warn("Rejected invalid message body.");
+            return ResponseEntity.status(400).build();
+        }
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
         // Any given UUID is wrong by default since we're creating a new Partner entity
         if (partnerDto.getUuid() != null || partnerDto.getBpnl() == null) {
@@ -106,6 +116,10 @@ public class PartnerController {
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
         @RequestBody AddressDto address) {
+        if(!validator.validate(address).isEmpty()) {
+            log.warn("Rejected invalid message body.");
+            return ResponseEntity.status(400).build();
+        }
         if(!bpnlPattern.matcher(partnerBpnl).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
@@ -143,6 +157,10 @@ public class PartnerController {
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
         @RequestBody SiteDto site) {
+        if(!validator.validate(site).isEmpty()) {
+            log.warn("Rejected invalid message body.");
+            return ResponseEntity.status(400).build();
+        }
         if(!bpnlPattern.matcher(partnerBpnl).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }

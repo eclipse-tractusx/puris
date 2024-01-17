@@ -60,9 +60,9 @@ public class AddressTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "Str@nge Name",
-        "Missing Nubmer Str.",
-        "4711"
+        "",
+        "Missing \n Nubmer Str.",
+        "4711\r"
     })
     public void test_invalidStreetAndNumberRegex(String streetAndNumber) {
         Address address = new Address("BPNA1234567890AA", streetAndNumber, "12345 New York", "USA");
@@ -120,9 +120,9 @@ public class AddressTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "Missing Number",
-        "47111",
-        "471112 Wrong zip code"
+        "",
+        "47111\r",
+        "471112 Wrong zip code\n"
     })
     public void test_invalidZipCodeAndCityRegex(String zipCodeAndCity) {
         Address address = new Address("BPNA1234567890AA", "Test Str. 1", zipCodeAndCity, "USA");
@@ -149,8 +149,8 @@ public class AddressTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "Inval!d Country",
-        "47111"
+        "",
+        "47\n111"
     })
     public void test_invalidCountryRegex(String country) {
         Address address = new Address("BPNA1234567890AA", "Test Str. 1", "1000 Bruxelles", country);

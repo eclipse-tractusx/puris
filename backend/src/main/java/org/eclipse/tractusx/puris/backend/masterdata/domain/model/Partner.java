@@ -86,7 +86,7 @@ public class Partner {
     /**
      * Contains all MaterialPartnerRelations that this Partner is involved in.
      */
-    private Set<MaterialPartnerRelation> materialPartnerRelations;
+    private Set<MaterialPartnerRelation> materialPartnerRelations = new HashSet<>();
 
     @OneToMany
     @ToString.Exclude

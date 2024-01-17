@@ -20,6 +20,9 @@
  */
 package org.eclipse.tractusx.puris.backend;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.config.Configuration;
 import org.springframework.boot.SpringApplication;
@@ -49,6 +52,13 @@ public class PurisApplication {
     @Bean
     public ExecutorService getExecutorService() {
         return Executors.newCachedThreadPool();
+    }
+
+    @Bean
+    public Validator getValidator() {
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            return factory.getValidator();
+        }
     }
 
 }

@@ -29,6 +29,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -109,7 +110,7 @@ public class Material {
     private String name;
 
     @OneToMany(mappedBy = "material")
-    Set<MaterialPartnerRelation> materialPartnerRelations;
+    Set<MaterialPartnerRelation> materialPartnerRelations = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {

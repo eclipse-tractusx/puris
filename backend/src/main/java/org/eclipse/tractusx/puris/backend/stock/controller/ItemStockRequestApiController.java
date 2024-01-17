@@ -23,6 +23,7 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
@@ -57,6 +58,8 @@ public class ItemStockRequestApiController {
     private ItemStockRequestMessageService itemStockRequestMessageService;
     @Autowired
     private ExecutorService executorService;
+    @Autowired
+    private Validator validator;
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
     @Operation(summary = "This endpoint receives the item stock request messages. ")
@@ -67,6 +70,10 @@ public class ItemStockRequestApiController {
     })
     @PostMapping("request")
     public ResponseEntity<RequestReactionMessageDto> postMapping(@RequestBody ItemStockRequestMessageDto requestMessageDto) {
+        if (!validator.validate(requestMessageDto).isEmpty()) {
+            log.warn("Rejected invalid message body");
+            return ResponseEntity.status(400).body(new RequestReactionMessageDto(requestMessageDto.getHeader().getMessageId()));
+        }
         log.info("Got Request\n" + requestMessageDto);
         ItemStockRequestMessage requestMessage = ItemStockRequestMessageDto.convertToEntity(requestMessageDto);
         var createdRequestMessage = itemStockRequestMessageService.create(requestMessage);
@@ -77,7 +84,8 @@ public class ItemStockRequestApiController {
             return ResponseEntity.status(422).body(new RequestReactionMessageDto(requestMessageDto.getHeader().getMessageId()));
         }
         switch (requestMessageDto.getContent().getDirection()) {
-            case INBOUND -> executorService.submit(() -> itemStockRequestApiService.handleRequestFromCustomer(requestMessageDto, createdRequestMessage));
+            case INBOUND ->
+                executorService.submit(() -> itemStockRequestApiService.handleRequestFromCustomer(requestMessageDto, createdRequestMessage));
             case OUTBOUND ->
                 executorService.submit(() -> itemStockRequestApiService.handleRequestFromSupplier(requestMessageDto, createdRequestMessage));
             default -> {
@@ -95,11 +103,9 @@ public class ItemStockRequestApiController {
     })
     @PostMapping("status")
     public ResponseEntity<StatusReactionMessageDto> getStatus(@RequestBody ItemStockStatusRequestMessageDto statusRequest) {
-        if (statusRequest.getHeader() == null || statusRequest.getHeader().getRelatedMessageId() == null
-            || statusRequest.getHeader().getSenderBpn() == null || statusRequest.getHeader().getReceiverBpn() == null
-            || !bpnlPattern.matcher(statusRequest.getHeader().getReceiverBpn()).matches()
-            || !bpnlPattern.matcher(statusRequest.getHeader().getSenderBpn()).matches()) {
+        if (!validator.validate(statusRequest).isEmpty()) {
             // Bad Request
+            log.warn("Rejected invalid message body");
             return ResponseEntity.status(400).build();
         }
         var relatedMessage = itemStockRequestMessageService.find(new ItemStockRequestMessage.Key(statusRequest.getHeader().getMessageId(),

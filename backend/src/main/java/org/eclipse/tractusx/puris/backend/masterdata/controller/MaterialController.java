@@ -25,6 +25,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialEntityDto;
@@ -41,10 +43,14 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("materials")
+@Slf4j
 public class MaterialController {
 
     @Autowired
     private MaterialService materialService;
+
+    @Autowired
+    private Validator validator;
     private final ModelMapper modelMapper = new ModelMapper();
     private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
 
@@ -58,6 +64,10 @@ public class MaterialController {
         @ApiResponse(responseCode = "500", description = "Internal Server error.")
     })
     public ResponseEntity<?> createMaterial(@RequestBody MaterialEntityDto materialDto) {
+        if(!validator.validate(materialDto).isEmpty()) {
+            log.warn("Rejected invalid message body.");
+            return ResponseEntity.status(400).build();
+        }
         if (materialDto.getOwnMaterialNumber() == null || materialDto.getOwnMaterialNumber().isEmpty()) {
             // Cannot create material without ownMaterialNumber
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
@@ -89,6 +99,10 @@ public class MaterialController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public ResponseEntity<?> updateMaterial(@RequestBody MaterialEntityDto materialDto) {
+        if(!validator.validate(materialDto).isEmpty()) {
+            log.warn("Rejected invalid message body.");
+            return ResponseEntity.status(400).build();
+        }
         if (materialDto.getOwnMaterialNumber() == null || materialDto.getOwnMaterialNumber().isEmpty()) {
             // Cannot update material without ownMaterialNumber
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
