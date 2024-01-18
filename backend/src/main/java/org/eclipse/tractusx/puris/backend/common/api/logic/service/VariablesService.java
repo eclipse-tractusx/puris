@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -86,6 +86,18 @@ public class VariablesService {
      * during asset creation.
      */
     private String responseApiAssetId;
+    @Value("${puris.statusrequest.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the status-request API
+     * during asset creation.
+     */
+    private String statusRequestApiAssetId;
+    @Value("${puris.statusrequest.serverendpoint}")
+    /**
+     * The url under which this application's status-request endpoint
+     * can be reached by external machines.
+     */
+    private String statusRequestServerEndpoint;
     @Value("${puris.api.key}")
     /**
      * The key for accessing the api.
@@ -160,12 +172,14 @@ public class VariablesService {
      * @return the asset-id
      */
     public String getApiAssetId(DT_ApiMethodEnum method) {
-        if(responseApiAssetId == null || requestApiAssetId == null) {
-            throw new RuntimeException("You must define request.apiassetid and response.apiassetid in properties file");
+        if(responseApiAssetId == null || requestApiAssetId == null || statusRequestApiAssetId == null) {
+            throw new RuntimeException("You must define puris.request.apiassetid, puris.response.apiassetid " +
+                "and puris.statusrequest.apiassetid in properties file");
         }
         switch (method) {
             case REQUEST: return requestApiAssetId;
             case RESPONSE: return responseApiAssetId;
+            case STATUS_REQUEST: return statusRequestApiAssetId;
             default: throw new RuntimeException("Unknown Api Method: " + method);
         }
     }

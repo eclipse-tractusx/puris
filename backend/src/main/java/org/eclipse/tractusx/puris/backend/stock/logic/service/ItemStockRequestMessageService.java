@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,42 +21,77 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStockRequestMessage;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ItemStockRequestMessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+import java.util.Objects;
 
 @Service
 @Slf4j
+/**
+ * This class is a service to store and retrieve item stock request messages and their status.
+ */
 public class ItemStockRequestMessageService {
     @Autowired
     private ItemStockRequestMessageRepository repository;
 
     public ItemStockRequestMessage create(ItemStockRequestMessage itemStockRequestMessage) {
-        if (itemStockRequestMessage.getMessageId() != null) {
-            log.error("MessageId already exists, could not create entity \n" + itemStockRequestMessage);
+        if (!validate(itemStockRequestMessage)) {
+            return null;
+        }
+        if (repository.findById(itemStockRequestMessage.getKey()).isPresent()) {
+            log.warn("Message already exists, cannot create message \n" + itemStockRequestMessage);
             return null;
         }
         return repository.save(itemStockRequestMessage);
     }
 
     public ItemStockRequestMessage update(ItemStockRequestMessage itemStockRequestMessage) {
-        if (itemStockRequestMessage.getMessageId() == null) {
-            log.error("MessageId missing, could not update entity \n" + itemStockRequestMessage);
+        if (!validate(itemStockRequestMessage)) {
             return null;
         }
-        if (find(itemStockRequestMessage.getMessageId()) == null) {
-            log.error("Unknown MessageId, could not update entity \n" + itemStockRequestMessage);
+        if (repository.findById(itemStockRequestMessage.getKey()).isEmpty()) {
+            log.warn("Cannot update message, message didn't exist before \n" + itemStockRequestMessage);
             return null;
         }
         return repository.save(itemStockRequestMessage);
     }
 
-    public ItemStockRequestMessage find(UUID messageId) {
-        return repository.findById(messageId).orElse(null);
+    public ItemStockRequestMessage find(ItemStockRequestMessage itemStockRequestMessage) {
+        if(itemStockRequestMessage.getKey() == null) {
+            return null;
+        }
+        return repository.findById(itemStockRequestMessage.getKey()).orElse(null);
     }
 
+    public ItemStockRequestMessage find(ItemStockRequestMessage.Key key) {
+        if(key == null) {
+            return null;
+        }
+        return repository.findById(key).orElse(null);
+    }
 
+    private boolean validate(ItemStockRequestMessage itemStockRequestMessage) {
+        try {
+            Objects.requireNonNull(itemStockRequestMessage.getKey(), "Missing key");
+            Objects.requireNonNull(itemStockRequestMessage.getKey().getMessageId(), "Missing MessageId");
+            Objects.requireNonNull(itemStockRequestMessage.getKey().getReceiverBpn(), "Missing receiverBpnl");
+            Objects.requireNonNull(itemStockRequestMessage.getKey().getSenderBpn(), "Missing senderBpnl");
+            Objects.requireNonNull(itemStockRequestMessage.getDirection(), "Missing direction");
+            Objects.requireNonNull(itemStockRequestMessage.getContext(), "Missing context");
+            Objects.requireNonNull(itemStockRequestMessage.getVersion(), "Missing version");
+            Objects.requireNonNull(itemStockRequestMessage.getState(), "Missing state");
+            if (itemStockRequestMessage.getState() == DT_RequestStateEnum.Requested || itemStockRequestMessage.getState() == DT_RequestStateEnum.Completed
+                || itemStockRequestMessage.getState() == DT_RequestStateEnum.Received) {
+                Objects.requireNonNull(itemStockRequestMessage.getSentDateTime(), "Missing sendDateTime in state " + itemStockRequestMessage.getState());
+            }
+        } catch (Exception e) {
+            log.error("Validation failed ", e);
+            return false;
+        }
+        return true;
+    }
 }

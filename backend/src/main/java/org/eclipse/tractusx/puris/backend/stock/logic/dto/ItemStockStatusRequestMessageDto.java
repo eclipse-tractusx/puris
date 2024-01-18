@@ -26,26 +26,22 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
 @ToString
 /**
- * This class represents a response message as it is sent
- * to the counterparty.
+ * This class represents a Dto for an
+ * ItemStock status request
  */
-public class ItemStockResponseDto {
-
+public class ItemStockStatusRequestMessageDto {
     @NotNull
     private HeaderDto header = new HeaderDto();
     @NotNull
-    private ContentDto content = new ContentDto();
+    private Object content = new Object();
 
     @Getter
     @Setter
@@ -68,13 +64,6 @@ public class ItemStockResponseDto {
         @Pattern(regexp = PatternStore.BPNL_STRING)
         private String receiverBpn;
         @NotNull
-        private Date sentDateTime;
-    }
-
-    @Getter
-    @Setter
-    @ToString
-    public static class ContentDto {
-        List<ItemStockSamm> itemStock = new ArrayList<>();
+        private Date sendDateTime;
     }
 }

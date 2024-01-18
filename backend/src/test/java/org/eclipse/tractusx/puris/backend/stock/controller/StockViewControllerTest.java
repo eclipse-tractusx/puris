@@ -66,6 +66,9 @@ class StockViewControllerTest {
     private MaterialItemStockService materialItemStockService;
 
     @MockBean
+    private ItemStockRequestApiService itemStockRequestMessageService;
+
+    @MockBean
     private ReportedMaterialItemStockService reportedMaterialItemStockService;
 
     @MockBean

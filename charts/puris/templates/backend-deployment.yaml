@@ -94,13 +94,17 @@ spec:
             - name: PURIS_EDR_ENDPOINT
               value: "http://{{ .Values.backend.puris.edr.endpoint }}/catena/edrendpoint"
             - name: PURIS_REQUEST_SERVERENDPOINT
-              value: "http://{{ .Values.backend.puris.request.serverendpoint }}/catena/product-stock/request"
+              value: "http://{{ .Values.backend.puris.request.serverendpoint }}/catena/item-stock/request"
             - name: PURIS_REQUEST_APIASSETID
               value: "{{ .Values.backend.puris.request.apiassetid }}"
             - name: PURIS_RESPONSE_SERVERENDPOINT
-              value: "http://{{ .Values.backend.puris.response.serverendpoint }}/product-stock/response"
+              value: "http://{{ .Values.backend.puris.response.serverendpoint }}/catena/item-stock/response"
             - name: PURIS_RESPONSE_APIASSETID
               value: "{{ .Values.backend.puris.response.apiassetid }}"
+            - name: PURIS_STATUSREQUEST_SERVERENDPOINT
+              value: "http://{{ .Values.backend.puris.statusrequest.serverendpoint }}/catena/item-stock/status"
+            - name: PURIS_STATUSREQUEST_APIASSETID
+              value: "{{ .Values.backend.puris.statusrequest.apiassetid }}"
           ports:
             - name: http
               containerPort: {{ .Values.backend.service.port }}

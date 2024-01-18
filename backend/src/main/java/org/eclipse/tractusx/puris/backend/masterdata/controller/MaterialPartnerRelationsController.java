@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,6 +25,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -40,6 +42,7 @@ import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("materialpartnerrelations")
+@Slf4j
 public class MaterialPartnerRelationsController {
 
 
@@ -52,9 +55,9 @@ public class MaterialPartnerRelationsController {
     @Autowired
     private MaterialPartnerRelationService mprService;
 
-    private final Pattern materialPattern = Pattern.compile(Material.MATERIAL_NUMBER_REGEX);
+    private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
 
-    private final Pattern bpnlPattern = Pattern.compile(Partner.BPNL_REGEX);
+    private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
     @PostMapping
     @Operation(description = "Creates a new MaterialPartnerRelation with the given parameter data. " +
@@ -78,21 +81,17 @@ public class MaterialPartnerRelationsController {
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
             example = "true") @RequestParam boolean partnerBuys) {
 
-        if(!materialPattern.matcher(ownMaterialNumber).matches() || !materialPattern.matcher(partnerMaterialNumber).matches()) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches() || !materialPattern.matcher(partnerMaterialNumber).matches()
+            || !bpnlPattern.matcher(partnerBpnl).matches()) {
+            log.warn("Rejected message parameters. ");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
 
-        if(!bpnlPattern.matcher(partnerBpnl).matches()) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
-        }
         Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
-        if (material == null || partnerBpnl == null) {
+        if (material == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-        Partner partner = null;
-        if (partnerBpnl != null) {
-            partner = partnerService.findByBpnl(partnerBpnl);
-        }
+        Partner partner = partnerService.findByBpnl(partnerBpnl);
         if (partner == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
@@ -132,13 +131,13 @@ public class MaterialPartnerRelationsController {
             example = "true") @RequestParam(required = false) Boolean partnerBuys) {
         MaterialPartnerRelation existingRelation = null;
 
-        if(!bpnlPattern.matcher(partnerBpnl).matches()) {
+        if (!bpnlPattern.matcher(partnerBpnl).matches() || !materialPattern.matcher(ownMaterialNumber).matches() ||
+            (partnerMaterialNumber !=null && !materialPattern.matcher(partnerMaterialNumber).matches())) {
+            log.warn("Rejected message parameters. ");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         Partner partner = partnerService.findByBpnl(partnerBpnl);
-        if(!materialPattern.matcher(ownMaterialNumber).matches() || !materialPattern.matcher(partnerMaterialNumber).matches()) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
-        }
+
         Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (partner != null && material != null) {
             existingRelation = mprService.find(material, partner);

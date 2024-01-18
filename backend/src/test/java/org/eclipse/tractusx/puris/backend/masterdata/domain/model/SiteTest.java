@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -58,8 +58,8 @@ public class SiteTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "invalid name!",
-        "@email"
+        "invalid name\r",
+        "@email\n"
     })
     public void test_invalidNameRegex(String name) {
         Site site = new Site("BPNS1234567890SS", name, "BPNA1234567890AA", "123 Main St 12", "12345 New York", "USA");

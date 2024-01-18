@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,13 +23,51 @@ package org.eclipse.tractusx.puris.backend.stock.domain.repository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
 
 @Repository
-public interface ReportedProductItemStockRepository extends JpaRepository<ReportedProductItemStock, UUID> {
+public interface ReportedProductItemStockRepository extends ItemStockRepository<ReportedProductItemStock> {
     List<ReportedProductItemStock> findByPartnerAndMaterial(Partner partner, Material material);
+
+    List<ReportedProductItemStock> findByPartner(Partner partner);
+
+    List<ReportedProductItemStock> findByMaterial(Material material);
+
+    List<ReportedProductItemStock> findByMaterial_OwnMaterialNumber(String ownMaterialNumber);
+
+    List<ReportedProductItemStock> findByPartner_Bpnl(String partnerBpnl);
+
+    List<ReportedProductItemStock> findByPartner_BpnlAndMaterial_OwnMaterialNumber(String partnerBpnl, String ownMaterialNumber);
+
+    @Override
+    default List<ReportedProductItemStock> getForPartnerAndMaterial(Partner partner, Material material) {
+        return findByPartnerAndMaterial(partner, material);
+    }
+
+    @Override
+    default List<ReportedProductItemStock> getForPartner(Partner partner) {
+        return findByPartner(partner);
+    }
+
+    @Override
+    default List<ReportedProductItemStock> getForMaterial(Material material) {
+        return findByMaterial(material);
+    }
+
+    @Override
+    default List<ReportedProductItemStock> getForOwnMatNbr(String ownMaterialNumber) {
+        return findByMaterial_OwnMaterialNumber(ownMaterialNumber);
+    }
+
+    @Override
+    default List<ReportedProductItemStock> getForPartnerBpnl(String partnerBpnl) {
+        return findByPartner_Bpnl(partnerBpnl);
+    }
+
+    @Override
+    default List<ReportedProductItemStock> getForPartnerBpnlAndOwnMatNbr(String partnerBpnl, String ownMaterialNumber) {
+        return findByPartner_BpnlAndMaterial_OwnMaterialNumber(partnerBpnl, ownMaterialNumber);
+    }
 }
