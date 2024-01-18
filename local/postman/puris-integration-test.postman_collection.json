@@ -533,7 +533,7 @@
                                 "header": [],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"material\": {\n        \"materialFlag\": true,\n        \"productFlag\": false,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 50.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{CUSTOMER_BPNS}}\",\n    \"stockLocationBpna\": \"{{CUSTOMER_BPNA}}\",\n    \"type\": \"MATERIAL\",\n    \"lastUpdatedOn\": \"2023-12-18T13:12:48.466+00:00\",\n    \"isBlocked\": true,\n    \"customerOrderNumber\": \"\",\n    \"customerOrderPositionNumber\": \"\",\n    \"supplierOrderNumber\": \"\",\n    \"partner\":{\n        \"bpnl\": \"{{SUPPLIER_BPNL}}\"\n    }\n}",
+                                    "raw": "{\n    \"material\": {\n        \"materialFlag\": true,\n        \"productFlag\": false,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 500.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{CUSTOMER_BPNS}}\",\n    \"stockLocationBpna\": \"{{CUSTOMER_BPNA}}\",\n    \"type\": \"MATERIAL\",\n    \"lastUpdatedOn\": \"2023-12-18T13:12:48.466+00:00\",\n    \"isBlocked\": true,\n    \"customerOrderNumber\": \"CNbr-1\",\n    \"customerOrderPositionNumber\": \"C-Pos-1\",\n    \"supplierOrderNumber\": \"SNbr-1\",\n    \"partner\":{\n        \"bpnl\": \"{{SUPPLIER_BPNL}}\"\n    }\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -642,6 +642,55 @@
                 {
                     "name": "SupplierInit",
                     "item": [
+                        {
+                            "name": "Add New Site to Supplier Partner (MySelf)",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})",
+                                            ""
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n\"bpns\": \"{{SUPPLIER_BPNS2}}\",\n\"name\": \"Semiconductor Supplier Inc. Secondary Site\",\n\"addresses\": [\n    {\n        \"bpna\": \"{{SUPPLIER_BPNA2}}\",\n        \"streetAndNumber\": \"Sunset Blvd. 345\",\n        \"zipCodeAndCity\": \"90001 Los Angeles\",\n        \"country\": \"USA\"\n    }\n]\n}"
+                                },
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/partners/putSite?partnerBpnl={{SUPPLIER_BPNL}}",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "partners",
+                                        "putSite"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "partnerBpnl",
+                                            "value": "{{SUPPLIER_BPNL}}"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
                         {
                             "name": "Create Semiconductor Product",
                             "event": [
@@ -984,7 +1033,48 @@
                                 "header": [],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"material\": {\n        \"materialFlag\": false,\n        \"productFlag\": true,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberSupplier\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 5.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{SUPPLIER_BPNS}}\",\n    \"stockLocationBpna\": \"{{SUPPLIER_BPNA}}\",\n    \"type\": \"PRODUCT\",\n    \"lastUpdatedOn\": \"2023-12-18T14:12:48.466+00:00\",\n    \"isBlocked\": false,\n    \"customerOrderNumber\": \"\",\n    \"customerOrderPositionNumber\": \"\",\n    \"supplierOrderNumber\": \"\",\n    \"partner\":{\n        \"bpnl\": \"{{CUSTOMER_BPNL}}\"\n    }\n}",
+                                    "raw": "{\n    \"material\": {\n        \"materialFlag\": false,\n        \"productFlag\": true,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberSupplier\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 100.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{SUPPLIER_BPNS}}\",\n    \"stockLocationBpna\": \"{{SUPPLIER_BPNA}}\",\n    \"type\": \"PRODUCT\",\n    \"lastUpdatedOn\": \"2023-12-18T14:12:48.466+00:00\",\n    \"isBlocked\": true,\n    \"customerOrderNumber\": \"CNbr-2\",\n    \"customerOrderPositionNumber\": \"C-Pos-2\",\n    \"supplierOrderNumber\": \"SNbr-2\",\n    \"partner\":{\n        \"bpnl\": \"{{CUSTOMER_BPNL}}\"\n    }\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/stockView/product-stocks",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "stockView",
+                                        "product-stocks"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Semiconductor Product Stock 2 Supplier",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"material\": {\n        \"materialFlag\": false,\n        \"productFlag\": true,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberSupplier\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 400.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{SUPPLIER_BPNS2}}\",\n    \"stockLocationBpna\": \"{{SUPPLIER_BPNA2}}\",\n    \"type\": \"PRODUCT\",\n    \"lastUpdatedOn\": \"2023-12-18T14:12:48.466+00:00\",\n    \"isBlocked\": false,\n    \"customerOrderNumber\": \"CNbr-2\",\n    \"customerOrderPositionNumber\": \"C-Pos-2\",\n    \"supplierOrderNumber\": \"SNbr-2\",\n    \"partner\":{\n        \"bpnl\": \"{{CUSTOMER_BPNL}}\"\n    }\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -1016,26 +1106,56 @@
                                             "    pm.response.to.have.status(200);",
                                             "});",
                                             "",
-                                            "pm.test(\"Verify response contains one material objects\", function () {",
-                                            "    pm.expect(pm.response.json()).to.be.an(\"array\").with.lengthOf(1);",
+                                            "pm.test(\"Verify response contains two product stock objects\", function () {",
+                                            "    pm.expect(pm.response.json()).to.be.an(\"array\").with.lengthOf(2);",
                                             "});",
                                             "",
-                                            "pm.test(\"Verify stock composition (material number with BPNS, BPNA and Partner BPNL)\", function () {",
-                                            "    const stock = pm.response.json()[0];",
+                                            "pm.test(\"Verify stock composition NY (material number with BPNS, BPNA and Partner BPNL)\", function () {",
                                             "",
-                                            "    pm.expect(stock).to.have.property(\"material\");",
-                                            "    pm.expect(stock.material).to.have.property(\"materialNumberCustomer\");",
-                                            "    pm.expect(stock.material.materialNumberSupplier).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"));",
+                                            "    var responseJson = pm.response.json();",
                                             "",
-                                            "    pm.expect(stock).to.have.property(\"stockLocationBpns\");",
-                                            "    pm.expect(stock.stockLocationBpns).to.equal(pm.environment.get(\"SUPPLIER_BPNS\"));",
+                                            "    const stockNy = responseJson.filter(function (stock) {",
+                                            "        return stock.stockLocationBpns === pm.environment.get(\"SUPPLIER_BPNS\");",
+                                            "    })[0];",
                                             "",
-                                            "    pm.expect(stock).to.have.property(\"stockLocationBpna\");",
-                                            "    pm.expect(stock.stockLocationBpna).to.equal(pm.environment.get(\"SUPPLIER_BPNA\"));",
+                                            "    pm.expect(stockNy).to.have.property(\"material\");",
+                                            "    pm.expect(stockNy.material).to.have.property(\"materialNumberCustomer\");",
+                                            "    pm.expect(stockNy.material.materialNumberSupplier).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"));",
                                             "",
-                                            "    pm.expect(stock).to.have.property(\"partner\");",
-                                            "    pm.expect(stock.partner).to.have.property(\"bpnl\");",
-                                            "    pm.expect(stock.partner.bpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
+                                            "    pm.expect(stockNy).to.have.property(\"stockLocationBpns\");",
+                                            "    pm.expect(stockNy.stockLocationBpns).to.equal(pm.environment.get(\"SUPPLIER_BPNS\"));",
+                                            "",
+                                            "    pm.expect(stockNy).to.have.property(\"stockLocationBpna\");",
+                                            "    pm.expect(stockNy.stockLocationBpna).to.equal(pm.environment.get(\"SUPPLIER_BPNA\"));",
+                                            "",
+                                            "    pm.expect(stockNy).to.have.property(\"partner\");",
+                                            "    pm.expect(stockNy.partner).to.have.property(\"bpnl\");",
+                                            "    pm.expect(stockNy.partner.bpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Verify stock composition LA (material number with BPNS, BPNA and Partner BPNL)\", function () {",
+                                            "",
+                                            "    var responseJson = pm.response.json();",
+                                            "",
+                                            "    const stockLa = responseJson.filter(function (stock) {",
+                                            "        return stock.stockLocationBpns === pm.environment.get(\"SUPPLIER_BPNS2\");",
+                                            "    })[0];",
+                                            "",
+                                            "    console.log(stockLa);",
+                                            "",
+                                            "    pm.expect(stockLa).to.have.property(\"material\");",
+                                            "    pm.expect(stockLa.material).to.have.property(\"materialNumberCustomer\");",
+                                            "    pm.expect(stockLa.material.materialNumberSupplier).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"));",
+                                            "",
+                                            "    pm.expect(stockLa).to.have.property(\"stockLocationBpns\");",
+                                            "    pm.expect(stockLa.stockLocationBpns).to.equal(pm.environment.get(\"SUPPLIER_BPNS2\"));",
+                                            "",
+                                            "    pm.expect(stockLa).to.have.property(\"stockLocationBpna\");",
+                                            "    pm.expect(stockLa.stockLocationBpna).to.equal(pm.environment.get(\"SUPPLIER_BPNA2\"));",
+                                            "",
+                                            "    pm.expect(stockLa).to.have.property(\"partner\");",
+                                            "    pm.expect(stockLa.partner).to.have.property(\"bpnl\");",
+                                            "    pm.expect(stockLa.partner.bpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
                                             "});"
                                         ],
                                         "type": "text/javascript"

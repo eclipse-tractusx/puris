@@ -49,6 +49,8 @@ Overall the customer has the following information:
     - Material: Semiconductor
     - Quantity: 500 pieces
     - Blocked: true
+    - Location BPNS: BPNS4444444444XX
+    - Location BPNA: BPNA4444444444AA
     - Order Position Reference:
       - Customer Order Number: CNbr-1
       - Customer Order Position Number: C-Pos-1
@@ -82,6 +84,8 @@ Overall the supplier has the following information:
         - Material: Semiconductor
         - Quantity: 100 pieces
         - Blocked: true
+        - Location BPNS: BPNS1234567890ZZ
+        - Location BPNA: BPNA1234567890AA
         - Order Position Reference:
             - Customer Order Number: CNbr-2
             - Customer Order Position Number: C-Pos-2
