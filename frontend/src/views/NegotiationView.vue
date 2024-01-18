@@ -55,7 +55,7 @@ export default {
         <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
             View EDC Negotiations
         </h1>
-        <li class="list-none" v-for="offer in catalog">
+        <li class="list-none" v-for="item in catalog">
             <div
                 class="text-center mx-4 my-8 block p-6 w-full bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
             >
@@ -63,26 +63,26 @@ export default {
                     <h1
                         class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white"
                     >
-                        Negotiation {{ offer["@id"] }}
+                        Negotiation {{ item["@id"] }}
                     </h1>
-                    <h2 v-if="offer['edc:contractAgreementId']"
+                    <h2 v-if="item['edc:contractAgreementId']"
                         class="font-normal text-medium text-gray-700 dark:text-gray-400">
-                        AgreementId: {{ offer["edc:contractAgreementId"] }}
+                        AgreementId: {{ item["edc:contractAgreementId"] }}
                     </h2>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-                        Type: {{ offer["edc:type"] }}
+                        Type: {{ item["edc:type"] }}
                     </h2>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-                        State: {{ offer["edc:state"] }}
+                        State: {{ item["edc:state"] }}
                     </h2>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-                        Counterparty: {{ offer["edc:counterPartyId"] }}
+                        Counterparty: {{ item["edc:counterPartyId"] }}
                     </h2>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-                        Counterparty EDC URL: {{ offer["edc:counterPartyAddress"] }}
+                        Counterparty EDC URL: {{ item["edc:counterPartyAddress"] }}
                     </h2>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-                        TimeStamp: {{ new Date(offer["edc:createdAt"]) }}
+                        TimeStamp: {{ new Date(item["edc:createdAt"]) }}
                     </h2>
                 </div>
             </div>
