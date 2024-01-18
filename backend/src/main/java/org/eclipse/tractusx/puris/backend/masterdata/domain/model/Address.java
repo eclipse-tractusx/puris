@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -27,6 +27,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
 
 /**
@@ -41,27 +42,26 @@ import lombok.ToString;
 @ToString
 public class Address implements Comparable<Address> {
 
-    public static final String BPNA_REGEX = "^BPNA[0-9a-zA-Z]{12}$";
     /**
      * The BPNA of this Address.
      */
-    @Pattern(regexp = BPNA_REGEX)
+    @Pattern(regexp = PatternStore.BPNA_STRING)
     private String bpna;
 
     /**
      * The street and house number of this Address.
      */
-    @Pattern(regexp = "^[0-9a-zßA-Z .-]+ [0-9]+[a-zA-Z]?$")
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String streetAndNumber;
     /**
      * The zip code and city of this Address.
      */
-    @Pattern(regexp = "^[0-9]{1,5} [a-zßA-Z ]+$")
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String zipCodeAndCity;
     /**
      * The country of this Address.
      */
-    @Pattern(regexp = "^[a-zA-Z ]+$")
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String country;
 
     /**

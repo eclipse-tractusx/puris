@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -45,7 +45,7 @@ public class PartnerTest {
 
     @Test
     public void test_invalidPartnerName() {
-        Partner partner = new Partner("Invalid!Name", "https://www.example.com", "BPNL1234567890LE",
+        Partner partner = new Partner("Invalid\nName", "https://www.example.com", "BPNL1234567890LE",
             "BPNS123456780LE", "Site A", "BPNA1234567890LE", "123 Main St", "12345 New York", "USA");
 
         Set<ConstraintViolation<Partner>> violations = validator.validate(partner);

@@ -24,11 +24,10 @@ package org.eclipse.tractusx.puris.backend;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.MessageHeader;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_UseCaseEnum;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.*;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -36,7 +35,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ItemStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
@@ -44,10 +43,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @Slf4j
@@ -113,7 +110,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             setupSupplierRole();
         } else if (variablesService.getDemoRole().equals(("customer"))) {
             setupCustomerRole();
-            createRequest();
         } else {
             log.info("No role specific setup was created");
         }
@@ -247,6 +243,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info("Own Street and Number: " + variablesService.getOwnDefaultStreetAndNumber());
 
         log.info(mySelf.toString());
+
         var builder = MaterialItemStock.builder();
         var materialItemStock = builder.partner(supplierPartner)
             .material(semiconductorMaterial)
@@ -255,139 +252,22 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .locationBpns(mySelf.getSites().first().getBpns())
             .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
             .quantity(20)
+            .partner(supplierPartner)
             .build();
         var createdMaterialItemStock = materialItemStockService.create(materialItemStock);
-        log.info("Created MaterialItemStock: \n" + createdMaterialItemStock.toString());
-        Site newSite = new Site();
-        newSite.setBpns("BPNS4444444444DD");
-        newSite.setName("Dummy Site");
-        Address address = new Address("BPNA4444444444DD", "Feldweg 1", "54545 Neustadt", "Germany");
-        newSite.getAddresses().add(address);
-        mySelf.getSites().add(newSite);
-        mySelf = partnerService.update(mySelf);
+        log.info("Created MaterialItemStock: \n" + createdMaterialItemStock);
 
-        builder = MaterialItemStock.builder();
-        var otherMaterialItemStock =
-            builder
-                .partner(supplierPartner)
-                .material(semiconductorMaterial)
-                .lastUpdatedOnDateTime(new Date())
-                .locationBpns(newSite.getBpns())
-                .locationBpna(address.getBpna())
-                .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
-                .quantity(12)
-                .customerOrderId("2023-ORD-4711")
-                .customerOrderPositionId("POS-1")
-                .build();
-        otherMaterialItemStock = materialItemStockService.create(otherMaterialItemStock);
-
-        var thirdMaterialItemStock = MaterialItemStock.builder()
-            .partner(supplierPartner)
-            .material(semiconductorMaterial)
-            .lastUpdatedOnDateTime(new Date())
-            .locationBpna(address.getBpna())
-            .locationBpns(newSite.getBpns())
-            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
-            .quantity(23)
-            .customerOrderId("2023-ORD-4712")
-            .customerOrderPositionId("POS-1")
-            .supplierOrderId("2023-SUPPLIER-ORD")
-            .isBlocked(true)
-            .build();
-        thirdMaterialItemStock = materialItemStockService.create(thirdMaterialItemStock);
-
-        var samm = itemStockSammMapper.materialItemStocksToItemStockSamm(List.of(createdMaterialItemStock, otherMaterialItemStock, thirdMaterialItemStock));
-        var node = objectMapper.readTree(objectMapper.writeValueAsString(samm));
-        log.info("Created SAMM\n" + node.toPrettyString());
-
-        mySelf.getSites().remove(newSite);
-        mySelf = partnerService.update(mySelf);
-        ItemStockSamm itemStockSAMM = new ItemStockSamm();
-        itemStockSAMM.setMaterialNumberSupplier(semiconductorMatNbrSupplier);
-        itemStockSAMM.setMaterialNumberCustomer(semiconductorMatNbrCustomer);
-        itemStockSAMM.setDirection(DirectionCharacteristic.OUTBOUND);
-        var posList = new ArrayList<Position>();
-        itemStockSAMM.setPositions(posList);
-        var pos1 = new Position();
-        posList.add(pos1);
-        pos1.setLastUpdatedOnDateTime(new Date());
-        ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(31.0, ItemUnitEnumeration.UNIT_PIECE);
-        var allocatedStocks = new ArrayList<AllocatedStock>();
-        pos1.setAllocatedStocks(allocatedStocks);
-        var allocatedStock = new AllocatedStock(itemQuantityEntity, "BPNS123456789012", true, "BPNA123456789012");
-        allocatedStocks.add(allocatedStock);
-        itemQuantityEntity = new ItemQuantityEntity(67.0, ItemUnitEnumeration.UNIT_KILOGRAM);
-        allocatedStock = new AllocatedStock(itemQuantityEntity, "BPNS123456789012", false, "BPNA123456789012");
-        allocatedStocks.add(allocatedStock);
-        var pos2 = new Position();
-        pos2.setLastUpdatedOnDateTime(new Date());
-        var opr = new OrderPositionReference("123", "234", "345");
-        pos2.setOrderPositionReference(opr);
-        allocatedStocks = new ArrayList<>();
-        pos2.setAllocatedStocks(allocatedStocks);
-        itemQuantityEntity = new ItemQuantityEntity(43.1, ItemUnitEnumeration.UNIT_KILOGRAM);
-        allocatedStock = new AllocatedStock(itemQuantityEntity, "BPNS1234567890AB", true, "BPNS1234567890CD");
-        allocatedStocks.add(allocatedStock);
-        itemQuantityEntity = new ItemQuantityEntity(83.7, ItemUnitEnumeration.UNIT_CUBIC_CENTIMETRE);
-        allocatedStock = new AllocatedStock(itemQuantityEntity, "BPNS1234567890EF", false, "BPNS1234567890GH");
-        allocatedStocks.add(allocatedStock);
-        posList.add(pos2);
-
-        log.info("Sample SAMM: " + objectMapper.readTree(objectMapper.writeValueAsString(itemStockSAMM)));
-
-        log.info("To MaterialItemStockList: ");
-        var list = itemStockSammMapper.itemStockSammToReportedMaterialItemStock(itemStockSAMM, supplierPartner);
-        for (var s : list) {
-            log.info(s.toString());
-        }
-        
-        ProductItemStock productItemStock = ProductItemStock.builder()
-            .partner(nonScenarioCustomer)
-            .material(centralControlUnitEntity)
-            .lastUpdatedOnDateTime(new Date())
-            .locationBpns(mySelf.getSites().first().getBpns())
-            .locationBpna(mySelf.getSites().first().getAddresses().first().getBpna())
-            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
-            .quantity(25)
-            .customerOrderId("2023-CUSTOMER-4712")
-            .customerOrderPositionId("CUS-POS-1")
-            .supplierOrderId("2023-MY-ORD")
-            .isBlocked(true)
-            .build();
-         productItemStock = productItemStockService.create(productItemStock);
-         log.info("Created ProductItemStock: {}", productItemStock.toString());
-
-        ReportedMaterialItemStock reportedMaterialItemStock = ReportedMaterialItemStock.builder()
-            .partner(supplierPartner)
+        var reportedMaterialItemStock = ReportedMaterialItemStock.builder()
             .material(semiconductorMaterial)
             .lastUpdatedOnDateTime(new Date())
             .locationBpns(supplierPartner.getSites().first().getBpns())
             .locationBpna(supplierPartner.getSites().first().getAddresses().first().getBpna())
             .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
-            .quantity(25)
-            .customerOrderId("2023-ORD-4711")
-            .customerOrderPositionId("POS-1")
-            .supplierOrderId("2023-SUPPLIER-ORD")
-            .isBlocked(true)
+            .quantity(30)
+            .partner(supplierPartner)
             .build();
         reportedMaterialItemStock = reportedMaterialItemStockService.create(reportedMaterialItemStock);
-        log.info("Created ReportedMaterialItemStock: {}", reportedMaterialItemStock.toString());
-
-        ReportedProductItemStock reportedProductItemStock = ReportedProductItemStock.builder()
-            .partner(nonScenarioCustomer)
-            .material(centralControlUnitEntity)
-            .lastUpdatedOnDateTime(new Date())
-            .locationBpns(nonScenarioCustomer.getSites().first().getBpns())
-            .locationBpna(nonScenarioCustomer.getSites().first().getAddresses().first().getBpna())
-            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
-            .quantity(25)
-            .customerOrderId("2023-CUSTOMER-4712")
-            .customerOrderPositionId("CUS-POS-1")
-            .supplierOrderId("2023-MY-ORD")
-            .isBlocked(true)
-            .build();
-        reportedProductItemStock = reportedProductItemStockService.create(reportedProductItemStock);
-        log.info("Created ReportedProductItemStock: {}", reportedProductItemStock.toString());
+        log.info("Created ReportedMaterialItemStock: \n" + reportedMaterialItemStock);
     }
 
     /**
@@ -418,22 +298,30 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info(String.format("Found customer partners for semiconductor: %s", customerPartners));
 
 
-        ProductStock productStockEntity = new ProductStock(
-            semiconductorMaterial,
-            20,
-            MeasurementUnit.piece,
-            mySelf.getSites().first().getBpns(),
-            LocationIdTypeEnum.B_P_N_S,
-            new Date(),
-            customerPartner
-        );
-        productStockEntity = productStockService.create(productStockEntity);
-        log.info(String.format("Created productStock: %s", productStockEntity.toString()));
 
-        List<ProductStock> foundProductStocks = productStockService.
-            findAllByMaterialNumberCustomer(semiconductorMatNbrCustomer, customerPartner);
-        log.info(String.format("Found productStocks by material number and allocated to customer " +
-            "bpnl: %s", foundProductStocks));
+        var productItemStock = ProductItemStock.builder()
+            .locationBpna(mySelf.getSites().first().getAddresses().first().getBpna())
+            .locationBpns(mySelf.getSites().first().getBpns())
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
+            .quantity(40)
+            .partner(customerPartner)
+            .material(semiconductorMaterial)
+            .lastUpdatedOnDateTime(new Date())
+            .build();
+        productItemStock = productItemStockService.create(productItemStock);
+        log.info("Created ProductItemStock \n" + productItemStock);
+
+        ReportedProductItemStock reportedProductItemStock = ReportedProductItemStock.builder()
+            .material(semiconductorMaterial)
+            .locationBpns(customerPartner.getSites().first().getBpns())
+            .locationBpna(customerPartner.getSites().first().getAddresses().first().getBpna())
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
+            .quantity(25)
+            .partner(customerPartner)
+            .lastUpdatedOnDateTime(new Date())
+            .build();
+        reportedProductItemStock = reportedProductItemStockService.create(reportedProductItemStock);
+        log.info("Created ReportedProductItemStock \n" + reportedProductItemStock);
     }
 
     /**
@@ -541,39 +429,4 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         return material;
     }
 
-    private void createRequest() throws JsonProcessingException {
-
-        ProductStockRequest request = new ProductStockRequest();
-        MessageHeader messageHeader = new MessageHeader();
-        messageHeader.setRequestId(UUID.fromString("4979893e-dd6b-43db-b732-6e48b4ba35b3"));
-        messageHeader.setRespondAssetId("product-stock-response-api");
-        messageHeader.setContractAgreementId("some cid");
-        messageHeader.setSender("BPNL1234567890ZZ");
-        messageHeader.setSenderEdc("http://supplier-controlplane:8084/api/v1/dsp");
-        messageHeader.setReceiver("BPNL4444444444XX");
-        messageHeader.setUseCase(DT_UseCaseEnum.PURIS);
-        messageHeader.setCreationDate(new Date());
-        request.setHeader(messageHeader);
-
-        var productStock = request.getContent().getProductStock();
-        ProductStockRequestForMaterial rfm = new ProductStockRequestForMaterial("CU-MNR",
-            null, "SU-MNR");
-        productStock.add(rfm);
-
-        rfm = new ProductStockRequestForMaterial("OtherCU-MNR",
-            null, "OtherSU-MNR");
-        productStock.add(rfm);
-        request.setState(DT_RequestStateEnum.Working);
-
-        request = productStockRequestService.createRequest(request);
-
-
-        String stringOutput = objectMapper.writeValueAsString(request);
-        log.info("SAMPLE-Request\n" + objectMapper.readTree(stringOutput).toPrettyString());
-
-        var deserializedRequest = objectMapper.readValue(stringOutput, ProductStockRequest.class);
-        log.info(deserializedRequest.toString());
-
-
-    }
 }

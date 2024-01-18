@@ -23,10 +23,12 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
@@ -49,15 +51,15 @@ public abstract class StockDto implements Serializable {
     private double quantity;
 
     private ItemUnitEnumeration measurementUnit;
-
+    @Pattern(regexp = PatternStore.BPNS_STRING)
     private String stockLocationBpns;
-
+    @Pattern(regexp = PatternStore.BPNA_STRING)
     private String stockLocationBpna;
-
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String customerOrderNumber;
-
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String customerOrderPositionNumber;
-
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String supplierOrderNumber;
 
     private Date lastUpdatedOn;

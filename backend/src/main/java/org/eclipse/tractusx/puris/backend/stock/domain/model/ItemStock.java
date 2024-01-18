@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,10 +25,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Address;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
 
 import java.util.Date;
@@ -65,10 +64,10 @@ public abstract class ItemStock {
     @NotNull
     protected ItemUnitEnumeration measurementUnit;
     @NotNull
-    @Pattern(regexp = Address.BPNA_REGEX)
+    @Pattern(regexp = PatternStore.BPNA_STRING)
     protected String locationBpna;
     @NotNull
-    @Pattern(regexp = Site.BPNS_REGEX)
+    @Pattern(regexp = PatternStore.BPNS_STRING)
     protected String locationBpns;
     @NotNull
     protected Date lastUpdatedOnDateTime;

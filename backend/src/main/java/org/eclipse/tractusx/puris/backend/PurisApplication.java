@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2022,2023 Volkswagen AG
- * Copyright (c) 2022,2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
- * Copyright (c) 2022,2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022-2024 Volkswagen AG
+ * Copyright (c) 2022-2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ * Copyright (c) 2022-2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,6 +20,9 @@
  */
 package org.eclipse.tractusx.puris.backend;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.config.Configuration;
 import org.springframework.boot.SpringApplication;
@@ -49,6 +52,13 @@ public class PurisApplication {
     @Bean
     public ExecutorService getExecutorService() {
         return Executors.newCachedThreadPool();
+    }
+
+    @Bean
+    public Validator getValidator() {
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            return factory.getValidator();
+        }
     }
 
 }
