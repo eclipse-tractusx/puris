@@ -1,6 +1,7 @@
 ---
 name: Report a Bug
 about: report bugs or unexpected behavior.
+labels: bug
 ---
 
 <!-- 
