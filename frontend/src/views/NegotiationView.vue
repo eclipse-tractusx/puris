@@ -1,7 +1,7 @@
 <!--
- Copyright (c) 2022,2023 Volkswagen AG
- Copyright (c) 2022,2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
- Copyright (c) 2022,2023 Contributors to the Eclipse Foundation
+ Copyright (c) 2022-2024 Volkswagen AG
+ Copyright (c) 2022-2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ Copyright (c) 2022-2024 Contributors to the Eclipse Foundation
  
  See the NOTICE file(s) distributed with this work for additional
  information regarding copyright ownership.
@@ -21,93 +21,67 @@
 
 <script>
 export default {
-  inject: ["baseUrl"],
-  data() {
-    return {
-      catalog: {},
-    };
-  },
-  methods: {
-    getCatalog() {
-      let vm = this;
-      fetch(vm.baseUrl + "/edc/negotiations")
-        .then((response) => response.json())
-        .then((data) => {
-          vm.catalog = data;
-        });
+    data() {
+        return {
+            backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
+            backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
+            catalog: {},
+        };
     },
-    startTransfer(orderId, url) {
-      const idArray = orderId.split(":");
-      const edcEncoded = encodeURIComponent(url);
-      let vm = this;
-      fetch(
-        vm.baseUrl +
-          "/edc/startTransfer?orderId=" +
-          idArray[0] +
-          "&connectorAddress=" +
-          edcEncoded +
-          "&transferId=" +
-          idArray[1] +
-          "&contractId=" +
-          idArray[1]
-      )
-        .then((response) => response.text())
-        .then((json) => window.alert(json));
+    methods: {
+        getContractNegotiations() {
+            let url = this.backendURL + "edc/contractnegotiations";
+            console.log("Fetching negotiations from " + url);
+            fetch(url, {
+                headers: {
+                    "X-API-KEY": this.backendApiKey,
+                },
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    this.catalog = data;
+                })
+                .catch((err) => console.log(err));
+        },
     },
-  },
-  mounted() {
-    let vm = this;
-    vm.getCatalog();
-  },
+    mounted() {
+        this.getContractNegotiations();
+    },
 };
 </script>
 
 <template>
-  <main>
-    <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
-      View EDC Negotiations
-    </h1>
-    <li class="list-none" v-for="offer in catalog">
-      <div
-        class="text-center mx-4 my-8 block p-6 w-full bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
-      >
-        <div>
-          <h1
-            class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white"
-          >
-            Negotiation {{ offer.id }}
-          </h1>
-          <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-            Counterparty: {{ offer.counterPartyAddress }}
-          </h2>
-          <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-            State: {{ offer.state }}
-          </h2>
-          <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-            Type: {{ offer.type }}
-          </h2>
-          <h2
-            v-if="offer.contractAgreementId"
-            class="font-normal text-medium text-gray-700 dark:text-gray-400"
-          >
-            Agreement ID: {{ offer.contractAgreementId }}
-          </h2>
-        </div>
-        <button
-          v-if="offer.state == 'CONFIRMED' && offer.type == 'CONSUMER'"
-          class="my-8 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          id="orderBtn"
-          type="submit"
-          v-on:click="
-            startTransfer(
-              offer.contractAgreementId,
-              offer.counterPartyAddress
-            )
-          "
-        >
-          Start Transfer
-        </button>
-      </div>
-    </li>
-  </main>
+    <main>
+        <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
+            View EDC Negotiations
+        </h1>
+        <li class="list-none" v-for="offer in catalog">
+            <div
+                class="text-center mx-4 my-8 block p-6 w-full bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+            >
+                <div>
+                    <h1
+                        class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white"
+                    >
+                        Negotiation {{ offer["@id"] }}
+                    </h1>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        Counterparty: {{ offer["edc:counterPartyId"] }}
+                    </h2>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        Counterparty EDC URL: {{ offer["edc:counterPartyAddress"] }}
+                    </h2>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        State: {{ offer["edc:state"] }}
+                    </h2>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        Type: {{ offer["edc:type"] }}
+                    </h2>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        TimeStamp: {{ new Date(offer["edc:createdAt"]) }}
+                    </h2>
+                </div>
+            </div>
+        </li>
+    </main>
 </template>

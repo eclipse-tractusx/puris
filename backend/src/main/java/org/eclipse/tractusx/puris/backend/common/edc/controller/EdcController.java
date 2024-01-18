@@ -86,4 +86,20 @@ public class EdcController {
         }
     }
 
+    /**
+     * Retrieves all contract negotiations in the history
+     * of your control plane.
+     * @return contract negotiation data
+     */
+    @GetMapping("/contractnegotiations")
+    public ResponseEntity<String> getContractNegotiations() {
+        try {
+            String data = edcAdapter.getAllNegotiations();
+            return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 }
