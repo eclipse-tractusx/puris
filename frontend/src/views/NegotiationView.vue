@@ -65,17 +65,21 @@ export default {
                     >
                         Negotiation {{ offer["@id"] }}
                     </h1>
-                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-                        Counterparty: {{ offer["edc:counterPartyId"] }}
+                    <h2 v-if="offer['edc:contractAgreementId']"
+                        class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        AgreementId: {{ offer["edc:contractAgreementId"] }}
                     </h2>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-                        Counterparty EDC URL: {{ offer["edc:counterPartyAddress"] }}
+                        Type: {{ offer["edc:type"] }}
                     </h2>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
                         State: {{ offer["edc:state"] }}
                     </h2>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-                        Type: {{ offer["edc:type"] }}
+                        Counterparty: {{ offer["edc:counterPartyId"] }}
+                    </h2>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        Counterparty EDC URL: {{ offer["edc:counterPartyAddress"] }}
                     </h2>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
                         TimeStamp: {{ new Date(offer["edc:createdAt"]) }}
