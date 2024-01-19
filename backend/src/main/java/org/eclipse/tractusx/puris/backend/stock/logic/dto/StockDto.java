@@ -55,11 +55,11 @@ public abstract class StockDto implements Serializable {
     private String stockLocationBpns;
     @Pattern(regexp = PatternStore.BPNA_STRING)
     private String stockLocationBpna;
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    @Pattern(regexp = PatternStore.NON_VERTICAL_WHITESPACE_STRING)
     private String customerOrderNumber;
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    @Pattern(regexp = PatternStore.NON_VERTICAL_WHITESPACE_STRING)
     private String customerOrderPositionNumber;
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    @Pattern(regexp = PatternStore.NON_VERTICAL_WHITESPACE_STRING)
     private String supplierOrderNumber;
 
     private Date lastUpdatedOn;

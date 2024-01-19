@@ -554,6 +554,33 @@ public class StockViewController {
             .collect(Collectors.toList()));
     }
 
+    @GetMapping("update-reported-product-stocks")
+    @Operation(description = "For the given material, all known customers will be requested to report their" +
+        "current stocks for our output material. The response body contains a list of those customer partners that were sent a request." +
+        "Please note that these requests are handled asynchronously by the partners, so there are no guarantees, if and " +
+        "when the corresponding responses will be available. As soon as a response arrives, it will be available via a " +
+        "call to the GET reported-material-stocks endpoint.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+    })
+    public ResponseEntity<List<PartnerDto>> triggerReportedProductStockUpdateForMaterialNumber(@RequestParam String ownMaterialNumber) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        log.info("Found material: " + (materialEntity != null) + " " + ownMaterialNumber);
+        List<Partner> allCustomerPartnerEntities = mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber);
+
+        for (Partner supplierPartner : allCustomerPartnerEntities) {
+            itemStockRequestApiService.doRequestForProductItemStocks(supplierPartner, materialEntity);
+        }
+
+        return ResponseEntity.ok(allCustomerPartnerEntities.stream()
+            .map(this::convertToDto)
+            .collect(Collectors.toList()));
+    }
+
     private PartnerDto convertToDto(Partner entity) {
         return modelMapper.map(entity, PartnerDto.class);
     }

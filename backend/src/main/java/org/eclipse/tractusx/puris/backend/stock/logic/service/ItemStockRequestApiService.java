@@ -140,10 +140,10 @@ public class ItemStockRequestApiService {
     public void handleRequestFromSupplier(ItemStockRequestMessageDto requestMessageDto, ItemStockRequestMessage requestMessage) {
         var requestMessageHeader = requestMessageDto.getHeader();
         Partner supplierPartner = partnerService.findByBpnl(requestMessageHeader.getSenderBpn());
-        if (supplierPartner == null || requestMessageDto.getContent().getDirection() != DirectionCharacteristic.INBOUND) {
+        if (supplierPartner == null || requestMessageDto.getContent().getDirection() != DirectionCharacteristic.OUTBOUND) {
             requestMessage.setState(DT_RequestStateEnum.Error);
             itemStockRequestMessageService.update(requestMessage);
-            if(requestMessageDto.getContent().getDirection() != DirectionCharacteristic.INBOUND){
+            if(requestMessageDto.getContent().getDirection() != DirectionCharacteristic.OUTBOUND){
                 log.error("Wrong direction in request from customer \n" + requestMessageDto);
             }
             if(supplierPartner == null) {
