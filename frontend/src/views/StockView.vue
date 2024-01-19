@@ -83,7 +83,6 @@
                             id="allocatedToPartner"
                             v-model="this.changedStock.partnerBpnl"
                             required
-                            :disabled="this.changedStock.materialId === ''"
                         >
                             <option
                                 v-for="option in partnerOptions"

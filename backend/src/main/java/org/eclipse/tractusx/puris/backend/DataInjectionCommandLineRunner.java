@@ -299,7 +299,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         mySelf.getSites().add(secondSite);
         mySelf = partnerService.update(mySelf);
-        log.info("Added Site to mySelf Partner: %s", mySelf);
+        log.info(String.format("Added Site to mySelf Partner: %s", mySelf));
 
         semiconductorMaterial = materialService.create(semiconductorMaterial);
         log.info(String.format("Created product: %s", semiconductorMaterial));
@@ -426,7 +426,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         supplierPartnerEntity.getSites().add(secondSite);
         Partner updatedSupplierPartner = partnerService.update(supplierPartnerEntity);
-        log.info("Added Site to supplier: %s", supplierPartnerEntity);
+        log.info(String.format("Added Site to mySelf Partner: %s", updatedSupplierPartner));
 
         return supplierPartnerEntity;
     }
