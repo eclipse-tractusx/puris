@@ -165,8 +165,8 @@ public class StockViewController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock misses material identification.");
         }
 
-        if (productStockDto.getMaterial().getMaterialNumberCustomer() == null ||
-            productStockDto.getMaterial().getMaterialNumberCustomer().isEmpty()) {
+        if (productStockDto.getMaterial().getMaterialNumberSupplier() == null ||
+            productStockDto.getMaterial().getMaterialNumberSupplier().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock misses material identification.");
         }
 
@@ -249,9 +249,9 @@ public class StockViewController {
         dto.setStockLocationBpns(entity.getLocationBpns());
         dto.setStockLocationBpna(entity.getLocationBpna());
 
-        dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
-        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
-        dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId());
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId());
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId());
 
         return dto;
     }
@@ -277,9 +277,9 @@ public class StockViewController {
         productStock.setLocationBpna(dto.getStockLocationBpna());
         productStock.setLocationBpns(dto.getStockLocationBpns());
 
-        productStock.setCustomerOrderId(dto.getCustomerOrderNumber().isEmpty() ? null : dto.getCustomerOrderNumber());
-        productStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber().isEmpty() ? null : dto.getCustomerOrderPositionNumber());
-        productStock.setSupplierOrderId(dto.getSupplierOrderNumber().isEmpty() ? null : dto.getSupplierOrderNumber());
+        productStock.setCustomerOrderId(dto.getCustomerOrderNumber());
+        productStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber());
+        productStock.setSupplierOrderId(dto.getSupplierOrderNumber());
 
         return productStock;
     }
@@ -390,9 +390,9 @@ public class StockViewController {
         dto.setStockLocationBpns(entity.getLocationBpns());
         dto.setStockLocationBpna(entity.getLocationBpna());
 
-        dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
-        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
-        dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId());
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId());
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId());
 
         return dto;
     }
@@ -418,9 +418,9 @@ public class StockViewController {
         materialStock.setLocationBpna(dto.getStockLocationBpna());
         materialStock.setLocationBpns(dto.getStockLocationBpns());
 
-        materialStock.setCustomerOrderId(dto.getCustomerOrderNumber().isEmpty() ? null : dto.getCustomerOrderNumber());
-        materialStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber().isEmpty() ? null : dto.getCustomerOrderPositionNumber());
-        materialStock.setSupplierOrderId(dto.getSupplierOrderNumber().isEmpty() ? null : dto.getSupplierOrderNumber());
+        materialStock.setCustomerOrderId(dto.getCustomerOrderNumber() );
+        materialStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber());
+        materialStock.setSupplierOrderId(dto.getSupplierOrderNumber());
 
         return materialStock;
     }
@@ -454,9 +454,9 @@ public class StockViewController {
         dto.setStockLocationBpns(entity.getLocationBpns());
         dto.setStockLocationBpna(entity.getLocationBpna());
 
-        dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
-        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
-        dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId());
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId());
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId());
 
         return dto;
     }
@@ -490,9 +490,9 @@ public class StockViewController {
         dto.setStockLocationBpns(entity.getLocationBpns());
         dto.setStockLocationBpna(entity.getLocationBpna());
 
-        dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
-        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
-        dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId());
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId());
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId());
 
         return dto;
     }
@@ -550,6 +550,33 @@ public class StockViewController {
         }
 
         return ResponseEntity.ok(allSupplierPartnerEntities.stream()
+            .map(this::convertToDto)
+            .collect(Collectors.toList()));
+    }
+
+    @GetMapping("update-reported-product-stocks")
+    @Operation(description = "For the given material, all known customers will be requested to report their" +
+        "current stocks for our output material. The response body contains a list of those customer partners that were sent a request." +
+        "Please note that these requests are handled asynchronously by the partners, so there are no guarantees, if and " +
+        "when the corresponding responses will be available. As soon as a response arrives, it will be available via a " +
+        "call to the GET reported-material-stocks endpoint.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+    })
+    public ResponseEntity<List<PartnerDto>> triggerReportedProductStockUpdateForMaterialNumber(@RequestParam String ownMaterialNumber) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        log.info("Found material: " + (materialEntity != null) + " " + ownMaterialNumber);
+        List<Partner> allCustomerPartnerEntities = mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber);
+
+        for (Partner supplierPartner : allCustomerPartnerEntities) {
+            itemStockRequestApiService.doRequestForProductItemStocks(supplierPartner, materialEntity);
+        }
+
+        return ResponseEntity.ok(allCustomerPartnerEntities.stream()
             .map(this::convertToDto)
             .collect(Collectors.toList()));
     }

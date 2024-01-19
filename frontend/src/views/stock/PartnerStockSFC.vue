@@ -50,64 +50,64 @@
         <div class="overflow-x-auto min-h-60 max-h-80">
             <table class="mt-2 w-full">
                 <thead>
-                    <tr class="text-left">
-                        <th>Supplier</th>
-                        <th>Quantity</th>
-                        <th>Is Blocked</th>
-                        <th>BPNS</th>
-                        <th>BPNA</th>
-                        <th>Last updated on</th>
-                        <th>
-                            Customer Order Number<br />Customer Order Pos.
-                            Number
-                        </th>
-                        <th>Supplier Order Number</th>
-                    </tr>
+                <tr class="text-left">
+                    <th>Supplier</th>
+                    <th>Quantity</th>
+                    <th>Is Blocked</th>
+                    <th>BPNS</th>
+                    <th>BPNA</th>
+                    <th>Last updated on</th>
+                    <th>
+                        Customer Order Number<br/>Customer Order Pos.
+                        Number
+                    </th>
+                    <th>Supplier Order Number</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <tr
-                        v-for="row in tableRows"
-                        :key="row.index"
-                        :class="{ 'empty-row': row.isEmpty }"
+                <tr
+                    v-for="row in tableRows"
+                    :key="row.index"
+                    :class="{ 'empty-row': row.isEmpty }"
+                >
+                    <template v-if="row.isEmpty">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </template>
+                    <template
+                        v-else
+                        v-for="stock in availableMaterialsOrProducts"
+                        :key="stock.partner.bpnl"
                     >
-                        <template v-if="row.isEmpty">
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </template>
-                        <template
-                            v-else
-                            v-for="stock in availableMaterialsOrProducts"
-                            :key="stock.partner.bpnl"
-                        >
-                            <td>
-                                {{ stock.partner.name }}<br />({{
-                                    stock.partner.bpnl
-                                }})
-                            </td>
-                            <td>
-                                {{ stock.quantity }}
-                                {{
-                                    getUomValueForUomKey(stock.measurementUnit)
-                                }}
-                            </td>
-                            <td>{{ stock.isBlocked }}</td>
-                            <td>{{ stock.stockLocationBpns }}</td>
-                            <td>{{ stock.stockLocationBpna }}</td>
-                            <td>{{ stock.lastUpdatedOn }}</td>
-                            <td>
-                                {{ stock.customerOrderNumber }}<br />{{
-                                    stock.customerOrderPositionNumber
-                                }}
-                            </td>
-                            <td>{{ stock.supplierOrderNumber }}</td>
-                        </template>
-                    </tr>
+                        <td>
+                            {{ stock.partner.name }}<br/>({{
+                                stock.partner.bpnl
+                            }})
+                        </td>
+                        <td>
+                            {{ stock.quantity }}
+                            {{
+                                getUomValueForUomKey(stock.measurementUnit)
+                            }}
+                        </td>
+                        <td>{{ stock.isBlocked }}</td>
+                        <td>{{ stock.stockLocationBpns }}</td>
+                        <td>{{ stock.stockLocationBpna }}</td>
+                        <td>{{ stock.lastUpdatedOn }}</td>
+                        <td>
+                            {{ stock.customerOrderNumber }}<br/>{{
+                                stock.customerOrderPositionNumber
+                            }}
+                        </td>
+                        <td>{{ stock.supplierOrderNumber }}</td>
+                    </template>
+                </tr>
                 </tbody>
             </table>
         </div>
@@ -121,8 +121,8 @@ export default {
     name: "PartnerStockSFC",
 
     props: {
-        selectedMaterialOrProductId: { type: String, required: true },
-        partnerRole: { type: String, required: true },
+        selectedMaterialOrProductId: {type: String, required: true},
+        partnerRole: {type: String, required: true},
     },
     data() {
         return {
@@ -135,13 +135,15 @@ export default {
             endpointUpdateReportedMaterialStocks: import.meta.env
                 .VITE_ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS,
             availableMaterialsOrProducts: [],
+            endpointUpdateReportedProductStocks: import.meta.env
+                .VITE_ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS,
         };
     },
     computed: {
         tableRows() {
             if (this.availableMaterialsOrProducts.length === 0) {
                 // Generate three empty rows
-                return Array.from({ length: 3 }, (_, index) => ({
+                return Array.from({length: 3}, (_, index) => ({
                     index,
                     isEmpty: true,
                 }));
@@ -170,8 +172,8 @@ export default {
         getAvailableMaterials() {
             fetch(
                 this.backendURL +
-                    this.endpointGetReportedMaterialStocks +
-                    this.selectedMaterialOrProductId,
+                this.endpointGetReportedMaterialStocks +
+                this.selectedMaterialOrProductId,
                 {
                     headers: {
                         "X-API-KEY": this.backendApiKey,
@@ -186,8 +188,8 @@ export default {
             console.info(this.selectedMaterialOrProductId);
             fetch(
                 this.backendURL +
-                    this.endpointGetReportedProductStocks +
-                    this.selectedMaterialOrProductId,
+                this.endpointGetReportedProductStocks +
+                this.selectedMaterialOrProductId,
                 {
                     headers: {
                         "X-API-KEY": this.backendApiKey,
@@ -199,20 +201,38 @@ export default {
                 .catch((err) => console.log(err));
         },
         updateMaterialOrProduct() {
-            if (this.partnerRole === "customer") return;
-            fetch(
-                this.backendURL +
+            if (this.partnerRole === "customer") {
+                console.log("Fetching from customers");
+                fetch(this.backendURL +
+                    this.endpointUpdateReportedProductStocks +
+                    this.selectedMaterialOrProductId,
+                    {
+                        headers: {
+                            "X-API-KEY": this.backendApiKey,
+                        },
+                    }
+                )
+                    .then((res) => res.json())
+                    .then((data) => console.log(data))
+                    .catch((err) => console.log(err));
+            }
+
+            if (this.partnerRole == "supplier") {
+                console.log("Fetching from suppliers");
+                fetch(
+                    this.backendURL +
                     this.endpointUpdateReportedMaterialStocks +
                     this.selectedMaterialOrProductId,
-                {
-                    headers: {
-                        "X-API-KEY": this.backendApiKey,
-                    },
-                }
-            )
-                .then((res) => res.json())
-                .then((data) => console.log(data))
-                .catch((err) => console.log(err));
+                    {
+                        headers: {
+                            "X-API-KEY": this.backendApiKey,
+                        },
+                    }
+                )
+                    .then((res) => res.json())
+                    .then((data) => console.log(data))
+                    .catch((err) => console.log(err));
+            }
         },
         getUomValueForUomKey(key) {
             return UnitOfMeasureUtils.findUomValueByKey(key);

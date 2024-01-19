@@ -39,6 +39,7 @@ services:
             - ENDPOINT_REPORTED_MATERIAL_STOCKS=stockView/reported-material-stocks?ownMaterialNumber=
             - ENDPOINT_REPORTED_PRODUCT_STOCKS=stockView/reported-product-stocks?ownMaterialNumber=
             - ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS=stockView/update-reported-material-stocks?ownMaterialNumber=
+            - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
             - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
             - IDP_DISABLE=true
         networks:
@@ -147,6 +148,7 @@ services:
             - ENDPOINT_REPORTED_MATERIAL_STOCKS=stockView/reported-material-stocks?ownMaterialNumber=
             - ENDPOINT_REPORTED_PRODUCT_STOCKS=stockView/reported-product-stocks?ownMaterialNumber=
             - ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS=stockView/update-reported-material-stocks?ownMaterialNumber=
+            - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
             - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
             - IDP_DISABLE=true
         networks:
