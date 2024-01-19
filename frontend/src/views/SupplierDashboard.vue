@@ -28,7 +28,7 @@
                     <div>
                         <label for="dropdown-products" class="text-xl ">Products: </label>
                     </div>
-                    <select v-model="dropdownProducts" id="dropdown-products" @change="getAllCustomers(dropdownProducts)" name="ddp" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                    <select v-model="dropdownProducts" id="dropdown-products" @change="getAllCustomers(dropdownProducts);getCustomerStocks(dropdownProducts)" name="ddp" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a product</option>
                         <option v-for="item in fetchedProducts" :value="item" >{{item.ownMaterialNumber + "  (" + item.description + ")"}}</option>
                     </select>
@@ -46,14 +46,14 @@
                     <div>
                         <label class="text-xl ">Location: </label>
                     </div>
-                    <select v-model="dropdownBPNS" id="" name="ddbpns"  class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                    <select v-model="dropdownBPNS" id="dropdown-bpns" name="ddbpns"  class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a site</option>
                         <option v-for="item in dropdownCustomer.sites" :value="item"> {{item.name}} </option>
                     </select>
                     <div class="mt-2">
-                        <select v-model="dropdownBPNA" id="" name="ddbpna"  class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                        <select v-model="dropdownBPNA" id="dropdown-bpna" name="ddbpna"  class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                             <option disabled value="" selected hidden>Choose an address</option>
-                            <option v-for="item in dropdownBPNS.addresses" :value="item" @click="emptyTotalDemandArray()"> {{item.streetAndNumber + ", " + item.zipCodeAndCity}} </option>
+                            <option v-for="item in dropdownBPNS.addresses" :value="item" @click="emptyTotalDemandArray();mockDataInput(dropdownBPNA.bpna)"> {{item.streetAndNumber + ", " + item.zipCodeAndCity}} </option>
                         </select>
                     </div>
                 </div>
@@ -73,7 +73,6 @@
                 <!-- Line seperator-
                 <p class="border-b-gray-200 border-b"></p>
                 -->
-
                 <table>
                     <tr>
                         <td class="font-bold text-xl firstRow firstColumn">Customer Information</td>
@@ -84,28 +83,31 @@
                     <tr  id="demandActual">
                         <td class="firstColumn">Demand (Actual)</td>
 
-                        <td v-for="item in dropdownBPNA.demandActual " :value="item">{{item}}</td>
+                        <td v-for="item in mockDemandActual" :value="item">{{item}}</td>
 
                     </tr>
                     <tr id="demandAdditional">
                         <td class="firstColumn secondLastRow">Demand (Additional)</td>
 
-                        <td v-for="item in dropdownBPNA.demandAdditional" :value="item" class="secondLastRow">{{item}}</td>
+                        <td v-for="item in mockDemandAdditional" :value="item" class="secondLastRow">{{item}}</td>
 
                     </tr>
 
                     <tr id="demandTotal">
                         <td class="firstColumn">Demand (Total)</td>
 
-                        <td v-if="(dropdownBPNA.demandActual != null)"
-                            v-for="(item,index) in (addDemands(dropdownBPNA))"
+                        <td v-for="(item,index) in (addDemands())"
                             :ref="setTotalDemand(item,index)"
                             :value="item">{{item}}</td>
                     </tr>
                     <tr>
                         <td class="firstColumn">
                             Customer Stock:
-                            <span>100</span>
+                            <template v-if="dropdownBPNA !== ''">
+                                <span>
+                                    {{filterCustomerStocks(dropdownCustomer.bpnl,dropdownBPNS.bpns,dropdownBPNA.bpna)}}
+                                </span>
+                            </template>
                         </td>
                     </tr>
                     <!-- line separator -->
@@ -125,7 +127,7 @@
                     <tr id="production">
                         <td class="firstColumn ">Production</td>
 
-                        <td v-for="(item, index) in dropdownBPNA.production"
+                        <td v-for="(item, index) in mockProduction"
                             :style="changeBgColor(index,item)">
                             {{item}}</td>
                     </tr>
@@ -135,12 +137,14 @@
                     </tr>
                     <!-- -------------- -->
                     <tr>
-                        <template v-if="dropdownBPNA.currentStock !== null">
-                            <td class="text-center firstColumn">
-                              Your Stock:
-                              <span> {{dropdownBPNA.currentStock}} </span>
-                            </td>
-                        </template>
+                        <td class="text-center firstColumn">
+                          Your Stock:
+                          <template v-if="dropdownBPNA !== ''">
+                              <span>
+                                  {{filterAllProductStocks(dropdownProducts.ownMaterialNumber,dropdownCustomer.bpnl)}}
+                              </span>
+                          </template>
+                        </td>
                         <!-- <td class=" text-center" colspan="">Test Number</td> -->
 
                     </tr>
@@ -153,6 +157,7 @@
 
 <script>
 import supplierDashboardMockData from "@/assets/supplierDashboardMockData.json";
+import UnitOfMeasureUtils from "@/services/UnitOfMeasureUtils";
 export default{
   name: "SupplierDashboard",
 
@@ -163,6 +168,8 @@ export default{
         backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
         endpointProducts: import.meta.env.VITE_ENDPOINT_PRODUCTS,
         endpointCustomers: import.meta.env.VITE_ENDPOINT_CUSTOMER,
+        endpointAllProductStocks: import.meta.env.VITE_ENDPOINT_PRODUCT_STOCKS,
+        endpointReportedProductStocks: import.meta.env.VITE_ENDPOINT_REPORTED_PRODUCT_STOCKS,
         // Customer dropdown
         dropdownCustomer: "",
         // Material dropdown
@@ -177,10 +184,17 @@ export default{
         fetchedProducts: [],
         // fetched Customers
         fetchedCustomers: [],
-        // Temp array for total demand
-        totalDemand: [],
-        // Customer Json
-        customer: supplierDashboardMockData,
+        // fetched Customer Stocks
+        fetchedCustomerStocks: [],
+        // fetched all Product Stocks
+        fetchedAllProductStocks: [],
+        // Mockdata Json
+        mockData: supplierDashboardMockData,
+        // Mockdata temp Arrays
+        mockDemandActual: [],
+        mockDemandAdditional: [],
+        mockTotalDemand: [],
+        mockProduction: [],
     };
   },
     mounted() {
@@ -192,49 +206,41 @@ export default{
           this.datesData[i] = updatedDate.getDate() + "." + (updatedDate.getMonth() + 1) + "." + updatedDate.getFullYear();
       }
       this.getAllProducts();
+      this.getAllProductStocks();
     },
     methods: {
-    addDemands: function(productObject){
-        var demandActual = productObject.demandActual;
-        var demandAdditional = productObject.demandAdditional;
-        let demandTotal = [];
-
-
-        for (let i=0;i <demandActual.length;i++){
-            if(demandAdditional[i] != undefined) {
-                demandTotal.push(parseFloat(demandActual[i]) + parseFloat(demandAdditional[i]));
+    addDemands: function(){
+        for (let i=0;i <this.mockDemandActual.length;i++){
+            if(this.mockDemandAdditional[i] != undefined) {
+                this.mockTotalDemand[i] = (parseFloat(this.mockDemandActual[i]) + parseFloat(this.mockDemandAdditional[i]));
             } else {
-                demandTotal.push(parseFloat(demandActual[i]));
+                this.mockTotalDemand[i] = (parseFloat(this.mockDemandActual[i]));
             }
         }
-        return demandTotal;
+        return this.mockTotalDemand;
     },
     changeBgColor: function (index, production){
-        if (production < this.totalDemand[index]){
+        if (production < this.mockTotalDemand[index]){
             return {'background-color': 'red'};
         }
     },
     setTotalDemand: function (el, index){
-        if(el && this.totalDemand[index] == null) {
-            this.totalDemand.push(el);
-        }
+    //    if(el && this.mockTotalDemand[index] == null) {
+    //        this.mockTotalDemand.push(el);
+    //    }
     },
     emptyTotalDemandArray: function (){
-        this.totalDemand.length = 0;
+        this.mockTotalDemand.length = 0;
     },
-    testMethode: function (){
-        for(const test of this.fetchedProducts){
-            console.log(test.ownMaterialNumber)
-
-            fetch( "http://localhost:8081/catena/stockView/supplier?ownMaterialNumber=" + test.ownMaterialNumber, {
-                headers: {
-                    "X-API-KEY": "test",
-                },
-            })
-                .then((res) => res.json())
-                .then((data) => (this.fetchedCustomers = data) && console.log(data))
-                .catch((err) => console.log(err));
-
+    mockDataInput: function (BPNA){
+        if( BPNA === "BPNA2222222222XZ"){
+            this.mockDemandActual = this.mockData[1].demandActual;
+            this.mockDemandAdditional = this.mockData[1].demandAdditional;
+            this.mockProduction = this.mockData[1].production;
+        } else {
+            this.mockDemandActual = this.mockData[0].demandActual;
+            this.mockDemandAdditional = this.mockData[0].demandAdditional;
+            this.mockProduction = this.mockData[0].production;
         }
     },
     getAllProducts: function (){
@@ -244,7 +250,7 @@ export default{
             },
         })
             .then((res) => res.json())
-            .then((data) => (this.fetchedProducts = data) && console.log(data))
+            .then((data) => (this.fetchedProducts = data))
             .catch((err) => console.log(err));
     },
     getAllCustomers: function (productNumber){
@@ -255,8 +261,86 @@ export default{
             },
         })
             .then((res) => res.json())
-            .then((data) => (this.fetchedCustomers = data) && console.log(data))
+            .then((data) => (this.fetchedCustomers = data))
             .catch((err) => console.log(err));
+    },
+    getCustomerStocks: function (productNumber){
+        console.log(productNumber)
+        fetch( this.backendURL + this.endpointReportedProductStocks + productNumber.ownMaterialNumber,{
+            headers: {
+                "X-API-KEY": this.backendApiKey,
+            },
+        })
+            .then((res) => res.json())
+            .then((data) => (this.fetchedCustomerStocks = data))
+            .catch((err) => console.log(err));
+    },
+    filterCustomerStocks: function (bpnl,bpns,bpna){
+        let filteredStocksMap = new Map();
+        let string = "";
+        for(let i=0;i <this.fetchedCustomerStocks.length;i++){
+            // Filter through this.fetchedCustomerStocks where bpnl,bpns and bpna are equal to the chosen dropdowns
+            if (bpnl === this.fetchedCustomerStocks[i].partner.bpnl && bpns === this.fetchedCustomerStocks[i].stockLocationBpns && bpna === this.fetchedCustomerStocks[i].stockLocationBpna) {
+                var uom = this.getUomValueForUomKey(this.fetchedCustomerStocks[i].measurementUnit)
+
+                // Check if Unitofmeasure already exists
+                    // If yes then delete the old (key,value) an add the value to the new (key,value)
+                if (filteredStocksMap.hasOwnProperty(uom)){
+                    var value = filteredStocksMap.get(uom)
+                    filteredStocksMap.delete(uom)
+                    filteredStocksMap.set(uom,this.fetchedCustomerStocks[i].quantity + value)
+
+                    // If no then just add (key,value)
+                } else {
+                    filteredStocksMap.set(uom, this.fetchedCustomerStocks[i].quantity)
+                }
+            }
+        }
+        for(let [key,value] of filteredStocksMap.entries()){
+            string += value + key + ", "
+        }
+
+        return string;
+    },
+    getAllProductStocks: function (){
+        fetch( this.backendURL + this.endpointAllProductStocks, {
+            headers: {
+                "X-API-KEY": this.backendApiKey,
+            },
+        })
+            .then((res) => res.json())
+            .then((data) => (this.fetchedAllProductStocks = data) && console.log(data))
+            .catch((err) => console.log(err));
+    },
+    filterAllProductStocks: function (material,bpnl){
+        let filteredStocksMap = new Map();
+        let string = "";
+        for(let i=0;i <this.fetchedAllProductStocks.length;i++){
+            // Filter through this.fetchedCustomerStocks where bpnl,bpns and bpna are equal to the chosen dropdowns
+            if (bpnl === this.fetchedAllProductStocks[i].partner.bpnl && material === this.fetchedAllProductStocks[i].material.materialNumberSupplier) {
+                var uom = this.getUomValueForUomKey(this.fetchedAllProductStocks[i].measurementUnit)
+
+                // Check if Unitofmeasure already exists
+                // If yes then delete the old (key,value) an add the value to the new (key,value)
+                if (filteredStocksMap.hasOwnProperty(uom)){
+                    var value = filteredStocksMap.get(uom)
+                    filteredStocksMap.delete(uom)
+                    filteredStocksMap.set(uom,this.fetchedAllProductStocks[i].quantity + value)
+
+                    // If no then just add (key,value)
+                } else {
+                    filteredStocksMap.set(uom, this.fetchedAllProductStocks[i].quantity)
+                }
+            }
+        }
+        for(let [key,value] of filteredStocksMap.entries()){
+            string += value + key + ", "
+        }
+
+        return string;
+    },
+    getUomValueForUomKey(key) {
+        return UnitOfMeasureUtils.findUomValueByKey(key);
     },
   }
 };
