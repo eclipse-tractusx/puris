@@ -249,9 +249,9 @@ public class StockViewController {
         dto.setStockLocationBpns(entity.getLocationBpns());
         dto.setStockLocationBpna(entity.getLocationBpna());
 
-        dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
-        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
-        dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId());
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId());
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId());
 
         return dto;
     }
@@ -277,9 +277,9 @@ public class StockViewController {
         productStock.setLocationBpna(dto.getStockLocationBpna());
         productStock.setLocationBpns(dto.getStockLocationBpns());
 
-        productStock.setCustomerOrderId(dto.getCustomerOrderNumber().isEmpty() ? null : dto.getCustomerOrderNumber());
-        productStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber().isEmpty() ? null : dto.getCustomerOrderPositionNumber());
-        productStock.setSupplierOrderId(dto.getSupplierOrderNumber().isEmpty() ? null : dto.getSupplierOrderNumber());
+        productStock.setCustomerOrderId(dto.getCustomerOrderNumber());
+        productStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber());
+        productStock.setSupplierOrderId(dto.getSupplierOrderNumber());
 
         return productStock;
     }
@@ -390,9 +390,9 @@ public class StockViewController {
         dto.setStockLocationBpns(entity.getLocationBpns());
         dto.setStockLocationBpna(entity.getLocationBpna());
 
-        dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
-        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
-        dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId());
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId());
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId());
 
         return dto;
     }
@@ -418,9 +418,9 @@ public class StockViewController {
         materialStock.setLocationBpna(dto.getStockLocationBpna());
         materialStock.setLocationBpns(dto.getStockLocationBpns());
 
-        materialStock.setCustomerOrderId(dto.getCustomerOrderNumber().isEmpty() ? null : dto.getCustomerOrderNumber());
-        materialStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber().isEmpty() ? null : dto.getCustomerOrderPositionNumber());
-        materialStock.setSupplierOrderId(dto.getSupplierOrderNumber().isEmpty() ? null : dto.getSupplierOrderNumber());
+        materialStock.setCustomerOrderId(dto.getCustomerOrderNumber() );
+        materialStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber());
+        materialStock.setSupplierOrderId(dto.getSupplierOrderNumber());
 
         return materialStock;
     }
@@ -454,9 +454,9 @@ public class StockViewController {
         dto.setStockLocationBpns(entity.getLocationBpns());
         dto.setStockLocationBpna(entity.getLocationBpna());
 
-        dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
-        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
-        dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId());
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId());
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId());
 
         return dto;
     }
@@ -490,9 +490,9 @@ public class StockViewController {
         dto.setStockLocationBpns(entity.getLocationBpns());
         dto.setStockLocationBpna(entity.getLocationBpna());
 
-        dto.setCustomerOrderNumber(entity.getCustomerOrderId() != null ? entity.getCustomerOrderId() : "");
-        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId() != null ? entity.getCustomerOrderPositionId() : "");
-        dto.setSupplierOrderNumber(entity.getSupplierOrderId() != null ? entity.getSupplierOrderId() : "");
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId());
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId());
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId());
 
         return dto;
     }
