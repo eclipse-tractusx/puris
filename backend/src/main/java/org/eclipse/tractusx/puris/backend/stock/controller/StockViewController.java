@@ -165,8 +165,8 @@ public class StockViewController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock misses material identification.");
         }
 
-        if (productStockDto.getMaterial().getMaterialNumberCustomer() == null ||
-            productStockDto.getMaterial().getMaterialNumberCustomer().isEmpty()) {
+        if (productStockDto.getMaterial().getMaterialNumberSupplier() == null ||
+            productStockDto.getMaterial().getMaterialNumberSupplier().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock misses material identification.");
         }
 
