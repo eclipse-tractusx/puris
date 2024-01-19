@@ -86,6 +86,27 @@ public class PatternStore {
     public final static Pattern NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN = Pattern.compile(NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING);
 
     /**
+     * Contains a Java-Regex-String that allows any combination of alphabetic characters,
+     * digits and special characters, excluding only vertical whitespaces
+     * like "\n" or "\r".
+     *
+     * It can be used to validate common names in human language, a well as material-numbers.
+     *
+     * It also can be used for sanitization of foreign input data before printing it to the logs.
+     *
+     */
+    public final static String NON_VERTICAL_WHITESPACE_STRING = "^[^\\n\\x0B\\f\\r\\x85\\u2028\\u2029]*$";
+
+    /**
+     * Contains a Pattern that allows any combination of alphabetic characters,
+     * digits and special characters, excluding only vertical whitespaces
+     * like "\n" or "\r".
+     *
+     * It is constructed from the NON_VERTICAL_WHITESPACE_STRING constant.
+     *
+     */
+    public final static Pattern NON_VERTICAL_WHITESPACE_PATTERN = Pattern.compile(NON_VERTICAL_WHITESPACE_STRING);
+    /**
      * Contains a Java-Regex-String that matches valid url data like
      *  <li>"https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp" - common ingress with path</li>
      * <li>"https://isst-edc-supplier.int.demo.catena-x.net" - ingress stating directly to protocol path</li>

@@ -56,6 +56,8 @@ spec:
               value: "{{ .Values.frontend.puris.endpointReportedProductStocks }}"
             - name: ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS
               value: "{{ .Values.frontend.puris.endpointUpdateReportedMaterialStocks }}"
+            - name: ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS
+              value: "{{ .Values.frontend.puris.endpointUpdateReportedProductStocks }}"
             - name: ENDPOINT_PARTNER_OWNSITES
               value: "{{ .Values.frontend.puris.endpointPartnerOwnSites }}"
             - name: BACKEND_API_KEY

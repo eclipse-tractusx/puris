@@ -189,8 +189,10 @@ frontend:
         endpointReportedMaterialStocks: stockView/reported-material-stocks?ownMaterialNumber=
         # -- The endpoint for the partners' (customer) product stocks that they received from me
         endpointReportedProductStocks: stockView/reported-product-stocks?ownMaterialNumber=
-        # -- The endpoint for updating the partners product stocks and their material numbers for the stock view
+        # -- The endpoint for triggering an update of your material stocks on your partners side
         endpointUpdateReportedMaterialStocks: stockView/update-reported-material-stocks?ownMaterialNumber=
+        # -- The endpoint for triggering an update of your product stocks on your partners side
+        endpointUpdateReportedProductStocks: stockView/update-reported-product-stocks?ownMaterialNumber=
         # -- The endpoint for the partners BPNS
         endpointPartnerOwnSites: partners/ownSites
         keycloak:
