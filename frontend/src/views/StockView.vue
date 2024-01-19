@@ -83,7 +83,7 @@
                             id="allocatedToPartner"
                             v-model="this.changedStock.partnerBpnl"
                             required
-                            :disabled="this.changedStock.materialId === ''"
+                            :disabled="this.changedStock.materialId === '' && this.changedStock.productId === ''"
                         >
                             <option
                                 v-for="option in partnerOptions"
@@ -286,9 +286,9 @@ export default {
                 isBlocked: false,
                 bpns: "",
                 bpna: "",
-                customerOrderNumber: "",
-                customerOrderPositionNumber: "",
-                supplierOrderNumber: "",
+                customerOrderNumber: null,
+                customerOrderPositionNumber: null,
+                supplierOrderNumber: null,
             },
             unitsOfMeasureJson: stockViewUom,
         };
@@ -322,8 +322,19 @@ export default {
     watch: {
         "changedStock.customerOrderNumber"(newVal) {
             if (newVal === "") {
-                this.changedStock.customerOrderPositionNumber = "";
-                this.changedStock.supplierOrderNumber = "";
+                this.changedStock.customerOrderNumber = null;
+                this.changedStock.customerOrderPositionNumber = null;
+                this.changedStock.supplierOrderNumber = null;
+            }
+        },
+        "changedStock.customerOrderPositionNumber"(newVal) {
+            if (newVal === "") {
+                this.changedStock.customerOrderPositionNumber = null;
+            }
+        },
+        "changedStock.supplierOrderNumber"(newVal) {
+            if (newVal === "") {
+                this.changedStock.supplierOrderNumber = null;
             }
         },
     },
@@ -367,18 +378,18 @@ export default {
                 let existingMaterialStocks = this.bdMaterialStocks.filter(
                     (stock) =>
                         stock.material.materialNumberCustomer ===
-                            this.changedStock.materialId &&
+                        this.changedStock.materialId &&
                         stock.partner.bpnl === this.changedStock.partnerBpnl &&
                         stock.stockLocationBpns ===
-                            this.changedStock.bpns.bpns &&
+                        this.changedStock.bpns.bpns &&
                         stock.stockLocationBpna === this.changedStock.bpna &&
                         stock.isBlocked === this.changedStock.isBlocked &&
                         stock.customerOrderNumber ===
-                            this.changedStock.customerOrderNumber &&
+                        this.changedStock.customerOrderNumber &&
                         stock.customerOrderPositionNumber ===
-                            this.changedStock.customerOrderPositionNumber &&
+                        this.changedStock.customerOrderPositionNumber &&
                         stock.supplierOrderNumber ===
-                            this.changedStock.supplierOrderNumber
+                        this.changedStock.supplierOrderNumber
                 );
 
                 if (existingMaterialStocks.length === 1) {
@@ -412,7 +423,7 @@ export default {
                     const newStock = {
                         material: {
                             materialNumberCustomer:
-                                existingMaterial.ownMaterialNumber,
+                            existingMaterial.ownMaterialNumber,
                         },
                         quantity: this.changedStock.quantity,
                         measurementUnit: this.changedStock.measurementUnit,
@@ -422,11 +433,11 @@ export default {
                         stockLocationBpns: this.changedStock.bpns.bpns,
                         isBlocked: this.changedStock.isBlocked,
                         customerOrderNumber:
-                            this.changedStock.customerOrderNumber,
+                        this.changedStock.customerOrderNumber,
                         customerOrderPositionNumber:
-                            this.changedStock.customerOrderPositionNumber,
+                        this.changedStock.customerOrderPositionNumber,
                         supplierOrderNumber:
-                            this.changedStock.supplierOrderNumber,
+                        this.changedStock.supplierOrderNumber,
                     };
 
                     var newMaterialStock = JSON.parse(JSON.stringify(newStock));
@@ -443,18 +454,18 @@ export default {
                 let existingProductStocks = this.bdProductStocks.filter(
                     (stock) =>
                         stock.material.materialNumberSupplier ===
-                            this.changedStock.productId &&
+                        this.changedStock.productId &&
                         stock.partner.bpnl === this.changedStock.partnerBpnl &&
                         stock.isBlocked === this.changedStock.isBlocked &&
                         stock.stockLocationBpns ===
-                            this.changedStock.bpns.bpns &&
+                        this.changedStock.bpns.bpns &&
                         stock.stockLocationBpna === this.changedStock.bpna &&
                         stock.customerOrderNumber ===
-                            this.changedStock.customerOrderNumber &&
+                        this.changedStock.customerOrderNumber &&
                         stock.customerOrderPositionNumber ===
-                            this.changedStock.customerOrderPositionNumber &&
+                        this.changedStock.customerOrderPositionNumber &&
                         stock.supplierOrderNumber ===
-                            this.changedStock.supplierOrderNumber
+                        this.changedStock.supplierOrderNumber
                 );
 
                 if (existingProductStocks.length === 1) {
@@ -489,7 +500,7 @@ export default {
                     const newStock = {
                         material: {
                             materialNumberSupplier:
-                                existingProduct.ownMaterialNumber,
+                            existingProduct.ownMaterialNumber,
                         },
                         quantity: this.changedStock.quantity,
                         measurementUnit: this.changedStock.measurementUnit,
@@ -499,11 +510,11 @@ export default {
                         stockLocationBpns: this.changedStock.bpns.bpns,
                         isBlocked: this.changedStock.isBlocked,
                         customerOrderNumber:
-                            this.changedStock.customerOrderNumber,
+                        this.changedStock.customerOrderNumber,
                         customerOrderPositionNumber:
-                            this.changedStock.customerOrderPositionNumber,
+                        this.changedStock.customerOrderPositionNumber,
                         supplierOrderNumber:
-                            this.changedStock.supplierOrderNumber,
+                        this.changedStock.supplierOrderNumber,
                     };
 
                     const newProductStock = JSON.parse(
