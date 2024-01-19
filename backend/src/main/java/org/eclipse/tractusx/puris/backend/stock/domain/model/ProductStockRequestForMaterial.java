@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,7 +26,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
 /**
  * Payload specifying a material for which a customer wants to get product stock
@@ -42,14 +42,14 @@ public class ProductStockRequestForMaterial {
 
     @NotNull
     @JsonProperty("materialNumberCustomer")
-    @Pattern(regexp = Material.MATERIAL_NUMBER_REGEX)
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String materialNumberCustomer;
 
-    @Pattern(regexp = "(^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)")
+    @Pattern(regexp = PatternStore.URN_STRING)
     @JsonProperty("materialNumberCatenaX")
     private String materialNumberCatenaX;
 
     @JsonProperty("materialNumberSupplier")
-    @Pattern(regexp = Material.MATERIAL_NUMBER_REGEX)
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String materialNumberSupplier;
 }

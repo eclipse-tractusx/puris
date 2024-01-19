@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2022,2023 Volkswagen AG
- * Copyright (c) 2022,2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
- * Copyright (c) 2022,2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022-2024 Volkswagen AG
+ * Copyright (c) 2022-2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ * Copyright (c) 2022-2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -111,9 +111,11 @@ public class EdcAdapterService {
      */
     public boolean registerAssetsInitially() {
         boolean result;
-        log.info("Registration of product-stock request api successful " + (result = registerApiAsset(DT_ApiMethodEnum.REQUEST)));
+        log.info("Registration of item-stock request api successful " + (result = registerApiAsset(DT_ApiMethodEnum.REQUEST)));
         if (!result) return false;
-        log.info("Registration of product-stock response api successful " + (result = registerApiAsset(DT_ApiMethodEnum.RESPONSE)));
+        log.info("Registration of item-stock response api successful " + (result = registerApiAsset(DT_ApiMethodEnum.RESPONSE)));
+        if(!result) return false;
+        log.info("Registration of item-stock status-request api successful " + (result = registerApiAsset(DT_ApiMethodEnum.STATUS_REQUEST)));
         return result;
     }
 
@@ -127,6 +129,7 @@ public class EdcAdapterService {
     public boolean createPolicyAndContractDefForPartner(Partner partner) {
         boolean result = createPolicyDefinitionForPartner(partner);
         result &= createContractDefinitionForPartner(partner, DT_ApiMethodEnum.REQUEST);
+        result &= createContractDefinitionForPartner(partner, DT_ApiMethodEnum.STATUS_REQUEST);
         return result & createContractDefinitionForPartner(partner, DT_ApiMethodEnum.RESPONSE);
     }
 
@@ -186,7 +189,7 @@ public class EdcAdapterService {
      * @return true if successful.
      */
     private boolean registerApiAsset(DT_ApiMethodEnum apiMethod) {
-        var body = edcRequestBodyBuilder.buildCreateAssetBody(apiMethod);
+        var body = edcRequestBodyBuilder.buildCreateItemStockAssetBody(apiMethod);
         try {
             var response = sendPostRequest(body, List.of("v3", "assets"));
             boolean result = response.isSuccessful();
@@ -443,7 +446,7 @@ public class EdcAdapterService {
                 EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
                 if (edr_Dto != null) {
                     log.info("Successfully negotiated for " + assetApi + " with " + partner.getEdcUrl());
-                    return new String[]{edr_Dto.getAuthKey(), edr_Dto.getAuthCode(), edr_Dto.getEndpoint(), contractId};
+                    return new String[]{edr_Dto.authKey(), edr_Dto.authCode(), edr_Dto.endpoint(), contractId};
                 }
             }
             log.warn("did not receive authCode");
@@ -453,5 +456,98 @@ public class EdcAdapterService {
             log.error("Failed to obtain api from " + partner.getEdcUrl(), e);
             return null;
         }
+    }
+
+    /**
+     * Tries to negotiate for the given api Method with the given partner
+     * and also tries to initiate the transfer of the edr token to the given endpoint.
+     * <p>
+     * It will return a String array of length 4. The authKey is stored under index 0, the
+     * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
+     *
+     * @param partner    the partner
+     * @param apiMethod  the api method
+     * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
+     */
+    public String[] getContractForItemStockApi(Partner partner, DT_ApiMethodEnum apiMethod) {
+            try {
+                var responseNode = getCatalog(partner.getEdcUrl());
+                var catalogArray = responseNode.get("dcat:dataset");
+                // If there is exactly one asset, the catalogContent will be a JSON object.
+                // In all other cases catalogContent will be a JSON array.
+                // For the sake of uniformity we will embed a single object in an array.
+                if (catalogArray.isObject()) {
+                    catalogArray = objectMapper.createArrayNode().add(catalogArray);
+                }
+                JsonNode targetCatalogEntry = null;
+
+                for(var entry : catalogArray) {
+                    var dctTypeObject = entry.get("dct:type");
+                    if(dctTypeObject != null) {
+                        if(("https://w3id.org/catenax/taxonomy#" + apiMethod.CX_TAXO).equals(dctTypeObject.get("@id").asText())) {
+                            if(apiMethod.TYPE.equals(entry.get("asset:prop:type").asText())) {
+                                if("1.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
+                                    if(targetCatalogEntry == null) {
+                                        targetCatalogEntry = entry;
+                                    } else {
+                                        log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if(targetCatalogEntry == null) {
+                    log.error("Could not find api asset " + apiMethod + " at partner " + partner.getBpnl() +  " 's catalog");
+                    return null;
+                }
+                String assetApiId = targetCatalogEntry.get("@id").asText();
+                JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
+                String negotiationId = negotiationResponse.get("@id").asText();
+                // Await confirmation of contract and contractId
+                String contractId = null;
+                for (int i = 0; i < 100; i++) {
+                    Thread.sleep(100);
+                    var responseObject = getNegotiationState(negotiationId);
+                    if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
+                        contractId = responseObject.get("edc:contractAgreementId").asText();
+                        break;
+                    }
+                }
+                if (contractId == null) {
+                    var negotiationState = getNegotiationState(negotiationId);
+                    log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
+                    log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
+                    return null;
+                }
+
+                // Initiate transfer of edr
+                var transferResp = initiateProxyPullTransfer(partner, contractId, assetApiId);
+                String transferId = transferResp.get("@id").asText();
+                for (int i = 0; i < 100; i++) {
+                    Thread.sleep(100);
+                    transferResp = getTransferState(transferId);
+                    if ("STARTED".equals(transferResp.get("edc:state").asText())) {
+                        break;
+                    }
+                }
+
+                // Await arrival of edr
+                for (int i = 0; i < 100; i++) {
+                    Thread.sleep(100);
+                    EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
+                    if (edr_Dto != null) {
+                        log.info("Successfully negotiated for " + assetApiId + " with " + partner.getEdcUrl());
+                        return new String[]{edr_Dto.authKey(), edr_Dto.authCode(), edr_Dto.endpoint(), contractId};
+                    }
+                }
+                log.warn("did not receive authCode");
+                log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
+                return null;
+
+            } catch (Exception e) {
+                log.error("Failed to get contract for " + apiMethod + " from " + partner.getBpnl(), e);
+                return null;
+            }
     }
 }

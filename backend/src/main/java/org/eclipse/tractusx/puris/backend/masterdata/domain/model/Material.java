@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -27,7 +27,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -72,8 +74,6 @@ import java.util.Set;
 @Builder
 public class Material {
 
-    public final static String MATERIAL_NUMBER_REGEX = "^[a-zA-Z0-9\\-.]{1,255}$";
-
     /**
      * If true, then the Material is a material (input for production / something I buy).
      * <p>
@@ -93,24 +93,24 @@ public class Material {
      * PURIS instance for this material.
      */
     @Id
-    @Pattern(regexp = MATERIAL_NUMBER_REGEX)
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String ownMaterialNumber;
 
     /**
      * If there is a Catena-X material number defined
      * for this material, this is stored here.
      */
-    @Pattern(regexp = "(^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)")
+    @Pattern(regexp = PatternStore.URN_STRING)
     private String materialNumberCx;
 
     /**
      * Informal name or description of the material.
      */
-    @Pattern(regexp = "^[a-zßA-Z0-9 \\-.]{1,255}$")
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String name;
 
     @OneToMany(mappedBy = "material")
-    Set<MaterialPartnerRelation> materialPartnerRelations;
+    Set<MaterialPartnerRelation> materialPartnerRelations = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {

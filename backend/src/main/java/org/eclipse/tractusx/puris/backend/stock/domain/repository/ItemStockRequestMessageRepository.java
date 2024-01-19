@@ -24,9 +24,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStockRequestMes
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.UUID;
-
 @Repository
-public interface ItemStockRequestMessageRepository extends JpaRepository<ItemStockRequestMessage, UUID> {
+public interface ItemStockRequestMessageRepository extends JpaRepository<ItemStockRequestMessage, ItemStockRequestMessage.Key> {
 
 }

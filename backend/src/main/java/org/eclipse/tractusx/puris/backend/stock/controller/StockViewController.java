@@ -27,7 +27,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
@@ -80,6 +82,9 @@ public class StockViewController {
     private ProductStockRequestApiService productStockRequestApiService;
 
     @Autowired
+    private ItemStockRequestApiService itemStockRequestApiService;
+
+    @Autowired
     private MaterialService materialService;
 
     @Autowired
@@ -91,7 +96,10 @@ public class StockViewController {
     @Autowired
     private ModelMapper modelMapper;
 
-    private final Pattern materialPattern = Pattern.compile(Material.MATERIAL_NUMBER_REGEX);
+    @Autowired
+    private Validator validator;
+
+    private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
 
     @GetMapping("materials")
     @ResponseBody
@@ -148,12 +156,17 @@ public class StockViewController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public ProductStockDto createProductStocks(@RequestBody ProductStockDto productStockDto) {
+        if(!validator.validate(productStockDto).isEmpty()) {
+            log.warn("Rejected invalid message body");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
         if (productStockDto.getUuid() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock misses material identification.");
         }
 
         if (productStockDto.getMaterial().getMaterialNumberCustomer() == null ||
-            productStockDto.getMaterial().getMaterialNumberCustomer().isEmpty()){
+            productStockDto.getMaterial().getMaterialNumberCustomer().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock misses material identification.");
         }
 
@@ -161,7 +174,7 @@ public class StockViewController {
 
         productStockToCreate.setLastUpdatedOnDateTime(new Date());
 
-        if (!productItemStockService.validate(productStockToCreate)){
+        if (!productItemStockService.validate(productStockToCreate)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock is invalid.");
         }
 
@@ -169,16 +182,16 @@ public class StockViewController {
             productStockToCreate.getPartner(),
             productStockToCreate.getMaterial());
 
-        boolean stockDoesExist = existingProductItemStocks.stream().filter( stock ->
+        boolean stockDoesExist = existingProductItemStocks.stream().filter(stock ->
             stock.isBlocked() == productStockToCreate.isBlocked() &&
-            stock.getLocationBpns().equals(productStockToCreate.getLocationBpns()) &&
-            stock.getLocationBpna().equals(productStockToCreate.getLocationBpna()) &&
-            Objects.equals(stock.getCustomerOrderId(), productStockToCreate.getCustomerOrderId()) &&
-            Objects.equals(stock.getCustomerOrderPositionId(), productStockToCreate.getCustomerOrderPositionId()) &&
-            Objects.equals(stock.getSupplierOrderId(), productStockToCreate.getSupplierOrderId())
+                stock.getLocationBpns().equals(productStockToCreate.getLocationBpns()) &&
+                stock.getLocationBpna().equals(productStockToCreate.getLocationBpna()) &&
+                Objects.equals(stock.getCustomerOrderId(), productStockToCreate.getCustomerOrderId()) &&
+                Objects.equals(stock.getCustomerOrderPositionId(), productStockToCreate.getCustomerOrderPositionId()) &&
+                Objects.equals(stock.getSupplierOrderId(), productStockToCreate.getSupplierOrderId())
         ).anyMatch(stock -> true);
 
-        if (stockDoesExist){
+        if (stockDoesExist) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Product Stock does already exist. Use PUT instead.");
         }
 
@@ -200,6 +213,11 @@ public class StockViewController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public ProductStockDto updateProductStocks(@RequestBody ProductStockDto productStockDto) {
+        if(!validator.validate(productStockDto).isEmpty()) {
+            log.warn("Rejected invalid message body.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
         if (productStockDto.getUuid() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock holds a UUID. Use POST instead.");
         }
@@ -247,7 +265,7 @@ public class StockViewController {
 
         Partner existingPartner = partnerService.findByBpnl(allocationPartner.getBpnl());
 
-        if (existingPartner == null){
+        if (existingPartner == null) {
             throw new IllegalStateException(String.format(
                 "Partner for bpnl %s could not be found",
                 allocationPartner.getBpnl())
@@ -286,40 +304,45 @@ public class StockViewController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public MaterialStockDto createMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
+        if(!validator.validate(materialStockDto).isEmpty()) {
+            log.warn("Rejected invalid message body.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
         if (materialStockDto.getUuid() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock holds a UUID. Use POST instead.");
         }
 
         if (materialStockDto.getMaterial().getMaterialNumberCustomer() == null ||
-            materialStockDto.getMaterial().getMaterialNumberCustomer().isEmpty()){
+            materialStockDto.getMaterial().getMaterialNumberCustomer().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock misses material identification.");
         }
 
         MaterialItemStock materialStockToCreate = convertToEntity(materialStockDto);
         materialStockToCreate.setLastUpdatedOnDateTime(new Date());
 
-        if (!materialItemStockService.validate(materialStockToCreate)){
+        if (!materialItemStockService.validate(materialStockToCreate)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock is invalid.");
         }
 
         List<MaterialItemStock> existingMaterialItemStocks = materialItemStockService.findByPartnerAndMaterial(materialStockToCreate.getPartner(),
             materialStockToCreate.getMaterial());
 
-        boolean stockDoesExist = existingMaterialItemStocks.stream().filter( stock ->
+        boolean stockDoesExist = existingMaterialItemStocks.stream().filter(stock ->
             stock.isBlocked() == materialStockToCreate.isBlocked() &&
-            stock.getLocationBpns().equals(materialStockToCreate.getLocationBpns()) &&
-            stock.getLocationBpna().equals(materialStockToCreate.getLocationBpna()) &&
-            Objects.equals(stock.getCustomerOrderId(), materialStockToCreate.getCustomerOrderId()) &&
-            Objects.equals(stock.getCustomerOrderPositionId(), materialStockToCreate.getCustomerOrderPositionId()) &&
-            Objects.equals(stock.getSupplierOrderId(), materialStockToCreate.getSupplierOrderId())
+                stock.getLocationBpns().equals(materialStockToCreate.getLocationBpns()) &&
+                stock.getLocationBpna().equals(materialStockToCreate.getLocationBpna()) &&
+                Objects.equals(stock.getCustomerOrderId(), materialStockToCreate.getCustomerOrderId()) &&
+                Objects.equals(stock.getCustomerOrderPositionId(), materialStockToCreate.getCustomerOrderPositionId()) &&
+                Objects.equals(stock.getSupplierOrderId(), materialStockToCreate.getSupplierOrderId())
         ).anyMatch(stock -> true);
 
-        if (stockDoesExist){
+        if (stockDoesExist) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Material Stock does already exist. Use PUT instead.");
         }
 
         MaterialItemStock createdMaterialStock = materialItemStockService.create(materialStockToCreate);
-        if (createdMaterialStock == null){
+        if (createdMaterialStock == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock could not be created.");
         }
 
@@ -335,6 +358,9 @@ public class StockViewController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public MaterialStockDto updateMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
+        if(!validator.validate(materialStockDto).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
         if (materialStockDto.getUuid() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock misses material identification.");
         }
@@ -381,7 +407,7 @@ public class StockViewController {
 
         Partner existingPartner = partnerService.findByBpnl(partnerDto.getBpnl());
 
-        if (existingPartner == null){
+        if (existingPartner == null) {
             throw new IllegalStateException(String.format(
                 "Partner for bpnl %s could not be found",
                 partnerDto.getBpnl())
@@ -407,16 +433,14 @@ public class StockViewController {
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
     public ResponseEntity<List<ReportedMaterialStockDto>> getSupplierMaterialStocks(@RequestParam String ownMaterialNumber) {
-        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-        
         return ResponseEntity.ok(reportedMaterialItemStockService.
-            findAll()
+            findByOwnMaterialNumber(ownMaterialNumber)
             .stream()
-                .filter(stock -> stock.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
             .map(this::convertToDto)
-            .collect(Collectors.toList()));
+            .toList());
     }
 
     private ReportedMaterialStockDto convertToDto(ReportedMaterialItemStock entity) {
@@ -445,15 +469,14 @@ public class StockViewController {
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
     public ResponseEntity<List<ReportedProductStockDto>> getCustomerProductStocks(@RequestParam String ownMaterialNumber) {
-        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         return ResponseEntity.ok(reportedProductItemStockService.
-            findAll()
+            findByOwnMaterialNumber(ownMaterialNumber)
             .stream()
-            .filter(stock -> stock.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
             .map(this::convertToDto)
-            .collect(Collectors.toList()));
+            .toList());
     }
 
     private ReportedProductStockDto convertToDto(ReportedProductItemStock entity) {
@@ -481,7 +504,7 @@ public class StockViewController {
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
     public ResponseEntity<List<PartnerDto>> getCustomerPartnersOrderingMaterial(@RequestParam String ownMaterialNumber) {
-        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         return ResponseEntity.ok(partnerService.findAllCustomerPartnersForMaterialId(ownMaterialNumber).stream()
@@ -496,7 +519,7 @@ public class StockViewController {
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
     public ResponseEntity<List<PartnerDto>> getSupplierPartnersSupplyingMaterial(@RequestParam String ownMaterialNumber) {
-        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         return ResponseEntity.ok(partnerService.findAllSupplierPartnersForMaterialId(ownMaterialNumber).stream()
@@ -515,7 +538,7 @@ public class StockViewController {
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
     public ResponseEntity<List<PartnerDto>> triggerReportedMaterialStockUpdateForMaterialNumber(@RequestParam String ownMaterialNumber) {
-        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
@@ -523,7 +546,7 @@ public class StockViewController {
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
 
         for (Partner supplierPartner : allSupplierPartnerEntities) {
-            productStockRequestApiService.doRequest(materialEntity, supplierPartner);
+            itemStockRequestApiService.doRequestForMaterialItemStocks(supplierPartner, materialEntity);
         }
 
         return ResponseEntity.ok(allSupplierPartnerEntities.stream()

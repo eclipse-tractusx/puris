@@ -416,12 +416,17 @@ backend:
           # -- Endpoint of server for request
           serverendpoint: *domain
           # -- Asset ID for request API
-          apiassetid: product-stock-request-api
+          apiassetid: request-api-asset
         response:
           # -- Endpoint of server for response
           serverendpoint: *domain
           # -- Asset ID for response API
-          apiassetid: product-stock-response-api
+          apiassetid: response-api-asset
+        statusrequest:
+          # -- Endpoint of server for statusrequest
+          serverendpoint: *domain
+          # -- Asset ID for status-request API
+          apiassetid: statusrequest-api-asset
         edr:
           # -- Number of minutes before received authentication data of a consumer pull is removed from memory
           deletiontimer: 2
