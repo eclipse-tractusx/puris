@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,9 +20,12 @@
 
 package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStockRequestMessage;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 
@@ -39,18 +42,30 @@ import java.util.UUID;
  * to the counterparty.
  */
 public class ItemStockRequestMessageDto {
-
+    @NotNull
     private HeaderDto header = new HeaderDto();
+    @NotNull
     private ContentDto content = new ContentDto();
 
     @Getter
     @Setter
+    @ToString
     public static class HeaderDto {
+        @NotNull
         private UUID messageId;
+        @NotNull
+        @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String context;
+        @NotNull
+        @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String version;
+        @NotNull
+        @Pattern(regexp = PatternStore.BPNL_STRING)
         private String senderBpn;
+        @NotNull
+        @Pattern(regexp = PatternStore.BPNL_STRING)
         private String receiverBpn;
+        @NotNull
         private Date sentDateTime;
     }
 
@@ -58,15 +73,20 @@ public class ItemStockRequestMessageDto {
     @Setter
     @ToString
     public static class ContentDto {
+        @NotNull
         private DirectionCharacteristic direction;
+        @NotNull
         private List<RequestDto> itemStock = new ArrayList<>();
     }
     @Getter
     @Setter
     @ToString
     public static class RequestDto {
+        @Pattern(regexp = PatternStore.URN_STRING)
         private String materialGlobalAssetId;
+        @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String materialNumberCustomer;
+        @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String materialNumberSupplier;
     }
 
@@ -80,11 +100,11 @@ public class ItemStockRequestMessageDto {
     public static ItemStockRequestMessageDto convertToDto(ItemStockRequestMessage itemStockRequestMessage) {
         ItemStockRequestMessageDto dto = new ItemStockRequestMessageDto();
         var header = dto.getHeader();
-        header.messageId = itemStockRequestMessage.getMessageId();
+        header.messageId = itemStockRequestMessage.getKey().getMessageId();
         header.context = itemStockRequestMessage.getContext();
         header.version = itemStockRequestMessage.getVersion();
-        header.senderBpn = itemStockRequestMessage.getSenderBpn();
-        header.receiverBpn = itemStockRequestMessage.getReceiverBpn();
+        header.senderBpn = itemStockRequestMessage.getKey().getSenderBpn();
+        header.receiverBpn = itemStockRequestMessage.getKey().getReceiverBpn();
         header.sentDateTime = itemStockRequestMessage.getSentDateTime();
         var content = dto.getContent();
         content.direction = itemStockRequestMessage.getDirection();
@@ -107,11 +127,9 @@ public class ItemStockRequestMessageDto {
      */
     public static ItemStockRequestMessage convertToEntity(ItemStockRequestMessageDto dto) {
         ItemStockRequestMessage entity = new ItemStockRequestMessage();
-        entity.setMessageId(dto.getHeader().messageId);
+        entity.setKey(new ItemStockRequestMessage.Key(dto.getHeader().messageId,dto.getHeader().senderBpn, dto.getHeader().receiverBpn));
         entity.setContext(dto.getHeader().context);
         entity.setVersion(dto.getHeader().version);
-        entity.setSenderBpn(dto.getHeader().senderBpn);
-        entity.setReceiverBpn(dto.getHeader().receiverBpn);
         entity.setSentDateTime(dto.getHeader().sentDateTime);
         entity.setDirection(dto.getContent().direction);
         for(var requestDto : dto.content.itemStock){

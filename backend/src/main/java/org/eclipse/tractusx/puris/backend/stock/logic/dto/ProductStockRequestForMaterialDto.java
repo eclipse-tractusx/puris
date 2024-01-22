@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto;
+import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 
 /**
  * One object that is received as a response.
@@ -38,14 +38,15 @@ import org.eclipse.tractusx.puris.backend.common.api.logic.dto.MessageContentDto
 public class ProductStockRequestForMaterialDto {
 
     @NotNull
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     @JsonProperty("materialNumberCustomer")
     private String materialNumberCustomer;
 
-    @Pattern(regexp = "(^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)")
+    @Pattern(regexp = PatternStore.URN_STRING)
     @JsonProperty("materialNumberCatenaX")
     private String materialNumberCatenaX;
 
-
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     @JsonProperty("materialNumberSupplier")
     private String materialNumberSupplier;
 }
