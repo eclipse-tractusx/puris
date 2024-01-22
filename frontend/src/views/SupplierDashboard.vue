@@ -28,7 +28,7 @@
                     <div>
                         <label for="dropdown-products" class="text-xl ">Products: </label>
                     </div>
-                    <select v-model="dropdownProducts" id="dropdown-products" @change="getAllCustomers(dropdownProducts);getCustomerStocks(dropdownProducts)" name="ddp" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                    <select v-model="dropdownProducts" id="dropdown-products" @change="getAllCustomers(dropdownProducts);getCustomerStocks(dropdownProducts);resetDropdownsFromProducts()" name="ddp" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a product</option>
                         <option v-for="item in fetchedProducts" :value="item" >{{item.ownMaterialNumber + "  (" + item.description + ")"}}</option>
                     </select>
@@ -37,7 +37,7 @@
                     <div>
                         <label for="dropdown-customer" class="text-xl">Customer: </label>
                     </div>
-                    <select v-model="dropdownCustomer" id="dropdown-customer" name="ddc" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                    <select v-model="dropdownCustomer" id="dropdown-customer" name="ddc" @change="resetDropdownsFromCustomer()" :disabled="dropdownProducts === ''" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a customer</option>
                         <option v-for="item in fetchedCustomers" :value="item">{{item.name}}</option>
                     </select>
@@ -46,14 +46,15 @@
                     <div>
                         <label class="text-xl ">Location: </label>
                     </div>
-                    <select v-model="dropdownBPNS" id="dropdown-bpns" name="ddbpns"  class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                    <select v-model="dropdownBPNS" id="dropdown-bpns" name="ddbpns" @change="resetDropdownsFromBpns()" :disabled="dropdownCustomer === ''" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a site</option>
                         <option v-for="item in dropdownCustomer.sites" :value="item"> {{item.name}} </option>
                     </select>
                     <div class="mt-2">
-                        <select v-model="dropdownBPNA" id="dropdown-bpna" name="ddbpna"  class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                        <select v-model="dropdownBPNA" id="dropdown-bpna" name="ddbpna" :disabled="dropdownBPNS === ''" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                             <option disabled value="" selected hidden>Choose an address</option>
-                            <option v-for="item in dropdownBPNS.addresses" :value="item" @click="emptyTotalDemandArray();mockDataInput(dropdownBPNA.bpna)"> {{item.streetAndNumber + ", " + item.zipCodeAndCity}} </option>
+                            <option value="allAddresses" @click="emptyTotalDemandArray();aggregateAllAddressesData()">All addresses</option>
+                            <option v-for="(item,index) in dropdownBPNS.addresses" :value="item" @click="emptyTotalDemandArray();mockDataInput(index)"> {{item.streetAndNumber + ", " + item.zipCodeAndCity}} </option>
                         </select>
                     </div>
                 </div>
@@ -158,6 +159,7 @@
 <script>
 import supplierDashboardMockData from "@/assets/supplierDashboardMockData.json";
 import UnitOfMeasureUtils from "@/services/UnitOfMeasureUtils";
+
 export default{
   name: "SupplierDashboard",
 
@@ -219,6 +221,32 @@ export default{
         }
         return this.mockTotalDemand;
     },
+    aggregateAllAddressesData: function(){
+        var optionQuantityDdBpna = document.getElementById("dropdown-bpna").options.length - 2; // Minus 2 because of 'Choose an address' and 'All addresses'
+        this.mockDemandActual = []
+        this.mockDemandAdditional = []
+        this.mockProduction = []
+
+        for(let i=0;i<optionQuantityDdBpna;i++){
+            for(let j=0;j<this.mockData[i].demandActual.length;j++){
+                if (isNaN(this.mockDemandActual[j])){
+                    this.mockDemandActual[j] = this.mockData[i].demandActual[j];
+                    this.mockDemandAdditional[j] = this.mockData[i].demandAdditional[j];
+                    this.mockProduction[j] = this.mockData[i].production[j];
+                } else {
+                    this.mockDemandActual[j] += this.mockData[i].demandActual[j];
+                    if (!isNaN((this.mockData[i].demandAdditional[j]))) {
+                        if(isNaN(this.mockDemandAdditional[j])){
+                            this.mockDemandAdditional[j] = this.mockData[i].demandAdditional[j];
+                        } else {
+                            this.mockDemandAdditional[j] += this.mockData[i].demandAdditional[j];
+                        }
+                    }
+                    this.mockProduction[j] += this.mockData[i].production[j];
+                }
+            }
+        }
+    },
     changeBgColor: function (index, production){
         if (production < this.mockTotalDemand[index]){
             return {'background-color': 'red'};
@@ -232,16 +260,10 @@ export default{
     emptyTotalDemandArray: function (){
         this.mockTotalDemand.length = 0;
     },
-    mockDataInput: function (BPNA){
-        if( BPNA === "BPNA2222222222XZ"){
-            this.mockDemandActual = this.mockData[1].demandActual;
-            this.mockDemandAdditional = this.mockData[1].demandAdditional;
-            this.mockProduction = this.mockData[1].production;
-        } else {
-            this.mockDemandActual = this.mockData[0].demandActual;
-            this.mockDemandAdditional = this.mockData[0].demandAdditional;
-            this.mockProduction = this.mockData[0].production;
-        }
+    mockDataInput: function (index){
+        this.mockDemandActual = this.mockData[index].demandActual;
+        this.mockDemandAdditional = this.mockData[index].demandAdditional;
+        this.mockProduction = this.mockData[index].production;
     },
     getAllProducts: function (){
         fetch( this.backendURL + this.endpointProducts, {
@@ -285,11 +307,9 @@ export default{
 
                 // Check if Unitofmeasure already exists
                     // If yes then delete the old (key,value) an add the value to the new (key,value)
-                if (filteredStocksMap.hasOwnProperty(uom)){
-                    var value = filteredStocksMap.get(uom)
-                    filteredStocksMap.delete(uom)
-                    filteredStocksMap.set(uom,this.fetchedCustomerStocks[i].quantity + value)
-
+                if (filteredStocksMap.has(uom)){
+                    var value = parseFloat(filteredStocksMap.get(uom)) + parseFloat(this.fetchedCustomerStocks[i].quantity)
+                    filteredStocksMap.set(uom,value)
                     // If no then just add (key,value)
                 } else {
                     filteredStocksMap.set(uom, this.fetchedCustomerStocks[i].quantity)
@@ -316,17 +336,15 @@ export default{
         let filteredStocksMap = new Map();
         let string = "";
         for(let i=0;i <this.fetchedAllProductStocks.length;i++){
-            // Filter through this.fetchedCustomerStocks where bpnl,bpns and bpna are equal to the chosen dropdowns
+            // Filter through this.fetchedAllProductStocks where bpnl and material are equal to the chosen dropdowns
             if (bpnl === this.fetchedAllProductStocks[i].partner.bpnl && material === this.fetchedAllProductStocks[i].material.materialNumberSupplier) {
                 var uom = this.getUomValueForUomKey(this.fetchedAllProductStocks[i].measurementUnit)
 
                 // Check if Unitofmeasure already exists
-                // If yes then delete the old (key,value) an add the value to the new (key,value)
-                if (filteredStocksMap.hasOwnProperty(uom)){
-                    var value = filteredStocksMap.get(uom)
-                    filteredStocksMap.delete(uom)
-                    filteredStocksMap.set(uom,this.fetchedAllProductStocks[i].quantity + value)
-
+                    // If yes then delete the old (key,value) an add the value to the new (key,value)
+                if (filteredStocksMap.has(uom)){
+                    var value = parseFloat(filteredStocksMap.get(uom)) + parseFloat(this.fetchedAllProductStocks[i].quantity)
+                    filteredStocksMap.set(uom,value)
                     // If no then just add (key,value)
                 } else {
                     filteredStocksMap.set(uom, this.fetchedAllProductStocks[i].quantity)
@@ -341,6 +359,33 @@ export default{
     },
     getUomValueForUomKey(key) {
         return UnitOfMeasureUtils.findUomValueByKey(key);
+    },
+    resetDropdownsFromProducts(){
+        this.dropdownCustomer= "";
+        this.dropdownBPNS= "";
+        this.dropdownBPNA="";
+
+        this.mockDemandActual = [];
+        this.mockDemandAdditional = [];
+        this.mockProduction = [];
+        this.emptyTotalDemandArray();
+    },
+    resetDropdownsFromCustomer(){
+        this.dropdownBPNS= "";
+        this.dropdownBPNA="";
+
+        this.mockDemandActual = [];
+        this.mockDemandAdditional = [];
+        this.mockProduction = [];
+        this.emptyTotalDemandArray()
+    },
+    resetDropdownsFromBpns(){
+        this.dropdownBPNA="";
+
+        this.mockDemandActual = [];
+        this.mockDemandAdditional = [];
+        this.mockProduction = [];
+        this.emptyTotalDemandArray()
     },
   }
 };
