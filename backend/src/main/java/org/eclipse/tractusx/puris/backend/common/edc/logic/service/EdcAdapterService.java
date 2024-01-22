@@ -287,7 +287,7 @@ public class EdcAdapterService {
      * specified by the parameter.
      *
      * @param negotiationId The id of the ongoing negotiation
-     * @return The response body as String
+     * @return The response body
      * @throws IOException If the connection to your control plane fails
      */
     public JsonNode getNegotiationState(String negotiationId) throws IOException {
@@ -295,6 +295,21 @@ public class EdcAdapterService {
         String stringData = response.body().string();
         response.body().close();
         return objectMapper.readTree(stringData);
+    }
+
+    /**
+     * Sends a request to the own control plane in order to receive
+     * all list of all negotiations.
+     *
+     * @return The response body as String
+     * @throws IOException If the connection to your control plane fails
+     */
+    public String getAllNegotiations() throws IOException {
+        var requestBody = edcRequestBodyBuilder.buildNegotiationsRequestBody();
+        var response = sendPostRequest(requestBody, List.of("v2", "contractnegotiations", "request"));
+        String stringData = response.body().string();
+        response.body().close();
+        return stringData;
     }
 
     /**
