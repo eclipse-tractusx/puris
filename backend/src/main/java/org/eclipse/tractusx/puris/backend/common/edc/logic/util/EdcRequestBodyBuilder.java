@@ -282,6 +282,20 @@ public class EdcRequestBodyBuilder {
     }
 
     /**
+     * Creates the request body for requesting a full list of all
+     * negotiations in the history of your EDC control plane.
+     *
+     * @return The request body
+     */
+    public JsonNode buildNegotiationsRequestBody() {
+        var body = getEdcContextObject();
+        body.put("@type", "QuerySpec");
+        body.put("sortOrder", "DESC");
+        body.put("sortField", "createdAt");
+        return body;
+    }
+
+    /**
      * A helper method returning a basic request object that can be used to build other
      * specific request bodies.
      *
