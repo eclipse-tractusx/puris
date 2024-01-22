@@ -29,7 +29,7 @@ export default {
   },
   methods: {
     getNegotiations() {
-      fetch(this.backendURL + "/edc/negotiations", {
+      fetch(this.backendURL + "edc/negotiations", {
         headers: {
           "X-API-KEY": this.backendApiKey,
         },
