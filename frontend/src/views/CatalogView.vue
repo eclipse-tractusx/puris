@@ -1,23 +1,22 @@
 <!--
- Copyright (c) 2022 - 2024 Volkswagen AG
- Copyright (c) 2022 - 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
- Copyright (c) 2022 - 2024 Contributors to the Eclipse Foundation
- 
- See the NOTICE file(s) distributed with this work for additional
- information regarding copyright ownership.
- 
- This program and the accompanying materials are made available under the
- terms of the Apache License, Version 2.0 which is available at
- https://www.apache.org/licenses/LICENSE-2.0.
- 
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- License for the specific language governing permissions and limitations
- under the License.
- 
- SPDX-License-Identifier: Apache-2.0
--->
+  - Copyright (c) 2022-2024 Volkswagen AG
+  - Copyright (c) 2022-2024 Contributors to the Eclipse Foundation
+  -
+  - See the NOTICE file(s) distributed with this work for additional
+  - information regarding copyright ownership.
+  -
+  - This program and the accompanying materials are made available under the
+  - terms of the Apache License, Version 2.0 which is available at
+  - https://www.apache.org/licenses/LICENSE-2.0.
+  -
+  - Unless required by applicable law or agreed to in writing, software
+  - distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  - WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+  - License for the specific language governing permissions and limitations
+  - under the License.
+  -
+  - SPDX-License-Identifier: Apache-2.0
+  -->
 
 <script>
 export default {
@@ -46,7 +45,7 @@ export default {
                             assetVersion:
                                 item[
                                     "https://w3id.org/catenax/ontology/common#version"
-                                ],
+                                    ],
                             permissions:
                                 item["odrl:hasPolicy"] &&
                                 item["odrl:hasPolicy"]["odrl:permission"],
@@ -111,23 +110,23 @@ export default {
                             }}"
                         </h2>
                         <div>
-                            Following permissions are defined: <br />
+                            Following permissions are defined: <br/>
                             <ul v-if="offer.permissions">
                                 <li class="list-none">
                                     {{
                                         offer.permissions["odrl:constraint"][
                                             "odrl:leftOperand"
-                                        ]
+                                            ]
                                     }}
                                     {{
                                         offer.permissions["odrl:constraint"][
                                             "odrl:operator"
-                                        ]["@id"]
+                                            ]["@id"]
                                     }}
                                     {{
                                         offer.permissions["odrl:constraint"][
                                             "odrl:rightOperand"
-                                        ]
+                                            ]
                                     }}
                                 </li>
                             </ul>
@@ -136,23 +135,23 @@ export default {
                             </ul>
                         </div>
                         <div>
-                            Following prohibitions are defined: <br />
+                            Following prohibitions are defined: <br/>
                             <ul v-if="offer.prohibitions">
                                 <li class="list-none">
                                     {{
                                         offer.prohibitions["odrl:constraint"][
                                             "odrl:leftOperand"
-                                        ]
+                                            ]
                                     }}
                                     {{
                                         offer.prohibitions["odrl:constraint"][
                                             "odrl:operator"
-                                        ]["@id"]
+                                            ]["@id"]
                                     }}
                                     {{
                                         offer.prohibitions["odrl:constraint"][
                                             "odrl:rightOperand"
-                                        ]
+                                            ]
                                     }}
                                 </li>
                             </ul>
@@ -161,23 +160,23 @@ export default {
                             </ul>
                         </div>
                         <div>
-                            Following obligations are defined: <br />
+                            Following obligations are defined: <br/>
                             <ul v-if="offer.obligations">
                                 <li class="list-none">
                                     {{
                                         offer.obligations["odrl:constraint"][
                                             "odrl:leftOperand"
-                                        ]
+                                            ]
                                     }}
                                     {{
                                         offer.obligations["odrl:constraint"][
                                             "odrl:operator"
-                                        ]["@id"]
+                                            ]["@id"]
                                     }}
                                     {{
                                         offer.obligations["odrl:constraint"][
                                             "odrl:rightOperand"
-                                        ]
+                                            ]
                                     }}
                                 </li>
                             </ul>
