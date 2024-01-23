@@ -21,58 +21,74 @@
 
 <script>
 export default {
-  inject: ["baseUrl"],
-  data() {
-    return {
-      catalog: {},
-    };
-  },
-  methods: {
-    getCatalog() {
-      const vm = this;
-      fetch(vm.baseUrl + "/edc/transfers")
-        .then((response) => response.json())
-        .then((data) => {
-          vm.catalog = data;
-        });
+    data() {
+        return {
+            backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
+            backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
+            catalog: {},//
+        };
     },
-  },
-  mounted() {
-    let vm = this;
-    vm.getCatalog();
-  },
+    methods: {
+        getCatalog() {
+            const url = this.backendURL + "edc/transfers";
+            console.log("Fetching from " + url);
+            fetch(url, {
+                headers: {
+                    "X-API-KEY": this.backendApiKey,
+                },
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    this.catalog = data;
+                })
+                .catch((err) => console.log(err));
+        },
+    },
+    mounted() {
+        let vm = this;
+        vm.getCatalog();
+    },
 };
 </script>
 
 <template>
-  <main>
-    <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
-      View EDC Transfers
-    </h1>
-    <li class="list-none" v-for="offer in catalog">
-      <div
-        class="text-center mx-4 my-8 block p-6 w-full bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
-      >
-        <div>
-          <h1
-            class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white"
-          >
-            Transfer {{ offer.id }}
-          </h1>
-          <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-            State: {{ offer.state }}
-          </h2>
-          <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-            Type: {{ offer.type }}
-          </h2>
-          <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-            Asset Id: {{ offer.dataRequest.assetId }}
-          </h2>
-          <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-            Contract Id: {{ offer.dataRequest.contractId }}
-          </h2>
-        </div>
-      </div>
-    </li>
-  </main>
+    <main>
+        <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
+            View EDC Transfers
+        </h1>
+        <li class="list-none" v-for="item in catalog">
+            <div
+                class="text-center mx-4 my-8 block p-6 w-full bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+            >
+                <div>
+                    <h1
+                        class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white"
+                    >
+                        Transfer {{ item["@id"] }}
+                    </h1>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        State: {{ item["edc:correlationId"] }}
+                    </h2>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        State: {{ item["edc:state"] }}
+                    </h2>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        State: {{ item["edc:stateTimestamp"] }}
+                    </h2>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        Type: {{ item["edc:type"] }}
+                    </h2>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        Asset Id: {{ item["edc:assetId"] }}
+                    </h2>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        Contract Id: {{ item["edc:contractId"] }}
+                    </h2>
+                    <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
+                        Connector Id: {{ item["edc:connectorId"] }}
+                    </h2>
+                </div>
+            </div>
+        </li>
+    </main>
 </template>
