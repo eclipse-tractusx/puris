@@ -79,9 +79,6 @@ public class StockViewController {
     private ReportedProductItemStockService reportedProductItemStockService;
 
     @Autowired
-    private ProductStockRequestApiService productStockRequestApiService;
-
-    @Autowired
     private ItemStockRequestApiService itemStockRequestApiService;
 
     @Autowired

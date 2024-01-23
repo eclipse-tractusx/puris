@@ -32,13 +32,12 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ItemStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -61,12 +60,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private MaterialPartnerRelationService mprService;
 
     @Autowired
-    private MaterialStockService materialStockService;
-
-    @Autowired
-    private ProductStockService productStockService;
-
-    @Autowired
     private MaterialItemStockService materialItemStockService;
     
     @Autowired
@@ -80,15 +73,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     
     @Autowired
     private ItemStockSammMapper itemStockSammMapper;
-
-    @Autowired
-    private PartnerProductStockService partnerProductStockService;
-
-    @Autowired
-    private ProductStockSammMapper productStockSammMapper;
-
-    @Autowired
-    private ProductStockRequestService productStockRequestService;
 
     @Autowired
     private VariablesService variablesService;
@@ -205,49 +189,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         productsFound = mprService.findAllProductsThatPartnerBuys(nonScenarioCustomer);
         log.info("Products that customer buys: " + productsFound);
-
-        // Create Material Stock
-        MaterialStock materialStockEntity = new MaterialStock(
-            semiconductorMaterial,
-            5,
-            MeasurementUnit.piece,
-            mySelf.getSites().first().getBpns(),
-            LocationIdTypeEnum.B_P_N_S,
-            new Date()
-        );
-        materialStockEntity = materialStockService.create(materialStockEntity);
-        log.info(String.format("Created materialStock: %s", materialStockEntity));
-
-        // Create Product Stock
-        ProductStock productStockEntity = new ProductStock(
-            centralControlUnitEntity,
-            20,
-            MeasurementUnit.piece,
-            mySelf.getSites().first().getBpns(),
-            LocationIdTypeEnum.B_P_N_S,
-            new Date(),
-            nonScenarioCustomer
-        );
-        productStockEntity = productStockService.create(productStockEntity);
-        log.info(String.format("Created productStock: %s", productStockEntity));
-
-        // Create PartnerProductStock
-        semiconductorMaterial = materialService.findByOwnMaterialNumber(semiconductorMaterial.getOwnMaterialNumber());
-        PartnerProductStock partnerProductStockEntity = new PartnerProductStock(
-            semiconductorMaterial,
-            10,
-            MeasurementUnit.piece,
-            supplierPartner.getSites().stream().findFirst().get().getBpns(),
-            LocationIdTypeEnum.B_P_N_S,
-            new Date(),
-            supplierPartner
-        );
-        log.info(String.format("Created partnerProductStock: %s", partnerProductStockEntity));
-        partnerProductStockEntity = partnerProductStockService.create(partnerProductStockEntity);
-        ProductStockSammDto productStockSammDto = productStockSammMapper.toSamm(partnerProductStockEntity);
-        log.info("SAMM-DTO:\n" + objectMapper.writeValueAsString(productStockSammDto));
-
-        log.info("Own Street and Number: " + variablesService.getOwnDefaultStreetAndNumber());
 
         log.info(mySelf.toString());
 

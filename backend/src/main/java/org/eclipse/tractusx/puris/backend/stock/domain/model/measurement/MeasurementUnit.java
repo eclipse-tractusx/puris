@@ -22,7 +22,6 @@
 package org.eclipse.tractusx.puris.backend.stock.domain.model.measurement;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
 
 public enum MeasurementUnit {
 
@@ -63,7 +62,7 @@ public enum MeasurementUnit {
     kilowattHour;
 
     /**
-     * Returns a json representation needed for de-/serialization of the {@link ProductStockSammDto}.
+     * Returns a json representation needed for de-/serialization of the ProductStockSammDto.
      * For example: "unit:piece"
      *
      * @return the json representation as String
