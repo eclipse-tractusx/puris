@@ -20,6 +20,9 @@
  */
 package org.eclipse.tractusx.puris.backend.common.edc.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
@@ -41,7 +44,10 @@ import java.util.List;
 @Slf4j
 public class EdcController {
 
-    @Autowired private EdcAdapterService edcAdapter;
+    @Autowired
+    private EdcAdapterService edcAdapter;
+    @Autowired
+    private ObjectMapper objectMapper;
 
 
     /**
@@ -53,7 +59,7 @@ public class EdcController {
     @GetMapping("/catalog")
     public ResponseEntity<String> getCatalog(@RequestParam String dspUrl) {
         try {
-            if(!PatternStore.URL_PATTERN.matcher(dspUrl).matches()) {
+            if (!PatternStore.URL_PATTERN.matcher(dspUrl).matches()) {
                 return ResponseEntity.badRequest().build();
             }
             var catalog = edcAdapter.getCatalog(dspUrl);
@@ -73,7 +79,7 @@ public class EdcController {
     @GetMapping("/assets")
     public ResponseEntity<String> getAssets(@RequestParam String assetId) {
         try {
-            if(!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.matches(assetId)) {
+            if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.matches(assetId)) {
                 return ResponseEntity.badRequest().build();
             }
             var result = edcAdapter.sendGetRequest(List.of("v3", "assets", assetId));
@@ -89,6 +95,7 @@ public class EdcController {
     /**
      * Retrieves all contract negotiations in the history
      * of your control plane.
+     *
      * @return contract negotiation data
      */
     @GetMapping("/contractnegotiations")
@@ -96,6 +103,38 @@ public class EdcController {
         try {
             String data = edcAdapter.getAllNegotiations();
             return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Retrieves all transfers in the history
+     * of your control plane.
+     *
+     * @return transfer data
+     */
+    @GetMapping("/transfers")
+    public ResponseEntity<JsonNode> getTransfers() {
+        try {
+            String data = edcAdapter.getAllTransfers();
+            var responseObject = objectMapper.readTree(data);
+            for (var item : responseObject) {
+                // The response from the control plane does not contain
+                // an edc:connectorId field, if your side was involved as PROVIDER
+                // in a transfer. Because we want to show the other party's
+                // BPNL in the frontend in any case, we retrieve the BPNL via
+                // the contractAgreement and insert it into the JSON data.
+                String myRole = item.get("edc:type").asText();
+                if ("PROVIDER".equals(myRole)) {
+                    String contractId = item.get("edc:contractId").asText();
+                    var contractObject = objectMapper.readTree(edcAdapter.getContractAgreement(contractId));
+                    String partnerBpnl = contractObject.get("edc:consumerId").asText();
+                    ((ObjectNode) item).put("edc:connectorId", partnerBpnl);
+                }
+            }
+            return ResponseEntity.ok(responseObject);
         } catch (Exception e) {
             log.warn(e.getMessage());
             return ResponseEntity.internalServerError().build();

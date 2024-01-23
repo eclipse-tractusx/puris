@@ -252,7 +252,7 @@ public class EdcAdapterService {
 
     /**
      * Sends a request to the own control plane in order to receive
-     * all list of all negotiations.
+     * a list of all negotiations.
      *
      * @return The response body as String
      * @throws IOException If the connection to your control plane fails
@@ -297,6 +297,36 @@ public class EdcAdapterService {
         String data = response.body().string();
         response.body().close();
         return objectMapper.readTree(data);
+    }
+
+    /**
+     * Sends a request to the own control plane in order to receive
+     * a list of all transfers.
+     *
+     * @return The response body as String
+     * @throws IOException If the connection to your control plane fails
+     */
+    public String getAllTransfers() throws IOException {
+        var requestBody = edcRequestBodyBuilder.buildTransfersRequestBody();
+        var response = sendPostRequest(requestBody, List.of("v2", "transferprocesses", "request"));
+        String data = response.body().string();
+        response.body().close();
+        return data;
+    }
+
+    /**
+     * Sends a request to the own control plane in order to receive
+     * the contract agreement with the given contractAgreementId
+     *
+     * @param contractAgreementId the contractAgreement's Id
+     * @return the contractAgreement
+     * @throws IOException If the connection to your control plane fails
+     */
+    public String getContractAgreement(String contractAgreementId) throws IOException {
+        var response = sendGetRequest(List.of("v2", "contractagreements", contractAgreementId));
+        String data = response.body().string();
+        response.body().close();
+        return data;
     }
 
 
