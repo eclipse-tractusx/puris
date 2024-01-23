@@ -36,9 +36,11 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
-import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ItemStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.ItemUnitEnumeration;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedMaterialItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedProductItemStockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -70,9 +72,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private ReportedProductItemStockService reportedProductItemStockService;
-    
-    @Autowired
-    private ItemStockSammMapper itemStockSammMapper;
 
     @Autowired
     private VariablesService variablesService;

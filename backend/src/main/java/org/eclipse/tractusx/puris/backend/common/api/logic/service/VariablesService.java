@@ -46,11 +46,6 @@ public class VariablesService {
      * defined in the DataInjectionCommandLineRunner
      */
     private String demoRole;
-    @Value("${puris.apiversion}")
-    /**
-     * The current version number
-     */
-    private String purisApiVersion;
     @Value("${puris.edr.endpoint}")
     /**
      * The edrEndpoint to be used during consumer pull asset transfers.
