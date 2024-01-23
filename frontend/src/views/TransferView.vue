@@ -25,7 +25,7 @@ export default {
         return {
             backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
             backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
-            catalog: {},//
+            catalog: {}
         };
     },
     methods: {
@@ -64,16 +64,16 @@ export default {
                     <h1
                         class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white"
                     >
-                        Transfer {{ item["@id"] }}
+                        Transfer Id: {{ item["@id"] }}
                     </h1>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-                        State: {{ item["edc:correlationId"] }}
+                        Correlation Id: {{ item["edc:correlationId"] }}
                     </h2>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
                         State: {{ item["edc:state"] }}
                     </h2>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
-                        State: {{ item["edc:stateTimestamp"] }}
+                        StateTimeStamp: {{ new Date(item["edc:stateTimestamp"]) }}
                     </h2>
                     <h2 class="font-normal text-medium text-gray-700 dark:text-gray-400">
                         Type: {{ item["edc:type"] }}
