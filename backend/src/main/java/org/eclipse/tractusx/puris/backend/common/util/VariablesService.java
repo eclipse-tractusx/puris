@@ -19,7 +19,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.logic.service;
+package org.eclipse.tractusx.puris.backend.common.util;
 
 import lombok.Getter;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;

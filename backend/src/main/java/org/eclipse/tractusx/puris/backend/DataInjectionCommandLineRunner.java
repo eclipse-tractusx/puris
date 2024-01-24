@@ -24,7 +24,7 @@ package org.eclipse.tractusx.puris.backend;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;

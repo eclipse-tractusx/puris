@@ -28,7 +28,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.ItemUnitEnumeration;

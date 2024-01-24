@@ -27,7 +27,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 import java.util.HashSet;
 import java.util.Objects;
