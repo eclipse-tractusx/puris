@@ -1,12 +1,12 @@
 <!--
- Copyright (c) 2023 Volkswagen AG
- Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
- Copyright (c) 2023 Contributors to the Eclipse Foundation
+ Copyright (c) 2023-2024 Volkswagen AG
+ Copyright (c) 2023-2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ Copyright (c) 2023-2024 Contributors to the Eclipse Foundation
 
  See the NOTICE file(s) distributed with this work for additional
  information regarding copyright ownership.
 
- This program and the accompanying products are made available under the
+ This program and the accompanying materials are made available under the
  terms of the Apache License, Version 2.0 which is available at
  https://www.apache.org/licenses/LICENSE-2.0.
 
@@ -28,7 +28,7 @@
                     <div>
                         <label for="dropdown-products" class="text-xl ">Products: </label>
                     </div>
-                    <select v-model="dropdownProducts" id="dropdown-products" @change="getAllCustomers(dropdownProducts);getCustomerStocks(dropdownProducts);resetDropdownsFromProducts()" name="ddp" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                    <select v-model="dropdownProducts" id="dropdown-products" @change="getAllCustomers(dropdownProducts);getCustomerStocks(dropdownProducts);resetDropdownsFromProducts();hoverUpdateCustomerDataButton = false" name="ddp" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a product</option>
                         <option v-for="item in fetchedProducts" :value="item" >{{item.ownMaterialNumber + "  (" + item.description + ")"}}</option>
                     </select>
@@ -37,7 +37,7 @@
                     <div>
                         <label for="dropdown-customer" class="text-xl">Customer: </label>
                     </div>
-                    <select v-model="dropdownCustomer" id="dropdown-customer" name="ddc" @change="resetDropdownsFromCustomer()" :disabled="dropdownProducts === ''" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                    <select v-model="dropdownCustomer" id="dropdown-customer" @change="resetDropdownsFromCustomer()" :disabled="dropdownProducts === ''" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a customer</option>
                         <option v-for="item in fetchedCustomers" :value="item">{{item.name}}</option>
                     </select>
@@ -46,16 +46,22 @@
                     <div>
                         <label class="text-xl ">Location: </label>
                     </div>
-                    <select v-model="dropdownBPNS" id="dropdown-bpns" name="ddbpns" @change="resetDropdownsFromBpns()" :disabled="dropdownCustomer === ''" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                    <select v-model="dropdownBPNS" id="dropdown-bpns" @change="resetDropdownsFromBpns()" :disabled="dropdownCustomer === ''" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                         <option disabled value="" selected hidden>Choose a site</option>
                         <option v-for="item in dropdownCustomer.sites" :value="item"> {{item.name}} </option>
                     </select>
                     <div class="mt-2">
-                        <select v-model="dropdownBPNA" id="dropdown-bpna" name="ddbpna" :disabled="dropdownBPNS === ''" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
+                        <select v-model="dropdownBPNA" id="dropdown-bpna" :disabled="dropdownBPNS === ''" class="w-60 py-2 px-4 bg-gray-200 text-gray-700 border border-gray-200 rounded focus:bg-white focus:outline-none focus:border-gray-500">
                             <option disabled value="" selected hidden>Choose an address</option>
                             <option value="allAddresses" @click="emptyTotalDemandArray();aggregateAllAddressesData()">All addresses</option>
                             <option v-for="(item,index) in dropdownBPNS.addresses" :value="item" @click="emptyTotalDemandArray();mockDataInput(index)"> {{item.streetAndNumber + ", " + item.zipCodeAndCity}} </option>
                         </select>
+                        <div v-if="hoverUpdateCustomerDataButton && dropdownProducts === ''"
+                             class="float-right font-bold"
+                             id="hintMessage"
+                        >
+                            You need to select a product first !
+                        </div>
                     </div>
                 </div>
             </div>
@@ -67,6 +73,10 @@
                         class="float-right bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                         id="updateCustomerDataBtn"
                         type="submit"
+                        @click="updateCustomerStocks(dropdownProducts)"
+                        :disabled="dropdownProducts === ''"
+                        @mouseover="hoverUpdateCustomerDataButton = true"
+                        @mouseleave="hoverUpdateCustomerDataButton = false"
                     >
                         Update Customer Data
                     </button>
@@ -97,8 +107,7 @@
                     <tr id="demandTotal">
                         <td class="firstColumn">Demand (Total)</td>
 
-                        <td v-for="(item,index) in (addDemands())"
-                            :ref="setTotalDemand(item,index)"
+                        <td v-for="(item) in (addDemands())"
                             :value="item">{{item}}</td>
                     </tr>
                     <tr>
@@ -106,7 +115,7 @@
                             Customer Stock:
                             <template v-if="dropdownBPNA !== ''">
                                 <span>
-                                    {{filterCustomerStocks(dropdownCustomer.bpnl,dropdownBPNS.bpns,dropdownBPNA.bpna)}}
+                                    {{filterCustomerStocks(dropdownCustomer.bpnl,dropdownBPNS.bpns,dropdownBPNA)}}
                                 </span>
                             </template>
                         </td>
@@ -165,6 +174,7 @@ export default{
 
   data() {
     return{
+        hoverUpdateCustomerDataButton: false,
         // get environmental endpoints
         backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
         backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
@@ -172,9 +182,11 @@ export default{
         endpointCustomers: import.meta.env.VITE_ENDPOINT_CUSTOMER,
         endpointAllProductStocks: import.meta.env.VITE_ENDPOINT_PRODUCT_STOCKS,
         endpointReportedProductStocks: import.meta.env.VITE_ENDPOINT_REPORTED_PRODUCT_STOCKS,
+        endpointUpdateReportedProductStocks: import.meta.env
+            .VITE_ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS,
         // Customer dropdown
         dropdownCustomer: "",
-        // Material dropdown
+        // Product dropdown
         dropdownProducts: "",
         // BPNS dropdown
         dropdownBPNS: "",
@@ -201,7 +213,8 @@ export default{
   },
     mounted() {
       let currentDate = new Date();
-      let updatedDate = new Date(currentDate.setDate(currentDate.getDate() + -1))
+      let updatedDate;
+      currentDate.setDate(currentDate.getDate() - 1)
 
       for(let i=0;i<28;i++) {
           updatedDate = new Date(currentDate.setDate(currentDate.getDate() + 1))
@@ -229,19 +242,33 @@ export default{
 
         for(let i=0;i<optionQuantityDdBpna;i++){
             for(let j=0;j<this.mockData[i].demandActual.length;j++){
+                // Check if mockDemandActual is empty
                 if (isNaN(this.mockDemandActual[j])){
+                    // yes --> give value by setting it from mockData.demandActual
                     this.mockDemandActual[j] = this.mockData[i].demandActual[j];
+                } else {
+                    // no --> just add new value on top of old value (cant add with empty Array because of NaN)
+                    this.mockDemandActual[j] += this.mockData[i].demandActual[j];
+                }
+                // Check if mockDemandAdditional is empty
+                if (isNaN(this.mockDemandAdditional[j])){
+                    // yes --> give value by setting it from mockData.demandAdditional
                     this.mockDemandAdditional[j] = this.mockData[i].demandAdditional[j];
+                } else {
+                    /*
+                      no --> just add new value on top of old value (cant add with empty Array because of NaN),
+                      but only when mockData.demandAdditional isnt empty itself
+                    */
+                    if(!isNaN(this.mockData[i].demandAdditional[j])){
+                        this.mockDemandAdditional[j] += this.mockData[i].demandAdditional[j];
+                    }
+                }
+                // Check if mockProduction is empty
+                if (isNaN(this.mockProduction[j])){
+                    // yes --> give value by setting it from mockData.production
                     this.mockProduction[j] = this.mockData[i].production[j];
                 } else {
-                    this.mockDemandActual[j] += this.mockData[i].demandActual[j];
-                    if (!isNaN((this.mockData[i].demandAdditional[j]))) {
-                        if(isNaN(this.mockDemandAdditional[j])){
-                            this.mockDemandAdditional[j] = this.mockData[i].demandAdditional[j];
-                        } else {
-                            this.mockDemandAdditional[j] += this.mockData[i].demandAdditional[j];
-                        }
-                    }
+                    // no --> just add new value on top of old value (cant add with empty Array because of NaN)
                     this.mockProduction[j] += this.mockData[i].production[j];
                 }
             }
@@ -251,11 +278,6 @@ export default{
         if (production < this.mockTotalDemand[index]){
             return {'background-color': 'red'};
         }
-    },
-    setTotalDemand: function (el, index){
-    //    if(el && this.mockTotalDemand[index] == null) {
-    //        this.mockTotalDemand.push(el);
-    //    }
     },
     emptyTotalDemandArray: function (){
         this.mockTotalDemand.length = 0;
@@ -276,7 +298,6 @@ export default{
             .catch((err) => console.log(err));
     },
     getAllCustomers: function (productNumber){
-        console.log(productNumber)
         fetch( this.backendURL + this.endpointCustomers + productNumber.ownMaterialNumber,{
             headers: {
                 "X-API-KEY": this.backendApiKey,
@@ -287,7 +308,6 @@ export default{
             .catch((err) => console.log(err));
     },
     getCustomerStocks: function (productNumber){
-        console.log(productNumber)
         fetch( this.backendURL + this.endpointReportedProductStocks + productNumber.ownMaterialNumber,{
             headers: {
                 "X-API-KEY": this.backendApiKey,
@@ -300,9 +320,10 @@ export default{
     filterCustomerStocks: function (bpnl,bpns,bpna){
         let filteredStocksMap = new Map();
         let string = "";
+
         for(let i=0;i <this.fetchedCustomerStocks.length;i++){
             // Filter through this.fetchedCustomerStocks where bpnl,bpns and bpna are equal to the chosen dropdowns
-            if (bpnl === this.fetchedCustomerStocks[i].partner.bpnl && bpns === this.fetchedCustomerStocks[i].stockLocationBpns && bpna === this.fetchedCustomerStocks[i].stockLocationBpna) {
+            if (bpnl === this.fetchedCustomerStocks[i].partner.bpnl && bpns === this.fetchedCustomerStocks[i].stockLocationBpns && (bpna.bpna === this.fetchedCustomerStocks[i].stockLocationBpna || bpna === "allAddresses")) {
                 var uom = this.getUomValueForUomKey(this.fetchedCustomerStocks[i].measurementUnit)
 
                 // Check if Unitofmeasure already exists
@@ -317,10 +338,25 @@ export default{
             }
         }
         for(let [key,value] of filteredStocksMap.entries()){
-            string += value + key + ", "
+            string += value + " " + key + ", "
         }
 
-        return string;
+        return string.slice(0,-2);
+    },
+    updateCustomerStocks: function(material){
+        console.log(material)
+        fetch(this.backendURL +
+            this.endpointUpdateReportedProductStocks +
+            material.ownMaterialNumber,
+            {
+                headers: {
+                    "X-API-KEY": this.backendApiKey,
+                },
+            }
+        )
+            .then((res) => res.json())
+            .then((data) => console.log(data))
+            .catch((err) => console.log(err));
     },
     getAllProductStocks: function (){
         fetch( this.backendURL + this.endpointAllProductStocks, {
@@ -352,10 +388,10 @@ export default{
             }
         }
         for(let [key,value] of filteredStocksMap.entries()){
-            string += value + key + ", "
+            string += value + " " + key + ", "
         }
 
-        return string;
+        return string.slice(0,-2);
     },
     getUomValueForUomKey(key) {
         return UnitOfMeasureUtils.findUomValueByKey(key);
@@ -393,15 +429,18 @@ export default{
 </script>
 
 <style scoped>
-#updateCustomerDataBtn {
+#updateCustomerDataBtn, #hintMessage{
     position: sticky;
     margin-top: 10px;
     right: 0;
     top: 0;
-
 }
-#showBtn{
-
+#updateCustomerDataBtn:disabled{
+    opacity: 0.6;
+}
+#updateCustomerDataBtn:disabled:hover{
+    --tw-bg-opacity: 0.6;
+    background-color: rgb(29 78 216 / var(--tw-bg-opacity));
 }
 th, td {
     padding: 10px;
