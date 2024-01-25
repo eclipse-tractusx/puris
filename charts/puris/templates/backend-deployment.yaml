@@ -103,6 +103,10 @@ spec:
               value: "http://{{ .Values.backend.puris.statusrequest.serverendpoint }}/catena/item-stock/status"
             - name: PURIS_STATUSREQUEST_APIASSETID
               value: "{{ .Values.backend.puris.statusrequest.apiassetid }}"
+            - name: PURIS_USEFRAMEWORKAGREEMENT
+              value: "{{ .Values.backend.puris.useframeworkagreement }}"
+            - name: PURIS_FRAMEWORKAGREEMENT
+              value: "{{ .Values.backend.puris.frameworkagreement }}"
           ports:
             - name: http
               containerPort: {{ .Values.backend.service.port }}

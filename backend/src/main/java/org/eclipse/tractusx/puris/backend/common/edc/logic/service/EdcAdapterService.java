@@ -103,7 +103,8 @@ public class EdcAdapterService {
 
     /**
      * Call this method at startup to register the necessary request and
-     * response apis.
+     * response apis. In case you are using the framework agreement feature,
+     * the framework agreement policy will be registered as well here.
      *
      * @return true if all registrations were successful, otherwise false
      */
@@ -114,6 +115,11 @@ public class EdcAdapterService {
         log.info("Registration of item-stock response api successful " + (result = registerApiAsset(DT_ApiMethodEnum.RESPONSE)));
         if(!result) return false;
         log.info("Registration of item-stock status-request api successful " + (result = registerApiAsset(DT_ApiMethodEnum.STATUS_REQUEST)));
+        if(variablesService.isUseFrameworkPolicy()) {
+            log.info("Registration of framework agreement policy successful " + (result = createFrameWorkPolicy()));
+        } else {
+            log.info("Skipping registration of framework agreement policy");
+        }
         return result;
     }
 
@@ -158,7 +164,7 @@ public class EdcAdapterService {
     }
 
     /**
-     * Registers a policy definitions that allows only the given partner's
+     * Registers a policy definition that allows only the given partner's
      * BPNL.
      *
      * @param partner the partner
@@ -176,6 +182,27 @@ public class EdcAdapterService {
             return result;
         } catch (Exception e) {
             log.error("Failed to register policy definition for partner " + partner.getBpnl(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Registers the framework agreement policy definition
+     *
+     * @return true, if registration ran successfully
+     */
+    private boolean createFrameWorkPolicy() {
+        var body = edcRequestBodyBuilder.buildFrameworkAgreementPolicy();
+        try {
+            var response = sendPostRequest(body, List.of("v2", "policydefinitions"));
+            boolean result = response.isSuccessful();
+            if(!result) {
+                log.warn("Framework Policy Registration failed \n" + response.body().string());
+            }
+            response.body().close();
+            return result;
+        } catch (Exception e) {
+            log.error("Failed to register Framework Policy", e);
             return false;
         }
     }
