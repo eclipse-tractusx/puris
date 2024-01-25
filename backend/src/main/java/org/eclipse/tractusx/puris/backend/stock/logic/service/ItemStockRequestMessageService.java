@@ -21,7 +21,7 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStockRequestMessage;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ItemStockRequestMessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
