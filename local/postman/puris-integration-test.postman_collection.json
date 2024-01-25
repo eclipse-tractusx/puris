@@ -1,0 +1,1476 @@
+{
+    "info": {
+        "_postman_id": "08da5aef-cb4d-46ea-a2e1-a1d47e73c97a",
+        "name": "puris-integration-test",
+        "description": "The collection assumes the following roles:\n\n- Customer PURIS (upper tier)\n    \n- Supplier PURIS (lower tier)\n    \n\nIt creates the opposite partner and the respective view on the semiconductor material or product.\n\nTo run the tests correctly, take the environment and fill the respective secrets:\n\n- CUSTOMER_EDC_API_KEY\n- CUSTOMER_PURIS_BACKEND_API_KEY\n- SUPPLIER_EDC_API_KEY\n- SUPPLIER_PURIS_BACKEND_API_KEY\n    \n\nWhen using the another environment, update / create a new environment.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_exporter_id": "26605468"
+    },
+    "item": [
+        {
+            "name": "Test_01-MAD",
+            "item": [
+                {
+                    "name": "CustomerInit",
+                    "item": [
+                        {
+                            "name": "Create Semiconductor Material",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"materialFlag\": true,\n  \"productFlag\": false,\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n  \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n  \"name\": \"Semiconductor\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/materials",
+                                    "host": [
+                                        "{{CUSTOMER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "materials"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Control Unit Product",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"materialFlag\": false,\n    \"productFlag\": true,\n    \"ownMaterialNumber\": \"MNR-4177-S\",\n    \"materialNumberCx\": null,\n    \"name\": \"Central Control Unit\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/materials",
+                                    "host": [
+                                        "{{CUSTOMER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "materials"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get All Materials",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})",
+                                            "",
+                                            "pm.test(\"Verify response contains two objects\", function () {",
+                                            "    pm.expect(pm.response.json()).to.be.an(\"array\").with.lengthOf(2);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Verify ownMaterialNumber values\", function () {",
+                                            "    var responseJson = pm.response.json();",
+                                            "",
+                                            "    var foundValues = [];",
+                                            "  ",
+                                            "    responseJson.forEach(function (obj) {",
+                                            "        pm.expect(obj).to.have.property(\"ownMaterialNumber\");",
+                                            "        pm.expect(obj.ownMaterialNumber).to.be.oneOf([\"MNR-4177-S\", pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\")]);",
+                                            "",
+                                            "        // Put found value into foundValues to ensure that each value is only found once",
+                                            "        pm.expect(foundValues).to.not.include(obj.ownMaterialNumber);",
+                                            "        foundValues.push(obj.ownMaterialNumber);",
+                                            "    });",
+                                            "});",
+                                            ""
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/materials/all",
+                                    "host": [
+                                        "{{CUSTOMER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "materials",
+                                        "all"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Register Supplier Partner",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Semiconductor Supplier Inc.\",\n  \"edcUrl\": \"{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\n  \"bpnl\": \"{{SUPPLIER_BPNL}}\",\n  \"addresses\": [],\n  \"sites\": [\n    {\n      \"bpns\": \"{{SUPPLIER_BPNS}}\",\n      \"name\": \"Semiconductor Supplier Inc. Headquarter\",\n      \"addresses\": [\n        {\n          \"bpna\": \"{{SUPPLIER_BPNA}}\",\n          \"streetAndNumber\": \"Wall Street 101\",\n          \"zipCodeAndCity\": \"10001 New York\",\n          \"country\": \"USA\"\n        }\n      ]\n    }\n  ]\n}"
+                                },
+                                "url": {
+                                    "raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/partners",
+                                    "host": [
+                                        "{{CUSTOMER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "partners"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Supplier Partner",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function () {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})",
+                                            "",
+                                            "pm.test(\"Verify partner values (BPNL with one BPNS with one BPNA)\", function () {",
+                                            "    var responseJson = pm.response.json();",
+                                            "",
+                                            "    pm.expect(responseJson).to.have.property(\"bpnl\");",
+                                            "    pm.expect(responseJson.bpnl).to.equal(pm.environment.get(\"SUPPLIER_BPNL\"));",
+                                            "",
+                                            "    pm.expect(responseJson.sites).to.be.an(\"array\").with.lengthOf(1);",
+                                            "",
+                                            "    var site = responseJson.sites[0];",
+                                            "    pm.expect(site).to.have.property(\"bpns\", pm.environment.get(\"SUPPLIER_BPNS\"));",
+                                            "",
+                                            "    pm.expect(site.addresses).to.be.an(\"array\").with.lengthOf(1);",
+                                            "",
+                                            "    var address = site.addresses[0];",
+                                            "    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"SUPPLIER_BPNA\"));",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/partners?partnerBpnl={{SUPPLIER_BPNL}}",
+                                    "host": [
+                                        "{{CUSTOMER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "partners"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "partnerBpnl",
+                                            "value": "{{SUPPLIER_BPNL}}"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Add New Site to Supplier Partner",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})",
+                                            ""
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n\"bpns\": \"{{SUPPLIER_BPNS2}}\",\n\"name\": \"Semiconductor Supplier Inc. Secondary Site\",\n\"addresses\": [\n    {\n        \"bpna\": \"{{SUPPLIER_BPNA2}}\",\n        \"streetAndNumber\": \"Sunset Blvd. 345\",\n        \"zipCodeAndCity\": \"90001 Los Angeles\",\n        \"country\": \"USA\"\n    }\n]\n}"
+                                },
+                                "url": {
+                                    "raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/partners/putSite?partnerBpnl={{SUPPLIER_BPNL}}",
+                                    "host": [
+                                        "{{CUSTOMER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "partners",
+                                        "putSite"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "partnerBpnl",
+                                            "value": "{{SUPPLIER_BPNL}}"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get All Partners",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})",
+                                            "",
+                                            "pm.test(\"Verify response contains two objects (puris owner, supplier partner)\", function () {",
+                                            "    pm.expect(pm.response.json()).to.be.an(\"array\").with.lengthOf(2);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Verify supplier partner values (BPNL with one BPNS with one BPNA)\", function () {",
+                                            "    const responseJson = pm.response.json();",
+                                            "",
+                                            "    var supplierPartners = responseJson.filter(function (partner) {",
+                                            "        return partner.bpnl === pm.environment.get(\"SUPPLIER_BPNL\");",
+                                            "    });",
+                                            "",
+                                            "    const supplierPartner = supplierPartners[0];",
+                                            "    pm.expect(supplierPartner).to.have.property(\"bpnl\");",
+                                            "",
+                                            "    pm.expect(supplierPartner.bpnl).to.equal(pm.environment.get(\"SUPPLIER_BPNL\"));",
+                                            "",
+                                            "    pm.expect(supplierPartner.sites).to.be.an(\"array\").with.lengthOf(2);",
+                                            "",
+                                            "    // check only the newly added site as the other one has been checked earlier",
+                                            "    var sites = supplierPartner.sites.filter(function (site) {",
+                                            "        return site.bpns === pm.environment.get(\"SUPPLIER_BPNS2\");",
+                                            "    });",
+                                            "",
+                                            "    const site = sites[0];",
+                                            "    pm.expect(site.addresses).to.be.an(\"array\").with.lengthOf(1);",
+                                            "",
+                                            "    var address = site.addresses[0];",
+                                            "    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"SUPPLIER_BPNA2\"));",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/partners/all",
+                                    "host": [
+                                        "{{CUSTOMER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "partners",
+                                        "all"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Material Partner Relation",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/materialpartnerrelations?partnerBpnl={{SUPPLIER_BPNL}}&ownMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}&partnerMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}&partnerSupplies=true&partnerBuys=false",
+                                    "host": [
+                                        "{{CUSTOMER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "materialpartnerrelations"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "partnerBpnl",
+                                            "value": "{{SUPPLIER_BPNL}}"
+                                        },
+                                        {
+                                            "key": "ownMaterialNumber",
+                                            "value": "{{MATERIAL_NUMBER_CUSTOMER}}"
+                                        },
+                                        {
+                                            "key": "partnerMaterialNumber",
+                                            "value": "{{MATERIAL_NUMBER_SUPPLIER}}"
+                                        },
+                                        {
+                                            "key": "partnerSupplies",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "key": "partnerBuys",
+                                            "value": "false"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Material Partner Mappings",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})",
+                                            "",
+                                            "pm.test(\"Verify material partner mapping\", function () {",
+                                            "    pm.response.to.have.jsonBody(pm.environment.get(\"SUPPLIER_BPNL\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"))",
+                                            "        .and.have.jsonBody(pm.environment.get(\"CUSTOMER_BPNL\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\"));",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/stockView/materialnumbers-mapping?ownMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}",
+                                    "host": [
+                                        "{{CUSTOMER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "stockView",
+                                        "materialnumbers-mapping"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "ownMaterialNumber",
+                                            "value": "{{MATERIAL_NUMBER_CUSTOMER}}"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Own Sites",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})",
+                                            "",
+                                            "pm.test(\"Verify own site values (one BPNS with one BPNA)\", function () {",
+                                            "    const responseJson = pm.response.json();",
+                                            "",
+                                            "    const sites = responseJson.filter(function (site) {",
+                                            "        return site.bpns === pm.environment.get(\"CUSTOMER_BPNS\");",
+                                            "    });",
+                                            "",
+                                            "    const site = sites[0];",
+                                            "    pm.expect(site.addresses).to.be.an(\"array\").with.lengthOf(1);",
+                                            "",
+                                            "    const address = site.addresses[0];",
+                                            "    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"CUSTOMER_BPNA\"));",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/partners/ownSites",
+                                    "host": [
+                                        "{{CUSTOMER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "partners",
+                                        "ownSites"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Semiconductor Material Stock Customer",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Verify stock composition (material number with BPNS, BPNA and Partner BPNL)\", function () {",
+                                            "    var responseJson = pm.response.json();",
+                                            "",
+                                            "    pm.expect(responseJson).to.have.property(\"material\");",
+                                            "    pm.expect(responseJson.material).to.have.property(\"materialNumberCustomer\");",
+                                            "    pm.expect(responseJson.material.materialNumberCustomer).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\"));",
+                                            "",
+                                            "    pm.expect(responseJson).to.have.property(\"stockLocationBpns\");",
+                                            "    pm.expect(responseJson.stockLocationBpns).to.equal(pm.environment.get(\"CUSTOMER_BPNS\"));",
+                                            "",
+                                            "    pm.expect(responseJson).to.have.property(\"stockLocationBpna\");",
+                                            "    pm.expect(responseJson.stockLocationBpna).to.equal(pm.environment.get(\"CUSTOMER_BPNA\"));",
+                                            "",
+                                            "    pm.expect(responseJson).to.have.property(\"partner\");",
+                                            "    pm.expect(responseJson.partner).to.have.property(\"bpnl\");",
+                                            "    pm.expect(responseJson.partner.bpnl).to.equal(pm.environment.get(\"SUPPLIER_BPNL\"));",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"material\": {\n        \"materialFlag\": true,\n        \"productFlag\": false,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 500.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{CUSTOMER_BPNS}}\",\n    \"stockLocationBpna\": \"{{CUSTOMER_BPNA}}\",\n    \"type\": \"MATERIAL\",\n    \"lastUpdatedOn\": \"2023-12-18T13:12:48.466+00:00\",\n    \"isBlocked\": true,\n    \"customerOrderNumber\": \"CNbr-1\",\n    \"customerOrderPositionNumber\": \"C-Pos-1\",\n    \"supplierOrderNumber\": \"SNbr-1\",\n    \"partner\":{\n        \"bpnl\": \"{{SUPPLIER_BPNL}}\"\n    }\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/stockView/material-stocks",
+                                    "host": [
+                                        "{{CUSTOMER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "stockView",
+                                        "material-stocks"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Semiconductor Material Stock Customer",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Verify response contains one stock\", function () {",
+                                            "    pm.expect(pm.response.json()).to.be.an(\"array\").with.lengthOf(1);",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            },
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"material\": {\n        \"materialFlag\": true,\n        \"productFlag\": false,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 5.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{CUSTOMER_BPNS}}\",\n    \"stockLocationBpna\": \"{{CUSTOMER_BPNA}}\",\n    \"type\": \"MATERIAL\",\n    \"lastUpdatedOn\": \"2023-12-18T13:12:48.466+00:00\",\n    \"isBlocked\": true,\n    \"customerOrderNumber\": \"\",\n    \"customerOrderPositionNumber\": \"\",\n    \"supplierOrderNumber\": \"\",\n    \"partner\":{\n        \"bpnl\": \"{{SUPPLIER_BPNL}}\"\n    }\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/stockView/material-stocks",
+                                    "host": [
+                                        "{{CUSTOMER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "stockView",
+                                        "material-stocks"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        }
+                    ],
+                    "auth": {
+                        "type": "apikey",
+                        "apikey": [
+                            {
+                                "key": "value",
+                                "value": "{{CUSTOMER_PURIS_BACKEND_API_KEY}}",
+                                "type": "string"
+                            },
+                            {
+                                "key": "key",
+                                "value": "X-API-KEY",
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    ""
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    ""
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "SupplierInit",
+                    "item": [
+                        {
+                            "name": "Add New Site to Supplier Partner (MySelf)",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})",
+                                            ""
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n\"bpns\": \"{{SUPPLIER_BPNS2}}\",\n\"name\": \"Semiconductor Supplier Inc. Secondary Site\",\n\"addresses\": [\n    {\n        \"bpna\": \"{{SUPPLIER_BPNA2}}\",\n        \"streetAndNumber\": \"Sunset Blvd. 345\",\n        \"zipCodeAndCity\": \"90001 Los Angeles\",\n        \"country\": \"USA\"\n    }\n]\n}"
+                                },
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/partners/putSite?partnerBpnl={{SUPPLIER_BPNL}}",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "partners",
+                                        "putSite"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "partnerBpnl",
+                                            "value": "{{SUPPLIER_BPNL}}"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Semiconductor Product",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"materialFlag\": false,\n  \"productFlag\": true,\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n  \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n  \"name\": \"Semiconductor\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/materials",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "materials"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get All Materials",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})",
+                                            "",
+                                            "pm.test(\"Verify response contains one material objects\", function () {",
+                                            "    pm.expect(pm.response.json()).to.be.an(\"array\").with.lengthOf(1);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Verify ownMaterialNumber values\", function () {",
+                                            "    const material = pm.response.json()[0];",
+                                            "",
+                                            "    pm.expect(material).to.have.property(\"ownMaterialNumber\");",
+                                            "    pm.expect(material.ownMaterialNumber).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"));",
+                                            "});",
+                                            ""
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/materials/all",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "materials",
+                                        "all"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Register Customer Partner",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Control Unit Creator Inc.\",\n  \"edcUrl\": \"{{CUSTOMER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\n  \"bpnl\": \"{{CUSTOMER_BPNL}}\",\n  \"addresses\": [],\n  \"sites\": [\n    {\n      \"bpns\": \"{{CUSTOMER_BPNS}}\",\n      \"name\": \"Control Unit Creator Headquarter\",\n      \"addresses\": [\n        {\n          \"bpna\": \"{{CUSTOMER_BPNA}}\",\n          \"streetAndNumber\": \"13th Street 47\",\n          \"zipCodeAndCity\": \"10011 New York\",\n          \"country\": \"USA\"\n        }\n      ]\n    }\n  ]\n}"
+                                },
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/partners",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "partners"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Customer Partner",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function () {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})",
+                                            "",
+                                            "pm.test(\"Verify partner values (BPNL with one BPNS with one BPNA)\", function () {",
+                                            "    var responseJson = pm.response.json();",
+                                            "",
+                                            "    pm.expect(responseJson).to.have.property(\"bpnl\");",
+                                            "    pm.expect(responseJson.bpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
+                                            "",
+                                            "    pm.expect(responseJson.sites).to.be.an(\"array\").with.lengthOf(1);",
+                                            "",
+                                            "    var site = responseJson.sites[0];",
+                                            "    pm.expect(site).to.have.property(\"bpns\", pm.environment.get(\"CUSTOMER_BPNS\"));",
+                                            "",
+                                            "    pm.expect(site.addresses).to.be.an(\"array\").with.lengthOf(1);",
+                                            "",
+                                            "    var address = site.addresses[0];",
+                                            "    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"CUSTOMER_BPNA\"));",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/partners?partnerBpnl={{CUSTOMER_BPNL}}",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "partners"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "partnerBpnl",
+                                            "value": "{{CUSTOMER_BPNL}}"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Material Partner Relation",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/materialpartnerrelations?partnerBpnl={{CUSTOMER_BPNL}}&ownMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}&partnerMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}&partnerSupplies=false&partnerBuys=true",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "materialpartnerrelations"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "partnerBpnl",
+                                            "value": "{{CUSTOMER_BPNL}}"
+                                        },
+                                        {
+                                            "key": "ownMaterialNumber",
+                                            "value": "{{MATERIAL_NUMBER_SUPPLIER}}"
+                                        },
+                                        {
+                                            "key": "partnerMaterialNumber",
+                                            "value": "{{MATERIAL_NUMBER_CUSTOMER}}"
+                                        },
+                                        {
+                                            "key": "partnerSupplies",
+                                            "value": "false"
+                                        },
+                                        {
+                                            "key": "partnerBuys",
+                                            "value": "true"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Material Partner Mappings",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})",
+                                            "",
+                                            "pm.test(\"Verify material partner mapping\", function () {",
+                                            "    pm.response.to.have.jsonBody(pm.environment.get(\"SUPPLIER_BPNL\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"))",
+                                            "        .and.have.jsonBody(pm.environment.get(\"CUSTOMER_BPNL\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\"));",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/stockView/materialnumbers-mapping?ownMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "stockView",
+                                        "materialnumbers-mapping"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "ownMaterialNumber",
+                                            "value": "{{MATERIAL_NUMBER_SUPPLIER}}"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Own Sites",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})",
+                                            "",
+                                            "pm.test(\"Verify own site values (one BPNS with one BPNA)\", function () {",
+                                            "    const responseJson = pm.response.json();",
+                                            "",
+                                            "    const sites = responseJson.filter(function (site) {",
+                                            "        return site.bpns === pm.environment.get(\"SUPPLIER_BPNS\");",
+                                            "    });",
+                                            "",
+                                            "    const site = sites[0];",
+                                            "    pm.expect(site.addresses).to.be.an(\"array\").with.lengthOf(1);",
+                                            "",
+                                            "    const address = site.addresses[0];",
+                                            "    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"SUPPLIER_BPNA\"));",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/partners/ownSites",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "partners",
+                                        "ownSites"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Semiconductor Product Stock Supplier",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"material\": {\n        \"materialFlag\": false,\n        \"productFlag\": true,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberSupplier\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 100.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{SUPPLIER_BPNS}}\",\n    \"stockLocationBpna\": \"{{SUPPLIER_BPNA}}\",\n    \"type\": \"PRODUCT\",\n    \"lastUpdatedOn\": \"2023-12-18T14:12:48.466+00:00\",\n    \"isBlocked\": true,\n    \"customerOrderNumber\": \"CNbr-2\",\n    \"customerOrderPositionNumber\": \"C-Pos-2\",\n    \"supplierOrderNumber\": \"SNbr-2\",\n    \"partner\":{\n        \"bpnl\": \"{{CUSTOMER_BPNL}}\"\n    }\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/stockView/product-stocks",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "stockView",
+                                        "product-stocks"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Semiconductor Product Stock 2 Supplier",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "})"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"material\": {\n        \"materialFlag\": false,\n        \"productFlag\": true,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberSupplier\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 400.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{SUPPLIER_BPNS2}}\",\n    \"stockLocationBpna\": \"{{SUPPLIER_BPNA2}}\",\n    \"type\": \"PRODUCT\",\n    \"lastUpdatedOn\": \"2023-12-18T14:12:48.466+00:00\",\n    \"isBlocked\": false,\n    \"customerOrderNumber\": \"CNbr-2\",\n    \"customerOrderPositionNumber\": \"C-Pos-2\",\n    \"supplierOrderNumber\": \"SNbr-2\",\n    \"partner\":{\n        \"bpnl\": \"{{CUSTOMER_BPNL}}\"\n    }\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/stockView/product-stocks",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "stockView",
+                                        "product-stocks"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Semiconductor Product Stocks (Supplier)",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"response is ok\", function() {",
+                                            "    pm.response.to.have.status(200);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Verify response contains two product stock objects\", function () {",
+                                            "    pm.expect(pm.response.json()).to.be.an(\"array\").with.lengthOf(2);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Verify stock composition NY (material number with BPNS, BPNA and Partner BPNL)\", function () {",
+                                            "",
+                                            "    var responseJson = pm.response.json();",
+                                            "",
+                                            "    const stockNy = responseJson.filter(function (stock) {",
+                                            "        return stock.stockLocationBpns === pm.environment.get(\"SUPPLIER_BPNS\");",
+                                            "    })[0];",
+                                            "",
+                                            "    pm.expect(stockNy).to.have.property(\"material\");",
+                                            "    pm.expect(stockNy.material).to.have.property(\"materialNumberCustomer\");",
+                                            "    pm.expect(stockNy.material.materialNumberSupplier).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"));",
+                                            "",
+                                            "    pm.expect(stockNy).to.have.property(\"stockLocationBpns\");",
+                                            "    pm.expect(stockNy.stockLocationBpns).to.equal(pm.environment.get(\"SUPPLIER_BPNS\"));",
+                                            "",
+                                            "    pm.expect(stockNy).to.have.property(\"stockLocationBpna\");",
+                                            "    pm.expect(stockNy.stockLocationBpna).to.equal(pm.environment.get(\"SUPPLIER_BPNA\"));",
+                                            "",
+                                            "    pm.expect(stockNy).to.have.property(\"partner\");",
+                                            "    pm.expect(stockNy.partner).to.have.property(\"bpnl\");",
+                                            "    pm.expect(stockNy.partner.bpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Verify stock composition LA (material number with BPNS, BPNA and Partner BPNL)\", function () {",
+                                            "",
+                                            "    var responseJson = pm.response.json();",
+                                            "",
+                                            "    const stockLa = responseJson.filter(function (stock) {",
+                                            "        return stock.stockLocationBpns === pm.environment.get(\"SUPPLIER_BPNS2\");",
+                                            "    })[0];",
+                                            "",
+                                            "    console.log(stockLa);",
+                                            "",
+                                            "    pm.expect(stockLa).to.have.property(\"material\");",
+                                            "    pm.expect(stockLa.material).to.have.property(\"materialNumberCustomer\");",
+                                            "    pm.expect(stockLa.material.materialNumberSupplier).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"));",
+                                            "",
+                                            "    pm.expect(stockLa).to.have.property(\"stockLocationBpns\");",
+                                            "    pm.expect(stockLa.stockLocationBpns).to.equal(pm.environment.get(\"SUPPLIER_BPNS2\"));",
+                                            "",
+                                            "    pm.expect(stockLa).to.have.property(\"stockLocationBpna\");",
+                                            "    pm.expect(stockLa.stockLocationBpna).to.equal(pm.environment.get(\"SUPPLIER_BPNA2\"));",
+                                            "",
+                                            "    pm.expect(stockLa).to.have.property(\"partner\");",
+                                            "    pm.expect(stockLa.partner).to.have.property(\"bpnl\");",
+                                            "    pm.expect(stockLa.partner.bpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "",
+                                        "value": "",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/stockView/product-stocks",
+                                    "host": [
+                                        "{{SUPPLIER_PURIS_BACKEND}}"
+                                    ],
+                                    "path": [
+                                        "catena",
+                                        "stockView",
+                                        "product-stocks"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        }
+                    ],
+                    "auth": {
+                        "type": "apikey",
+                        "apikey": [
+                            {
+                                "key": "value",
+                                "value": "{{SUPPLIER_PURIS_BACKEND_API_KEY}}",
+                                "type": "string"
+                            },
+                            {
+                                "key": "key",
+                                "value": "X-API-KEY",
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    ""
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    ""
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Test_02-EDC",
+            "item": [
+                {
+                    "name": "Query Catalog for request offer as Customer from Supplier",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"response is ok\", function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify response contains one data offer\", function () {",
+                                    "    console.info(pm.response.json());",
+                                    "    console.info(pm.response.json()['dcat:dataset']);",
+                                    "    pm.expect(pm.response.json()['dcat:dataset']).to.be.an(\"object\");",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify that offer matches search criteria (dct:type, cx-common:version)\", function () {",
+                                    "    const contractOffer = pm.response.json()['dcat:dataset'];",
+                                    "",
+                                    "    pm.expect(contractOffer).to.exist;",
+                                    "",
+                                    "    pm.expect(contractOffer[\"https://w3id.org/catenax/ontology/common#version\"]).to.equal(\"1.0\");",
+                                    "    pm.expect(contractOffer[\"dct:type\"][\"@id\"]).to.equal(\"https://w3id.org/catenax/taxonomy#ItemStockRequestApi\");    ",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n    \"@context\": {},\r\n    \"@type\": \"CatalogRequest\",\r\n    \"protocol\": \"dataspace-protocol-http\",\r\n    \"counterPartyAddress\": \"{{CUSTOMER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\r\n    \"querySpec\": {\r\n        \"offset\": 0,\r\n        \"limit\": 100,\r\n        \"filter\": \"\",\r\n        \"range\": {\r\n            \"from\": 0,\r\n            \"to\": 100\r\n        },\r\n        \"filterExpression\": [\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"asset:prop:type\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"data.res.itemStockRequestApi\"\r\n            },\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"https://w3id.org/catenax/ontology/common#version\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"1.0\"\r\n            }\r\n        ]\r\n    }\r\n}\r\n",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v2/catalog/request",
+                            "host": [
+                                "{{SUPPLIER_EDC}}"
+                            ],
+                            "path": [
+                                "{{MANAGEMENT_PATH}}",
+                                "v2",
+                                "catalog",
+                                "request"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Query Catalog for response offer as Customer from Supplier",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"response is ok\", function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify response contains one data offer\", function () {",
+                                    "    console.info(pm.response.json());",
+                                    "    console.info(pm.response.json()['dcat:dataset']);",
+                                    "    pm.expect(pm.response.json()['dcat:dataset']).to.be.an(\"object\");",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify that offer matches search criteria (dct:type, cx-common:version)\", function () {",
+                                    "    const contractOffer = pm.response.json()['dcat:dataset'];",
+                                    "",
+                                    "    pm.expect(contractOffer).to.exist;",
+                                    "",
+                                    "    pm.expect(contractOffer[\"https://w3id.org/catenax/ontology/common#version\"]).to.equal(\"1.0\");",
+                                    "    pm.expect(contractOffer[\"dct:type\"][\"@id\"]).to.equal(\"https://w3id.org/catenax/taxonomy#ItemStockResponseApi\");    ",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n    \"@context\": {},\r\n    \"@type\": \"CatalogRequest\",\r\n    \"protocol\": \"dataspace-protocol-http\",\r\n    \"counterPartyAddress\": \"{{CUSTOMER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\r\n    \"querySpec\": {\r\n        \"offset\": 0,\r\n        \"limit\": 100,\r\n        \"filter\": \"\",\r\n        \"range\": {\r\n            \"from\": 0,\r\n            \"to\": 100\r\n        },\r\n        \"filterExpression\": [\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"asset:prop:type\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"data.res.itemStockResponseApi\"\r\n            },\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"https://w3id.org/catenax/ontology/common#version\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"1.0\" \r\n            }\r\n        ]\r\n    }\r\n}\r\n",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v2/catalog/request",
+                            "host": [
+                                "{{SUPPLIER_EDC}}"
+                            ],
+                            "path": [
+                                "{{MANAGEMENT_PATH}}",
+                                "v2",
+                                "catalog",
+                                "request"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Query Catalog for request status offer as Customer from Supplier",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"response is ok\", function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify response contains one data offer\", function () {",
+                                    "    console.info(pm.response.json());",
+                                    "    console.info(pm.response.json()['dcat:dataset']);",
+                                    "    pm.expect(pm.response.json()['dcat:dataset']).to.be.an(\"object\");",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Verify that offer matches search criteria (dct:type, cx-common:version)\", function () {",
+                                    "    const contractOffer = pm.response.json()['dcat:dataset'];",
+                                    "",
+                                    "    pm.expect(contractOffer).to.exist;",
+                                    "",
+                                    "    pm.expect(contractOffer[\"https://w3id.org/catenax/ontology/common#version\"]).to.equal(\"1.0\");",
+                                    "    pm.expect(contractOffer[\"dct:type\"][\"@id\"]).to.equal(\"https://w3id.org/catenax/taxonomy#ItemStockRequestStatusApi\");    ",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n    \"@context\": {},\r\n    \"@type\": \"CatalogRequest\",\r\n    \"protocol\": \"dataspace-protocol-http\",\r\n    \"counterPartyAddress\": \"{{CUSTOMER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}\",\r\n    \"querySpec\": {\r\n        \"offset\": 0,\r\n        \"limit\": 100,\r\n        \"filter\": \"\",\r\n        \"range\": {\r\n            \"from\": 0,\r\n            \"to\": 100\r\n        },\r\n        \"filterExpression\": [\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"asset:prop:type\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"data.res.itemStockRequestStatusApi\"\r\n            },\r\n            {\r\n                \"@type\" : \"CriterionDto\",\r\n                \"operandLeft\": \"https://w3id.org/catenax/ontology/common#version\",\r\n                \"operator\": \"=\",\r\n                \"operandRight\": \"1.0\" \r\n            }\r\n        ]\r\n    }\r\n}\r\n",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v2/catalog/request",
+                            "host": [
+                                "{{SUPPLIER_EDC}}"
+                            ],
+                            "path": [
+                                "{{MANAGEMENT_PATH}}",
+                                "v2",
+                                "catalog",
+                                "request"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ],
+            "auth": {
+                "type": "apikey",
+                "apikey": [
+                    {
+                        "key": "value",
+                        "value": "{{SUPPLIER_EDC_API_KEY}}",
+                        "type": "string"
+                    },
+                    {
+                        "key": "key",
+                        "value": "X-Api-Key",
+                        "type": "string"
+                    }
+                ]
+            },
+            "event": [
+                {
+                    "listen": "prerequest",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            ""
+                        ]
+                    }
+                },
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            ""
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "MATERIAL_NUMBER_CUSTOMER",
+            "value": "MNR-7307-AU340474.002",
+            "type": "string"
+        },
+        {
+            "key": "MATERIAL_NUMBER_SUPPLIER",
+            "value": "MNR-8101-ID146955.001",
+            "type": "string"
+        },
+        {
+            "key": "MATERIAL_NUMBER_CX",
+            "value": "860fb504-b884-4009-9313-c6fb6cdc776b",
+            "type": "string"
+        }
+    ]
+}

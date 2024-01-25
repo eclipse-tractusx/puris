@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,11 +49,7 @@ public class EdcRequestBodyBuilder {
     private final String ODRL_NAMESPACE = "http://www.w3.org/ns/odrl/2/";
     private final String CX_TAXO_NAMESPACE = "https://w3id.org/catenax/taxonomy#";
     private final String CX_COMMON_NAMESPACE = "https://w3id.org/catenax/ontology/common#";
-    private final String CX_VERSION_KEY = "https://w3id.org/catenax/ontology/common#version";
-    private final String CX_VERSION_NUMBER = "2.0.0";
     private final String DCT_NAMESPACE = "https://purl.org/dc/terms/";
-    private final String PURL_TYPE_KEY = "https://purl.org/dc/terms/type";
-
 
     /**
      * Creates a request body for requesting a catalog in DSP protocol.
@@ -98,49 +94,6 @@ public class EdcRequestBodyBuilder {
         propertiesObject.put("asset:prop:type", apiMethod.TYPE);
         propertiesObject.put("cx-common:version", "1.0");
         propertiesObject.put("description", apiMethod.DESCRIPTION);
-
-        var dataAddress = MAPPER.createObjectNode();
-        String url = apiMethod == DT_ApiMethodEnum.REQUEST ? variablesService.getRequestServerEndpoint() : variablesService.getResponseServerEndpoint();
-        dataAddress.put("baseUrl", url);
-        dataAddress.put("type", "HttpData");
-        dataAddress.put("proxyPath", "true");
-        dataAddress.put("proxyBody", "true");
-        dataAddress.put("proxyMethod", "true");
-        dataAddress.put("authKey", "x-api-key");
-        dataAddress.put("authCode", variablesService.getApiKey());
-        body.set("dataAddress", dataAddress);
-        return body;
-    }
-
-    /**
-     * Build a request body for a request to register an api method as an asset in DSP protocol.
-     *
-     * @param apiMethod The API method you want to register
-     * @return The request body
-     */
-    public JsonNode buildCreateAssetBody(DT_ApiMethodEnum apiMethod) {
-        var body = MAPPER.createObjectNode();
-        var context = MAPPER.createObjectNode();
-        context.put(VOCAB_KEY, EDC_NAMESPACE);
-        context.put("cx-taxo", CX_TAXO_NAMESPACE);
-        context.put("cx-common", CX_COMMON_NAMESPACE);
-        context.put("dct", DCT_NAMESPACE);
-        body.set("@context", context);
-
-        String apiId = variablesService.getApiAssetId(apiMethod);
-        body.put("@id", apiId);
-        var properties = MAPPER.createObjectNode();
-        properties.put("asset:prop:type", "api");
-        properties.put("asset:prop:apibusinessobject", "product-stock");
-        properties.put("asset:prop:version", variablesService.getPurisApiVersion());
-        properties.put("asset:prop:apipurpose", apiMethod.PURPOSE);
-        body.set("properties", properties);
-        var edcProperties = MAPPER.createObjectNode();
-        edcProperties.put(CX_VERSION_KEY, CX_VERSION_NUMBER);
-        var typeNode = MAPPER.createObjectNode();
-        String taxonomy = DT_ApiMethodEnum.REQUEST == apiMethod ? "ProductStockRequestApi" : "ProductStockResponseApi";
-        typeNode.put("@id", CX_TAXO_NAMESPACE + taxonomy);
-        edcProperties.set(PURL_TYPE_KEY, typeNode);
 
         var dataAddress = MAPPER.createObjectNode();
         String url = apiMethod == DT_ApiMethodEnum.REQUEST ? variablesService.getRequestServerEndpoint() : variablesService.getResponseServerEndpoint();
@@ -278,6 +231,34 @@ public class EdcRequestBodyBuilder {
         var privateProperties = MAPPER.createObjectNode();
         privateProperties.put("receiverHttpEndpoint", variablesService.getEdrEndpoint());
         body.set("privateProperties", privateProperties);
+        return body;
+    }
+
+    /**
+     * Creates the request body for requesting a full list of all
+     * negotiations in the history of your EDC control plane.
+     *
+     * @return The request body
+     */
+    public JsonNode buildNegotiationsRequestBody() {
+        var body = getEdcContextObject();
+        body.put("@type", "QuerySpec");
+        body.put("sortOrder", "DESC");
+        body.put("sortField", "createdAt");
+        return body;
+    }
+
+    /**
+     * Creates the request body for requesting a full list of all
+     * transfers in the history of your EDC control plane.
+     *
+     * @return The request body
+     */
+    public JsonNode buildTransfersRequestBody() {
+        var body = getEdcContextObject();
+        body.put("@type", "QuerySpec");
+        body.put("sortOrder", "DESC");
+        body.put("sortField", "stateTimestamp");
         return body;
     }
 

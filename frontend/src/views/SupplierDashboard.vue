@@ -20,6 +20,11 @@
 -->
 <template>
     <main>
+        <header class="banner">
+            <div class="banner-text">
+                CONFIDENTIAL - The data you see is confidential and should be treated according to present law
+            </div>
+        </header>
         <div class="text-gray-900 ">
 
             <!-- First content bubble-->
@@ -275,7 +280,7 @@ export default{
         }
     },
     changeBgColor: function (index, production){
-        if (production < this.mockTotalDemand[index]){
+        if (production < this.totalDemand[index]){
             return {'background-color': 'red'};
         }
     },
@@ -429,6 +434,19 @@ export default{
 </script>
 
 <style scoped>
+.banner {
+    justify-content: center;
+    background-color: burlywood;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+.banner-text {
+    text-align: center;
+    padding: 10px;
+    color: red;
+    font-weight: bold;
+}
 #updateCustomerDataBtn, #hintMessage{
     position: sticky;
     margin-top: 10px;

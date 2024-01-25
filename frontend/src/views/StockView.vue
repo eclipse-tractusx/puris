@@ -20,6 +20,11 @@
 -->
 <template>
     <main class="flex flex-col mb-7">
+        <header class="banner">
+            <div class="banner-text">
+                CONFIDENTIAL - The data you see is confidential and should be treated according to present law
+            </div>
+        </header>
         <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
             View and Manage Stocks
         </h1>
@@ -633,4 +638,18 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.banner {
+    justify-content: center;
+    background-color: burlywood;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+.banner-text {
+    text-align: center;
+    padding: 10px;
+    color: red;
+    font-weight: bold;
+}
+</style>
