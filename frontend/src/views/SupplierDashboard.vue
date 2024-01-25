@@ -22,7 +22,8 @@
     <main>
         <header class="banner">
             <div class="banner-text">
-                CONFIDENTIAL - The data you see is confidential and should be treated according to present law
+                IMPORTANT: Please note that the data shown may be <b>competitively sensitive</b> and, according to appliable
+                antitrust laws,<b> must not </b>be shared with competitors. Please consult your legal department, if necessary.
             </div>
         </header>
         <div class="text-gray-900 ">
@@ -445,7 +446,6 @@ export default{
     text-align: center;
     padding: 10px;
     color: red;
-    font-weight: bold;
 }
 #updateCustomerDataBtn, #hintMessage{
     position: sticky;
