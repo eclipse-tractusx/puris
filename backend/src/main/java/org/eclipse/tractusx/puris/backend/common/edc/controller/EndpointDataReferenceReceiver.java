@@ -27,7 +27,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EndpointDataReferenceService;
 import org.springframework.beans.factory.annotation.Autowired;

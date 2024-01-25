@@ -23,7 +23,7 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 @AllArgsConstructor
 @NoArgsConstructor
