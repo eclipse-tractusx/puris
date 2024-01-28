@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,8 +20,12 @@
 
 package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 
 import java.util.ArrayList;
@@ -31,29 +35,45 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@ToString
 /**
  * This class represents a response message as it is sent
  * to the counterparty.
  */
 public class ItemStockResponseDto {
 
+    @NotNull
     private HeaderDto header = new HeaderDto();
+    @NotNull
     private ContentDto content = new ContentDto();
 
     @Getter
     @Setter
+    @ToString
     public static class HeaderDto {
+        @NotNull
         private UUID messageId;
+        @NotNull
         private UUID relatedMessageId;
+        @NotNull
+        @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String context;
+        @NotNull
+        @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String version;
+        @NotNull
+        @Pattern(regexp = PatternStore.BPNL_STRING)
         private String senderBpn;
+        @NotNull
+        @Pattern(regexp = PatternStore.BPNL_STRING)
         private String receiverBpn;
+        @NotNull
         private Date sentDateTime;
     }
 
     @Getter
     @Setter
+    @ToString
     public static class ContentDto {
         List<ItemStockSamm> itemStock = new ArrayList<>();
     }

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -27,9 +27,9 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EndpointDataReferenceService;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -50,10 +50,8 @@ public class EndpointDataReferenceReceiver {
     @Autowired
     private EndpointDataReferenceService edrService;
 
-    private final Pattern alphanumericalPattern = Pattern.compile("^[a-zA-Z0-9]+$");
-    private final Pattern idPattern = Pattern.compile("^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$");
-    private final Pattern codePattern = Pattern.compile("^[a-zA-Z0-9\\.\\-_]+$");
-    private final Pattern edcUrlPattern = Pattern.compile(Partner.EDC_REGEX);
+    private final Pattern basicPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
+    private final Pattern edcUrlPattern = PatternStore.URL_PATTERN;
 
     /**
      * This endpoint awaits incoming EDR Tokens from external
@@ -74,13 +72,13 @@ public class EndpointDataReferenceReceiver {
     private ResponseEntity<String> authCodeReceivingEndpoint(@RequestBody JsonNode body) {
         log.debug("Received edr data:\n" + body.toPrettyString());
         String transferId = body.get("id").asText();
-        boolean valid = (transferId != null) && idPattern.matcher(transferId).matches();
+        boolean valid = (transferId != null) && basicPattern.matcher(transferId).matches();
 
         String authKey = body.get("authKey").asText();
-        valid = valid && (authKey != null) && alphanumericalPattern.matcher(authKey).matches();
+        valid = valid && (authKey != null) && basicPattern.matcher(authKey).matches();
 
         String authCode = body.get("authCode").asText();
-        valid = valid && (authCode != null) && codePattern.matcher(authCode).matches();
+        valid = valid && (authCode != null) && basicPattern.matcher(authCode).matches();
 
         String endpoint = body.get("endpoint").asText();
         valid = valid && (endpoint != null) && edcUrlPattern.matcher(endpoint).matches();

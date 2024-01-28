@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2022,2023 Volkswagen AG
- * Copyright (c) 2022,2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
- * Copyright (c) 2022,2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022-2024 Volkswagen AG
+ * Copyright (c) 2022-2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ * Copyright (c) 2022-2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -55,15 +55,6 @@ export const ALL_ROUTES = [
         path: "/transfers",
         name: "Transfers",
         component: () => import("../views/TransferView.vue"),
-        meta: {
-            requiresAuth: true,
-            requiredRoles: ["PURIS_ADMIN"],
-        },
-    },
-    {
-        path: "/connectors",
-        name: "Connectors",
-        component: () => import("../views/ConnectorView.vue"),
         meta: {
             requiresAuth: true,
             requiredRoles: ["PURIS_ADMIN"],

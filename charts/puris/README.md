@@ -58,7 +58,6 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.podSecurityContext | object | `{}` | Added security contexts for a pod |
 | backend.puris.api.key | string | `"test"` | The API key of the PURIS application |
 | backend.puris.api.rootDir | string | `"/catena"` | The root directory of the API |
-| backend.puris.api.version | string | `"1.0.0"` | Current version of the puris API |
 | backend.puris.datasource.driverClassName | string | `"org.postgresql.Driver"` | Driver class name of the database |
 | backend.puris.datasource.password | string | `nil` | Password for the database user. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.url | string | `"jdbc:postgresql://postgresql-name:5432/puris-database"` | URL of the database. Ignored if postgres.enabled is true. |
@@ -81,10 +80,12 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.own.site.name | string | `"puris-test"` | Own site name |
 | backend.puris.own.streetnumber | string | `"Musterstraße 110A"` | Own street and number |
 | backend.puris.own.zipcodeandcity | string | `"12345 Musterhausen"` | Own zipcode and city |
-| backend.puris.request.apiassetid | string | `"product-stock-request-api"` | Asset ID for request API |
+| backend.puris.request.apiassetid | string | `"request-api-asset"` | Asset ID for request API |
 | backend.puris.request.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for request |
-| backend.puris.response.apiassetid | string | `"product-stock-response-api"` | Asset ID for response API |
+| backend.puris.response.apiassetid | string | `"response-api-asset"` | Asset ID for response API |
 | backend.puris.response.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for response |
+| backend.puris.statusrequest.apiassetid | string | `"statusrequest-api-asset"` | Asset ID for status-request API |
+| backend.puris.statusrequest.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for statusrequest |
 | backend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":250,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
 | backend.readinessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a readiness probe |
 | backend.readinessProbe.initialDelaySeconds | int | `250` | Delay in seconds after which an initial readiness probe is checked |
@@ -138,11 +139,13 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.puris.endpointMaterialStocks | string | `"stockView/material-stocks"` | The endpoint for material stocks for the stock view |
 | frontend.puris.endpointMaterials | string | `"stockView/materials"` | The endpoint for materials for the stock view |
 | frontend.puris.endpointPartnerOwnSites | string | `"partners/ownSites"` | The endpoint for the partners BPNS |
-| frontend.puris.endpointPartnerProductStocks | string | `"stockView/partner-product-stocks?ownMaterialNumber="` | The endpoint for the partners product stocks and their material numbers for the stock view |
 | frontend.puris.endpointProductStocks | string | `"stockView/product-stocks"` | The endpoint for product stocks for the stock view |
 | frontend.puris.endpointProducts | string | `"stockView/products"` | The endpoint for products for the stock view |
+| frontend.puris.endpointReportedMaterialStocks | string | `"stockView/reported-material-stocks?ownMaterialNumber="` | The endpoint for the partners' (supplier) material stocks that they potentially will deliver to me |
+| frontend.puris.endpointReportedProductStocks | string | `"stockView/reported-product-stocks?ownMaterialNumber="` | The endpoint for the partners' (customer) product stocks that they received from me |
 | frontend.puris.endpointSupplier | string | `"stockView/supplier?ownMaterialNumber="` | The endpoint for the suppliers who buy a material identified via the own material number for the stock view |
-| frontend.puris.endpointUpdatePartnerProductStocks | string | `"stockView/update-partner-product-stock?ownMaterialNumber="` | The endpoint for updating the partners product stocks and their material numbers for the stock view |
+| frontend.puris.endpointUpdateReportedMaterialStocks | string | `"stockView/update-reported-material-stocks?ownMaterialNumber="` | The endpoint for triggering an update of your material stocks on your partners side |
+| frontend.puris.endpointUpdateReportedProductStocks | string | `"stockView/update-reported-product-stocks?ownMaterialNumber="` | The endpoint for triggering an update of your product stocks on your partners side |
 | frontend.puris.keycloak.clientId | string | `"appXYZ"` | Name of the client which is used for the application. |
 | frontend.puris.keycloak.disabled | bool | `true` | Disable the Keycloak integration. |
 | frontend.puris.keycloak.realm | string | `"Catena-X"` | Name of the Realm of the keycloak instance. |
@@ -176,5 +179,3 @@ $ helm install puris --namespace puris --create-namespace .
 | postgresql.fullnameOverride | string | `"backend-postgresql"` | Possibility to override the fullname |
 | postgresql.service.ports.postgresql | int | `5432` | Port of postgres database. |
 
-----------------------------------------------
-Autogenerated from chart metadata using [helm-docs v1.11.3](https://github.com/norwoodj/helm-docs/releases/v1.11.3)

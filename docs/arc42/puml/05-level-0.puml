@@ -1,11 +1,12 @@
 @startuml
 [Data Provisioning & Transformation] as data_prov
 [Eclipse DataSpace Components Connector] as edc
+[Postgresql DB] as postgres
 [Keycloak] as idp
 
 data_prov -( "Interface internal systems"
 edc -- "EDC APIs"
-
+e
 package "<<system>> PURIS"{
 
   [PURIS FOSS Backend] as puris_backend
@@ -14,7 +15,8 @@ package "<<system>> PURIS"{
   "EDC APIs" )-- "provide and pull data\naccording to standards" puris_backend
   "Interface internal systems" - puris_backend
   puris_backend <-- puris_frontend
-  idp <- puris_frontend
+  puris_frontend -- idp
+  puris_backend --> postgres
 
 }
 

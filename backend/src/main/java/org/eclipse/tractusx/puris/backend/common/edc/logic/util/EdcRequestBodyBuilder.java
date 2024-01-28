@@ -1,10 +1,31 @@
+/*
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.eclipse.tractusx.puris.backend.common.edc.logic.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +49,7 @@ public class EdcRequestBodyBuilder {
     private final String ODRL_NAMESPACE = "http://www.w3.org/ns/odrl/2/";
     private final String CX_TAXO_NAMESPACE = "https://w3id.org/catenax/taxonomy#";
     private final String CX_COMMON_NAMESPACE = "https://w3id.org/catenax/ontology/common#";
-    private final String CX_VERSION_KEY = "https://w3id.org/catenax/ontology/common#version";
-    private final String CX_VERSION_NUMBER = "2.0.0";
     private final String DCT_NAMESPACE = "https://purl.org/dc/terms/";
-    private final String PURL_TYPE_KEY = "https://purl.org/dc/terms/type";
-
 
     /**
      * Creates a request body for requesting a catalog in DSP protocol.
@@ -59,13 +76,7 @@ public class EdcRequestBodyBuilder {
         return objectNode;
     }
 
-    /**
-     * Build a request body for a request to register an api method as an asset in DSP protocol.
-     *
-     * @param apiMethod The API method you want to register
-     * @return The request body
-     */
-    public JsonNode buildCreateAssetBody(DT_ApiMethodEnum apiMethod) {
+    public JsonNode buildCreateItemStockAssetBody(DT_ApiMethodEnum apiMethod) {
         var body = MAPPER.createObjectNode();
         var context = MAPPER.createObjectNode();
         context.put(VOCAB_KEY, EDC_NAMESPACE);
@@ -73,21 +84,16 @@ public class EdcRequestBodyBuilder {
         context.put("cx-common", CX_COMMON_NAMESPACE);
         context.put("dct", DCT_NAMESPACE);
         body.set("@context", context);
-
-        String apiId = variablesService.getApiAssetId(apiMethod);
-        body.put("@id", apiId);
-        var properties = MAPPER.createObjectNode();
-        properties.put("asset:prop:type", "api");
-        properties.put("asset:prop:apibusinessobject", "product-stock");
-        properties.put("asset:prop:version", variablesService.getPurisApiVersion());
-        properties.put("asset:prop:apipurpose", apiMethod.PURPOSE);
-        body.set("properties", properties);
-        var edcProperties = MAPPER.createObjectNode();
-        edcProperties.put(CX_VERSION_KEY, CX_VERSION_NUMBER);
-        var typeNode = MAPPER.createObjectNode();
-        String taxonomy = DT_ApiMethodEnum.REQUEST == apiMethod ? "ProductStockRequestApi" : "ProductStockResponseApi";
-        typeNode.put("@id", CX_TAXO_NAMESPACE + taxonomy);
-        edcProperties.set(PURL_TYPE_KEY, typeNode);
+        body.put("@type", "Asset");
+        body.put("@id", variablesService.getApiAssetId(apiMethod));
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", "cx-taxo:" + apiMethod.CX_TAXO);
+        propertiesObject.put("asset:prop:type", apiMethod.TYPE);
+        propertiesObject.put("cx-common:version", "1.0");
+        propertiesObject.put("description", apiMethod.DESCRIPTION);
 
         var dataAddress = MAPPER.createObjectNode();
         String url = apiMethod == DT_ApiMethodEnum.REQUEST ? variablesService.getRequestServerEndpoint() : variablesService.getResponseServerEndpoint();
@@ -138,7 +144,7 @@ public class EdcRequestBodyBuilder {
      * Creates a request body in order to register a contract definition for the given partner and the given
      * api method that uses the BPNL-restricted policy created with the buildBpnRestrictedPolicy - method.
      *
-     * @param partner the partner
+     * @param partner   the partner
      * @param apiMethod the api method
      * @return the request body
      */
@@ -225,7 +231,34 @@ public class EdcRequestBodyBuilder {
         var privateProperties = MAPPER.createObjectNode();
         privateProperties.put("receiverHttpEndpoint", variablesService.getEdrEndpoint());
         body.set("privateProperties", privateProperties);
-        log.info(body.toPrettyString());
+        return body;
+    }
+
+    /**
+     * Creates the request body for requesting a full list of all
+     * negotiations in the history of your EDC control plane.
+     *
+     * @return The request body
+     */
+    public JsonNode buildNegotiationsRequestBody() {
+        var body = getEdcContextObject();
+        body.put("@type", "QuerySpec");
+        body.put("sortOrder", "DESC");
+        body.put("sortField", "createdAt");
+        return body;
+    }
+
+    /**
+     * Creates the request body for requesting a full list of all
+     * transfers in the history of your EDC control plane.
+     *
+     * @return The request body
+     */
+    public JsonNode buildTransfersRequestBody() {
+        var body = getEdcContextObject();
+        body.put("@type", "QuerySpec");
+        body.put("sortOrder", "DESC");
+        body.put("sortField", "stateTimestamp");
         return body;
     }
 

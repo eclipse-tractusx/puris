@@ -50,10 +50,14 @@ spec:
               value: "{{ .Values.frontend.puris.endpointCustomer }}"
             - name: ENDPOINT_SUPPLIER
               value: "{{ .Values.frontend.puris.endpointSupplier }}"
-            - name: ENDPOINT_PARTNER_PRODUCT_STOCKS
-              value: "{{ .Values.frontend.puris.endpointPartnerProductStocks }}"
-            - name: ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK
-              value: "{{ .Values.frontend.puris.endpointUpdatePartnerProductStocks }}"
+            - name: ENDPOINT_REPORTED_MATERIAL_STOCKS
+              value: "{{ .Values.frontend.puris.endpointReportedMaterialStocks }}"
+            - name: ENDPOINT_REPORTED_PRODUCT_STOCKS
+              value: "{{ .Values.frontend.puris.endpointReportedProductStocks }}"
+            - name: ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS
+              value: "{{ .Values.frontend.puris.endpointUpdateReportedMaterialStocks }}"
+            - name: ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS
+              value: "{{ .Values.frontend.puris.endpointUpdateReportedProductStocks }}"
             - name: ENDPOINT_PARTNER_OWNSITES
               value: "{{ .Values.frontend.puris.endpointPartnerOwnSites }}"
             - name: BACKEND_API_KEY

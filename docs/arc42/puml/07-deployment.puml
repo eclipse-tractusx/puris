@@ -1,0 +1,48 @@
+@startuml
+
+
+package "Customer"{
+
+  [Tractus-X Connector Customer] as edc_cus
+
+  [Postgresql DB] as postgres_cus
+  [PURIS FOSS Backend] as puris_backend_cus
+  [PURIS FOSS Frontend] as puris_frontend_cus
+
+  puris_backend_cus - edc_cus
+  postgres_cus -- puris_backend_cus
+  "Interface internal systems\n(Customer)" - puris_backend_cus
+  puris_backend_cus -- puris_frontend_cus
+
+}
+
+package "CX" {
+
+  [Keycloak] as keycloak
+  [Managed Identity Wallet] as miw
+
+}
+
+
+package "Supplier"{
+
+  [Tractus-X Connector Supplier] as edc_sup
+
+  [Postgresql DB] as postgres_sup
+  [PURIS FOSS Backend] as puris_backend_sup
+  [PURIS FOSS Frontend] as puris_frontend_sup
+
+  edc_sup - puris_backend_sup
+  postgres_sup -- puris_backend_sup
+  puris_backend_sup - "Interface internal systems\n(Supplier)"
+  puris_backend_sup -- puris_frontend_sup
+
+}
+
+edc_cus -- keycloak
+edc_cus -- miw
+
+keycloak -- edc_sup
+miw -- edc_sup
+
+@enduml

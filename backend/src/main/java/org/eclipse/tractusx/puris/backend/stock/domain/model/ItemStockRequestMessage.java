@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,17 +21,18 @@
 package org.eclipse.tractusx.puris.backend.stock.domain.model;
 
 import jakarta.annotation.Nullable;
-import jakarta.persistence.*;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 
+import java.io.Serializable;
 import java.util.*;
 
 @Getter
@@ -48,20 +49,12 @@ public class ItemStockRequestMessage {
     public final static String CONTEXT = "RES-PURIS-ItemStockRequest:1.0";
     public final static String VERSION = "urn:samm:io.catenax.message_header:2.0";
 
-    @NotNull
-    @Id
-    @GeneratedValue
-    private UUID messageId;
+    @EmbeddedId
+    private Key key;
     @NotNull
     private String context = CONTEXT;
     @NotNull
     private String version = VERSION;
-    @NotNull
-    @Pattern(regexp = Partner.BPNL_REGEX)
-    private String senderBpn;
-    @NotNull
-    @Pattern(regexp = Partner.BPNL_REGEX)
-    private String receiverBpn;
     @Nullable
     private Date sentDateTime;
     @NotNull
@@ -71,16 +64,45 @@ public class ItemStockRequestMessage {
     @NotNull
     private DT_RequestStateEnum state = DT_RequestStateEnum.Working;
 
+    @Embeddable
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    @ToString
+    public static class Key implements Serializable {
+        @NotNull
+        private UUID messageId;
+        @NotNull
+        @Pattern(regexp = PatternStore.BPNL_STRING)
+        private String senderBpn;
+        @NotNull
+        @Pattern(regexp = PatternStore.BPNL_STRING)
+        private String receiverBpn;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Key key)) return false;
+            return Objects.equals(messageId, key.messageId) && Objects.equals(senderBpn, key.senderBpn) && Objects.equals(receiverBpn, key.receiverBpn);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(messageId, senderBpn, receiverBpn);
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ItemStockRequestMessage that)) return false;
-        return Objects.equals(messageId, that.messageId) && Objects.equals(context, that.context) && Objects.equals(version, that.version) && Objects.equals(senderBpn, that.senderBpn) && Objects.equals(receiverBpn, that.receiverBpn) && Objects.equals(sentDateTime, that.sentDateTime) && direction == that.direction && Objects.equals(itemStock, that.itemStock) && state == that.state;
+        return Objects.equals(key, that.key);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(messageId, context, version, senderBpn, receiverBpn, sentDateTime, direction, itemStock, state);
+        return Objects.hash(key);
     }
 
     @Getter

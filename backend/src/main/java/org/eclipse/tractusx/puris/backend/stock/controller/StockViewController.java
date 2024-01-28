@@ -27,35 +27,33 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.Stock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.*;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.PartnerProductStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockRequestApiService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -69,16 +67,19 @@ import java.util.stream.Collectors;
 public class StockViewController {
 
     @Autowired
-    private ProductStockService productStockService;
+    private ProductItemStockService productItemStockService;
 
     @Autowired
-    private MaterialStockService materialStockService;
+    private MaterialItemStockService materialItemStockService;
 
     @Autowired
-    private PartnerProductStockService partnerProductStockService;
+    private ReportedMaterialItemStockService reportedMaterialItemStockService;
 
     @Autowired
-    private ProductStockRequestApiService productStockRequestApiService;
+    private ReportedProductItemStockService reportedProductItemStockService;
+
+    @Autowired
+    private ItemStockRequestApiService itemStockRequestApiService;
 
     @Autowired
     private MaterialService materialService;
@@ -93,9 +94,9 @@ public class StockViewController {
     private ModelMapper modelMapper;
 
     @Autowired
-    private VariablesService variablesService;
+    private Validator validator;
 
-    private final Pattern materialPattern = Pattern.compile(Material.MATERIAL_NUMBER_REGEX);
+    private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
 
     @GetMapping("materials")
     @ResponseBody
@@ -133,12 +134,11 @@ public class StockViewController {
             .collect(Collectors.toList());
     }
 
-
     @GetMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Returns a list of all product-stocks")
     public List<ProductStockDto> getProductStocks() {
-        return productStockService.findAll().stream()
+        return productItemStockService.findAll().stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
     }
@@ -146,15 +146,55 @@ public class StockViewController {
     @PostMapping("product-stocks")
     @ResponseBody
     @Operation(description = "Creates a new product-stock")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Product Stock was created."),
+        @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
+        @ApiResponse(responseCode = "409", description = "Product Stock does already exist."),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+    })
     public ProductStockDto createProductStocks(@RequestBody ProductStockDto productStockDto) {
+        if(!validator.validate(productStockDto).isEmpty()) {
+            log.warn("Rejected invalid message body");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
 
-        ProductStock productStockToCreate = convertToEntity(productStockDto);
+        if (productStockDto.getUuid() != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock misses material identification.");
+        }
 
-        productStockToCreate.setLastUpdatedOn(new Date());
+        if (productStockDto.getMaterial().getMaterialNumberSupplier() == null ||
+            productStockDto.getMaterial().getMaterialNumberSupplier().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock misses material identification.");
+        }
 
-        ProductStock createdProductStock = productStockService.create(productStockToCreate);
+        ProductItemStock productStockToCreate = convertToEntity(productStockDto);
+
+        productStockToCreate.setLastUpdatedOnDateTime(new Date());
+
+        if (!productItemStockService.validate(productStockToCreate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock is invalid.");
+        }
+
+        List<ProductItemStock> existingProductItemStocks = productItemStockService.findByPartnerAndMaterial(
+            productStockToCreate.getPartner(),
+            productStockToCreate.getMaterial());
+
+        boolean stockDoesExist = existingProductItemStocks.stream().filter(stock ->
+            stock.isBlocked() == productStockToCreate.isBlocked() &&
+                stock.getLocationBpns().equals(productStockToCreate.getLocationBpns()) &&
+                stock.getLocationBpna().equals(productStockToCreate.getLocationBpna()) &&
+                Objects.equals(stock.getCustomerOrderId(), productStockToCreate.getCustomerOrderId()) &&
+                Objects.equals(stock.getCustomerOrderPositionId(), productStockToCreate.getCustomerOrderPositionId()) &&
+                Objects.equals(stock.getSupplierOrderId(), productStockToCreate.getSupplierOrderId())
+        ).anyMatch(stock -> true);
+
+        if (stockDoesExist) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Product Stock does already exist. Use PUT instead.");
+        }
+
+        ProductItemStock createdProductStock = productItemStockService.create(productStockToCreate);
         if (createdProductStock == null) {
-            return null;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock could not be created.");
         }
         log.info("Created product-stock: " + createdProductStock);
 
@@ -163,63 +203,81 @@ public class StockViewController {
 
     @PutMapping("product-stocks")
     @ResponseBody
-    @Operation(description = "Updates an existing product-stock")
+    @Operation(description = "Updates an existing productstock")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Product Stock was updated."),
+        @ApiResponse(responseCode = "400", description = "Malformed request body."),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+    })
     public ProductStockDto updateProductStocks(@RequestBody ProductStockDto productStockDto) {
-        ProductStock existingProductStock = productStockService.findByUuid(productStockDto.getUuid());
-        if (existingProductStock.getUuid() == null) {
-            return null;
+        if(!validator.validate(productStockDto).isEmpty()) {
+            log.warn("Rejected invalid message body.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
+        if (productStockDto.getUuid() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock holds a UUID. Use POST instead.");
+        }
+
+        ProductItemStock existingProductStock = productItemStockService.findById(productStockDto.getUuid());
+        if (existingProductStock == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock does not exist. Use Post instead.");
         }
 
         existingProductStock.setQuantity(productStockDto.getQuantity());
         existingProductStock.setMeasurementUnit(productStockDto.getMeasurementUnit());
-        existingProductStock.setLastUpdatedOn(new Date());
+        existingProductStock.setLastUpdatedOnDateTime(new Date());
 
-        existingProductStock = productStockService.update(existingProductStock);
+        existingProductStock = productItemStockService.update(existingProductStock);
         log.info("Updated product-stock: " + existingProductStock);
 
         return convertToDto(existingProductStock);
     }
 
-    private ProductStockDto convertToDto(ProductStock entity) {
+    private ProductStockDto convertToDto(ProductItemStock entity) {
         ProductStockDto dto = modelMapper.map(entity, ProductStockDto.class);
         dto.getMaterial().setMaterialNumberSupplier(entity.getMaterial().getOwnMaterialNumber());
         var materialPartnerRelation =
-            mprService.find(entity.getMaterial().getOwnMaterialNumber(), entity.getAllocatedToCustomerPartner().getUuid());
+            mprService.find(entity.getMaterial().getOwnMaterialNumber(), entity.getPartner().getUuid());
         dto.getMaterial().setMaterialNumberCustomer(materialPartnerRelation.getPartnerMaterialNumber());
 
-        Partner myself = partnerService.getOwnPartnerEntity();
-        setBpnaAndBpnsOnStockDtoBasedOnPartner(entity, dto, myself);
+        dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
+
+        dto.setStockLocationBpns(entity.getLocationBpns());
+        dto.setStockLocationBpna(entity.getLocationBpna());
+
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId());
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId());
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId());
 
         return dto;
     }
 
-    private ProductStock convertToEntity(ProductStockDto dto) {
-        ProductStock productStock = modelMapper.map(dto, ProductStock.class);
+    private ProductItemStock convertToEntity(ProductStockDto dto) {
+        ProductItemStock productStock = modelMapper.map(dto, ProductItemStock.class);
         Material material = materialService.findByOwnMaterialNumber(dto.getMaterial().getMaterialNumberSupplier());
         productStock.setMaterial(material);
 
-        PartnerDto allocationPartner = dto.getAllocatedToPartner();
+        PartnerDto allocationPartner = dto.getPartner();
 
-        Partner existingPartner;
-        if(allocationPartner.getUuid() != null){
+        Partner existingPartner = partnerService.findByBpnl(allocationPartner.getBpnl());
 
-            existingPartner = partnerService.findByUuid(allocationPartner.getUuid());
-        }else{
-            existingPartner = partnerService.findByBpnl(allocationPartner.getBpnl());
-        }
-
-        if (existingPartner == null){
+        if (existingPartner == null) {
             throw new IllegalStateException(String.format(
-                "Partner for uuid %s and bpnl %s could not be found",
-                allocationPartner.getUuid(),
+                "Partner for bpnl %s could not be found",
                 allocationPartner.getBpnl())
             );
         }
-        productStock.setAllocatedToCustomerPartner(existingPartner);
 
-        // always set to bpna and find corresponding site
-        productStock.setLocationId(dto.getStockLocationBpna());
-        productStock.setLocationIdType(LocationIdTypeEnum.B_P_N_A);
+        productStock.setPartner(existingPartner);
+
+        productStock.setLocationBpna(dto.getStockLocationBpna());
+        productStock.setLocationBpns(dto.getStockLocationBpns());
+
+        productStock.setCustomerOrderId(dto.getCustomerOrderNumber());
+        productStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber());
+        productStock.setSupplierOrderId(dto.getSupplierOrderNumber());
+
         return productStock;
     }
 
@@ -227,22 +285,63 @@ public class StockViewController {
     @ResponseBody
     @Operation(description = "Returns a list of all material-stocks")
     public List<MaterialStockDto> getMaterialStocks() {
-        List<MaterialStockDto> allMaterialStocks = materialStockService.findAll().stream()
+        List<MaterialStockDto> allMaterialStocks = materialItemStockService.findAll().stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
-        log.info(allMaterialStocks.toString());
         return allMaterialStocks;
     }
 
     @PostMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Creates a new material-stock")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Material Stock was created."),
+        @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
+        @ApiResponse(responseCode = "409", description = "Material Stock does already exist."),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+    })
     public MaterialStockDto createMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
+        if(!validator.validate(materialStockDto).isEmpty()) {
+            log.warn("Rejected invalid message body.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
 
-        MaterialStock materialStockToCreate = convertToEntity(materialStockDto);
-        materialStockToCreate.setLastUpdatedOn(new Date());
+        if (materialStockDto.getUuid() != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock holds a UUID. Use POST instead.");
+        }
 
-        MaterialStock createdMaterialStock = materialStockService.create(materialStockToCreate);
+        if (materialStockDto.getMaterial().getMaterialNumberCustomer() == null ||
+            materialStockDto.getMaterial().getMaterialNumberCustomer().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock misses material identification.");
+        }
+
+        MaterialItemStock materialStockToCreate = convertToEntity(materialStockDto);
+        materialStockToCreate.setLastUpdatedOnDateTime(new Date());
+
+        if (!materialItemStockService.validate(materialStockToCreate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock is invalid.");
+        }
+
+        List<MaterialItemStock> existingMaterialItemStocks = materialItemStockService.findByPartnerAndMaterial(materialStockToCreate.getPartner(),
+            materialStockToCreate.getMaterial());
+
+        boolean stockDoesExist = existingMaterialItemStocks.stream().filter(stock ->
+            stock.isBlocked() == materialStockToCreate.isBlocked() &&
+                stock.getLocationBpns().equals(materialStockToCreate.getLocationBpns()) &&
+                stock.getLocationBpna().equals(materialStockToCreate.getLocationBpna()) &&
+                Objects.equals(stock.getCustomerOrderId(), materialStockToCreate.getCustomerOrderId()) &&
+                Objects.equals(stock.getCustomerOrderPositionId(), materialStockToCreate.getCustomerOrderPositionId()) &&
+                Objects.equals(stock.getSupplierOrderId(), materialStockToCreate.getSupplierOrderId())
+        ).anyMatch(stock -> true);
+
+        if (stockDoesExist) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Material Stock does already exist. Use PUT instead.");
+        }
+
+        MaterialItemStock createdMaterialStock = materialItemStockService.create(materialStockToCreate);
+        if (createdMaterialStock == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock could not be created.");
+        }
 
         return convertToDto(createdMaterialStock);
     }
@@ -250,104 +349,149 @@ public class StockViewController {
     @PutMapping("material-stocks")
     @ResponseBody
     @Operation(description = "Updates an existing material-stock")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Material Stock was updated."),
+        @ApiResponse(responseCode = "400", description = "Malformed request body."),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+    })
     public MaterialStockDto updateMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
-        MaterialStock existingMaterialStock = materialStockService.findByUuid(materialStockDto.getUuid());
-        if (existingMaterialStock == null || existingMaterialStock.getUuid() == null) {
-            log.warn("unable to find existing stock, exiting");
-            return null;
+        if(!validator.validate(materialStockDto).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+        if (materialStockDto.getUuid() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock misses material identification.");
+        }
+
+        MaterialItemStock existingMaterialStock = materialItemStockService.findById(materialStockDto.getUuid());
+        if (existingMaterialStock == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock misses material identification.");
         }
 
         existingMaterialStock.setQuantity(materialStockDto.getQuantity());
         existingMaterialStock.setMeasurementUnit(materialStockDto.getMeasurementUnit());
-        existingMaterialStock.setLastUpdatedOn(new Date());
+        existingMaterialStock.setLastUpdatedOnDateTime(new Date());
 
-        existingMaterialStock = materialStockService.update(existingMaterialStock);
+        existingMaterialStock = materialItemStockService.update(existingMaterialStock);
 
         return convertToDto(existingMaterialStock);
     }
 
-    private MaterialStockDto convertToDto(MaterialStock entity) {
+    private MaterialStockDto convertToDto(MaterialItemStock entity) {
         MaterialStockDto dto = modelMapper.map(entity, MaterialStockDto.class);
         dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
         dto.getMaterial().setMaterialNumberCustomer(entity.getMaterial().getOwnMaterialNumber());
+        var materialPartnerRelation = mprService.find(entity.getMaterial().getOwnMaterialNumber(),
+            entity.getPartner().getUuid());
+        dto.getMaterial().setMaterialNumberSupplier(materialPartnerRelation.getPartnerMaterialNumber());
 
-        dto.setStockLocationBpns(variablesService.getOwnDefaultBpns());
-        dto.setStockLocationBpna(variablesService.getOwnDefaultBpna());
-        log.info(dto.toString());
+        dto.setStockLocationBpns(entity.getLocationBpns());
+        dto.setStockLocationBpna(entity.getLocationBpna());
 
-        Partner myself = partnerService.getOwnPartnerEntity();
-        setBpnaAndBpnsOnStockDtoBasedOnPartner(entity, dto, myself);
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId());
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId());
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId());
 
         return dto;
     }
 
-    private MaterialStock convertToEntity(MaterialStockDto dto) {
-        MaterialStock materialStock = modelMapper.map(dto, MaterialStock.class);
-        materialStock.getMaterial().setOwnMaterialNumber(dto.getMaterial().getMaterialNumberCustomer());
+    private MaterialItemStock convertToEntity(MaterialStockDto dto) {
+        MaterialItemStock materialStock = modelMapper.map(dto, MaterialItemStock.class);
 
-        // always set to bpna and find corresponding site
-        materialStock.setLocationId(dto.getStockLocationBpna());
-        materialStock.setLocationIdType(LocationIdTypeEnum.B_P_N_A);
+        Material material = materialService.findByOwnMaterialNumber(dto.getMaterial().getMaterialNumberCustomer());
+        materialStock.setMaterial(material);
+
+        PartnerDto partnerDto = dto.getPartner();
+
+        Partner existingPartner = partnerService.findByBpnl(partnerDto.getBpnl());
+
+        if (existingPartner == null) {
+            throw new IllegalStateException(String.format(
+                "Partner for bpnl %s could not be found",
+                partnerDto.getBpnl())
+            );
+        }
+        materialStock.setPartner(existingPartner);
+
+        materialStock.setLocationBpna(dto.getStockLocationBpna());
+        materialStock.setLocationBpns(dto.getStockLocationBpns());
+
+        materialStock.setCustomerOrderId(dto.getCustomerOrderNumber() );
+        materialStock.setCustomerOrderPositionId(dto.getCustomerOrderPositionNumber());
+        materialStock.setSupplierOrderId(dto.getSupplierOrderNumber());
 
         return materialStock;
     }
 
-    @GetMapping("partner-product-stocks")
-    @Operation(description = "Returns a list of all partner-product-stocks that refer to the given material number")
+    @GetMapping("reported-material-stocks")
+    @Operation(description = "Returns a list of all materials the partner (supplier) reported he has at his site." +
+        " Only stocks for the given material number are returned.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
-    public ResponseEntity<List<PartnerProductStockDto>> getPartnerProductStocks(@RequestParam String ownMaterialNumber) {
-        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+    public ResponseEntity<List<ReportedMaterialStockDto>> getSupplierMaterialStocks(@RequestParam String ownMaterialNumber) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-        return ResponseEntity.ok(partnerProductStockService.
-            findAllByOwnMaterialNumber(ownMaterialNumber)
+        return ResponseEntity.ok(reportedMaterialItemStockService.
+            findByOwnMaterialNumber(ownMaterialNumber)
             .stream()
             .map(this::convertToDto)
-            .collect(Collectors.toList()));
+            .toList());
     }
 
-    private PartnerProductStockDto convertToDto(PartnerProductStock entity) {
-        PartnerProductStockDto dto = modelMapper.map(entity, PartnerProductStockDto.class);
+    private ReportedMaterialStockDto convertToDto(ReportedMaterialItemStock entity) {
+        ReportedMaterialStockDto dto = modelMapper.map(entity, ReportedMaterialStockDto.class);
         dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
         dto.getMaterial().setMaterialNumberCustomer(entity.getMaterial().getOwnMaterialNumber());
         var materialPartnerRelation = mprService.find(entity.getMaterial().getOwnMaterialNumber(),
-            entity.getSupplierPartner().getUuid());
+            entity.getPartner().getUuid());
         dto.getMaterial().setMaterialNumberSupplier(materialPartnerRelation.getPartnerMaterialNumber());
 
-        Partner customerPartner = partnerService.findByBpnl(entity.getSupplierPartner().getBpnl());
-        setBpnaAndBpnsOnStockDtoBasedOnPartner(entity, dto, customerPartner);
+        dto.setStockLocationBpns(entity.getLocationBpns());
+        dto.setStockLocationBpna(entity.getLocationBpna());
+
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId());
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId());
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId());
 
         return dto;
     }
 
-    /**
-     * helper method to lookup and set the corresponding bpna or bpns on dto
-     *
-     * @param entity Stock to set the data from
-     * @param dto StockDto to set the data on
-     * @param partner holding the stock
-     */
-    private void setBpnaAndBpnsOnStockDtoBasedOnPartner(Stock entity, StockDto dto, Partner partner){
-        if (entity.getLocationIdType() == LocationIdTypeEnum.B_P_N_A){
-            Optional<Site> siteForAddress = partner.getSites()
-                .stream().filter(site -> site.getAddresses().stream().anyMatch(addr -> addr.getBpna().equals(entity.getLocationId()))).findFirst();
-
-            if (!siteForAddress.isEmpty()){
-                dto.setStockLocationBpns(siteForAddress.get().getBpns());
-                dto.setStockLocationBpna(entity.getLocationId());
-            }
-        }else{
-            dto.setStockLocationBpns(entity.getLocationId());
-            Optional<Site> siteOfPartner = partner.getSites().stream().filter(site -> site.getBpns().equals(entity.getLocationId())).findFirst();
-            if(!siteOfPartner.isEmpty()){
-                dto.setStockLocationBpna(siteOfPartner.get().getAddresses().first().getBpna());
-            }else{
-                throw new IllegalStateException(String.format("Partner %s with Site %s has no Address.", partner.getBpnl(), siteOfPartner.get().getBpns()));
-            }
+    @GetMapping("reported-product-stocks")
+    @Operation(description = "Returns a list of all products the partner (customer) reported he has at his site." +
+        " Only stocks for the given material number are returned.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+    })
+    public ResponseEntity<List<ReportedProductStockDto>> getCustomerProductStocks(@RequestParam String ownMaterialNumber) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
+        return ResponseEntity.ok(reportedProductItemStockService.
+            findByOwnMaterialNumber(ownMaterialNumber)
+            .stream()
+            .map(this::convertToDto)
+            .toList());
+    }
+
+    private ReportedProductStockDto convertToDto(ReportedProductItemStock entity) {
+        ReportedProductStockDto dto = modelMapper.map(entity, ReportedProductStockDto.class);
+        dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
+        dto.getMaterial().setMaterialNumberSupplier(entity.getMaterial().getOwnMaterialNumber());
+        var materialPartnerRelation = mprService.find(entity.getMaterial().getOwnMaterialNumber(),
+            entity.getPartner().getUuid());
+        dto.getMaterial().setMaterialNumberCustomer(materialPartnerRelation.getPartnerMaterialNumber());
+
+        dto.setStockLocationBpns(entity.getLocationBpns());
+        dto.setStockLocationBpna(entity.getLocationBpna());
+
+        dto.setCustomerOrderNumber(entity.getCustomerOrderId());
+        dto.setCustomerOrderPositionNumber(entity.getCustomerOrderPositionId());
+        dto.setSupplierOrderNumber(entity.getSupplierOrderId());
+
+        return dto;
     }
 
     @GetMapping("customer")
@@ -357,7 +501,7 @@ public class StockViewController {
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
     public ResponseEntity<List<PartnerDto>> getCustomerPartnersOrderingMaterial(@RequestParam String ownMaterialNumber) {
-        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         return ResponseEntity.ok(partnerService.findAllCustomerPartnersForMaterialId(ownMaterialNumber).stream()
@@ -372,7 +516,7 @@ public class StockViewController {
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
     public ResponseEntity<List<PartnerDto>> getSupplierPartnersSupplyingMaterial(@RequestParam String ownMaterialNumber) {
-        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         return ResponseEntity.ok(partnerService.findAllSupplierPartnersForMaterialId(ownMaterialNumber).stream()
@@ -380,18 +524,18 @@ public class StockViewController {
             .collect(Collectors.toList()));
     }
 
-    @GetMapping("update-partner-product-stock")
+    @GetMapping("update-reported-material-stocks")
     @Operation(description = "For the given material, all known suppliers will be requested to report their" +
-        "current product-stocks. The response body contains a list of those supplier partners that were sent a request." +
+        "current stocks for our input material. The response body contains a list of those supplier partners that were sent a request." +
         "Please note that these requests are handled asynchronously by the partners, so there are no guarantees, if and " +
         "when the corresponding responses will be available. As soon as a response arrives, it will be available via a " +
-        "call to the GET partner-product-stocks endpoint.")
+        "call to the GET reported-material-stocks endpoint.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter")
     })
-    public ResponseEntity<List<PartnerDto>> triggerPartnerProductStockUpdateForMaterial(@RequestParam String ownMaterialNumber) {
-        if(!materialPattern.matcher(ownMaterialNumber).matches()) {
+    public ResponseEntity<List<PartnerDto>> triggerReportedMaterialStockUpdateForMaterialNumber(@RequestParam String ownMaterialNumber) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
@@ -399,10 +543,37 @@ public class StockViewController {
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
 
         for (Partner supplierPartner : allSupplierPartnerEntities) {
-            productStockRequestApiService.doRequest(materialEntity, supplierPartner);
+            itemStockRequestApiService.doRequestForMaterialItemStocks(supplierPartner, materialEntity);
         }
 
         return ResponseEntity.ok(allSupplierPartnerEntities.stream()
+            .map(this::convertToDto)
+            .collect(Collectors.toList()));
+    }
+
+    @GetMapping("update-reported-product-stocks")
+    @Operation(description = "For the given material, all known customers will be requested to report their" +
+        "current stocks for our output material. The response body contains a list of those customer partners that were sent a request." +
+        "Please note that these requests are handled asynchronously by the partners, so there are no guarantees, if and " +
+        "when the corresponding responses will be available. As soon as a response arrives, it will be available via a " +
+        "call to the GET reported-material-stocks endpoint.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+    })
+    public ResponseEntity<List<PartnerDto>> triggerReportedProductStockUpdateForMaterialNumber(@RequestParam String ownMaterialNumber) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        log.info("Found material: " + (materialEntity != null) + " " + ownMaterialNumber);
+        List<Partner> allCustomerPartnerEntities = mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber);
+
+        for (Partner supplierPartner : allCustomerPartnerEntities) {
+            itemStockRequestApiService.doRequestForProductItemStocks(supplierPartner, materialEntity);
+        }
+
+        return ResponseEntity.ok(allCustomerPartnerEntities.stream()
             .map(this::convertToDto)
             .collect(Collectors.toList()));
     }

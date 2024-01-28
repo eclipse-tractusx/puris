@@ -21,7 +21,6 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
@@ -61,19 +60,19 @@ class StockViewControllerTest {
     private MaterialService materialService;
 
     @MockBean
-    private ProductStockService productStockService;
-
-    @MockBean
     private ProductItemStockService productItemStockService;
 
     @MockBean
-    private MaterialStockService materialStockService;
+    private MaterialItemStockService materialItemStockService;
 
     @MockBean
-    private PartnerProductStockService partnerProductStockService;
+    private ItemStockRequestApiService itemStockRequestMessageService;
 
     @MockBean
-    private ProductStockRequestApiService productStockRequestApiService;
+    private ReportedMaterialItemStockService reportedMaterialItemStockService;
+
+    @MockBean
+    private ReportedProductItemStockService reportedProductItemStockService;
 
     @MockBean
     private PartnerService partnerService;
@@ -83,9 +82,6 @@ class StockViewControllerTest {
 
     @MockBean
     private ModelMapper modelMapper;
-
-    @MockBean
-    private VariablesService variablesService;
 
     @Test
     @WithMockApiKey

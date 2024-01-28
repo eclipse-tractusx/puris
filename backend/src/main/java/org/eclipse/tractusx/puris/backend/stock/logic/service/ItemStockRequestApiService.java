@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,7 +23,8 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -44,8 +45,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 /**
- * This class is a Service that handles requests and responses
- * for MaterialItemStocks or ProductItemStocks.
+ * This class is a Service that handles requests for MaterialItemStocks or ProductItemStocks.
  */
 public class ItemStockRequestApiService {
     @Autowired
@@ -74,22 +74,28 @@ public class ItemStockRequestApiService {
      * assembles and sends a response from your local ProductItemStocks
      * to this customer.
      *
-     * @param requestMessage the RequestMessage
+     * @param requestMessageDto the RequestMessage
      */
-    public void handleRequestFromCustomer(ItemStockRequestMessageDto requestMessage) {
-        var requestMessageHeader = requestMessage.getHeader();
+    public void handleRequestFromCustomer(ItemStockRequestMessageDto requestMessageDto, ItemStockRequestMessage requestMessage) {
+        var requestMessageHeader = requestMessageDto.getHeader();
         Partner customerPartner = partnerService.findByBpnl(requestMessageHeader.getSenderBpn());
-        if (customerPartner == null) {
-            log.error("Unknown Partner in request \n" + requestMessage);
+        if (customerPartner == null || requestMessageDto.getContent().getDirection() != DirectionCharacteristic.INBOUND) {
+            requestMessage.setState(DT_RequestStateEnum.Error);
+            itemStockRequestMessageService.update(requestMessage);
+            if(requestMessageDto.getContent().getDirection() != DirectionCharacteristic.INBOUND){
+                log.error("Wrong direction in request from customer \n" + requestMessageDto);
+            }
+            if(customerPartner == null) {
+                log.error("Unknown Partner in request \n" + requestMessageDto);
+            }
             return;
         }
-        if (requestMessage.getContent().getDirection() != DirectionCharacteristic.INBOUND) {
-            log.error("Wrong direction in request from customer " + requestMessage);
-        }
+        requestMessage.setState(DT_RequestStateEnum.Working);
+        itemStockRequestMessageService.update(requestMessage);
         ItemStockResponseDto responseDto = new ItemStockResponseDto();
         responseDto.getHeader().setRelatedMessageId(requestMessageHeader.getMessageId());
 
-        for (var productRequest : requestMessage.getContent().getItemStock()) {
+        for (var productRequest : requestMessageDto.getContent().getItemStock()) {
             Material product = null;
             if (productRequest.getMaterialGlobalAssetId() != null) {
                 product = materialService.findByMaterialNumberCx(productRequest.getMaterialGlobalAssetId());
@@ -115,10 +121,11 @@ public class ItemStockRequestApiService {
                 log.error("Could not identify material in " + productRequest);
                 continue;
             }
-            var productItemStocks = productItemStockService.findByPartnerAndMaterial(customerPartner, product);
+            var productItemStocks = productItemStockService.findByPartnerAndMaterial(customerPartner, product)
+                .stream().filter(itemStock -> itemStock.getQuantity() > 0).toList();
             responseDto.getContent().getItemStock().add(sammMapper.productItemStocksToItemStockSamm(productItemStocks));
         }
-        sendResponse(customerPartner, responseDto);
+        sendResponse(customerPartner, responseDto, requestMessage);
 
     }
 
@@ -128,21 +135,28 @@ public class ItemStockRequestApiService {
      * assembles and sends a response from your local MaterialItemStocks
      * to this customer.
      *
-     * @param requestMessage the RequestMessage
+     * @param requestMessageDto the RequestMessage
      */
-    public void handleRequestFromSupplier(ItemStockRequestMessageDto requestMessage) {
-        var requestMessageHeader = requestMessage.getHeader();
+    public void handleRequestFromSupplier(ItemStockRequestMessageDto requestMessageDto, ItemStockRequestMessage requestMessage) {
+        var requestMessageHeader = requestMessageDto.getHeader();
         Partner supplierPartner = partnerService.findByBpnl(requestMessageHeader.getSenderBpn());
-        if (supplierPartner == null) {
-            log.error("Unknown Partner in request \n" + requestMessage);
+        if (supplierPartner == null || requestMessageDto.getContent().getDirection() != DirectionCharacteristic.OUTBOUND) {
+            requestMessage.setState(DT_RequestStateEnum.Error);
+            itemStockRequestMessageService.update(requestMessage);
+            if(requestMessageDto.getContent().getDirection() != DirectionCharacteristic.OUTBOUND){
+                log.error("Wrong direction in request from customer \n" + requestMessageDto);
+            }
+            if(supplierPartner == null) {
+                log.error("Unknown Partner in request \n" + requestMessageDto);
+            }
             return;
         }
-        if (requestMessage.getContent().getDirection() != DirectionCharacteristic.OUTBOUND) {
-            log.error("Wrong direction in request from customer " + requestMessage);
-        }
+
+        requestMessage.setState(DT_RequestStateEnum.Working);
+        itemStockRequestMessageService.update(requestMessage);
         ItemStockResponseDto responseDto = new ItemStockResponseDto();
         responseDto.getHeader().setRelatedMessageId(requestMessageHeader.getMessageId());
-        for (var materialRequest : requestMessage.getContent().getItemStock()) {
+        for (var materialRequest : requestMessageDto.getContent().getItemStock()) {
             Material material = null;
             if (materialRequest.getMaterialGlobalAssetId() != null) {
                 material = materialService.findByMaterialNumberCx(materialRequest.getMaterialGlobalAssetId());
@@ -168,10 +182,11 @@ public class ItemStockRequestApiService {
                 log.error("Could not identify material in " + materialRequest);
                 continue;
             }
-            var materialItemStocks = materialItemStockService.findByPartnerAndMaterial(supplierPartner, material);
+            var materialItemStocks = materialItemStockService.findByPartnerAndMaterial(supplierPartner, material)
+                .stream().filter(itemStock -> itemStock.getQuantity() > 0).toList();
             responseDto.getContent().getItemStock().add(sammMapper.materialItemStocksToItemStockSamm(materialItemStocks));
         }
-        sendResponse(supplierPartner, responseDto);
+        sendResponse(supplierPartner, responseDto, requestMessage);
 
     }
 
@@ -181,11 +196,13 @@ public class ItemStockRequestApiService {
      * The responseDto object's content is expected to be filled in advance.
      *
      * @param partner     the given Partner
-     * @param responseDto
+     * @param responseDto the responseDto
      */
-    private void sendResponse(Partner partner, ItemStockResponseDto responseDto) {
-        var data = edcAdapterService.getContractForResponseApi(partner);
+    private void sendResponse(Partner partner, ItemStockResponseDto responseDto, ItemStockRequestMessage requestMessage) {
+        var data = edcAdapterService.getContractForItemStockApi(partner, DT_ApiMethodEnum.RESPONSE);
         if (data == null) {
+            requestMessage.setState(DT_RequestStateEnum.Error);
+            itemStockRequestMessageService.update(requestMessage);
             log.error("Failed to contract response api from " + partner.getEdcUrl());
             return;
         }
@@ -199,15 +216,19 @@ public class ItemStockRequestApiService {
         responseDtoHeader.setVersion(ItemStockRequestMessage.VERSION);
         responseDtoHeader.setContext(ItemStockRequestMessage.CONTEXT);
         responseDtoHeader.setSentDateTime(new Date());
-
         try {
             String requestBody = objectMapper.writeValueAsString(responseDto);
             var httpResponse = edcAdapterService.postProxyPullRequest(
                 endpoint, authKey, authCode, requestBody);
             httpResponse.body().close();
             log.info("Sent response \n" + responseDto);
+            requestMessage.setState(DT_RequestStateEnum.Completed);
         } catch (Exception e) {
+            requestMessage.setState(DT_RequestStateEnum.Error);
             log.error("Failed to send response \n" + responseDto, e);
+        } finally {
+            log.info("Updating state");
+            itemStockRequestMessageService.update(requestMessage);
         }
     }
 
@@ -220,10 +241,7 @@ public class ItemStockRequestApiService {
      * @param materials       the materials
      */
     public void doRequestForMaterialItemStocks(Partner supplierPartner, Material... materials) {
-        Partner mySelf = partnerService.getOwnPartnerEntity();
-        ItemStockRequestMessage itemStockRequestMessage = new ItemStockRequestMessage();
-        itemStockRequestMessage.setReceiverBpn(supplierPartner.getBpnl());
-        itemStockRequestMessage.setSenderBpn(mySelf.getBpnl());
+        ItemStockRequestMessage itemStockRequestMessage = getItemStockRequestMessage(supplierPartner);
         itemStockRequestMessage.setDirection(DirectionCharacteristic.INBOUND);
         for (var material : materials) {
             ItemStockRequestMessage.Request request = new ItemStockRequestMessage.Request();
@@ -243,10 +261,7 @@ public class ItemStockRequestApiService {
      * @param materials       the materials
      */
     public void doRequestForProductItemStocks(Partner customerPartner, Material... materials) {
-        Partner mySelf = partnerService.getOwnPartnerEntity();
-        ItemStockRequestMessage itemStockRequestMessage = new ItemStockRequestMessage();
-        itemStockRequestMessage.setReceiverBpn(customerPartner.getBpnl());
-        itemStockRequestMessage.setSenderBpn(mySelf.getBpnl());
+        ItemStockRequestMessage itemStockRequestMessage = getItemStockRequestMessage(customerPartner);
         itemStockRequestMessage.setDirection(DirectionCharacteristic.OUTBOUND);
         for (var material : materials) {
             ItemStockRequestMessage.Request request = new ItemStockRequestMessage.Request();
@@ -259,6 +274,17 @@ public class ItemStockRequestApiService {
 
     }
 
+    private ItemStockRequestMessage getItemStockRequestMessage(Partner partner) {
+        Partner mySelf = partnerService.getOwnPartnerEntity();
+        ItemStockRequestMessage.Key key = new ItemStockRequestMessage.Key(UUID.randomUUID(), mySelf.getBpnl(), partner.getBpnl());
+        while (itemStockRequestMessageService.find(key) != null) {
+            key.setMessageId(UUID.randomUUID());
+        }
+        ItemStockRequestMessage itemStockRequestMessage = new ItemStockRequestMessage();
+        itemStockRequestMessage.setKey(key);
+        return itemStockRequestMessage;
+    }
+
     /**
      * Convenience method to bundle the common parts in the workflow of
      * the doRequestForMaterialItemStocks and doRequestForProductItemStocks methods.
@@ -268,7 +294,9 @@ public class ItemStockRequestApiService {
      */
     private void sendRequest(Partner partner, ItemStockRequestMessage itemStockRequestMessage) {
         itemStockRequestMessage = itemStockRequestMessageService.create(itemStockRequestMessage);
-        String[] data = edcAdapterService.getContractForRequestApi(partner);
+        log.info("Created Message : \n" + (itemStockRequestMessage != null));
+        itemStockRequestMessage.setState(DT_RequestStateEnum.Working);
+        String[] data = edcAdapterService.getContractForItemStockApi(partner, DT_ApiMethodEnum.REQUEST);
         if (data == null) {
             log.error("Failed to obtain request api from " + partner.getEdcUrl());
             itemStockRequestMessage.setState(DT_RequestStateEnum.Error);
@@ -286,7 +314,6 @@ public class ItemStockRequestApiService {
                 objectMapper.writeValueAsString(requestDto));
             if (response.isSuccessful()) {
                 itemStockRequestMessage.setState(DT_RequestStateEnum.Requested);
-
             } else {
                 itemStockRequestMessage.setState(DT_RequestStateEnum.Error);
             }

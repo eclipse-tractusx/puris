@@ -20,6 +20,11 @@
 -->
 <template>
     <main class="flex flex-col mb-7">
+        <header class="banner">
+            <div class="banner-text">
+                CONFIDENTIAL - The data you see is confidential and should be treated according to present law
+            </div>
+        </header>
         <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
             View and Manage Stocks
         </h1>
@@ -55,31 +60,35 @@
                     <div>
                         <DisableableSelectInput
                             id="materialSelect"
-                            label="Material"
+                            label="Material *"
                             :value="changedStock.materialId"
                             :disabled="changedStock.type === 'Product'"
                             :options="bdMaterials"
                             @input="onMaterialChange"
+                            :required="stockType === 'Material'"
                         />
                     </div>
                     <div>
                         <DisableableSelectInput
                             id="productSelect"
-                            label="Product"
+                            label="Product *"
                             :value="changedStock.productId"
                             :disabled="changedStock.type === 'Material'"
                             :options="bdProducts"
                             @input="onProductChange"
+                            :required="stockType === 'Product'"
                         />
                     </div>
                     <div>
                         <label for="allocatedToPartner">
-                            Allocated to Partner
+                            Allocated to Partner *
                         </label>
                         <select
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="allocatedToPartner"
-                            v-model="this.changedStock.allocatedToPartner"
+                            v-model="this.changedStock.partnerBpnl"
+                            required
+                            :disabled="this.changedStock.materialId === '' && this.changedStock.productId === ''"
                         >
                             <option
                                 v-for="option in partnerOptions"
@@ -92,20 +101,22 @@
                     </div>
                     <div class="flex flex-row">
                         <div class="flex flex-col basis-2/3 mr-4">
-                            <label for="Quantity">Quantity</label>
+                            <label for="Quantity">Quantity *</label>
                             <input
                                 class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                                 type="number"
                                 id="quantityInput"
                                 v-model="this.changedStock.quantity"
+                                required
                             />
                         </div>
                         <div class="flex flex-col basis-1/3">
-                            <label for="measurementUnit">UOM</label>
+                            <label for="measurementUnit">UOM *</label>
                             <select
                                 class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                                 id="measurementUnit"
                                 v-model="this.changedStock.measurementUnit"
+                                required
                             >
                                 <option
                                     v-for="item in unitsOfMeasureJson"
@@ -132,19 +143,20 @@
                             type="checkbox"
                             id="isBlocked"
                             name="isBlockedCheckbox"
-                            value="isBlocked"
                             class="mr-2"
+                            v-model="this.changedStock.isBlocked"
                         />
-                        <label for="isBlocked">Is Blocked </label>
+                        <label for="isBlocked">Is Blocked</label>
                     </div>
                     <div>
                         <label for="stockLocationBPNS">
-                            Stock Location BPNS
+                            Stock Location BPNS *
                         </label>
                         <select
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="stockLocationBPNS"
                             v-model="this.changedStock.bpns"
+                            required
                         >
                             <option
                                 v-for="site in bdSitesWithAddresses"
@@ -157,12 +169,13 @@
                     </div>
                     <div>
                         <label for="stockLocationBPNA">
-                            Stock Location BPNA
+                            Stock Location BPNA *
                         </label>
                         <select
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="stockLocationBPNA"
                             v-model="this.changedStock.bpna"
+                            required
                         >
                             <option
                                 v-for="address in this.changedStock.bpns
@@ -198,6 +211,8 @@
                                     this.changedStock
                                         .customerOrderPositionNumber
                                 "
+                                :required="hasCustomerOrderNumber"
+                                :disabled="!hasCustomerOrderNumber"
                             />
                         </div>
                     </div>
@@ -209,6 +224,7 @@
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                             id="supplierOrderNumber"
                             v-model="this.changedStock.supplierOrderNumber"
+                            :disabled="!hasCustomerOrderNumber"
                         />
                     </div>
                     <!-- Empty div -->
@@ -271,17 +287,13 @@ export default {
                 type: "Material",
                 quantity: "",
                 measurementUnit: "",
-                allocatedToPartner: "",
+                partnerBpnl: "",
                 isBlocked: false,
                 bpns: "",
                 bpna: "",
-                customerOrderNumber: "",
-                customerOrderPositionNumber: "",
-                supplierOrderNumber: "",
-            },
-            site: {
-                bpns: "BPNS12345678910ZZZ",
-                name: "Wolfsburg Hauptwerk",
+                customerOrderNumber: null,
+                customerOrderPositionNumber: null,
+                supplierOrderNumber: null,
             },
             unitsOfMeasureJson: stockViewUom,
         };
@@ -298,14 +310,36 @@ export default {
         partnerOptions() {
             if (this.changedStock.type === "Product") {
                 return this.bdCustomers.map((customer) => ({
-                    value: customer.uuid,
+                    value: customer.bpnl,
                     label: customer.name,
                 }));
             } else {
                 return this.bdSuppliers.map((supplier) => ({
-                    value: supplier.uuid,
+                    value: supplier.bpnl,
                     label: supplier.name,
                 }));
+            }
+        },
+        hasCustomerOrderNumber() {
+            return !!this.changedStock.customerOrderNumber;
+        },
+    },
+    watch: {
+        "changedStock.customerOrderNumber"(newVal) {
+            if (newVal === "") {
+                this.changedStock.customerOrderNumber = null;
+                this.changedStock.customerOrderPositionNumber = null;
+                this.changedStock.supplierOrderNumber = null;
+            }
+        },
+        "changedStock.customerOrderPositionNumber"(newVal) {
+            if (newVal === "") {
+                this.changedStock.customerOrderPositionNumber = null;
+            }
+        },
+        "changedStock.supplierOrderNumber"(newVal) {
+            if (newVal === "") {
+                this.changedStock.supplierOrderNumber = null;
             }
         },
     },
@@ -349,10 +383,18 @@ export default {
                 let existingMaterialStocks = this.bdMaterialStocks.filter(
                     (stock) =>
                         stock.material.materialNumberCustomer ===
-                            this.changedStock.materialId &&
+                        this.changedStock.materialId &&
+                        stock.partner.bpnl === this.changedStock.partnerBpnl &&
                         stock.stockLocationBpns ===
-                            this.changedStock.bpns.bpns &&
-                        stock.stockLocationBpna === this.changedStock.bpna
+                        this.changedStock.bpns.bpns &&
+                        stock.stockLocationBpna === this.changedStock.bpna &&
+                        stock.isBlocked === this.changedStock.isBlocked &&
+                        stock.customerOrderNumber ===
+                        this.changedStock.customerOrderNumber &&
+                        stock.customerOrderPositionNumber ===
+                        this.changedStock.customerOrderPositionNumber &&
+                        stock.supplierOrderNumber ===
+                        this.changedStock.supplierOrderNumber
                 );
 
                 if (existingMaterialStocks.length === 1) {
@@ -374,23 +416,33 @@ export default {
                     // 1. Determine product
                     const existingMaterial = this.bdMaterials.filter(
                         (m) =>
-                            m.materialNumberCustomer ===
-                            this.changedStock.materialId
+                            m.ownMaterialNumber === this.changedStock.materialId
                     )[0];
 
-                    // 2. Create Stock
+                    // 2. Determine partner
+                    const existingSupplier = this.bdSuppliers.filter(
+                        (s) => s.bpnl === this.changedStock.partnerBpnl
+                    )[0];
+
+                    // 3. Create Stock
                     const newStock = {
-                        uuid: null,
                         material: {
                             materialNumberCustomer:
-                                existingMaterial.ownMaterialNumber,
+                            existingMaterial.ownMaterialNumber,
                         },
                         quantity: this.changedStock.quantity,
                         measurementUnit: this.changedStock.measurementUnit,
+                        partner: existingSupplier,
                         type: "MATERIAL",
-                        atSiteBpnl: this.site.bpns,
                         stockLocationBpna: this.changedStock.bpna,
-                        stockLocationBpns: this.changedStock.bpns,
+                        stockLocationBpns: this.changedStock.bpns.bpns,
+                        isBlocked: this.changedStock.isBlocked,
+                        customerOrderNumber:
+                        this.changedStock.customerOrderNumber,
+                        customerOrderPositionNumber:
+                        this.changedStock.customerOrderPositionNumber,
+                        supplierOrderNumber:
+                        this.changedStock.supplierOrderNumber,
                     };
 
                     var newMaterialStock = JSON.parse(JSON.stringify(newStock));
@@ -407,12 +459,18 @@ export default {
                 let existingProductStocks = this.bdProductStocks.filter(
                     (stock) =>
                         stock.material.materialNumberSupplier ===
-                            this.changedStock.productId &&
-                        stock.allocatedToPartner.uuid ===
-                            this.changedStock.allocatedToPartner &&
+                        this.changedStock.productId &&
+                        stock.partner.bpnl === this.changedStock.partnerBpnl &&
+                        stock.isBlocked === this.changedStock.isBlocked &&
                         stock.stockLocationBpns ===
-                            this.changedStock.bpns.bpns &&
-                        stock.stockLocationBpna === this.changedStock.bpna
+                        this.changedStock.bpns.bpns &&
+                        stock.stockLocationBpna === this.changedStock.bpna &&
+                        stock.customerOrderNumber ===
+                        this.changedStock.customerOrderNumber &&
+                        stock.customerOrderPositionNumber ===
+                        this.changedStock.customerOrderPositionNumber &&
+                        stock.supplierOrderNumber ===
+                        this.changedStock.supplierOrderNumber
                 );
 
                 if (existingProductStocks.length === 1) {
@@ -433,27 +491,35 @@ export default {
                     // Create new product stock
                     // 1. Determine product
                     const existingProduct = this.bdProducts.filter(
-                        (p) => p.ownMaterialNumber === changedStock.productId
+                        (p) =>
+                            p.ownMaterialNumber === this.changedStock.productId
                     )[0];
 
                     // 2. Determine partner
                     const existingCustomer = this.bdCustomers.filter(
-                        (c) => c.uuid === changedStock.allocatedToPartner
+                        (c) => c.bpnl === this.changedStock.partnerBpnl
                     )[0];
+                    console.log(existingCustomer);
 
                     // 3. Create Stock
                     const newStock = {
-                        uuid: null,
                         material: {
                             materialNumberSupplier:
-                                existingProduct.ownMaterialNumber,
+                            existingProduct.ownMaterialNumber,
                         },
                         quantity: this.changedStock.quantity,
                         measurementUnit: this.changedStock.measurementUnit,
-                        allocatedToPartner: existingCustomer,
+                        partner: existingCustomer,
                         type: "PRODUCT",
                         stockLocationBpna: this.changedStock.bpna,
                         stockLocationBpns: this.changedStock.bpns.bpns,
+                        isBlocked: this.changedStock.isBlocked,
+                        customerOrderNumber:
+                        this.changedStock.customerOrderNumber,
+                        customerOrderPositionNumber:
+                        this.changedStock.customerOrderPositionNumber,
+                        supplierOrderNumber:
+                        this.changedStock.supplierOrderNumber,
                     };
 
                     const newProductStock = JSON.parse(
@@ -485,6 +551,7 @@ export default {
             })
                 .then((res) => res.json())
                 .then((data) => (this.bdMaterialStocks = data))
+                .then(() => console.info(this.bdMaterialStocks))
                 .catch((err) => console.log(err));
         },
         fetchProductStocks() {
@@ -571,4 +638,18 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.banner {
+    justify-content: center;
+    background-color: burlywood;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+.banner-text {
+    text-align: center;
+    padding: 10px;
+    color: red;
+    font-weight: bold;
+}
+</style>

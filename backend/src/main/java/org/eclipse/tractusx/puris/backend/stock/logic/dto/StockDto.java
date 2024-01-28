@@ -22,14 +22,16 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialDto;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_StockTypeEnum;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.ItemUnitEnumeration;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -48,25 +50,23 @@ public abstract class StockDto implements Serializable {
 
     private double quantity;
 
-    private MeasurementUnit measurementUnit;
-
+    private ItemUnitEnumeration measurementUnit;
+    @Pattern(regexp = PatternStore.BPNS_STRING)
     private String stockLocationBpns;
-
+    @Pattern(regexp = PatternStore.BPNA_STRING)
     private String stockLocationBpna;
-
-    private LocationIdTypeEnum locationIdType;
-
-    private DT_StockTypeEnum type;
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    private String customerOrderNumber;
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    private String customerOrderPositionNumber;
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    private String supplierOrderNumber;
 
     private Date lastUpdatedOn;
 
-    public StockDto(MaterialDto material, double quantity, MeasurementUnit measurementUnit, String stockLocationBpns,
-                    String stockLocationBpna, Date lastUpdatedOn) {
-        this.material = material;
-        this.quantity = quantity;
-        this.measurementUnit = measurementUnit;
-        this.stockLocationBpns = stockLocationBpns;
-        this.stockLocationBpna = stockLocationBpna;
-        this.lastUpdatedOn = lastUpdatedOn;
-    }
+    private PartnerDto partner;
+
+    @JsonProperty("isBlocked")
+    private boolean isBlocked;
+
 }

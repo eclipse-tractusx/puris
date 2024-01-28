@@ -50,64 +50,58 @@
         <div class="overflow-x-auto min-h-60 max-h-80">
             <table class="mt-2 w-full">
                 <thead>
-                    <tr class="text-left">
-                        <th>Supplier</th>
-                        <th>Quantity</th>
-                        <th>Is Blocked</th>
-                        <th>BPNS</th>
-                        <th>BPNA</th>
-                        <th>Last updated on</th>
-                        <th>
-                            Customer Order Number<br />Customer Order Pos.
-                            Number
-                        </th>
-                        <th>Supplier Order Number</th>
-                    </tr>
+                <tr class="text-left">
+                    <th>Supplier</th>
+                    <th>Quantity</th>
+                    <th>Is Blocked</th>
+                    <th>BPNS</th>
+                    <th>BPNA</th>
+                    <th>Last updated on</th>
+                    <th>
+                        Customer Order Number<br/>Customer Order Pos.
+                        Number
+                    </th>
+                    <th>Supplier Order Number</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <tr
-                        v-for="row in tableRows"
-                        :key="row.index"
-                        :class="{ 'empty-row': row.isEmpty }"
-                    >
-                        <template v-if="row.isEmpty">
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </template>
-                        <template
-                            v-else
-                            v-for="stock in availableMaterialsOrProducts"
-                            :key="stock.supplierPartner.bpnl"
-                        >
-                            <td>
-                                {{ stock.supplierPartner.name }}<br />({{
-                                    stock.supplierPartner.bpnl
-                                }})
-                            </td>
-                            <td>
-                                {{ stock.quantity }}
-                                {{
-                                    getUomValueForUomKey(stock.measurementUnit)
-                                }}
-                            </td>
-                            <td>{{ stock.isBlocked }}</td>
-                            <td>{{ stock.stockLocationBpns }}</td>
-                            <td>{{ stock.stockLocationBpna }}</td>
-                            <td>{{ stock.lastUpdatedOn }}</td>
-                            <td>
-                                {{ stock.customerOrderNumber }}<br />{{
-                                    stock.customerOrderPositionNumber
-                                }}
-                            </td>
-                            <td>{{ stock.supplierOrderNumber }}</td>
-                        </template>
+
+                <template v-if="availableMaterialsOrProducts.length === 0">
+                    <tr v-for="index in 3" :key="index" class="empty-row">
+                        <td v-for="index in 8" :key="index"/>
                     </tr>
+                </template>
+
+                <template
+                    v-else
+                    v-for="stock in availableMaterialsOrProducts"
+                    :key="stock.partner.bpnl"
+                >
+                    <tr>
+                        <td>
+                            {{ stock.partner.name }}<br/>({{
+                                stock.partner.bpnl
+                            }})
+                        </td>
+                        <td>
+                            {{ stock.quantity }}
+                            {{
+                                getUomValueForUomKey(stock.measurementUnit)
+                            }}
+                        </td>
+                        <td>{{ stock.isBlocked }}</td>
+                        <td>{{ stock.stockLocationBpns }}</td>
+                        <td>{{ stock.stockLocationBpna }}</td>
+                        <td>{{ stock.lastUpdatedOn }}</td>
+                        <td>
+                            {{ stock.customerOrderNumber }}<br/>{{
+                                stock.customerOrderPositionNumber
+                            }}
+                        </td>
+                        <td>{{ stock.supplierOrderNumber }}</td>
+                    </tr>
+                </template>
+
                 </tbody>
             </table>
         </div>
@@ -121,56 +115,39 @@ export default {
     name: "PartnerStockSFC",
 
     props: {
-        selectedMaterialOrProductId: { type: String, required: true },
-        partnerRole: { type: String, required: true },
+        selectedMaterialOrProductId: {type: String, required: true},
+        partnerRole: {type: String, required: true},
     },
     data() {
         return {
             backendURL: import.meta.env.VITE_BACKEND_BASE_URL,
             backendApiKey: import.meta.env.VITE_BACKEND_API_KEY,
-            endpointPartnerProductStocks: import.meta.env
-                .VITE_ENDPOINT_PARTNER_PRODUCT_STOCKS,
-            endpointUpdatePartnerProductStock: import.meta.env
-                .VITE_ENDPOINT_UPDATE_PARTNER_PRODUCT_STOCK,
+            endpointGetReportedMaterialStocks: import.meta.env
+                .VITE_ENDPOINT_REPORTED_MATERIAL_STOCKS,
+            endpointGetReportedProductStocks: import.meta.env
+                .VITE_ENDPOINT_REPORTED_PRODUCT_STOCKS,
+            endpointUpdateReportedMaterialStocks: import.meta.env
+                .VITE_ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS,
             availableMaterialsOrProducts: [],
+            endpointUpdateReportedProductStocks: import.meta.env
+                .VITE_ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS,
         };
-    },
-    computed: {
-        tableRows() {
-            if (this.availableMaterialsOrProducts.length === 0) {
-                // Generate three empty rows
-                return Array.from({ length: 3 }, (_, index) => ({
-                    index,
-                    isEmpty: true,
-                }));
-            } else {
-                // Generate rows with data
-                return this.availableMaterialsOrProducts.map(
-                    (stock, index) => ({
-                        index,
-                        stock,
-                        isEmpty: false,
-                    })
-                );
-            }
-        },
     },
     created() {
         if (this.selectedMaterialOrProductId !== "") {
             if (this.partnerRole === "supplier") {
                 this.getAvailableMaterials();
+            } else if (this.partnerRole === "customer") {
+                this.getAvailableProducts();
             }
-            // else if (this.partnerRole === "customer") {
-            //   this.getAvailableProducts();
-            // }
         }
     },
     methods: {
         getAvailableMaterials() {
             fetch(
                 this.backendURL +
-                    this.endpointPartnerProductStocks +
-                    this.selectedMaterialOrProductId,
+                this.endpointGetReportedMaterialStocks +
+                this.selectedMaterialOrProductId,
                 {
                     headers: {
                         "X-API-KEY": this.backendApiKey,
@@ -181,17 +158,12 @@ export default {
                 .then((data) => (this.availableMaterialsOrProducts = data))
                 .catch((err) => console.log(err));
         },
-        // getAvailableProducts() {
-        //   fetch(this.backendURL + this.endpointPartnerProductStocks)
-        //     .then(res => res.json())
-        //     .then(data => this.availableMaterialsOrProducts = data)
-        //     .catch(err => console.log(err));
-        // },
-        updateMaterialOrProduct() {
+        getAvailableProducts() {
+            console.info(this.selectedMaterialOrProductId);
             fetch(
                 this.backendURL +
-                    this.endpointUpdatePartnerProductStock +
-                    this.selectedMaterialOrProductId,
+                this.endpointGetReportedProductStocks +
+                this.selectedMaterialOrProductId,
                 {
                     headers: {
                         "X-API-KEY": this.backendApiKey,
@@ -199,8 +171,42 @@ export default {
                 }
             )
                 .then((res) => res.json())
-                .then((data) => console.log(data))
+                .then((data) => (this.availableMaterialsOrProducts = data))
                 .catch((err) => console.log(err));
+        },
+        updateMaterialOrProduct() {
+            if (this.partnerRole === "customer") {
+                console.log("Fetching from customers");
+                fetch(this.backendURL +
+                    this.endpointUpdateReportedProductStocks +
+                    this.selectedMaterialOrProductId,
+                    {
+                        headers: {
+                            "X-API-KEY": this.backendApiKey,
+                        },
+                    }
+                )
+                    .then((res) => res.json())
+                    .then((data) => console.log(data))
+                    .catch((err) => console.log(err));
+            }
+
+            if (this.partnerRole == "supplier") {
+                console.log("Fetching from suppliers");
+                fetch(
+                    this.backendURL +
+                    this.endpointUpdateReportedMaterialStocks +
+                    this.selectedMaterialOrProductId,
+                    {
+                        headers: {
+                            "X-API-KEY": this.backendApiKey,
+                        },
+                    }
+                )
+                    .then((res) => res.json())
+                    .then((data) => console.log(data))
+                    .catch((err) => console.log(err));
+            }
         },
         getUomValueForUomKey(key) {
             return UnitOfMeasureUtils.findUomValueByKey(key);

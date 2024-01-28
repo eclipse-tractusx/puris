@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -24,9 +24,11 @@ package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
-import lombok.*;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 import java.util.*;
 
@@ -49,37 +51,23 @@ import java.util.*;
 @NoArgsConstructor
 public class Partner {
 
-    public final static String BPNL_REGEX = "^BPNL[0-9a-zA-Z]{12}$";
-    /**
-     * The EDC Url should state to the procotol url of the edc.
-     *
-     * The pattern should match on http and https proctocol urls independent of their path. Following edc regexes are
-     * considered to be valid:
-     * <li>https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp - common ingress with path</li>
-     * <li>https://isst-edc-supplier.int.demo.catena-x.net - ingress stating directly to protocol path</li>
-     * <li>http://customer-control-plane:8184/api/v1/dsp - e.g. local development</li>
-     * <li>http://127.0.0.1:8081/api/v1/dsp - e.g. local development/li>
-     *
-     */
-    public final static String EDC_REGEX = "^http[s]?://([a-z0-9][a-z0-9\\-]+[a-z0-9])(\\.[a-z0-9\\-]+)*(:[0-9]{1,4})?(/[a-z0-9\\-]+)*[/]?$";
-
     @Id
     @GeneratedValue
     private UUID uuid;
     /**
      * A human-readable, distinctive name of this partner.
      */
-    @Pattern(regexp = "^[a-zßA-Z0-9 \\-.]{1,255}$")
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String name;
     /**
      * The EDC-URL of the partner.
      */
-    @Pattern(regexp = EDC_REGEX)
+    @Pattern(regexp = PatternStore.URL_STRING)
     private String edcUrl;
     /**
      * The BPNL of the partner.
      */
-    @Pattern(regexp = BPNL_REGEX)
+    @Pattern(regexp = PatternStore.BPNL_STRING)
     private String bpnl;
     @ElementCollection
     @Valid
@@ -99,23 +87,7 @@ public class Partner {
     /**
      * Contains all MaterialPartnerRelations that this Partner is involved in.
      */
-    private Set<MaterialPartnerRelation> materialPartnerRelations;
-
-    @OneToMany
-    @ToString.Exclude
-    @Setter(AccessLevel.NONE)
-    /**
-     * Contains all ProductStocks that are created for this Partner.
-     */
-    private List<ProductStock> allocatedProductStocksForCustomer = new ArrayList<>();
-
-    @OneToMany
-    @ToString.Exclude
-    @Setter(AccessLevel.NONE)
-    /**
-     * Contains all PartnerProductStocks that this Partner has for us.
-     */
-    private List<PartnerProductStock> partnerProductStocks = new ArrayList<>();
+    private Set<MaterialPartnerRelation> materialPartnerRelations = new HashSet<>();
 
     /**
      * Use this constructor to generate a new Partner with a BPNS and a BPNA attached.
