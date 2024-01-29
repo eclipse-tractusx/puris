@@ -163,53 +163,7 @@ public class ItemStockSammMapper {
             log.warn("Direction should be INBOUND, aborting");
             return outputList;
         }
-        Material material = null;
-        // Use CatenaXNbr
-        if (matNbrCatenaX != null) {
-            material = materialService.findByMaterialNumberCx(matNbrCatenaX);
-            if (material != null) {
-                if (!material.getOwnMaterialNumber().equals(matNbrSupplier)) {
-                    log.warn("Mismatch between CatenaX Number " + matNbrCatenaX + " and ownMaterialNumber " + matNbrSupplier);
-                }
-                var mpr = mprService.find(material, partner);
-                if (mpr == null) {
-                    log.warn("Missing MaterialPartnerRelation for " + material.getOwnMaterialNumber() + " and Partner " + partner.getBpnl());
-                } else {
-                    if (!mpr.getPartnerMaterialNumber().equals(matNbrCustomer)) {
-                        log.warn("Mismatch for MaterialNumberCustomer " + matNbrCustomer + " and " + material.getOwnMaterialNumber());
-                    }
-                }
-            }
-        }
-        // Use MatNbrCustomer
-        if (material == null && matNbrCustomer != null) {
-            var list = mprService.findAllByPartnerMaterialNumber(matNbrCustomer).stream().filter(m -> {
-                var mpr = mprService.find(m, partner);
-                return mpr != null && mpr.isPartnerBuysMaterial();
-            }).toList();
-            if (!list.isEmpty()) {
-                material = list.get(0);
-                if (list.size() > 1) {
-                    log.warn("CustomerMaterialNumber " + matNbrCustomer + " is ambiguous, arbitrarily choosing " + material.getOwnMaterialNumber());
-                }
-            }
-        }
-        // Use MatNbrSupplier
-        if (material == null && matNbrSupplier != null) {
-            material = materialService.findByOwnMaterialNumber(matNbrSupplier);
-
-            if (material != null) {
-                if (matNbrCatenaX != null) {
-                    log.warn("Unknown CatenaXNumber for Material " + material.getOwnMaterialNumber());
-                }
-                var mpr = mprService.find(material, partner);
-                if (mpr != null) {
-                    if (!mpr.getPartnerMaterialNumber().equals(matNbrCustomer)) {
-                        log.warn("Unknown MaterialNumberCustomer " + matNbrCustomer + " for Material " + material.getOwnMaterialNumber());
-                    }
-                }
-            }
-        }
+        Material material = materialService.findFromSupplierPerspective(matNbrCatenaX, matNbrCustomer, matNbrSupplier, partner);
         if (material == null) {
             log.warn("Could not identify material with CatenaXNbr " + matNbrCatenaX + " ,CustomerMaterialNbr " + matNbrCustomer + " and SupplierMaterialNbr " + matNbrSupplier);
             return outputList;
@@ -252,55 +206,7 @@ public class ItemStockSammMapper {
             log.warn("Direction should be OUTBOUND, aborting");
             return outputList;
         }
-        Material material = null;
-        // Use MatNbrCatenaX
-        if (matNbrCatenaX != null) {
-            material = materialService.findByMaterialNumberCx(matNbrCatenaX);
-            if (material != null) {
-                if (!material.getOwnMaterialNumber().equals(matNbrCustomer)) {
-                    log.warn("Mismatch between CatenaX Number " + matNbrCatenaX + " and ownMaterialNumber " + matNbrCustomer);
-                }
-                var mpr = mprService.find(material, partner);
-                if (mpr == null) {
-                    log.warn("Missing MaterialPartnerRelation for " + material.getOwnMaterialNumber() + " and Partner " + partner.getBpnl());
-                } else {
-                    if (!mpr.getPartnerMaterialNumber().equals(matNbrSupplier)) {
-                        log.warn("Mismatch for MaterialNumberSupplier " + matNbrSupplier + " and " + material.getOwnMaterialNumber());
-                    }
-                }
-            }
-        }
-        // Use MatNbrCustomer
-        if (material == null && matNbrCustomer != null) {
-            material = materialService.findByOwnMaterialNumber(matNbrCustomer);
-            if (material != null) {
-                if (matNbrCatenaX != null) {
-                    log.warn("Unknown CatenaXNumber for Material " + material.getOwnMaterialNumber());
-                }
-                var mpr = mprService.find(material, partner);
-                if (mpr != null) {
-                    if (!mpr.getPartnerMaterialNumber().equals(matNbrSupplier)) {
-                        log.warn("Unknown MaterialNumberSupplier " + matNbrSupplier + " for Material " + material.getOwnMaterialNumber());
-                    }
-                }
-            }
-        }
-        //Use MatNbrSupplier
-        if (material == null && matNbrSupplier != null) {
-            var list = mprService.findAllByPartnerMaterialNumber(matNbrSupplier)
-                .stream()
-                .filter(m -> {
-                    var mpr = mprService.find(m, partner);
-                    return mpr != null && mpr.isPartnerSuppliesMaterial();
-                })
-                .toList();
-            if (!list.isEmpty()) {
-                material = list.get(0);
-                if (list.size() > 1) {
-                    log.warn("SupplierMaterialNumber " + matNbrSupplier + " is ambiguous, arbitrarily choosing " + material.getOwnMaterialNumber());
-                }
-            }
-        }
+        Material material = materialService.findFromCustomerPerspective(matNbrCatenaX, matNbrCustomer, matNbrSupplier, partner);
         if (material == null) {
             log.warn("Could not identify material with CatenaXNbr " + matNbrCatenaX + " ,CustomerMaterialNbr " + matNbrCustomer + " and SupplierMaterialNbr " + matNbrSupplier);
             return outputList;
