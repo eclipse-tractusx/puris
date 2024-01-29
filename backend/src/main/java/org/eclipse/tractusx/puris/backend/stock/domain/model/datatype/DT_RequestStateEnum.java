@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,15 +18,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype;
-
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockRequest;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStockResponse;
+package org.eclipse.tractusx.puris.backend.stock.domain.model.datatype;
 
 /**
  * Enum to track the status of
- * {@link ProductStockRequest} and
- * {@link ProductStockResponse}.
+ * ItemStockRequestRequestMessage
  */
 public enum DT_RequestStateEnum {
     /**

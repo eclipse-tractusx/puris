@@ -19,7 +19,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.logic.service;
+package org.eclipse.tractusx.puris.backend.common.util;
 
 import lombok.Getter;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
@@ -46,11 +46,6 @@ public class VariablesService {
      * defined in the DataInjectionCommandLineRunner
      */
     private String demoRole;
-    @Value("${puris.apiversion}")
-    /**
-     * The current version number
-     */
-    private String purisApiVersion;
     @Value("${puris.edr.endpoint}")
     /**
      * The edrEndpoint to be used during consumer pull asset transfers.

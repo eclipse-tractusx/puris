@@ -24,7 +24,7 @@ package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 import java.io.Serializable;
 import java.util.Objects;

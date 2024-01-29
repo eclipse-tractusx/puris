@@ -110,7 +110,7 @@ public class MaterialServiceImpl implements MaterialService {
                 if (customerMatNbr != null && !material.equals(findByOwnMaterialNumber(customerMatNbr))) {
                     log.warn("Mismatch between " + material + " and " + customerMatNbr);
                 }
-                if (material != null && partner != null && !mprService.partnerSuppliesMaterial(material, partner)) {
+                if (partner != null && !mprService.partnerSuppliesMaterial(material, partner)) {
                     log.warn("Partner " + partner + " does not supply material " + material);
                 }
             }

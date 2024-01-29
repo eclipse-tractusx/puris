@@ -358,8 +358,6 @@ backend:
           key: "test"
           # -- The root directory of the API
           rootDir: /catena
-          # -- Current version of the puris API
-          version: 1.0.0
         datasource:
             # -- Driver class name of the database
             driverClassName: org.postgresql.Driver
