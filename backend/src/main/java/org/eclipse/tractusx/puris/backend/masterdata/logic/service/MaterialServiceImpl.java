@@ -23,6 +23,8 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +37,10 @@ import java.util.Optional;
 public class MaterialServiceImpl implements MaterialService {
 
     @Autowired
-    MaterialRepository materialRepository;
+    private MaterialRepository materialRepository;
+
+    @Autowired
+    private MaterialPartnerRelationService mprService;
 
     @Override
     public Material create(Material material) {
@@ -50,7 +55,7 @@ public class MaterialServiceImpl implements MaterialService {
     @Override
     public Material update(Material material) {
         Optional<Material> existingMaterial =
-                materialRepository.findById(material.getOwnMaterialNumber());
+            materialRepository.findById(material.getOwnMaterialNumber());
         if (existingMaterial.isPresent()) {
             return existingMaterial.get();
         }
@@ -93,6 +98,129 @@ public class MaterialServiceImpl implements MaterialService {
     @Override
     public List<Material> findAll() {
         return materialRepository.findAll();
+    }
+
+    @Override
+    public Material findFromCustomerPerspective(String materialNumberCx, String customerMatNbr, String supplierMatNbr, Partner partner) {
+        Material material = null;
+        if (materialNumberCx != null) {
+            // Use Material Number CX
+            material = findByMaterialNumberCx(materialNumberCx);
+            if (material != null) {
+                if (customerMatNbr != null && !material.equals(findByOwnMaterialNumber(customerMatNbr))) {
+                    log.warn("Mismatch between " + material + " and " + customerMatNbr);
+                }
+                if (partner != null && !mprService.partnerSuppliesMaterial(material, partner)) {
+                    log.warn("Partner " + partner + " does not supply material " + material);
+                }
+            }
+
+        }
+        if (material == null && customerMatNbr != null) {
+            // If previous effort yielded not result, use Customer Material Number
+            material = findByOwnMaterialNumber(customerMatNbr);
+            if (material != null && materialNumberCx != null) {
+                log.warn("Unknown Material Number CX " + materialNumberCx + " for Material " + material);
+            }
+            if (material != null && partner != null && !mprService.partnerSuppliesMaterial(material, partner)) {
+                log.warn("Partner " + partner + " does not supply material " + material);
+            }
+        }
+        if (material == null && supplierMatNbr != null) {
+            // If previous effort yielded not result, use Supplier Material Number
+            List<Material> materialList;
+            if (partner != null) {
+                materialList = mprService.findAllBySupplierPartnerAndPartnerMaterialNumber(partner, supplierMatNbr)
+                    .stream()
+                    .map(MaterialPartnerRelation::getMaterial)
+                    .toList();
+            } else {
+                materialList = mprService.findAllBySupplierPartnerMaterialNumber(supplierMatNbr)
+                    .stream()
+                    .map(MaterialPartnerRelation::getMaterial)
+                    .toList();
+            }
+
+            if (!materialList.isEmpty()) {
+                material = materialList.get(0);
+            }
+            if (materialList.size() > 1) {
+                log.warn("Ambiguous results for supplier partner Material Number " + supplierMatNbr + ", arbitrarily choosing " + material);
+            }
+            if (material != null) {
+                if (materialNumberCx != null) {
+                    log.warn("Unknown Material Number CX " + materialNumberCx + " for Material " + material);
+                }
+                if (customerMatNbr != null) {
+                    log.warn("Unknown Customer Material Number " + customerMatNbr + " for Material " + material);
+                }
+            }
+        }
+
+        return material;
+    }
+
+    @Override
+    public Material findFromSupplierPerspective(String materialNumberCx, String customerMatNbr, String supplierMatNbr, Partner partner) {
+        Material material = null;
+        if (materialNumberCx != null) {
+            // Use Material Number CX
+            material = findByMaterialNumberCx(materialNumberCx);
+            if (material != null) {
+                if (supplierMatNbr != null && !material.equals(findByOwnMaterialNumber(supplierMatNbr))) {
+                    log.warn("Mismatch between " + material + " and " + supplierMatNbr);
+                }
+                if(partner != null && ! mprService.partnerOrdersProduct(material, partner)) {
+                    log.warn("Partner " + partner + " does not order material " + material);
+                }
+            }
+        }
+        if (material == null && customerMatNbr != null) {
+            // If previous effort yielded not result, use Customer Material Number
+            List<Material> materialList;
+            if (partner != null) {
+                materialList = mprService.findAllByCustomerPartnerAndPartnerMaterialNumber(partner, customerMatNbr)
+                    .stream()
+                    .map(MaterialPartnerRelation::getMaterial)
+                    .toList();
+            } else {
+                materialList = mprService.findAllByCustomerPartnerMaterialNumber(customerMatNbr)
+                    .stream()
+                    .map(MaterialPartnerRelation::getMaterial)
+                    .toList();
+            }
+
+            if (!materialList.isEmpty()) {
+                material = materialList.get(0);
+            }
+            if (materialList.size() > 1) {
+                log.warn("Ambiguous results for customer partner Material Number " + customerMatNbr + ", arbitrarily choosing " + material);
+            }
+            if (material != null) {
+                if (materialNumberCx != null) {
+                    log.warn("Unknown Material Number CX " + materialNumberCx + " for Material " + material);
+                }
+                if (supplierMatNbr != null && !material.equals(findByOwnMaterialNumber(supplierMatNbr))) {
+                    log.warn("Mismatch between OwnMaterialNumber " + supplierMatNbr + " and " + material);
+                }
+            }
+        }
+        if (material == null && supplierMatNbr != null) {
+            // If previous effort yielded not result, use Supplier Material Number
+            material = findByOwnMaterialNumber(supplierMatNbr);
+            if (material != null) {
+                if (materialNumberCx != null) {
+                    log.warn("Unknown Material Number CX " + materialNumberCx + " for Material " + material);
+                }
+                if (customerMatNbr != null) {
+                    log.warn("Unknown customer Material Number " + customerMatNbr + " for Material " + material);
+                }
+                if(partner != null && ! mprService.partnerOrdersProduct(material, partner)) {
+                    log.warn("Partner " + partner + " does not order material " + material);
+                }
+            }
+        }
+        return material;
     }
 
 }

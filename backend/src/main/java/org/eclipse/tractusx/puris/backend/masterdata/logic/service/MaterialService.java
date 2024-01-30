@@ -22,6 +22,7 @@
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 
 import java.util.List;
 
@@ -35,18 +36,68 @@ public interface MaterialService {
 
     List<Material> findAllProducts();
 
-
-
-//    Material findByUuid(UUID materialUuid);
-
     Material findByOwnMaterialNumber(String ownMaterialNumber);
 
     Material findByMaterialNumberCx(String materialNumberCx);
 
     List<Material> findAll();
 
-//    Material findMaterialByMaterialNumberCustomer(String materialNumberCustomer);
-//
-//    Material findProductByMaterialNumberCustomer(String materialNumberCustomer);
+    /**
+     * This method will do a best effort attempt to return a Material Entity for the given input arguments.
+     * All arguments are potentially nullable. But the more arguments you provide, the better.
+     *
+     * The material will be selected
+     * <li>by the materialNumberCx, if possible</li>
+     * <li>otherwise by the customerMaterialNumber, if possible</li>
+     * <li>otherwise by the supplierMaterialNumber, if possible</li>
+     *
+     * If a materialNumberCx is given and there exists a Material Entity that matches, this Material will
+     * always be chosen.
+     *
+     * Otherwise, an attempt will be made to find a matching Material by the other arguments. In this case,
+     * if a specific partner is given as an argument, a matching supplierMaterialNumber will only be considered,
+     * if this is actually this partner's material number.
+     *
+     * This method will write warnings to the log, if mismatches or ambiguities were found.
+     *
+     * Since this method is only meant to be used from a Customer's Perspective, the customerMaterialNumber will
+     * be treated as ownMaterialNumber.
+     *
+     * @param materialNumberCx the CatenaX - MaterialNumber
+     * @param customerMatNbr   the MaterialNumber on the customer's side
+     * @param supplierMatNbr   the MaterialNumber on the supplier's side
+     * @param partner          the Partner
+     * @return                 the Material, or null if no matching material was found
+     */
+    Material findFromCustomerPerspective(String materialNumberCx, String customerMatNbr, String supplierMatNbr, Partner partner);
+
+    /**
+     * This method will do a best effort attempt to return a Material Entity for the given input arguments.
+     * All arguments are potentially nullable. But the more arguments you provide, the better.
+     *
+     * The material will be selected
+     * <li>by the materialNumberCx, if possible</li>
+     * <li>otherwise by the customerMaterialNumber, if possible</li>
+     * <li>otherwise by the supplierMaterialNumber, if possible</li>
+     *
+     * If a materialNumberCx is given and there exists a Material Entity that matches, this Material will
+     * always be chosen.
+     *
+     * Otherwise, an attempt will be made to find a matching Material by the other arguments. In this case,
+     * if a specific partner is given as an argument, a matching customerMaterialNumber will only be considered,
+     * if this is actually this partner's material number.
+     *
+     * This method will write warnings to the log, if mismatches or ambiguities were found.
+     *
+     * Since this method is only meant to be used from a Supplier's Perspective, the supplierMaterialNumber will
+     * be treated as ownMaterialNumber.
+     *
+     * @param materialNumberCx the CatenaX - MaterialNumber
+     * @param customerMatNbr   the MaterialNumber on the customer's side
+     * @param supplierMatNbr   the MaterialNumber on the supplier's side
+     * @param partner          the Partner
+     * @return                 the Material, or null if no matching material was found
+     */
+    Material findFromSupplierPerspective(String materialNumberCx, String customerMatNbr, String supplierMatNbr, Partner partner);
 
 }
