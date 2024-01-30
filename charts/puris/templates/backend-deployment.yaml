@@ -61,8 +61,6 @@ spec:
               value: "{{ .Values.backend.puris.edc.controlplane.management.url }}"
             - name: EDC_CONTROLPLANE_PROTOCOL_URL
               value: "{{ .Values.backend.puris.edc.controlplane.protocol.url }}"
-            - name: EDC_WEB_REST_CORS_ENABLED
-              value: "{{ .Values.backend.puris.edc.web.rest.cors.enabled }}"
             - name: OWN_BPNA
               value: "{{ .Values.backend.puris.own.bpna }}"
             - name: OWN_BPNL

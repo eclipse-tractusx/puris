@@ -378,10 +378,6 @@ backend:
                 url: "https://your-edc-address:8184/api/v1/dsp"
               # -- Key for the EDC control plane
               key: "password"
-            web:
-                rest:
-                    cors:
-                        enabled: true
         own:
             # -- Own BPNL of the EDC
             bpnl: BPNL4444444444XX
