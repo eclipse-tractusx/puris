@@ -114,45 +114,7 @@ public class ItemStockSammMapper {
                                           String customerOrderPositionId) {
     }
 
-    public ItemStockSamm toItemStockSamm(MaterialItemStock materialItemStock) {
-        ItemStockSamm samm = new ItemStockSamm();
-        samm.setDirection(DirectionCharacteristic.INBOUND);
-        samm.setPositions(new ArrayList<>());
-        samm.setMaterialGlobalAssetId(materialItemStock.getMaterial().getMaterialNumberCx());
-        samm.setMaterialNumberCustomer(materialItemStock.getMaterial().getOwnMaterialNumber());
-        samm.setMaterialNumberSupplier(mprService.find(materialItemStock.getMaterial(),
-            materialItemStock.getPartner()).getPartnerMaterialNumber());
-        return createPosition(materialItemStock, samm);
-    }
 
-    private static ItemStockSamm createPosition(ItemStock itemStock, ItemStockSamm samm) {
-        Position position = new Position();
-        samm.setPositions(List.of(position));
-        position.setLastUpdatedOnDateTime(itemStock.getLastUpdatedOnDateTime());
-        if (itemStock.getCustomerOrderId() != null || itemStock.getCustomerOrderPositionId() != null
-            || itemStock.getSupplierOrderId() != null) {
-            OrderPositionReference opr = new OrderPositionReference(itemStock.getSupplierOrderId(),
-                itemStock.getCustomerOrderId(), itemStock.getCustomerOrderPositionId());
-            position.setOrderPositionReference(opr);
-        }
-        ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(itemStock.getQuantity(),
-            itemStock.getMeasurementUnit());
-        AllocatedStock allocatedStock = new AllocatedStock(itemQuantityEntity, itemStock.getLocationBpns(),
-            itemStock.isBlocked(), itemStock.getLocationBpna());
-        position.setAllocatedStocks(List.of(allocatedStock));
-        return samm;
-    }
-
-    public ItemStockSamm toItemStockSamm(ProductItemStock productItemStock) {
-        ItemStockSamm samm = new ItemStockSamm();
-        samm.setDirection(DirectionCharacteristic.OUTBOUND);
-        samm.setPositions(new ArrayList<>());
-        samm.setMaterialGlobalAssetId(productItemStock.getMaterial().getMaterialNumberCx());
-        samm.setMaterialNumberSupplier(productItemStock.getMaterial().getOwnMaterialNumber());
-        samm.setMaterialNumberCustomer(mprService.find(productItemStock.getMaterial(),
-            productItemStock.getPartner()).getPartnerMaterialNumber());
-        return createPosition(productItemStock, samm);
-    }
 
     public List<ReportedProductItemStock> itemStockSammToReportedProductItemStock(ItemStockSamm samm, Partner partner) {
         String matNbrCustomer = samm.getMaterialNumberCustomer();
