@@ -395,7 +395,7 @@ backend:
             # -- Own zipcode and city
             zipcodeandcity: "12345 Musterhausen"
             # -- Own name (self-description)
-            name: "YOUR-APPLICATION-NAME"
+            name: "YOUR-COMPANY-NAME"
         demonstrator:
             # -- Current role of the PURIS demonstrator. Default value should be empty.
             # Can be set to "customer" or "supplier" to enable demonstration setup

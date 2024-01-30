@@ -88,17 +88,33 @@ spec:
             - name: PURIS_EDR_DELETIONTIMER
               value: "{{ .Values.backend.puris.edr.deletiontimer }}"
             - name: PURIS_EDR_ENDPOINT
+              {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
+              value: "https://{{ .Values.backend.puris.edr.endpoint }}/catena/edrendpoint"
+                {{- else }}
               value: "http://{{ .Values.backend.puris.edr.endpoint }}/catena/edrendpoint"
+                {{- end }}
             - name: PURIS_REQUEST_SERVERENDPOINT
+              {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
+              value: "https://{{ .Values.backend.puris.request.serverendpoint }}/catena/item-stock/request"
+                {{- else }}
               value: "http://{{ .Values.backend.puris.request.serverendpoint }}/catena/item-stock/request"
+                {{- end}}
             - name: PURIS_REQUEST_APIASSETID
               value: "{{ .Values.backend.puris.request.apiassetid }}"
             - name: PURIS_RESPONSE_SERVERENDPOINT
+              {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
+              value: "https://{{ .Values.backend.puris.response.serverendpoint }}/catena/item-stock/response"
+                {{- else }}
               value: "http://{{ .Values.backend.puris.response.serverendpoint }}/catena/item-stock/response"
+                {{- end}}
             - name: PURIS_RESPONSE_APIASSETID
               value: "{{ .Values.backend.puris.response.apiassetid }}"
             - name: PURIS_STATUSREQUEST_SERVERENDPOINT
+              {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
+              value: "https://{{ .Values.backend.puris.statusrequest.serverendpoint }}/catena/item-stock/status"
+                {{- else }}
               value: "http://{{ .Values.backend.puris.statusrequest.serverendpoint }}/catena/item-stock/status"
+                {{- end}}
             - name: PURIS_STATUSREQUEST_APIASSETID
               value: "{{ .Values.backend.puris.statusrequest.apiassetid }}"
           ports:
