@@ -61,7 +61,7 @@ spec:
             - name: ENDPOINT_PARTNER_OWNSITES
               value: "{{ .Values.frontend.puris.endpointPartnerOwnSites }}"
             - name: BACKEND_API_KEY
-              value: "test"
+              value: "{{ .Values.backend.puris.api.key}}"
             - name: IDP_DISABLE
               value: "{{ .Values.frontend.puris.keycloak.disabled }}"
             - name: IDP_URL
