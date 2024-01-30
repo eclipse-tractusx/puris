@@ -350,7 +350,6 @@ export default{
         return string.slice(0,-2);
     },
     updateCustomerStocks: function(material){
-        console.log(material)
         fetch(this.backendURL +
             this.endpointUpdateReportedProductStocks +
             material.ownMaterialNumber,
@@ -371,7 +370,7 @@ export default{
             },
         })
             .then((res) => res.json())
-            .then((data) => (this.fetchedAllProductStocks = data) && console.log(data))
+            .then((data) => (this.fetchedAllProductStocks = data))
             .catch((err) => console.log(err));
     },
     filterAllProductStocks: function (material,bpnl){
