@@ -58,4 +58,12 @@ public interface MaterialPartnerRelationService {
     boolean partnerSuppliesMaterial(Material material, Partner partner);
 
     boolean partnerOrdersProduct(Material material, Partner partner);
+
+    List<MaterialPartnerRelation> findAllBySupplierPartnerMaterialNumber(String partnerMaterialNumber);
+
+    List<MaterialPartnerRelation> findAllByCustomerPartnerMaterialNumber(String partnerMaterialNumber);
+
+    List<MaterialPartnerRelation> findAllBySupplierPartnerAndPartnerMaterialNumber(Partner partner, String partnerMaterialNumber);
+
+    List<MaterialPartnerRelation> findAllByCustomerPartnerAndPartnerMaterialNumber(Partner partner, String partnerMaterialNumber);
 }
