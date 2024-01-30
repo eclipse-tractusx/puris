@@ -92,9 +92,9 @@
                 -->
                 <table>
                     <tr>
-                        <td class="font-bold text-xl firstRow firstColumn">Customer Information</td>
+                        <th class="text-xl firstRow firstColumn">Customer Information</th>
 
-                        <td v-for="day in datesData" :value="day" class="firstRow">{{day}}</td>
+                        <th v-for="day in datesData" :value="day" class="firstRow">{{day}}</th>
 
                     </tr>
                     <tr  id="demandActual">
@@ -132,11 +132,11 @@
                     </tr>
 
                     <tr>
-                        <td class="font-bold text-xl firstRow firstColumn ">Your Own Information</td>
+                        <th class="text-xl firstRow firstColumn ">Your Own Information</th>
                         <!-- upper border of production items -->
-                        <td class="firstRow" v-for="item in datesData">
+                        <th class="firstRow" v-for="item in datesData">
                             {{}}
-                        </td>
+                        </th>
 
                     </tr>
 
@@ -281,7 +281,7 @@ export default{
         }
     },
     changeBgColor: function (index, production){
-        if (production < this.totalDemand[index]){
+        if (production < this.mockTotalDemand[index]){
             return {'background-color': 'red'};
         }
     },
@@ -467,7 +467,7 @@ th, td {
 div > .outerBox{
     margin: 20px 0px;
 }
-td.firstRow{
+th.firstRow{
     font-weight: bold;
     border-bottom: 1px solid rgb(229 231 235 / var(--tw-border-opacity));;
 }
