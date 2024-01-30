@@ -83,11 +83,6 @@ public class Partner {
      */
     private SortedSet<Site> sites = new TreeSet<>();
 
-    @OneToMany(mappedBy = "partner")
-    /**
-     * Contains all MaterialPartnerRelations that this Partner is involved in.
-     */
-    private Set<MaterialPartnerRelation> materialPartnerRelations = new HashSet<>();
 
     /**
      * Use this constructor to generate a new Partner with a BPNS and a BPNA attached.

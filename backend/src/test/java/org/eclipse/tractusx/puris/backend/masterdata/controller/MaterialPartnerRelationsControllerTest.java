@@ -37,8 +37,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import java.util.HashSet;
+
 import java.util.UUID;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -84,11 +85,8 @@ public class MaterialPartnerRelationsControllerTest {
         String partnerMaterialNumber = "MNR-8101-ID146955.001";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
-        HashSet<MaterialPartnerRelation> set = new HashSet<>();
-        set.add(newMpr);
 
-        material.setMaterialPartnerRelations(set);
-        partner.setMaterialPartnerRelations(set);
+
 
         // when
         when(materialService.findByOwnMaterialNumber(materialNumber)).thenReturn(material);
@@ -148,10 +146,7 @@ public class MaterialPartnerRelationsControllerTest {
         String partnerMaterialNumber = "MNR-8101-ID146955.001";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
-        HashSet<MaterialPartnerRelation> set = new HashSet<>();
-        set.add(newMpr);
-        material.setMaterialPartnerRelations(set);
-        partner.setMaterialPartnerRelations(set);
+
 
         String partnerMaterialNumber2 = "MNR-8101-ID146955.002";
         MaterialPartnerRelation newMpr2 = new MaterialPartnerRelation(material, partner, partnerMaterialNumber2,
@@ -190,18 +185,12 @@ public class MaterialPartnerRelationsControllerTest {
         String partnerMaterialNumber = "MNR-8101-ID146955.001";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
-        HashSet<MaterialPartnerRelation> set = new HashSet<>();
-        set.add(newMpr);
-        material.setMaterialPartnerRelations(set);
-        partner.setMaterialPartnerRelations(set);
+
 
         String partnerMaterialNumber2 = "MNR-8101-ID146955.002";
         MaterialPartnerRelation newMpr2 = new MaterialPartnerRelation(material, partner, partnerMaterialNumber2,
             true, true);
-        HashSet<MaterialPartnerRelation> set2 = new HashSet<>();
-        set.add(newMpr2);
-        material.setMaterialPartnerRelations(set2);
-        partner.setMaterialPartnerRelations(set2);
+
 
         // when
         when(partnerService.findByBpnl(anyString())).thenReturn(partner);
