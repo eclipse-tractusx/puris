@@ -23,15 +23,12 @@ package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * <p>This class represents materials and products that are to be traded between
@@ -108,9 +105,6 @@ public class Material {
      */
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String name;
-
-    @OneToMany(mappedBy = "material")
-    Set<MaterialPartnerRelation> materialPartnerRelations = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {

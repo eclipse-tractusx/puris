@@ -24,7 +24,7 @@ package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -53,13 +53,9 @@ public class MaterialPartnerRelation {
     private boolean partnerBuysMaterial;
 
     @ManyToOne
-    @MapsId("ownMaterialNumber")
-    @JoinColumn(name = "material_ownMaterialNumber")
     private Material material;
 
     @ManyToOne
-    @MapsId("uuid")
-    @JoinColumn(name = "partner_uuid")
     private Partner partner;
 
     public MaterialPartnerRelation() {
@@ -95,11 +91,11 @@ public class MaterialPartnerRelation {
     @ToString
     public static class Key implements Serializable {
 
-        @Column(name = "material_ownMaterialNumber")
+        @Column(name = "key_ownMaterialNumber")
         @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String ownMaterialNumber;
 
-        @Column(name = "partner_uuid")
+        @Column(name = "key_uuid")
         private UUID partnerUuid;
 
         @Override

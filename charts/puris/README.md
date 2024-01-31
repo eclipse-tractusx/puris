@@ -58,7 +58,6 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.podSecurityContext | object | `{}` | Added security contexts for a pod |
 | backend.puris.api.key | string | `"test"` | The API key of the PURIS application |
 | backend.puris.api.rootDir | string | `"/catena"` | The root directory of the API |
-| backend.puris.api.version | string | `"1.0.0"` | Current version of the puris API |
 | backend.puris.datasource.driverClassName | string | `"org.postgresql.Driver"` | Driver class name of the database |
 | backend.puris.datasource.password | string | `nil` | Password for the database user. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.url | string | `"jdbc:postgresql://postgresql-name:5432/puris-database"` | URL of the database. Ignored if postgres.enabled is true. |

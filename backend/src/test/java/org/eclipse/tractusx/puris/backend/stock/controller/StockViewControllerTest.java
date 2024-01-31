@@ -75,9 +75,6 @@ class StockViewControllerTest {
     private ReportedProductItemStockService reportedProductItemStockService;
 
     @MockBean
-    private ProductStockRequestApiService productStockRequestApiService;
-
-    @MockBean
     private PartnerService partnerService;
 
     @MockBean

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Volkswagen AG
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -29,6 +29,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialServi
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
 import org.junit.jupiter.api.*;
 import org.junit.platform.commons.logging.Logger;
@@ -64,7 +65,7 @@ public class ItemStockSammMapperTest {
     final static String SUPPLIER_BPNS2 = "BPNS2222222222SI";
     final static String SUPPLIER_BPNA2 = "BPNA2222222222AD";
 
-    final Partner supplierPartner = new Partner(
+    final static Partner supplierPartner = new Partner(
         "Scenario Supplier",
         "http://supplier-control-plane:9184/api/v1/dsp",
         SUPPLIER_BPNL,
@@ -76,7 +77,7 @@ public class ItemStockSammMapperTest {
         "Germany"
     );
 
-    final Partner customerPartner = new Partner(
+    final static Partner customerPartner = new Partner(
         "Scenario Customer",
         "http://customer-control-plane:8184/api/v1/dsp",
         "BPNL4444444444XX",
@@ -143,7 +144,7 @@ public class ItemStockSammMapperTest {
         // These should result in two positions
         // - one WITHOUT orderPositionReference AND two allocatedStocks
         // - one WITH orderPosition AND one allocatedStocks
-        ItemStockSamm materialItemStockSamm = itemStockSammMapper.toItemStockSamm(materialItemStock);
+        ItemStockSamm materialItemStockSamm = itemStockSammMapper.materialItemStocksToItemStockSamm(List.of(materialItemStock));
 
         // Then
         assertNotNull(materialItemStockSamm);
@@ -287,7 +288,7 @@ public class ItemStockSammMapperTest {
 
         // When
         // Find material based on CX number and mpr
-        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(semiconductorProduct);
+        when(materialService.findFromSupplierPerspective(CX_MAT_NUMBER, CUSTOMER_MAT_NUMBER, SUPPLIER_MAT_NUMBER, customerPartner)).thenReturn(semiconductorProduct);
         when(mprService.find(semiconductorProduct, customerPartner)).thenReturn(mpr);
 
         // Then we should build 5 reported product stocks:
@@ -297,7 +298,6 @@ public class ItemStockSammMapperTest {
         // - OPR, blocked, 10 pieces, BPNS & BPNA
         // - OPR, not blocked, 20 kilo, BPNS & BPNA
         List<ReportedProductItemStock> reportedProductItemStocks = itemStockSammMapper.itemStockSammToReportedProductItemStock(inboundProductStockSamm, customerPartner);
-
         // Then
         assertEquals(5, reportedProductItemStocks.size());
 
@@ -386,14 +386,12 @@ public class ItemStockSammMapperTest {
         material.setMaterialNumberCx(CX_MAT_NUMBER);
 
         MaterialPartnerRelation mpr = new MaterialPartnerRelation();
-        mpr.setPartner(supplierPartner);
+        mpr.setPartner(customerPartner);
         mpr.setMaterial(material);
         mpr.setPartnerBuysMaterial(true);
         mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
 
-        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(material);
-        when(mprService.findAllByPartnerMaterialNumber(CUSTOMER_MAT_NUMBER)).thenReturn(List.of(material));
-        when(mprService.find(material, supplierPartner)).thenReturn(mpr);
+        when(materialService.findFromSupplierPerspective(CX_MAT_NUMBER, CUSTOMER_MAT_NUMBER, SUPPLIER_MAT_NUMBER, customerPartner)).thenReturn(material);
 
         var list = itemStockSammMapper.itemStockSammToReportedProductItemStock(SAMM_FROM_CUSTOMER_PARTNER, supplierPartner);
         assertNotNull(list);
@@ -420,14 +418,12 @@ public class ItemStockSammMapperTest {
         material.setMaterialNumberCx(CX_MAT_NUMBER);
 
         MaterialPartnerRelation mpr = new MaterialPartnerRelation();
-        mpr.setPartner(supplierPartner);
+        mpr.setPartner(customerPartner);
         mpr.setMaterial(material);
         mpr.setPartnerBuysMaterial(true);
         mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
 
-        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(material);
-        when(mprService.findAllByPartnerMaterialNumber(CUSTOMER_MAT_NUMBER)).thenReturn(List.of(material));
-        when(mprService.find(material, supplierPartner)).thenReturn(mpr);
+        when(materialService.findFromSupplierPerspective(CX_MAT_NUMBER, CUSTOMER_MAT_NUMBER, SUPPLIER_MAT_NUMBER, customerPartner)).thenReturn(material);
 
         ObjectMapper objectMapper = new ObjectMapper();
 

@@ -21,6 +21,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.ItemUnitEnumeration;
 
 import java.util.Objects;
 

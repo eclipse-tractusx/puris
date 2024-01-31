@@ -31,20 +31,25 @@
                 Your {{ this.partnerRole }}s' stocks for
                 {{ this.selectedMaterialOrProductId }}.
             </h3>
-            <button class="btn-primary" @click="updateMaterialOrProduct()">
+            <button class="btn-primary"
+                    @click="updateMaterialOrProduct()"
+                    :disabled="this.selectedMaterialOrProductId === ''"
+            >
                 Update Partner Stocks
             </button>
         </div>
         <p v-if="this.partnerRole === 'supplier'">
             <i>
                 Info: These are your suppliers' stocks (your potential inputs)
-                at his site that not yet sent to you.
+                at his site that have not yet been sent to you. <br>
+                Please choose a material from above table before clicking the "Update Partner Stocks" button.
             </i>
         </p>
         <p v-else-if="this.partnerRole === 'customer'">
             <i>
                 Info: These are your customers' stocks (your recent outputs) at
-                his site that have not yet been used for production.
+                his site that have not yet been used for production. <br>
+                Please choose a material from above table before clicking the "Update Partner Stocks" button.
             </i>
         </p>
         <div class="overflow-x-auto min-h-60 max-h-80">
@@ -65,26 +70,19 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr
-                    v-for="row in tableRows"
-                    :key="row.index"
-                    :class="{ 'empty-row': row.isEmpty }"
+
+                <template v-if="availableMaterialsOrProducts.length === 0">
+                    <tr v-for="index in 3" :key="index" class="empty-row">
+                        <td v-for="index in 8" :key="index"/>
+                    </tr>
+                </template>
+
+                <template
+                    v-else
+                    v-for="stock in availableMaterialsOrProducts"
+                    :key="stock.partner.bpnl"
                 >
-                    <template v-if="row.isEmpty">
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </template>
-                    <template
-                        v-else
-                        v-for="stock in availableMaterialsOrProducts"
-                        :key="stock.partner.bpnl"
-                    >
+                    <tr>
                         <td>
                             {{ stock.partner.name }}<br/>({{
                                 stock.partner.bpnl
@@ -106,8 +104,9 @@
                             }}
                         </td>
                         <td>{{ stock.supplierOrderNumber }}</td>
-                    </template>
-                </tr>
+                    </tr>
+                </template>
+
                 </tbody>
             </table>
         </div>
@@ -138,26 +137,6 @@ export default {
             endpointUpdateReportedProductStocks: import.meta.env
                 .VITE_ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS,
         };
-    },
-    computed: {
-        tableRows() {
-            if (this.availableMaterialsOrProducts.length === 0) {
-                // Generate three empty rows
-                return Array.from({length: 3}, (_, index) => ({
-                    index,
-                    isEmpty: true,
-                }));
-            } else {
-                // Generate rows with data
-                return this.availableMaterialsOrProducts.map(
-                    (stock, index) => ({
-                        index,
-                        stock,
-                        isEmpty: false,
-                    })
-                );
-            }
-        },
     },
     created() {
         if (this.selectedMaterialOrProductId !== "") {

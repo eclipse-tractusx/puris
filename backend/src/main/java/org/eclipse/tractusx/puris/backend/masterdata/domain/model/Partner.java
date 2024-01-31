@@ -24,10 +24,11 @@ package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
-import lombok.*;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.PatternStore;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.PartnerProductStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductStock;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 import java.util.*;
 
@@ -82,27 +83,6 @@ public class Partner {
      */
     private SortedSet<Site> sites = new TreeSet<>();
 
-    @OneToMany(mappedBy = "partner")
-    /**
-     * Contains all MaterialPartnerRelations that this Partner is involved in.
-     */
-    private Set<MaterialPartnerRelation> materialPartnerRelations = new HashSet<>();
-
-    @OneToMany
-    @ToString.Exclude
-    @Setter(AccessLevel.NONE)
-    /**
-     * Contains all ProductStocks that are created for this Partner.
-     */
-    private List<ProductStock> allocatedProductStocksForCustomer = new ArrayList<>();
-
-    @OneToMany
-    @ToString.Exclude
-    @Setter(AccessLevel.NONE)
-    /**
-     * Contains all PartnerProductStocks that this Partner has for us.
-     */
-    private List<PartnerProductStock> partnerProductStocks = new ArrayList<>();
 
     /**
      * Use this constructor to generate a new Partner with a BPNS and a BPNA attached.

@@ -22,20 +22,18 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.squareup.okhttp.*;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
+import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
@@ -220,51 +218,6 @@ public class EdcAdapterService {
     }
 
     /**
-     * Retrieve the content of the catalog from a remote EDC Connector as an
-     * array of catalog items.
-     * You may specify filter criteria, consisting of a map of key-value-pairs.
-     * Catalog items that don't have these filter criteria will be removed from the output array.
-     *
-     * @param dspUrl The Protocol URL of the other EDC Connector
-     * @param filter A map of key-value-pairs. May be empty or null.
-     * @return An array of Catalog items.
-     * @throws IOException If the connection to the partners control plane fails
-     */
-    private JsonNode getCatalogItems(String dspUrl, Map<String, String> filter) throws IOException {
-        var response = sendPostRequest(edcRequestBodyBuilder.
-            buildBasicCatalogRequestBody(dspUrl, filter), List.of("v2", "catalog", "request"));
-        String stringData = response.body().string();
-        if (!response.isSuccessful()) {
-            throw new IOException("Http Catalog Request unsuccessful");
-        }
-        response.body().close();
-        JsonNode responseNode = objectMapper.readTree(stringData);
-
-        var catalogArray = responseNode.get("dcat:dataset");
-        // If there is exactly one asset, the catalogContent will be a JSON object.
-        // In all other cases catalogContent will be a JSON array.
-        // For the sake of uniformity we will embed a single object in an array.
-        if (catalogArray.isObject()) {
-            catalogArray = objectMapper.createArrayNode().add(catalogArray);
-        }
-        if (filter == null || filter.isEmpty()) {
-            return catalogArray;
-        }
-        var filteredNode = objectMapper.createArrayNode();
-        for (var catalogEntry : catalogArray) {
-            boolean testPassed = true;
-            for (var filterEntry : filter.entrySet()) {
-                testPassed = testPassed && catalogEntry.has(filterEntry.getKey())
-                    && catalogEntry.get(filterEntry.getKey()).asText().equals(filterEntry.getValue());
-            }
-            if (testPassed) {
-                filteredNode.add(catalogEntry);
-            }
-        }
-        return filteredNode;
-    }
-
-    /**
      * Helper method for contracting a certain asset as specified in the catalog item from
      * a specific Partner.
      *
@@ -287,7 +240,7 @@ public class EdcAdapterService {
      * specified by the parameter.
      *
      * @param negotiationId The id of the ongoing negotiation
-     * @return The response body as String
+     * @return The response body
      * @throws IOException If the connection to your control plane fails
      */
     public JsonNode getNegotiationState(String negotiationId) throws IOException {
@@ -295,6 +248,21 @@ public class EdcAdapterService {
         String stringData = response.body().string();
         response.body().close();
         return objectMapper.readTree(stringData);
+    }
+
+    /**
+     * Sends a request to the own control plane in order to receive
+     * a list of all negotiations.
+     *
+     * @return The response body as String
+     * @throws IOException If the connection to your control plane fails
+     */
+    public String getAllNegotiations() throws IOException {
+        var requestBody = edcRequestBodyBuilder.buildNegotiationsRequestBody();
+        var response = sendPostRequest(requestBody, List.of("v2", "contractnegotiations", "request"));
+        String stringData = response.body().string();
+        response.body().close();
+        return stringData;
     }
 
     /**
@@ -331,6 +299,36 @@ public class EdcAdapterService {
         return objectMapper.readTree(data);
     }
 
+    /**
+     * Sends a request to the own control plane in order to receive
+     * a list of all transfers.
+     *
+     * @return The response body as String
+     * @throws IOException If the connection to your control plane fails
+     */
+    public String getAllTransfers() throws IOException {
+        var requestBody = edcRequestBodyBuilder.buildTransfersRequestBody();
+        var response = sendPostRequest(requestBody, List.of("v2", "transferprocesses", "request"));
+        String data = response.body().string();
+        response.body().close();
+        return data;
+    }
+
+    /**
+     * Sends a request to the own control plane in order to receive
+     * the contract agreement with the given contractAgreementId
+     *
+     * @param contractAgreementId the contractAgreement's Id
+     * @return the contractAgreement
+     * @throws IOException If the connection to your control plane fails
+     */
+    public String getContractAgreement(String contractAgreementId) throws IOException {
+        var response = sendGetRequest(List.of("v2", "contractagreements", contractAgreementId));
+        String data = response.body().string();
+        response.body().close();
+        return data;
+    }
+
 
     /**
      * Util method for sending a post request the given endpoint
@@ -356,105 +354,6 @@ public class EdcAdapterService {
         } catch (Exception e) {
             log.error("Failed to send Proxy Pull request to " + url, e);
             throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Tries to negotiate for the request api of the given partner, including the retrieval of the
-     * authCode for a request.
-     * It will return a String array of length 4. The authKey is stored under index 0, the
-     * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
-     *
-     * @param partner The partner to negotiate with
-     * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
-     */
-    public String[] getContractForRequestApi(Partner partner) {
-        HashMap<String, String> filter = new HashMap<>();
-        filter.put("asset:prop:type", "api");
-        filter.put("asset:prop:apibusinessobject", "product-stock");
-        filter.put("asset:prop:apipurpose", "request");
-        filter.put("asset:prop:version", variablesService.getPurisApiVersion());
-        return getContractForRequestOrResponseApi(partner, filter);
-    }
-
-    /**
-     * Tries to negotiate for the response api of the given partner, including the retrieval of the
-     * authCode for a request.
-     * It will return a String array of length 4. The authKey is stored under index 0, the
-     * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
-     *
-     * @param partner The partner to negotiate with
-     * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
-     */
-    public String[] getContractForResponseApi(Partner partner) {
-        HashMap<String, String> filter = new HashMap<>();
-        filter.put("asset:prop:type", "api");
-        filter.put("asset:prop:apibusinessobject", "product-stock");
-        filter.put("asset:prop:apipurpose", "response");
-        filter.put("asset:prop:version", variablesService.getPurisApiVersion());
-        return getContractForRequestOrResponseApi(partner, filter);
-    }
-
-    /**
-     * Tries to negotiate for the given api of the partner specified by the parameter
-     * and also tries to initiate the transfer of the edr token to the given endpoint.
-     * <p>
-     * It will return a String array of length 4. The authKey is stored under index 0, the
-     * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
-     *
-     * @param partner The partner to negotiate with
-     * @param filter  The filter to be applied on the level of the asset's properties object.
-     * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
-     */
-    private String[] getContractForRequestOrResponseApi(Partner partner, Map<String, String> filter) {
-        try {
-            JsonNode catalogItem = getCatalogItems(partner.getEdcUrl(), filter).get(0);
-            JsonNode negotiationResponse = initiateNegotiation(partner, catalogItem);
-            String assetApi = catalogItem.get("@id").asText();
-            String negotiationId = negotiationResponse.get("@id").asText();
-            // Await confirmation of contract and contractId
-            String contractId = null;
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
-                var responseObject = getNegotiationState(negotiationId);
-                if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
-                    contractId = responseObject.get("edc:contractAgreementId").asText();
-                    break;
-                }
-            }
-            if (contractId == null) {
-                var negotiationState = getNegotiationState(negotiationId);
-                log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
-                log.error("Failed to obtain " + assetApi + " from " + partner.getEdcUrl());
-                return null;
-            }
-
-            // Initiate transfer of edr
-            var transferResp = initiateProxyPullTransfer(partner, contractId, assetApi);
-            String transferId = transferResp.get("@id").asText();
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
-                transferResp = getTransferState(transferId);
-                if ("STARTED".equals(transferResp.get("edc:state").asText())) {
-                    break;
-                }
-            }
-
-            // Await arrival of edr
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
-                EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
-                if (edr_Dto != null) {
-                    log.info("Successfully negotiated for " + assetApi + " with " + partner.getEdcUrl());
-                    return new String[]{edr_Dto.authKey(), edr_Dto.authCode(), edr_Dto.endpoint(), contractId};
-                }
-            }
-            log.warn("did not receive authCode");
-            log.error("Failed to obtain " + assetApi + " from " + partner.getEdcUrl());
-            return null;
-        } catch (Exception e) {
-            log.error("Failed to obtain api from " + partner.getEdcUrl(), e);
-            return null;
         }
     }
 

@@ -20,6 +20,12 @@
 -->
 <template>
     <main class="flex flex-col mb-7">
+        <header class="banner">
+            <div class="banner-text">
+                IMPORTANT: Please note that the data shown may be <b>competitively sensitive</b> and, according to appliable
+                antitrust laws,<b> must not </b>be shared with competitors. Please consult your legal department, if necessary.
+            </div>
+        </header>
         <h1 class="w-full text-center bold text-5xl mb-6 pb-6">
             View and Manage Stocks
         </h1>
@@ -633,4 +639,17 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.banner {
+    justify-content: center;
+    background-color: burlywood;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+.banner-text {
+    text-align: center;
+    padding: 10px;
+    color: red;
+}
+</style>

@@ -24,21 +24,23 @@ package org.eclipse.tractusx.puris.backend;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.logic.service.VariablesService;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.MeasurementUnit;
-import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ItemStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ProductStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemUnitEnumeration;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.LocationIdTypeEnum;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.samm.ProductStockSammDto;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.ItemUnitEnumeration;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedMaterialItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedProductItemStockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -60,12 +62,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private MaterialPartnerRelationService mprService;
 
     @Autowired
-    private MaterialStockService materialStockService;
-
-    @Autowired
-    private ProductStockService productStockService;
-
-    @Autowired
     private MaterialItemStockService materialItemStockService;
     
     @Autowired
@@ -76,18 +72,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private ReportedProductItemStockService reportedProductItemStockService;
-    
-    @Autowired
-    private ItemStockSammMapper itemStockSammMapper;
-
-    @Autowired
-    private PartnerProductStockService partnerProductStockService;
-
-    @Autowired
-    private ProductStockSammMapper productStockSammMapper;
-
-    @Autowired
-    private ProductStockRequestService productStockRequestService;
 
     @Autowired
     private VariablesService variablesService;
@@ -96,6 +80,12 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     private final String semiconductorMatNbrCustomer = "MNR-7307-AU340474.002";
     private final String semiconductorMatNbrSupplier = "MNR-8101-ID146955.001";
+
+    private final String semiconductorMatNbrCatenaX = "860fb504-b884-4009-9313-c6fb6cdc776b";
+
+    private final String supplierSiteNyBpns = "BPNS1234567890ZZ";
+
+    private final String supplierSiteLaBpns = "BPNS2222222222SS";
 
     public DataInjectionCommandLineRunner(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -199,49 +189,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         productsFound = mprService.findAllProductsThatPartnerBuys(nonScenarioCustomer);
         log.info("Products that customer buys: " + productsFound);
 
-        // Create Material Stock
-        MaterialStock materialStockEntity = new MaterialStock(
-            semiconductorMaterial,
-            5,
-            MeasurementUnit.piece,
-            mySelf.getSites().first().getBpns(),
-            LocationIdTypeEnum.B_P_N_S,
-            new Date()
-        );
-        materialStockEntity = materialStockService.create(materialStockEntity);
-        log.info(String.format("Created materialStock: %s", materialStockEntity));
-
-        // Create Product Stock
-        ProductStock productStockEntity = new ProductStock(
-            centralControlUnitEntity,
-            20,
-            MeasurementUnit.piece,
-            mySelf.getSites().first().getBpns(),
-            LocationIdTypeEnum.B_P_N_S,
-            new Date(),
-            nonScenarioCustomer
-        );
-        productStockEntity = productStockService.create(productStockEntity);
-        log.info(String.format("Created productStock: %s", productStockEntity));
-
-        // Create PartnerProductStock
-        semiconductorMaterial = materialService.findByOwnMaterialNumber(semiconductorMaterial.getOwnMaterialNumber());
-        PartnerProductStock partnerProductStockEntity = new PartnerProductStock(
-            semiconductorMaterial,
-            10,
-            MeasurementUnit.piece,
-            supplierPartner.getSites().stream().findFirst().get().getBpns(),
-            LocationIdTypeEnum.B_P_N_S,
-            new Date(),
-            supplierPartner
-        );
-        log.info(String.format("Created partnerProductStock: %s", partnerProductStockEntity));
-        partnerProductStockEntity = partnerProductStockService.create(partnerProductStockEntity);
-        ProductStockSammDto productStockSammDto = productStockSammMapper.toSamm(partnerProductStockEntity);
-        log.info("SAMM-DTO:\n" + objectMapper.writeValueAsString(productStockSammDto));
-
-        log.info("Own Street and Number: " + variablesService.getOwnDefaultStreetAndNumber());
-
         log.info(mySelf.toString());
 
         var builder = MaterialItemStock.builder();
@@ -251,8 +198,11 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .locationBpna(mySelf.getSites().first().getAddresses().first().getBpna())
             .locationBpns(mySelf.getSites().first().getBpns())
             .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
-            .quantity(20)
+            .quantity(500)
             .partner(supplierPartner)
+            .customerOrderId("CNbr-1")
+            .customerOrderPositionId("C-Pos-1")
+            .supplierOrderId("SNbr-1")
             .build();
         var createdMaterialItemStock = materialItemStockService.create(materialItemStock);
         log.info("Created MaterialItemStock: \n" + createdMaterialItemStock);
@@ -278,6 +228,19 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         Material semiconductorMaterial = getNewSemiconductorMaterialForSupplier();
         Partner mySelf = partnerService.getOwnPartnerEntity();
 
+        Site secondSite = new Site(
+            supplierSiteLaBpns,
+            "Semiconductor Supplier Inc. Secondary Site",
+            "BPNA2222222222AA",
+            "Sunset Blvd. 345",
+            "90001 Los Angeles",
+            "USA"
+        );
+
+        mySelf.getSites().add(secondSite);
+        mySelf = partnerService.update(mySelf);
+        log.info(String.format("Added Site to mySelf Partner: %s", mySelf));
+
         semiconductorMaterial = materialService.create(semiconductorMaterial);
         log.info(String.format("Created product: %s", semiconductorMaterial));
 
@@ -297,19 +260,39 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         List<Partner> customerPartners = mprService.findAllCustomersForOwnMaterialNumber(semiconductorMaterial.getOwnMaterialNumber());
         log.info(String.format("Found customer partners for semiconductor: %s", customerPartners));
 
-
+        Site siteNy = mySelf.getSites().stream().filter(site -> site.getBpns().equals("BPNS1234567890ZZ")).findFirst().get();
+        Site siteLa = mySelf.getSites().stream().filter(site -> site.getBpns().equals("BPNS2222222222SS")).findFirst().get();
 
         var productItemStock = ProductItemStock.builder()
-            .locationBpna(mySelf.getSites().first().getAddresses().first().getBpna())
-            .locationBpns(mySelf.getSites().first().getBpns())
+            .locationBpna(siteNy.getAddresses().stream().findFirst().get().getBpna())
+            .locationBpns(siteNy.getBpns())
             .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
-            .quantity(40)
+            .quantity(100)
             .partner(customerPartner)
+            .isBlocked(true)
+            .customerOrderId("CNbr-2")
+            .customerOrderPositionId("C-Pos-2")
+            .supplierOrderId("SNbr-2")
             .material(semiconductorMaterial)
             .lastUpdatedOnDateTime(new Date())
             .build();
         productItemStock = productItemStockService.create(productItemStock);
         log.info("Created ProductItemStock \n" + productItemStock);
+
+        var productItemStock2 = ProductItemStock.builder()
+            .locationBpna(siteLa.getAddresses().stream().findFirst().get().getBpna())
+            .locationBpns(siteLa.getBpns())
+            .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
+            .quantity(400)
+            .partner(customerPartner)
+            .customerOrderId("CNbr-2")
+            .customerOrderPositionId("C-Pos-2")
+            .supplierOrderId("SNbr-2")
+            .material(semiconductorMaterial)
+            .lastUpdatedOnDateTime(new Date())
+            .build();
+        productItemStock2 = productItemStockService.create(productItemStock2);
+        log.info("Created ProductItemStock 2\n" + productItemStock2);
 
         ReportedProductItemStock reportedProductItemStock = ReportedProductItemStock.builder()
             .material(semiconductorMaterial)
@@ -332,15 +315,15 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
      */
     private Partner createAndGetCustomerPartner() {
         Partner customerPartnerEntity = new Partner(
-            "Scenario Customer",
+            "Control Unit Creator Inc.",
             "http://customer-control-plane:8184/api/v1/dsp",
             "BPNL4444444444XX",
             "BPNS4444444444XX",
-            "Hauptwerk Musterhausen",
+            "Control Unit Creator Production Site",
             "BPNA4444444444AA",
-            "Musterstraße 35b",
-            "77777 Musterhausen",
-            "Germany"
+            "13th Street 47",
+            "10011 New York",
+            "USA"
         );
         customerPartnerEntity = partnerService.create(customerPartnerEntity);
         log.info(String.format("Created customer partner: %s", customerPartnerEntity));
@@ -357,20 +340,34 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
      */
     private Partner createAndGetSupplierPartner() {
         Partner supplierPartnerEntity = new Partner(
-            "Scenario Supplier",
+            "Semiconductor Supplier Inc.",
             "http://supplier-control-plane:9184/api/v1/dsp",
             "BPNL1234567890ZZ",
-            "BPNS1234567890ZZ",
-            "Konzernzentrale Dudelsdorf",
+            supplierSiteNyBpns,
+            "Semiconductor Supplier Inc. Production Site",
             "BPNA1234567890AA",
-            "Heinrich-Supplier-Straße 1",
-            "77785 Dudelsdorf",
-            "Germany"
+            "Wall Street 101",
+            "10001 New York",
+            "USA"
         );
         supplierPartnerEntity = partnerService.create(supplierPartnerEntity);
         log.info(String.format("Created supplier partner: %s", supplierPartnerEntity));
         supplierPartnerEntity = partnerService.findByUuid(supplierPartnerEntity.getUuid());
         log.info(String.format("Found supplier partner: %s", supplierPartnerEntity));
+
+        Site secondSite = new Site(
+            supplierSiteLaBpns,
+            "Semiconductor Supplier Inc. Secondary Site",
+            "BPNA2222222222AA",
+            "Sunset Blvd. 345",
+            "90001 Los Angeles",
+            "USA"
+        );
+
+        supplierPartnerEntity.getSites().add(secondSite);
+        Partner updatedSupplierPartner = partnerService.update(supplierPartnerEntity);
+        log.info(String.format("Added Site to mySelf Partner: %s", updatedSupplierPartner));
+
         return supplierPartnerEntity;
     }
 
@@ -402,16 +399,18 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Material getNewSemiconductorMaterialForSupplier() {
         Material material = new Material();
         material.setOwnMaterialNumber(semiconductorMatNbrSupplier);
+        material.setMaterialNumberCx(semiconductorMatNbrCatenaX);
         material.setProductFlag(true);
-        material.setName("semiconductor");
+        material.setName("Semiconductor");
         return material;
     }
 
     private Material getNewSemiconductorMaterialForCustomer() {
         Material material = new Material();
         material.setOwnMaterialNumber(semiconductorMatNbrCustomer);
+        material.setMaterialNumberCx(semiconductorMatNbrCatenaX);
         material.setMaterialFlag(true);
-        material.setName("semiconductor");
+        material.setName("Semiconductor");
         return material;
     }
 
@@ -425,7 +424,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         Material material = new Material();
         material.setOwnMaterialNumber("MNR-4177-S");
         material.setProductFlag(true);
-        material.setName("central control unit");
+        material.setName("Central Control Unit");
         return material;
     }
 
