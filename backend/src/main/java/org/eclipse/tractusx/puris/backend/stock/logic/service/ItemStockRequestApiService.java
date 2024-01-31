@@ -22,7 +22,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype.DT_RequestStateEnum;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;

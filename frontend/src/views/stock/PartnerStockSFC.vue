@@ -31,20 +31,25 @@
                 Your {{ this.partnerRole }}s' stocks for
                 {{ this.selectedMaterialOrProductId }}.
             </h3>
-            <button class="btn-primary" @click="updateMaterialOrProduct()">
+            <button class="btn-primary"
+                    @click="updateMaterialOrProduct()"
+                    :disabled="this.selectedMaterialOrProductId === ''"
+            >
                 Update Partner Stocks
             </button>
         </div>
         <p v-if="this.partnerRole === 'supplier'">
             <i>
                 Info: These are your suppliers' stocks (your potential inputs)
-                at his site that not yet sent to you.
+                at his site that have not yet been sent to you. <br>
+                Please choose a material from above table before clicking the "Update Partner Stocks" button.
             </i>
         </p>
         <p v-else-if="this.partnerRole === 'customer'">
             <i>
                 Info: These are your customers' stocks (your recent outputs) at
-                his site that have not yet been used for production.
+                his site that have not yet been used for production. <br>
+                Please choose a material from above table before clicking the "Update Partner Stocks" button.
             </i>
         </p>
         <div class="overflow-x-auto min-h-60 max-h-80">

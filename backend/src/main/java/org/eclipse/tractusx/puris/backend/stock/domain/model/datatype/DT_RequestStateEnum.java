@@ -18,7 +18,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.common.api.domain.model.datatype;
+package org.eclipse.tractusx.puris.backend.stock.domain.model.datatype;
 
 /**
  * Enum to track the status of
