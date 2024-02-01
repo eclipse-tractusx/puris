@@ -121,6 +121,7 @@ public class EdcRequestBodyBuilder {
         var context = MAPPER.createObjectNode();
         context.put("odrl", ODRL_NAMESPACE);
         body.set("@context", context);
+        body.put("@type", "PolicyDefinitionRequestDto");
         body.put("@id", getBpnPolicyId(partner));
         var policy = MAPPER.createObjectNode();
         body.set("policy", policy);
@@ -152,6 +153,7 @@ public class EdcRequestBodyBuilder {
         var context = MAPPER.createObjectNode();
         context.put("odrl", ODRL_NAMESPACE);
         body.set("@context", context);
+        body.put("@type", "PolicyDefinitionRequestDto");
         body.put("@id", FRAMEWORK_POLICY_ID);
         var policy = MAPPER.createObjectNode();
         body.set("policy", policy);
@@ -169,7 +171,6 @@ public class EdcRequestBodyBuilder {
         constraintObject.set("odrl:operator", operatorObject);
         operatorObject.put("@id", "odrl:eq");
         constraintObject.put("odrl:rightOperand", "active");
-
         return body;
     }
 
