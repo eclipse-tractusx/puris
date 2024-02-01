@@ -93,13 +93,13 @@ public class VariablesService {
      * can be reached by external machines.
      */
     private String statusRequestServerEndpoint;
-    @Value("${puris.useframeworkagreement}")
+    @Value("${puris.frameworkagreement.use}")
     /**
      * A flag that signals whether a framework policy
      * shall be used as contract policy for your api assets.
      */
     private boolean useFrameworkPolicy;
-    @Value("${puris.frameworkagreement}")
+    @Value("${puris.frameworkagreement.credential}")
     /**
      * The name of the framework agreement to be used.
      */
