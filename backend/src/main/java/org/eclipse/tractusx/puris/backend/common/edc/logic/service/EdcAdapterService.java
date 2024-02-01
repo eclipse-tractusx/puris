@@ -425,6 +425,7 @@ public class EdcAdapterService {
                                                 "been aborted. This partner's contract policy does not match the policy " +
                                                 "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
                                                 "\n Received offer from Partner: \n" + entry.toPrettyString());
+                                            break;
                                         }
                                     } else {
                                         targetCatalogEntry = entry;
