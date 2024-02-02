@@ -72,6 +72,13 @@ spec:
               value: "{{ .Values.frontend.puris.keycloak.clientId }}"
             - name: IDP_REDIRECT_URL_FRONTEND
               value: "{{ .Values.frontend.puris.keycloak.redirectUrlFrontend }}"
+            ######################################
+            ## Additional environment variables ##
+            ######################################
+            {{- range $key, $value := .Values.frontend.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.frontend.service.port }}

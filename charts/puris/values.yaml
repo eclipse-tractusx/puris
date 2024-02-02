@@ -207,6 +207,10 @@ frontend:
             # -- URL to use as keycloak redirect url.
             redirectUrlFrontend: "https://your-frontend-url.com"
 
+    # -- Extra environment variables that will be passed onto the frontend deployment pods
+    env: { }
+      #  ENV_NAME: value
+
 
 # BACKEND -----------
 backend:
@@ -429,6 +433,10 @@ backend:
           # -- Endpoint for EDR
           endpoint: *domain
 
+    # -- Extra environment variables that will be passed onto the backend deployment pods
+    env: { }
+    #  ENV_NAME: value
+
 postgresql:
     # -- Enable postgres by default, set to false to use existing postgres. Make sure to set
     # backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from
@@ -447,3 +455,12 @@ postgresql:
         username: "puris"
         # -- Password for the database.
         password: "password"
+
+# -- configuration of the [Java Util Logging Facade](https://docs.oracle.com/javase/7/docs/technotes/guides/logging/overview.html)
+logging: |-
+  .level=INFO
+  org.eclipse.edc.level=ALL
+  handlers=java.util.logging.ConsoleHandler
+  java.util.logging.ConsoleHandler.formatter=java.util.logging.SimpleFormatter
+  java.util.logging.ConsoleHandler.level=ALL
+  java.util.logging.SimpleFormatter.format=[%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS] [%4$-7s] %5$s%6$s%n

@@ -117,6 +117,13 @@ spec:
                 {{- end}}
             - name: PURIS_STATUSREQUEST_APIASSETID
               value: "{{ .Values.backend.puris.statusrequest.apiassetid }}"
+            ######################################
+            ## Additional environment variables ##
+            ######################################
+            {{- range $key, $value := .Values.backend.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.backend.service.port }}
