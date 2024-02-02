@@ -49,7 +49,6 @@ public class ApiKeyAuthenticationProvider implements org.springframework.securit
         }
 
         if (apiKey.equals(headerKey)){
-            log.info("Request has valid key.");
             return new ApiKeyAuthentication(headerKey, true);
         }
         throw new BadCredentialsException("API key is wrong.");

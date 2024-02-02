@@ -70,6 +70,8 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc |
 | backend.puris.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
 | backend.puris.edr.endpoint | string | `"your-backend-host-address.com"` | Endpoint for EDR |
+| backend.puris.frameworkagreement.credential | string | `"FrameworkAgreement.traceability"` | The name of the framework agreement |
+| backend.puris.frameworkagreement.use | bool | `false` | Flag to determine whether to use a framework agreement in puris |
 | backend.puris.jpa.hibernate.ddl-auto | string | `"create"` | Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones |
 | backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans | bool | `true` | Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction |
 | backend.puris.own.bpna | string | `"BPNA4444444444ZZ"` | Own BPNA of the EDC |

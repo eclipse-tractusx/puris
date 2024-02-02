@@ -427,6 +427,11 @@ backend:
           serverendpoint: *domain
           # -- Asset ID for status-request API
           apiassetid: statusrequest-api-asset
+        frameworkagreement:
+          # -- Flag to determine whether to use a framework agreement in puris
+          use: false
+          # -- The name of the framework agreement
+          credential : FrameworkAgreement.traceability
         edr:
           # -- Number of minutes before received authentication data of a consumer pull is removed from memory
           deletiontimer: 2

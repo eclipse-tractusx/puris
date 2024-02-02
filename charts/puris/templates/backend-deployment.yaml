@@ -117,6 +117,10 @@ spec:
                 {{- end}}
             - name: PURIS_STATUSREQUEST_APIASSETID
               value: "{{ .Values.backend.puris.statusrequest.apiassetid }}"
+            - name: PURIS_FRAMEWORKAGREEMENT_USE
+              value: "{{ .Values.backend.puris.frameworkagreement.use }}"
+            - name: PURIS_FRAMEWORKAGREEMENT_CREDENTIAL
+              value: "{{ .Values.backend.puris.frameworkagreement.credential }}"
             ######################################
             ## Additional environment variables ##
             ######################################
