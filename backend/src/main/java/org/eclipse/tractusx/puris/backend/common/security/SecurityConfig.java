@@ -76,10 +76,21 @@ public class SecurityConfig {
             .httpBasic(
                 AbstractHttpConfigurer::disable
             )
+            .formLogin(
+                AbstractHttpConfigurer::disable
+            )
+            .logout(
+                AbstractHttpConfigurer::disable
+            )
+            .anonymous(
+                AbstractHttpConfigurer::disable
+            )
             .sessionManagement(
                 (sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            .cors(Customizer.withDefaults());
+            .cors(
+                Customizer.withDefaults()
+            );
 
 
         http.addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
