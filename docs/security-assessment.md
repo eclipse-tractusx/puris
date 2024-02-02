@@ -1,6 +1,6 @@
 # Security Assessment PURIS (incl. Frontend, Backend Services, IAM and other infrastructure)
 
-|                           |                                                                                                |
+| Contact                  | Details                                                                           |
 | ------------------------- | ---------------------------------------------------------------------------------------------- |
 | Contact for product       | [@tom-rm-meyer-ISST](https://github.com/tom-rm-meyer-ISST) |
 | Security responsible      | [@SSIRKC](https://github.com/SSIRKC) <br> [@szymonkowalczykzf](https://github.com/szymonkowalczykzf) |
@@ -37,3 +37,7 @@ The rest of the functionalities, especially the resiliency ones are currently  n
 |3 |	H2 Database |
 |4 |	Data Response Controller |
 |5 |	Data Request Controller |
+
+# Vulnerabilities & Threats
+| V001 | Lack of authentication & authorization mechanisms |
+| ------------------------- | ------------------------- |
