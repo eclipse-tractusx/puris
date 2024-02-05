@@ -52,10 +52,21 @@ Note: Stock information is updated asynchronously. The user may reload the page 
 
 ## Supplier Dashboard
 
+![Dashboard View after opening](img/dashboard_view.png)
+
 The Supplier Dashboard is a preview. It allows a partner to select a customer, material and location information to
-get insights regarding the current status of a customers' supply situation. Using the button "Update Customer Data", the
-respective information for the partner get updated.
-Note: information is updated asynchronously. The user may reload the page later to see the updated data.
+get insights regarding the current status of a customers' supply situation. If address "All Addresses" is selected, then
+all information of the different address is summed up.
+
+![Dashboard View after selection](img/dashboard_view_list.png)
+
+A very easy overview is given by highlighting cells red in which the production is less than the total demand of that
+day. Stocks, transit times and deliveries are ignored.
+
+After selecting a product the "Update Customer Data" button is enabled. When using the button, the respective
+information for the partner get updated.
+Note: information is updated asynchronously. The user may reload the page later to see the updated data. Currently only
+Stock information of the partner is updated.
 
 ## Catalog
 
