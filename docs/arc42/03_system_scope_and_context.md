@@ -8,7 +8,7 @@ related to partners. This application scope follows the following information.
 PURIS FOSS may be operated in any supply network, but currently will likely be operated in the
 automotive supply network.
 
-![Business Context](puml/03-business-context.svg)
+![Business Context](img/03-business-context.svg)
 
 **Disposition**
 The disposition has a major information need to keep a material flow into and out of the production. The disposition
@@ -45,7 +45,7 @@ message standards, too OR even don't do EDI.
 
 The Technical Context has been derived from the architecture constraints:
 
-![Technical Context](puml/03-technical-context.svg)
+![Technical Context](img/03-technical-context.svg)
 
 **PURIS FOSS**
 
