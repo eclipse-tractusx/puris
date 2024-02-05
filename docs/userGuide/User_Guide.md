@@ -36,19 +36,28 @@ The view allows a user to either add a material (user selected radio button 'Mat
 
 The updated or created stocks can be seen in the related section after triggering button "Add or Update".
 
+![Stock View after adding a Material Stock](img/stock_view_added_material_stock.png)
+
 ### Material Stocks
 
 The table shows the relevant information regarding all material stocks that are at your sites. The user may select one
-stock to see which of the selected material are already allocated on supplier side. Using the button "Update Partner
-Stocks", the user may request an update of this data for all partners who supply the material.
+stock to see which of the selected material are already allocated to him on supplier side. All Stocks related to the
+material of the selected line are shown.
+
+![Stock View after selecting a Material Stock](img/stock_view_selected_material_stock.png)
+
+Using the button "Update Partner Stocks", the user may request an update of this data for all partners who supply the
+material.
 Note: Stock information is updated asynchronously. The user may reload the page later to see the updated data.
 
 ### Product Stocks
 
 The table shows the relevant information regarding all product stocks that are at your sites. The user may select one
-stock to see which of the selected products have already arrived on customer side but not be used for production. Using
-the button "Update Partner Stocks", the user may request an update of this data for all partners who buy the material.
+stock to see which of the selected products have already arrived at customer side but not be used for production. All
+Stocks related to the material of the selected line are shown. Using the button "Update Partner Stocks", the user may
+request an update of this data for all partners who buy the material.
 Note: Stock information is updated asynchronously. The user may reload the page later to see the updated data.
+Note 2: No images have been added, as the Product Stocks mechanics are the same as for material stocks.
 
 ## Supplier Dashboard
 
