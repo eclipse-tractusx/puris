@@ -1,0 +1,11 @@
+@startuml
+[SAMM] as samm
+[Tractus-X EDC] as edc
+[Sovereign Data Exchange] as sov
+[PURIS FOSS] as puris
+
+samm -- puris
+edc - puris
+puris - sov
+
+@enduml

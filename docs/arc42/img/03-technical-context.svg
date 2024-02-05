@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="us-ascii" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" contentStyleType="text/css" height="165px" preserveAspectRatio="none"
+     style="width:571px;height:165px;background:#FFFFFF;" version="1.1" viewBox="0 0 571 165" width="571px"
+     zoomAndPan="magnify">
+    <defs/>
+    <g><!--entity samm-->
+        <g id="elem_samm">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="83"
+                  x="203.5" y="7"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="266.5" y="12"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="264.5" y="14"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="264.5" y="18"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="43"
+                  x="218.5" y="39.9951">SAMM
+            </text>
+        </g><!--entity edc-->
+        <g id="elem_edc">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="142"
+                  x="7" y="113"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="129" y="118"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="127" y="120"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="127" y="124"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="102" x="22"
+                  y="145.9951">Tractus-X EDC
+            </text>
+        </g><!--entity sov-->
+        <g id="elem_sov">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="224"
+                  x="341" y="113"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="545" y="118"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="543" y="120"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="543" y="124"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="184" x="356"
+                  y="145.9951">Sovereign Data Exchange
+            </text>
+        </g><!--entity puris-->
+        <g id="elem_puris">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="122"
+                  x="184" y="113"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="286" y="118"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="284" y="120"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="284" y="124"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="82" x="199"
+                  y="145.9951">PURIS FOSS
+            </text>
+        </g><!--link samm to puris-->
+        <g id="link_samm_puris">
+            <path d="M245,53.06 C245,70.7 245,95.34 245,112.98 " fill="none" id="samm-puris"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link edc to puris-->
+        <g id="link_edc_puris">
+            <path d="M149.11,136 C160.72,136 172.33,136 183.94,136 " fill="none" id="edc-puris"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link puris to sov-->
+        <g id="link_puris_sov">
+            <path d="M306.34,136 C317.8,136 329.26,136 340.72,136 " fill="none" id="puris-sov"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--SRC=[YmvszFMDLKWiLYXEpCtbYWufIamkAItMZL1mTN46YwUc97D51-UNfHQbPgRdARWabYGgk5OaPoJcfQT2DEQNSKK7X0Pv1Yku-GS7WyKAIeioYxcuG6OgwEf2kK2J561iC0daWJG30000]-->
+    </g>
+</svg>
