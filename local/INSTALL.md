@@ -56,6 +56,24 @@ docker compose up
 ```
 Wait for the startup and visit http://localhost:3000/ for the customer's frontend or http://localhost:3001/ for the supplier side. 
 
+Whenever you have edited the source code in the frontend or backend and you want to test these changes, we recommend that you 
+stop all the containers, which are not part of the infrastructure, by deleting the volumes, i.e. run  
+
+```
+docker compose down -v
+```
+
+Then, build a new docker image for the respective component (frontend and/or backend) as described above and then restart via 
+
+```shell
+docker compose up
+```
+
+In general, it is not necessary to restart the infrastructure, if you had to rebuild frontend or backend. 
+However, in rare cases there may be issues with the MIW. If this 
+happens, you should use the cleanup script as mentioned in the debugging section below and then repeat the above-mentioned 
+steps beginning with the Initial Setup section. 
+
 ## Notes on debugging
 
 ### Vault & Certs
