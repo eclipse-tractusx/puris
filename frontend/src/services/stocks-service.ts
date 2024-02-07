@@ -19,8 +19,8 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { config } from '../models/constants/config';
-import { MaterialStock, ProductStock } from '../models/types/data/stock';
+import { config } from '@models/constants/config';
+import { MaterialStock, ProductStock } from '@models/types/data/stock';
 
 export const postProductStocks =async (stock: ProductStock) => {
   return fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCT_STOCKS, {

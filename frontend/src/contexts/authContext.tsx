@@ -20,8 +20,8 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { ReactNode, createContext, useEffect, useState } from 'react';
-import AuthenticationService from '../services/authentication-service';
-import { Auth } from '../models/types/auth/auth';
+import AuthenticationService from '@services/authentication-service';
+import { Auth } from '@models/types/auth/auth';
 
 export const AuthContext = createContext<Auth>({
     isInitialized: false,

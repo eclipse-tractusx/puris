@@ -24,7 +24,7 @@ import { StockUpdateForm } from './StockUpdateForm';
 import { PartnerStockTable } from './PartnerStockTable';
 import { StockTable } from './StockTable';
 import { useProducts } from '../hooks/useProducts';
-import { ProductStock } from '../../../models/types/data/stock';
+import { ProductStock } from '@models/types/data/stock';
 
 export const ProductStockView = () => {
     const { products } = useProducts();

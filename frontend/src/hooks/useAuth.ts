@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { useContext } from 'react';
-import { AuthContext } from '../contexts/authContext';
+import { AuthContext } from '@contexts/authContext';
 
 export const useAuth = () => {
     const auth = useContext(AuthContext);

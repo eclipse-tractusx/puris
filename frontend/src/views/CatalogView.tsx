@@ -20,11 +20,11 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { Input, LoadingButton } from '@catena-x/portal-shared-components';
-import { useCatalog } from '../hooks/edc/useCatalog';
+import { useCatalog } from '@hooks/edc/useCatalog';
 import { useRef, useState } from 'react';
-import { CatalogOperation } from '../models/types/edc/catalog';
+import { CatalogOperation } from '@models/types/edc/catalog';
 import { Card } from '@mui/material';
-import { getCatalogOperator } from '../util/helpers';
+import { getCatalogOperator } from '@util/helpers';
 
 type OperationListProps = {
     title: string;

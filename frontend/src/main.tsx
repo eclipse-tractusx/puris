@@ -23,7 +23,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router.tsx';
-import { AuthContextProvider } from './contexts/authContext.tsx';
+import { AuthContextProvider } from '@contexts/authContext.tsx';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <AuthContextProvider>

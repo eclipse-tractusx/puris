@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import Keycloak from 'keycloak-js';
-import { config } from '../models/constants/config';
-import { Role } from '../models/types/auth/role';
+import { config } from '@models/constants/config';
+import { Role } from '@models/types/auth/role';
 
 const MIN_TOKEN_VALIDITY = 600;
 

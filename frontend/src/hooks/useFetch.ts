@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { useEffect, useState } from 'react';
-import { config } from '../models/constants/config';
+import { config } from '@models/constants/config';
 
 const defaultHeaders = {
     'Content-Type': 'application/json',

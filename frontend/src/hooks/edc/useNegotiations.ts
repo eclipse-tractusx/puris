@@ -19,8 +19,8 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { config } from '../../models/constants/config';
-import { Negotiation } from '../../models/types/edc/negotiation';
+import { config } from '@models/constants/config';
+import { Negotiation } from '@models/types/edc/negotiation';
 import { useFetch } from '../useFetch';
 
 export const useNegotiations = () => {

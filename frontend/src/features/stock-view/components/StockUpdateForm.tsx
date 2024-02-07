@@ -20,15 +20,15 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { Input, LoadingButton } from '@catena-x/portal-shared-components';
-import { MaterialDescriptor } from '../../../models/types/data/material-descriptor';
-import { UNITS_OF_MEASUREMENT } from '../../../models/constants/uom';
+import { MaterialDescriptor } from '@models/types/data/material-descriptor';
+import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { useSites } from '../hooks/useSites';
 import { useEffect, useReducer, useState } from 'react';
 import { Autocomplete, Checkbox } from '@mui/material';
-import { MaterialStock, ProductStock } from '../../../models/types/data/stock';
-import { getUnitOfMeasurement } from '../../../util/helpers';
+import { MaterialStock, ProductStock } from '@models/types/data/stock';
+import { getUnitOfMeasurement } from '@util/helpers';
 import { usePartners } from '../hooks/usePartners';
-import { postMaterialStocks, postProductStocks, putMaterialStocks, putProductStocks } from '../../../services/stocks-service';
+import { postMaterialStocks, postProductStocks, putMaterialStocks, putProductStocks } from '@services/stocks-service';
 
 type StockUpdateFormProps = {
     items: MaterialDescriptor[] | null;

@@ -19,9 +19,9 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { config } from '../../../models/constants/config';
-import { MaterialDescriptor } from '../../../models/types/data/material-descriptor';
-import { useFetch } from '../../../hooks/useFetch';
+import { config } from '@models/constants/config';
+import { MaterialDescriptor } from '@models/types/data/material-descriptor';
+import { useFetch } from '@hooks/useFetch';
 
 export const useMaterials = () => {
     const {

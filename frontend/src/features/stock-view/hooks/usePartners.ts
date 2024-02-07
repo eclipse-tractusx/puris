@@ -19,9 +19,9 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { useFetch } from '../../../hooks/useFetch';
-import { config } from '../../../models/constants/config';
-import { Partner } from '../../../models/types/edc/partner';
+import { useFetch } from '@hooks/useFetch';
+import { config } from '@models/constants/config';
+import { Partner } from '@models/types/edc/partner';
 
 export const usePartners = (type: 'material' | 'product', materialNumber: string | null) => {
   const endpoint = type === 'product' ? config.app.ENDPOINT_CUSTOMER : config.app.ENDPOINT_SUPPLIER;

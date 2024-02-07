@@ -19,8 +19,8 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { UNITS_OF_MEASUREMENT } from '../models/constants/uom';
-import { UnitOfMeasurementKey } from '../models/types/data/uom';
+import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
+import { UnitOfMeasurementKey } from '@models/types/data/uom';
 
 export const getUnitOfMeasurement = (unitOfMeasurementKey: UnitOfMeasurementKey) =>
     UNITS_OF_MEASUREMENT.find((uom) => uom.key === unitOfMeasurementKey)?.value;

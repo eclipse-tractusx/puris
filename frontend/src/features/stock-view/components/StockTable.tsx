@@ -20,8 +20,8 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { Table } from '@catena-x/portal-shared-components';
-import { MaterialStock, ProductStock } from '../../../models/types/data/stock';
-import { getUnitOfMeasurement } from '../../../util/helpers';
+import { MaterialStock, ProductStock } from '@models/types/data/stock';
+import { getUnitOfMeasurement } from '@util/helpers';
 import { useStocks } from '../hooks/useStocks';
 
 type StockTableProps<T extends ProductStock | MaterialStock> = {

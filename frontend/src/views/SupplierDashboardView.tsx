@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import { Input, Table } from '@catena-x/portal-shared-components';
 import { useState } from 'react';
-import { ConfidentialBanner } from '../components/ConfidentialBanner';
+import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import Autocomplete from '@mui/material/Autocomplete';
 
 type Customer = {

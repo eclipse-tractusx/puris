@@ -24,7 +24,7 @@ import { useMaterials } from '../hooks/useMaterials';
 import { StockUpdateForm } from './StockUpdateForm';
 import { PartnerStockTable } from './PartnerStockTable';
 import { StockTable } from './StockTable';
-import { MaterialStock } from '../../../models/types/data/stock';
+import { MaterialStock } from '@models/types/data/stock';
 
 export const MaterialStockView = () => {
     const { materials } = useMaterials();

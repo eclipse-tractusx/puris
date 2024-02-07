@@ -19,8 +19,8 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { config } from '../../models/constants/config';
-import { RawCatalogData } from '../../models/types/edc/catalog';
+import { config } from '@models/constants/config';
+import { RawCatalogData } from '@models/types/edc/catalog';
 import { useFetch } from '../useFetch';
 
 export const useCatalog = (edcUrl: string | null) => {

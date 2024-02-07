@@ -20,17 +20,17 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { createBrowserRouter, redirect } from 'react-router-dom';
-import { Layout } from './components/layout/Layout';
-import { NotFoundView } from './views/errors/NotFoundView';
-import { CatalogView } from './views/CatalogView';
-import { NegotiationView } from './views/NegotiationView';
-import { TransferView } from './views/TransferView';
-import { StockView } from './views/StockView';
-import { SupplierDashboardView } from './views/SupplierDashboardView';
-import { AboutLicenseView } from './views/AboutLicenseView';
-import { UnauthorizedView } from './views/errors/UnauthorizedView';
-import { ErrorView } from './views/errors/ErrorView';
-import { RouteGuard } from './components/RouteGuard';
+import { Layout } from '@components/layout/Layout';
+import { NotFoundView } from '@views/errors/NotFoundView';
+import { CatalogView } from '@views/CatalogView';
+import { NegotiationView } from '@views/NegotiationView';
+import { TransferView } from '@views/TransferView';
+import { StockView } from '@views/StockView';
+import { SupplierDashboardView } from '@views/SupplierDashboardView';
+import { AboutLicenseView } from '@views/AboutLicenseView';
+import { UnauthorizedView } from '@views/errors/UnauthorizedView';
+import { ErrorView } from '@views/errors/ErrorView';
+import { RouteGuard } from '@components/RouteGuard';
 
 export const router = createBrowserRouter([
     {

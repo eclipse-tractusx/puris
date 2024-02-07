@@ -19,7 +19,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { useTransfers } from '../hooks/edc/useTransfers';
+import { useTransfers } from '@hooks/edc/useTransfers';
 
 export const TransferView = () => {
     const { transfers } = useTransfers();

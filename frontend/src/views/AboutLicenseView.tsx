@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { Link } from '@mui/material';
-import aboutPage from '../assets/aboutPage.json';
+import aboutPage from '@assets/aboutPage.json';
 import { Table } from '@catena-x/portal-shared-components';
 
 const aboutPageColumns = [

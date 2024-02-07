@@ -20,10 +20,10 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { LoadingButton, Table } from '@catena-x/portal-shared-components';
-import { MaterialStock, ProductStock } from '../../../models/types/data/stock';
+import { MaterialStock, ProductStock } from '@models/types/data/stock';
 import { usePartnerStocks } from '../hooks/usePartnerStocks';
-import { getUnitOfMeasurement } from '../../../util/helpers';
-import { refreshPartnerStocks } from '../../../services/stocks-service';
+import { getUnitOfMeasurement } from '@util/helpers';
+import { refreshPartnerStocks } from '@services/stocks-service';
 import { useState } from 'react';
 
 type PartnerStockTableProps = {

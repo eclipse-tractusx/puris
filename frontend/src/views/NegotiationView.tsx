@@ -19,7 +19,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { useNegotiations } from '../hooks/edc/useNegotiations';
+import { useNegotiations } from '@hooks/edc/useNegotiations';
 
 export const NegotiationView = () => {
     const { negotiations  } = useNegotiations();

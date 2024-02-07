@@ -19,8 +19,8 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { config } from '../../models/constants/config';
-import { Transfer } from '../../models/types/edc/transfer';
+import { config } from '@models/constants/config';
+import { Transfer } from '@models/types/edc/transfer';
 import { useFetch } from '../useFetch';
 
 export const useTransfers = () => {

@@ -20,8 +20,8 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { Outlet, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { Role } from '../models/types/auth/role';
+import { useAuth } from '@hooks/useAuth';
+import { Role } from '@models/types/auth/role';
 import { useEffect } from 'react';
 
 type RouteGuardProps = {

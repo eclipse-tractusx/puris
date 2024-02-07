@@ -26,8 +26,8 @@ import CatalogIcon from '@/assets/icons/catalog.svg';
 import StockIcon from '@/assets/icons/stock.svg';
 import TrashIcon from '@/assets/icons/trash.svg';
 import { Typography } from '@catena-x/portal-shared-components';
-import { Role } from '../../models/types/auth/role';
-import { useAuth } from '../../hooks/useAuth';
+import { Role } from '@models/types/auth/role';
+import { useAuth } from '@hooks/useAuth';
 
 type SideBarItemProps = (
     | {

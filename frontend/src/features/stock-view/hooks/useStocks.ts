@@ -19,9 +19,9 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { config } from '../../../models/constants/config';
-import { MaterialStock, ProductStock } from '../../../models/types/data/stock';
-import { useFetch } from '../../../hooks/useFetch';
+import { config } from '@models/constants/config';
+import { MaterialStock, ProductStock } from '@models/types/data/stock';
+import { useFetch } from '@hooks/useFetch';
 
 export const useStocks = (type: 'material' | 'product') => {
   const url = type === 'material' ? config.app.ENDPOINT_MATERIAL_STOCKS : config.app.ENDPOINT_PRODUCT_STOCKS;

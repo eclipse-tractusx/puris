@@ -21,9 +21,9 @@ SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react';
 import { Tab, TabPanel, Tabs } from '@catena-x/portal-shared-components';
-import { MaterialStockView } from '../features/stock-view/components/MaterialStockView';
-import { ConfidentialBanner } from '../components/ConfidentialBanner';
-import { ProductStockView } from '../features/stock-view/components/ProductStockView';
+import { MaterialStockView } from '@features/stock-view/components/MaterialStockView';
+import { ConfidentialBanner } from '@components/ConfidentialBanner';
+import { ProductStockView } from '@features/stock-view/components/ProductStockView';
 
 export const StockView = () => {
     const [selectedTab, setSelectedTab] = useState<number>(0);
