@@ -19,18 +19,16 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+import { Outlet } from 'react-router-dom';
+import { SideBar } from './SideBar';
 
-body {
-    @apply text-gray-700;
-}
-
-[role="tabpanel"] {
-    @apply w-full;
-}
-
-.MuiDataGrid-root > .MuiBox-root h5 > span {
-    display: none;
+export const Layout = () => {
+    return (
+        <div className="flex h-[100vh] w-full">
+            <SideBar></SideBar>
+            <main className="flex-grow overflow-y-auto py-5 px-7">
+                <Outlet />
+            </main>
+        </div>
+    );
 }

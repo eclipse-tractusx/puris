@@ -19,18 +19,14 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './router.tsx';
+import { AuthContextProvider } from './contexts/authContext.tsx';
 
-body {
-    @apply text-gray-700;
-}
-
-[role="tabpanel"] {
-    @apply w-full;
-}
-
-.MuiDataGrid-root > .MuiBox-root h5 > span {
-    display: none;
-}
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+    <AuthContextProvider>
+        <RouterProvider router={router} />
+    </AuthContextProvider>
+);

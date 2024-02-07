@@ -19,18 +19,19 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+import { config } from '../../../models/constants/config';
+import { MaterialDescriptor } from '../../../models/types/data/material-descriptor';
+import { useFetch } from '../../../hooks/useFetch';
 
-body {
-    @apply text-gray-700;
-}
-
-[role="tabpanel"] {
-    @apply w-full;
-}
-
-.MuiDataGrid-root > .MuiBox-root h5 > span {
-    display: none;
+export const useMaterials = () => {
+    const {
+        data: materials,
+        error: materialsError,
+        isLoading: isLoadingMaterials,
+    } = useFetch<MaterialDescriptor[]>(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_MATERIALS);
+    return {
+        materials,
+        materialsError,
+        isLoadingMaterials,
+    };
 }

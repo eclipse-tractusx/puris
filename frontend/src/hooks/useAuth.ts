@@ -19,18 +19,13 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+import { useContext } from 'react';
+import { AuthContext } from '../contexts/authContext';
 
-body {
-    @apply text-gray-700;
-}
-
-[role="tabpanel"] {
-    @apply w-full;
-}
-
-.MuiDataGrid-root > .MuiBox-root h5 > span {
-    display: none;
-}
+export const useAuth = () => {
+    const auth = useContext(AuthContext);
+    if (auth === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return auth;
+};

@@ -19,18 +19,11 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+import { BPNA } from './bpn';
 
-body {
-    @apply text-gray-700;
-}
-
-[role="tabpanel"] {
-    @apply w-full;
-}
-
-.MuiDataGrid-root > .MuiBox-root h5 > span {
-    display: none;
-}
+export type Address = {
+    bpna: BPNA;
+    streetAndNumber: string;
+    zipCodeAndCity: string;
+    country: string;
+};

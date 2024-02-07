@@ -19,18 +19,11 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-body {
-    @apply text-gray-700;
-}
-
-[role="tabpanel"] {
-    @apply w-full;
-}
-
-.MuiDataGrid-root > .MuiBox-root h5 > span {
-    display: none;
+export const NotFoundView = () => {
+    return (
+        <div className="flex flex-col items-center justify-center w-full h-full">
+            <h1 className="text-4xl font-bold text-gray-700">404</h1>
+            <p className="text-gray-700">Page not found</p>
+        </div>
+    );
 }

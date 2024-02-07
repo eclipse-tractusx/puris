@@ -19,18 +19,9 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+export type UnitOfMeasurementKey = `unit:${string}`;
 
-body {
-    @apply text-gray-700;
-}
-
-[role="tabpanel"] {
-    @apply w-full;
-}
-
-.MuiDataGrid-root > .MuiBox-root h5 > span {
-    display: none;
-}
+export type UnitOfMeasurement = {
+    key: UnitOfMeasurementKey;
+    value: string;
+};
