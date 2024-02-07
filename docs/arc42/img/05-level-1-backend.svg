@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="us-ascii" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" contentStyleType="text/css" height="322px" preserveAspectRatio="none"
+     style="width:318px;height:322px;background:#FFFFFF;" version="1.1" viewBox="0 0 318 322" width="318px"
+     zoomAndPan="magnify">
+    <defs/>
+    <g><!--cluster <<system>> PURIS FOSS Backend-->
+        <g id="cluster_&lt;&lt;system&gt;&gt; PURIS FOSS Backend">
+            <path
+                d="M37,6 L281,6 A3.75,3.75 0 0 1 283.5,8.5 L290.5,28.2969 L291,28.2969 A2.5,2.5 0 0 1 293.5,30.7969 L293.5,312.5 A2.5,2.5 0 0 1 291,315 L37,315 A2.5,2.5 0 0 1 34.5,312.5 L34.5,8.5 A2.5,2.5 0 0 1 37,6 "
+                fill="none" style="stroke:#000000;stroke-width:1.5;"/>
+            <line style="stroke:#000000;stroke-width:1.5;" x1="34.5" x2="290.5" y1="28.2969" y2="28.2969"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing"
+                  textLength="243" x="38.5" y="20.9951">&#171;system&#187; PURIS FOSS Backend
+            </text>
+        </g><!--entity edc-->
+        <g id="elem_edc">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="70"
+                  x="128.5" y="41"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="178.5" y="46"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="176.5" y="48"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="176.5" y="52"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30"
+                  x="143.5" y="73.9951">EDC
+            </text>
+        </g><!--entity EDC Client Interface-->
+        <g id="elem_EDC Client Interface">
+            <ellipse cx="242.5" cy="64" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="137" x="174"
+                  y="93.9951">EDC Client Interface
+            </text>
+        </g><!--entity stock-->
+        <g id="elem_stock">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="79"
+                  x="124" y="147"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="183" y="152"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="181" y="154"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="181" y="158"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="39" x="139"
+                  y="179.9951">Stock
+            </text>
+        </g><!--entity Stock Interface-->
+        <g id="elem_Stock Interface">
+            <ellipse cx="247.5" cy="170" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="103" x="196"
+                  y="199.9951">Stock Interface
+            </text>
+        </g><!--entity Stock Request &\n Response Interfaces\n(through EDC)-->
+        <g id="elem_Stock Request &amp;\n Response Interfaces\n(through EDC)">
+            <ellipse cx="79.5" cy="170" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="118" x="6"
+                  y="199.9951">Stock Request &amp;
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="143" x="10"
+                  y="216.292">Response Interfaces
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="99" x="6"
+                  y="232.5889">(through EDC)
+            </text>
+        </g><!--entity mad-->
+        <g id="elem_mad">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="72"
+                  x="127.5" y="253"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="179.5" y="258"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="177.5" y="260"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="177.5" y="264"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="32"
+                  x="142.5" y="285.9951">MAD
+            </text>
+        </g><!--entity MAD Interface-->
+        <g id="elem_MAD Interface">
+            <ellipse cx="243.5" cy="276" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96"
+                  x="195.5" y="305.9951">MAD Interface
+            </text>
+        </g><!--link edc to EDC Client Interface-->
+        <g id="link_edc_EDC Client Interface">
+            <path d="M198.84,64 C211.49,64 224.72,64 233.26,64 " fill="none" id="edc-EDC Client Interface"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link stock to Stock Interface-->
+        <g id="link_stock_Stock Interface">
+            <path d="M203.04,170 C216.15,170 229.57,170 238.19,170 " fill="none" id="stock-Stock Interface"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link Stock Request &\n Response Interfaces\n(through EDC) to stock-->
+        <g id="link_Stock Request &amp;\n Response Interfaces\n(through EDC)_stock">
+            <path d="M88.81,170 C97.35,170 110.62,170 123.61,170 " fill="none"
+                  id="Stock Request &amp;\n Response Interfaces\n(through EDC)-stock"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link edc to stock-->
+        <g id="link_edc_stock">
+            <path d="M163.5,87 C163.5,104.66 163.5,128.94 163.5,146.68 " fill="none" id="edc-stock"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="102"
+                  x="27.4594" y="120.8402">query catalog &amp;
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="141"
+                  x="7.9594" y="135.973">request data (via edc)
+            </text>
+        </g><!--link mad to MAD Interface-->
+        <g id="link_mad_MAD Interface">
+            <path d="M199.75,276 C212.49,276 225.73,276 234.26,276 " fill="none" id="mad-MAD Interface"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link stock to mad-->
+        <g id="link_stock_mad">
+            <path d="M163.5,193 C163.5,210.66 163.5,234.94 163.5,252.68 " fill="none" id="stock-mad"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--SRC=[NKz1JiCm4Bpx5ICVK3dq1rKbQ47g0O4QSMevh9mbYPBOmTuYHOY_ipOj82xhtTcPsN7gEpzHf153vrdcYH6YjC6OYLnF3SEkLcbEmkDwZQVd_Qx2_MDLuLRNx6lxOGnmkDjkNa09N3iTjM89go0sGyTUiFF2yPKSsqAl9BY-25Bk52fl5fNLNpuks9xVJfm4LqUlVPg2J_nBJ4U_a3Q6KzD23rzRDVislmHISpM8Cnm93Q79Hl7iMIk4nNj7cQhQ7-NXuMPRWevKwwWrXrJmtvVE-PU5PpxD5m00]-->
+    </g>
+</svg>

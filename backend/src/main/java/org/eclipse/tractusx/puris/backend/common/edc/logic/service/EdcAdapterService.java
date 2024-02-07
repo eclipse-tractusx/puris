@@ -59,6 +59,7 @@ public class EdcAdapterService {
      * Util method for issuing a GET request to the management api of your control plane.
      * Any caller of this method has the responsibility to close
      * the returned Response object after using it.
+     *
      * @param pathSegments The path segments
      * @return The response
      * @throws IOException If the connection to your control plane fails
@@ -80,6 +81,7 @@ public class EdcAdapterService {
      * Util method for issuing a POST request to the management api of your control plane.
      * Any caller of this method has the responsibility to close
      * the returned Response object after using it.
+     *
      * @param requestBody  The request body
      * @param pathSegments The path segments
      * @return The response from your control plane
@@ -113,9 +115,9 @@ public class EdcAdapterService {
         log.info("Registration of item-stock request api successful " + (result = registerApiAsset(DT_ApiMethodEnum.REQUEST)));
         if (!result) return false;
         log.info("Registration of item-stock response api successful " + (result = registerApiAsset(DT_ApiMethodEnum.RESPONSE)));
-        if(!result) return false;
+        if (!result) return false;
         log.info("Registration of item-stock status-request api successful " + (result = registerApiAsset(DT_ApiMethodEnum.STATUS_REQUEST)));
-        if(variablesService.isUseFrameworkPolicy()) {
+        if (variablesService.isUseFrameworkPolicy()) {
             log.info("Registration of framework agreement policy successful " + (result = createFrameWorkPolicy()));
         } else {
             log.info("Skipping registration of framework agreement policy");
@@ -127,6 +129,7 @@ public class EdcAdapterService {
     /**
      * Utility method to register policy- and contract-definitions for both the
      * REQUEST and the RESPONSE-Api specifically for the given partner.
+     *
      * @param partner the partner
      * @return true, if all registrations ran successfully
      */
@@ -143,7 +146,7 @@ public class EdcAdapterService {
      * Prior to this method you must always have successfully completed the
      * createPolicyDefinitionForPartner - method first.
      *
-     * @param partner the partner
+     * @param partner   the partner
      * @param apiMethod the api method
      * @return true, if registration ran successfully
      */
@@ -152,7 +155,7 @@ public class EdcAdapterService {
         try {
             var response = sendPostRequest(body, List.of("v2", "contractdefinitions"));
             boolean result = response.isSuccessful();
-            if(!result) {
+            if (!result) {
                 log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and "
                     + apiMethod + "\n" + response.body().string());
             }
@@ -175,7 +178,7 @@ public class EdcAdapterService {
         try {
             var response = sendPostRequest(body, List.of("v2", "policydefinitions"));
             boolean result = response.isSuccessful();
-            if(!result){
+            if (!result) {
                 log.warn("Policy Registration failed \n" + response.body().string());
             }
             response.body().close();
@@ -196,7 +199,7 @@ public class EdcAdapterService {
         try {
             var response = sendPostRequest(body, List.of("v2", "policydefinitions"));
             boolean result = response.isSuccessful();
-            if(!result) {
+            if (!result) {
                 log.warn("Framework Policy Registration failed \n" + response.body().string());
             }
             response.body().close();
@@ -224,7 +227,7 @@ public class EdcAdapterService {
             response.body().close();
             return result;
         } catch (Exception e) {
-            log.error("Failed to register api asset " + apiMethod.PURPOSE, e);
+            log.error("Failed to register api asset " + apiMethod.CX_TAXO, e);
             return false;
         }
     }
@@ -391,89 +394,141 @@ public class EdcAdapterService {
      * It will return a String array of length 4. The authKey is stored under index 0, the
      * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
      *
-     * @param partner    the partner
-     * @param apiMethod  the api method
+     * @param partner   the partner
+     * @param apiMethod the api method
      * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
     public String[] getContractForItemStockApi(Partner partner, DT_ApiMethodEnum apiMethod) {
-            try {
-                var responseNode = getCatalog(partner.getEdcUrl());
-                var catalogArray = responseNode.get("dcat:dataset");
-                // If there is exactly one asset, the catalogContent will be a JSON object.
-                // In all other cases catalogContent will be a JSON array.
-                // For the sake of uniformity we will embed a single object in an array.
-                if (catalogArray.isObject()) {
-                    catalogArray = objectMapper.createArrayNode().add(catalogArray);
-                }
-                JsonNode targetCatalogEntry = null;
+        try {
+            var responseNode = getCatalog(partner.getEdcUrl());
+            var catalogArray = responseNode.get("dcat:dataset");
+            // If there is exactly one asset, the catalogContent will be a JSON object.
+            // In all other cases catalogContent will be a JSON array.
+            // For the sake of uniformity we will embed a single object in an array.
+            if (catalogArray.isObject()) {
+                catalogArray = objectMapper.createArrayNode().add(catalogArray);
+            }
+            JsonNode targetCatalogEntry = null;
 
-                for(var entry : catalogArray) {
-                    var dctTypeObject = entry.get("dct:type");
-                    if(dctTypeObject != null) {
-                        if(("https://w3id.org/catenax/taxonomy#" + apiMethod.CX_TAXO).equals(dctTypeObject.get("@id").asText())) {
-                            if(apiMethod.TYPE.equals(entry.get("asset:prop:type").asText())) {
-                                if("1.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
-                                    if(targetCatalogEntry == null) {
-                                        targetCatalogEntry = entry;
+            for (var entry : catalogArray) {
+                var dctTypeObject = entry.get("dct:type");
+                if (dctTypeObject != null) {
+                    if (("https://w3id.org/catenax/taxonomy#" + apiMethod.CX_TAXO).equals(dctTypeObject.get("@id").asText())) {
+                        if (apiMethod.TYPE.equals(entry.get("asset:prop:type").asText())) {
+                            if ("1.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
+                                if (targetCatalogEntry == null) {
+                                    if (variablesService.isUseFrameworkPolicy()) {
+                                        if (testFrameworkAgreementConstraint(entry)) {
+                                            targetCatalogEntry = entry;
+                                        } else {
+                                            log.error("Contract Negotiation with partner " + partner.getBpnl() + " has " +
+                                                "been aborted. This partner's contract policy does not match the policy " +
+                                                "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
+                                                "\n Received offer from Partner: \n" + entry.toPrettyString());
+                                            break;
+                                        }
                                     } else {
-                                        log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
+                                        targetCatalogEntry = entry;
                                     }
+                                } else {
+                                    log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
                                 }
                             }
                         }
                     }
                 }
-                if(targetCatalogEntry == null) {
-                    log.error("Could not find api asset " + apiMethod + " at partner " + partner.getBpnl() +  " 's catalog");
-                    return null;
-                }
-                String assetApiId = targetCatalogEntry.get("@id").asText();
-                JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
-                String negotiationId = negotiationResponse.get("@id").asText();
-                // Await confirmation of contract and contractId
-                String contractId = null;
-                for (int i = 0; i < 100; i++) {
-                    Thread.sleep(100);
-                    var responseObject = getNegotiationState(negotiationId);
-                    if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
-                        contractId = responseObject.get("edc:contractAgreementId").asText();
-                        break;
-                    }
-                }
-                if (contractId == null) {
-                    var negotiationState = getNegotiationState(negotiationId);
-                    log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
-                    log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
-                    return null;
-                }
-
-                // Initiate transfer of edr
-                var transferResp = initiateProxyPullTransfer(partner, contractId, assetApiId);
-                String transferId = transferResp.get("@id").asText();
-                for (int i = 0; i < 100; i++) {
-                    Thread.sleep(100);
-                    transferResp = getTransferState(transferId);
-                    if ("STARTED".equals(transferResp.get("edc:state").asText())) {
-                        break;
-                    }
-                }
-
-                // Await arrival of edr
-                for (int i = 0; i < 100; i++) {
-                    Thread.sleep(100);
-                    EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
-                    if (edr_Dto != null) {
-                        log.info("Successfully negotiated for " + assetApiId + " with " + partner.getEdcUrl());
-                        return new String[]{edr_Dto.authKey(), edr_Dto.authCode(), edr_Dto.endpoint(), contractId};
-                    }
-                }
-                log.warn("did not receive authCode");
-                log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
-                return null;
-
-            } catch (Exception e) {
-                log.error("Failed to get contract for " + apiMethod + " from " + partner.getBpnl(), e);
+            }
+            if (targetCatalogEntry == null) {
+                log.error("Could not find api asset " + apiMethod + " at partner " + partner.getBpnl() + " 's catalog");
                 return null;
             }
+            String assetApiId = targetCatalogEntry.get("@id").asText();
+            JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
+            String negotiationId = negotiationResponse.get("@id").asText();
+            // Await confirmation of contract and contractId
+            String contractId = null;
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                var responseObject = getNegotiationState(negotiationId);
+                if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
+                    contractId = responseObject.get("edc:contractAgreementId").asText();
+                    break;
+                }
+            }
+            if (contractId == null) {
+                var negotiationState = getNegotiationState(negotiationId);
+                log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
+                log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
+                return null;
+            }
+
+            // Initiate transfer of edr
+            var transferResp = initiateProxyPullTransfer(partner, contractId, assetApiId);
+            String transferId = transferResp.get("@id").asText();
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                transferResp = getTransferState(transferId);
+                if ("STARTED".equals(transferResp.get("edc:state").asText())) {
+                    break;
+                }
+            }
+
+            // Await arrival of edr
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
+                if (edr_Dto != null) {
+                    log.info("Successfully negotiated for " + assetApiId + " with " + partner.getEdcUrl());
+                    return new String[]{edr_Dto.authKey(), edr_Dto.authCode(), edr_Dto.endpoint(), contractId};
+                }
+            }
+            log.warn("did not receive authCode");
+            log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
+            return null;
+
+        } catch (Exception e) {
+            log.error("Failed to get contract for " + apiMethod + " from " + partner.getBpnl(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Helper method to check whether you and the contract offer from the other party have the
+     * same framework agreement policy.
+     *
+     * @param catalogEntry the catalog item containing the desired api asset
+     * @return true, if the policy matches yours, otherwise false
+     */
+    private boolean testFrameworkAgreementConstraint(JsonNode catalogEntry) {
+        try {
+            var policyObject = catalogEntry.get("odrl:hasPolicy");
+            if (policyObject == null) {
+                return false;
+            }
+            var permissionObject = policyObject.get("odrl:permission");
+            if(permissionObject == null) {
+                return false;
+            }
+            var constraintObject = permissionObject.get("odrl:constraint");
+            if (constraintObject == null) {
+                return false;
+            }
+            var leftOperandObject = constraintObject.get("odrl:leftOperand");
+            if (!variablesService.getPurisFrameworkAgreement().equals(leftOperandObject.asText())) {
+                return false;
+            }
+            var operatorObject = constraintObject.get("odrl:operator");
+            if (!"odrl:eq".equals(operatorObject.get("@id").asText())) {
+                return false;
+            }
+            var rightOperandObject = constraintObject.get("odrl:rightOperand");
+            if (!"active".equals(rightOperandObject.asText())) {
+                return false;
+            }
+        } catch (Exception e) {
+            log.error("Failed in Framework Agreement Test ", e);
+            return false;
+        }
+        return true;
     }
 }

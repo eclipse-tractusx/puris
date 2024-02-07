@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="us-ascii" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" contentStyleType="text/css" height="319px" preserveAspectRatio="none"
+     style="width:738px;height:319px;background:#FFFFFF;" version="1.1" viewBox="0 0 738 319" width="738px"
+     zoomAndPan="magnify">
+    <defs/>
+    <g>
+        <rect fill="#DDDDDD" height="307.9844" style="stroke:#181818;stroke-width:0.5;" width="120" x="93" y="6"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing"
+              textLength="114" x="96" y="18.0669">Data Consumer
+        </text>
+        <rect fill="#DDDDDD" height="307.9844" style="stroke:#181818;stroke-width:0.5;" width="108" x="393" y="6"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing"
+              textLength="102" x="396" y="18.0669">Data Provider
+        </text>
+        <rect fill="#FFFFFF" height="74.2656" style="stroke:#181818;stroke-width:1.0;" width="10" x="442" y="138.9922"/>
+        <line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="152.5" x2="152.5" y1="72.7266"
+              y2="263.3906"/>
+        <line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="446.5" x2="446.5" y1="72.7266"
+              y2="263.3906"/>
+        <rect fill="#E2E2F0" height="46.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="89"
+              x="108.5" y="25.1328"/>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="121"
+              y="45.1279">Business
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="75" x="115.5"
+              y="61.4248">Application
+        </text>
+        <rect fill="#E2E2F0" height="46.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="89"
+              x="108.5" y="262.3906"/>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="121"
+              y="282.3857">Business
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="75" x="115.5"
+              y="298.6826">Application
+        </text>
+        <rect fill="#E2E2F0" height="46.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="89"
+              x="402.5" y="25.1328"/>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="415"
+              y="45.1279">Business
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="75" x="409.5"
+              y="61.4248">Application
+        </text>
+        <rect fill="#E2E2F0" height="46.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="89"
+              x="402.5" y="262.3906"/>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="415"
+              y="282.3857">Business
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="75" x="409.5"
+              y="298.6826">Application
+        </text>
+        <rect fill="#FFFFFF" height="74.2656" style="stroke:#181818;stroke-width:1.0;" width="10" x="442" y="138.9922"/>
+        <polygon fill="#181818" points="435,102.8594,445,106.8594,435,110.8594,439,106.8594"
+                 style="stroke:#181818;stroke-width:1.0;"/>
+        <line style="stroke:#181818;stroke-width:1.0;" x1="153" x2="441" y1="106.8594" y2="106.8594"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing"
+              textLength="9" x="173.5" y="101.7935">1
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="240" x="186.5"
+              y="101.7935">Request Information Object Exchange
+        </text>
+        <path d="M452,87.7266 L452,112.7266 L585,112.7266 L585,97.7266 L575,87.7266 L452,87.7266 " fill="#FEFFDD"
+              style="stroke:#181818;stroke-width:0.5;"/>
+        <path d="M575,87.7266 L575,97.7266 L585,97.7266 L575,87.7266 " fill="#FEFFDD"
+              style="stroke:#181818;stroke-width:0.5;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="112" x="458"
+              y="104.7935">Request Endpoint
+        </text>
+        <polygon fill="#181818" points="164,134.9922,154,138.9922,164,142.9922,160,138.9922"
+                 style="stroke:#181818;stroke-width:1.0;"/>
+        <line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="158" x2="441" y1="138.9922"
+              y2="138.9922"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing"
+              textLength="9" x="261" y="133.9263">2
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="60" x="274"
+              y="133.9263">Accepted
+        </text>
+        <line style="stroke:#181818;stroke-width:1.0;" x1="452" x2="494" y1="168.125" y2="168.125"/>
+        <line style="stroke:#181818;stroke-width:1.0;" x1="494" x2="494" y1="168.125" y2="181.125"/>
+        <line style="stroke:#181818;stroke-width:1.0;" x1="453" x2="494" y1="181.125" y2="181.125"/>
+        <polygon fill="#181818" points="463,177.125,453,181.125,463,185.125,459,181.125"
+                 style="stroke:#181818;stroke-width:1.0;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing"
+              textLength="9" x="459" y="163.0591">3
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="259" x="472"
+              y="163.0591">Determine requested Information Object
+        </text>
+        <polygon fill="#181818" points="164,209.2578,154,213.2578,164,217.2578,160,213.2578"
+                 style="stroke:#181818;stroke-width:1.0;"/>
+        <line style="stroke:#181818;stroke-width:1.0;" x1="158" x2="446" y1="213.2578" y2="213.2578"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing"
+              textLength="9" x="181.5" y="208.1919">4
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="224" x="194.5"
+              y="208.1919">Send requested Information Object
+        </text>
+        <path d="M5,194.125 L5,219.125 L148,219.125 L148,204.125 L138,194.125 L5,194.125 " fill="#FEFFDD"
+              style="stroke:#181818;stroke-width:0.5;"/>
+        <path d="M138,194.125 L138,204.125 L148,204.125 L138,194.125 " fill="#FEFFDD"
+              style="stroke:#181818;stroke-width:0.5;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="122" x="11"
+              y="211.1919">Response Endpoint
+        </text>
+        <polygon fill="#181818" points="435,241.3906,445,245.3906,435,249.3906,439,245.3906"
+                 style="stroke:#181818;stroke-width:1.0;"/>
+        <line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="153" x2="441" y1="245.3906"
+              y2="245.3906"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing"
+              textLength="9" x="263.5" y="240.3247">5
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="60" x="276.5"
+              y="240.3247">Accepted
+        </text><!--SRC=[bP31JiCm38RlUGghTrvW1wJ2Tk20G715GcxYTORM2OapxV5nYzQYWP2uHOg_tzzlh1gbZXrbLzvP4cOSeT179V5qJwLWJ-t0lO0dKPjoNJn1iqL5k8rIwaYvSOOfUque2irDBIn6laYRqi0UbQCqW0KmfLTla2C9O3dVmnvpF7BuPrWoQ0rpvtoukeRbVmDFKvsYS2VxcCSv0HwwD_8AkvC_eFJa92f1vlwWw_nEGeeiwZ9fpGAjzvIKWYtooaSqOhKuFovsRycEDbe5o5-f57xnS3_ngSS6dgToVvAp-43xsRiaesWL3xIOBgANPJu1]-->
+    </g>
+</svg>
