@@ -50,7 +50,7 @@ services:
     puris-backend-customer:
         image: puris-backend:dev
         container_name: customer-backend
-        depends_on: 
+        depends_on:
             edc-customer-control-plane:
                 condition: service_started #service_healthy
             postgres-customer:
@@ -67,9 +67,13 @@ services:
             - miw-net
         extra_hosts:
             - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
+
     dtr-customer:
-        image: tractusx/sldt-digital-twin-registry:0.3.16-M1
+        image: tractusx/sldt-digital-twin-registry:latest
         container_name: dtr-customer
+        depends_on:
+          postgres-customer:
+            condition: service_healthy
         ports:
           - "127.0.0.1:4243:4243"
         environment:
@@ -195,8 +199,11 @@ services:
             - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
     dtr-supplier:
-      image: tractusx/sldt-digital-twin-registry:0.3.16-M1
+      image: tractusx/sldt-digital-twin-registry:latest
       container_name: dtr-supplier
+      depends_on:
+        postgres-supplier:
+          condition: service_healthy
       ports:
         - "127.0.0.1:4244:4243"
       environment:
