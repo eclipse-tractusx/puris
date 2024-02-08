@@ -131,13 +131,13 @@ public class EdcAdapterService {
         log.info("Registration of item-stock response api successful " + (result = registerApiAsset(DT_ApiMethodEnum.RESPONSE)));
         if (!result) return false;
         log.info("Registration of item-stock status-request api successful " + (result = registerApiAsset(DT_ApiMethodEnum.STATUS_REQUEST)));
-        if(!result) return false;
+        if (!result) return false;
         if (variablesService.isUseFrameworkPolicy()) {
             log.info("Registration of framework agreement policy successful " + (result = createFrameWorkPolicy()));
         } else {
             log.info("Skipping registration of framework agreement policy");
         }
-        if(!result) return false;
+        if (!result) return false;
         log.info("Registration of DTR Asset successful " + (result = registerDtrAsset()));
         return result;
     }
