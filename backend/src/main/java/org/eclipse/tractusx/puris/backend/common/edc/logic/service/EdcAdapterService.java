@@ -108,7 +108,7 @@ public class EdcAdapterService {
         for (var pathSegment : pathSegments) {
             urlBuilder.addPathSegment(pathSegment);
         }
-        RequestBody body = RequestBody.create(MediaType.parse("application/json"), requestBody.toString());
+        RequestBody body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json"));
         var request = new Request.Builder()
             .post(body)
             .url(urlBuilder.build())
@@ -134,10 +134,10 @@ public class EdcAdapterService {
         if (!result) return false;
         if (variablesService.isUseFrameworkPolicy()) {
             log.info("Registration of framework agreement policy successful " + (result = createFrameWorkPolicy()));
+            if (!result) return false;
         } else {
             log.info("Skipping registration of framework agreement policy");
         }
-        if (!result) return false;
         log.info("Registration of DTR Asset successful " + (result = registerDtrAsset()));
         return result;
     }
