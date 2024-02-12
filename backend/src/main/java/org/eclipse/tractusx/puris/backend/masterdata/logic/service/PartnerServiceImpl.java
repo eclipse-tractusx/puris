@@ -81,7 +81,9 @@ public class PartnerServiceImpl implements PartnerService {
 
     @Override
     public void prepareApiAssetsForPartner(Partner partner) {
-        executorService.submit(new RegistrationTask(partner));
+        if (!variablesService.getOwnBpnl().equals(partner.getBpnl())) {
+            executorService.submit(new RegistrationTask(partner));
+        }
     }
 
     @AllArgsConstructor

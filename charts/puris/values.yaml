@@ -437,6 +437,9 @@ backend:
           deletiontimer: 2
           # -- Endpoint for EDR
           endpoint: *domain
+        dtr:
+          # --Endpoint for DTR
+          url: http://localhost:4243
 
 postgresql:
     # -- Enable postgres by default, set to false to use existing postgres. Make sure to set

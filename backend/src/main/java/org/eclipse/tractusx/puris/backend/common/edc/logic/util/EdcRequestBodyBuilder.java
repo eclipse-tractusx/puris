@@ -78,14 +78,7 @@ public class EdcRequestBodyBuilder {
     }
 
     public JsonNode buildCreateItemStockAssetBody(DT_ApiMethodEnum apiMethod) {
-        var body = MAPPER.createObjectNode();
-        var context = MAPPER.createObjectNode();
-        context.put(VOCAB_KEY, EDC_NAMESPACE);
-        context.put("cx-taxo", CX_TAXO_NAMESPACE);
-        context.put("cx-common", CX_COMMON_NAMESPACE);
-        context.put("dct", DCT_NAMESPACE);
-        body.set("@context", context);
-        body.put("@type", "Asset");
+        var body = getAssetRegistrationContext();
         body.put("@id", variablesService.getApiAssetId(apiMethod));
         var propertiesObject = MAPPER.createObjectNode();
         body.set("properties", propertiesObject);
@@ -201,6 +194,20 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+    public JsonNode buildDtrContractDefinitionForPartner(Partner partner) {
+        var body = getEdcContextObject();
+        body.put("@id", partner.getBpnl() +"_contractdefinition_for_dtr");
+        body.put("accessPolicyId", getBpnPolicyId(partner));
+        body.put("contractPolicyId", getBpnPolicyId(partner));
+        var assetsSelector = MAPPER.createObjectNode();
+        body.set("assetsSelector", assetsSelector);
+        assetsSelector.put("@type", "CriterionDto");
+        assetsSelector.put("operandLeft", EDC_NAMESPACE + "id");
+        assetsSelector.put("operator", "=");
+        assetsSelector.put("operandRight", getDtrAssetId());
+        return body;
+    }
+
     /**
      * This method helps to ensure that the buildContractDefinitionWithBpnRestrictedPolicy uses the
      * same policy-id as the one that is created with the buildContractDefinitionWithBpnRestrictedPolicy
@@ -221,18 +228,18 @@ public class EdcRequestBodyBuilder {
      * @param dcatCatalogItem The catalog entry that describes the target asset.
      * @return The request body
      */
-    public ObjectNode buildAssetNegotiationBody(Partner partner, JsonNode dcatCatalogItem) {
-        var objectNode = MAPPER.createObjectNode();
+    public JsonNode buildAssetNegotiationBody(Partner partner, JsonNode dcatCatalogItem) {
+        var body = MAPPER.createObjectNode();
         var contextNode = MAPPER.createObjectNode();
         contextNode.put(VOCAB_KEY, EDC_NAMESPACE);
         contextNode.put("odrl", ODRL_NAMESPACE);
-        objectNode.set("@context", contextNode);
-        objectNode.put("@type", "NegotiationInitiateRequestDto");
-        objectNode.put("connectorId", partner.getBpnl());
-        objectNode.put("connectorAddress", partner.getEdcUrl());
-        objectNode.put("consumerId", variablesService.getOwnBpnl());
-        objectNode.put("providerId", partner.getBpnl());
-        objectNode.put("protocol", "dataspace-protocol-http");
+        body.set("@context", contextNode);
+        body.put("@type", "NegotiationInitiateRequestDto");
+        body.put("connectorId", partner.getBpnl());
+        body.put("connectorAddress", partner.getEdcUrl());
+        body.put("consumerId", variablesService.getOwnBpnl());
+        body.put("providerId", partner.getBpnl());
+        body.put("protocol", "dataspace-protocol-http");
         String assetId = dcatCatalogItem.get("@id").asText();
         var policyNode = dcatCatalogItem.get("odrl:hasPolicy");
         var offerNode = MAPPER.createObjectNode();
@@ -240,8 +247,8 @@ public class EdcRequestBodyBuilder {
         offerNode.put("offerId", offerId);
         offerNode.put("assetId", assetId);
         offerNode.set("policy", policyNode);
-        objectNode.set("offer", offerNode);
-        return objectNode;
+        body.set("offer", offerNode);
+        return body;
     }
 
     /**
@@ -300,6 +307,49 @@ public class EdcRequestBodyBuilder {
         body.put("sortField", "stateTimestamp");
         return body;
     }
+
+    public JsonNode buildDtrRegistrationBody() {
+        var body = getAssetRegistrationContext();
+        body.put("@id", getDtrAssetId());
+
+        var propertiesObject = MAPPER.createObjectNode();
+        var dctTypeObject = MAPPER.createObjectNode();
+        dctTypeObject.put("@id", "cx-taxo:DigitalTwinRegistry");
+        propertiesObject.set("dct:type", dctTypeObject);
+        propertiesObject.put("cx-common:version", "3.0");
+        propertiesObject.put("asset:prop:type", "data.core.digitalTwinRegistry");
+        propertiesObject.put("description", "");
+        body.set("properties", propertiesObject);
+
+        var dataAddress = MAPPER.createObjectNode();
+        String url = variablesService.getDtrUrl();
+        dataAddress.put("@type", "DataAddress");
+        dataAddress.put("proxyPath", "true");
+        dataAddress.put("proxyQueryParams", "true");
+        dataAddress.put("proxyMethod", "false");
+        dataAddress.put("type", "HttpData");
+        dataAddress.put("baseUrl", url);
+        body.set("dataAddress", dataAddress);
+
+        return body;
+    }
+
+    private String getDtrAssetId() {
+        return "DigitalTwinRegistryId@" + variablesService.getOwnBpnl();
+    }
+
+    private ObjectNode getAssetRegistrationContext() {
+        var body = MAPPER.createObjectNode();
+        var context = MAPPER.createObjectNode();
+        context.put(VOCAB_KEY, EDC_NAMESPACE);
+        context.put("cx-taxo", CX_TAXO_NAMESPACE);
+        context.put("cx-common", CX_COMMON_NAMESPACE);
+        context.put("dct", DCT_NAMESPACE);
+        body.set("@context", context);
+        body.put("@type", "Asset");
+        return body;
+    }
+
 
     /**
      * A helper method returning a basic request object that can be used to build other
