@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="us-ascii" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" contentStyleType="text/css" height="271px" preserveAspectRatio="none"
+     style="width:490px;height:271px;background:#FFFFFF;" version="1.1" viewBox="0 0 490 271" width="490px"
+     zoomAndPan="magnify">
+    <defs/>
+    <g><!--entity disposition-->
+        <g id="elem_disposition">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="118"
+                  x="228" y="7"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="326" y="12"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="324" y="14"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="324" y="18"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78" x="243"
+                  y="39.9951">Disposition
+            </text>
+        </g><!--entity production-->
+        <g id="elem_production">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="184"
+                  x="7" y="113"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="171" y="118"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="169" y="120"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="169" y="124"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="144" x="22"
+                  y="145.9951">Production (Process)
+            </text>
+        </g><!--entity logistics-->
+        <g id="elem_logistics">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="101"
+                  x="383.5" y="113"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="464.5" y="118"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="462.5" y="120"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="462.5" y="124"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="61"
+                  x="398.5" y="145.9951">Logistics
+            </text>
+        </g><!--entity sc-->
+        <g id="elem_sc">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="229"
+                  x="172.5" y="219"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="381.5" y="224"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="379.5" y="226"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="379.5" y="230"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="189"
+                  x="187.5" y="251.9951">(Automotive) Supply Chain
+            </text>
+        </g><!--entity puris-->
+        <g id="elem_puris">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="122"
+                  x="226" y="113"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="328" y="118"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="326" y="120"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="326" y="124"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="82" x="241"
+                  y="145.9951">PURIS FOSS
+            </text>
+        </g><!--link disposition to puris-->
+        <g id="link_disposition_puris">
+            <path d="M287,53.06 C287,70.7 287,95.34 287,112.98 " fill="none" id="disposition-puris"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link production to puris-->
+        <g id="link_production_puris">
+            <path d="M191.16,136 C202.77,136 214.37,136 225.98,136 " fill="none" id="production-puris"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link puris to logistics-->
+        <g id="link_puris_logistics">
+            <path d="M348.15,136 C359.89,136 371.63,136 383.36,136 " fill="none" id="puris-logistics"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link puris to sc-->
+        <g id="link_puris_sc">
+            <path d="M287,159.06 C287,176.7 287,201.34 287,218.98 " fill="none" id="puris-sc"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--SRC=[JKxB2eCm4BplL-nH3_c8qb8e29Q6de87YQ8BjXlSfD2_Dr5hUbdciSoCkP0u5lB4xmPRmIvpCFUPks0JnY9YsukKwvSx330L3oIUhApEz6DWYbFm_69Fdxv47PoRldWUMzgAnCRyv-EcyLfhlQM6cGJWRm8gjQkv4GyftSXovQwe5Bu0]-->
+    </g>
+</svg>

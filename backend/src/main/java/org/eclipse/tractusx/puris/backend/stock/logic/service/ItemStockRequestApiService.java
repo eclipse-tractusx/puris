@@ -79,10 +79,10 @@ public class ItemStockRequestApiService {
     public void handleRequestFromCustomer(ItemStockRequestMessageDto requestMessageDto, ItemStockRequestMessage requestMessage) {
         var requestMessageHeader = requestMessageDto.getHeader();
         Partner customerPartner = partnerService.findByBpnl(requestMessageHeader.getSenderBpn());
-        if (customerPartner == null || requestMessageDto.getContent().getDirection() != DirectionCharacteristic.INBOUND) {
+        if (customerPartner == null || requestMessageDto.getContent().getDirection() != DirectionCharacteristic.OUTBOUND) {
             requestMessage.setState(DT_RequestStateEnum.Error);
             itemStockRequestMessageService.update(requestMessage);
-            if(requestMessageDto.getContent().getDirection() != DirectionCharacteristic.INBOUND){
+            if(requestMessageDto.getContent().getDirection() != DirectionCharacteristic.OUTBOUND){
                 log.error("Wrong direction in request from customer \n" + requestMessageDto);
             }
             if(customerPartner == null) {
@@ -140,10 +140,10 @@ public class ItemStockRequestApiService {
     public void handleRequestFromSupplier(ItemStockRequestMessageDto requestMessageDto, ItemStockRequestMessage requestMessage) {
         var requestMessageHeader = requestMessageDto.getHeader();
         Partner supplierPartner = partnerService.findByBpnl(requestMessageHeader.getSenderBpn());
-        if (supplierPartner == null || requestMessageDto.getContent().getDirection() != DirectionCharacteristic.OUTBOUND) {
+        if (supplierPartner == null || requestMessageDto.getContent().getDirection() != DirectionCharacteristic.INBOUND) {
             requestMessage.setState(DT_RequestStateEnum.Error);
             itemStockRequestMessageService.update(requestMessage);
-            if(requestMessageDto.getContent().getDirection() != DirectionCharacteristic.OUTBOUND){
+            if(requestMessageDto.getContent().getDirection() != DirectionCharacteristic.INBOUND){
                 log.error("Wrong direction in request from customer \n" + requestMessageDto);
             }
             if(supplierPartner == null) {
@@ -242,7 +242,7 @@ public class ItemStockRequestApiService {
      */
     public void doRequestForMaterialItemStocks(Partner supplierPartner, Material... materials) {
         ItemStockRequestMessage itemStockRequestMessage = getItemStockRequestMessage(supplierPartner);
-        itemStockRequestMessage.setDirection(DirectionCharacteristic.INBOUND);
+        itemStockRequestMessage.setDirection(DirectionCharacteristic.OUTBOUND);
         for (var material : materials) {
             ItemStockRequestMessage.Request request = new ItemStockRequestMessage.Request();
             request.setMaterialGlobalAssetId(material.getMaterialNumberCx());
@@ -262,7 +262,7 @@ public class ItemStockRequestApiService {
      */
     public void doRequestForProductItemStocks(Partner customerPartner, Material... materials) {
         ItemStockRequestMessage itemStockRequestMessage = getItemStockRequestMessage(customerPartner);
-        itemStockRequestMessage.setDirection(DirectionCharacteristic.OUTBOUND);
+        itemStockRequestMessage.setDirection(DirectionCharacteristic.INBOUND);
         for (var material : materials) {
             ItemStockRequestMessage.Request request = new ItemStockRequestMessage.Request();
             request.setMaterialGlobalAssetId(material.getMaterialNumberCx());

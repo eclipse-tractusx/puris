@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="us-ascii" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" contentStyleType="text/css" height="222px" preserveAspectRatio="none"
+     style="width:958px;height:222px;background:#FFFFFF;" version="1.1" viewBox="0 0 958 222" width="958px"
+     zoomAndPan="magnify">
+    <defs/>
+    <g><!--cluster <<system>> PURIS FOSS Frontend-->
+        <g id="cluster_&lt;&lt;system&gt;&gt; PURIS FOSS Frontend">
+            <path
+                d="M132.5,6 L386.5,6 A3.75,3.75 0 0 1 389,8.5 L396,28.2969 L667.5,28.2969 A2.5,2.5 0 0 1 670,30.7969 L670,212.5 A2.5,2.5 0 0 1 667.5,215 L132.5,215 A2.5,2.5 0 0 1 130,212.5 L130,8.5 A2.5,2.5 0 0 1 132.5,6 "
+                fill="none" style="stroke:#000000;stroke-width:1.5;"/>
+            <line style="stroke:#000000;stroke-width:1.5;" x1="130" x2="396" y1="28.2969" y2="28.2969"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing"
+                  textLength="253" x="134" y="20.9951">&#171;system&#187; PURIS FOSS Frontend
+            </text>
+        </g><!--entity stock_view-->
+        <g id="elem_stock_view">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="117"
+                  x="536.5" y="41"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="633.5" y="46"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="631.5" y="48"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="631.5" y="52"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="77"
+                  x="551.5" y="73.9951">Stock View
+            </text>
+        </g><!--entity dashboard-->
+        <g id="elem_dashboard">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="118"
+                  x="383" y="41"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="481" y="46"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="479" y="48"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="479" y="52"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78" x="398"
+                  y="73.9951">Dashboard
+            </text>
+        </g><!--entity auth_service-->
+        <g id="elem_auth_service">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="201"
+                  x="146.5" y="41"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="327.5" y="46"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="325.5" y="48"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="325.5" y="52"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="161"
+                  x="161.5" y="73.9951">Authentication Service
+            </text>
+        </g><!--entity access_service-->
+        <g id="elem_access_service">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="146"
+                  x="174" y="153"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="300" y="158"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="298" y="160"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="298" y="164"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="106" x="189"
+                  y="185.9951">Access Service
+            </text>
+        </g><!--entity idp-->
+        <g id="elem_idp">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="104"
+                  x="7" y="41"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="91" y="46"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="89" y="48"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="89" y="52"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="22"
+                  y="73.9951">Keycloak
+            </text>
+        </g><!--entity Stock Interface-->
+        <g id="elem_Stock Interface">
+            <ellipse cx="747" cy="176" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="107"
+                  x="693.5" y="205.9951">Stock Interface
+            </text>
+        </g><!--entity MAD interface-->
+        <g id="elem_MAD interface">
+            <ellipse cx="901" cy="176" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="101"
+                  x="850.5" y="205.9951">MAD interface
+            </text>
+        </g><!--reverse link auth_service to access_service-->
+        <g id="link_auth_service_access_service">
+            <path d="M247,93.21 C247,112.43 247,133.61 247,152.82 " fill="none" id="auth_service-backto-access_service"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+            <polygon fill="#181818" points="247,87.21,243,96.21,247,92.21,251,96.21,247,87.21"
+                     style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link idp to auth_service-->
+        <g id="link_idp_auth_service">
+            <path d="M111.37,64 C122.34,64 134.26,64 146.33,64 " fill="none" id="idp-auth_service"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link stock_view to Stock Interface-->
+        <g id="link_stock_view_Stock Interface">
+            <path d="M653.77,72 C696.54,72 747,72 747,72 C747,72 747,135.32 747,160.77 " fill="none"
+                  id="stock_view-to-Stock Interface" style="stroke:#181818;stroke-width:1.0;"/>
+            <polygon fill="#181818" points="747,166.77,751,157.77,747,161.77,743,157.77,747,166.77"
+                     style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link stock_view to MAD interface-->
+        <g id="link_stock_view_MAD interface">
+            <path d="M653.54,57 C747.2,57 920.33,57 920.33,57 C920.33,57 920.33,166.31 920.33,169.91 " fill="none"
+                  id="stock_view-to-MAD interface" style="stroke:#181818;stroke-width:1.0;"/>
+            <polygon fill="#181818" points="920.33,175.91,924.33,166.91,920.33,170.91,916.33,166.91,920.33,175.91"
+                     style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link dashboard to Stock Interface-->
+        <g id="link_dashboard_Stock Interface">
+            <path d="M461.67,87.21 C461.67,120.01 461.67,176 461.67,176 C461.67,176 682.99,176 731.83,176 " fill="none"
+                  id="dashboard-to-Stock Interface" style="stroke:#181818;stroke-width:1.0;"/>
+            <polygon fill="#181818" points="737.83,176,728.83,172,732.83,176,728.83,180,737.83,176"
+                     style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link dashboard to MAD interface-->
+        <g id="link_dashboard_MAD interface">
+            <path
+                d="M422.33,87.09 C422.33,101.37 422.33,117 422.33,117 C422.33,117 881.67,117 881.67,117 C881.67,117 881.67,166.37 881.67,169.83 "
+                fill="none" id="dashboard-to-MAD interface" style="stroke:#181818;stroke-width:1.0;"/>
+            <polygon fill="#181818" points="881.67,175.83,885.67,166.83,881.67,170.83,877.67,166.83,881.67,175.83"
+                     style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--SRC=[TO_HQiCm34NVzHKYx_w340YKGIcZOs5xAQEeZhgOj7Qml8vG-kzrNDek2NiHN9qZcokjiHrvEkB1M0vzn-XyQ1n0HxgbRyOipwMNmCUYmBUFzsM5B-ig3kziO5jdPm34JHMSRl7JyEyNag0CSNkASO0BacRdoDU9rVSqeF8dD6o3qHICirYnFndDoQE8jd9R95Lh5XahQVMGelNt27EbPie5OBFYNXySjUaDKtS0SQ0Q_mZF3gXKWTcjuZAszdlIdCs4rtA1vedXKVIV-mcVd5y1]-->
+    </g>
+</svg>
