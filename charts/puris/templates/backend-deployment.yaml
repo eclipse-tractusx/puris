@@ -46,17 +46,26 @@ spec:
             - name: DATASOURCE_USERNAME
               value: "{{ .Values.postgresql.auth.username }}"
             - name: DATASOURCE_PASSWORD
-              value: "{{ .Values.postgresql.auth.password }}"
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.postgresql.auth.existingSecret }}"
+                  key: "postgres-password"
             {{- else }}
             - name: DATASOURCE_URL
               value: "{{ .Values.backend.puris.datasource.url }}"
             - name: DATASOURCE_USERNAME
               value: "{{ .Values.backend.puris.datasource.username }}"
             - name: DATASOURCE_PASSWORD
-              value: "{{ .Values.backend.puris.datasource.password }}"
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.backend.puris.secret }}"
+                  key: "puris-datasource-password"
             {{- end }}
             - name: EDC_CONTROLPLANE_KEY
-              value: "{{ .Values.backend.puris.edc.controlplane.key | default (randAlphaNum 16) }}"
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.backend.puris.secret }}"
+                  key: "puris-edc-controlplane-key"
             - name: EDC_CONTROLPLANE_MANAGEMENT_URL
               value: "{{ .Values.backend.puris.edc.controlplane.management.url }}"
             - name: EDC_CONTROLPLANE_PROTOCOL_URL
@@ -82,38 +91,41 @@ spec:
             - name: JPA_PROPERTIES_HIBERNATE_ENABLE.LAZY.LOAD.NO.TRANS
               value: "{{ .Values.backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans }}"
             - name: PURIS_API_KEY
-              value: "{{ .Values.backend.puris.api.key}}"
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.backend.puris.secret }}"
+                  key: "puris-api-key"
             - name: PURIS_DEMONSTRATOR_ROLE
               value: "{{ .Values.backend.puris.demonstrator.role }}"
             - name: PURIS_EDR_DELETIONTIMER
               value: "{{ .Values.backend.puris.edr.deletiontimer }}"
             - name: PURIS_EDR_ENDPOINT
               {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
-              value: "https://{{ .Values.backend.puris.edr.endpoint }}/catena/edrendpoint"
+              value: "https://{{ .Values.backend.puris.edr.endpoint }}{{ .Values.backend.puris.api.rootDir }}/edrendpoint"
                 {{- else }}
-              value: "http://{{ .Values.backend.puris.edr.endpoint }}/catena/edrendpoint"
+              value: "http://{{ .Values.backend.puris.edr.endpoint }}{{ .Values.backend.puris.api.rootDir }}/edrendpoint"
                 {{- end }}
             - name: PURIS_REQUEST_SERVERENDPOINT
               {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
-              value: "https://{{ .Values.backend.puris.request.serverendpoint }}/catena/item-stock/request"
+              value: "https://{{ .Values.backend.puris.request.serverendpoint }}{{ .Values.backend.puris.api.rootDir }}/item-stock/request"
                 {{- else }}
-              value: "http://{{ .Values.backend.puris.request.serverendpoint }}/catena/item-stock/request"
+              value: "http://{{ .Values.backend.puris.request.serverendpoint }}{{ .Values.backend.puris.api.rootDir }}/item-stock/request"
                 {{- end}}
             - name: PURIS_REQUEST_APIASSETID
               value: "{{ .Values.backend.puris.request.apiassetid }}"
             - name: PURIS_RESPONSE_SERVERENDPOINT
               {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
-              value: "https://{{ .Values.backend.puris.response.serverendpoint }}/catena/item-stock/response"
+              value: "https://{{ .Values.backend.puris.response.serverendpoint }}{{ .Values.backend.puris.api.rootDir }}/item-stock/response"
                 {{- else }}
-              value: "http://{{ .Values.backend.puris.response.serverendpoint }}/catena/item-stock/response"
+              value: "http://{{ .Values.backend.puris.response.serverendpoint }}{{ .Values.backend.puris.api.rootDir }}/item-stock/response"
                 {{- end}}
             - name: PURIS_RESPONSE_APIASSETID
               value: "{{ .Values.backend.puris.response.apiassetid }}"
             - name: PURIS_STATUSREQUEST_SERVERENDPOINT
               {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
-              value: "https://{{ .Values.backend.puris.statusrequest.serverendpoint }}/catena/item-stock/status"
+              value: "https://{{ .Values.backend.puris.statusrequest.serverendpoint }}{{ .Values.backend.puris.api.rootDir }}/item-stock/status"
                 {{- else }}
-              value: "http://{{ .Values.backend.puris.statusrequest.serverendpoint }}/catena/item-stock/status"
+              value: "http://{{ .Values.backend.puris.statusrequest.serverendpoint }}{{ .Values.backend.puris.api.rootDir }}/item-stock/status"
                 {{- end}}
             - name: PURIS_STATUSREQUEST_APIASSETID
               value: "{{ .Values.backend.puris.statusrequest.apiassetid }}"
@@ -134,11 +146,11 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /catena/health/
+              path: {{ .Values.backend.puris.api.rootDir }}/health/
               port: http
           readinessProbe:
             httpGet:
-              path: /catena/health/
+              path: {{ .Values.backend.puris.api.rootDir }}/health/
               port: http
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}

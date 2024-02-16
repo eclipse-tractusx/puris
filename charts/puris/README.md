@@ -57,15 +57,15 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.nodeSelector | object | `{}` | Constrains for the node selector |
 | backend.podAnnotations | object | `{}` | Annotations added to a running pod |
 | backend.podSecurityContext | object | `{}` | Added security contexts for a pod |
-| backend.puris.api.key | string | `"test"` | The API key of the PURIS application |
+| backend.puris.api.key | string | `"test"` | The API key of the PURIS application. Secret-key 'puris-api-key'. |
 | backend.puris.api.rootDir | string | `"/catena"` | The root directory of the API |
 | backend.puris.datasource.driverClassName | string | `"org.postgresql.Driver"` | Driver class name of the database |
-| backend.puris.datasource.password | string | `nil` | Password for the database user. Ignored if postgres.enabled is true. |
+| backend.puris.datasource.password | string | `nil` | Password for the database user. Ignored if postgres.enabled is true. Secret-key 'puris-datasource-password'. |
 | backend.puris.datasource.url | string | `"jdbc:postgresql://postgresql-name:5432/puris-database"` | URL of the database. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.username | string | `"db-user"` | Username of the database. Ignored if postgres.enabled is true. |
 | backend.puris.demonstrator.role | string | `nil` | Current role of the PURIS demonstrator. Default value should be empty. Can be set to "customer" or "supplier" to enable demonstration setup |
 | backend.puris.edc.controlplane.host | string | `"172.17.0.2"` |  |
-| backend.puris.edc.controlplane.key | string | `"password"` | Key for the EDC control plane |
+| backend.puris.edc.controlplane.key | string | `"password"` | Key for the EDC control plane. Secret-key 'puris-edc-controlplane-key' |
 | backend.puris.edc.controlplane.management.url | string | `"https:/your-edc-address:8181/management"` | Url to the EDC controlplane management of the edc |
 | backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc |
 | backend.puris.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
@@ -86,6 +86,7 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.request.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for request |
 | backend.puris.response.apiassetid | string | `"response-api-asset"` | Asset ID for response API |
 | backend.puris.response.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for response |
+| backend.puris.secret | string | `"secret-backend-puris"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
 | backend.puris.statusrequest.apiassetid | string | `"statusrequest-api-asset"` | Asset ID for status-request API |
 | backend.puris.statusrequest.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for statusrequest |
 | backend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":250,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
@@ -175,9 +176,9 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
 | frontend.tolerations | list | `[]` | Constrains for tolerations |
 | global.domain.backend.ingress | string | `"your-backend-host-address.com"` |  |
-| logging | string | `".level=INFO\norg.eclipse.edc.level=ALL\nhandlers=java.util.logging.ConsoleHandler\njava.util.logging.ConsoleHandler.formatter=java.util.logging.SimpleFormatter\njava.util.logging.ConsoleHandler.level=ALL\njava.util.logging.SimpleFormatter.format=[%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS] [%4$-7s] %5$s%6$s%n"` | configuration of the [Java Util Logging Facade](https://docs.oracle.com/javase/7/docs/technotes/guides/logging/overview.html) |
 | postgresql.auth.database | string | `"postgres"` | Name of the database. |
-| postgresql.auth.password | string | `"password"` | Password for the database. |
+| postgresql.auth.existingSecret | string | `"secret-postgres-init"` | Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file. |
+| postgresql.auth.password | string | `"password"` | Password for the database. Secret-key 'postgres-password'. |
 | postgresql.auth.username | string | `"puris"` | Username for the database. |
 | postgresql.enabled | bool | `true` | Enable postgres by default, set to false to use existing postgres. Make sure to set backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from backend). |
 | postgresql.fullnameOverride | string | `"backend-postgresql"` | Possibility to override the fullname |

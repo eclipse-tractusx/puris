@@ -37,7 +37,7 @@ spec:
             - name: APP_NAME
               value: "{{ .Values.frontend.puris.appName }}"
             - name: BACKEND_BASE_URL
-              value: "https://{{ .Values.frontend.puris.baseUrl }}/catena/"
+              value: "https://{{ .Values.frontend.puris.baseUrl }}{{ .Values.backend.puris.api.rootDir }}/"
             - name: ENDPOINT_MATERIALS
               value: "{{ .Values.frontend.puris.endpointMaterials }}"
             - name: ENDPOINT_PRODUCTS

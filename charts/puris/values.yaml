@@ -357,8 +357,10 @@ backend:
         timeoutSeconds: 1
 
     puris:
+        # -- Secret for backend passwords. For more information look into 'backend-secrets.yaml' file.
+        secret: "secret-backend-puris"
         api:
-          # -- The API key of the PURIS application
+          # -- The API key of the PURIS application. Secret-key 'puris-api-key'.
           key: "test"
           # -- The root directory of the API
           rootDir: /catena
@@ -369,7 +371,7 @@ backend:
             url: jdbc:postgresql://postgresql-name:5432/puris-database
             # -- Username of the database. Ignored if postgres.enabled is true.
             username: db-user
-            # -- Password for the database user. Ignored if postgres.enabled is true.
+            # -- Password for the database user. Ignored if postgres.enabled is true. Secret-key 'puris-datasource-password'.
             password:
         edc:
             controlplane:
@@ -380,7 +382,7 @@ backend:
               protocol:
                 # -- Url to the EDC controlplane protocol API of the edc
                 url: "https://your-edc-address:8184/api/v1/dsp"
-              # -- Key for the EDC control plane
+              # -- Key for the EDC control plane. Secret-key 'puris-edc-controlplane-key'
               key: "password"
         own:
             # -- Own BPNL of the EDC
@@ -456,16 +458,9 @@ postgresql:
     auth:
         # -- Name of the database.
         database: "postgres"
+        # -- Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file.
+        existingSecret: "secret-postgres-init"
         # -- Username for the database.
         username: "puris"
-        # -- Password for the database.
+        # -- Password for the database. Secret-key 'postgres-password'.
         password: "password"
-
-# -- configuration of the [Java Util Logging Facade](https://docs.oracle.com/javase/7/docs/technotes/guides/logging/overview.html)
-logging: |-
-  .level=INFO
-  org.eclipse.edc.level=ALL
-  handlers=java.util.logging.ConsoleHandler
-  java.util.logging.ConsoleHandler.formatter=java.util.logging.SimpleFormatter
-  java.util.logging.ConsoleHandler.level=ALL
-  java.util.logging.SimpleFormatter.format=[%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS] [%4$-7s] %5$s%6$s%n
