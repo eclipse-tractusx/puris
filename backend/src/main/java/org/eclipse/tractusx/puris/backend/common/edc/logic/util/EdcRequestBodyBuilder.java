@@ -90,7 +90,11 @@ public class EdcRequestBodyBuilder {
         propertiesObject.put("description", apiMethod.DESCRIPTION);
 
         var dataAddress = MAPPER.createObjectNode();
-        String url = apiMethod == DT_ApiMethodEnum.REQUEST ? variablesService.getRequestServerEndpoint() : variablesService.getResponseServerEndpoint();
+        String url = switch (apiMethod) {
+            case REQUEST -> variablesService.getRequestServerEndpoint();
+            case RESPONSE -> variablesService.getResponseServerEndpoint();
+            case STATUS_REQUEST -> variablesService.getStatusRequestServerEndpoint();
+        };
         dataAddress.put("baseUrl", url);
         dataAddress.put("type", "HttpData");
         dataAddress.put("proxyPath", "true");
