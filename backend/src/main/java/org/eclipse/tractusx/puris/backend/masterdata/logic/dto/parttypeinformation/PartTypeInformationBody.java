@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -19,6 +20,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 public class PartTypeInformationBody {
 
 	@NotNull
@@ -26,12 +28,12 @@ public class PartTypeInformationBody {
 
 	@NotNull
 	private String nameAtManufacturer;
-	private LinkedHashSet<ClassificationEntity> partClassification = new LinkedHashSet<>();
+	private LinkedHashSet<Classification> partClassification = new LinkedHashSet<>();
 
 	@JsonCreator
 	public PartTypeInformationBody(@JsonProperty(value = "manufacturerPartId") String manufacturerPartId,
                                    @JsonProperty(value = "nameAtManufacturer") String nameAtManufacturer,
-                                   @JsonProperty(value = "partClassification") LinkedHashSet<ClassificationEntity> partClassification) {
+                                   @JsonProperty(value = "partClassification") LinkedHashSet<Classification> partClassification) {
 		this.manufacturerPartId = manufacturerPartId;
 		this.nameAtManufacturer = nameAtManufacturer;
 		this.partClassification = partClassification;

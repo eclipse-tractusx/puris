@@ -4,9 +4,12 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformat
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 import java.util.Objects;
 
@@ -18,19 +21,24 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ClassificationEntity {
+@ToString
+public class Classification {
 
 	@NotNull
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
 	private String classificationStandard;
 
 	@NotNull
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
 	private String classificationID;
+
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
 	private String classificationDescription;
 
 	@JsonCreator
-	public ClassificationEntity(@JsonProperty(value = "classificationStandard") String classificationStandard,
-			@JsonProperty(value = "classificationID") String classificationID,
-			@JsonProperty(value = "classificationDescription") String classificationDescription) {
+	public Classification(@JsonProperty(value = "classificationStandard") String classificationStandard,
+                          @JsonProperty(value = "classificationID") String classificationID,
+                          @JsonProperty(value = "classificationDescription") String classificationDescription) {
 		this.classificationStandard = classificationStandard;
 		this.classificationID = classificationID;
 		this.classificationDescription = classificationDescription;
@@ -45,7 +53,7 @@ public class ClassificationEntity {
 			return false;
 		}
 
-		final ClassificationEntity that = (ClassificationEntity) o;
+		final Classification that = (Classification) o;
 		return Objects.equals(classificationStandard, that.classificationStandard)
 				&& Objects.equals(classificationID, that.classificationID)
 				&& Objects.equals(classificationDescription, that.classificationDescription);

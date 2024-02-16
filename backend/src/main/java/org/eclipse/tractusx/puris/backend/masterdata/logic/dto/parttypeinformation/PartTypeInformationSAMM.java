@@ -3,11 +3,13 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformat
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 import java.util.HashSet;
@@ -22,6 +24,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 public class PartTypeInformationSAMM {
 
 	@NotNull
@@ -30,12 +33,13 @@ public class PartTypeInformationSAMM {
 
 	@NotNull
 	private PartTypeInformationBody partTypeInformation = new PartTypeInformationBody();
-	private Set<PartSitesInformationAsPlannedEntity> partSitesInformationAsPlanned = new HashSet<>();
+    @Valid
+	private Set<PartSitesInformationAsPlanned> partSitesInformationAsPlanned = new HashSet<>();
 
 	@JsonCreator
 	public PartTypeInformationSAMM(@JsonProperty(value = "catenaXId") String catenaXId,
                                    @JsonProperty(value = "partTypeInformation") PartTypeInformationBody partTypeInformation,
-                                   @JsonProperty(value = "partSitesInformationAsPlanned") Set<PartSitesInformationAsPlannedEntity> partSitesInformationAsPlanned) {
+                                   @JsonProperty(value = "partSitesInformationAsPlanned") Set<PartSitesInformationAsPlanned> partSitesInformationAsPlanned) {
 		this.catenaXId = catenaXId;
 		this.partTypeInformation = partTypeInformation;
 		this.partSitesInformationAsPlanned = partSitesInformationAsPlanned;
