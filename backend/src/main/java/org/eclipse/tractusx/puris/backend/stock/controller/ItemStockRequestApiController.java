@@ -84,9 +84,9 @@ public class ItemStockRequestApiController {
             return ResponseEntity.status(422).body(new RequestReactionMessageDto(requestMessageDto.getHeader().getMessageId()));
         }
         switch (requestMessageDto.getContent().getDirection()) {
-            case INBOUND ->
-                executorService.submit(() -> itemStockRequestApiService.handleRequestFromCustomer(requestMessageDto, createdRequestMessage));
             case OUTBOUND ->
+                executorService.submit(() -> itemStockRequestApiService.handleRequestFromCustomer(requestMessageDto, createdRequestMessage));
+            case INBOUND ->
                 executorService.submit(() -> itemStockRequestApiService.handleRequestFromSupplier(requestMessageDto, createdRequestMessage));
             default -> {
                 log.warn("Missing direction in request \n" + requestMessageDto);

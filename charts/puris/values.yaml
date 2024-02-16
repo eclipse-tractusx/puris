@@ -439,6 +439,9 @@ backend:
           deletiontimer: 2
           # -- Endpoint for EDR
           endpoint: *domain
+        dtr:
+          # --Endpoint for DTR
+          url: http://localhost:4243
 
     # -- Extra environment variables that will be passed onto the backend deployment pods
     env: { }
