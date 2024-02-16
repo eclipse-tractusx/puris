@@ -22,8 +22,8 @@
 # GlOBAL -----------
 global:
     domain:
-       backend:
-          ingress: &domain your-backend-host-address.com
+        backend:
+            ingress: &domain your-backend-host-address.com
 # FRONTEND -----------
 frontend:
     replicaCount: 1
@@ -37,7 +37,7 @@ frontend:
         tag: ""
 
     # -- List of used secrets
-    imagePullSecrets: [ ]
+    imagePullSecrets: []
     # -- Possibility to override the name
     nameOverride: ""
     # -- Possibility to override the fullname
@@ -47,15 +47,15 @@ frontend:
         # -- Specifies whether a service account should be created
         create: true
         # -- Annotations to add to the service account
-        annotations: { }
+        annotations: {}
         # -- The name of the service account to use. If not set and create is true, a name is generated using the fullname template
         name: ""
 
     # -- Annotations added to a running pod
-    podAnnotations: { }
+    podAnnotations: {}
 
     # -- Added security contexts for a pod
-    podSecurityContext: { }
+    podSecurityContext: {}
     # fsGroup: 2000
 
     # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
@@ -83,18 +83,18 @@ frontend:
         # -- Class name for the Ingress controller
         className: "nginx"
         # -- Annotations for the Ingress controller
-        annotations: { }
+        annotations: {}
         # -- Hosts for the Ingress controller
         hosts:
-            -   host: "your-frontend-host-address.com"
-                paths:
-                    -   path: /
-                        pathType: ImplementationSpecific
+            - host: "your-frontend-host-address.com"
+              paths:
+                  - path: /
+                    pathType: ImplementationSpecific
         # -- TLS certificates for the Ingress controller
         tls:
-            -   secretName: tls-secret
-                hosts:
-                    - your-frontend-host-address.com
+            - secretName: tls-secret
+              hosts:
+                  - your-frontend-host-address.com
 
     # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
     # @url: https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-resource-requests-and-limits
@@ -120,10 +120,10 @@ frontend:
         # targetMemoryUtilizationPercentage: 80
 
     # -- Constrains for the node selector
-    nodeSelector: { }
+    nodeSelector: {}
 
     # -- Constrains for tolerations
-    tolerations: [ ]
+    tolerations: []
 
     # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
     # @url: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
@@ -131,15 +131,15 @@ frontend:
         podAntiAffinity:
             # -- Rules for the scheduler to find a pod
             preferredDuringSchedulingIgnoredDuringExecution:
-                -   weight: 100
-                    podAffinityTerm:
-                        labelSelector:
-                            # -- Matching Expressions as key and operators for the pod affinity
-                            matchExpressions:
-                                -   key: app.kubernetes.io/name
-                                    operator: DoesNotExist
-                        # -- Topology key of the Kubernetes cluster
-                        topologyKey: kubernetes.io/hostname
+                - weight: 100
+                  podAffinityTerm:
+                      labelSelector:
+                          # -- Matching Expressions as key and operators for the pod affinity
+                          matchExpressions:
+                              - key: app.kubernetes.io/name
+                                operator: DoesNotExist
+                      # -- Topology key of the Kubernetes cluster
+                      topologyKey: kubernetes.io/hostname
 
     # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
     # @url: https://github.com/helm/charts/blob/master/stable/nginx-ingress/values.yaml#L210
@@ -208,7 +208,7 @@ frontend:
             redirectUrlFrontend: "https://your-frontend-url.com"
 
     # -- Extra environment variables that will be passed onto the frontend deployment pods
-    env: { }
+    env: {}
       #  ENV_NAME: value
 
 
@@ -226,7 +226,7 @@ backend:
         tag: ""
 
     # -- List of used secrets
-    imagePullSecrets: [ ]
+    imagePullSecrets: []
     # -- Possibility to override the name
     nameOverride: ""
     # -- Possibility to override the fullname
@@ -236,15 +236,15 @@ backend:
         # -- Specifies whether a service account should be created
         create: true
         # -- Annotations to add to the service account
-        annotations: { }
+        annotations: {}
         # -- The name of the service account to use. If not set and create is true, a name is generated using the fullname template
         name: ""
 
     # -- Annotations added to a running pod
-    podAnnotations: { }
+    podAnnotations: {}
 
     # -- Added security contexts for a pod
-    podSecurityContext: { }
+    podSecurityContext: {}
     # fsGroup: 2000
 
     # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
@@ -297,21 +297,21 @@ backend:
             nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
         # -- Hosts for the Ingress controller
         hosts:
-            -   host: *domain
-                paths:
-                    -   path: /
-                        pathType: ImplementationSpecific
+            - host: *domain
+              paths:
+                  - path: /
+                    pathType: ImplementationSpecific
         # -- TLS certificates for the Ingress controller
         tls:
-            -   secretName: tls-secret
-                hosts:
-                    - *domain
+            - secretName: tls-secret
+              hosts:
+                  - *domain
 
     # -- Constrains for the node selector
-    nodeSelector: { }
+    nodeSelector: {}
 
     # -- Constrains for tolerations
-    tolerations: [ ]
+    tolerations: []
 
     # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
     # @url: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
@@ -319,15 +319,15 @@ backend:
         podAntiAffinity:
             # -- Rules for the scheduler to find a pod
             preferredDuringSchedulingIgnoredDuringExecution:
-                -   weight: 100
-                    podAffinityTerm:
-                        labelSelector:
-                            # -- Matching Expressions as key and operators for the pod affinity
-                            matchExpressions:
-                                -   key: app.kubernetes.io/name
-                                    operator: DoesNotExist
-                        # -- Topology key of the Kubernetes cluster
-                        topologyKey: kubernetes.io/hostname
+                - weight: 100
+                  podAffinityTerm:
+                      labelSelector:
+                          # -- Matching Expressions as key and operators for the pod affinity
+                          matchExpressions:
+                              - key: app.kubernetes.io/name
+                                operator: DoesNotExist
+                      # -- Topology key of the Kubernetes cluster
+                      topologyKey: kubernetes.io/hostname
 
     # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
     # @url: https://github.com/helm/charts/blob/master/stable/nginx-ingress/values.yaml#L210
@@ -360,10 +360,10 @@ backend:
         # -- Secret for backend passwords. For more information look into 'backend-secrets.yaml' file.
         secret: "secret-backend-puris"
         api:
-          # -- The API key of the PURIS application. Secret-key 'puris-api-key'.
-          key: "test"
-          # -- The root directory of the API
-          rootDir: /catena
+            # -- The API key of the PURIS application. Secret-key 'puris-api-key'.
+            key: "test"
+            # -- The root directory of the API
+            rootDir: /catena
         datasource:
             # -- Driver class name of the database
             driverClassName: org.postgresql.Driver
@@ -375,15 +375,15 @@ backend:
             password:
         edc:
             controlplane:
-              host: "172.17.0.2"
-              management:
-                # -- Url to the EDC controlplane management of the edc
-                url: "https:/your-edc-address:8181/management"
-              protocol:
-                # -- Url to the EDC controlplane protocol API of the edc
-                url: "https://your-edc-address:8184/api/v1/dsp"
-              # -- Key for the EDC control plane. Secret-key 'puris-edc-controlplane-key'
-              key: "password"
+                host: "172.17.0.2"
+                management:
+                    # -- Url to the EDC controlplane management of the edc
+                    url: "https:/your-edc-address:8181/management"
+                protocol:
+                    # -- Url to the EDC controlplane protocol API of the edc
+                    url: "https://your-edc-address:8184/api/v1/dsp"
+                # -- Key for the EDC control plane. Secret-key 'puris-edc-controlplane-key'
+                key: "password"
         own:
             # -- Own BPNL of the EDC
             bpnl: BPNL4444444444XX
@@ -415,36 +415,36 @@ backend:
                     # -- Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction
                     enable_lazy_load_no_trans: true
         request:
-          # -- Endpoint of server for request
-          serverendpoint: *domain
-          # -- Asset ID for request API
-          apiassetid: request-api-asset
+            # -- Endpoint of server for request
+            serverendpoint: *domain
+            # -- Asset ID for request API
+            apiassetid: request-api-asset
         response:
-          # -- Endpoint of server for response
-          serverendpoint: *domain
-          # -- Asset ID for response API
-          apiassetid: response-api-asset
+            # -- Endpoint of server for response
+            serverendpoint: *domain
+            # -- Asset ID for response API
+            apiassetid: response-api-asset
         statusrequest:
-          # -- Endpoint of server for statusrequest
-          serverendpoint: *domain
-          # -- Asset ID for status-request API
-          apiassetid: statusrequest-api-asset
+            # -- Endpoint of server for statusrequest
+            serverendpoint: *domain
+            # -- Asset ID for status-request API
+            apiassetid: statusrequest-api-asset
         frameworkagreement:
-          # -- Flag to determine whether to use a framework agreement in puris
-          use: false
-          # -- The name of the framework agreement
-          credential : FrameworkAgreement.traceability
+            # -- Flag to determine whether to use a framework agreement in puris
+            use: false
+            # -- The name of the framework agreement
+            credential: FrameworkAgreement.traceability
         edr:
-          # -- Number of minutes before received authentication data of a consumer pull is removed from memory
-          deletiontimer: 2
-          # -- Endpoint for EDR
-          endpoint: *domain
+            # -- Number of minutes before received authentication data of a consumer pull is removed from memory
+            deletiontimer: 2
+            # -- Endpoint for EDR
+            endpoint: *domain
         dtr:
-          # --Endpoint for DTR
-          url: http://localhost:4243
+            # --Endpoint for DTR
+            url: http://localhost:4243
 
     # -- Extra environment variables that will be passed onto the backend deployment pods
-    env: { }
+    env: {}
     #  ENV_NAME: value
 
 postgresql:
@@ -455,9 +455,9 @@ postgresql:
     # -- Possibility to override the fullname
     fullnameOverride: "backend-postgresql"
     service:
-      ports:
-        # -- Port of postgres database.
-        postgresql: 5432
+        ports:
+            # -- Port of postgres database.
+            postgresql: 5432
     auth:
         # -- Name of the database.
         database: "postgres"
