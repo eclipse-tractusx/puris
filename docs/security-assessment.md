@@ -76,7 +76,7 @@ flowchart TD
     D3-->|Forwarding Data Response \n HTTPS Protocol|B
 
     B-->|Forwarding Data Requests \n HTTPS Protocol|D3
-    B-->|List catalog negotiations \n and transfers, \n Read Access \n HTTPS Protocol|D2
+    B-->|List catalog, negotiations \n and transfers, \n Read Access \n HTTPS Protocol|D2
     
     B<-->|Forwarding Data Response \n HTTPS Protocol|D4
     
