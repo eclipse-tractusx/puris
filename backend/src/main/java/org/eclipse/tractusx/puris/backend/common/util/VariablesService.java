@@ -93,11 +93,28 @@ public class VariablesService {
      * can be reached by external machines.
      */
     private String statusRequestServerEndpoint;
+    @Value("${puris.frameworkagreement.use}")
+    /**
+     * A flag that signals whether a framework policy
+     * shall be used as contract policy for your api assets.
+     */
+    private boolean useFrameworkPolicy;
+    @Value("${puris.frameworkagreement.credential}")
+    /**
+     * The name of the framework agreement to be used.
+     */
+    private String purisFrameworkAgreement;
     @Value("${puris.api.key}")
     /**
      * The key for accessing the api.
      */
     private String apiKey;
+
+    @Value("${puris.dtr.url}")
+    /**
+     * The url of your decentralized DTR
+     */
+    private String dtrUrl;
 
     @Value("${edc.controlplane.key}")
     /**

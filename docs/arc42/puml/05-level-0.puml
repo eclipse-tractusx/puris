@@ -6,7 +6,7 @@
 
 data_prov -( "Interface internal systems"
 edc -- "EDC APIs"
-e
+
 package "<<system>> PURIS"{
 
   [PURIS FOSS Backend] as puris_backend

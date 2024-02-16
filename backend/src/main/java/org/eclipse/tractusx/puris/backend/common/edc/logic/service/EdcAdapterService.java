@@ -59,6 +59,7 @@ public class EdcAdapterService {
      * Util method for issuing a GET request to the management api of your control plane.
      * Any caller of this method has the responsibility to close
      * the returned Response object after using it.
+     *
      * @param pathSegments The path segments
      * @return The response
      * @throws IOException If the connection to your control plane fails
@@ -80,6 +81,7 @@ public class EdcAdapterService {
      * Util method for issuing a POST request to the management api of your control plane.
      * Any caller of this method has the responsibility to close
      * the returned Response object after using it.
+     *
      * @param requestBody  The request body
      * @param pathSegments The path segments
      * @return The response from your control plane
@@ -90,7 +92,7 @@ public class EdcAdapterService {
         for (var pathSegment : pathSegments) {
             urlBuilder.addPathSegment(pathSegment);
         }
-        RequestBody body = RequestBody.create(MediaType.parse("application/json"), requestBody.toString());
+        RequestBody body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json"));
 
         var request = new Request.Builder()
             .post(body)
@@ -101,9 +103,24 @@ public class EdcAdapterService {
         return CLIENT.newCall(request).execute();
     }
 
+    private Response sendDtrPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getDtrUrl() + "/api/v3.0").newBuilder();
+        for (var pathSegment : pathSegments) {
+            urlBuilder.addPathSegment(pathSegment);
+        }
+        RequestBody body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json"));
+        var request = new Request.Builder()
+            .post(body)
+            .url(urlBuilder.build())
+            .header("Content-Type", "application/json")
+            .build();
+        return CLIENT.newCall(request).execute();
+    }
+
     /**
      * Call this method at startup to register the necessary request and
-     * response apis.
+     * response apis. In case you are using the framework agreement feature,
+     * the framework agreement policy will be registered as well here.
      *
      * @return true if all registrations were successful, otherwise false
      */
@@ -112,8 +129,16 @@ public class EdcAdapterService {
         log.info("Registration of item-stock request api successful " + (result = registerApiAsset(DT_ApiMethodEnum.REQUEST)));
         if (!result) return false;
         log.info("Registration of item-stock response api successful " + (result = registerApiAsset(DT_ApiMethodEnum.RESPONSE)));
-        if(!result) return false;
+        if (!result) return false;
         log.info("Registration of item-stock status-request api successful " + (result = registerApiAsset(DT_ApiMethodEnum.STATUS_REQUEST)));
+        if (!result) return false;
+        if (variablesService.isUseFrameworkPolicy()) {
+            log.info("Registration of framework agreement policy successful " + (result = createFrameWorkPolicy()));
+            if (!result) return false;
+        } else {
+            log.info("Skipping registration of framework agreement policy");
+        }
+        log.info("Registration of DTR Asset successful " + (result = registerDtrAsset()));
         return result;
     }
 
@@ -121,11 +146,13 @@ public class EdcAdapterService {
     /**
      * Utility method to register policy- and contract-definitions for both the
      * REQUEST and the RESPONSE-Api specifically for the given partner.
+     *
      * @param partner the partner
      * @return true, if all registrations ran successfully
      */
     public boolean createPolicyAndContractDefForPartner(Partner partner) {
         boolean result = createPolicyDefinitionForPartner(partner);
+        result &= createDtrContractDefinitionForPartner(partner);
         result &= createContractDefinitionForPartner(partner, DT_ApiMethodEnum.REQUEST);
         result &= createContractDefinitionForPartner(partner, DT_ApiMethodEnum.STATUS_REQUEST);
         return result & createContractDefinitionForPartner(partner, DT_ApiMethodEnum.RESPONSE);
@@ -137,28 +164,45 @@ public class EdcAdapterService {
      * Prior to this method you must always have successfully completed the
      * createPolicyDefinitionForPartner - method first.
      *
-     * @param partner the partner
+     * @param partner   the partner
      * @param apiMethod the api method
      * @return true, if registration ran successfully
      */
     private boolean createContractDefinitionForPartner(Partner partner, DT_ApiMethodEnum apiMethod) {
         var body = edcRequestBodyBuilder.buildContractDefinitionWithBpnRestrictedPolicy(partner, apiMethod);
-        try {
-            var response = sendPostRequest(body, List.of("v2", "contractdefinitions"));
-            boolean result = response.isSuccessful();
-            if(!result) {
+        try (var response = sendPostRequest(body, List.of("v2", "contractdefinitions"))) {
+            if (!response.isSuccessful()) {
                 log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and "
-                    + apiMethod + "\n" + response.body().string());
+                    + apiMethod);
+                if (response.body() != null) {
+                    log.warn("Response: \n" + response.body().string());
+                }
+                return false;
             }
-            response.body().close();
-            return result;
+            return true;
         } catch (Exception e) {
+            log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and " + apiMethod);
             return false;
         }
     }
 
+    private boolean createDtrContractDefinitionForPartner(Partner partner) {
+        var body = edcRequestBodyBuilder.buildDtrContractDefinitionForPartner(partner);
+        try (var response = sendPostRequest(body, List.of("v2", "contractdefinitions"))) {
+            if (!response.isSuccessful()) {
+                log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and DTR");
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and DTR", e);
+            return false;
+        }
+    }
+
+
     /**
-     * Registers a policy definitions that allows only the given partner's
+     * Registers a policy definition that allows only the given partner's
      * BPNL.
      *
      * @param partner the partner
@@ -166,16 +210,56 @@ public class EdcAdapterService {
      */
     private boolean createPolicyDefinitionForPartner(Partner partner) {
         var body = edcRequestBodyBuilder.buildBpnRestrictedPolicy(partner);
-        try {
-            var response = sendPostRequest(body, List.of("v2", "policydefinitions"));
-            boolean result = response.isSuccessful();
-            if(!result){
-                log.warn("Policy Registration failed \n" + response.body().string());
+        try (var response = sendPostRequest(body, List.of("v2", "policydefinitions"))) {
+            if (!response.isSuccessful()) {
+                log.warn("Policy Registration failed");
+                if (response.body() != null) {
+                    log.warn("Response: \n" + response.body().string());
+                }
+                return false;
             }
-            response.body().close();
-            return result;
+            return true;
         } catch (Exception e) {
             log.error("Failed to register policy definition for partner " + partner.getBpnl(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Registers the framework agreement policy definition
+     *
+     * @return true, if registration ran successfully
+     */
+    private boolean createFrameWorkPolicy() {
+        var body = edcRequestBodyBuilder.buildFrameworkAgreementPolicy();
+        try (var response = sendPostRequest(body, List.of("v2", "policydefinitions"))) {
+            if (!response.isSuccessful()) {
+                log.warn("Framework Policy Registration failed");
+                if (response.body() != null) {
+                    log.warn("Response: \n" + response.body().string());
+                }
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to register Framework Policy", e);
+            return false;
+        }
+    }
+
+
+    private boolean registerDtrAsset() {
+        var body = edcRequestBodyBuilder.buildDtrRegistrationBody();
+        try (var response = sendPostRequest(body, List.of("v3", "assets"))) {
+            if (!response.isSuccessful()) {
+                log.warn("Asset registration failed for DTR");
+                if (response.body() != null) {
+                    log.warn("Response: \n" + response.body().string());
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to register DTR Asset", e);
             return false;
         }
     }
@@ -188,16 +272,17 @@ public class EdcAdapterService {
      */
     private boolean registerApiAsset(DT_ApiMethodEnum apiMethod) {
         var body = edcRequestBodyBuilder.buildCreateItemStockAssetBody(apiMethod);
-        try {
-            var response = sendPostRequest(body, List.of("v3", "assets"));
-            boolean result = response.isSuccessful();
-            if (!result) {
-                log.warn("Asset registration failed \n" + response.body().string());
+        try (var response = sendPostRequest(body, List.of("v3", "assets"))) {
+            if (!response.isSuccessful()) {
+                log.warn("Asset registration failed");
+                if (response.body() != null) {
+                    log.warn("Response: \n" + response.body().string());
+                }
+                return false;
             }
-            response.body().close();
-            return result;
+            return true;
         } catch (Exception e) {
-            log.error("Failed to register api asset " + apiMethod.PURPOSE, e);
+            log.error("Failed to register api asset " + apiMethod.CX_TAXO, e);
             return false;
         }
     }
@@ -211,10 +296,11 @@ public class EdcAdapterService {
      * @throws IOException If the connection to the partners control plane fails
      */
     public JsonNode getCatalog(String dspUrl) throws IOException {
-        var response = sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, null), List.of("v2", "catalog", "request"));
-        String stringData = response.body().string();
-        response.body().close();
-        return objectMapper.readTree(stringData);
+        try (var response = sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, null), List.of("v2", "catalog", "request"))) {
+            String stringData = response.body().string();
+            return objectMapper.readTree(stringData);
+        }
+
     }
 
     /**
@@ -228,10 +314,10 @@ public class EdcAdapterService {
      */
     private JsonNode initiateNegotiation(Partner partner, JsonNode catalogItem) throws IOException {
         var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(partner, catalogItem);
-        var response = sendPostRequest(requestBody, List.of("v2", "contractnegotiations"));
-        String responseString = response.body().string();
-        response.body().close();
-        return objectMapper.readTree(responseString);
+        try (var response = sendPostRequest(requestBody, List.of("v2", "contractnegotiations"))) {
+            String responseString = response.body().string();
+            return objectMapper.readTree(responseString);
+        }
     }
 
     /**
@@ -244,10 +330,10 @@ public class EdcAdapterService {
      * @throws IOException If the connection to your control plane fails
      */
     public JsonNode getNegotiationState(String negotiationId) throws IOException {
-        var response = sendGetRequest(List.of("v2", "contractnegotiations", negotiationId));
-        String stringData = response.body().string();
-        response.body().close();
-        return objectMapper.readTree(stringData);
+        try (var response = sendGetRequest(List.of("v2", "contractnegotiations", negotiationId))) {
+            String stringData = response.body().string();
+            return objectMapper.readTree(stringData);
+        }
     }
 
     /**
@@ -259,10 +345,9 @@ public class EdcAdapterService {
      */
     public String getAllNegotiations() throws IOException {
         var requestBody = edcRequestBodyBuilder.buildNegotiationsRequestBody();
-        var response = sendPostRequest(requestBody, List.of("v2", "contractnegotiations", "request"));
-        String stringData = response.body().string();
-        response.body().close();
-        return stringData;
+        try (var response = sendPostRequest(requestBody, List.of("v2", "contractnegotiations", "request"))) {
+            return response.body().string();
+        }
     }
 
     /**
@@ -277,10 +362,10 @@ public class EdcAdapterService {
      */
     public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String assetId) throws IOException {
         var body = edcRequestBodyBuilder.buildProxyPullRequestBody(partner, contractId, assetId);
-        var response = sendPostRequest(body, List.of("v2", "transferprocesses"));
-        String data = response.body().string();
-        response.body().close();
-        return objectMapper.readTree(data);
+        try (var response = sendPostRequest(body, List.of("v2", "transferprocesses"))) {
+            String data = response.body().string();
+            return objectMapper.readTree(data);
+        }
     }
 
     /**
@@ -293,10 +378,10 @@ public class EdcAdapterService {
      * @throws IOException If the connection to your control plane fails
      */
     public JsonNode getTransferState(String transferId) throws IOException {
-        var response = sendGetRequest(List.of("v2", "transferprocesses", transferId));
-        String data = response.body().string();
-        response.body().close();
-        return objectMapper.readTree(data);
+        try (var response = sendGetRequest(List.of("v2", "transferprocesses", transferId))) {
+            String data = response.body().string();
+            return objectMapper.readTree(data);
+        }
     }
 
     /**
@@ -308,10 +393,10 @@ public class EdcAdapterService {
      */
     public String getAllTransfers() throws IOException {
         var requestBody = edcRequestBodyBuilder.buildTransfersRequestBody();
-        var response = sendPostRequest(requestBody, List.of("v2", "transferprocesses", "request"));
-        String data = response.body().string();
-        response.body().close();
-        return data;
+        try (var response = sendPostRequest(requestBody, List.of("v2", "transferprocesses", "request"))) {
+            String data = response.body().string();
+            return data;
+        }
     }
 
     /**
@@ -323,12 +408,10 @@ public class EdcAdapterService {
      * @throws IOException If the connection to your control plane fails
      */
     public String getContractAgreement(String contractAgreementId) throws IOException {
-        var response = sendGetRequest(List.of("v2", "contractagreements", contractAgreementId));
-        String data = response.body().string();
-        response.body().close();
-        return data;
+        try (var response = sendGetRequest(List.of("v2", "contractagreements", contractAgreementId))) {
+            return response.body().string();
+        }
     }
-
 
     /**
      * Util method for sending a post request the given endpoint
@@ -364,89 +447,141 @@ public class EdcAdapterService {
      * It will return a String array of length 4. The authKey is stored under index 0, the
      * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
      *
-     * @param partner    the partner
-     * @param apiMethod  the api method
+     * @param partner   the partner
+     * @param apiMethod the api method
      * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
     public String[] getContractForItemStockApi(Partner partner, DT_ApiMethodEnum apiMethod) {
-            try {
-                var responseNode = getCatalog(partner.getEdcUrl());
-                var catalogArray = responseNode.get("dcat:dataset");
-                // If there is exactly one asset, the catalogContent will be a JSON object.
-                // In all other cases catalogContent will be a JSON array.
-                // For the sake of uniformity we will embed a single object in an array.
-                if (catalogArray.isObject()) {
-                    catalogArray = objectMapper.createArrayNode().add(catalogArray);
-                }
-                JsonNode targetCatalogEntry = null;
+        try {
+            var responseNode = getCatalog(partner.getEdcUrl());
+            var catalogArray = responseNode.get("dcat:dataset");
+            // If there is exactly one asset, the catalogContent will be a JSON object.
+            // In all other cases catalogContent will be a JSON array.
+            // For the sake of uniformity we will embed a single object in an array.
+            if (catalogArray.isObject()) {
+                catalogArray = objectMapper.createArrayNode().add(catalogArray);
+            }
+            JsonNode targetCatalogEntry = null;
 
-                for(var entry : catalogArray) {
-                    var dctTypeObject = entry.get("dct:type");
-                    if(dctTypeObject != null) {
-                        if(("https://w3id.org/catenax/taxonomy#" + apiMethod.CX_TAXO).equals(dctTypeObject.get("@id").asText())) {
-                            if(apiMethod.TYPE.equals(entry.get("asset:prop:type").asText())) {
-                                if("1.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
-                                    if(targetCatalogEntry == null) {
-                                        targetCatalogEntry = entry;
+            for (var entry : catalogArray) {
+                var dctTypeObject = entry.get("dct:type");
+                if (dctTypeObject != null) {
+                    if (("https://w3id.org/catenax/taxonomy#" + apiMethod.CX_TAXO).equals(dctTypeObject.get("@id").asText())) {
+                        if (apiMethod.TYPE.equals(entry.get("asset:prop:type").asText())) {
+                            if ("1.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
+                                if (targetCatalogEntry == null) {
+                                    if (variablesService.isUseFrameworkPolicy()) {
+                                        if (testFrameworkAgreementConstraint(entry)) {
+                                            targetCatalogEntry = entry;
+                                        } else {
+                                            log.error("Contract Negotiation with partner " + partner.getBpnl() + " has " +
+                                                "been aborted. This partner's contract policy does not match the policy " +
+                                                "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
+                                                "\n Received offer from Partner: \n" + entry.toPrettyString());
+                                            break;
+                                        }
                                     } else {
-                                        log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
+                                        targetCatalogEntry = entry;
                                     }
+                                } else {
+                                    log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
                                 }
                             }
                         }
                     }
                 }
-                if(targetCatalogEntry == null) {
-                    log.error("Could not find api asset " + apiMethod + " at partner " + partner.getBpnl() +  " 's catalog");
-                    return null;
-                }
-                String assetApiId = targetCatalogEntry.get("@id").asText();
-                JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
-                String negotiationId = negotiationResponse.get("@id").asText();
-                // Await confirmation of contract and contractId
-                String contractId = null;
-                for (int i = 0; i < 100; i++) {
-                    Thread.sleep(100);
-                    var responseObject = getNegotiationState(negotiationId);
-                    if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
-                        contractId = responseObject.get("edc:contractAgreementId").asText();
-                        break;
-                    }
-                }
-                if (contractId == null) {
-                    var negotiationState = getNegotiationState(negotiationId);
-                    log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
-                    log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
-                    return null;
-                }
-
-                // Initiate transfer of edr
-                var transferResp = initiateProxyPullTransfer(partner, contractId, assetApiId);
-                String transferId = transferResp.get("@id").asText();
-                for (int i = 0; i < 100; i++) {
-                    Thread.sleep(100);
-                    transferResp = getTransferState(transferId);
-                    if ("STARTED".equals(transferResp.get("edc:state").asText())) {
-                        break;
-                    }
-                }
-
-                // Await arrival of edr
-                for (int i = 0; i < 100; i++) {
-                    Thread.sleep(100);
-                    EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
-                    if (edr_Dto != null) {
-                        log.info("Successfully negotiated for " + assetApiId + " with " + partner.getEdcUrl());
-                        return new String[]{edr_Dto.authKey(), edr_Dto.authCode(), edr_Dto.endpoint(), contractId};
-                    }
-                }
-                log.warn("did not receive authCode");
-                log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
-                return null;
-
-            } catch (Exception e) {
-                log.error("Failed to get contract for " + apiMethod + " from " + partner.getBpnl(), e);
+            }
+            if (targetCatalogEntry == null) {
+                log.error("Could not find api asset " + apiMethod + " at partner " + partner.getBpnl() + " 's catalog");
                 return null;
             }
+            String assetApiId = targetCatalogEntry.get("@id").asText();
+            JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
+            String negotiationId = negotiationResponse.get("@id").asText();
+            // Await confirmation of contract and contractId
+            String contractId = null;
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                var responseObject = getNegotiationState(negotiationId);
+                if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
+                    contractId = responseObject.get("edc:contractAgreementId").asText();
+                    break;
+                }
+            }
+            if (contractId == null) {
+                var negotiationState = getNegotiationState(negotiationId);
+                log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
+                log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
+                return null;
+            }
+
+            // Initiate transfer of edr
+            var transferResp = initiateProxyPullTransfer(partner, contractId, assetApiId);
+            String transferId = transferResp.get("@id").asText();
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                transferResp = getTransferState(transferId);
+                if ("STARTED".equals(transferResp.get("edc:state").asText())) {
+                    break;
+                }
+            }
+
+            // Await arrival of edr
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
+                if (edr_Dto != null) {
+                    log.info("Successfully negotiated for " + assetApiId + " with " + partner.getEdcUrl());
+                    return new String[]{edr_Dto.authKey(), edr_Dto.authCode(), edr_Dto.endpoint(), contractId};
+                }
+            }
+            log.warn("did not receive authCode");
+            log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
+            return null;
+
+        } catch (Exception e) {
+            log.error("Failed to get contract for " + apiMethod + " from " + partner.getBpnl(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Helper method to check whether you and the contract offer from the other party have the
+     * same framework agreement policy.
+     *
+     * @param catalogEntry the catalog item containing the desired api asset
+     * @return true, if the policy matches yours, otherwise false
+     */
+    private boolean testFrameworkAgreementConstraint(JsonNode catalogEntry) {
+        try {
+            var policyObject = catalogEntry.get("odrl:hasPolicy");
+            if (policyObject == null) {
+                return false;
+            }
+            var permissionObject = policyObject.get("odrl:permission");
+            if (permissionObject == null) {
+                return false;
+            }
+            var constraintObject = permissionObject.get("odrl:constraint");
+            if (constraintObject == null) {
+                return false;
+            }
+            var leftOperandObject = constraintObject.get("odrl:leftOperand");
+            if (!variablesService.getPurisFrameworkAgreement().equals(leftOperandObject.asText())) {
+                return false;
+            }
+            var operatorObject = constraintObject.get("odrl:operator");
+            if (!"odrl:eq".equals(operatorObject.get("@id").asText())) {
+                return false;
+            }
+            var rightOperandObject = constraintObject.get("odrl:rightOperand");
+            if (!"active".equals(rightOperandObject.asText())) {
+                return false;
+            }
+        } catch (Exception e) {
+            log.error("Failed in Framework Agreement Test ", e);
+            return false;
+        }
+        return true;
     }
 }

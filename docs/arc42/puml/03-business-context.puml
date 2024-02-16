@@ -1,0 +1,13 @@
+@startuml
+[Disposition] as disposition
+[Production (Process)] as production
+[Logistics] as logistics
+[(Automotive) Supply Chain] as sc
+[PURIS FOSS] as puris
+
+disposition -- puris
+production - puris
+puris - logistics
+puris -- sc
+
+@enduml
