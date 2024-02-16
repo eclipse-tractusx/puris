@@ -110,6 +110,12 @@ public class VariablesService {
      */
     private String apiKey;
 
+    @Value("${puris.dtr.url}")
+    /**
+     * The url of your decentralized DTR
+     */
+    private String dtrUrl;
+
     @Value("${edc.controlplane.key}")
     /**
      * The api key of your control plane

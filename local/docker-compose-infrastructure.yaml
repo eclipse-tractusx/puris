@@ -33,7 +33,7 @@ services:
 
     postgres:
         image: postgres:15.4-alpine
-        container_name: postgres
+        container_name: postgres-miw
         environment:
             POSTGRES_DB: edc
             POSTGRES_USER: ${PG_USER}
