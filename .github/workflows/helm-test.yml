@@ -20,6 +20,8 @@ name: Lint and Test Charts
 
 on:
     pull_request:
+        paths:
+            - 'charts/**'
     workflow_dispatch:
         inputs:
             node_image:
