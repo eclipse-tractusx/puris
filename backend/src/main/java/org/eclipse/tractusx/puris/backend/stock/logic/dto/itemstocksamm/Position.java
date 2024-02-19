@@ -45,6 +45,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @ToString
 public class Position {
+    @Valid
 	private OrderPositionReference orderPositionReference;
 
     @NotNull
