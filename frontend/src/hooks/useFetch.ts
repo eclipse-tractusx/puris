@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -19,7 +18,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { config } from '@models/constants/config';
 
 const defaultHeaders = {
@@ -32,7 +31,7 @@ export const useFetch = <T = unknown>(url?: string, options?: RequestInit) => {
     const [error, setError] = useState<unknown>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
+    const fetchData = useCallback(async () => {
         if (!url) {
             setIsLoading(false);
             return;
@@ -47,9 +46,11 @@ export const useFetch = <T = unknown>(url?: string, options?: RequestInit) => {
             .then((data) => {
                 if (shouldCancel) return;
                 setData(data);
+                setError(null);
             })
             .catch((err) => {
                 if (shouldCancel) return;
+                setData(null);
                 setError(err);
             })
             .finally(() => setIsLoading(false));
@@ -57,9 +58,18 @@ export const useFetch = <T = unknown>(url?: string, options?: RequestInit) => {
             shouldCancel = true;
         };
     }, [url, options]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const refresh = () => {
+        fetchData();
+    }
     return {
         data,
         error,
         isLoading,
+        refresh,
     };
-}
+};

@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -19,6 +18,6 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { roles } from '../../constants/roles';
+import { roles } from '@models/constants/roles';
 
 export type Role = (typeof roles)[number];

@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,20 +19,21 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { Table } from '@catena-x/portal-shared-components';
-import { MaterialStock, ProductStock } from '@models/types/data/stock';
+import { Stock, StockType } from '@models/types/data/stock';
+import { capitalize } from '@mui/material';
 import { getUnitOfMeasurement } from '@util/helpers';
-import { useStocks } from '../hooks/useStocks';
 
-type StockTableProps<T extends ProductStock | MaterialStock> = {
-    type: 'material' | 'product';
-    onSelection: (stock: T) => void;
+type StockTableProps = {
+    type: StockType;
+    stocks: Stock[];
+    onSelection: (stock: Stock) => void;
 };
 
-const createStockTableColumns = (type: 'material' | 'product') => [
+const createStockTableColumns = (type: StockType) => [
     {
         field: 'materialNumber',
-        headerName: type === 'material' ? 'Material' : 'Product',
-        renderCell: (params: { row: MaterialStock }) => (
+        headerName: capitalize(type),
+        renderCell: (params: { row: Stock }) => (
             <div className="flex flex-col">
                 <span>{params.row.material?.name}</span>
                 <span>({type === 'material' ? params.row.material?.materialNumberCustomer : params.row.material?.materialNumberSupplier})</span>
@@ -43,13 +43,13 @@ const createStockTableColumns = (type: 'material' | 'product') => [
     },
     {
         field: 'quantity',
-        valueGetter: (data: { row: MaterialStock }) => data.row.quantity + ' ' + getUnitOfMeasurement(data.row.measurementUnit),
+        valueGetter: (data: { row: Stock }) => data.row.quantity + ' ' + getUnitOfMeasurement(data.row.measurementUnit),
         headerName: 'Quantity',
         flex: 2,
     },
     {
         field: 'partner',
-        renderCell: (params: { row: MaterialStock }) => (
+        renderCell: (params: { row: Stock }) => (
             <div className="flex flex-col">
                 <span>{params.row.partner?.name}</span>
                 <span>({params.row.partner?.bpnl})</span>
@@ -89,8 +89,7 @@ const createStockTableColumns = (type: 'material' | 'product') => [
         flex: 3,
     },
 ];
-export const StockTable = <T extends ProductStock | MaterialStock>({ onSelection, type }: StockTableProps<T>) => {
-    const { stocks } = useStocks(type);
+export const StockTable = ({ onSelection, type, stocks }: StockTableProps) => {
     return (
         <Table
             title="Your Stocks"

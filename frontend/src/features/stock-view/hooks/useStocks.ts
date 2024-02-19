@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,19 +19,22 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { config } from '@models/constants/config';
-import { MaterialStock, ProductStock } from '@models/types/data/stock';
 import { useFetch } from '@hooks/useFetch';
+import { Stock, StockType } from '@models/types/data/stock';
 
-export const useStocks = (type: 'material' | 'product') => {
+
+export const useStocks = <T extends StockType>(type: T) => {
   const url = type === 'material' ? config.app.ENDPOINT_MATERIAL_STOCKS : config.app.ENDPOINT_PRODUCT_STOCKS;
   const {
       data: stocks,
       error: stocksError,
       isLoading: isLoadingStocks,
-  } = useFetch<MaterialStock[] | ProductStock[]>(config.app.BACKEND_BASE_URL + url);
+      refresh: refreshStocks,
+  } = useFetch<Stock[]>(config.app.BACKEND_BASE_URL + url);
   return {
       stocks,
       stocksError,
       isLoadingStocks,
+      refreshStocks,
   };
 };

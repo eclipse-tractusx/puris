@@ -1,7 +1,7 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2023-2024 Volkswagen AG
+Copyright (c) 2023-2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2023-2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -19,24 +19,65 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
+import Card from '@mui/material/Card';
+
 import { useNegotiations } from '@hooks/edc/useNegotiations';
+import { Negotiation } from '@models/types/edc/negotiation';
+
+type NegotiationCardProps = {
+    negotiation: Negotiation;
+};
+
+const NegotiationCard = ({negotiation }: NegotiationCardProps) => {
+    return (
+        <Card className="p-5">
+            <h2 className="text-xl font-semibold mb-3">Negotiation</h2>
+            <div className="flex w-full flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                    <div className="flex gap-3">
+                        <span className="w-[30ch] font-semibold"> Negotiation Id: </span>
+                        {negotiation['@id']}
+                    </div>
+                    <div className="flex gap-3">
+                        <span className="w-[30ch] font-semibold"> Aggreement  Id: </span>
+                        <span className="break-all w-[60ch]">{negotiation['edc:contractAgreementId']}</span>
+                    </div>
+                    <div className="flex gap-3">
+                        <span className="w-[30ch] font-semibold"> Type: </span>
+                        {negotiation['edc:type']}
+                    </div>
+                    <div className="flex gap-3">
+                        <span className="w-[30ch] font-semibold"> State: </span>
+                        {negotiation['edc:state']}
+                    </div>
+                    <div className="flex gap-3">
+                        <span className="w-[30ch] font-semibold"> CounterParty: </span>
+                        {negotiation['edc:counterPartyId']}
+                    </div>
+                    <div className="flex gap-3">
+                        <span className="w-[30ch] font-semibold"> Counterparty EDC URL: </span>
+                        {negotiation['edc:counterPartyAddress']}
+                    </div>
+                    <div className="flex gap-3">
+                        <span className="w-[30ch] font-semibold"> Timestamp: </span>
+                        {new Date(negotiation['edc:createdAt']).toLocaleString()}
+                    </div>
+                </div>
+            </div>
+        </Card>
+    );
+};
 
 export const NegotiationView = () => {
     const { negotiations  } = useNegotiations();
     return (
         <div className="flex flex-col items-center w-full h-full">
             <h1 className="text-3xl font-semibold text-gray-700 mb-10">Negotiation</h1>
-            <ul>
+            <ul className="flex flex-col gap-3 w-[100ch]">
                 {negotiations && negotiations.length > 0 ? (
                     negotiations.map((negotiation) => (
                         <li>
-                            <h2> Transfer Id: {negotiation['@id']}</h2>
-                            <span> Agreement Id: {negotiation['edc:contractAgreementId']}</span>
-                            <span> Type: {negotiation['edc:type']}</span>
-                            <span> State: {negotiation['edc:state']}</span>
-                            <span> Counterparty: {negotiation['edc:counterPartyId']}</span>
-                            <span> Counterparty EDC URL: {negotiation['edc:counterPartyAddress']}</span>
-                            <span> Timestamp: {negotiation['edc:createdAt']}</span>
+                            <NegotiationCard negotiation={negotiation} />
                         </li>
                     ))
                 ) : (

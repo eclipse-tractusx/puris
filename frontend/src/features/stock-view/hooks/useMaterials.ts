@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -22,13 +21,15 @@ SPDX-License-Identifier: Apache-2.0
 import { config } from '@models/constants/config';
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
 import { useFetch } from '@hooks/useFetch';
+import { StockType } from '@models/types/data/stock';
 
-export const useMaterials = () => {
+export const useMaterials = (type: StockType) => {
+    const endpoint = type === 'material' ? config.app.ENDPOINT_MATERIALS : config.app.ENDPOINT_PRODUCTS;
     const {
         data: materials,
         error: materialsError,
         isLoading: isLoadingMaterials,
-    } = useFetch<MaterialDescriptor[]>(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_MATERIALS);
+    } = useFetch<MaterialDescriptor[]>(config.app.BACKEND_BASE_URL + endpoint);
     return {
         materials,
         materialsError,

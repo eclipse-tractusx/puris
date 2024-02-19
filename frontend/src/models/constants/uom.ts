@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -19,7 +18,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import stockViewUom from '../../assets/stockViewUom.json';
+import stockViewUom from '@assets/stockViewUom.json';
 import { UnitOfMeasurement } from '../types/data/uom';
 
 export const UNITS_OF_MEASUREMENT = stockViewUom as UnitOfMeasurement[];

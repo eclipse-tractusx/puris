@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,27 +19,27 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { LoadingButton, Table } from '@catena-x/portal-shared-components';
-import { MaterialStock, ProductStock } from '@models/types/data/stock';
-import { usePartnerStocks } from '../hooks/usePartnerStocks';
+import { Stock, StockType } from '@models/types/data/stock';
 import { getUnitOfMeasurement } from '@util/helpers';
-import { refreshPartnerStocks } from '@services/stocks-service';
-import { useState } from 'react';
 
-type PartnerStockTableProps = {
-    type: 'material' | 'product';
-    materialNumber?: string | null;
+type PartnerStockTableProps<T extends StockType> = {
+    type: T;
+    materialName?: string | null;
+    partnerStocks: Stock[];
+    isRefreshing: boolean;
+    onRefresh: () => void;
 };
 
 const partnerStockTableColumns = [
     {
         field: 'partner',
-        valueGetter: (data: { row: MaterialStock | ProductStock }) => data.row.partner?.name,
+        valueGetter: (data: { row: Stock }) => data.row.partner?.name,
         headerName: 'Partner',
         flex: 5,
     },
     {
         field: 'quantity',
-        valueGetter: (data: { row: MaterialStock | ProductStock }) =>
+        valueGetter: (data: { row: Stock }) =>
             data.row.quantity + ' ' + getUnitOfMeasurement(data.row.measurementUnit),
         headerName: 'Quantity',
         flex: 3,
@@ -57,7 +56,7 @@ const partnerStockTableColumns = [
     },
     {
         field: 'customerOrder',
-        renderCell: (params: { row: MaterialStock | ProductStock }) => (
+        renderCell: (params: { row: Stock }) => (
             <div className="flex flex-col">
                 <span>{params.row.customerOrderNumber}</span>
                 <span>{params.row.customerOrderPositionNumber}</span>
@@ -73,24 +72,17 @@ const partnerStockTableColumns = [
     },
     {
         field: 'lastUpdatedOn',
-        valueGetter: (data: { row: MaterialStock }) => new Date(data.row.lastUpdatedOn)?.toLocaleString(),
+        valueGetter: (data: { row: Stock }) => new Date(data.row.lastUpdatedOn)?.toLocaleString(),
         headerName: 'Last Updated On',
         flex: 3,
     },
 ];
 
-export const PartnerStockTable = ({ materialNumber, type }: PartnerStockTableProps) => {
-    const { partnerStocks } = usePartnerStocks(type, materialNumber);
-    const [refreshing, setRefreshing] = useState(false);
-
-    const handleStockRefresh = () => {
-        setRefreshing(true);
-        refreshPartnerStocks(type, materialNumber ?? null).then(()=>setRefreshing(false));
-    };
+export const PartnerStockTable = <T extends StockType>({ type, materialName, partnerStocks, onRefresh, isRefreshing }: PartnerStockTableProps<T>) => {
     return (
         <div className="relative">
             <Table
-                title={`Your ${type === 'material' ? 'Customers' : 'Suppliers'}' Stocks ${materialNumber ? `for Material ${materialNumber}` : ''}`}
+                title={`Your ${type === 'material' ? 'Customers' : 'Suppliers'}' Stocks ${materialName ? `for ${materialName}` : ''}`}
                 noRowsMsg={
                     type === 'material'
                         ? 'Select a Material to show your suppliers stocks'
@@ -101,7 +93,7 @@ export const PartnerStockTable = ({ materialNumber, type }: PartnerStockTablePro
                 getRowId={(row) => row.uuid}
                 hideFooter={true}
             ></Table>
-            <LoadingButton label='Refresh Stocks' loadIndicator='refreshing...' loading={refreshing} className="absolute top-8 end-8" variant="contained" onButtonClick={() => handleStockRefresh()} />
+            <LoadingButton label='Refresh Stocks' loadIndicator='refreshing...' loading={isRefreshing} className="absolute top-8 end-8" variant="contained" onButtonClick={() => onRefresh()} />
         </div>
     );
 };

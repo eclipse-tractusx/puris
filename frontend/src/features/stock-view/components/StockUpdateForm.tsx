@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -19,69 +18,61 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
+import { useEffect, useReducer } from 'react';
+import { Autocomplete, Checkbox, capitalize } from '@mui/material';
 import { Input, LoadingButton } from '@catena-x/portal-shared-components';
+
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
+import { Stock, StockType } from '@models/types/data/stock';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
-import { useSites } from '../hooks/useSites';
-import { useEffect, useReducer, useState } from 'react';
-import { Autocomplete, Checkbox } from '@mui/material';
-import { MaterialStock, ProductStock } from '@models/types/data/stock';
 import { getUnitOfMeasurement } from '@util/helpers';
+
+import { useSites } from '../hooks/useSites';
 import { usePartners } from '../hooks/usePartners';
-import { postMaterialStocks, postProductStocks, putMaterialStocks, putProductStocks } from '@services/stocks-service';
 
-type StockUpdateFormProps = {
+const validateStock = (stock: Partial<Stock>) => {
+    return stock?.material && stock?.partner && stock?.quantity && stock?.measurementUnit && stock?.stockLocationBpns && stock?.stockLocationBpna;
+}
+
+type StockUpdateFormProps<T extends StockType> = {
     items: MaterialDescriptor[] | null;
-    type: 'material' | 'product';
-    selectedItem: MaterialStock | ProductStock | null;
+    type: T;
+    selectedItem: Stock | null;
+    isSaving: boolean;
+    onSubmit: (stock: Stock) => void;
 };
 
-const stockReducer = (
-    state: Partial<MaterialStock> | Partial<ProductStock>,
-    action: {
-        type: 'replace' | keyof MaterialStock | keyof ProductStock;
-        payload: MaterialStock[keyof MaterialStock] | ProductStock[keyof ProductStock] | MaterialStock | ProductStock;
-    }
-) => {
-    if (action.type === 'replace') {
-        return action.payload as MaterialStock | ProductStock;
-    }
-    return {
-        ...state,
-        [action.type]: action.payload,
-    };
-};
-
-export const StockUpdateForm = ({ items, type, selectedItem }: StockUpdateFormProps) => {
+export const StockUpdateForm = <T extends StockType>({ items, type, selectedItem, isSaving, onSubmit }: StockUpdateFormProps<T>) => {
     const { sites } = useSites();
-    const [saving, setSaving] = useState<boolean>(false);
+    const stockReducer = (
+        state: Partial<Stock>,
+        action: {
+            type: keyof Stock | "replace";
+            payload: Stock[keyof Stock] | Stock;
+        }
+    ) => {
+        if (action.type === 'replace') {
+            return action.payload as Stock;
+        }
+        return {
+            ...state,
+            [action.type]: action.payload as Stock[typeof action.type],
+        };
+    };
     const [newStock, dispatch] = useReducer(stockReducer, selectedItem ?? {});
     const { partners } = usePartners(
         type,
         (type === 'material' ? newStock?.material?.materialNumberCustomer : newStock?.material?.materialNumberSupplier) ?? null
     );
-    const handleSave = () => {
-        if (saving) return;
-        setSaving(true);
-        if (type === 'material') {
-            if (newStock.uuid) {
-                postMaterialStocks(newStock as MaterialStock).then(() => setSaving(false));
-            } else {
-                putMaterialStocks(newStock as MaterialStock).then(() => setSaving(false));
-            }
-        } else {
-            if (newStock.uuid) {
-                postProductStocks(newStock as ProductStock).then(() => setSaving(false));
-            } else {
-                putProductStocks(newStock as ProductStock).then(() => setSaving(false));
-            }
-        }
-    };
 
     useEffect(() => {
         dispatch({ type: 'replace', payload: selectedItem });
     }, [selectedItem]);
-
+    const handleSubmit = () => {
+        if (validateStock(newStock)) {
+            onSubmit(newStock as Stock);
+        }
+    }
     return (
         <form className="p-5">
             <div className="flex gap-5 justify-center">
@@ -101,7 +92,7 @@ export const StockUpdateForm = ({ items, type, selectedItem }: StockUpdateFormPr
                         }
                         options={items ?? []}
                         getOptionLabel={(option) => option.ownMaterialNumber ?? ''}
-                        renderInput={(params) => <Input {...params} label={`${type}*`} placeholder={`Select a ${type}`} />}
+                        renderInput={(params) => <Input {...params} label={`${capitalize(type)}*`} placeholder={`Select a ${type}`} />}
                         onChange={(_, newValue) =>
                             dispatch({
                                 type: 'material',
@@ -124,7 +115,7 @@ export const StockUpdateForm = ({ items, type, selectedItem }: StockUpdateFormPr
                         options={partners ?? []}
                         getOptionLabel={(option) => option?.name ?? ''}
                         renderInput={(params) => <Input {...params} label="Partner*" placeholder="Select a Partner" />}
-                        onChange={(_, value) => dispatch({ type: 'partner', payload: value ?? null })}
+                        onChange={(_, value) => dispatch({ type: 'partner', payload: value ?? null})}
                     />
                     <div className="grid grid-cols-3 gap-2">
                         <div className="col-span-2">
@@ -134,7 +125,9 @@ export const StockUpdateForm = ({ items, type, selectedItem }: StockUpdateFormPr
                                 type="number"
                                 placeholder="Enter quantity"
                                 value={newStock?.quantity}
-                                onChange={(event) => dispatch({ type: 'quantity', payload: event.target.value })}
+                                onChange={(event) =>
+                                    dispatch({ type: 'quantity', payload: event.target.value })
+                                }
                             />
                         </div>
                         <Autocomplete
@@ -147,7 +140,9 @@ export const StockUpdateForm = ({ items, type, selectedItem }: StockUpdateFormPr
                             options={UNITS_OF_MEASUREMENT}
                             getOptionLabel={(option) => option?.value ?? ''}
                             renderInput={(params) => <Input {...params} label="UOM*" placeholder="Select unit" />}
-                            onChange={(_, value) => dispatch({ type: 'measurementUnit', payload: value?.key ?? null })}
+                            onChange={(_, value) =>
+                                dispatch({ type: 'measurementUnit', payload: value?.key ?? null })
+                            }
                         />
                     </div>
                     <div className="flex items-center justify-end pt-7">
@@ -165,14 +160,18 @@ export const StockUpdateForm = ({ items, type, selectedItem }: StockUpdateFormPr
                         value={newStock?.stockLocationBpns ?? null}
                         options={sites?.map((site) => site.bpns) ?? []}
                         renderInput={(params) => <Input {...params} label="Stock Location BPNS*" placeholder="Select a Site" />}
-                        onChange={(_, value) => dispatch({ type: 'stockLocationBpns', payload: value ?? null })}
+                        onChange={(_, value) =>
+                            dispatch({ type: 'stockLocationBpns', payload: value ?? null })
+                        }
                     />
                     <Autocomplete
                         id="site"
                         value={newStock?.stockLocationBpna ?? null}
                         options={sites?.find((site) => site.bpns === newStock?.stockLocationBpns)?.addresses.map((addr) => addr.bpna) ?? []}
                         renderInput={(params) => <Input {...params} label="Stock Location BPNA*" placeholder="Select an Address" />}
-                        onChange={(_, value) => dispatch({ type: 'stockLocationBpna', payload: value ?? null })}
+                        onChange={(_, value) =>
+                            dispatch({ type: 'stockLocationBpna', payload: value ?? null })
+                        }
                     />
                     <div className="grid grid-cols-2 gap-2">
                         <Input
@@ -180,14 +179,21 @@ export const StockUpdateForm = ({ items, type, selectedItem }: StockUpdateFormPr
                             label="Customer Order Number"
                             type="text"
                             value={newStock?.customerOrderNumber}
-                            onChange={(event) => dispatch({ type: 'customerOrderNumber', payload: event.target.value })}
+                            onChange={(event) =>
+                                dispatch({ type: 'customerOrderNumber', payload: event.target.value })
+                            }
                         />
                         <Input
                             id="customer-order-position"
-                            label="Customer Order Position"
+                            label="Customer Order Position Number"
                             type="text"
                             value={newStock?.customerOrderPositionNumber}
-                            onChange={(event) => dispatch({ type: 'customerOrderPositionNumber', payload: event.target.value })}
+                            onChange={(event) =>
+                                dispatch({
+                                    type: 'customerOrderPositionNumber',
+                                    payload: event.target.value,
+                                })
+                            }
                         />
                     </div>
                     <Input
@@ -195,7 +201,9 @@ export const StockUpdateForm = ({ items, type, selectedItem }: StockUpdateFormPr
                         label="Supplier Order Number"
                         type="text"
                         value={newStock?.supplierOrderNumber}
-                        onChange={(event) => dispatch({ type: 'supplierOrderNumber', payload: event.target.value })}
+                        onChange={(event) =>
+                            dispatch({ type: 'supplierOrderNumber', payload: event.target.value })
+                        }
                     />
                 </div>
             </div>
@@ -204,9 +212,9 @@ export const StockUpdateForm = ({ items, type, selectedItem }: StockUpdateFormPr
                     className="w-full"
                     variant="contained"
                     color="primary"
-                    loading={saving}
+                    loading={isSaving}
                     loadIndicator="Saving..."
-                    onButtonClick={() => handleSave()}
+                    onButtonClick={handleSubmit}
                     label="Add or Update"
                     fullWidth={true}
                 ></LoadingButton>

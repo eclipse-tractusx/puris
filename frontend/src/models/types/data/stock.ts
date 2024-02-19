@@ -25,7 +25,9 @@ import { Partner } from '../edc/partner';
 import { UnitOfMeasurementKey } from './uom';
 
 type MaterialDetails = {
-    uuid: UUID | null;
+    uuid?: UUID | null;
+    materialFlag: boolean;
+    productFlag: boolean;
     materialNumberCustomer: string | null;
     materialNumberSupplier: string | null;
     materialNumberCx: string | null;
@@ -33,7 +35,8 @@ type MaterialDetails = {
 };
 
 export type Stock = {
-    uuid: UUID | null;
+    uuid?: UUID | null;
+    material: MaterialDetails
     quantity: number;
     measurementUnit: UnitOfMeasurementKey;
     stockLocationBpns: BPNS;
@@ -46,16 +49,4 @@ export type Stock = {
     isBlocked: boolean;
 };
 
-export type MaterialStock = {
-    material: {
-        materialFlag: true;
-        productFlag: false;
-    } & MaterialDetails;
-} & Stock;
-
-export type ProductStock = {
-    material: {
-        materialFlag: false;
-        productFlag: true;
-    } & MaterialDetails;
-} & Stock;
+export type StockType = 'material' | 'product';
