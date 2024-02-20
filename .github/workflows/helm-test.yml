@@ -102,6 +102,6 @@ jobs:
             -   name: Run chart-testing (install)
                 run: |
                     helm repo add bitnami https://charts.bitnami.com/bitnami
-                    helm dependency update
+                    helm repo add postgresql https://charts.bitnami.com/bitnami
                     ct install --charts charts/puris --helm-extra-set-args "--set backend.image.repository=${{ env.REGISTRY }}/${{ env.APP_BACKEND_NAME}} --set backend.image.tag=${{ env.TAG }} --set frontend.image.repository=${{ env.REGISTRY }}/${{ env.APP_FRONTEND_NAME }} --set frontend.image.tag=${{ env.TAG }}"
                 if: github.event_name != 'pull_request' || steps.list-changed.outputs.changed == 'true'
