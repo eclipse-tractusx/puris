@@ -155,10 +155,20 @@ spec:
             httpGet:
               path: {{ .Values.backend.puris.api.rootDir }}/health/
               port: http
+            initialDelaySeconds: {{ .Values.backend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.backend.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.backend.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.backend.livenessProbe.failureThreshold }}
           readinessProbe:
             httpGet:
               path: {{ .Values.backend.puris.api.rootDir }}/health/
               port: http
+            initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.backend.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.backend.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.backend.readinessProbe.failureThreshold }}
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}
       {{- with .Values.backend.nodeSelector }}

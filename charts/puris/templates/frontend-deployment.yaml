@@ -87,10 +87,20 @@ spec:
             httpGet:
               path: /
               port: http
+            initialDelaySeconds: {{ .Values.frontend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.frontend.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.frontend.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.frontend.livenessProbe.failureThreshold }}
           readinessProbe:
             httpGet:
               path: /
               port: http
+            initialDelaySeconds: {{ .Values.frontend.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.frontend.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.frontend.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.frontend.readinessProbe.failureThreshold }}
           resources:
             {{- toYaml .Values.frontend.resources | nindent 12 }}
       {{- with .Values.frontend.nodeSelector }}
