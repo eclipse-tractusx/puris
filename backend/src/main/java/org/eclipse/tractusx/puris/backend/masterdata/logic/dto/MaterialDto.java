@@ -46,7 +46,6 @@ public class MaterialDto implements Serializable {
      * <p>
      * Boolean because there could be companies (tradesmen company) that buy and sell the same material.
      */
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private boolean materialFlag;
 
     /**

@@ -20,6 +20,7 @@
 
 package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -43,8 +44,10 @@ import java.util.UUID;
 public class ItemStockResponseDto {
 
     @NotNull
+    @Valid
     private HeaderDto header = new HeaderDto();
     @NotNull
+    @Valid
     private ContentDto content = new ContentDto();
 
     @Getter
@@ -75,6 +78,7 @@ public class ItemStockResponseDto {
     @Setter
     @ToString
     public static class ContentDto {
+        @Valid
         List<ItemStockSamm> itemStock = new ArrayList<>();
     }
 }
