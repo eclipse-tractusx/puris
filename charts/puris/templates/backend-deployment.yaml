@@ -50,6 +50,11 @@ spec:
                 secretKeyRef:
                   name: "{{ .Values.postgresql.auth.existingSecret }}"
                   key: "postgres-password"
+            - name: ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.postgresql.auth.existingSecret }}"
+                  key: "password"
             {{- else }}
             - name: DATASOURCE_URL
               value: "{{ .Values.backend.puris.datasource.url }}"
@@ -58,13 +63,13 @@ spec:
             - name: DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Values.backend.puris.secret }}"
+                  name: "{{ .Values.backend.puris.existingSecret }}"
                   key: "puris-datasource-password"
             {{- end }}
             - name: EDC_CONTROLPLANE_KEY
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Values.backend.puris.secret }}"
+                  name: "{{ .Values.backend.puris.existingSecret }}"
                   key: "puris-edc-controlplane-key"
             - name: EDC_CONTROLPLANE_MANAGEMENT_URL
               value: "{{ .Values.backend.puris.edc.controlplane.management.url }}"
@@ -93,7 +98,7 @@ spec:
             - name: PURIS_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Values.backend.puris.secret }}"
+                  name: "{{ .Values.backend.puris.existingSecret }}"
                   key: "puris-api-key"
             - name: PURIS_DEMONSTRATOR_ROLE
               value: "{{ .Values.backend.puris.demonstrator.role }}"
