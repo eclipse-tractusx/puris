@@ -21,6 +21,7 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
@@ -45,7 +46,9 @@ public class PartnerDto implements Serializable {
     @Pattern(regexp = PatternStore.BPNL_STRING)
     private String bpnl;
 
+    @Valid
     private SortedSet<AddressDto> addresses = new TreeSet<>();
+    @Valid
     private SortedSet<SiteDto> sites = new TreeSet<>();
 
 }

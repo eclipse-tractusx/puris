@@ -358,7 +358,7 @@ backend:
 
     puris:
         # -- Secret for backend passwords. For more information look into 'backend-secrets.yaml' file.
-        secret: "secret-backend-puris"
+        existingSecret: "secret-backend-puris"
         api:
             # -- The API key of the PURIS application. Secret-key 'puris-api-key'.
             key: "test"
@@ -463,7 +463,9 @@ postgresql:
         database: "postgres"
         # -- Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file.
         existingSecret: "secret-postgres-init"
-        # -- Username for the database.
+        # -- Username for the root user and for the database.
         username: "puris"
+        # -- Password for the root user. Secret-key 'password'
+        password: ""
         # -- Password for the database. Secret-key 'postgres-password'.
-        password: "password"
+        passwordPostgres: "password"
