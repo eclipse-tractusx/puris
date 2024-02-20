@@ -18,4 +18,7 @@ do
   envsubst $EXISTING_VARS < $file | sponge $file
   echo -e "\r\n"
 done
+
+envsubst $EXISTING_VARS < /etc/nginx/nginx.conf | sponge /etc/nginx/nginx.conf
+
 nginx -g 'daemon off;'

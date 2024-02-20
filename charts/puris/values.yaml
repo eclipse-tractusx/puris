@@ -206,6 +206,13 @@ frontend:
             clientId: "appXYZ"
             # -- URL to use as keycloak redirect url.
             redirectUrlFrontend: "https://your-frontend-url.com"
+        rateLimiting:
+            # -- Bucket zone limit for rate limiting in nginx.
+            limit: 10m
+            # -- Burst rate limiting for nginx.
+            burst: 30
+            # -- Allowed rates per second for nginx rate limiting.
+            rate: 10r/s
 
 
 # BACKEND -----------
