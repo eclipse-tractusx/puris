@@ -37,7 +37,7 @@ frontend:
     tag: ""
 
   # -- List of used secrets
-  imagePullSecrets: [ ]
+  imagePullSecrets: []
   # -- Possibility to override the name
   nameOverride: ""
   # -- Possibility to override the fullname
@@ -47,15 +47,15 @@ frontend:
     # -- Specifies whether a service account should be created
     create: true
     # -- Annotations to add to the service account
-    annotations: { }
+    annotations: {}
     # -- The name of the service account to use. If not set and create is true, a name is generated using the fullname template
     name: ""
 
   # -- Annotations added to a running pod
-  podAnnotations: { }
+  podAnnotations: {}
 
   # -- Added security contexts for a pod
-  podSecurityContext: { }
+  podSecurityContext: {}
   # fsGroup: 2000
 
   # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
@@ -83,7 +83,7 @@ frontend:
     # -- Class name for the Ingress controller
     className: "nginx"
     # -- Annotations for the Ingress controller
-    annotations: { }
+    annotations: {}
     # -- Hosts for the Ingress controller
     hosts:
       - host: "your-frontend-host-address.com"
@@ -120,10 +120,10 @@ frontend:
     # targetMemoryUtilizationPercentage: 80
 
   # -- Constrains for the node selector
-  nodeSelector: { }
+  nodeSelector: {}
 
   # -- Constrains for tolerations
-  tolerations: [ ]
+  tolerations: []
 
   # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
   # @url: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
@@ -229,7 +229,7 @@ backend:
     tag: ""
 
   # -- List of used secrets
-  imagePullSecrets: [ ]
+  imagePullSecrets: []
   # -- Possibility to override the name
   nameOverride: ""
   # -- Possibility to override the fullname
@@ -239,15 +239,15 @@ backend:
     # -- Specifies whether a service account should be created
     create: true
     # -- Annotations to add to the service account
-    annotations: { }
+    annotations: {}
     # -- The name of the service account to use. If not set and create is true, a name is generated using the fullname template
     name: ""
 
   # -- Annotations added to a running pod
-  podAnnotations: { }
+  podAnnotations: {}
 
   # -- Added security contexts for a pod
-  podSecurityContext: { }
+  podSecurityContext: {}
   # fsGroup: 2000
 
   # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
@@ -311,10 +311,10 @@ backend:
           - *domain
 
   # -- Constrains for the node selector
-  nodeSelector: { }
+  nodeSelector: {}
 
   # -- Constrains for tolerations
-  tolerations: [ ]
+  tolerations: []
 
   # Following Catena-X Helm Best Practices @url: https://eclipse-tractusx.github.io/docs/release/trg-5/trg-5-01/
   # @url: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
