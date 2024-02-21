@@ -47,7 +47,7 @@ COPY NOTICE.md /app/dist/NOTICE.md
 COPY DEPENDENCIES /app/dist/DEPENDENCIES
 
 # uses 101 restricted user
-FROM nginxinc/nginx-unprivileged:stable-alpine
+FROM nginxinc/nginx-unprivileged:alpine
 #FROM nginx:stable-alpine
 
 # commly it would be .../html/js/.*js, but due to the project structure the JS files are in .../html/assets
