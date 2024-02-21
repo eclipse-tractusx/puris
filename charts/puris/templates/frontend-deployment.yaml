@@ -72,6 +72,12 @@ spec:
               value: "{{ .Values.frontend.puris.keycloak.clientId }}"
             - name: IDP_REDIRECT_URL_FRONTEND
               value: "{{ .Values.frontend.puris.keycloak.redirectUrlFrontend }}"
+            - name: NGINX_RATE_LIMIT
+              value: "{{ .Values.frontend.puris.rateLimiting.limit }}"
+            - name: NGINX_BURST
+              value: "{{ .Values.frontend.puris.rateLimiting.burst }}"
+            - name: NGINX_RATE
+              value: "{{ .Values.frontend.puris.rateLimiting.rate }}"
             ######################################
             ## Additional environment variables ##
             ######################################

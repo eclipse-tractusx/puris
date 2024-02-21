@@ -162,7 +162,7 @@ frontend:
     # -- Delay in seconds after which an initial readiness probe is checked
     initialDelaySeconds: 10
     # -- Wait time in seconds between readiness probes
-    periodSeconds: 80
+    periodSeconds: 10
     # -- Number of trys until a pod is marked ready
     successThreshold: 1
     # -- Timeout in seconds of the readiness probe
@@ -206,6 +206,13 @@ frontend:
       clientId: "appXYZ"
       # -- URL to use as keycloak redirect url.
       redirectUrlFrontend: "https://your-frontend-url.com"
+    rateLimiting:
+      # -- Bucket zone limit for rate limiting in nginx.
+      limit: 10m
+      # -- Burst rate limiting for nginx.
+      burst: 30
+      # -- Allowed rates per second for nginx rate limiting.
+      rate: 10r/s
 
   # -- Extra environment variables that will be passed onto the frontend deployment pods
   env: {}
@@ -348,9 +355,9 @@ backend:
     # -- Number of failures (threshold) for a readiness probe
     failureThreshold: 3
     # -- Delay in seconds after which an initial readiness probe is checked
-    initialDelaySeconds: 120
+    initialDelaySeconds: 250
     # -- Wait time in seconds between readiness probes
-    periodSeconds: 60
+    periodSeconds: 25
     # -- Number of trys until a pod is marked ready
     successThreshold: 1
     # -- Timeout in seconds of the readiness probe
@@ -360,8 +367,8 @@ backend:
     # -- Secret for backend passwords. For more information look into 'backend-secrets.yaml' file.
     existingSecret: "secret-backend-puris"
     api:
-      # -- The API key of the PURIS application. Secret-key 'puris-api-key'.
-      key: "test2"
+      # -- The API key of the PURIS application
+      key: "test"
       # -- The root directory of the API
       rootDir: /catena
     datasource:
@@ -371,7 +378,7 @@ backend:
       url: jdbc:postgresql://postgresql-name:5432/puris-database
       # -- Username of the database. Ignored if postgres.enabled is true.
       username: db-user
-      # -- Password for the database user. Ignored if postgres.enabled is true. Secret-key 'puris-datasource-password'.
+      # -- Password for the database user. Ignored if postgres.enabled is true.
       password:
     edc:
       controlplane:
@@ -382,7 +389,7 @@ backend:
         protocol:
           # -- Url to the EDC controlplane protocol API of the edc
           url: "https://your-edc-address:8184/api/v1/dsp"
-        # -- Key for the EDC control plane. Secret-key 'puris-edc-controlplane-key'
+        # -- Key for the EDC control plane
         key: "password"
     own:
       # -- Own BPNL of the EDC
@@ -395,7 +402,7 @@ backend:
       country: "Germany"
       site:
         # -- Own site name
-        name: "puris-test"
+        name: "YOUR-SITE-NAME"
       # -- Own street and number
       streetnumber: "Musterstraße 110A"
       # -- Own zipcode and city
@@ -405,7 +412,7 @@ backend:
     demonstrator:
       # -- Current role of the PURIS demonstrator. Default value should be empty.
       # Can be set to "customer" or "supplier" to enable demonstration setup
-      role: "customer"
+      role:
     jpa:
       hibernate:
         # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones

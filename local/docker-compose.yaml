@@ -42,6 +42,9 @@ services:
             - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
             - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
             - IDP_DISABLE=true
+            - NGINX_RATE_LIMIT=10m
+            - NGINX_BURST=30
+            - NGINX_RATE=10r/s
         networks:
             - miw-net
         extra_hosts:
@@ -172,6 +175,9 @@ services:
             - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
             - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
             - IDP_DISABLE=true
+            - NGINX_RATE_LIMIT=10m
+            - NGINX_BURST=30
+            - NGINX_RATE=10r/s
         networks:
             - miw-net
         extra_hosts:
