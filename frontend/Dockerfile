@@ -64,6 +64,8 @@ RUN apk --no-cache add moreutils
 # use non-root user
 USER 101
 
+HEALTHCHECK --interval=30s --timeout=3s  CMD wget -O /dev/null http://localhost:8080 || exit 1
+
 WORKDIR /usr/share/nginx/html
 COPY --from=build /app/dist .
 ENTRYPOINT [ "start-nginx.sh" ]
