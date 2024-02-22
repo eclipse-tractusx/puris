@@ -37,11 +37,6 @@ Eclipse Tractus-X product(s) installed within the image:
 - Project license: [Apache License, Version 2.0](https://github.com/eclipse-tractusx/puris/blob/main/frontend/LICENSE)
 
 **Used Base Image [Frontend]**
-`node:lts-alpine`
-
-- DockerHub: https://hub.docker.com/_/node/
-- GitHub project: https://github.com/nodejs/docker-node
-
 `nginxinc/nginx-unprivileged:alpine`
 
 - DockerHub: https://hub.docker.com/r/nginxinc/nginx-unprivileged
