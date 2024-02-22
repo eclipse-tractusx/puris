@@ -21,6 +21,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,12 +45,14 @@ import java.util.Objects;
 @NoArgsConstructor
 @ToString
 public class Position {
+    @Valid
 	private OrderPositionReference orderPositionReference;
 
     @NotNull
 	private Date lastUpdatedOnDateTime;
 
 	@NotNull
+    @Valid
 	private List<AllocatedStock> allocatedStocks;
 
 	@JsonCreator

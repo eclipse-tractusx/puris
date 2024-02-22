@@ -1,12 +1,13 @@
 # Security Assessment PURIS (incl. Frontend, Backend Services, IAM and other infrastructure)
 
 | Contact                  | Details                                                                           |
-| ------------------------- | ---------------------------------------------------------------------------------------------- |
-| Contact for product       | [@tom-rm-meyer-ISST](https://github.com/tom-rm-meyer-ISST) |
-| Security responsible      | [@SSIRKC](https://github.com/SSIRKC) <br> [@szymonkowalczykzf](https://github.com/szymonkowalczykzf) |
-| Version number of product | 23.12                                                                                          |
-| Dates of assessment       | 2023-12-11: Re-Assessment                                                                      |
-| Status of assessment      | RE-ASSESSMENT DONE                                                                            |
+| -------------------------  | ---------------------------------------------------------------------------------------------- |
+| Contact for product        | [@tom-rm-meyer-ISST](https://github.com/tom-rm-meyer-ISST) |
+| Security responsible       | [@SSIRKC](https://github.com/SSIRKC) <br> [@szymonkowalczykzf](https://github.com/szymonkowalczykzf) |
+| Version number of product  | 23.12                                                                                          |
+| Dates of assessment        | 2023-12-11: Assessment                                                                      |
+| Dates of last re-assessment| 2024-02-16: Re-Assessment                                                                      |
+| Status of assessment       | RE-ASSESSMENT DONE                                                                            |
 
 ## Product Description
 Application Security review provides information about application design, architecture and current security state.
@@ -39,7 +40,84 @@ Currently the PURIS Application have 1 main functionality:
 |5 |	Data Request Controller |
 
 ## Dataflow Diagram
-To be added by @szymonkowalcyk
+
+```mermaid
+flowchart TD
+    A(Customer \n Human User) 
+    A2(Puris Endpoint App \n Data Provider \n Out of Scope)
+    A3(EDC \n Eclipse Data Space Components Connector \n C-X Member \n Out of Scope)
+    
+    B(EDC \n ECLIPSE DataSpace Components Connector \n C-X Operator \n Out of Scope)
+
+    C(Vue User Interface)
+
+    D6(Master Data Controller \n Exposed for external system based on API Keys \n Out of scope)
+    D7(Product Measures Visualization \n Just visualization of the data \n Out of scope - Not yet developped)
+
+    D(Stock View Controller)
+    D2(EDC View Controller)
+    D3(Data Request Controller)
+    D4(Data Response Controller)
+    D5[(PostgreSQL DB \n Main Database)]
+
+    A-->|Main functionality is possibility to view & manage stocks with Business Partners. \n Enter stock information manually. \n View the Supply Dashboard to check a supply situation between Partner & Customer \n for Partner and Supplier. \n HTTPS Protocol|C
+    A2-->|Providing Customer data on stocks & supplies \n HTTPS Protocol|A3
+
+    C-->|Read & Write access|D
+    C-->|Read access|D2
+
+    A3-->|View Data \n Negotiate Contracts \n Initialize & Perform Data Transfers \n HTTPS Protocol|B
+
+    D-->|Data Read & Write \n TCP9092|D5
+    D3-->|Data Read & Write \n TCP9092|D5
+   
+    D4-->|Data Read & Write \n TCP9092|D5
+
+    D3-->|Forwarding Data Response \n HTTPS Protocol|B
+
+    B-->|Forwarding Data Requests \n HTTPS Protocol|D3
+    B-->|List catalog, negotiations \n and transfers, \n Read Access \n HTTPS Protocol|D2
+    
+    B<-->|Forwarding Data Response \n HTTPS Protocol|D4
+    
+
+    subgraph Internet Boundary
+    A
+
+        subgraph Customer Environment
+         
+         A2
+         A3
+
+         end
+
+end
+
+subgraph Catena - X Environment
+
+B
+
+    subgraph PURIS Product 
+                  
+        subgraph PURIS Product - View Frontend
+         C
+         end
+
+         subgraph PURIS Product - Java Backend
+         D6
+         D7
+         D2
+         D3
+         D
+         D5
+         D4
+          end
+            
+    
+    end
+
+    end
+```
 
 ## Vulnerabilities & Threats
 | V001 | Lack of authentication & authorization mechanisms |
@@ -70,26 +148,12 @@ To be added by @szymonkowalcyk
 | After Mitigation | Impact: Low, Likelihood: Low, Risk: Low |
 | Mitigation | Product Team currently working on SSL. Team already implemented and enforce HTTPS for the front end of the product. Additionally, the admin guide explains how to serve the backend with spring configuration. It also includes configuration of HTTPS with docker. Guide was created on how to configure HTTPS with docker. There are currently some Cores issues that were detected and are being investigated, probably needs spring reconfiguration. It was fixed. Issues happened cause of self signed certificates. The issue is already solved. SSL was also already integrated to the Product. |
 
-| V005 | Lack of rate limiting on API level, that make API vulnerable for denial of service	 |
-| ------------------------- | ------------------------- |
-| Element | PURIS Product |
-| Before Mitigation | Impact: Medium, Likelihood: Medium, Risk: Medium |
-| After Mitigation | Impact: Low, Likelihood: Low, Risk: Low |
-| Mitigation | Implementation was currently postponed till all of the other High findings will be addressed. |
-
 | V006 | Lack of logging and monitoring solution in place, that can hinder the detection of security incidents, performance issues and operational anomalies. |
 | ------------------------- | ------------------------- |
 | Element | PURIS Product |
 | Before Mitigation | Impact: Low, Likelihood: Medium, Risk: Medium |
 | After Mitigation | Impact: Low, Likelihood: Low, Risk: Low |
 | Mitigation | Application is already logging every information about : every call to the respective EDC's, actions related to the exchange of data between partners, all authentication & authorization data Logging enchantments were completed. |
-
-| V007 | Encryption of confidential data at rest. |
-| ------------------------- | ------------------------- |
-| Element | PURIS Product |
-| Before Mitigation | Impact: High, Likelihood: Low, Risk: Medium |
-| After Mitigation | Impact: Low, Likelihood: Low, Risk: Low |
-| Mitigation |  Will be addressed with lower priority due to severity. Goal is to show app is capable of processing the encrypted data. Remaining work is focused on testing those functionality with PostgreSQL DB. |
 
 | V008 | Confirmed vulnerabilities with high severity for H2 Database. |
 | ------------------------- | ------------------------- |
