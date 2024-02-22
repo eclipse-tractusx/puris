@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #
 # Copyright (c) 2022,2024 Volkswagen AG
 # Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
@@ -17,8 +19,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-
-#!/bin/bash
 
 # enable job control (bg, fg)
 set -m

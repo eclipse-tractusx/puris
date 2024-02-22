@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #
 # Copyright (c) 2022,2024 Volkswagen AG
 # Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
