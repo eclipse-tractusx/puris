@@ -9,16 +9,27 @@ echo "==============="
 
 for file in $JSFOLDER;
 do
-  echo -e "\r\n"
-  echo $file
+  echo "Substitute environment variables in $file"
 
-  # other command cuts off length of files. sponge has no file-size limitation.
-  #cat $file | envsubst $EXISTING_VARS | tee $file
-  #envsubst $EXISTING_VARS < $file | tee $file
-  envsubst $EXISTING_VARS < $file | sponge $file
+  tmp_file="$file.tmp"
+  echo "envsubstitute $file to $tmp_file"
+  envsubst $EXISTING_VARS < $file > $tmp_file
+
+  echo "replace file ($file) by tmp file ($tmp_file)"
+  rm $file
+  mv $tmp_file $file
+
   echo -e "\r\n"
 done
 
-envsubst $EXISTING_VARS < /etc/nginx/nginx.conf | sponge /etc/nginx/nginx.conf
+nginx_conf="/etc/nginx/nginx.conf"
+tmp_nginx_conf="$nginx_conf.tmp"
+
+echo "envsubstitute $nginx_conf to $tmp_file"
+envsubst $EXISTING_VARS < $nginx_conf > $tmp_nginx_conf
+
+echo "replace config ($nginx_conf) by tmp file ($tmp_nginx_conf)"
+rm $nginx_conf
+mv $tmp_nginx_conf $nginx_conf
 
 nginx -g 'daemon off;'
