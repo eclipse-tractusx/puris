@@ -24,70 +24,70 @@
 name: Build - Docker image Backend (SemVer)
 
 on:
-  push:
-    branches:
-      - main
-    # trigger events for SemVer like tags
-    tags:
-      - 'v*.*.*'
-      - 'v*.*.*-*'
-  pull_request:
-    branches:
-      - main
+    push:
+        branches:
+            - main
+        # trigger events for SemVer like tags
+        tags:
+            - 'v*.*.*'
+            - 'v*.*.*-*'
+    pull_request:
+        branches:
+            - main
 
 env:
-  IMAGE_NAMESPACE: "tractusx"
-  IMAGE_NAME: "app-puris-backend"
+    IMAGE_NAMESPACE: "tractusx"
+    IMAGE_NAME: "app-puris-backend"
 
 jobs:
-  docker:
-    if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
+    docker:
+        if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
+        runs-on: ubuntu-latest
+        permissions:
+            packages: write
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      # Create SemVer or ref tags dependent of trigger event
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0
-        with:
-          images: |
-            ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}
-          tags: |
-            # set latest tag for main branch
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }},event=pr
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}
-            type=semver,pattern={{major}}.{{minor}}
+            # Create SemVer or ref tags dependent of trigger event
+            -   name: Docker meta
+                id: meta
+                uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0
+                with:
+                    images: |
+                        ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}
+                    tags: |
+                        # set latest tag for main branch
+                        type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }},event=pr
+                        type=ref,event=branch
+                        type=ref,event=pr
+                        type=semver,pattern={{version}}
+                        type=semver,pattern={{major}}
+                        type=semver,pattern={{major}}.{{minor}}
 
-      - name: DockerHub login
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+            -   name: DockerHub login
+                if: github.event_name != 'pull_request'
+                uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
+                with:
+                    username: ${{ secrets.DOCKER_HUB_USER }}
+                    password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Build and push
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 #v5.1
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+            -   name: Build and push
+                uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 #v5.1
+                with:
+                    context: ./backend
+                    file: ./backend/Dockerfile
+                    push: ${{ github.event_name != 'pull_request' }}
+                    tags: ${{ steps.meta.outputs.tags }}
+                    labels: ${{ steps.meta.outputs.labels }}
 
-      # https://github.com/peter-evans/dockerhub-description
-      - name: Update Docker Hub description
-        if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@dc67fad7001ef9e8e3c124cb7a64e16d0a63d864 #v3.4.2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}
-          readme-filepath: ./backend/README.md
+            # https://github.com/peter-evans/dockerhub-description
+            -   name: Update Docker Hub description
+                if: github.event_name != 'pull_request'
+                uses: peter-evans/dockerhub-description@dc67fad7001ef9e8e3c124cb7a64e16d0a63d864 #v3.4.2
+                with:
+                    username: ${{ secrets.DOCKER_HUB_USER }}
+                    password: ${{ secrets.DOCKER_HUB_TOKEN }}
+                    repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}
+                    readme-filepath: ./backend/DOCKER_NOTICE.md
