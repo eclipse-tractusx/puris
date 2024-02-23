@@ -23,9 +23,6 @@ FROM node:lts-alpine as build
 ARG NPM_BUILD_MODE=dockerbuild
 ENV JQ_VERSION=1.6
 
-# TODO curl results in problem with node during ```npm run ${NPM_BUILD_MODE}```
-#RUN apk --no-cache add curl
-#RUN curl https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/jq-linux64 -o /tmp/jq-linux64
 RUN wget --no-check-certificate https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/jq-linux64 -O /tmp/jq-linux64
 RUN cp /tmp/jq-linux64 /usr/bin/jq
 RUN chmod +x /usr/bin/jq
@@ -59,7 +56,6 @@ USER root
 COPY ./nginx.conf /etc/nginx/nginx.conf
 RUN chmod 777 /etc/nginx/nginx.conf
 COPY ./start-nginx.sh /usr/bin/start-nginx.sh
-RUN apk --no-cache add moreutils
 
 # use non-root user
 USER 101
