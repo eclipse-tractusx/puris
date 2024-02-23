@@ -47,9 +47,9 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.ingress.enabled | bool | `false` | Enable the Ingress |
 | backend.ingress.hosts | list | `[{"host":"your-backend-host-address.com","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
 | backend.ingress.tls | list | `[{"hosts":["your-backend-host-address.com"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
-| backend.livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":250,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
+| backend.livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":120,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | backend.livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
-| backend.livenessProbe.initialDelaySeconds | int | `250` | Delay in seconds after which an initial liveness probe is checked |
+| backend.livenessProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial liveness probe is checked |
 | backend.livenessProbe.periodSeconds | int | `25` | Wait time in seconds between liveness probes |
 | backend.livenessProbe.successThreshold | int | `1` | Number of trys until a pod is marked alive |
 | backend.livenessProbe.timeoutSeconds | int | `1` | Timeout in seconds of the liveness probe |
@@ -57,20 +57,21 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.nodeSelector | object | `{}` | Constrains for the node selector |
 | backend.podAnnotations | object | `{}` | Annotations added to a running pod |
 | backend.podSecurityContext | object | `{}` | Added security contexts for a pod |
-| backend.puris.api.key | string | `"test"` | The API key of the PURIS application. Secret-key 'puris-api-key'. |
+| backend.puris.api.key | string | `"test"` | The API key of the PURIS application |
 | backend.puris.api.rootDir | string | `"/catena"` | The root directory of the API |
 | backend.puris.datasource.driverClassName | string | `"org.postgresql.Driver"` | Driver class name of the database |
-| backend.puris.datasource.password | string | `nil` | Password for the database user. Ignored if postgres.enabled is true. Secret-key 'puris-datasource-password'. |
+| backend.puris.datasource.password | string | `nil` | Password for the database user. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.url | string | `"jdbc:postgresql://postgresql-name:5432/puris-database"` | URL of the database. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.username | string | `"db-user"` | Username of the database. Ignored if postgres.enabled is true. |
 | backend.puris.demonstrator.role | string | `nil` | Current role of the PURIS demonstrator. Default value should be empty. Can be set to "customer" or "supplier" to enable demonstration setup |
 | backend.puris.dtr.url | string | `"http://localhost:4243"` | Endpoint for DTR |
 | backend.puris.edc.controlplane.host | string | `"172.17.0.2"` |  |
-| backend.puris.edc.controlplane.key | string | `"password"` | Key for the EDC control plane. Secret-key 'puris-edc-controlplane-key' |
+| backend.puris.edc.controlplane.key | string | `"password"` | Key for the EDC control plane |
 | backend.puris.edc.controlplane.management.url | string | `"https:/your-edc-address:8181/management"` | Url to the EDC controlplane management of the edc |
 | backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc |
 | backend.puris.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
 | backend.puris.edr.endpoint | string | `"your-backend-host-address.com"` | Endpoint for EDR |
+| backend.puris.existingSecret | string | `"secret-backend-puris"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
 | backend.puris.frameworkagreement.credential | string | `"FrameworkAgreement.traceability"` | The name of the framework agreement |
 | backend.puris.frameworkagreement.use | bool | `false` | Flag to determine whether to use a framework agreement in puris |
 | backend.puris.jpa.hibernate.ddl-auto | string | `"create"` | Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones |
@@ -80,30 +81,29 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.own.bpns | string | `"BPNS4444444444XX"` | Own BPNS of the EDC |
 | backend.puris.own.country | string | `"Germany"` | Own country |
 | backend.puris.own.name | string | `"YOUR-COMPANY-NAME"` | Own name (self-description) |
-| backend.puris.own.site.name | string | `"puris-test"` | Own site name |
+| backend.puris.own.site.name | string | `"YOUR-SITE-NAME"` | Own site name |
 | backend.puris.own.streetnumber | string | `"Musterstraße 110A"` | Own street and number |
 | backend.puris.own.zipcodeandcity | string | `"12345 Musterhausen"` | Own zipcode and city |
 | backend.puris.request.apiassetid | string | `"request-api-asset"` | Asset ID for request API |
 | backend.puris.request.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for request |
 | backend.puris.response.apiassetid | string | `"response-api-asset"` | Asset ID for response API |
 | backend.puris.response.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for response |
-| backend.puris.secret | string | `"secret-backend-puris"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
 | backend.puris.statusrequest.apiassetid | string | `"statusrequest-api-asset"` | Asset ID for status-request API |
 | backend.puris.statusrequest.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for statusrequest |
-| backend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":250,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
+| backend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":120,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
 | backend.readinessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a readiness probe |
-| backend.readinessProbe.initialDelaySeconds | int | `250` | Delay in seconds after which an initial readiness probe is checked |
+| backend.readinessProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial readiness probe is checked |
 | backend.readinessProbe.periodSeconds | int | `25` | Wait time in seconds between readiness probes |
 | backend.readinessProbe.successThreshold | int | `1` | Number of trys until a pod is marked ready |
 | backend.readinessProbe.timeoutSeconds | int | `1` | Timeout in seconds of the readiness probe |
 | backend.replicaCount | int | `1` | Number of replicas of the Kubernetes deployment |
 | backend.resources.limits | object | `{"cpu":"3000m","memory":"2048Mi"}` | Maximum resource limits of CPU und memory |
 | backend.resources.requests | object | `{"cpu":"1000m","memory":"2048Mi"}` | Minimum requested resources for CPU und memory |
-| backend.securityContext | object | `{"allowPrivilegeEscalation":false,"runAsGroup":3000,"runAsNonRoot":true,"runAsUser":10001}` | Security configurations |
+| backend.securityContext | object | `{"allowPrivilegeEscalation":false,"runAsGroup":3000,"runAsNonRoot":true,"runAsUser":8877}` | Security configurations |
 | backend.securityContext.allowPrivilegeEscalation | bool | `false` | Get more privileges than the parent process |
 | backend.securityContext.runAsGroup | int | `3000` | Configures the group id of a user for a run |
 | backend.securityContext.runAsNonRoot | bool | `true` | Configures the non-root privileges for a run |
-| backend.securityContext.runAsUser | int | `10001` | Configures the user id for a run |
+| backend.securityContext.runAsUser | int | `8877` | Configures the user id for a run |
 | backend.service.port | int | `8081` | The port of the service |
 | backend.service.type | string | `"ClusterIP"` | Type of the service |
 | backend.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
@@ -168,11 +168,11 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.replicaCount | int | `1` |  |
 | frontend.resources.limits | object | `{"cpu":"600m","memory":"128Mi"}` | Maximum resource limits of CPU und memory |
 | frontend.resources.requests | object | `{"cpu":"200m","memory":"128Mi"}` | Minimum requested resources for CPU und memory |
-| frontend.securityContext | object | `{"allowPrivilegeEscalation":false,"runAsGroup":3000,"runAsNonRoot":true,"runAsUser":10001}` | Security configurations |
+| frontend.securityContext | object | `{"allowPrivilegeEscalation":false,"runAsGroup":3000,"runAsNonRoot":true,"runAsUser":101}` | Security configurations |
 | frontend.securityContext.allowPrivilegeEscalation | bool | `false` | Get more privileges than the parent process |
 | frontend.securityContext.runAsGroup | int | `3000` | Configures the group id of a user for a run |
 | frontend.securityContext.runAsNonRoot | bool | `true` | Configures the non-root privileges for a run |
-| frontend.securityContext.runAsUser | int | `10001` | Configures the user id for a run |
+| frontend.securityContext.runAsUser | int | `101` | Configures the user id for a run |
 | frontend.service.port | int | `8080` | The port of the service |
 | frontend.service.type | string | `"ClusterIP"` | Type of the service |
 | frontend.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
@@ -182,8 +182,9 @@ $ helm install puris --namespace puris --create-namespace .
 | global.domain.backend.ingress | string | `"your-backend-host-address.com"` |  |
 | postgresql.auth.database | string | `"postgres"` | Name of the database. |
 | postgresql.auth.existingSecret | string | `"secret-postgres-init"` | Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file. |
-| postgresql.auth.password | string | `"password"` | Password for the database. Secret-key 'postgres-password'. |
-| postgresql.auth.username | string | `"puris"` | Username for the database. |
+| postgresql.auth.password | string | `""` | Password for the root user. Secret-key 'password' |
+| postgresql.auth.passwordPostgres | string | `""` | Password for the database. Secret-key 'postgres-password'. |
+| postgresql.auth.username | string | `"puris"` | Username for the root user and for the database. |
 | postgresql.enabled | bool | `true` | Enable postgres by default, set to false to use existing postgres. Make sure to set backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from backend). |
 | postgresql.fullnameOverride | string | `"backend-postgresql"` | Possibility to override the fullname |
 | postgresql.service.ports.postgresql | int | `5432` | Port of postgres database. |

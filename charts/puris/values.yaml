@@ -1,7 +1,7 @@
 #
-# Copyright (c) 2023 Volkswagen AG
-# Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-# Copyright (c) 2023 Contributors to the Eclipse Foundation
+# Copyright (c) 2023,2024 Volkswagen AG
+# Copyright (c) 2023,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2023,2024 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -65,7 +65,7 @@ frontend:
     # -- Configures the non-root privileges for a run
     runAsNonRoot: true
     # -- Configures the user id for a run
-    runAsUser: 10001
+    runAsUser: 101
     # -- Configures the group id of a user for a run
     runAsGroup: 3000
 
@@ -253,7 +253,7 @@ backend:
     # -- Configures the non-root privileges for a run
     runAsNonRoot: true
     # -- Configures the user id for a run
-    runAsUser: 10001
+    runAsUser: 8877
     # -- Configures the group id of a user for a run
     runAsGroup: 3000
 
@@ -327,7 +327,7 @@ backend:
     # -- Number of failures (threshold) for a liveness probe
     failureThreshold: 3
     # -- Delay in seconds after which an initial liveness probe is checked
-    initialDelaySeconds: 250
+    initialDelaySeconds: 120
     # -- Wait time in seconds between liveness probes
     periodSeconds: 25
     # -- Number of trys until a pod is marked alive
@@ -339,7 +339,7 @@ backend:
     # -- Number of failures (threshold) for a readiness probe
     failureThreshold: 3
     # -- Delay in seconds after which an initial readiness probe is checked
-    initialDelaySeconds: 250
+    initialDelaySeconds: 120
     # -- Wait time in seconds between readiness probes
     periodSeconds: 25
     # -- Number of trys until a pod is marked ready
@@ -459,4 +459,4 @@ postgresql:
     # -- Password for the root user. Secret-key 'password'
     password: ""
     # -- Password for the database. Secret-key 'postgres-password'.
-    passwordPostgres: "password"
+    passwordPostgres: ""
