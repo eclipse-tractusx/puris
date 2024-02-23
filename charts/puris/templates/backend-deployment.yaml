@@ -109,6 +109,8 @@ spec:
               value: "{{ .Values.backend.puris.frameworkagreement.credential }}"
             - name: PURIS_DTR_URL
               value: "{{ .Values.backend.puris.dtr.url  }}"
+            - name: PURIS_GENERATEMATERIALCATENAXID
+              value: "{{ .Values.backend.puris.generatematerialcatenaxid  }}"
           ports:
             - name: http
               containerPort: {{ .Values.backend.service.port }}

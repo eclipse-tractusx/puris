@@ -101,21 +101,6 @@ public class Material {
     private String materialNumberCx;
 
     /**
-     * This flag indicates whether there is evidently conflicting
-     * CX-Material Number information on this material.
-     *
-     * Since there is currently no guarantee that a Catena-X
-     * material number that is received from one of the supplier
-     * partners is unique, it is possible that different partners
-     * refer to the same Material under different Catena-X Id's.
-     *
-     * If the value of this attribute is "false" then we have received
-     * such conflicting information. Then a decision is necessary, how
-     * this conflict should be handled.
-     */
-    private boolean matNbrCxAssumedToBeUnique = true;
-
-    /**
      * Informal name or description of the material.
      */
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)

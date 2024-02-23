@@ -38,12 +38,12 @@ public class MaterialRepositoryTest {
     @Test
     void findAllByMaterialFlagTrue_ReturnsListOfMaterials() {
         // Given
-        Material material1 = new Material(true, false, "MNR-123", UUID.randomUUID().toString(), true, "Test Material 1");
+        Material material1 = new Material(true, false, "MNR-123", UUID.randomUUID().toString(), "Test Material 1");
 
-        Material material2 = new Material(true, false, "MNR-234", UUID.randomUUID().toString(), true, "Test Material 2");
+        Material material2 = new Material(true, false, "MNR-234", UUID.randomUUID().toString(), "Test Material 2");
 
         // would be more realistic with relationship, but didn't add it here as we just want to test the MaterialRepo
-        Material product = new Material(false, true, "MNR-456", UUID.randomUUID().toString(), true, "Test Product 1");
+        Material product = new Material(false, true, "MNR-456", UUID.randomUUID().toString(), "Test Product 1");
 
         materialRepository.save(material1);
         materialRepository.save(material2);

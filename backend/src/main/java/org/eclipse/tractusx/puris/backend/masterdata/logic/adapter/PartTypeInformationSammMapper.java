@@ -33,12 +33,6 @@ public class PartTypeInformationSammMapper {
             return null;
         }
         PartTypeInformationSAMM samm = new PartTypeInformationSAMM();
-        if (material.isMatNbrCxAssumedToBeUnique()) {
-            samm.setCatenaXId(material.getMaterialNumberCx());
-        } else {
-            // TODO: Decide if a non-unique CX-Materialnumber should be passed on to customer partners
-            // If yes: which one should be passed on?
-        }
         samm.getPartTypeInformation().setManufacturerPartId(material.getOwnMaterialNumber());
         samm.getPartTypeInformation().setNameAtManufacturer(material.getName());
 
@@ -64,11 +58,14 @@ public class PartTypeInformationSammMapper {
             Objects.requireNonNull(samm.getPartTypeInformation(), "Missing PartTypeInformation");
             Objects.requireNonNull(partId, "Missing PartId");
             Objects.requireNonNull(nameAtManufacturer, "Missing nameAtManufacturer");
+            Objects.requireNonNull(cxId, "Missing CatenaXId from partner");
 
             // Receive update for Partner Material Number.
             if (!partId.equals(mpr.getPartnerMaterialNumber())) {
                 // Notification if partner changed the Material Number for his product
                 if (mpr.getPartnerMaterialNumber() != null) {
+                    // This should never happen, because partners are not expected to change the materialNumber
+                    // of an existing material
                     log.warn("Replacing previous Partner-MaterialNumber " + mpr.getPartnerMaterialNumber() + " with " +
                         "new PartId from SAMM: " + partId + " by Partner " + sendingPartner.getBpnl());
                 }
@@ -85,29 +82,14 @@ public class PartTypeInformationSammMapper {
                 mpr.setNameAtManufacturer(nameAtManufacturer);
             }
 
-            if (cxId != null) {
-                if (!cxId.equals(mpr.getPartnerCXNumber())) {
-                    if (mpr.getPartnerCXNumber() != null) {
-                        log.warn("Replacing previous Partner CX Number " + mpr.getPartnerCXNumber() + " with " +
-                            "new Partner CX Number from SAMM: " + cxId + " by Partner " + sendingPartner.getBpnl());
-                    }
-                    mpr.setPartnerCXNumber(cxId);
+            if (!cxId.equals(mpr.getPartnerCXNumber())) {
+                if (mpr.getPartnerCXNumber() != null) {
+                    // This should never happen, because partners are not expected to change the CatenaXId
+                    // of an existing material
+                    log.warn("Replacing previous Partner CX Number " + mpr.getPartnerCXNumber() + " with " +
+                        "new Partner CX Number from SAMM: " + cxId + " by Partner " + sendingPartner.getBpnl());
                 }
-
-                if (material.getMaterialNumberCx() != null && !cxId.equals(material.getMaterialNumberCx())) {
-                    log.warn("Mismatching CX Numbers on Material Entity. CatenaX Number can no longer be considered unique");
-                    material.setMatNbrCxAssumedToBeUnique(false);
-                    materialService.update(material);
-                    // TODO: Decide how to handle conflicting CX Numbers from different suppliers
-                    // If we allowed for the possibility that a received PartTypeInformation SAMM
-                    // could bring one of our Material entities into an inconsistent state, that could
-                    // severely damage important parts of our business logic.
-
-                    materialService.update(material);
-                } else {
-                    material.setMaterialNumberCx(cxId);
-                    materialService.update(material);
-                }
+                mpr.setPartnerCXNumber(cxId);
             }
             mprService.update(mpr);
 

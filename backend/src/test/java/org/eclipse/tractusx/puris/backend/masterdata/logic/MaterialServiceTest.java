@@ -63,7 +63,7 @@ public class MaterialServiceTest {
     @Test
     void create_WhenMaterialDoesNotExist_ReturnsCreatedMaterial() {
         // Given
-        Material material = new Material(true, false, "MNR-123", "uuid-value", true, "Test Material");
+        Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material");
 
         // When
         when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
@@ -81,7 +81,7 @@ public class MaterialServiceTest {
     @Test
     void create_WhenMaterialExists_ReturnsNull() {
         // Given
-        Material material = new Material(true, false, "MNR-123", "uuid-value", true, "Test Material");
+        Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material");
 
         // When
         when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.of(material));

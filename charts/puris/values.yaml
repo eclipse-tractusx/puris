@@ -440,6 +440,7 @@ backend:
         dtr:
           # --Endpoint for DTR
           url: http://localhost:4243
+        generatematerialcatenaxid: true
 
 postgresql:
     # -- Enable postgres by default, set to false to use existing postgres. Make sure to set

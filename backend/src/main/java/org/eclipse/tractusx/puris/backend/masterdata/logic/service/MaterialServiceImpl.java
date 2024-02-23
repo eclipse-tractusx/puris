@@ -22,6 +22,7 @@
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -42,8 +44,30 @@ public class MaterialServiceImpl implements MaterialService {
     @Autowired
     private MaterialPartnerRelationService mprService;
 
+    @Autowired
+    private VariablesService variablesService;
+
     @Override
     public Material create(Material material) {
+        if(material.getOwnMaterialNumber() == null) {
+            log.error("Could not create material without ownMaterialNumber");
+        }
+        if(material.getMaterialNumberCx() == null) {
+            if(variablesService.isGenerateMaterialCatenaXId()) {
+                UUID uuid;
+                do {
+                    uuid = UUID.randomUUID();
+                } while (!materialRepository.findByMaterialNumberCx(uuid.toString()).isEmpty());
+                material.setMaterialNumberCx(uuid.toString());
+            } else {
+                log.error("Could not create material " + material.getOwnMaterialNumber() + " because of missing CatenaXId");
+                return null;
+            }
+        } else {
+            if(!materialRepository.findByMaterialNumberCx(material.getMaterialNumberCx()).isEmpty()) {
+                log.error("Could not create material " + material.getOwnMaterialNumber() + " because CatenaXId already exists: " + material.getMaterialNumberCx());
+            }
+        }
         var searchResult = materialRepository.findById(material.getOwnMaterialNumber());
         if (searchResult.isEmpty()) {
             return materialRepository.save(material);
@@ -57,7 +81,11 @@ public class MaterialServiceImpl implements MaterialService {
         Optional<Material> existingMaterial =
             materialRepository.findById(material.getOwnMaterialNumber());
         if (existingMaterial.isPresent()) {
-            return existingMaterial.get();
+            var foundMaterial = existingMaterial.get();
+            if(!foundMaterial.getMaterialNumberCx().equals(material.getMaterialNumberCx())) {
+                log.error("Could not update material " + material.getOwnMaterialNumber() + " because changing the CatenaXId is not allowed");
+            }
+            return materialRepository.save(material);
         }
         log.error("Could not update material " + material.getOwnMaterialNumber() + " because it didn't exist before");
         return null;
