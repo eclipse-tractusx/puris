@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.eclipse.tractusx.puris.backend.masterdata.logic.adapter;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -5,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
@@ -19,10 +40,31 @@ public class PartTypeInformationSAMMMapperTest {
 
     private static final Validator validator;
 
+    private static final PartTypeInformationSammMapper partTypeSammMapper = new PartTypeInformationSammMapper();
+
     static {
         try (var validationFactory = Validation.buildDefaultValidatorFactory()) {
             validator = validationFactory.getValidator();
         }
+    }
+
+    @Test
+    void testSammMapperShouldSuccess() {
+        Material material = getTestMaterial();
+        System.out.println("Fail test Mat" + material);
+        PartTypeInformationSAMM samm =  partTypeSammMapper.productToSamm(material);
+        Assertions.assertEquals(samm.getCatenaXId(), material.getMaterialNumberCx());
+        Assertions.assertEquals(samm.getPartTypeInformation().getManufacturerPartId(), material.getOwnMaterialNumber());
+        Assertions.assertEquals(samm.getPartTypeInformation().getNameAtManufacturer(), material.getName());
+    }
+
+    @Test
+    void testSammMapperShouldFail() {
+        Material material = getTestMaterial();
+        material.setProductFlag(false);
+        PartTypeInformationSAMM samm =  partTypeSammMapper.productToSamm(material);
+        System.out.println(samm);
+        Assertions.assertNull(samm);
     }
 
     @Test
@@ -77,5 +119,14 @@ public class PartTypeInformationSAMMMapperTest {
         ptb.getPartClassification().add(classification);
         partTypeInformationSAMM.setPartTypeInformation(ptb);
         return partTypeInformationSAMM;
+    }
+
+    private static Material getTestMaterial() {
+        Material material = new Material();
+        material.setMaterialNumberCx("6acb1403-e625-408d-b59f-802328b2fcfc");
+        material.setOwnMaterialNumber("TestOwnMaterialNumber");
+        material.setName("A wonderful test balloon");
+        material.setProductFlag(true);
+        return material;
     }
 }
