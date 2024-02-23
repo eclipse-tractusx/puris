@@ -23,6 +23,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,6 +47,7 @@ public abstract class StockDto implements Serializable {
 
     private UUID uuid;
 
+    @Valid
     private MaterialDto material;
 
     private double quantity;

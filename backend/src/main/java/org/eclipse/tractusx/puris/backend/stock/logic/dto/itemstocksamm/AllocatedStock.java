@@ -21,6 +21,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -46,6 +47,7 @@ import java.util.Objects;
 public class AllocatedStock {
 
 	@NotNull
+    @Valid
 	private ItemQuantityEntity quantityOnAllocatedStock;
 
 	@NotNull
