@@ -39,14 +39,14 @@ jobs:
         id: mad_test
         run: |
           # Perform API Test 1 and capture the response
-          response=$(curl -w "%{http_code}" -v GET https://puris-backend-customer.int.demo.catena-x.net/catena/materials --header "X-Api-Key: ${{ secrets.API_KEY }}")
+          response=$(curl -w "%{http_code}" -v GET https://puris-backend-customer.int.demo.catena-x.net/catena/materials --header "X-Api-Key: ${{ API_KEY }}")
           echo "Response: $response"
 
       - name: Stock View Test
         id: stock_view_test
         run: |
           # Perform API Test 3 and capture the response
-          response=$(curl -X GET https://puris-backend-customer.int.demo.catena-x.net/catena/stockView/product-stocks --header "X-Api-Key: ${{ secrets.API_KEY }}")
+          response=$(curl -X GET https://puris-backend-customer.int.demo.catena-x.net/catena/stockView/product-stocks --header "X-Api-Key: ${{ API_KEY }}")
           echo "Response: $response"
 
       - name: Generating report skeletons
