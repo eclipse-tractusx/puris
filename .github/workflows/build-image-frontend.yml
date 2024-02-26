@@ -29,8 +29,8 @@ on:
             - main
         # trigger events for SemVer like tags
         tags:
-            - 'v*.*.*'
-            - 'v*.*.*-*'
+            - '*.*.*'
+            - '*.*.*-*'
     pull_request:
         branches:
             - main
