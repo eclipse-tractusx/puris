@@ -431,7 +431,7 @@ backend:
     dtr:
       # --Endpoint for DTR
       url: http://localhost:4243
-    # Flag that decides whether the auto-generation feature of the puris backend is enabled.
+    # -- Flag that decides whether the auto-generation feature of the puris backend is enabled.
     # Since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing CatenaX-Id
     # via the materials-API of the backend, when you are inserting a new Material entity to the backend's
     # database.

@@ -73,7 +73,7 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.edr.endpoint | string | `"your-backend-host-address.com"` | Endpoint for EDR |
 | backend.puris.frameworkagreement.credential | string | `"FrameworkAgreement.traceability"` | The name of the framework agreement |
 | backend.puris.frameworkagreement.use | bool | `false` | Flag to determine whether to use a framework agreement in puris |
-| backend.puris.generatematerialcatenaxid | bool | `true` |  |
+| backend.puris.generatematerialcatenaxid | bool | `true` | Flag that decides whether the auto-generation feature of the puris backend is enabled. Since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing CatenaX-Id via the materials-API of the backend, when you are inserting a new Material entity to the backend's database. If a CatenaX-Id was not assigned to your Material so far, then this feature can auto-generate one randomly. In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that Material entity. |
 | backend.puris.jpa.hibernate.ddl-auto | string | `"create"` | Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones |
 | backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans | bool | `true` | Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction |
 | backend.puris.own.bpna | string | `"BPNA4444444444ZZ"` | Own BPNA of the EDC |
