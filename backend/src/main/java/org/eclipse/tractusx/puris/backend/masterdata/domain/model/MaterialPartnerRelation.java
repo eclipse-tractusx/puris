@@ -47,7 +47,7 @@ public class MaterialPartnerRelation {
     @EmbeddedId
     private Key key;
 
-    @Pattern(regexp = PatternStore.URN_STRING)
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String partnerCXNumber;
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String partnerMaterialNumber;

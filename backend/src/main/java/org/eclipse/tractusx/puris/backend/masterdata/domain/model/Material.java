@@ -97,7 +97,7 @@ public class Material {
      * If there is a Catena-X material number defined
      * for this material, this is stored here.
      */
-    @Pattern(regexp = PatternStore.URN_STRING)
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String materialNumberCx;
 
     /**

@@ -47,7 +47,7 @@ import java.util.Set;
 public class PartTypeInformationSAMM {
 
 	@NotNull
-	@Pattern(regexp = PatternStore.URN_STRING)
+	@Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
 	private String catenaXId;
 
 	@NotNull
