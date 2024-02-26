@@ -58,7 +58,7 @@ spec:
             - name: APP_NAME
               value: "{{ .Values.frontend.puris.appName }}"
             - name: BACKEND_BASE_URL
-              value: "https://{{ .Values.frontend.puris.baseUrl }}/catena/"
+              value: "https://{{ .Values.frontend.puris.baseUrl }}{{ .Values.backend.puris.api.rootDir }}/"
             - name: ENDPOINT_MATERIALS
               value: "{{ .Values.frontend.puris.endpointMaterials }}"
             - name: ENDPOINT_PRODUCTS
@@ -82,7 +82,7 @@ spec:
             - name: ENDPOINT_PARTNER_OWNSITES
               value: "{{ .Values.frontend.puris.endpointPartnerOwnSites }}"
             - name: BACKEND_API_KEY
-              value: "test"
+              value: "{{ .Values.backend.puris.api.key}}"
             - name: IDP_DISABLE
               value: "{{ .Values.frontend.puris.keycloak.disabled }}"
             - name: IDP_URL
@@ -99,6 +99,13 @@ spec:
               value: "{{ .Values.frontend.puris.rateLimiting.burst }}"
             - name: NGINX_RATE
               value: "{{ .Values.frontend.puris.rateLimiting.rate }}"
+            ######################################
+            ## Additional environment variables ##
+            ######################################
+            {{- range $key, $value := .Values.frontend.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.frontend.service.port }}
@@ -107,10 +114,20 @@ spec:
             httpGet:
               path: /
               port: http
+            initialDelaySeconds: {{ .Values.frontend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.frontend.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.frontend.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.frontend.livenessProbe.failureThreshold }}
           readinessProbe:
             httpGet:
               path: /
               port: http
+            initialDelaySeconds: {{ .Values.frontend.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.frontend.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.frontend.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.frontend.readinessProbe.failureThreshold }}
           resources:
             {{- toYaml .Values.frontend.resources | nindent 12 }}
       {{- with .Values.frontend.nodeSelector }}
