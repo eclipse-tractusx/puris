@@ -454,9 +454,9 @@ postgresql:
     database: "postgres"
     # -- Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file.
     existingSecret: "secret-postgres-init"
-    # -- Username for the root user and for the database.
+    # -- Username for the custom database user.
     username: "puris"
-    # -- Password for the root user. Secret-key 'password'
+    # -- Password for the custom database user. Secret-key 'password'
     password: ""
     # -- Password for the database. Secret-key 'postgres-password'.
     passwordPostgres: ""
