@@ -32,7 +32,7 @@ on:
                 type: string
             upgrade_from:
                 description: 'chart version to upgrade from'
-                # chart version from 3.1 release as default
+                # chart version from 1.0.0 (R24.03) release as default
                 default: '1.0.0'
                 required: false
                 type: string
@@ -117,8 +117,8 @@ jobs:
             -   name: Run helm upgrade
                 run: |
                     helm repo add bitnami https://charts.bitnami.com/bitnami
-                    helm repo add postgresql https://charts.bitnami.com/bitnami
-                    helm install puris charts/puris --version ${{ github.event.inputs.upgrade_from || '1.0.0' }}
+                    helm repo add tractusx-dev https://eclipse-tractusx.github.io/charts/
+                    helm install puris tractusx-dev/puris --version ${{ github.event.inputs.upgrade_from || '1.0.0' }}
                     helm dependency update charts/puris
-                    helm upgrade [NAME] charts/puris
+                    helm upgrade puris charts/puris
                 if: github.event_name != 'pull_request' || steps.list-changed.outputs.changed == 'true'
