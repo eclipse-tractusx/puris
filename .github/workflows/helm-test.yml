@@ -117,7 +117,7 @@ jobs:
             -   name: Run helm upgrade
                 run: |
                     helm repo add bitnami https://charts.bitnami.com/bitnami
-                    helm repo add tractusx-dev https://eclipse-tractusx.github.io/charts/
+                    helm repo add tractusx-dev https://eclipse-tractusx.github.io/charts/dev
                     helm install puris tractusx-dev/puris --version ${{ github.event.inputs.upgrade_from || '1.0.0' }}
                     helm dependency update charts/puris
                     helm upgrade puris charts/puris
