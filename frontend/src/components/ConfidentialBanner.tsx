@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -21,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 
 export const ConfidentialBanner = () => {
     return (
-        <header className="bg-orange-100 text-red-500 font-semibold w-full flex items-center justify-center py-3 mb-5">
+        <header className="bg-orange-100 text-red-500 font-semibold w-full flex items-center justify-center p-3 mb-5 text-center">
             <span>
                 IMPORTANT: Please note that the data shown may be <b> competitively sensitive </b> and, according to appliable antitrust
                 laws,

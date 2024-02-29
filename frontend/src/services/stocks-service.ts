@@ -1,6 +1,6 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2023,2024 Volkswagen AG
+Copyright (c) 2023,2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -23,7 +23,7 @@ import { Stock, StockType } from '@models/types/data/stock';
 
 export const postStocks = async (type: StockType, stock: Stock) => {
   const endpoint = type === 'product' ? config.app.ENDPOINT_PRODUCT_STOCKS : config.app.ENDPOINT_MATERIAL_STOCKS;
-  return fetch(config.app.BACKEND_BASE_URL + endpoint, {
+  const res = await fetch(config.app.BACKEND_BASE_URL + endpoint, {
     method: 'POST',
     body: JSON.stringify(stock),
     headers: {
@@ -31,11 +31,16 @@ export const postStocks = async (type: StockType, stock: Stock) => {
       'X-API-KEY': config.app.BACKEND_API_KEY,
     },
   });
+  if(res.status >= 400) {
+    const error = await res.json();
+    throw error;
+  }
+  return res.json();
 }
 
 export const putStocks = async (type: StockType, stock: Stock) => {
   const endpoint = type === 'product' ? config.app.ENDPOINT_PRODUCT_STOCKS : config.app.ENDPOINT_MATERIAL_STOCKS;
-  return fetch(config.app.BACKEND_BASE_URL + endpoint, {
+  const res = await fetch(config.app.BACKEND_BASE_URL + endpoint, {
     method: 'PUT',
     body: JSON.stringify(stock),
     headers: {
@@ -43,15 +48,25 @@ export const putStocks = async (type: StockType, stock: Stock) => {
       'X-API-KEY': config.app.BACKEND_API_KEY,
     },
   });
+  if(res.status >= 400) {
+    const error = await res.json();
+    throw error;
+  }
+  return res.json();
 }
 
-export const refreshPartnerStocks = (type: StockType, materialNumber: string | null) => {
+export const refreshPartnerStocks = async (type: StockType, materialNumber: string | null) => {
   const endpoint = type === 'product' ? config.app.ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS : config.app.ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS;
-  return fetch(`${config.app.BACKEND_BASE_URL}${endpoint}${materialNumber}`, {
+  const res = await fetch(`${config.app.BACKEND_BASE_URL}${endpoint}${materialNumber}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       'X-API-KEY': config.app.BACKEND_API_KEY,
     },
   });
+  if(res.status >= 400) {
+    const error = await res.json();
+    throw error;
+  }
+  return res.json();
 }

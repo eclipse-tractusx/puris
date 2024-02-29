@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -41,9 +40,9 @@ export type Stock = {
     measurementUnit: UnitOfMeasurementKey;
     stockLocationBpns: BPNS;
     stockLocationBpna: BPNA;
-    customerOrderNumber: string;
-    customerOrderPositionNumber: string;
-    supplierOrderNumber: string;
+    customerOrderNumber: string | null;
+    customerOrderPositionNumber: string | null;
+    supplierOrderNumber: string | null;
     lastUpdatedOn: string;
     partner: Partner;
     isBlocked: boolean;
