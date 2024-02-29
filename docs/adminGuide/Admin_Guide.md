@@ -263,6 +263,13 @@ You can use this collection as an example for the REST API calls.
 | Site                            | /partners/putSite         | Adds a site to a partner including addresses                                                                   |
 | Relationship Partner & Material | /materialpartnerrelations | Connect material and partner incl. partner-related material numbers and wether they supply or buy the material |
 
+Please note that since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing
+via the materials-API of the backend, when you are inserting a new Material entity to the backend's database.
+If a CatenaX-Id was not assigned to your Material so far, then by having the ```puris.generatematerialcatenaxid``` set to ```true``` you can auto-generate one randomly (this is the default-setting, by the way). 
+In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that
+Material entity.
+
+
 ### Onboard Stock Information
 
 One may use the `StockView` related interfaces to add stocks after adding the master data to e.g. regularly update /

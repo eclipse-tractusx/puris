@@ -116,6 +116,14 @@ public class VariablesService {
      */
     private String dtrUrl;
 
+    @Value("${puris.generatematerialcatenaxid}")
+    /**
+     * A flag that signals whether the MaterialService
+     * should auto-generate a CatenaXId for a newly
+     * created material.
+     */
+    private boolean generateMaterialCatenaXId;
+
     @Value("${edc.controlplane.key}")
     /**
      * The api key of your control plane

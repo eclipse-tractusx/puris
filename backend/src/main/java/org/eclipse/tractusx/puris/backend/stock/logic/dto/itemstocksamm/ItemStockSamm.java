@@ -52,7 +52,7 @@ public class ItemStockSamm {
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String materialNumberCustomer;
 
-    @Pattern(regexp = PatternStore.URN_STRING)
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String materialGlobalAssetId;
 
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)

@@ -106,13 +106,13 @@ public class PatternStore {
      * <li>urn:uuid:48878d48-6f1d-47f5-8ded-a441d0d879df</li>
      * <li>48878d48-6f1d-47f5-8ded-a441d0d879df</li>
      */
-    public final static String URN_STRING = "(^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)";
+    public final static String URN_OR_UUID_STRING = "(^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)";
 
     /**
      * Contains a Pattern that matches valid urn data.
      * It is constructed from the URN_STRING constant.
      */
-    public final static Pattern URN_PATTERN = Pattern.compile(URN_STRING);
+    public final static Pattern URN_OR_UUID_PATTERN = Pattern.compile(URN_OR_UUID_STRING);
 
 
 }
