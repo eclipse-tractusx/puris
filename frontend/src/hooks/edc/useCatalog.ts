@@ -21,15 +21,16 @@ SPDX-License-Identifier: Apache-2.0
 import { config } from '@models/constants/config';
 import { RawCatalogData } from '@models/types/edc/catalog';
 import { useFetch } from '../useFetch';
+import { isErrorResponse } from '@util/helpers';
 
 export const useCatalog = (edcUrl: string | null) => {
     const {
         data,
-        error: catalogError,
+        error,
         isLoading: isLoadingCatalog,
     } = useFetch<RawCatalogData>(edcUrl ? config.app.BACKEND_BASE_URL + 'edc/catalog?dspUrl=' + encodeURIComponent(edcUrl) : undefined);
-    const catalog = data
-        ? data['dcat:dataset'].map((item) => {
+    const catalog = data && !isErrorResponse(data)
+        ? (data['dcat:dataset']?.map((item) => {
               return {
                   assetId: item['@id'],
                   assetType: item['asset:prop:type'],
@@ -38,8 +39,9 @@ export const useCatalog = (edcUrl: string | null) => {
                   prohibitions: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:prohibitions'],
                   obligations: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:obligations'],
               };
-          })
+          }) ?? null)
         : null;
+    const catalogError = error ?? (data && isErrorResponse(data) ? data : null);
     return {
         catalog,
         catalogError,

@@ -1,7 +1,7 @@
 /*
-Copyright (c) 2023-2024 Volkswagen AG
-Copyright (c) 2023-2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-Copyright (c) 2023-2024 Contributors to the Eclipse Foundation
+Copyright (c) 2022,2024 Volkswagen AG
+Copyright (c) 2022,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -50,7 +50,7 @@ const OperationList = ({ title, operations }: OperationListProps) => {
             )}
         </>
     );
-}
+};
 
 export const CatalogView = () => {
     const [edcUrl, setEdcUrl] = useState<string | null>(null);
@@ -77,24 +77,32 @@ export const CatalogView = () => {
                     />
                 </div>
             </div>
-            {catalog ? (
+            {catalog && catalog.length > 0 ? (
                 <ul className="flex flex-col gap-5 w-[64rem]">
                     {catalog.map((item, index) => (
                         <Card className="p-5">
                             <li key={index}>
                                 <h2 className="text-xl font-semibold">Catalog Item</h2>
                                 <div className="flex w-full justify-start gap-4">
-                                    <div className="grid grid-cols-2">
-                                        <h3 className="font-semibold">Asset ID: </h3>"{item.assetId}"
-                                        <h4 className="font-semibold">Asset type: </h4>"{item.assetType}"
-                                        <h4 className="font-semibold">Asset action: </h4>
-                                        {item.permission['odrl:action']['odrl:type']} {item.permission['odrl:target']}
-                                        <h4 className="font-semibold">Asset condition: </h4>
-                                        {item.permission['odrl:constraint']['odrl:leftOperand'] + ' '}
-                                        {getCatalogOperator(item.permission['odrl:constraint']['odrl:operator']['@id']) + ' '}
-                                        {item.permission['odrl:constraint']['odrl:rightOperand']}
+                                    <div className="flex flex-col gap-1 w-[70ch]">
+                                        <div className="flex">
+                                            <h3 className="font-semibold w-[20ch]">Asset ID: </h3>"{item.assetId}"
+                                        </div>
+                                        <div className="flex">
+                                            <h4 className="font-semibold w-[20ch]">Asset type: </h4>"{item.assetType}"
+                                        </div>
+                                        <div className="flex">
+                                            <h4 className="font-semibold w-[20ch]">Asset action: </h4>
+                                            {item.permission['odrl:action']['odrl:type']} {item.permission['odrl:target']}
+                                        </div>
+                                        <div className="flex">
+                                            <h4 className="font-semibold w-[20ch]">Asset condition: </h4>
+                                            {item.permission['odrl:constraint']['odrl:leftOperand'] + ' '}
+                                            {getCatalogOperator(item.permission['odrl:constraint']['odrl:operator']['@id']) + ' '}
+                                            {item.permission['odrl:constraint']['odrl:rightOperand']}
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col w-1/2">
+                                    <div className="flex flex-col w-1/3 flex-shrink-0">
                                         <OperationList title="The following prohibitions are defined:" operations={item.prohibitions} />
                                         <OperationList title="The following obligations are defined:" operations={item.obligations} />
                                     </div>
@@ -103,8 +111,11 @@ export const CatalogView = () => {
                         </Card>
                     ))}
                 </ul>
-            ) : null}
-            {catalogError != null ? <div className="text-red-500 py-5">There was an error retrieving the Catalog from {edcUrl}</div> : null}
+            ) : catalogError != null ? (
+                <div className="text-red-500 py-5">There was an error retrieving the Catalog from {edcUrl}</div>
+            ) : (
+                <div className="py-5"> {`No Catalog available for ${edcUrl}`} </div>
+            )}
         </div>
     );
-}
+};
