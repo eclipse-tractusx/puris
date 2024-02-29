@@ -39,6 +39,6 @@ export const validateStock = (stock: Partial<Stock>) => {
     stock?.measurementUnit &&
     stock?.stockLocationBpns &&
     stock?.stockLocationBpna &&
-    ((stock?.customerOrderNumber && stock?.customerOrderPositionNumber) || !stock?.customerOrderNumber)
+    ((stock?.customerOrderNumber && stock?.customerOrderPositionNumber && stock?.supplierOrderNumber) || !stock?.customerOrderNumber)
 );
 }

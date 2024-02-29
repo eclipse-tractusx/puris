@@ -221,6 +221,7 @@ export const StockUpdateForm = <T extends StockType>({ items, type, selectedItem
                                 dispatch({ type: 'customerOrderNumber', payload: event.target.value });
                                 if (event.target.value === '' || event.target.value === null) {
                                     dispatch({ type: 'customerOrderPositionNumber', payload: '' });
+                                    dispatch({ type: 'supplierOrderNumber', payload: '' });
                                 }
                             }}
                         />
@@ -244,6 +245,8 @@ export const StockUpdateForm = <T extends StockType>({ items, type, selectedItem
                         label="Supplier Order Number"
                         type="text"
                         value={newStock?.supplierOrderNumber ?? ''}
+                        disabled={!newStock?.customerOrderNumber}
+                        error={formError && !!newStock?.customerOrderNumber && !newStock?.supplierOrderNumber}
                         onChange={(event) => dispatch({ type: 'supplierOrderNumber', payload: event.target.value })}
                     />
                 </div>
