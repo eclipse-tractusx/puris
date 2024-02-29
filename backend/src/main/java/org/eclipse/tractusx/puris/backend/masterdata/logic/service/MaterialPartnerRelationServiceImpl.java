@@ -22,7 +22,9 @@
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.DtrAdapterService;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
@@ -35,18 +37,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 @Slf4j
 public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelationService {
+
+    private QueuingHelper queuingHelper = new QueuingHelper();
 
     @Autowired
     private MaterialPartnerRelationRepository mprRepository;
 
     @Autowired
     private VariablesService variablesService;
+
+    @Autowired
+    private DtrAdapterService dtrAdapterService;
+
+    @Autowired
+    private ExecutorService executorService;
+
+
+    {
+        Thread thread = new Thread(queuingHelper);
+        thread.setDaemon(true);
+        thread.start();
+    }
 
 
     /**
@@ -59,10 +80,71 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         flagConsistencyTest(materialPartnerRelation);
         var searchResult = find(materialPartnerRelation.getMaterial(), materialPartnerRelation.getPartner());
         if (searchResult == null) {
+            queuingHelper.addToQueue(materialPartnerRelation);
             return mprRepository.save(materialPartnerRelation);
         }
         log.error("Could not create MaterialPartnerRelation, " + materialPartnerRelation.getKey() + " already exists");
         return null;
+    }
+
+    @AllArgsConstructor
+    private class DtrUpdateTask implements Callable<Boolean> {
+        private MaterialPartnerRelation materialPartnerRelation;
+        @Override
+        public Boolean call() throws Exception {
+            Thread.sleep(3000);
+            return dtrAdapterService.updateMaterialForMaterialPartnerRelation(materialPartnerRelation);
+        }
+    }
+
+    private class QueuingHelper implements Runnable {
+        private ConcurrentLinkedDeque<MaterialPartnerRelation> queue = new ConcurrentLinkedDeque<>();
+        private int retries = 3;
+
+        public void addToQueue(MaterialPartnerRelation materialPartnerRelation) {
+            queue.add(materialPartnerRelation);
+        }
+
+        @Override
+        public void run() {
+            ConcurrentHashMap<MaterialPartnerRelation, Integer> failCount = new ConcurrentHashMap<>();
+            while(true) {
+                try {
+                    var mpr = queue.getFirst();
+                    var futureResult = executorService.submit(new DtrUpdateTask(mpr));
+                    while (!futureResult.isDone()) {
+                        Thread.yield();
+                    }
+                    if(!futureResult.get()) {
+                        log.error("Failed to update for " + mpr);
+                        Integer count = failCount.get(mpr);
+                        if (count == null) {
+                            count = 1;
+                        } else {
+                            count++;
+                        }
+                        failCount.put(mpr, count);
+                        if (count <= retries) {
+                            queue.addLast(mpr);
+                            log.info("Will retry for " + mpr + " Retries left: " + (retries-count+1));
+                        } else {
+                            failCount.put(mpr, null);
+                        }
+                    } else {
+                        log.info("Successfully updated for " + mpr);
+                    }
+                } catch (Exception e) {
+
+                }
+                Thread.yield();
+                try {
+                    Thread.sleep(1000);
+                } catch (Exception e) {
+
+                }
+
+            }
+        }
     }
 
     /**

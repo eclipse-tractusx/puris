@@ -21,7 +21,9 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.DtrAdapterService;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
@@ -33,6 +35,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 
 @Service
 @Slf4j
@@ -46,6 +50,13 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Autowired
     private VariablesService variablesService;
+
+    @Autowired
+    private DtrAdapterService dtrAdapterService;
+
+    @Autowired
+    private ExecutorService executorService;
+
 
     @Override
     public Material create(Material material) {
@@ -70,10 +81,25 @@ public class MaterialServiceImpl implements MaterialService {
         }
         var searchResult = materialRepository.findById(material.getOwnMaterialNumber());
         if (searchResult.isEmpty()) {
+            executorService.submit(new DtrRegistrationTask(material));
             return materialRepository.save(material);
         }
         log.error("Could not create material " + material.getOwnMaterialNumber() + " because it already exists");
         return null;
+    }
+
+    @AllArgsConstructor
+    private class DtrRegistrationTask implements Callable<Boolean> {
+
+        private Material material;
+        @Override
+        public Boolean call() throws Exception {
+            boolean result = dtrAdapterService.registerMaterialAtDtr(material);
+            if (result) {
+                log.info("Registered " + material.getOwnMaterialNumber() + " at DTR");
+            }
+            return result;
+        }
     }
 
     @Override

@@ -109,9 +109,9 @@ services:
       - "127.0.0.1:5433:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready  -d puris-customer -U ${PG_USER}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      interval: 6s
+      timeout: 4s
+      retries: 12
     networks:
       - miw-net
     deploy:
@@ -250,9 +250,9 @@ services:
       - "127.0.0.1:5435:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d puris-supplier -U ${PG_USER}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      interval: 6s
+      timeout: 4s
+      retries: 12
     networks:
       - miw-net
     deploy:

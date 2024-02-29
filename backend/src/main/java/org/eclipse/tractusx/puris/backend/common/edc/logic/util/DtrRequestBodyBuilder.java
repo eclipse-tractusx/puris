@@ -1,13 +1,19 @@
 package org.eclipse.tractusx.puris.backend.common.edc.logic.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -20,15 +26,47 @@ public class DtrRequestBodyBuilder {
     @Autowired
     private VariablesService variablesService;
 
+
+    public JsonNode injectMaterialPartnerRelation(MaterialPartnerRelation mpr, String existingNode) throws JsonProcessingException {
+        var body = (ObjectNode) objectMapper.readTree(existingNode);
+        log.info("Reading for " + mpr + "\n" + body.toPrettyString());
+        var assetIdTypes = List.of ("digitalTwinType", "manufacturerPartId", "manufacturerId");
+        var assetIdArray = body.get("specificAssetIds");
+        Partner partner = mpr.getPartner();
+        var keyObject = objectMapper.createObjectNode();
+        keyObject.put("type", "GlobalReference");
+        keyObject.put("value", partner.getBpnl());
+        for (var asset : assetIdArray) {
+            String assetName = asset.get("name").asText();
+            if (assetIdTypes.contains(assetName)) {
+                var externalSubjectIdObject = asset.get("externalSubjectId");
+                var keys = (ArrayNode)externalSubjectIdObject.get("keys");
+                boolean alreadyThere = false;
+                for (var key : keys) {
+                    var value = key.get("value").asText();
+                    if(partner.getBpnl().equals(value)) {
+                        alreadyThere = true;
+                    }
+                }
+                if (!alreadyThere) {
+                    keys.add(keyObject);
+                }
+            }
+        }
+        log.info("UPDATED BODY " + body.toPrettyString());
+        return body;
+    }
+
     public JsonNode createMaterialRegistrationRequestBody(Material material) {
         var body = objectMapper.createObjectNode();
-        body.put("id", UUID.randomUUID().toString());
+        body.put("id", material.getMaterialNumberCx());
         body.put("globalAssetId", material.getMaterialNumberCx());
         body.put("idShort", material.getName());
         var specificAssetIdsArray = objectMapper.createArrayNode();
         body.set("specificAssetIds", specificAssetIdsArray);
         var digitalTwinObject = objectMapper.createObjectNode();
         specificAssetIdsArray.add(digitalTwinObject);
+
         digitalTwinObject.put("name", "digitalTwinType");
         digitalTwinObject.put("value", "PartType");
         var externalSubjectIdObject = objectMapper.createObjectNode();
