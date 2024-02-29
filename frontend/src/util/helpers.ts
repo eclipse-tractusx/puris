@@ -32,3 +32,32 @@ export const getCatalogOperator = (operatorId: string) => {
             return operatorId;
     }
 };
+
+/* Type predicates */
+
+/***
+ * Type predicate to check if a value is an array
+ * 
+ * Unlike Array.isArray, this predicate asserts the members of the array to be unknown rather than any
+ */
+export const isArray = (value: unknown): value is unknown[] => Array.isArray(value);
+
+type ErrorResponse = {
+    message: string;
+    type: string;
+    path: string;
+    invalidValue: string | null;
+};
+
+export const isErrorResponse = (response: unknown): response is ErrorResponse => {
+    return (
+        isArray(response) &&
+        typeof response[0] === 'object' &&
+        response[0] != null &&
+        'message' in response[0] &&
+        'type' in response[0] &&
+        'path' in response[0] &&
+        'invalidValue' in response[0] &&
+        typeof response[0].message === 'string'
+    );
+};

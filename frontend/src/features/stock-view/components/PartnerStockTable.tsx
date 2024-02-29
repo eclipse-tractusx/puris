@@ -27,6 +27,7 @@ type PartnerStockTableProps<T extends StockType> = {
     materialName?: string | null;
     partnerStocks: Stock[];
     isRefreshing: boolean;
+    lastUpdated?: Date | null;
     onRefresh: () => void;
 };
 
@@ -78,7 +79,7 @@ const partnerStockTableColumns = [
     },
 ];
 
-export const PartnerStockTable = <T extends StockType>({ type, materialName, partnerStocks, onRefresh, isRefreshing }: PartnerStockTableProps<T>) => {
+export const PartnerStockTable = <T extends StockType>({ type, materialName, partnerStocks, onRefresh, isRefreshing, lastUpdated = null }: PartnerStockTableProps<T>) => {
     return (
         <div className="relative">
             <Table
@@ -93,7 +94,10 @@ export const PartnerStockTable = <T extends StockType>({ type, materialName, par
                 getRowId={(row) => row.uuid}
                 hideFooter={true}
             ></Table>
-            <LoadingButton label='Refresh Stocks' loadIndicator='refreshing...' loading={isRefreshing} className="absolute top-8 end-8" variant="contained" onButtonClick={() => onRefresh()} />
+            <div className="absolute top-8 end-8 flex items-center gap-3">
+                {lastUpdated && <div>refresh requested at {lastUpdated.toLocaleTimeString()}</div>}
+                <LoadingButton label='Refresh Stocks' loadIndicator='refreshing...' loading={isRefreshing}  variant="contained" onButtonClick={() => onRefresh()} />
+            </div>
         </div>
     );
 };

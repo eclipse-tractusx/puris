@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { useState } from 'react';
+import { PageSnackbar, PageSnackbarStack } from '@catena-x/portal-shared-components';
 
 import { Stock, StockType } from '@models/types/data/stock';
 import { postStocks, putStocks, refreshPartnerStocks } from '@services/stocks-service';
@@ -29,9 +30,16 @@ import { PartnerStockTable } from './PartnerStockTable';
 import { StockTable } from './StockTable';
 import { useStocks } from '../hooks/useStocks';
 import { usePartnerStocks } from '../hooks/usePartnerStocks';
+import { compareStocks } from '@util/stock-helpers';
 
 type StockDetailsViewProps<T extends StockType> = {
     type: T;
+};
+
+type Notification = {
+    title: string;
+    description: string;
+    severity: 'success' | 'error';
 };
 
 export const StockDetailsView = <T extends StockType>({ type }: StockDetailsViewProps<T>) => {
@@ -44,6 +52,8 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
     );
     const [saving, setSaving] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
 
     const handleStockRefresh = () => {
         setRefreshing(true);
@@ -51,27 +61,62 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
             type,
             (type == 'product' ? selectedMaterial?.material?.materialNumberSupplier : selectedMaterial?.material?.materialNumberCustomer) ??
                 null
-        ).then(() => {
-            refresh();
-            setRefreshing(false);
-        });
+        )
+            .then(() => {
+                setLastUpdated(new Date());
+                setNotifications((ns) => [
+                    ...ns,
+                    {
+                        title: 'Update requested',
+                        description: 'Partner Stock update request has been sent successfully',
+                        severity: 'success',
+                    },
+                ]);
+                refresh();
+            })
+            .catch((error) => {
+                setNotifications((ns) => [
+                    ...ns,
+                    {
+                        title: 'Error requesting update',
+                        description: error.message,
+                        severity: 'error',
+                    },
+                ]);
+            })
+            .finally(() => setRefreshing(false));
     };
 
     const saveStock = (stock: Stock) => {
         if (saving) return;
-        stock.uuid ??=
-            stocks?.find(
-                (s) =>
-                    s.stockLocationBpna === stock.stockLocationBpna &&
-                    s.stockLocationBpns === stock.stockLocationBpns &&
-                    (s.material.materialNumberCustomer === stock.material.materialNumberCustomer ||
-                        s.material.materialNumberSupplier === stock.material.materialNumberSupplier) &&
-                    s.partner?.uuid === stock.partner?.uuid
-            )?.uuid ?? null;
-        (stock.uuid == null ? postStocks(type, stock) : putStocks(type, stock)).then(() => {
-            setSaving(false);
-            refreshStocks();
-        });
+        stock.uuid =
+            stocks?.find((s) =>compareStocks(s, stock))?.uuid ?? null;
+        stock.customerOrderNumber ||= null;
+        stock.customerOrderPositionNumber ||= null;
+        stock.supplierOrderNumber ||= null;
+        (stock.uuid == null ? postStocks(type, stock) : putStocks(type, stock))
+            .then(() => {
+                setNotifications((ns) => [
+                    ...ns,
+                    {
+                        title: `Stock ${stock.uuid == null ? 'Created' : 'Updated'}`,
+                        description: 'The stock has been updated successfully',
+                        severity: 'success',
+                    },
+                ]);
+                refreshStocks();
+            })
+            .catch((error) => {
+                setNotifications((ns) => [
+                    ...ns,
+                    {
+                        title: `Error ${stock.uuid == null ? 'Creating' : 'Updating'} Stock`,
+                        description: error.message,
+                        severity: 'error',
+                    },
+                ]);
+            })
+            .finally(() => setSaving(false));
     };
 
     return (
@@ -86,7 +131,21 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
                 partnerStocks={partnerStocks ?? []}
                 onRefresh={handleStockRefresh}
                 isRefreshing={refreshing}
+                lastUpdated={lastUpdated}
             />
+            <PageSnackbarStack>
+                {notifications.map((notification, index) => (
+                    <PageSnackbar
+                        key={index}
+                        open={!!notification}
+                        severity={notification?.severity}
+                        title={notification?.title}
+                        description={notification?.description}
+                        autoClose={true}
+                        onCloseNotification={() => setNotifications((ns) => ns.filter((_, i) => i !== index) ?? [])}
+                    />
+                ))}
+            </PageSnackbarStack>
         </div>
     );
 };

@@ -37,6 +37,7 @@ export const useFetch = <T = unknown>(url?: string, options?: RequestInit) => {
             return;
         }
         let shouldCancel = false;
+        setError(null);
         fetch(url, {
             method: options?.method ?? 'GET',
             body: options?.body ?? undefined,
@@ -46,7 +47,6 @@ export const useFetch = <T = unknown>(url?: string, options?: RequestInit) => {
             .then((data) => {
                 if (shouldCancel) return;
                 setData(data);
-                setError(null);
             })
             .catch((err) => {
                 if (shouldCancel) return;
