@@ -81,9 +81,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3.0/shell-descriptors" ]
-      interval: 6s
-      timeout: 4s
-      retries: 12
+      interval: 4s
+      timeout: 3s
+      retries: 15
     ports:
       - "127.0.0.1:4243:4243"
     environment:
@@ -109,9 +109,9 @@ services:
       - "127.0.0.1:5433:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready  -d puris-customer -U ${PG_USER}" ]
-      interval: 6s
-      timeout: 4s
-      retries: 12
+      interval: 4s
+      timeout: 3s
+      retries: 15
     networks:
       - miw-net
     deploy:
@@ -222,9 +222,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3.0/shell-descriptors" ]
-      interval: 6s
-      timeout: 4s
-      retries: 12
+      interval: 4s
+      timeout: 3s
+      retries: 15
     ports:
       - "127.0.0.1:4244:4243"
     environment:
@@ -250,9 +250,9 @@ services:
       - "127.0.0.1:5435:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d puris-supplier -U ${PG_USER}" ]
-      interval: 6s
-      timeout: 4s
-      retries: 12
+      interval: 4s
+      timeout: 3s
+      retries: 15
     networks:
       - miw-net
     deploy:
