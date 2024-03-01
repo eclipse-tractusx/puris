@@ -21,7 +21,6 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.DtrAdapterService;
@@ -33,14 +32,8 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialP
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -59,11 +52,8 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     @Autowired
     private DtrAdapterService dtrAdapterService;
 
-    @Autowired
-    private ExecutorService executorService;
-
-
     {
+        // Initializer block
         Thread thread = new Thread(queuingHelper);
         thread.setDaemon(true);
         thread.start();
@@ -72,6 +62,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     /**
      * Stores the given relation to the database.
+     *
      * @param materialPartnerRelation
      * @return the stored relation or null, if the given relation was already in existence.
      */
@@ -87,16 +78,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         return null;
     }
 
-    @AllArgsConstructor
-    private class DtrUpdateTask implements Callable<Boolean> {
-        private MaterialPartnerRelation materialPartnerRelation;
-        @Override
-        public Boolean call() throws Exception {
-            Thread.sleep(3000);
-            return dtrAdapterService.updateMaterialForMaterialPartnerRelation(materialPartnerRelation);
-        }
-    }
-
     private class QueuingHelper implements Runnable {
         private ConcurrentLinkedDeque<MaterialPartnerRelation> queue = new ConcurrentLinkedDeque<>();
         private int retries = 3;
@@ -107,15 +88,12 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
         @Override
         public void run() {
-            ConcurrentHashMap<MaterialPartnerRelation, Integer> failCount = new ConcurrentHashMap<>();
-            while(true) {
+            HashMap<MaterialPartnerRelation, Integer> failCount = new HashMap<>();
+            while (true) {
                 try {
-                    var mpr = queue.getFirst();
-                    var futureResult = executorService.submit(new DtrUpdateTask(mpr));
-                    while (!futureResult.isDone()) {
-                        Thread.yield();
-                    }
-                    if(!futureResult.get()) {
+                    var mpr = queue.removeFirst();
+                    boolean success = dtrAdapterService.updateMaterialForMaterialPartnerRelation(mpr);
+                    if (!success) {
                         log.error("Failed to update for " + mpr);
                         Integer count = failCount.get(mpr);
                         if (count == null) {
@@ -126,15 +104,18 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                         failCount.put(mpr, count);
                         if (count <= retries) {
                             queue.addLast(mpr);
-                            log.info("Will retry for " + mpr + " Retries left: " + (retries-count+1));
+                            log.info("Will retry for " + mpr + " Retries left: " + (retries - count + 1));
                         } else {
                             failCount.put(mpr, null);
                         }
                     } else {
                         log.info("Successfully updated for " + mpr);
+                        failCount.put(mpr, null);
                     }
                 } catch (Exception e) {
-
+                    if (!(e instanceof NoSuchElementException)) {
+                        log.error("Error in QueuingHelper ", e);
+                    }
                 }
                 Thread.yield();
                 try {
@@ -149,6 +130,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     /**
      * Updates an existing MaterialPartnerRelation
+     *
      * @param materialPartnerRelation
      * @return the updated relation or null, if the given relation didn't exist before.
      */
@@ -174,6 +156,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     /**
      * Find the MaterialPartnerRelation containing the material and the partner.
+     *
      * @param material
      * @param partner
      * @return the relation, if it exists or else null;
@@ -185,6 +168,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     /**
      * Returns a list of all materials that the given partner supplies to you.
+     *
      * @param partner the partner
      * @return a list of material entities
      */
@@ -199,6 +183,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     /**
      * Returns a list of all products that the given partner buys from you.
+     *
      * @param partner the partner
      * @return a list of product entities
      */
@@ -212,7 +197,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     }
 
     /**
-     *
      * @return a list of all existing MaterialPartnerRelations
      */
     @Override
@@ -224,6 +208,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
      * Generates a Map of key-value-pairs. Each key represents the BPNL of a
      * partner (and yourself), each corresponding value is the materialNumber
      * that the owner of the BPNL is using in his own house to define the given Material.
+     *
      * @param ownMaterialNumber
      * @return a Map with the content described above or an empty map if no entries with the given ownMaterialNumber could be found.
      */
@@ -244,6 +229,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     /**
      * Find the MaterialPartnerRelation containing the material with the given
      * ownMaterialNumber and the uuid referencing a partner in your database.
+     *
      * @param ownMaterialNumber
      * @param partnerUuid
      * @return the relation, if it exists or else null
@@ -257,7 +243,8 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         return null;
     }
 
-    /**Returns a list containing all Partners that are registered as suppliers for
+    /**
+     * Returns a list containing all Partners that are registered as suppliers for
      * the material with the given ownMaterialNumber
      *
      * @param ownMaterialNumber
@@ -265,13 +252,14 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
      */
     @Override
     public List<Partner> findAllSuppliersForOwnMaterialNumber(String ownMaterialNumber) {
-        return  mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerSuppliesMaterialIsTrue(ownMaterialNumber)
-                .stream()
-                .map(mpr -> mpr.getPartner())
-                .collect(Collectors.toList());
+        return mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerSuppliesMaterialIsTrue(ownMaterialNumber)
+            .stream()
+            .map(mpr -> mpr.getPartner())
+            .collect(Collectors.toList());
     }
 
-    /**Returns a list containing all Partners that are registered as customers for
+    /**
+     * Returns a list containing all Partners that are registered as customers for
      * the material with the given ownMaterialNumber
      *
      * @param ownMaterialNumber
@@ -285,7 +273,8 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
             .collect(Collectors.toList());
     }
 
-    /**Returns a list containing all Partners that are registered as suppliers for
+    /**
+     * Returns a list containing all Partners that are registered as suppliers for
      * the material with the given material
      *
      * @param material
@@ -296,7 +285,8 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         return findAllSuppliersForOwnMaterialNumber(material.getOwnMaterialNumber());
     }
 
-    /**Returns a list containing all Partners that are registered as customers for
+    /**
+     * Returns a list containing all Partners that are registered as customers for
      * the material with the given material
      *
      * @param material
@@ -309,6 +299,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     /**
      * Returns a list of all Materials, for which a MaterialPartnerRelation exists,
      * where the partner is using the given partnerMaterialNumber.
+     *
      * @param partnerMaterialNumber
      * @return a list of Materials
      */
@@ -321,13 +312,12 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     }
 
     /**
-     *
      * @param material
      * @param partner
      * @return true, if the given partner is registered as supplier for the given material, else false
      */
     @Override
-    public boolean partnerSuppliesMaterial (Material material, Partner partner) {
+    public boolean partnerSuppliesMaterial(Material material, Partner partner) {
         if (material.isMaterialFlag()) {
             MaterialPartnerRelation mpr = find(material, partner);
             return mpr != null && mpr.isPartnerSuppliesMaterial();
@@ -336,7 +326,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     }
 
     /**
-     *
      * @param material
      * @param partner
      * @return true, if the given partner is registered as customer for the given material, else false
@@ -344,7 +333,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     @Override
     public boolean partnerOrdersProduct(Material material, Partner partner) {
         if (material.isProductFlag()) {
-            MaterialPartnerRelation mpr = find(material,partner);
+            MaterialPartnerRelation mpr = find(material, partner);
             return mpr != null && mpr.isPartnerBuysMaterial();
         }
         return false;

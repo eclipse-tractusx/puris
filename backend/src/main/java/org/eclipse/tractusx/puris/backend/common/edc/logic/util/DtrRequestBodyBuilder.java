@@ -10,6 +10,7 @@ import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,7 @@ public class DtrRequestBodyBuilder {
     public JsonNode injectMaterialPartnerRelation(MaterialPartnerRelation mpr, String existingNode) throws JsonProcessingException {
         var body = (ObjectNode) objectMapper.readTree(existingNode);
         log.info("Reading for " + mpr + "\n" + body.toPrettyString());
-        var assetIdTypes = List.of ("digitalTwinType", "manufacturerPartId", "manufacturerId");
+        var assetIdTypes = List.of("digitalTwinType", "manufacturerPartId", "manufacturerId");
         var assetIdArray = body.get("specificAssetIds");
         Partner partner = mpr.getPartner();
         var keyObject = objectMapper.createObjectNode();
@@ -40,11 +41,11 @@ public class DtrRequestBodyBuilder {
             String assetName = asset.get("name").asText();
             if (assetIdTypes.contains(assetName)) {
                 var externalSubjectIdObject = asset.get("externalSubjectId");
-                var keys = (ArrayNode)externalSubjectIdObject.get("keys");
+                var keys = (ArrayNode) externalSubjectIdObject.get("keys");
                 boolean alreadyThere = false;
                 for (var key : keys) {
                     var value = key.get("value").asText();
-                    if(partner.getBpnl().equals(value)) {
+                    if (partner.getBpnl().equals(value)) {
                         alreadyThere = true;
                     }
                 }
@@ -52,9 +53,33 @@ public class DtrRequestBodyBuilder {
                     keys.add(keyObject);
                 }
             }
+            var supplementalIds = asset.get("supplementalSemanticIds");
+            if (supplementalIds != null && supplementalIds.isArray()) {
+                ArrayNode arrayNode = (ArrayNode) supplementalIds;
+                if (arrayNode.isEmpty()) {
+                    ((ObjectNode) asset).remove("supplementalSemanticIds");
+                }
+            }
+        }
+        var submodelDescriptors = (ArrayNode) body.get("submodelDescriptors");
+        for (var submodelDescriptor : submodelDescriptors) {
+            var supplementalIds = submodelDescriptor.get("supplementalSemanticId");
+            if (supplementalIds != null && supplementalIds.isArray()) {
+                ArrayNode arrayNode = (ArrayNode) supplementalIds;
+                if (arrayNode.isEmpty()) {
+                    ((ObjectNode) submodelDescriptor).remove("supplementalSemanticId");
+                }
+            }
         }
         log.info("UPDATED BODY " + body.toPrettyString());
         return body;
+    }
+
+    private JsonNode getOwnReferenceObject() {
+        var refObject = objectMapper.createObjectNode();
+        refObject.put("type", "GlobalReference");
+        refObject.put("value", variablesService.getOwnBpnl());
+        return refObject;
     }
 
     public JsonNode createMaterialRegistrationRequestBody(Material material) {
@@ -74,21 +99,12 @@ public class DtrRequestBodyBuilder {
         externalSubjectIdObject.put("type", "ExternalReference");
         var keysArray = objectMapper.createArrayNode();
         externalSubjectIdObject.set("keys", keysArray);
-        var refObject = objectMapper.createObjectNode();
-        keysArray.add(refObject);
-        refObject.put("type", "GlobalReference");
-        refObject.put("value", variablesService.getOwnBpnl());
-
-        var manufacturerPartIdObject = objectMapper.createObjectNode();
-        specificAssetIdsArray.add(manufacturerPartIdObject);
-        manufacturerPartIdObject.put("name", "manufacturerPartId");
-        manufacturerPartIdObject.put("value", material.getOwnMaterialNumber());
-        externalSubjectIdObject = objectMapper.createObjectNode();
-        manufacturerPartIdObject.set("externalSubjectId", externalSubjectIdObject);
-        externalSubjectIdObject.put("type", "ExternalReference");
-        keysArray = objectMapper.createArrayNode();
-        externalSubjectIdObject.set("keys", keysArray);
-        keysArray.add(refObject);
+        var ownRefObject = getOwnReferenceObject();
+        keysArray.add(ownRefObject);
+        if(material.isProductFlag()) {
+            var manufacturerPartIdObject = getManufacturerPartIdObject(material, ownRefObject);
+            specificAssetIdsArray.add(manufacturerPartIdObject);
+        }
 
         var manufacturerIdObject = objectMapper.createObjectNode();
         specificAssetIdsArray.add(manufacturerIdObject);
@@ -99,7 +115,7 @@ public class DtrRequestBodyBuilder {
         externalSubjectIdObject.put("type", "ExternalReference");
         keysArray = objectMapper.createArrayNode();
         externalSubjectIdObject.put("keys", keysArray);
-        keysArray.add(refObject);
+        keysArray.add(ownRefObject);
 
 
         var submodelDescriptorsArray = objectMapper.createArrayNode();
@@ -144,6 +160,20 @@ public class DtrRequestBodyBuilder {
         securityObject.put("value", "NONE");
 
         return body;
+    }
+
+    @NotNull
+    private ObjectNode getManufacturerPartIdObject(Material material, JsonNode refObject) {
+        var manufacturerPartIdObject = objectMapper.createObjectNode();
+        manufacturerPartIdObject.put("name", "manufacturerPartId");
+        manufacturerPartIdObject.put("value", material.getOwnMaterialNumber());
+        ObjectNode externalSubjectIdObject = objectMapper.createObjectNode();
+        manufacturerPartIdObject.set("externalSubjectId", externalSubjectIdObject);
+        externalSubjectIdObject.put("type", "ExternalReference");
+        ArrayNode keysArray = objectMapper.createArrayNode();
+        externalSubjectIdObject.set("keys", keysArray);
+        keysArray.add(refObject);
+        return manufacturerPartIdObject;
     }
 
 
