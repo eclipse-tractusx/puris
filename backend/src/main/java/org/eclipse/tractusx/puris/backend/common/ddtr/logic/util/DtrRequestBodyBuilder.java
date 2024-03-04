@@ -34,7 +34,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,10 +74,6 @@ public class DtrRequestBodyBuilder {
         var assetIdTypes = List.of(DIGITAL_TWIN_TYPE, MANUFACTURER_PART_ID, CUSTOMER_PART_ID);
         var assetIdArray = body.get("specificAssetIds");
         Partner partner = mpr.getPartner();
-        HashMap<String,Boolean> checkAssetTypes = new HashMap<>();
-        checkAssetTypes.put(DIGITAL_TWIN_TYPE, true);
-        checkAssetTypes.put(MANUFACTURER_PART_ID, mpr.isPartnerSuppliesMaterial() && mpr.getMaterial().isMaterialFlag());
-        checkAssetTypes.put(CUSTOMER_PART_ID, mpr.isPartnerBuysMaterial() && mpr.getMaterial().isProductFlag());
         var partnerKeyObject = objectMapper.createObjectNode();
         partnerKeyObject.put("type", "GlobalReference");
         partnerKeyObject.put("value", partner.getBpnl());
