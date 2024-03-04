@@ -23,7 +23,8 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.service.DtrAdapterService;
+import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingService;
+import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DtrAdapterService;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
@@ -50,6 +51,9 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     private VariablesService variablesService;
 
     @Autowired
+    private DigitalTwinMappingService dtmService;
+
+    @Autowired
     private DtrAdapterService dtrAdapterService;
 
     {
@@ -71,6 +75,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         flagConsistencyTest(materialPartnerRelation);
         var searchResult = find(materialPartnerRelation.getMaterial(), materialPartnerRelation.getPartner());
         if (searchResult == null) {
+            dtmService.update(materialPartnerRelation);
             queuingHelper.addToQueue(materialPartnerRelation);
             return mprRepository.save(materialPartnerRelation);
         }
@@ -78,39 +83,81 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         return null;
     }
 
+    /**
+     * This class is an internal service that helps to make sure that calls to the dDTR are executed in
+     * the order that they were caused and will help to avoid race conditions for write actions on the dDTR.
+     * One important reason why this is necessary, is because any creation or update event of MPR's can only work,
+     * after the given Material was registered at the dDTR. If the registration of the Material was not complete,
+     * then one or more retries may be necessary to properly insert the data from the MPR.
+     *
+     */
     private class QueuingHelper implements Runnable {
-        private ConcurrentLinkedDeque<MaterialPartnerRelation> queue = new ConcurrentLinkedDeque<>();
+
+        private enum RegistrationType {
+
+            /**
+             * case: Partner acts as a supplier in the context of a given MPR
+             */
+            REGISTER_AS_SUPPLIER,
+
+            /**
+             * case: Partner acts as a customer in the context of a given MPR
+             */
+            REGISTER_AS_CUSTOMER;
+        }
+        private ConcurrentLinkedDeque<RegistrationTask> queue = new ConcurrentLinkedDeque<>();
+
+        private record RegistrationTask (RegistrationType type, MaterialPartnerRelation mpr){}
+
+        /**
+         * The maximum number of retries that will be attempted for an MPR, that was put into the queue.
+         * If the maximum number is exceeded, then a new series of retries can be triggered manually.
+         */
         private int retries = 3;
 
+        /**
+         * The minimum number of milliseconds between two write-calls to the dDTR.
+         */
+        private long interval = 1000L;
+
         public void addToQueue(MaterialPartnerRelation materialPartnerRelation) {
-            queue.add(materialPartnerRelation);
+            if (materialPartnerRelation.getMaterial().isProductFlag() && materialPartnerRelation.isPartnerBuysMaterial()) {
+                queue.addLast(new RegistrationTask(RegistrationType.REGISTER_AS_CUSTOMER, materialPartnerRelation));
+            }
+            if (materialPartnerRelation.getMaterial().isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial()) {
+                queue.addLast(new RegistrationTask(RegistrationType.REGISTER_AS_SUPPLIER, materialPartnerRelation));
+            }
+
         }
 
         @Override
         public void run() {
-            HashMap<MaterialPartnerRelation, Integer> failCount = new HashMap<>();
+            HashMap<RegistrationTask, Integer> failCount = new HashMap<>();
             while (true) {
                 try {
-                    var mpr = queue.removeFirst();
-                    boolean success = dtrAdapterService.updateMaterialForMaterialPartnerRelation(mpr);
+                    var task = queue.removeFirst();
+                    boolean success = switch (task.type()) {
+                        case REGISTER_AS_SUPPLIER -> true;
+                        case REGISTER_AS_CUSTOMER -> dtrAdapterService.updateProductForMaterialPartnerRelationWithCustomer(task.mpr());
+                    };
                     if (!success) {
-                        log.error("Failed to update for " + mpr);
-                        Integer count = failCount.get(mpr);
+                        log.error("Failed to update for " + task);
+                        Integer count = failCount.get(task);
                         if (count == null) {
                             count = 1;
                         } else {
                             count++;
                         }
-                        failCount.put(mpr, count);
+                        failCount.put(task, count);
                         if (count <= retries) {
-                            queue.addLast(mpr);
-                            log.info("Will retry for " + mpr + " Retries left: " + (retries - count + 1));
+                            queue.addLast(task);
+                            log.info("Will retry for " + task + " Retries left: " + (retries - count + 1));
                         } else {
-                            failCount.put(mpr, null);
+                            failCount.put(task, null);
                         }
                     } else {
-                        log.info("Successfully updated for " + mpr);
-                        failCount.put(mpr, null);
+                        log.info("Successfully updated for " + task);
+                        failCount.put(task, null);
                     }
                 } catch (Exception e) {
                     if (!(e instanceof NoSuchElementException)) {
@@ -119,7 +166,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                 }
                 Thread.yield();
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(interval);
                 } catch (Exception e) {
 
                 }
@@ -139,6 +186,8 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         flagConsistencyTest(materialPartnerRelation);
         var foundEntity = mprRepository.findById(materialPartnerRelation.getKey());
         if (foundEntity.isPresent()) {
+            dtmService.update(materialPartnerRelation);
+            queuingHelper.addToQueue(materialPartnerRelation);
             return mprRepository.save(materialPartnerRelation);
         }
         log.error("Could not update MaterialPartnerRelation, " + materialPartnerRelation.getKey() + " didn't exist before");

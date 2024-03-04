@@ -1,9 +1,29 @@
-package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
+/*
+ * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package org.eclipse.tractusx.puris.backend.common.ddtr.logic;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.util.DtrRequestBodyBuilder;
+import org.eclipse.tractusx.puris.backend.common.ddtr.logic.util.DtrRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
@@ -16,6 +36,9 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A service that conducts HTTP-interactions with your decentralized Digital Twin Registry (dDTR).
+ */
 @Service
 @Slf4j
 public class DtrAdapterService {
@@ -26,6 +49,9 @@ public class DtrAdapterService {
 
     @Autowired
     private DtrRequestBodyBuilder dtrRequestBodyBuilder;
+
+    @Autowired
+    private DigitalTwinMappingService digitalTwinMappingService;
 
     private Response sendDtrPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getDtrUrl()).newBuilder();
@@ -88,9 +114,18 @@ public class DtrAdapterService {
         return null;
     }
 
-    public boolean updateMaterialForMaterialPartnerRelation(MaterialPartnerRelation materialPartnerRelation) {
-        Material material = materialPartnerRelation.getMaterial();
-        String idAsBase64 = Base64.getEncoder().encodeToString(material.getMaterialNumberCx().getBytes(StandardCharsets.UTF_8));
+    /**
+     * Call this method, when a MaterialPartnerRelation was created or updated via your MaterialPartnerRelationService
+     * and it is about one of your products and a MaterialPartnerRelation involving a customer of this product.
+     *
+     * This method assumes that an entry for the respective Product was already created in your dDTR.
+     *
+     * @param materialPartnerRelation   The MaterialPartnerRelation
+     * @return                          true, if the material's entry at the dDTR was successfully updated
+     */
+    public boolean updateProductForMaterialPartnerRelationWithCustomer(MaterialPartnerRelation materialPartnerRelation) {
+        String twinId = digitalTwinMappingService.get(materialPartnerRelation.getMaterial()).getProductTwinId();
+        String idAsBase64 = Base64.getEncoder().encodeToString(twinId.getBytes(StandardCharsets.UTF_8));
         var result = getAasForMaterial(idAsBase64);
         if (result == null) {
             return false;
@@ -111,8 +146,15 @@ public class DtrAdapterService {
         return false;
     }
 
-    public boolean registerMaterialAtDtr(Material material) {
-        var body = dtrRequestBodyBuilder.createMaterialRegistrationRequestBody(material);
+    /**
+     * Call this method when a new Material was created in your MaterialService, in order to
+     * register this Material at your dDTR.
+     * @param material  The Material
+     * @return          true, if the registration was successful.
+     */
+    public boolean registerProductAtDtr(Material material) {
+        String twinId = digitalTwinMappingService.get(material).getProductTwinId();
+        var body = dtrRequestBodyBuilder.createProductRegistrationRequestBody(material, twinId);
         try (var response = sendDtrPostRequest(body, List.of("api", "v3.0", "shell-descriptors"))) {
             var bodyString = response.body().string();
             if (response.isSuccessful()) {
