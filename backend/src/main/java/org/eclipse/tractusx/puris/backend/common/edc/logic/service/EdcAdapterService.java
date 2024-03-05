@@ -103,20 +103,6 @@ public class EdcAdapterService {
         return CLIENT.newCall(request).execute();
     }
 
-    private Response sendDtrPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getDtrUrl() + "/api/v3.0").newBuilder();
-        for (var pathSegment : pathSegments) {
-            urlBuilder.addPathSegment(pathSegment);
-        }
-        RequestBody body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json"));
-        var request = new Request.Builder()
-            .post(body)
-            .url(urlBuilder.build())
-            .header("Content-Type", "application/json")
-            .build();
-        return CLIENT.newCall(request).execute();
-    }
-
     /**
      * Call this method at startup to register the necessary request and
      * response apis. In case you are using the framework agreement feature,
