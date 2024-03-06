@@ -20,7 +20,6 @@
 
 package org.eclipse.tractusx.puris.backend.common.ddtr.logic.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -29,8 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,152 +46,177 @@ public class DtrRequestBodyBuilder {
 
     @Autowired
     private VariablesService variablesService;
-    
+
     private final static String DIGITAL_TWIN_TYPE = "digitalTwinType";
     private final static String MANUFACTURER_PART_ID = "manufacturerPartId";
     private final static String MANUFACTURER_ID = "manufacturerId";
     private final static String CUSTOMER_PART_ID = "customerPartId";
 
     /**
-     * Inserts or updates information from the given MaterialPartnerRelation into
-     * the existing AAS Shell of the Material, that is referenced by the MaterialPartnerRelation.
+     * Creates a RequestBody for registering or updating a <b>Material-Type</b> Material
      *
-     * First, you need to request the current dDTR entry of that Material and hand it over to this
-     * method.
-     *
-     * The returned JsonNode is meant to be sent to the PUT endpoint of your dDTR.
-     *
-     * @param mpr               The MaterialPartnerRelation
-     * @param existingNode      The JSON-Content of the existing Material dDTR entry as String
-     * @return                  The updated dDTR entry
-     * @throws JsonProcessingException
+     * @param materialPartnerRelation   The MaterialPartnerRelation that defines the Material and the corresponding supplier partner.
+     * @return                          The Request Body
      */
-    public JsonNode injectMaterialPartnerRelation(MaterialPartnerRelation mpr, String existingNode) throws JsonProcessingException {
-        var body = (ObjectNode) objectMapper.readTree(existingNode);
-        var assetIdTypes = List.of(DIGITAL_TWIN_TYPE, MANUFACTURER_PART_ID, CUSTOMER_PART_ID);
-        var assetIdArray = body.get("specificAssetIds");
-        Partner partner = mpr.getPartner();
-        var partnerKeyObject = objectMapper.createObjectNode();
-        partnerKeyObject.put("type", "GlobalReference");
-        partnerKeyObject.put("value", partner.getBpnl());
-        boolean manufacturerPartIdForPartnerNeeded = mpr.isPartnerBuysMaterial() && mpr.getMaterial().isProductFlag();
-        boolean foundManufacturerPartIdForPartner = false;
-        // check For DIGITAL_TWIN_TYPE and whether Partner needs to be added.
-        // Additionally, do a lookup for existing manufacturerPartId/customerPartId elements for partner
-        // Update existing manufacturerPartId / customerPartId entries, if necessary.
-        for (JsonNode asset : assetIdArray) {
-            String assetName = asset.get("name").asText();
-            var externalSubjectIdObject = asset.get("externalSubjectId");
-            var keys = (ArrayNode) externalSubjectIdObject.get("keys");
-            if (assetIdTypes.contains(assetName)) {
-                switch (assetName) {
-                    case DIGITAL_TWIN_TYPE -> {
-                        boolean alreadyThere = false;
-                        for (var key : keys) {
-                            var value = key.get("value").asText();
-                            if (partner.getBpnl().equals(value)) {
-                                alreadyThere = true;
-                            }
-                        }
-                        if (!alreadyThere) {
-                            keys.add(partnerKeyObject);
-                        }
-                    }
-                    case MANUFACTURER_PART_ID -> {
-                        if (manufacturerPartIdForPartnerNeeded) {
-                            for (var key : keys) {
-                                var value = key.get("value").asText();
-                                if (partner.getBpnl().equals(value)) {
-                                    foundManufacturerPartIdForPartner = true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            var supplementalIds = asset.get("supplementalSemanticIds");
-            if (supplementalIds != null && supplementalIds.isArray()) {
-                ArrayNode arrayNode = (ArrayNode) supplementalIds;
-                if (arrayNode.isEmpty()) {
-                    ((ObjectNode) asset).remove("supplementalSemanticIds");
-                }
-            }
+
+    public JsonNode createMaterialRegistrationRequestBody(MaterialPartnerRelation materialPartnerRelation) {
+        Material material = materialPartnerRelation.getMaterial();
+        if(!material.isMaterialFlag() || !materialPartnerRelation.isPartnerSuppliesMaterial()) {
+            return null;
         }
-        var submodelDescriptors = (ArrayNode) body.get("submodelDescriptors");
-        for (var submodelDescriptor : submodelDescriptors) {
-            var supplementalIds = submodelDescriptor.get("supplementalSemanticId");
-            if (supplementalIds != null && supplementalIds.isArray()) {
-                ArrayNode arrayNode = (ArrayNode) supplementalIds;
-                if (arrayNode.isEmpty()) {
-                    ((ObjectNode) submodelDescriptor).remove("supplementalSemanticId");
-                }
-            }
-        }
-        if (manufacturerPartIdForPartnerNeeded && !foundManufacturerPartIdForPartner) {
-            // Insert manufacturerPartId for Partner
-            var manufacturerPartIdObjectBody = objectMapper.createObjectNode();
-            manufacturerPartIdObjectBody.put("name", MANUFACTURER_PART_ID);
-            manufacturerPartIdObjectBody.put("value", mpr.getMaterial().getOwnMaterialNumber());
-            var externalSubjectIdBody = objectMapper.createObjectNode();
-            externalSubjectIdBody.put("type", "ExternalReference");
-            var manufacturerPartIdKeysArray = objectMapper.createArrayNode();
-            manufacturerPartIdObjectBody.set("keys", manufacturerPartIdKeysArray);
-            manufacturerPartIdKeysArray.add(getOwnReferenceObject());
-            manufacturerPartIdKeysArray.add(partnerKeyObject);
-            ((ArrayNode)assetIdArray).add(manufacturerPartIdObjectBody);
-            log.info("Added manufacturerPartId for " + partner.getBpnl() + " and " + mpr.getMaterial().getOwnMaterialNumber());
-        }
+        var body = objectMapper.createObjectNode();
+        body.put("id", materialPartnerRelation.getPartnerCXNumber());
+        body.put("globalAssetId", materialPartnerRelation.getPartnerCXNumber());
+        var specificAssetIdsArray = objectMapper.createArrayNode();
+        body.set("specificAssetIds", specificAssetIdsArray);
+
+        var partnerRefNode = List.of(getReferenceObject(materialPartnerRelation.getPartner().getBpnl()));
+
+        var digitalTwinObject = getDigitalTwinObject(partnerRefNode);
+        specificAssetIdsArray.add(digitalTwinObject);
+
+        var manufacturerIdObject = getManufacturerIdObject(materialPartnerRelation.getPartner().getBpnl(), partnerRefNode);
+        specificAssetIdsArray.add(manufacturerIdObject);
+
+        var manufacturerPartIdObject = getManufacturerPartIdObject(materialPartnerRelation.getPartnerMaterialNumber(), partnerRefNode);
+        specificAssetIdsArray.add(manufacturerPartIdObject);
+
+        var customerPartIdObject = getCustomerPartIdObject(material.getOwnMaterialNumber(), materialPartnerRelation.getPartner().getBpnl());
+        specificAssetIdsArray.add(customerPartIdObject);
+
+        var submodelDescriptorsArray = objectMapper.createArrayNode();
+        body.set("submodelDescriptors", submodelDescriptorsArray);
+
+        var itemStockRequestSubmodelObject = getItemStockSubmodelObject();
+        submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
+        log.info("Created body for material " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
         return body;
     }
 
+    /**
+     * Creates a RequestBody for registering or updating a <b>Product-Type</b> Material
+     *
+     * @param material          The Material
+     * @param productTwinId     The ProductTwinId
+     * @param mprs              The list of all MaterialProductRelations that exist with customers of the given Material
+     * @return                  The Request Body
+     */
+    public JsonNode createProductRegistrationRequestBody(Material material, String productTwinId, List<MaterialPartnerRelation> mprs) {
+        var body = objectMapper.createObjectNode();
+        body.put("id", productTwinId);
+        body.put("globalAssetId", material.getMaterialNumberCx());
+        var specificAssetIdsArray = objectMapper.createArrayNode();
+        body.set("specificAssetIds", specificAssetIdsArray);
+        mprs = mprs.stream().filter(MaterialPartnerRelation::isPartnerBuysMaterial).filter(mpr -> mpr.getMaterial().equals(material)).toList();
+        var partnerRefObjects = mprs.stream().map(mpr -> getReferenceObject(mpr.getPartner().getBpnl())).toList();
+        if (material.isProductFlag()) {
+            var digitalTwinObject = getDigitalTwinObject(partnerRefObjects);
+            specificAssetIdsArray.add(digitalTwinObject);
+            var manufacturerPartIdObject = getManufacturerPartIdObject(material.getOwnMaterialNumber(), partnerRefObjects);
+            specificAssetIdsArray.add(manufacturerPartIdObject);
+            var manufacturerIdObject = getManufacturerIdObject(variablesService.getOwnBpnl(), partnerRefObjects);
+            specificAssetIdsArray.add(manufacturerIdObject);
+            for (var mpr : mprs) {
+                var customerPartIdObject = getCustomerPartIdObject(mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
+                specificAssetIdsArray.add(customerPartIdObject);
+            }
+        } else {
+            log.error("Could not create request body: Missing product flag in material " + material.getOwnMaterialNumber());
+            return null;
+        }
 
-    private JsonNode getOwnReferenceObject() {
+        var submodelDescriptorsArray = objectMapper.createArrayNode();
+        body.set("submodelDescriptors", submodelDescriptorsArray);
+
+        var itemStockRequestSubmodelObject = getItemStockSubmodelObject();
+        submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
+
+        log.info("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
+        return body;
+    }
+
+    private ObjectNode getManufacturerPartIdObject(String manufacturerPartId, List<ObjectNode> refObjects) {
+        var manufacturerPartIdObject = objectMapper.createObjectNode();
+        manufacturerPartIdObject.put("name", MANUFACTURER_PART_ID);
+        manufacturerPartIdObject.put("value", manufacturerPartId);
+        ObjectNode externalSubjectIdObject = objectMapper.createObjectNode();
+        manufacturerPartIdObject.set("externalSubjectId", externalSubjectIdObject);
+        externalSubjectIdObject.put("type", "ExternalReference");
+        ArrayNode keysArray = objectMapper.createArrayNode();
+        externalSubjectIdObject.set("keys", keysArray);
+        for (var refObject : refObjects) {
+            keysArray.add(refObject);
+        }
+        keysArray.add(getOwnReferenceObject());
+        return manufacturerPartIdObject;
+    }
+
+    private ObjectNode getManufacturerIdObject(String manufacturerId, List<ObjectNode> refObjects) {
+        var manufacturerIdObject = objectMapper.createObjectNode();
+        manufacturerIdObject.put("name", MANUFACTURER_ID);
+        manufacturerIdObject.put("value", manufacturerId);
+        ObjectNode externalSubjectIdObject = objectMapper.createObjectNode();
+        manufacturerIdObject.set("externalSubjectId", externalSubjectIdObject);
+        externalSubjectIdObject.put("type", "ExternalReference");
+        ArrayNode keysArray = objectMapper.createArrayNode();
+        externalSubjectIdObject.set("keys", keysArray);
+        for (var refObject : refObjects) {
+            keysArray.add(refObject);
+        }
+        keysArray.add(getOwnReferenceObject());
+        return manufacturerIdObject;
+    }
+
+    private ObjectNode getCustomerPartIdObject(String customerPartId, String customerBpnl) {
+        var customerPartIdObject = objectMapper.createObjectNode();
+        customerPartIdObject.put("name", CUSTOMER_PART_ID);
+        customerPartIdObject.put("value", customerPartId);
+        ObjectNode externalSubjectIdObject = objectMapper.createObjectNode();
+        customerPartIdObject.set("externalSubjectId", externalSubjectIdObject);
+        externalSubjectIdObject.put("type", "ExternalReference");
+        ArrayNode keysArray = objectMapper.createArrayNode();
+        externalSubjectIdObject.set("keys", keysArray);
+        keysArray.add(getOwnReferenceObject());
+        keysArray.add(getReferenceObject(customerBpnl));
+        return customerPartIdObject;
+    }
+
+    private ObjectNode getReferenceObject(String bpnl) {
         var refObject = objectMapper.createObjectNode();
         refObject.put("type", "GlobalReference");
-        refObject.put("value", variablesService.getOwnBpnl());
+        refObject.put("value", bpnl);
         return refObject;
     }
 
-    /**
-     * Creates a Request Body for the initial registration of a given Material at
-     * your dDTR.
-     * @param material  The Material you want to register
-     * @return          The Request Body
-     */
-    public JsonNode createProductRegistrationRequestBody(Material material, String productTwinId) {
-        var body = objectMapper.createObjectNode();
-        body.put("id", productTwinId); //Random uuid
-        body.put("globalAssetId", material.getMaterialNumberCx());
-        body.put("idShort", material.getOwnMaterialNumber());
-        var specificAssetIdsArray = objectMapper.createArrayNode();
-        body.set("specificAssetIds", specificAssetIdsArray);
-        var digitalTwinObject = objectMapper.createObjectNode();
-        specificAssetIdsArray.add(digitalTwinObject);
+    private ObjectNode getOwnReferenceObject() {
+        return getReferenceObject(variablesService.getOwnBpnl());
+    }
 
-        digitalTwinObject.put("name", "digitalTwinType");
+
+    private JsonNode getDigitalTwinObject(List<ObjectNode> refNodes) {
+        var digitalTwinObject = objectMapper.createObjectNode();
+        digitalTwinObject.put("name", DIGITAL_TWIN_TYPE);
         digitalTwinObject.put("value", "PartType");
         var externalSubjectIdObject = objectMapper.createObjectNode();
         digitalTwinObject.set("externalSubjectId", externalSubjectIdObject);
         externalSubjectIdObject.put("type", "ExternalReference");
         var keysArray = objectMapper.createArrayNode();
         externalSubjectIdObject.set("keys", keysArray);
-        var ownRefObject = getOwnReferenceObject();
-        keysArray.add(ownRefObject);
-        if(material.isProductFlag()) {
-            var manufacturerPartIdObject = getManufacturerPartIdObject(material, ownRefObject);
-            specificAssetIdsArray.add(manufacturerPartIdObject);
+        keysArray.add(getOwnReferenceObject());
+        for (var refNode : refNodes) {
+            keysArray.add(refNode);
         }
+        return digitalTwinObject;
+    }
 
-        var submodelDescriptorsArray = objectMapper.createArrayNode();
-        body.set("submodelDescriptors", submodelDescriptorsArray);
-
+    private JsonNode getItemStockSubmodelObject() {
         var itemStockRequestSubmodelObject = objectMapper.createObjectNode();
-        submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
+
         itemStockRequestSubmodelObject.put("id", UUID.randomUUID().toString());
         var semanticIdObject = objectMapper.createObjectNode();
         itemStockRequestSubmodelObject.set("semanticId", semanticIdObject);
         semanticIdObject.put("type", "ExternalReference");
-        keysArray = objectMapper.createArrayNode();
+        var keysArray = objectMapper.createArrayNode();
         semanticIdObject.set("keys", keysArray);
         var keyObject = objectMapper.createObjectNode();
         keysArray.add(keyObject);
@@ -223,21 +245,7 @@ public class DtrRequestBodyBuilder {
         securityObject.put("type", "NONE");
         securityObject.put("key", "NONE");
         securityObject.put("value", "NONE");
-        return body;
-    }
-
-    @NotNull
-    private ObjectNode getManufacturerPartIdObject(Material material, JsonNode refObject) {
-        var manufacturerPartIdObject = objectMapper.createObjectNode();
-        manufacturerPartIdObject.put("name", "manufacturerPartId");
-        manufacturerPartIdObject.put("value", material.getOwnMaterialNumber());
-        ObjectNode externalSubjectIdObject = objectMapper.createObjectNode();
-        manufacturerPartIdObject.set("externalSubjectId", externalSubjectIdObject);
-        externalSubjectIdObject.put("type", "ExternalReference");
-        ArrayNode keysArray = objectMapper.createArrayNode();
-        externalSubjectIdObject.set("keys", keysArray);
-        keysArray.add(refObject);
-        return manufacturerPartIdObject;
+        return itemStockRequestSubmodelObject;
     }
 
 

@@ -87,7 +87,7 @@ public class MaterialServiceImpl implements MaterialService {
         if (searchResult.isEmpty()) {
             dtmService.create(material);
             if (material.isProductFlag()) {
-                executorService.submit(new DtrRegistrationTask(material));
+                executorService.submit(new DtrRegistrationTask(material, 3));
             }
             return materialRepository.save(material);
         }
@@ -102,14 +102,24 @@ public class MaterialServiceImpl implements MaterialService {
     private class DtrRegistrationTask implements Callable<Boolean> {
 
         private Material material;
+        int retries;
 
         @Override
         public Boolean call() throws Exception {
+            if (retries < 0) {
+                return false;
+            }
             boolean result = dtrAdapterService.registerProductAtDtr(material);
             if (result) {
-                log.info("Registered " + material.getOwnMaterialNumber() + "as a Product at DTR");
+                log.info("Registered " + material.getOwnMaterialNumber() + " as a Product at DTR");
+                return true;
+            } else {
+                log.warn("Registration for " + material.getOwnMaterialNumber() + " as a Product at DTR failed. Retries left: " + retries);
+                Thread.sleep(500);
+                retries--;
+                return call();
             }
-            return result;
+
         }
     }
 
@@ -125,7 +135,7 @@ public class MaterialServiceImpl implements MaterialService {
 
             if (!foundMaterial.isProductFlag() && material.isProductFlag()) {
                 dtmService.update(material);
-                executorService.submit(new DtrRegistrationTask(material));
+                executorService.submit(new DtrRegistrationTask(material, 3));
             }
 
             return materialRepository.save(material);

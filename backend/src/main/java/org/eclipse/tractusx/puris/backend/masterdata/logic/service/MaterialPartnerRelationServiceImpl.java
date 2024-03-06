@@ -21,6 +21,7 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingService;
@@ -33,8 +34,12 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialP
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -42,7 +47,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelationService {
 
-    private QueuingHelper queuingHelper = new QueuingHelper();
 
     @Autowired
     private MaterialPartnerRelationRepository mprRepository;
@@ -56,13 +60,8 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     @Autowired
     private DtrAdapterService dtrAdapterService;
 
-    {
-        // Initializer block
-        Thread thread = new Thread(queuingHelper);
-        thread.setDaemon(true);
-        thread.start();
-    }
-
+    @Autowired
+    private ExecutorService executorService;
 
     /**
      * Stores the given relation to the database.
@@ -76,101 +75,99 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         var searchResult = find(materialPartnerRelation.getMaterial(), materialPartnerRelation.getPartner());
         if (searchResult == null) {
             dtmService.update(materialPartnerRelation);
-            queuingHelper.addToQueue(materialPartnerRelation);
+            executorService.submit(new DtrRegistrationTask(materialPartnerRelation, "CREATE", 3));
             return mprRepository.save(materialPartnerRelation);
         }
         log.error("Could not create MaterialPartnerRelation, " + materialPartnerRelation.getKey() + " already exists");
         return null;
     }
 
-    /**
-     * This class is an internal service that helps to make sure that calls to the dDTR are executed in
-     * the order that they were caused and will help to avoid race conditions for write actions on the dDTR.
-     * One important reason why this is necessary, is because any creation or update event of MPR's can only work,
-     * after the given Material was registered at the dDTR. If the registration of the Material was not complete,
-     * then one or more retries may be necessary to properly insert the data from the MPR.
-     *
-     */
-    private class QueuingHelper implements Runnable {
 
-        private enum RegistrationType {
-
-            /**
-             * case: Partner acts as a supplier in the context of a given MPR
-             */
-            REGISTER_AS_SUPPLIER,
-
-            /**
-             * case: Partner acts as a customer in the context of a given MPR
-             */
-            REGISTER_AS_CUSTOMER;
-        }
-        private ConcurrentLinkedDeque<RegistrationTask> queue = new ConcurrentLinkedDeque<>();
-
-        private record RegistrationTask (RegistrationType type, MaterialPartnerRelation mpr){}
-
+    @AllArgsConstructor
+    private class DtrRegistrationTask implements Callable<Boolean> {
+        final MaterialPartnerRelation materialPartnerRelation;
         /**
-         * The maximum number of retries that will be attempted for an MPR, that was put into the queue.
-         * If the maximum number is exceeded, then a new series of retries can be triggered manually.
+         * Must be either "CREATE" or "UPDATE". The distinction is important,
+         * because for an existing AAS, the PUT endpoint on the DTR must be called.
+         * While, on the other hand, for a new AAS the POST endpoint must be called
+         * at the DTR.
          */
-        private int retries = 3;
-
-        /**
-         * The minimum number of milliseconds between two write-calls to the dDTR.
-         */
-        private long interval = 1000L;
-
-        public void addToQueue(MaterialPartnerRelation materialPartnerRelation) {
-            if (materialPartnerRelation.getMaterial().isProductFlag() && materialPartnerRelation.isPartnerBuysMaterial()) {
-                queue.addLast(new RegistrationTask(RegistrationType.REGISTER_AS_CUSTOMER, materialPartnerRelation));
-            }
-            if (materialPartnerRelation.getMaterial().isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial()) {
-                queue.addLast(new RegistrationTask(RegistrationType.REGISTER_AS_SUPPLIER, materialPartnerRelation));
-            }
-
-        }
+        final String job;
+        int retries;
 
         @Override
-        public void run() {
-            HashMap<RegistrationTask, Integer> failCount = new HashMap<>();
-            while (true) {
-                try {
-                    var task = queue.removeFirst();
-                    boolean success = switch (task.type()) {
-                        case REGISTER_AS_SUPPLIER -> true;
-                        case REGISTER_AS_CUSTOMER -> dtrAdapterService.updateProductForMaterialPartnerRelationWithCustomer(task.mpr());
-                    };
-                    if (!success) {
-                        log.error("Failed to update for " + task);
-                        Integer count = failCount.get(task);
-                        if (count == null) {
-                            count = 1;
+        public Boolean call() throws Exception {
+            if (retries < 0) {
+                return false;
+            }
+            if (materialPartnerRelation.getPartnerCXNumber() == null){
+                log.error("Missing partnerCX Number in " + materialPartnerRelation + "\nAborting DTR call");
+                return false;
+            }
+            Thread.sleep(500);
+            boolean success = true;
+            switch (job) {
+                case "UPDATE" -> {
+                    if (materialPartnerRelation.getMaterial().isProductFlag()) {
+                        var allCustomers =
+                            mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
+                                materialPartnerRelation.getMaterial().getOwnMaterialNumber()).
+                                stream().filter(mpr -> mpr.getPartnerCXNumber() != null).toList();
+                        boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
+                        if (result) {
+                            log.info("Updated product DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
                         } else {
-                            count++;
+                            log.warn("Update failed for product DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " Retries left: " + retries);
                         }
-                        failCount.put(task, count);
-                        if (count <= retries) {
-                            queue.addLast(task);
-                            log.info("Will retry for " + task + " Retries left: " + (retries - count + 1));
+                        success &= result;
+                    }
+                    if (materialPartnerRelation.getMaterial().isMaterialFlag()) {
+                        boolean result = dtrAdapterService.updateMaterialAtDtr(materialPartnerRelation);
+                        if (result) {
+                            log.info("Updated material DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                " and supplier partner " + materialPartnerRelation.getPartner().getBpnl());
                         } else {
-                            failCount.put(task, null);
+                            log.warn("Failed Update for material DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                " and supplier partner " + materialPartnerRelation.getPartner().getBpnl() + " Retries left: " + retries);
                         }
-                    } else {
-                        log.info("Successfully updated for " + task);
-                        failCount.put(task, null);
+                        success &= result;
                     }
-                } catch (Exception e) {
-                    if (!(e instanceof NoSuchElementException)) {
-                        log.error("Error in QueuingHelper ", e);
-                    }
+                    return success;
                 }
-                Thread.yield();
-                try {
-                    Thread.sleep(interval);
-                } catch (Exception e) {
+                case "CREATE" -> {
+                    if (materialPartnerRelation.getMaterial().isProductFlag()) {
+                        var allCustomers =
+                            mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
+                                    materialPartnerRelation.getMaterial().getOwnMaterialNumber()).
+                                stream().filter(mpr -> mpr.getPartnerCXNumber() != null).toList();
+                        boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
+                        if (result) {
+                            log.info("Updated product DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+                        } else {
+                            log.warn("Update failed for product DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " Retries left: " + retries);
+                        }
+                        success &= result;
+
+                    }
+                    if (materialPartnerRelation.getMaterial().isMaterialFlag()) {
+                        boolean result = dtrAdapterService.registerMaterialAtDtr(materialPartnerRelation);
+                        if (result) {
+                            log.info("Created material DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                " and supplier partner " + materialPartnerRelation.getPartner().getBpnl());
+                        } else {
+                            log.warn("Failed creation for material DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                " and supplier partner " + materialPartnerRelation.getPartner().getBpnl() + " Retries left: " + retries);
+                        }
+                        success &= result;
+                    }
 
                 }
-
+            }
+            if (success) {
+               return true;
+            } else {
+                retries--;
+                return call();
             }
         }
     }
@@ -187,7 +184,11 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         var foundEntity = mprRepository.findById(materialPartnerRelation.getKey());
         if (foundEntity.isPresent()) {
             dtmService.update(materialPartnerRelation);
-            queuingHelper.addToQueue(materialPartnerRelation);
+            if (!foundEntity.get().isPartnerSuppliesMaterial() && materialPartnerRelation.isPartnerSuppliesMaterial()) {
+                executorService.submit(new DtrRegistrationTask(materialPartnerRelation, "CREATE", 3));
+            } else {
+                executorService.submit(new DtrRegistrationTask(materialPartnerRelation, "UPDATE", 3));
+            }
             return mprRepository.save(materialPartnerRelation);
         }
         log.error("Could not update MaterialPartnerRelation, " + materialPartnerRelation.getKey() + " didn't exist before");

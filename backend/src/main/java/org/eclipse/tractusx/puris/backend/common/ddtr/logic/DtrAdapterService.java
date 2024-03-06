@@ -100,71 +100,87 @@ public class DtrAdapterService {
         return CLIENT.newCall(requestBuilder.build()).execute();
     }
 
-    private String getAasForMaterial(String idAsBase64) {
-        try (var response = sendDtrGetRequest(List.of("api", "v3.0", "shell-descriptors", idAsBase64), Map.of("Edc-Bpn", variablesService.getOwnBpnl()), Map.of())){
-                var bodyString = response.body().string();
-                log.info("Response Code " + response.code());
-                if(response.isSuccessful()) {
-                    return bodyString;
-                }
-
-        } catch (Exception e) {
-            log.error("Failed to retrieve DTR from ");
-        }
-        return null;
-    }
-
     /**
-     * Call this method, when a MaterialPartnerRelation was created or updated via your MaterialPartnerRelationService
-     * and it is about one of your products and a MaterialPartnerRelation involving a customer of this product.
+     * Updates an existing product-AAS with all corresponding customer partners.
      *
-     * This method assumes that an entry for the respective Product was already created in your dDTR.
-     *
-     * @param materialPartnerRelation   The MaterialPartnerRelation
-     * @return                          true, if the material's entry at the dDTR was successfully updated
+     * @param material  The given Material
+     * @param mprs      The list of all MaterialProductRelations that exist with customers of the given Material
+     * @return          true, if the DTR signaled a successful registration
      */
-    public boolean updateProductForMaterialPartnerRelationWithCustomer(MaterialPartnerRelation materialPartnerRelation) {
-        String twinId = digitalTwinMappingService.get(materialPartnerRelation.getMaterial()).getProductTwinId();
+    public boolean updateProduct(Material material, List<MaterialPartnerRelation> mprs) {
+        String twinId = digitalTwinMappingService.get(material).getProductTwinId();
         String idAsBase64 = Base64.getEncoder().encodeToString(twinId.getBytes(StandardCharsets.UTF_8));
-        var result = getAasForMaterial(idAsBase64);
-        if (result == null) {
-            return false;
-        }
-        try {
-            var updatedBody = dtrRequestBodyBuilder.injectMaterialPartnerRelation(materialPartnerRelation, result);
-            try (var response = sendDtrPutRequest(updatedBody, List.of("api", "v3.0", "shell-descriptors", idAsBase64))) {
-                var bodyString = response.body().string();
-                log.info("Response Code " + response.code());
-                if(response.isSuccessful()) {
-                    return true;
-                }
-                log.error("Failure in update for " + materialPartnerRelation + "\n" + bodyString);
+        var body = dtrRequestBodyBuilder.createProductRegistrationRequestBody(material, twinId, mprs);
+        try (var response = sendDtrPutRequest(body, List.of("api", "v3.0", "shell-descriptors", idAsBase64))) {
+            var bodyString = response.body().string();
+            log.info("Response Code " + response.code());
+            if (response.isSuccessful()) {
+                return true;
             }
+            log.error("Failure in update for product twin " + material.getOwnMaterialNumber() + "\n" + bodyString);
         } catch (Exception e) {
-            log.error("Failure in update for " + materialPartnerRelation, e);
+            log.error("Failure in update for product twin " + material.getOwnMaterialNumber(), e);
         }
         return false;
     }
 
     /**
-     * Call this method when a new Material was created in your MaterialService, in order to
-     * register this Material at your dDTR.
+     * Call this method when a new Material with a product flag was created in your MaterialService - or if a product
+     * flag was later added to an existing Material.
+     *
+     * A new AAS will be registered for this Material at your dDTR.
+     *
      * @param material  The Material
-     * @return          true, if the registration was successful.
+     * @return          true, if the DTR signaled a successful registration
      */
     public boolean registerProductAtDtr(Material material) {
         String twinId = digitalTwinMappingService.get(material).getProductTwinId();
-        var body = dtrRequestBodyBuilder.createProductRegistrationRequestBody(material, twinId);
+        var body = dtrRequestBodyBuilder.createProductRegistrationRequestBody(material, twinId, List.of());
         try (var response = sendDtrPostRequest(body, List.of("api", "v3.0", "shell-descriptors"))) {
             var bodyString = response.body().string();
             if (response.isSuccessful()) {
                 return true;
             }
-            log.error("Failed to register material at DTR " + material.getOwnMaterialNumber() + "\n" + bodyString);
-            return false;
+            log.error("Failed to register product at DTR " + material.getOwnMaterialNumber() + "\n" + bodyString);
         } catch (Exception e) {
-            log.error("Failed to register material at DTR " + material.getOwnMaterialNumber(), e);
-            return false;
+            log.error("Failed to register product at DTR " + material.getOwnMaterialNumber(), e);
         }
+        return false;
+    }
+
+    /**
+     * Call this method when a MaterialPartnerRelation was created or updated it's flag signals that this partner is
+     * a supplier for the referenced Material.
+     *
+     * @param supplierPartnerRelation   The MaterialPartnerRelation indicating a supplier for a given Material.
+     * @return
+     */
+    public boolean registerMaterialAtDtr(MaterialPartnerRelation supplierPartnerRelation) {
+        var body = dtrRequestBodyBuilder.createMaterialRegistrationRequestBody(supplierPartnerRelation);
+        try (var response = sendDtrPostRequest(body, List.of("api", "v3.0", "shell-descriptors"))) {
+            var bodyString = response.body().string();
+            if(response.isSuccessful()) {
+                return true;
+            }
+            log.error("Failed to register material at DTR " + supplierPartnerRelation.getMaterial().getOwnMaterialNumber() + "\n" + bodyString);
+        } catch (Exception e) {
+            log.error("Failed to register material at DTR " + supplierPartnerRelation.getMaterial().getOwnMaterialNumber(), e);
+        }
+        return false;
+    }
+
+    public boolean updateMaterialAtDtr(MaterialPartnerRelation supplierPartnerRelation) {
+        var body = dtrRequestBodyBuilder.createMaterialRegistrationRequestBody(supplierPartnerRelation);
+        String idAsBase64 = Base64.getEncoder().encodeToString(supplierPartnerRelation.getPartnerCXNumber().getBytes(StandardCharsets.UTF_8));
+        try (var response = sendDtrPutRequest(body, List.of("api", "v3.0", "shell-descriptors", idAsBase64))) {
+            var bodyString = response.body().string();
+            if(response.isSuccessful()) {
+                return true;
+            }
+            log.error("Failed to register material at DTR " + supplierPartnerRelation.getMaterial().getOwnMaterialNumber() + "\n" + bodyString);
+        } catch (Exception e) {
+            log.error("Failed to register material at DTR " + supplierPartnerRelation.getMaterial().getOwnMaterialNumber(), e);
+        }
+        return false;
     }
 }

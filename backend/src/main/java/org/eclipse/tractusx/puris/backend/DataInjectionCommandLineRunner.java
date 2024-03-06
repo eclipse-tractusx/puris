@@ -162,6 +162,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
             supplierPartner, semiconductorMatNbrSupplier, true, false);
+        semiconductorPartnerRelation.setPartnerCXNumber(semiconductorMatNbrCatenaX);
         mprService.create(semiconductorPartnerRelation);
         semiconductorPartnerRelation = mprService.find(semiconductorMaterial, supplierPartner);
         log.info("Found Relation: " + semiconductorPartnerRelation);
@@ -174,6 +175,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         MaterialPartnerRelation ccuPartnerRelation = new MaterialPartnerRelation(centralControlUnitEntity,
             nonScenarioCustomer, "MNR-4177-C", false, true);
+        ccuPartnerRelation.setPartnerCXNumber("89f9c477-7e6e-4899-9b4b-d2c1081455ec");
         ccuPartnerRelation = mprService.create(ccuPartnerRelation);
         log.info("Found Relation: " + ccuPartnerRelation);
 
@@ -190,6 +192,10 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info("Products that customer buys: " + productsFound);
 
         log.info(mySelf.toString());
+
+        MaterialPartnerRelation newMpr = new MaterialPartnerRelation(centralControlUnitEntity, supplierPartner, "FOO42", false, true);
+        newMpr.setPartnerCXNumber("860fb504-b884-4009-9313-c6fb6cdcffff");
+        mprService.create(newMpr);
 
         var builder = MaterialItemStock.builder();
         var materialItemStock = builder.partner(supplierPartner)
@@ -246,6 +252,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
             customerPartner, semiconductorMatNbrCustomer, false, true);
+        semiconductorPartnerRelation.setPartnerCXNumber(semiconductorMatNbrCatenaX);
         semiconductorPartnerRelation = mprService.create(semiconductorPartnerRelation);
 
         log.info("Created Relation " + semiconductorPartnerRelation);
