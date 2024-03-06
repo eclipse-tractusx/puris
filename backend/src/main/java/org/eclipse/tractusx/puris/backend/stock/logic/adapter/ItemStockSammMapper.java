@@ -20,6 +20,8 @@
 
 package org.eclipse.tractusx.puris.backend.stock.logic.adapter;
 
+import java.util.Comparator;
+import java.util.HashSet;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -77,33 +79,25 @@ public class ItemStockSammMapper {
         ItemStockSamm samm = new ItemStockSamm();
         samm.setMaterialGlobalAssetId(material.getMaterialNumberCx());
 
-        String partnerMaterialNumber = mprService.find(material, partner).getPartnerMaterialNumber();
-        String customerMatNbr = directionCharacteristic ==
-            DirectionCharacteristic.INBOUND ? material.getOwnMaterialNumber() : partnerMaterialNumber;
-        String supplierMatNbr = directionCharacteristic ==
-            DirectionCharacteristic.INBOUND ? partnerMaterialNumber : material.getOwnMaterialNumber();
-        samm.setMaterialNumberCustomer(customerMatNbr);
-        samm.setMaterialNumberSupplier(supplierMatNbr);
         samm.setDirection(directionCharacteristic);
-        var posList = new ArrayList<Position>();
+        var posList = new HashSet<Position>();
         samm.setPositions(posList);
         for (var mappingHelperListEntry : groupedByPositionAttributes.entrySet()) {
             var key = mappingHelperListEntry.getKey();
             var stock = mappingHelperListEntry.getValue().get(0);
             Position position = new Position();
             posList.add(position);
-            position.setLastUpdatedOnDateTime(key.date());
             if (!key.customerOrderId.isEmpty() || !key.supplierOrderId.isEmpty() || !key.customerOrderPositionId.isEmpty()) {
                 // get opr from stock as this is nullable and prevents mapping empty strings to the samm.
                 OrderPositionReference opr = new OrderPositionReference(stock.getSupplierOrderId(), stock.getCustomerOrderId(),
                     stock.getCustomerOrderPositionId());
                 position.setOrderPositionReference(opr);
             }
-            var allocatedStocksList = new ArrayList<AllocatedStock>();
+            var allocatedStocksList = new HashSet<AllocatedStock>();
             position.setAllocatedStocks(allocatedStocksList);
             for (var v : mappingHelperListEntry.getValue()) {
                 ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(v.getQuantity(), v.getMeasurementUnit());
-                AllocatedStock allocatedStock = new AllocatedStock(itemQuantityEntity, v.getLocationBpns(), v.isBlocked(), v.getLocationBpna());
+                AllocatedStock allocatedStock = new AllocatedStock(itemQuantityEntity, v.getLocationBpns(), v.isBlocked(), v.getLocationBpna(), v.getLastUpdatedOnDateTime());
                 allocatedStocksList.add(allocatedStock);
             }
         }
@@ -131,7 +125,7 @@ public class ItemStockSammMapper {
             return outputList;
         }
         for (var position : samm.getPositions()) {
-            Date lastUpdated = position.getLastUpdatedOnDateTime();
+            Date lastUpdated = position.getAllocatedStocks().stream().max(Comparator.comparing(AllocatedStock::getLastUpdatedOnDateTime)).get().getLastUpdatedOnDateTime();
             String supplierOrderId = null, customerOrderPositionId = null, customerOrderId = null;
             if (position.getOrderPositionReference() != null) {
                 supplierOrderId = position.getOrderPositionReference().getSupplierOrderId();
@@ -174,7 +168,7 @@ public class ItemStockSammMapper {
             return outputList;
         }
         for (var position : samm.getPositions()) {
-            Date lastUpdated = position.getLastUpdatedOnDateTime();
+            Date lastUpdated = position.getAllocatedStocks().stream().max(Comparator.comparing(AllocatedStock::getLastUpdatedOnDateTime)).get().getLastUpdatedOnDateTime();
             String supplierOrderId = null, customerOrderPositionId = null, customerOrderId = null;
             if (position.getOrderPositionReference() != null) {
                 supplierOrderId = position.getOrderPositionReference().getSupplierOrderId();
