@@ -50,6 +50,11 @@ public class EdcController {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private static final String CATALOG = "catalog";
+    private static final String ASSETS = "assets";
+    private static final String CONTRACTNEGOTIATIONS = "contractnegotiations";
+    private static final String TRANSFERS = "transfers";
+
 
     /**
      * Get the catalog from an EDC.
@@ -57,7 +62,7 @@ public class EdcController {
      * @param dspUrl url of the edc to get catalog from.
      * @return catalog of the requested edc.
      */
-    @GetMapping("/catalog")
+    @GetMapping(CATALOG)
     public ResponseEntity<String> getCatalog(@RequestParam String dspUrl) {
         try {
             if (!PatternStore.URL_PATTERN.matcher(dspUrl).matches()) {
@@ -70,17 +75,17 @@ public class EdcController {
                 return ResponseEntity.ok(responseString);
             } else {
                 if (catalogResponse != null) {
-                    log.warn("catalog endpoint received status code " + catalogResponse.code());
+                    log.warn(statusCodeMessageGenerator(CATALOG, catalogResponse.code()));
                     if (catalogResponse.body() != null) {
                         catalogResponse.body().close();
                     }
                 } else {
-                    log.warn("catalog endpoint received no response");
+                    log.warn(noResponseMessageGenerator(CATALOG));
                 }
                 return ResponseEntity.badRequest().build();
             }
         } catch (IOException e) {
-            log.error("exception in catalog endpoint" ,e);
+            log.error(exceptionMessageGenerator(CATALOG), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -91,30 +96,30 @@ public class EdcController {
      * @param assetId optional parameter if only a specific asset should be retrieved.
      * @return response from own EDC.
      */
-    @GetMapping("/assets")
+    @GetMapping(ASSETS)
     public ResponseEntity<String> getAssets(@RequestParam String assetId) {
         try {
             if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.matches(assetId)) {
                 return ResponseEntity.badRequest().build();
             }
-            var assetsResponse = edcAdapter.sendGetRequest(List.of("v3", "assets", assetId));
+            var assetsResponse = edcAdapter.sendGetRequest(List.of("v3", ASSETS, assetId));
             if (assetsResponse != null && assetsResponse.isSuccessful()) {
                 var stringData = assetsResponse.body().string();
                 assetsResponse.body().close();
                 return ResponseEntity.ok(stringData);
             } else {
                 if (assetsResponse != null) {
-                    log.warn("assets endpoint received status code " + assetsResponse.code());
+                    log.warn(statusCodeMessageGenerator(ASSETS, assetsResponse.code()));
                     if (assetsResponse.body() != null) {
                         assetsResponse.body().close();
                     }
                 } else {
-                    log.warn("assets endpoint received no response");
+                    log.warn(noResponseMessageGenerator(ASSETS));
                 }
                 return ResponseEntity.badRequest().build();
             }
         } catch (IOException e) {
-            log.error("exception in assets endpoint" ,e);
+            log.error(exceptionMessageGenerator(ASSETS), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -125,7 +130,7 @@ public class EdcController {
      *
      * @return contract negotiation data
      */
-    @GetMapping("/contractnegotiations")
+    @GetMapping(CONTRACTNEGOTIATIONS)
     public ResponseEntity<String> getContractNegotiations() {
         try {
             Response negotiationsResponse = edcAdapter.getAllNegotiations();
@@ -135,18 +140,18 @@ public class EdcController {
                 return ResponseEntity.ok(responseString);
             } else {
                 if (negotiationsResponse != null) {
-                    log.warn("contractnegotiations endpoint received status code" + negotiationsResponse.code());
+                    log.warn(statusCodeMessageGenerator(CONTRACTNEGOTIATIONS, negotiationsResponse.code()));
                     if (negotiationsResponse.body() != null) {
                         negotiationsResponse.body().close();
                     }
                 } else {
-                    log.warn("contractnegotiations endpoint received no response");
+                    log.warn(noResponseMessageGenerator(CONTRACTNEGOTIATIONS));
                 }
                 return ResponseEntity.internalServerError().build();
             }
 
         } catch (Exception e) {
-            log.error("exception in contractnegotiations endpoint" ,e);
+            log.error(exceptionMessageGenerator(CONTRACTNEGOTIATIONS), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -157,7 +162,7 @@ public class EdcController {
      *
      * @return transfer data
      */
-    @GetMapping("/transfers")
+    @GetMapping(TRANSFERS)
     public ResponseEntity<JsonNode> getTransfers() {
         try {
             Response transfersResponse = edcAdapter.getAllTransfers();
@@ -181,7 +186,7 @@ public class EdcController {
                 return ResponseEntity.ok(responseObject);
             } else {
                 if (transfersResponse != null) {
-                    log.warn("transfers endpoint received status code " + transfersResponse.code());
+                    log.warn(statusCodeMessageGenerator(TRANSFERS, transfersResponse.code()));
                     if (transfersResponse.body() != null) {
                         transfersResponse.body().close();
                     }
@@ -189,9 +194,21 @@ public class EdcController {
                 return ResponseEntity.internalServerError().build();
             }
         } catch (Exception e) {
-            log.error("exception in transfers endpoint" ,e);
+            log.error(exceptionMessageGenerator(TRANSFERS), e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    private String exceptionMessageGenerator(String endpointName) {
+        return "Exception in " + endpointName + " endpoint ";
+    }
+
+    private String statusCodeMessageGenerator(String endpointName, int code) {
+        return endpointName + " received status code " + code;
+    }
+
+    private String noResponseMessageGenerator(String endpointName) {
+        return endpointName + "  endpoint received no response";
     }
 
 }
