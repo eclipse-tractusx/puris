@@ -204,7 +204,7 @@ public class EdcController {
     }
 
     private String statusCodeMessageGenerator(String endpointName, int code) {
-        return endpointName + " received status code " + code;
+        return endpointName + " endpoint received status code " + code;
     }
 
     private String noResponseMessageGenerator(String endpointName) {
