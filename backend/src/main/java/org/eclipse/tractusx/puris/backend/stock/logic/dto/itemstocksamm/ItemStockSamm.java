@@ -21,6 +21,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -44,13 +45,14 @@ import java.util.Objects;
 public class ItemStockSamm {
 
     @NotNull
+    @Valid
     private List<Position> positions;
 
     @NotNull
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String materialNumberCustomer;
 
-    @Pattern(regexp = PatternStore.URN_STRING)
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String materialGlobalAssetId;
 
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)

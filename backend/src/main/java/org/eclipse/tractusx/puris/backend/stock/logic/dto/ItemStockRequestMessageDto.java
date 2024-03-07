@@ -20,6 +20,7 @@
 
 package org.eclipse.tractusx.puris.backend.stock.logic.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -43,8 +44,10 @@ import java.util.UUID;
  */
 public class ItemStockRequestMessageDto {
     @NotNull
+    @Valid
     private HeaderDto header = new HeaderDto();
     @NotNull
+    @Valid
     private ContentDto content = new ContentDto();
 
     @Getter
@@ -76,13 +79,14 @@ public class ItemStockRequestMessageDto {
         @NotNull
         private DirectionCharacteristic direction;
         @NotNull
+        @Valid
         private List<RequestDto> itemStock = new ArrayList<>();
     }
     @Getter
     @Setter
     @ToString
     public static class RequestDto {
-        @Pattern(regexp = PatternStore.URN_STRING)
+        @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
         private String materialGlobalAssetId;
         @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String materialNumberCustomer;

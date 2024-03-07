@@ -76,7 +76,9 @@ public class Partner {
      * Partner's BPNL.
      */
     private SortedSet<Address> addresses = new TreeSet<>();
+
     @OneToMany(cascade = CascadeType.ALL)
+    @Valid
     /**
      * Contains all Sites (BPNSs) that are assigned to this
      * Partner's BPNL. Each BPNS has one or more addresses (BPNAs).

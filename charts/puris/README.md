@@ -1,6 +1,6 @@
 # puris
 
-![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: main](https://img.shields.io/badge/AppVersion-main-informational?style=flat-square)
+![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
@@ -33,6 +33,7 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions | list | `[{"key":"app.kubernetes.io/name","operator":"DoesNotExist"}]` | Matching Expressions as key and operators for the pod affinity |
 | backend.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey | string | `"kubernetes.io/hostname"` | Topology key of the Kubernetes cluster |
 | backend.autoscaling.enabled | bool | `false` | Enable or disable the autoscaling of pods |
+| backend.env | object | `{}` | Extra environment variables that will be passed onto the backend deployment pods |
 | backend.fullnameOverride | string | `"backend"` | Possibility to override the fullname |
 | backend.image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
 | backend.image.repository | string | `"tractusx/app-puris-backend"` | Repository of the docker image |
@@ -46,9 +47,9 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.ingress.enabled | bool | `false` | Enable the Ingress |
 | backend.ingress.hosts | list | `[{"host":"your-backend-host-address.com","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
 | backend.ingress.tls | list | `[{"hosts":["your-backend-host-address.com"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
-| backend.livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":250,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
+| backend.livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":120,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | backend.livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
-| backend.livenessProbe.initialDelaySeconds | int | `250` | Delay in seconds after which an initial liveness probe is checked |
+| backend.livenessProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial liveness probe is checked |
 | backend.livenessProbe.periodSeconds | int | `25` | Wait time in seconds between liveness probes |
 | backend.livenessProbe.successThreshold | int | `1` | Number of trys until a pod is marked alive |
 | backend.livenessProbe.timeoutSeconds | int | `1` | Timeout in seconds of the liveness probe |
@@ -63,23 +64,25 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.datasource.url | string | `"jdbc:postgresql://postgresql-name:5432/puris-database"` | URL of the database. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.username | string | `"db-user"` | Username of the database. Ignored if postgres.enabled is true. |
 | backend.puris.demonstrator.role | string | `nil` | Current role of the PURIS demonstrator. Default value should be empty. Can be set to "customer" or "supplier" to enable demonstration setup |
+| backend.puris.dtr.url | string | `"http://localhost:4243"` | Endpoint for DTR |
 | backend.puris.edc.controlplane.host | string | `"172.17.0.2"` |  |
 | backend.puris.edc.controlplane.key | string | `"password"` | Key for the EDC control plane |
 | backend.puris.edc.controlplane.management.url | string | `"https:/your-edc-address:8181/management"` | Url to the EDC controlplane management of the edc |
 | backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc |
-| backend.puris.edc.web.rest.cors.enabled | bool | `true` |  |
 | backend.puris.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
 | backend.puris.edr.endpoint | string | `"your-backend-host-address.com"` | Endpoint for EDR |
+| backend.puris.existingSecret | string | `"secret-backend-puris"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
 | backend.puris.frameworkagreement.credential | string | `"FrameworkAgreement.traceability"` | The name of the framework agreement |
 | backend.puris.frameworkagreement.use | bool | `false` | Flag to determine whether to use a framework agreement in puris |
+| backend.puris.generatematerialcatenaxid | bool | `true` | Flag that decides whether the auto-generation feature of the puris backend is enabled. Since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing CatenaX-Id via the materials-API of the backend, when you are inserting a new Material entity to the backend's database. If a CatenaX-Id was not assigned to your Material so far, then this feature can auto-generate one randomly. In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that Material entity. |
 | backend.puris.jpa.hibernate.ddl-auto | string | `"create"` | Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones |
 | backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans | bool | `true` | Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction |
 | backend.puris.own.bpna | string | `"BPNA4444444444ZZ"` | Own BPNA of the EDC |
 | backend.puris.own.bpnl | string | `"BPNL4444444444XX"` | Own BPNL of the EDC |
 | backend.puris.own.bpns | string | `"BPNS4444444444XX"` | Own BPNS of the EDC |
 | backend.puris.own.country | string | `"Germany"` | Own country |
-| backend.puris.own.name | string | `"YOUR-APPLICATION-NAME"` | Own name (self-description) |
-| backend.puris.own.site.name | string | `"puris-test"` | Own site name |
+| backend.puris.own.name | string | `"YOUR-COMPANY-NAME"` | Own name (self-description) |
+| backend.puris.own.site.name | string | `"YOUR-SITE-NAME"` | Own site name |
 | backend.puris.own.streetnumber | string | `"Musterstraße 110A"` | Own street and number |
 | backend.puris.own.zipcodeandcity | string | `"12345 Musterhausen"` | Own zipcode and city |
 | backend.puris.request.apiassetid | string | `"request-api-asset"` | Asset ID for request API |
@@ -88,20 +91,20 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.response.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for response |
 | backend.puris.statusrequest.apiassetid | string | `"statusrequest-api-asset"` | Asset ID for status-request API |
 | backend.puris.statusrequest.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for statusrequest |
-| backend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":250,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
+| backend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":120,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
 | backend.readinessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a readiness probe |
-| backend.readinessProbe.initialDelaySeconds | int | `250` | Delay in seconds after which an initial readiness probe is checked |
+| backend.readinessProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial readiness probe is checked |
 | backend.readinessProbe.periodSeconds | int | `25` | Wait time in seconds between readiness probes |
 | backend.readinessProbe.successThreshold | int | `1` | Number of trys until a pod is marked ready |
 | backend.readinessProbe.timeoutSeconds | int | `1` | Timeout in seconds of the readiness probe |
 | backend.replicaCount | int | `1` | Number of replicas of the Kubernetes deployment |
 | backend.resources.limits | object | `{"cpu":"3000m","memory":"2048Mi"}` | Maximum resource limits of CPU und memory |
 | backend.resources.requests | object | `{"cpu":"1000m","memory":"2048Mi"}` | Minimum requested resources for CPU und memory |
-| backend.securityContext | object | `{"allowPrivilegeEscalation":false,"runAsGroup":3000,"runAsNonRoot":true,"runAsUser":10001}` | Security configurations |
+| backend.securityContext | object | `{"allowPrivilegeEscalation":false,"runAsGroup":3000,"runAsNonRoot":true,"runAsUser":8877}` | Security configurations |
 | backend.securityContext.allowPrivilegeEscalation | bool | `false` | Get more privileges than the parent process |
 | backend.securityContext.runAsGroup | int | `3000` | Configures the group id of a user for a run |
 | backend.securityContext.runAsNonRoot | bool | `true` | Configures the non-root privileges for a run |
-| backend.securityContext.runAsUser | int | `10001` | Configures the user id for a run |
+| backend.securityContext.runAsUser | int | `8877` | Configures the user id for a run |
 | backend.service.port | int | `8081` | The port of the service |
 | backend.service.type | string | `"ClusterIP"` | Type of the service |
 | backend.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
@@ -115,6 +118,7 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.autoscaling.maxReplicas | int | `100` | Number of maximum replica pods for autoscaling |
 | frontend.autoscaling.minReplicas | int | `1` | Number of minimum replica pods for autoscaling |
 | frontend.autoscaling.targetCPUUtilizationPercentage | int | `80` | Value of CPU usage in percentage for autoscaling decisions |
+| frontend.env | object | `{}` | Extra environment variables that will be passed onto the frontend deployment pods |
 | frontend.fullnameOverride | string | `"frontend"` | Possibility to override the fullname |
 | frontend.image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
 | frontend.image.repository | string | `"tractusx/app-puris-frontend"` | Repository of the docker image |
@@ -153,6 +157,9 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.puris.keycloak.realm | string | `"Catena-X"` | Name of the Realm of the keycloak instance. |
 | frontend.puris.keycloak.redirectUrlFrontend | string | `"https://your-frontend-url.com"` | URL to use as keycloak redirect url. |
 | frontend.puris.keycloak.url | string | `"https://idp.com/auth"` | The URL to the IDP that should be used. |
+| frontend.puris.rateLimiting.burst | int | `30` | Burst rate limiting for nginx. |
+| frontend.puris.rateLimiting.limit | string | `"10m"` | Bucket zone limit for rate limiting in nginx. |
+| frontend.puris.rateLimiting.rate | string | `"10r/s"` | Allowed rates per second for nginx rate limiting. |
 | frontend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":10,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
 | frontend.readinessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a readiness probe |
 | frontend.readinessProbe.initialDelaySeconds | int | `10` | Delay in seconds after which an initial readiness probe is checked |
@@ -162,11 +169,11 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.replicaCount | int | `1` |  |
 | frontend.resources.limits | object | `{"cpu":"600m","memory":"128Mi"}` | Maximum resource limits of CPU und memory |
 | frontend.resources.requests | object | `{"cpu":"200m","memory":"128Mi"}` | Minimum requested resources for CPU und memory |
-| frontend.securityContext | object | `{"allowPrivilegeEscalation":false,"runAsGroup":3000,"runAsNonRoot":true,"runAsUser":10001}` | Security configurations |
+| frontend.securityContext | object | `{"allowPrivilegeEscalation":false,"runAsGroup":3000,"runAsNonRoot":true,"runAsUser":101}` | Security configurations |
 | frontend.securityContext.allowPrivilegeEscalation | bool | `false` | Get more privileges than the parent process |
 | frontend.securityContext.runAsGroup | int | `3000` | Configures the group id of a user for a run |
 | frontend.securityContext.runAsNonRoot | bool | `true` | Configures the non-root privileges for a run |
-| frontend.securityContext.runAsUser | int | `10001` | Configures the user id for a run |
+| frontend.securityContext.runAsUser | int | `101` | Configures the user id for a run |
 | frontend.service.port | int | `8080` | The port of the service |
 | frontend.service.type | string | `"ClusterIP"` | Type of the service |
 | frontend.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
@@ -175,8 +182,10 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.tolerations | list | `[]` | Constrains for tolerations |
 | global.domain.backend.ingress | string | `"your-backend-host-address.com"` |  |
 | postgresql.auth.database | string | `"postgres"` | Name of the database. |
-| postgresql.auth.password | string | `"password"` | Password for the database. |
-| postgresql.auth.username | string | `"puris"` | Username for the database. |
+| postgresql.auth.existingSecret | string | `"secret-postgres-init"` | Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file. |
+| postgresql.auth.password | string | `""` | Password for the custom database user. Secret-key 'password' |
+| postgresql.auth.passwordPostgres | string | `""` | Password for the database. Secret-key 'postgres-password'. |
+| postgresql.auth.username | string | `"puris"` | Username for the custom database user. |
 | postgresql.enabled | bool | `true` | Enable postgres by default, set to false to use existing postgres. Make sure to set backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from backend). |
 | postgresql.fullnameOverride | string | `"backend-postgresql"` | Possibility to override the fullname |
 | postgresql.service.ports.postgresql | int | `5432` | Port of postgres database. |

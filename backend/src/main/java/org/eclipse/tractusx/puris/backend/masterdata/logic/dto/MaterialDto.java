@@ -46,7 +46,6 @@ public class MaterialDto implements Serializable {
      * <p>
      * Boolean because there could be companies (tradesmen company) that buy and sell the same material.
      */
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private boolean materialFlag;
 
     /**
@@ -59,7 +58,7 @@ public class MaterialDto implements Serializable {
     private String materialNumberCustomer;
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String materialNumberSupplier;
-    @Pattern(regexp = PatternStore.URN_STRING)
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String materialNumberCx;
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String name;

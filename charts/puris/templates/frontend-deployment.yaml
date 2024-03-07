@@ -1,3 +1,24 @@
+#
+# Copyright (c) 2022,2024 Volkswagen AG
+# Copyright (c) 2022,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -37,7 +58,7 @@ spec:
             - name: APP_NAME
               value: "{{ .Values.frontend.puris.appName }}"
             - name: BACKEND_BASE_URL
-              value: "https://{{ .Values.frontend.puris.baseUrl }}/catena/"
+              value: "https://{{ .Values.frontend.puris.baseUrl }}{{ .Values.backend.puris.api.rootDir }}/"
             - name: ENDPOINT_MATERIALS
               value: "{{ .Values.frontend.puris.endpointMaterials }}"
             - name: ENDPOINT_PRODUCTS
@@ -61,7 +82,7 @@ spec:
             - name: ENDPOINT_PARTNER_OWNSITES
               value: "{{ .Values.frontend.puris.endpointPartnerOwnSites }}"
             - name: BACKEND_API_KEY
-              value: "test"
+              value: "{{ .Values.backend.puris.api.key}}"
             - name: IDP_DISABLE
               value: "{{ .Values.frontend.puris.keycloak.disabled }}"
             - name: IDP_URL
@@ -72,6 +93,19 @@ spec:
               value: "{{ .Values.frontend.puris.keycloak.clientId }}"
             - name: IDP_REDIRECT_URL_FRONTEND
               value: "{{ .Values.frontend.puris.keycloak.redirectUrlFrontend }}"
+            - name: NGINX_RATE_LIMIT
+              value: "{{ .Values.frontend.puris.rateLimiting.limit }}"
+            - name: NGINX_BURST
+              value: "{{ .Values.frontend.puris.rateLimiting.burst }}"
+            - name: NGINX_RATE
+              value: "{{ .Values.frontend.puris.rateLimiting.rate }}"
+            ######################################
+            ## Additional environment variables ##
+            ######################################
+            {{- range $key, $value := .Values.frontend.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.frontend.service.port }}
@@ -80,10 +114,20 @@ spec:
             httpGet:
               path: /
               port: http
+            initialDelaySeconds: {{ .Values.frontend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.frontend.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.frontend.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.frontend.livenessProbe.failureThreshold }}
           readinessProbe:
             httpGet:
               path: /
               port: http
+            initialDelaySeconds: {{ .Values.frontend.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.frontend.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.frontend.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.frontend.readinessProbe.failureThreshold }}
           resources:
             {{- toYaml .Values.frontend.resources | nindent 12 }}
       {{- with .Values.frontend.nodeSelector }}

@@ -94,6 +94,16 @@ Thus, it may seem that the Credential is available, but isn't. Same applies to t
 _Note: Please refer to
 the [Portal's documentation on how to sign use case agreements](https://github.com/eclipse-tractusx/portal-assets/blob/main/docs/user/06.%20Certificates/01.%20UseCase%20Participation.md)._
 
+## Rate Limiting using nginx
+
+Rate limiting is by default enabled in the puris frontend served by nginx and can be dynamically configured.
+In order to adjust any variables of nginx's rate limiting or disable it, one has to modify the respective variables in either the
+local docker deployment by setting the necessary environment variables, or by modifying the variables in the helm chart values.yaml.
+
+These variables then get dynamically injected in the nginx.conf file, which is then copied to the docker image to be used by nginx.
+That means that the rate limiting can be disabled by modifying the nginx.conf file in the frontend folder. This is also the place
+to insert and override any other nginx configurations.
+
 ## Serving with HTTPS / SSL
 
 Serving with SSL is available for Docker and Helm Deployment. In local deployment directly with mvn (backend) and
@@ -252,6 +262,13 @@ You can use this collection as an example for the REST API calls.
 | Partner                         | /partner                  | Add partners (customers / suppliers) with sites and addresses and edc Urls                                     |
 | Site                            | /partners/putSite         | Adds a site to a partner including addresses                                                                   |
 | Relationship Partner & Material | /materialpartnerrelations | Connect material and partner incl. partner-related material numbers and wether they supply or buy the material |
+
+Please note that since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing
+via the materials-API of the backend, when you are inserting a new Material entity to the backend's database.
+If a CatenaX-Id was not assigned to your Material so far, then by having the ```puris.generatematerialcatenaxid``` set to ```true``` you can auto-generate one randomly (this is the default-setting, by the way). 
+In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that
+Material entity.
+
 
 ### Onboard Stock Information
 

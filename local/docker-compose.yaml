@@ -42,6 +42,9 @@ services:
             - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
             - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
             - IDP_DISABLE=true
+            - NGINX_RATE_LIMIT=10m
+            - NGINX_BURST=30
+            - NGINX_RATE=10r/s
         networks:
             - miw-net
         extra_hosts:
@@ -50,7 +53,7 @@ services:
     puris-backend-customer:
         image: puris-backend:dev
         container_name: customer-backend
-        depends_on: 
+        depends_on:
             edc-customer-control-plane:
                 condition: service_started #service_healthy
             postgres-customer:
@@ -67,6 +70,25 @@ services:
             - miw-net
         extra_hosts:
             - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
+
+    dtr-customer:
+        image: tractusx/sldt-digital-twin-registry:0.3.23
+        container_name: dtr-customer
+        depends_on:
+          postgres-customer:
+            condition: service_healthy
+        ports:
+          - "127.0.0.1:4243:4243"
+        environment:
+          SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
+          SPRING_DATASOURCE_URL: jdbc:postgresql://customer-postgres:5432/dtr_database
+          SPRING_DATASOURCE_USERNAME: ${PG_USER}
+          SPRING_DATASOURCE_PASSWORD: ${PG_PW}
+          SPRING_PROFILES_ACTIVE: local
+        networks:
+          - miw-net
+        extra_hosts:
+          - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
     postgres-customer:
         image: postgres:15.4-alpine
@@ -91,6 +113,8 @@ services:
                     cpus: "0.5"
         security_opt:
           - no-new-privileges:true
+        volumes:
+          - ./postgres/init-dtr.sql:/docker-entrypoint-initdb.d/init-dtr.sql
 
     edc-customer-control-plane:
         restart: on-failure
@@ -151,6 +175,9 @@ services:
             - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
             - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
             - IDP_DISABLE=true
+            - NGINX_RATE_LIMIT=10m
+            - NGINX_BURST=30
+            - NGINX_RATE=10r/s
         networks:
             - miw-net
         extra_hosts:
@@ -177,6 +204,25 @@ services:
         extra_hosts:
             - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
+    dtr-supplier:
+      image: tractusx/sldt-digital-twin-registry:0.3.23
+      container_name: dtr-supplier
+      depends_on:
+        postgres-supplier:
+          condition: service_healthy
+      ports:
+        - "127.0.0.1:4244:4243"
+      environment:
+        SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
+        SPRING_DATASOURCE_URL: jdbc:postgresql://supplier-postgres:5432/dtr_database
+        SPRING_DATASOURCE_USERNAME: ${PG_USER}
+        SPRING_DATASOURCE_PASSWORD: ${PG_PW}
+        SPRING_PROFILES_ACTIVE: local
+      networks:
+        - miw-net
+      extra_hosts:
+        - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
+
     postgres-supplier:
         image: postgres:15.4-alpine
         container_name: supplier-postgres
@@ -200,6 +246,8 @@ services:
                     cpus: "0.5"
         security_opt:
             - no-new-privileges:true
+        volumes:
+          - ./postgres/init-dtr.sql:/docker-entrypoint-initdb.d/init-dtr.sql
 
     edc-supplier-control-plane:
         restart: on-failure
