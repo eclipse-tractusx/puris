@@ -103,20 +103,6 @@ public class EdcAdapterService {
         return CLIENT.newCall(request).execute();
     }
 
-    private Response sendDtrPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getDtrUrl() + "/api/v3.0").newBuilder();
-        for (var pathSegment : pathSegments) {
-            urlBuilder.addPathSegment(pathSegment);
-        }
-        RequestBody body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json"));
-        var request = new Request.Builder()
-            .post(body)
-            .url(urlBuilder.build())
-            .header("Content-Type", "application/json")
-            .build();
-        return CLIENT.newCall(request).execute();
-    }
-
     /**
      * Call this method at startup to register the necessary request and
      * response apis. In case you are using the framework agreement feature,
@@ -287,6 +273,17 @@ public class EdcAdapterService {
         }
     }
 
+
+    /**
+     * Retrieve the response to an unfiltered catalog request from the partner
+     * with the given dspUrl
+     * @param dspUrl    The dspUrl of your partner
+     * @return          The response containing the full catalog, if successful
+     */
+    public Response getCatalogResponse(String dspUrl) throws IOException {
+         return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, null), List.of("v2", "catalog", "request"));
+    }
+
     /**
      * Retrieve an (unfiltered) catalog from the partner with the
      * given dspUrl
@@ -296,7 +293,7 @@ public class EdcAdapterService {
      * @throws IOException If the connection to the partners control plane fails
      */
     public JsonNode getCatalog(String dspUrl) throws IOException {
-        try (var response = sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, null), List.of("v2", "catalog", "request"))) {
+        try (var response = getCatalogResponse(dspUrl)) {
             String stringData = response.body().string();
             return objectMapper.readTree(stringData);
         }
@@ -343,11 +340,9 @@ public class EdcAdapterService {
      * @return The response body as String
      * @throws IOException If the connection to your control plane fails
      */
-    public String getAllNegotiations() throws IOException {
+    public Response getAllNegotiations() throws IOException {
         var requestBody = edcRequestBodyBuilder.buildNegotiationsRequestBody();
-        try (var response = sendPostRequest(requestBody, List.of("v2", "contractnegotiations", "request"))) {
-            return response.body().string();
-        }
+        return sendPostRequest(requestBody, List.of("v2", "contractnegotiations", "request"));
     }
 
     /**
@@ -388,15 +383,12 @@ public class EdcAdapterService {
      * Sends a request to the own control plane in order to receive
      * a list of all transfers.
      *
-     * @return The response body as String
+     * @return The response
      * @throws IOException If the connection to your control plane fails
      */
-    public String getAllTransfers() throws IOException {
+    public Response getAllTransfers() throws IOException {
         var requestBody = edcRequestBodyBuilder.buildTransfersRequestBody();
-        try (var response = sendPostRequest(requestBody, List.of("v2", "transferprocesses", "request"))) {
-            String data = response.body().string();
-            return data;
-        }
+        return sendPostRequest(requestBody, List.of("v2", "transferprocesses", "request"));
     }
 
     /**

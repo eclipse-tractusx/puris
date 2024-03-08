@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.Response;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,11 @@ public class EdcController {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private static final String CATALOG = "catalog";
+    private static final String ASSETS = "assets";
+    private static final String CONTRACTNEGOTIATIONS = "contractnegotiations";
+    private static final String TRANSFERS = "transfers";
+
 
     /**
      * Get the catalog from an EDC.
@@ -56,16 +62,30 @@ public class EdcController {
      * @param dspUrl url of the edc to get catalog from.
      * @return catalog of the requested edc.
      */
-    @GetMapping("/catalog")
+    @GetMapping(CATALOG)
     public ResponseEntity<String> getCatalog(@RequestParam String dspUrl) {
         try {
             if (!PatternStore.URL_PATTERN.matcher(dspUrl).matches()) {
                 return ResponseEntity.badRequest().build();
             }
-            var catalog = edcAdapter.getCatalog(dspUrl);
-            return ResponseEntity.ok(catalog.toPrettyString());
+            var catalogResponse = edcAdapter.getCatalogResponse(dspUrl);
+            if (catalogResponse != null && catalogResponse.isSuccessful()) {
+                var responseString = catalogResponse.body().string();
+                catalogResponse.body().close();
+                return ResponseEntity.ok(responseString);
+            } else {
+                if (catalogResponse != null) {
+                    log.warn(statusCodeMessageGenerator(CATALOG, catalogResponse.code()));
+                    if (catalogResponse.body() != null) {
+                        catalogResponse.body().close();
+                    }
+                } else {
+                    log.warn(noResponseMessageGenerator(CATALOG));
+                }
+                return ResponseEntity.badRequest().build();
+            }
         } catch (IOException e) {
-            log.warn(e.getMessage());
+            log.error(exceptionMessageGenerator(CATALOG), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -76,18 +96,30 @@ public class EdcController {
      * @param assetId optional parameter if only a specific asset should be retrieved.
      * @return response from own EDC.
      */
-    @GetMapping("/assets")
+    @GetMapping(ASSETS)
     public ResponseEntity<String> getAssets(@RequestParam String assetId) {
         try {
             if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.matches(assetId)) {
                 return ResponseEntity.badRequest().build();
             }
-            var result = edcAdapter.sendGetRequest(List.of("v3", "assets", assetId));
-            var stringData = result.body().string();
-            result.body().close();
-            return ResponseEntity.ok(stringData);
+            var assetsResponse = edcAdapter.sendGetRequest(List.of("v3", ASSETS, assetId));
+            if (assetsResponse != null && assetsResponse.isSuccessful()) {
+                var stringData = assetsResponse.body().string();
+                assetsResponse.body().close();
+                return ResponseEntity.ok(stringData);
+            } else {
+                if (assetsResponse != null) {
+                    log.warn(statusCodeMessageGenerator(ASSETS, assetsResponse.code()));
+                    if (assetsResponse.body() != null) {
+                        assetsResponse.body().close();
+                    }
+                } else {
+                    log.warn(noResponseMessageGenerator(ASSETS));
+                }
+                return ResponseEntity.badRequest().build();
+            }
         } catch (IOException e) {
-            log.warn(e.getMessage());
+            log.error(exceptionMessageGenerator(ASSETS), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -98,13 +130,28 @@ public class EdcController {
      *
      * @return contract negotiation data
      */
-    @GetMapping("/contractnegotiations")
+    @GetMapping(CONTRACTNEGOTIATIONS)
     public ResponseEntity<String> getContractNegotiations() {
         try {
-            String data = edcAdapter.getAllNegotiations();
-            return ResponseEntity.ok(data);
+            Response negotiationsResponse = edcAdapter.getAllNegotiations();
+            if (negotiationsResponse != null && negotiationsResponse.isSuccessful()) {
+                String responseString = negotiationsResponse.body().string();
+                negotiationsResponse.body().close();
+                return ResponseEntity.ok(responseString);
+            } else {
+                if (negotiationsResponse != null) {
+                    log.warn(statusCodeMessageGenerator(CONTRACTNEGOTIATIONS, negotiationsResponse.code()));
+                    if (negotiationsResponse.body() != null) {
+                        negotiationsResponse.body().close();
+                    }
+                } else {
+                    log.warn(noResponseMessageGenerator(CONTRACTNEGOTIATIONS));
+                }
+                return ResponseEntity.internalServerError().build();
+            }
+
         } catch (Exception e) {
-            log.warn(e.getMessage());
+            log.error(exceptionMessageGenerator(CONTRACTNEGOTIATIONS), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -115,30 +162,53 @@ public class EdcController {
      *
      * @return transfer data
      */
-    @GetMapping("/transfers")
+    @GetMapping(TRANSFERS)
     public ResponseEntity<JsonNode> getTransfers() {
         try {
-            String data = edcAdapter.getAllTransfers();
-            var responseObject = objectMapper.readTree(data);
-            for (var item : responseObject) {
-                // The response from the control plane does not contain
-                // an edc:connectorId field, if your side was involved as PROVIDER
-                // in a transfer. Because we want to show the other party's
-                // BPNL in the frontend in any case, we retrieve the BPNL via
-                // the contractAgreement and insert it into the JSON data.
-                String myRole = item.get("edc:type").asText();
-                if ("PROVIDER".equals(myRole)) {
-                    String contractId = item.get("edc:contractId").asText();
-                    var contractObject = objectMapper.readTree(edcAdapter.getContractAgreement(contractId));
-                    String partnerBpnl = contractObject.get("edc:consumerId").asText();
-                    ((ObjectNode) item).put("edc:connectorId", partnerBpnl);
+            Response transfersResponse = edcAdapter.getAllTransfers();
+            if (transfersResponse != null && transfersResponse.isSuccessful()) {
+                String data = transfersResponse.body().string();
+                var responseObject = objectMapper.readTree(data);
+                for (var item : responseObject) {
+                    // The response from the control plane does not contain
+                    // an edc:connectorId field, if your side was involved as PROVIDER
+                    // in a transfer. Because we want to show the other party's
+                    // BPNL in the frontend in any case, we retrieve the BPNL via
+                    // the contractAgreement and insert it into the JSON data.
+                    String myRole = item.get("edc:type").asText();
+                    if ("PROVIDER".equals(myRole)) {
+                        String contractId = item.get("edc:contractId").asText();
+                        var contractObject = objectMapper.readTree(edcAdapter.getContractAgreement(contractId));
+                        String partnerBpnl = contractObject.get("edc:consumerId").asText();
+                        ((ObjectNode) item).put("edc:connectorId", partnerBpnl);
+                    }
                 }
+                return ResponseEntity.ok(responseObject);
+            } else {
+                if (transfersResponse != null) {
+                    log.warn(statusCodeMessageGenerator(TRANSFERS, transfersResponse.code()));
+                    if (transfersResponse.body() != null) {
+                        transfersResponse.body().close();
+                    }
+                }
+                return ResponseEntity.internalServerError().build();
             }
-            return ResponseEntity.ok(responseObject);
         } catch (Exception e) {
-            log.warn(e.getMessage());
+            log.error(exceptionMessageGenerator(TRANSFERS), e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    private String exceptionMessageGenerator(String endpointName) {
+        return "Exception in " + endpointName + " endpoint ";
+    }
+
+    private String statusCodeMessageGenerator(String endpointName, int code) {
+        return endpointName + " endpoint received status code " + code;
+    }
+
+    private String noResponseMessageGenerator(String endpointName) {
+        return endpointName + "  endpoint received no response";
     }
 
 }
