@@ -65,11 +65,11 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.datasource.username | string | `"db-user"` | Username of the database. Ignored if postgres.enabled is true. |
 | backend.puris.demonstrator.role | string | `nil` | Current role of the PURIS demonstrator. Default value should be empty. Can be set to "customer" or "supplier" to enable demonstration setup |
 | backend.puris.dtr.url | string | `"http://localhost:4243"` | Endpoint for DTR |
-| backend.puris.edc.controlplane.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api |
 | backend.puris.edc.controlplane.host | string | `"172.17.0.2"` |  |
 | backend.puris.edc.controlplane.key | string | `"password"` | Key for the EDC control plane |
 | backend.puris.edc.controlplane.management.url | string | `"https:/your-edc-address:8181/management"` | Url to the EDC controlplane management of the edc |
 | backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc |
+| backend.puris.edc.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api |
 | backend.puris.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
 | backend.puris.edr.endpoint | string | `"your-backend-host-address.com"` | Endpoint for EDR |
 | backend.puris.existingSecret | string | `"secret-backend-puris"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
