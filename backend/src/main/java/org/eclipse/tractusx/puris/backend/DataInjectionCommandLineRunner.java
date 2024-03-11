@@ -193,10 +193,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         log.info(mySelf.toString());
 
-        MaterialPartnerRelation newMpr = new MaterialPartnerRelation(centralControlUnitEntity, supplierPartner, "FOO42", false, true);
-        newMpr.setPartnerCXNumber("860fb504-b884-4009-9313-c6fb6cdcffff");
-        mprService.create(newMpr);
-
         var builder = MaterialItemStock.builder();
         var materialItemStock = builder.partner(supplierPartner)
             .material(semiconductorMaterial)

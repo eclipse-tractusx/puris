@@ -375,6 +375,10 @@ backend:
           url: "https://your-edc-address:8184/api/v1/dsp"
         # -- Key for the EDC control plane
         key: "password"
+        dataplane:
+          public:
+            # -- Url of one of your data plane's public api
+            url: "https://your-data-plane:8285/api/public/"
     own:
       # -- Own BPNL of the EDC
       bpnl: BPNL4444444444XX

@@ -115,19 +115,19 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                                 stream().filter(mpr -> mpr.getPartnerCXNumber() != null).toList();
                         boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
                         if (result) {
-                            log.info("Updated product DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+                            log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
                         } else {
-                            log.warn("Update failed for product DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " Retries left: " + retries);
+                            log.warn("Update of product ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " Retries left: " + retries);
                         }
                         success &= result;
                     }
                     if (materialPartnerRelation.getMaterial().isMaterialFlag()) {
                         boolean result = dtrAdapterService.updateMaterialAtDtr(materialPartnerRelation);
                         if (result) {
-                            log.info("Updated material DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                            log.info("Updated material ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
                                 " and supplier partner " + materialPartnerRelation.getPartner().getBpnl());
                         } else {
-                            log.warn("Failed Update for material DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                            log.warn("Update of material ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
                                 " and supplier partner " + materialPartnerRelation.getPartner().getBpnl() + " Retries left: " + retries);
                         }
                         success &= result;
@@ -142,9 +142,9 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                                 stream().filter(mpr -> mpr.getPartnerCXNumber() != null).toList();
                         boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
                         if (result) {
-                            log.info("Updated product DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+                            log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
                         } else {
-                            log.warn("Update failed for product DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " Retries left: " + retries);
+                            log.warn("Update of product ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " Retries left: " + retries);
                         }
                         success &= result;
 
@@ -152,10 +152,10 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                     if (materialPartnerRelation.getMaterial().isMaterialFlag()) {
                         boolean result = dtrAdapterService.registerMaterialAtDtr(materialPartnerRelation);
                         if (result) {
-                            log.info("Created material DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                            log.info("Created material ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
                                 " and supplier partner " + materialPartnerRelation.getPartner().getBpnl());
                         } else {
-                            log.warn("Failed creation for material DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                            log.warn("Creation of material ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
                                 " and supplier partner " + materialPartnerRelation.getPartner().getBpnl() + " Retries left: " + retries);
                         }
                         success &= result;

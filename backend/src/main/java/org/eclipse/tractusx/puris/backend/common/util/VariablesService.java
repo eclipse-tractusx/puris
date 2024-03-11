@@ -139,6 +139,12 @@ public class VariablesService {
      * Your control plane's protocol url
      */
     private String edcProtocolUrl;
+    @Value("${edc.dataplane.public.url}")
+    /**
+     * Your data plane's public url
+     */
+    private String edcDataplanePublicUrl;
+
 
     @Value("${own.bpnl}")
     /**

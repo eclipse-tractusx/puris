@@ -70,24 +70,24 @@ public class DtrRequestBodyBuilder {
         var specificAssetIdsArray = objectMapper.createArrayNode();
         body.set("specificAssetIds", specificAssetIdsArray);
 
-        var partnerRefNode = List.of(getReferenceObject(materialPartnerRelation.getPartner().getBpnl()));
+        var partnerRefNode = List.of(createReferenceObject(materialPartnerRelation.getPartner().getBpnl()));
 
-        var digitalTwinObject = getDigitalTwinObject(partnerRefNode);
+        var digitalTwinObject = createDigitalTwinObject(partnerRefNode);
         specificAssetIdsArray.add(digitalTwinObject);
 
-        var manufacturerIdObject = getManufacturerIdObject(materialPartnerRelation.getPartner().getBpnl(), partnerRefNode);
+        var manufacturerIdObject = createManufacturerIdObject(materialPartnerRelation.getPartner().getBpnl(), partnerRefNode);
         specificAssetIdsArray.add(manufacturerIdObject);
 
-        var manufacturerPartIdObject = getManufacturerPartIdObject(materialPartnerRelation.getPartnerMaterialNumber(), partnerRefNode);
+        var manufacturerPartIdObject = createManufacturerPartIdObject(materialPartnerRelation.getPartnerMaterialNumber(), partnerRefNode);
         specificAssetIdsArray.add(manufacturerPartIdObject);
 
-        var customerPartIdObject = getCustomerPartIdObject(material.getOwnMaterialNumber(), materialPartnerRelation.getPartner().getBpnl());
+        var customerPartIdObject = createCustomerPartIdObject(material.getOwnMaterialNumber(), materialPartnerRelation.getPartner().getBpnl());
         specificAssetIdsArray.add(customerPartIdObject);
 
         var submodelDescriptorsArray = objectMapper.createArrayNode();
         body.set("submodelDescriptors", submodelDescriptorsArray);
 
-        var itemStockRequestSubmodelObject = getItemStockSubmodelObject();
+        var itemStockRequestSubmodelObject = createItemStockSubmodelObject();
         submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
         log.info("Created body for material " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
         return body;
@@ -108,16 +108,16 @@ public class DtrRequestBodyBuilder {
         var specificAssetIdsArray = objectMapper.createArrayNode();
         body.set("specificAssetIds", specificAssetIdsArray);
         mprs = mprs.stream().filter(MaterialPartnerRelation::isPartnerBuysMaterial).filter(mpr -> mpr.getMaterial().equals(material)).toList();
-        var partnerRefObjects = mprs.stream().map(mpr -> getReferenceObject(mpr.getPartner().getBpnl())).toList();
+        var partnerRefObjects = mprs.stream().map(mpr -> createReferenceObject(mpr.getPartner().getBpnl())).toList();
         if (material.isProductFlag()) {
-            var digitalTwinObject = getDigitalTwinObject(partnerRefObjects);
+            var digitalTwinObject = createDigitalTwinObject(partnerRefObjects);
             specificAssetIdsArray.add(digitalTwinObject);
-            var manufacturerPartIdObject = getManufacturerPartIdObject(material.getOwnMaterialNumber(), partnerRefObjects);
+            var manufacturerPartIdObject = createManufacturerPartIdObject(material.getOwnMaterialNumber(), partnerRefObjects);
             specificAssetIdsArray.add(manufacturerPartIdObject);
-            var manufacturerIdObject = getManufacturerIdObject(variablesService.getOwnBpnl(), partnerRefObjects);
+            var manufacturerIdObject = createManufacturerIdObject(variablesService.getOwnBpnl(), partnerRefObjects);
             specificAssetIdsArray.add(manufacturerIdObject);
             for (var mpr : mprs) {
-                var customerPartIdObject = getCustomerPartIdObject(mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
+                var customerPartIdObject = createCustomerPartIdObject(mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
                 specificAssetIdsArray.add(customerPartIdObject);
             }
         } else {
@@ -128,88 +128,58 @@ public class DtrRequestBodyBuilder {
         var submodelDescriptorsArray = objectMapper.createArrayNode();
         body.set("submodelDescriptors", submodelDescriptorsArray);
 
-        var itemStockRequestSubmodelObject = getItemStockSubmodelObject();
+        var itemStockRequestSubmodelObject = createItemStockSubmodelObject();
         submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
 
         log.info("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
         return body;
     }
 
-    private ObjectNode getManufacturerPartIdObject(String manufacturerPartId, List<ObjectNode> refObjects) {
-        var manufacturerPartIdObject = objectMapper.createObjectNode();
-        manufacturerPartIdObject.put("name", MANUFACTURER_PART_ID);
-        manufacturerPartIdObject.put("value", manufacturerPartId);
+
+    private ObjectNode createGenericIdObject(String name, String id, List<ObjectNode> refObjects) {
+        var idObject = objectMapper.createObjectNode();
+        idObject.put("name", name);
+        idObject.put("value", id);
         ObjectNode externalSubjectIdObject = objectMapper.createObjectNode();
-        manufacturerPartIdObject.set("externalSubjectId", externalSubjectIdObject);
+        idObject.set("externalSubjectId", externalSubjectIdObject);
         externalSubjectIdObject.put("type", "ExternalReference");
         ArrayNode keysArray = objectMapper.createArrayNode();
         externalSubjectIdObject.set("keys", keysArray);
         for (var refObject : refObjects) {
             keysArray.add(refObject);
         }
-        keysArray.add(getOwnReferenceObject());
-        return manufacturerPartIdObject;
+        keysArray.add(createOwnReferenceObject());
+        return idObject;
     }
 
-    private ObjectNode getManufacturerIdObject(String manufacturerId, List<ObjectNode> refObjects) {
-        var manufacturerIdObject = objectMapper.createObjectNode();
-        manufacturerIdObject.put("name", MANUFACTURER_ID);
-        manufacturerIdObject.put("value", manufacturerId);
-        ObjectNode externalSubjectIdObject = objectMapper.createObjectNode();
-        manufacturerIdObject.set("externalSubjectId", externalSubjectIdObject);
-        externalSubjectIdObject.put("type", "ExternalReference");
-        ArrayNode keysArray = objectMapper.createArrayNode();
-        externalSubjectIdObject.set("keys", keysArray);
-        for (var refObject : refObjects) {
-            keysArray.add(refObject);
-        }
-        keysArray.add(getOwnReferenceObject());
-        return manufacturerIdObject;
+    private ObjectNode createManufacturerPartIdObject(String manufacturerPartId, List<ObjectNode> refObjects) {
+        return createGenericIdObject(MANUFACTURER_PART_ID, manufacturerPartId, refObjects);
     }
 
-    private ObjectNode getCustomerPartIdObject(String customerPartId, String customerBpnl) {
-        var customerPartIdObject = objectMapper.createObjectNode();
-        customerPartIdObject.put("name", CUSTOMER_PART_ID);
-        customerPartIdObject.put("value", customerPartId);
-        ObjectNode externalSubjectIdObject = objectMapper.createObjectNode();
-        customerPartIdObject.set("externalSubjectId", externalSubjectIdObject);
-        externalSubjectIdObject.put("type", "ExternalReference");
-        ArrayNode keysArray = objectMapper.createArrayNode();
-        externalSubjectIdObject.set("keys", keysArray);
-        keysArray.add(getOwnReferenceObject());
-        keysArray.add(getReferenceObject(customerBpnl));
-        return customerPartIdObject;
+    private ObjectNode createManufacturerIdObject(String manufacturerId, List<ObjectNode> refObjects) {
+        return createGenericIdObject(MANUFACTURER_ID, manufacturerId, refObjects);
     }
 
-    private ObjectNode getReferenceObject(String bpnl) {
+    private ObjectNode createCustomerPartIdObject(String customerPartId, String customerBpnl) {
+        return createGenericIdObject(CUSTOMER_PART_ID, customerPartId, List.of(createReferenceObject(customerBpnl)));
+    }
+
+    private JsonNode createDigitalTwinObject(List<ObjectNode> refNodes) {
+        return createGenericIdObject(DIGITAL_TWIN_TYPE, "PartType", refNodes);
+    }
+
+    private ObjectNode createReferenceObject(String bpnl) {
         var refObject = objectMapper.createObjectNode();
         refObject.put("type", "GlobalReference");
         refObject.put("value", bpnl);
         return refObject;
     }
 
-    private ObjectNode getOwnReferenceObject() {
-        return getReferenceObject(variablesService.getOwnBpnl());
+    private ObjectNode createOwnReferenceObject() {
+        return createReferenceObject(variablesService.getOwnBpnl());
     }
 
-
-    private JsonNode getDigitalTwinObject(List<ObjectNode> refNodes) {
-        var digitalTwinObject = objectMapper.createObjectNode();
-        digitalTwinObject.put("name", DIGITAL_TWIN_TYPE);
-        digitalTwinObject.put("value", "PartType");
-        var externalSubjectIdObject = objectMapper.createObjectNode();
-        digitalTwinObject.set("externalSubjectId", externalSubjectIdObject);
-        externalSubjectIdObject.put("type", "ExternalReference");
-        var keysArray = objectMapper.createArrayNode();
-        externalSubjectIdObject.set("keys", keysArray);
-        keysArray.add(getOwnReferenceObject());
-        for (var refNode : refNodes) {
-            keysArray.add(refNode);
-        }
-        return digitalTwinObject;
-    }
-
-    private JsonNode getItemStockSubmodelObject() {
+    private JsonNode createItemStockSubmodelObject() {
         var itemStockRequestSubmodelObject = objectMapper.createObjectNode();
 
         itemStockRequestSubmodelObject.put("id", UUID.randomUUID().toString());
@@ -230,7 +200,7 @@ public class DtrRequestBodyBuilder {
         submodel3EndpointObject.put("interface", "SUBMODEL-3.0");
         var protocolInformationObject = objectMapper.createObjectNode();
         submodel3EndpointObject.set("protocolInformation", protocolInformationObject);
-        protocolInformationObject.put("href", variablesService.getEdcProtocolUrl());
+        protocolInformationObject.put("href", variablesService.getEdcDataplanePublicUrl());
         protocolInformationObject.put("endpointProtocol", "HTTP");
         var endpointProtocolVersionArray = objectMapper.createArrayNode();
         protocolInformationObject.set("endpointProtocolVersion", endpointProtocolVersionArray);
