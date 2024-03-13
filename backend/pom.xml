@@ -38,7 +38,7 @@
   <description>PURIS Backend</description>
   <properties>
     <java.version>17</java.version>
-    <springdoc.version>2.3.0</springdoc.version>
+    <springdoc.version>2.4.0</springdoc.version>
     <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
     <snakeyaml.version>2.2</snakeyaml.version>
   </properties>
