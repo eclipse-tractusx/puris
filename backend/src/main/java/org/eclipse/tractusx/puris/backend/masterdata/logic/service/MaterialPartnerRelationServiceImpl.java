@@ -22,7 +22,10 @@
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingService;
+import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DtrAdapterService;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
@@ -35,12 +38,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 @Slf4j
 public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelationService {
+
 
     @Autowired
     private MaterialPartnerRelationRepository mprRepository;
@@ -48,9 +54,18 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     @Autowired
     private VariablesService variablesService;
 
+    @Autowired
+    private DigitalTwinMappingService dtmService;
+
+    @Autowired
+    private DtrAdapterService dtrAdapterService;
+
+    @Autowired
+    private ExecutorService executorService;
 
     /**
      * Stores the given relation to the database.
+     *
      * @param materialPartnerRelation
      * @return the stored relation or null, if the given relation was already in existence.
      */
@@ -59,14 +74,107 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         flagConsistencyTest(materialPartnerRelation);
         var searchResult = find(materialPartnerRelation.getMaterial(), materialPartnerRelation.getPartner());
         if (searchResult == null) {
+            dtmService.update(materialPartnerRelation);
+            executorService.submit(new DtrRegistrationTask(materialPartnerRelation, "CREATE", 3));
             return mprRepository.save(materialPartnerRelation);
         }
         log.error("Could not create MaterialPartnerRelation, " + materialPartnerRelation.getKey() + " already exists");
         return null;
     }
 
+
+    @AllArgsConstructor
+    private class DtrRegistrationTask implements Callable<Boolean> {
+        final MaterialPartnerRelation materialPartnerRelation;
+        /**
+         * Must be either "CREATE" or "UPDATE". The distinction is important,
+         * because for an existing AAS, the PUT endpoint on the DTR must be called.
+         * While, on the other hand, for a new AAS the POST endpoint must be called
+         * at the DTR.
+         */
+        final String job;
+        int retries;
+
+        @Override
+        public Boolean call() throws Exception {
+            if (retries < 0) {
+                return false;
+            }
+            if (materialPartnerRelation.getPartnerCXNumber() == null){
+                log.error("Missing partnerCX Number in " + materialPartnerRelation + "\nAborting DTR call");
+                return false;
+            }
+            Thread.sleep(500);
+            boolean success = true;
+            switch (job) {
+                case "UPDATE" -> {
+                    if (materialPartnerRelation.getMaterial().isProductFlag()) {
+                        var allCustomers =
+                            mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
+                                materialPartnerRelation.getMaterial().getOwnMaterialNumber()).
+                                stream().filter(mpr -> mpr.getPartnerCXNumber() != null).toList();
+                        boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
+                        if (result) {
+                            log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+                        } else {
+                            log.warn("Update of product ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " Retries left: " + retries);
+                        }
+                        success &= result;
+                    }
+                    if (materialPartnerRelation.getMaterial().isMaterialFlag()) {
+                        boolean result = dtrAdapterService.updateMaterialAtDtr(materialPartnerRelation);
+                        if (result) {
+                            log.info("Updated material ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                " and supplier partner " + materialPartnerRelation.getPartner().getBpnl());
+                        } else {
+                            log.warn("Update of material ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                " and supplier partner " + materialPartnerRelation.getPartner().getBpnl() + " Retries left: " + retries);
+                        }
+                        success &= result;
+                    }
+                    return success;
+                }
+                case "CREATE" -> {
+                    if (materialPartnerRelation.getMaterial().isProductFlag()) {
+                        var allCustomers =
+                            mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
+                                    materialPartnerRelation.getMaterial().getOwnMaterialNumber()).
+                                stream().filter(mpr -> mpr.getPartnerCXNumber() != null).toList();
+                        boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
+                        if (result) {
+                            log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+                        } else {
+                            log.warn("Update of product ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " Retries left: " + retries);
+                        }
+                        success &= result;
+
+                    }
+                    if (materialPartnerRelation.getMaterial().isMaterialFlag()) {
+                        boolean result = dtrAdapterService.registerMaterialAtDtr(materialPartnerRelation);
+                        if (result) {
+                            log.info("Created material ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                " and supplier partner " + materialPartnerRelation.getPartner().getBpnl());
+                        } else {
+                            log.warn("Creation of material ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                " and supplier partner " + materialPartnerRelation.getPartner().getBpnl() + " Retries left: " + retries);
+                        }
+                        success &= result;
+                    }
+
+                }
+            }
+            if (success) {
+               return true;
+            } else {
+                retries--;
+                return call();
+            }
+        }
+    }
+
     /**
      * Updates an existing MaterialPartnerRelation
+     *
      * @param materialPartnerRelation
      * @return the updated relation or null, if the given relation didn't exist before.
      */
@@ -75,6 +183,12 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         flagConsistencyTest(materialPartnerRelation);
         var foundEntity = mprRepository.findById(materialPartnerRelation.getKey());
         if (foundEntity.isPresent()) {
+            dtmService.update(materialPartnerRelation);
+            if (!foundEntity.get().isPartnerSuppliesMaterial() && materialPartnerRelation.isPartnerSuppliesMaterial()) {
+                executorService.submit(new DtrRegistrationTask(materialPartnerRelation, "CREATE", 3));
+            } else {
+                executorService.submit(new DtrRegistrationTask(materialPartnerRelation, "UPDATE", 3));
+            }
             return mprRepository.save(materialPartnerRelation);
         }
         log.error("Could not update MaterialPartnerRelation, " + materialPartnerRelation.getKey() + " didn't exist before");
@@ -92,6 +206,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     /**
      * Find the MaterialPartnerRelation containing the material and the partner.
+     *
      * @param material
      * @param partner
      * @return the relation, if it exists or else null;
@@ -103,6 +218,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     /**
      * Returns a list of all materials that the given partner supplies to you.
+     *
      * @param partner the partner
      * @return a list of material entities
      */
@@ -117,6 +233,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     /**
      * Returns a list of all products that the given partner buys from you.
+     *
      * @param partner the partner
      * @return a list of product entities
      */
@@ -130,7 +247,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     }
 
     /**
-     *
      * @return a list of all existing MaterialPartnerRelations
      */
     @Override
@@ -142,6 +258,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
      * Generates a Map of key-value-pairs. Each key represents the BPNL of a
      * partner (and yourself), each corresponding value is the materialNumber
      * that the owner of the BPNL is using in his own house to define the given Material.
+     *
      * @param ownMaterialNumber
      * @return a Map with the content described above or an empty map if no entries with the given ownMaterialNumber could be found.
      */
@@ -162,6 +279,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     /**
      * Find the MaterialPartnerRelation containing the material with the given
      * ownMaterialNumber and the uuid referencing a partner in your database.
+     *
      * @param ownMaterialNumber
      * @param partnerUuid
      * @return the relation, if it exists or else null
@@ -175,7 +293,8 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         return null;
     }
 
-    /**Returns a list containing all Partners that are registered as suppliers for
+    /**
+     * Returns a list containing all Partners that are registered as suppliers for
      * the material with the given ownMaterialNumber
      *
      * @param ownMaterialNumber
@@ -183,13 +302,14 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
      */
     @Override
     public List<Partner> findAllSuppliersForOwnMaterialNumber(String ownMaterialNumber) {
-        return  mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerSuppliesMaterialIsTrue(ownMaterialNumber)
-                .stream()
-                .map(mpr -> mpr.getPartner())
-                .collect(Collectors.toList());
+        return mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerSuppliesMaterialIsTrue(ownMaterialNumber)
+            .stream()
+            .map(mpr -> mpr.getPartner())
+            .collect(Collectors.toList());
     }
 
-    /**Returns a list containing all Partners that are registered as customers for
+    /**
+     * Returns a list containing all Partners that are registered as customers for
      * the material with the given ownMaterialNumber
      *
      * @param ownMaterialNumber
@@ -203,7 +323,8 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
             .collect(Collectors.toList());
     }
 
-    /**Returns a list containing all Partners that are registered as suppliers for
+    /**
+     * Returns a list containing all Partners that are registered as suppliers for
      * the material with the given material
      *
      * @param material
@@ -214,7 +335,8 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         return findAllSuppliersForOwnMaterialNumber(material.getOwnMaterialNumber());
     }
 
-    /**Returns a list containing all Partners that are registered as customers for
+    /**
+     * Returns a list containing all Partners that are registered as customers for
      * the material with the given material
      *
      * @param material
@@ -227,6 +349,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     /**
      * Returns a list of all Materials, for which a MaterialPartnerRelation exists,
      * where the partner is using the given partnerMaterialNumber.
+     *
      * @param partnerMaterialNumber
      * @return a list of Materials
      */
@@ -239,13 +362,12 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     }
 
     /**
-     *
      * @param material
      * @param partner
      * @return true, if the given partner is registered as supplier for the given material, else false
      */
     @Override
-    public boolean partnerSuppliesMaterial (Material material, Partner partner) {
+    public boolean partnerSuppliesMaterial(Material material, Partner partner) {
         if (material.isMaterialFlag()) {
             MaterialPartnerRelation mpr = find(material, partner);
             return mpr != null && mpr.isPartnerSuppliesMaterial();
@@ -254,7 +376,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     }
 
     /**
-     *
      * @param material
      * @param partner
      * @return true, if the given partner is registered as customer for the given material, else false
@@ -262,7 +383,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     @Override
     public boolean partnerOrdersProduct(Material material, Partner partner) {
         if (material.isProductFlag()) {
-            MaterialPartnerRelation mpr = find(material,partner);
+            MaterialPartnerRelation mpr = find(material, partner);
             return mpr != null && mpr.isPartnerBuysMaterial();
         }
         return false;

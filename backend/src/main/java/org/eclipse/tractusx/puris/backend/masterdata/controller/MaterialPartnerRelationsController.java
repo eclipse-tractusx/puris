@@ -76,6 +76,10 @@ public class MaterialPartnerRelationsController {
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
         @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material.",
             example = "MNR-8101-ID146955.001") @RequestParam String partnerMaterialNumber,
+        @Parameter(description = "The CatenaX Number that this Partner uses",
+            example = "860fb504-b884-4009-9313-c6fb6cdc776b") @RequestParam(required = false) String partnerCXNumber,
+        @Parameter(description = "The informal name that this Partner uses",
+            example = "Semiconductor") @RequestParam(required = false) String nameAtManufacturer,
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential supplier of the given Material.",
             example = "true") @RequestParam boolean partnerSupplies,
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
@@ -100,6 +104,12 @@ public class MaterialPartnerRelationsController {
             return new ResponseEntity<>(HttpStatusCode.valueOf(409));
         }
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber, partnerSupplies, partnerBuys);
+        if (partnerCXNumber != null) {
+            newMpr.setPartnerCXNumber(partnerCXNumber);
+        }
+        if (nameAtManufacturer != null) {
+            newMpr.setNameAtManufacturer(nameAtManufacturer);
+        }
 
         newMpr = mprService.create(newMpr);
         if (newMpr == null) {
@@ -125,6 +135,10 @@ public class MaterialPartnerRelationsController {
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
         @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material.",
             example = "MNR-8101-ID146955.001") @RequestParam(required = false) String partnerMaterialNumber,
+        @Parameter(description = "The CatenaX Number that this Partner uses",
+            example = "860fb504-b884-4009-9313-c6fb6cdc776b") @RequestParam(required = false) String partnerCXNumber,
+        @Parameter(description = "The informal name that this Partner uses",
+            example = "Semiconductor") @RequestParam(required = false) String nameAtManufacturer,
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential supplier of the given Material.",
             example = "true") @RequestParam(required = false) Boolean partnerSupplies,
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
@@ -132,7 +146,7 @@ public class MaterialPartnerRelationsController {
         MaterialPartnerRelation existingRelation = null;
 
         if (!bpnlPattern.matcher(partnerBpnl).matches() || !materialPattern.matcher(ownMaterialNumber).matches() ||
-            (partnerMaterialNumber !=null && !materialPattern.matcher(partnerMaterialNumber).matches())) {
+            (partnerMaterialNumber != null && !materialPattern.matcher(partnerMaterialNumber).matches())) {
             log.warn("Rejected message parameters. ");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
@@ -153,6 +167,12 @@ public class MaterialPartnerRelationsController {
         }
         if (partnerMaterialNumber != null) {
             existingRelation.setPartnerMaterialNumber(partnerMaterialNumber);
+        }
+        if (nameAtManufacturer != null) {
+            existingRelation.setNameAtManufacturer(nameAtManufacturer);
+        }
+        if (partnerCXNumber != null) {
+            existingRelation.setPartnerCXNumber(partnerCXNumber);
         }
         existingRelation = mprService.update(existingRelation);
         if (existingRelation == null) {
