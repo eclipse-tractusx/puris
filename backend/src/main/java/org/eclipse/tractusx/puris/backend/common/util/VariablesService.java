@@ -116,6 +116,9 @@ public class VariablesService {
      */
     private String dtrUrl;
 
+    @Value("${puris.parttypeinformation.serverendpoint}")
+    private String parttypeInformationServerendpoint;
+
     @Value("${puris.generatematerialcatenaxid}")
     /**
      * A flag that signals whether the MaterialService
