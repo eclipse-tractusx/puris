@@ -21,6 +21,7 @@
 package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +67,9 @@ public class PartTypeInformationController {
         @ApiResponse(responseCode = "404", description = "Product not found for given parameters. ")
     })
     @GetMapping("/{bpnl}/{materialnumber}")
-    public ResponseEntity<?> getMapping(@PathVariable String bpnl, @PathVariable String materialnumber) {
+    public ResponseEntity<?> getMapping(@Parameter(description = "The BPNL of the requesting party") @PathVariable String bpnl,
+                                        @Parameter(description = "The material number that the request receiving party uses for the material in question")
+                                        @PathVariable String materialnumber) {
         if (!bpnlPattern.matcher(bpnl).matches() || !materialNumberPattern.matcher(materialnumber).matches()) {
             return ResponseEntity.badRequest().build();
         }
