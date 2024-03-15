@@ -125,36 +125,18 @@ spec:
                   key: "puris-api-key"
             - name: PURIS_DEMONSTRATOR_ROLE
               value: "{{ .Values.backend.puris.demonstrator.role }}"
+            - name: PURIS_BASEURL
+              {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
+              value: "https://{{ .Values.backend.puris.baseurl }}"
+                {{- else }}
+              value: "http://{{ .Values.backend.puris.baseurl }}"
+                {{- end}}
             - name: PURIS_EDR_DELETIONTIMER
               value: "{{ .Values.backend.puris.edr.deletiontimer }}"
-            - name: PURIS_EDR_ENDPOINT
-              {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
-              value: "https://{{ .Values.backend.puris.edr.endpoint }}{{ .Values.backend.puris.api.rootDir }}/edrendpoint"
-                {{- else }}
-              value: "http://{{ .Values.backend.puris.edr.endpoint }}{{ .Values.backend.puris.api.rootDir }}/edrendpoint"
-                {{- end }}
-            - name: PURIS_REQUEST_SERVERENDPOINT
-              {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
-              value: "https://{{ .Values.backend.puris.request.serverendpoint }}{{ .Values.backend.puris.api.rootDir }}/item-stock/request"
-                {{- else }}
-              value: "http://{{ .Values.backend.puris.request.serverendpoint }}{{ .Values.backend.puris.api.rootDir }}/item-stock/request"
-                {{- end}}
             - name: PURIS_REQUEST_APIASSETID
               value: "{{ .Values.backend.puris.request.apiassetid }}"
-            - name: PURIS_RESPONSE_SERVERENDPOINT
-              {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
-              value: "https://{{ .Values.backend.puris.response.serverendpoint }}{{ .Values.backend.puris.api.rootDir }}/item-stock/response"
-                {{- else }}
-              value: "http://{{ .Values.backend.puris.response.serverendpoint }}{{ .Values.backend.puris.api.rootDir }}/item-stock/response"
-                {{- end}}
             - name: PURIS_RESPONSE_APIASSETID
               value: "{{ .Values.backend.puris.response.apiassetid }}"
-            - name: PURIS_STATUSREQUEST_SERVERENDPOINT
-              {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
-              value: "https://{{ .Values.backend.puris.statusrequest.serverendpoint }}{{ .Values.backend.puris.api.rootDir }}/item-stock/status"
-                {{- else }}
-              value: "http://{{ .Values.backend.puris.statusrequest.serverendpoint }}{{ .Values.backend.puris.api.rootDir }}/item-stock/status"
-                {{- end}}
             - name: PURIS_STATUSREQUEST_APIASSETID
               value: "{{ .Values.backend.puris.statusrequest.apiassetid }}"
             - name: PURIS_FRAMEWORKAGREEMENT_USE

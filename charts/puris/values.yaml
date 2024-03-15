@@ -348,6 +348,8 @@ backend:
     timeoutSeconds: 1
 
   puris:
+    # -- Base url of the PURIS backend (requires a trailing "/")
+    baseurl: customer-backend:8081/
     # -- Secret for backend passwords. For more information look into 'backend-secrets.yaml' file.
     existingSecret: "secret-backend-puris"
     api:
@@ -410,18 +412,12 @@ backend:
           # -- Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction
           enable_lazy_load_no_trans: true
     request:
-      # -- Endpoint of server for request
-      serverendpoint: *domain
       # -- Asset ID for request API
       apiassetid: request-api-asset
     response:
-      # -- Endpoint of server for response
-      serverendpoint: *domain
       # -- Asset ID for response API
       apiassetid: response-api-asset
     statusrequest:
-      # -- Endpoint of server for statusrequest
-      serverendpoint: *domain
       # -- Asset ID for status-request API
       apiassetid: statusrequest-api-asset
     frameworkagreement:
@@ -432,8 +428,6 @@ backend:
     edr:
       # -- Number of minutes before received authentication data of a consumer pull is removed from memory
       deletiontimer: 2
-      # -- Endpoint for EDR
-      endpoint: *domain
     dtr:
       # --Endpoint for DTR
       url: http://localhost:4243
