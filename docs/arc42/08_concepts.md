@@ -20,6 +20,9 @@ the respective material number of a partner leading to the following constellati
     - own material number = material number supplier
     - material number partner = material number customer
 
+Furthermore, as of ItemStockSAMM v2.0.0 the supplier CX ID is the sole identifier for a material of a respective partner.
+Thus, the material global asset id is the same as the partner material CX ID of the supplier.
+
 ## Data Sovereignty
 
 The application only provides assets (API usage) based on a Business Partner Number Legal Entity (BPNL) based access
