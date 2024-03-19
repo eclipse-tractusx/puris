@@ -19,6 +19,7 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic;
 
+import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -46,6 +47,8 @@ public class MaterialServiceTest {
 
     @Mock
     private MaterialPartnerRelationService mprService;
+    @Mock
+    private DigitalTwinMappingService digitalTwinMappingService;
 
     @InjectMocks
     private MaterialServiceImpl materialService;
