@@ -89,7 +89,7 @@ public class DtrRequestBodyBuilder {
 
         var itemStockRequestSubmodelObject = createItemStockSubmodelObject();
         submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
-        log.info("Created body for material " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
+        log.debug("Created body for material " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
         return body;
     }
 
@@ -131,7 +131,7 @@ public class DtrRequestBodyBuilder {
         var itemStockRequestSubmodelObject = createItemStockSubmodelObject();
         submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
 
-        log.info("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
+        log.debug("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
         return body;
     }
 
