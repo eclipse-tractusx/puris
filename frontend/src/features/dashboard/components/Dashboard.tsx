@@ -29,6 +29,7 @@ import { ProductionTable } from './ProductionTable';
 import { Stack, Typography, capitalize } from '@mui/material';
 import { Delivery } from '@models/types/data/delivery';
 import { DeliveryInformationModal } from './DeliveryInformationModal';
+import { getPartnerType } from '../util/helpers';
 
 const NUMBER_OF_DAYS = 42;
 
@@ -65,7 +66,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                     Our Stock Information {selectedMaterial && selectedSite && <>for {selectedMaterial.description}</>}
                 </Typography>
                 {selectedSite ? (
-                    type === 'customer' ? (
+                    type === 'supplier' ? (
                         <ProductionTable
                             numberOfDays={NUMBER_OF_DAYS}
                             stocks={stocks}
@@ -86,11 +87,11 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                 {selectedSite && (
                     <>
                         <Typography variant="h5" component="h2">
-                            {`${capitalize(type)} Stocks ${selectedMaterial ? `for ${selectedMaterial?.description}` : ''}`}
+                            {`${capitalize(getPartnerType(type))} Stocks ${selectedMaterial ? `for ${selectedMaterial?.description}` : ''}`}
                         </Typography>
                         {selectedPartnerSites ? (
                             selectedPartnerSites.map((ps) =>
-                                type === 'customer' ? (
+                                type === 'supplier' ? (
                                     <DemandTable
                                         numberOfDays={NUMBER_OF_DAYS}
                                         stocks={partnerStocks}
@@ -107,7 +108,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                 )
                             )
                         ) : (
-                            <Typography variant="body1">{`Select a ${type} site to show their stock information`}</Typography>
+                            <Typography variant="body1">{`Select a ${getPartnerType(type)} site to show their stock information`}</Typography>
                         )}
                     </>
                 )}

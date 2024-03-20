@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 import { TableWithRowHeader } from '@components/TableWithRowHeader';
 import { Stock } from '@models/types/data/stock';
 import { Site } from '@models/types/edc/site';
-import { createDateColumnHeaders } from '../util/table-helpers';
+import { createDateColumnHeaders } from '../util/helpers';
 import { Box, Typography } from '@mui/material';
 import { Delivery } from '@models/types/data/delivery';
 

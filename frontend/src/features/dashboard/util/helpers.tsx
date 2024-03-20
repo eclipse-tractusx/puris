@@ -40,3 +40,6 @@ export const createDateColumnHeaders = (numberOfDays: number) => {
         };
     });
 };
+
+export const getPartnerType = (type: 'customer' | 'supplier') => (type === 'customer' ? 'supplier' : 'customer');
+

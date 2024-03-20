@@ -25,6 +25,7 @@ import { useSites } from '@features/stock-view/hooks/useSites';
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
 import { Site } from '@models/types/edc/site';
 import { Autocomplete, Grid, capitalize } from '@mui/material';
+import { getPartnerType } from '../util/helpers';
 
 type DashboardFiltersProps = {
     type: 'customer' | 'supplier';
@@ -73,14 +74,18 @@ export const DashboardFilters = ({
             </Grid>
             <Grid item md={12} paddingTop='0 !important'>
                 <Autocomplete
-                    id="customer-site"
+                    id="partner-site"
                     value={partnerSites ?? []}
                     options={partners?.reduce((acc: Site[], p) => [...acc, ...p.sites], []) ?? []}
                     disabled={!site}
                     getOptionLabel={(option) => `${option.name} (${option.bpns})`}
                     isOptionEqualToValue={(option, value) => option.bpns === value.bpns}
                     renderInput={(params) => (
-                        <Input {...params} label={`${capitalize(type)} Sites*`} placeholder="Select a Customer site" />
+                        <Input
+                            {...params}
+                            label={`${capitalize(getPartnerType(type))} Sites*`}
+                            placeholder={`Select a ${capitalize(getPartnerType(type))} site`}
+                        />
                     )}
                     onChange={(_, newValue) => onPartnerSitesChange(newValue?.length > 0 ? newValue : null)}
                     multiple={true}
