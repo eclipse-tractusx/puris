@@ -27,6 +27,13 @@ RUN mvn dependency:go-offline
 COPY src/ /app/src/
 RUN mvn clean package -DskipTests
 
+# Copy Legal information for distributions
+COPY README.md /opt/app/README.md
+COPY SECURITY.md /opt/app/SECURITY.md
+COPY LICENSE /opt/app/LICENSE
+COPY NOTICE.md /opt/app/NOTICE.md
+COPY DEPENDENCIES /opt/app/DEPENDENCIES
+
 FROM eclipse-temurin:17-jre-alpine
 RUN mkdir /opt/app
 COPY --from=build /app/target/*.jar /opt/app/puris-backend.jar

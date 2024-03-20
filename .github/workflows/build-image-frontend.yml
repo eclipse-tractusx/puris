@@ -41,8 +41,27 @@ env:
     IMAGE_NAME: "app-puris-frontend"
 
 jobs:
+    # Copy legal information from root folder to frontend container to fulfill TRG 7.05 requirements
+    # (https://eclipse-tractusx.github.io/docs/release/trg-7/trg-7-05/).
+    copy-legal-information:
+        if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
+        runs-on: ubuntu-latest
+        permissions:
+            packages: write
+
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+            -   name: Copy and paste legal information
+                run: |
+                    cp ./DEPENDENCIES_FRONTEND ./frontend/DEPENDENCIES
+                    cp ./LICENSE ./frontend/LICENSE
+                    cp ./NOTICE.md ./frontend/NOTICE.md
+                    cp ./SECURITY.md ./frontend/SECURITY.md
     docker:
         if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
+        needs: copy-legal-information # first needs to successfully do the "copy-legal-information" job
         runs-on: ubuntu-latest
         permissions:
             packages: write
