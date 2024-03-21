@@ -119,7 +119,7 @@ public class VariablesService {
      */
     private String dtrUrl;
 
-    @Value("${puris.baseurl}" + "catena/parttype")
+    @Value("${puris.baseurl}" + "catena/parttypeinformation")
     private String parttypeInformationServerendpoint;
 
     @Value("${puris.generatematerialcatenaxid}")

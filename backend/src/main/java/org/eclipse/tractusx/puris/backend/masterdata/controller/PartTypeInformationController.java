@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.regex.Pattern;
 
 @RestController
-@RequestMapping("parttype")
+@RequestMapping("parttypeinformation")
 @Slf4j
 public class PartTypeInformationController {
     static Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
@@ -66,11 +66,13 @@ public class PartTypeInformationController {
         @ApiResponse(responseCode = "401", description = "Access forbidden. "),
         @ApiResponse(responseCode = "404", description = "Product not found for given parameters. ")
     })
-    @GetMapping("/{bpnl}/{materialnumber}")
+    @GetMapping("/{bpnl}/{materialnumber}/{representation}")
     public ResponseEntity<?> getMapping(@Parameter(description = "The BPNL of the requesting party") @PathVariable String bpnl,
                                         @Parameter(description = "The material number that the request receiving party uses for the material in question")
-                                        @PathVariable String materialnumber) {
-        if (!bpnlPattern.matcher(bpnl).matches() || !materialNumberPattern.matcher(materialnumber).matches()) {
+                                        @PathVariable String materialnumber,
+                                        @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
+        if (!bpnlPattern.matcher(bpnl).matches() || !materialNumberPattern.matcher(materialnumber).matches()
+            || !"$value".equals(representation)) {
             return ResponseEntity.badRequest().build();
         }
         Partner partner = partnerService.findByBpnl(bpnl);

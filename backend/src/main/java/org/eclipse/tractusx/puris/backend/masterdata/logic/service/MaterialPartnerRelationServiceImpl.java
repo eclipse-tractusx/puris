@@ -110,13 +110,13 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                     " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed");
                 return false;
             }
-            String[] data = edcAdapterService.getContractForPartTypeInfoApi(materialPartnerRelation.getPartner());
+            String[] data = edcAdapterService.getContractForPartTypeInfoSubmodel(materialPartnerRelation.getPartner());
             if (data != null) {
                 String authKey = data[0];
                 String authCode = data[1];
                 String endpoint = data[2];
                 var response = edcAdapterService.getProxyPullRequest(endpoint, authKey, authCode,
-                    new String[]{materialPartnerRelation.getPartnerMaterialNumber()});
+                    new String[]{materialPartnerRelation.getPartnerMaterialNumber(), "$value"});
                 if (response != null && response.isSuccessful()) {
                     var body = objectMapper.readTree(response.body().string());
                     var cxId = body.get("catenaXId").asText();

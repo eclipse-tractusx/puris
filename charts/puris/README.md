@@ -1,6 +1,6 @@
 # puris
 
-![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 1.1.2](https://img.shields.io/badge/Version-1.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
@@ -59,7 +59,7 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.podSecurityContext | object | `{}` | Added security contexts for a pod |
 | backend.puris.api.key | string | `"test"` | The API key of the PURIS application |
 | backend.puris.api.rootDir | string | `"/catena"` | The root directory of the API |
-| backend.puris.baseurl | string | `"customer-backend:8081/"` | Base url of the PURIS backend (requires a trailing "/") |
+| backend.puris.baseurl | string | `"your-backend-host-address.com"` | Base url of the PURIS backend |
 | backend.puris.datasource.driverClassName | string | `"org.postgresql.Driver"` | Driver class name of the database |
 | backend.puris.datasource.password | string | `nil` | Password for the database user. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.url | string | `"jdbc:postgresql://postgresql-name:5432/puris-database"` | URL of the database. Ignored if postgres.enabled is true. |

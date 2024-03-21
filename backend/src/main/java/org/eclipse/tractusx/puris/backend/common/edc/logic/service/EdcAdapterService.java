@@ -488,16 +488,16 @@ public class EdcAdapterService {
     }
 
     /**
-     * Tries to negotiate for the PartTypeInfo-Api with the given partner
+     * Tries to negotiate for the PartTypeInfo-Submodel asset with the given partner
      * and also tries to initiate the transfer of the edr token to the given endpoint.
      * <p>
      * It will return a String array of length 4. The authKey is stored under index 0, the
      * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
      *
-     * @param partner   the partner
-     * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
+     * @param partner the partner
+     * @return A String array or null, if negotiation failed or the authCode did not arrive
      */
-    public String[] getContractForPartTypeInfoApi(Partner partner) {
+    public String[] getContractForPartTypeInfoSubmodel(Partner partner) {
         try {
             var responseNode = getCatalog(partner.getEdcUrl());
             var catalogArray = responseNode.get("dcat:dataset");
@@ -511,22 +511,36 @@ public class EdcAdapterService {
             for (var entry : catalogArray) {
                 var dctTypeObject = entry.get("dct:type");
                 if (dctTypeObject != null) {
-                    if (("https://w3id.org/catenax/taxonomy#UniqueIdPushConnectToParentNotification").equals(dctTypeObject.get("@id").asText())) {
-                        if ("2.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
-                            if (targetCatalogEntry == null) {
-                                targetCatalogEntry = entry;
-                            } else {
-                                log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
+                    if (("https://w3id.org/catenax/taxonomy#Submodel").equals(dctTypeObject.get("@id").asText())) {
+                        if ("3.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
+                            if ("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation".equals(entry.get("aas-semantics:semanticId.@id").asText())) {
+                                if (targetCatalogEntry == null) {
+                                    if (variablesService.isUseFrameworkPolicy()) {
+                                        if (testFrameworkAgreementConstraint(entry)) {
+                                            targetCatalogEntry = entry;
+                                        } else {
+                                            log.error("Contract Negotiation for PartTypeInformation Submodel asset with partner " + partner.getBpnl() + " has " +
+                                                "been aborted. This partner's contract policy does not match the policy " +
+                                                "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
+                                                "\n Received offer from Partner: \n" + entry.toPrettyString());
+                                            break;
+                                        }
+                                    } else {
+                                        targetCatalogEntry = entry;
+                                    }
+                                } else {
+                                    log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
+                                }
                             }
                         }
                     }
                 }
             }
             if (targetCatalogEntry == null) {
-                log.error("Could not find api asset for PartTypeInformation at partner " + partner.getBpnl() + " 's catalog");
+                log.error("Could not find submodel asset for PartTypeInformation at partner " + partner.getBpnl() + " 's catalog");
                 return null;
             }
-            String assetApiId = targetCatalogEntry.get("@id").asText();
+            String assetId = targetCatalogEntry.get("@id").asText();
             JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
             String negotiationId = negotiationResponse.get("@id").asText();
             // Await confirmation of contract and contractId
@@ -542,12 +556,12 @@ public class EdcAdapterService {
             if (contractId == null) {
                 var negotiationState = getNegotiationState(negotiationId);
                 log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
-                log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
+                log.error("Failed to obtain " + assetId + " from " + partner.getEdcUrl());
                 return null;
             }
 
             // Initiate transfer of edr
-            var transferResp = initiateProxyPullTransfer(partner, contractId, assetApiId);
+            var transferResp = initiateProxyPullTransfer(partner, contractId, assetId);
             String transferId = transferResp.get("@id").asText();
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
@@ -562,16 +576,16 @@ public class EdcAdapterService {
                 Thread.sleep(100);
                 EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
                 if (edr_Dto != null) {
-                    log.info("Successfully negotiated for " + assetApiId + " with " + partner.getEdcUrl());
+                    log.info("Successfully negotiated for " + assetId + " with " + partner.getEdcUrl());
                     return new String[]{edr_Dto.authKey(), edr_Dto.authCode(), edr_Dto.endpoint(), contractId};
                 }
             }
             log.warn("did not receive authCode");
-            log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
+            log.error("Failed to obtain " + assetId + " from " + partner.getEdcUrl());
             return null;
 
         } catch (Exception e) {
-            log.error("Failed to get contract for PartTypeInfo api from " + partner.getBpnl(), e);
+            log.error("Failed to get contract for PartTypeInfo submodel asset from " + partner.getBpnl(), e);
             return null;
         }
     }

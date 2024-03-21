@@ -348,8 +348,8 @@ backend:
     timeoutSeconds: 1
 
   puris:
-    # -- Base url of the PURIS backend (requires a trailing "/")
-    baseurl: customer-backend:8081/
+    # -- Base url of the PURIS backend
+    baseurl: *domain
     # -- Secret for backend passwords. For more information look into 'backend-secrets.yaml' file.
     existingSecret: "secret-backend-puris"
     api:

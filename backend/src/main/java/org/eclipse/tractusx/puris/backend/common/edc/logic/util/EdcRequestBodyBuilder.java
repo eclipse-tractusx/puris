@@ -216,7 +216,11 @@ public class EdcRequestBodyBuilder {
         var body = getEdcContextObject();
         body.put("@id", partner.getBpnl() +"_contractdefinition_for_PartTypeInfoAsset");
         body.put("accessPolicyId", getBpnPolicyId(partner));
-        body.put("contractPolicyId", getBpnPolicyId(partner));
+        if(variablesService.isUseFrameworkPolicy()) {
+            body.put("contractPolicyId", FRAMEWORK_POLICY_ID);
+        } else {
+            body.put("contractPolicyId", getBpnPolicyId(partner));
+        }
         var assetsSelector = MAPPER.createObjectNode();
         body.set("assetsSelector", assetsSelector);
         assetsSelector.put("@type", "CriterionDto");
@@ -359,9 +363,9 @@ public class EdcRequestBodyBuilder {
         body.set("properties", propertiesObject);
         var dctTypeObject = MAPPER.createObjectNode();
         propertiesObject.set("dct:type", dctTypeObject);
-        dctTypeObject.put("@id", "cx-taxo:UniqueIdPushConnectToParentNotification");
-        propertiesObject.put("cx-common:version", "2.0");
-        propertiesObject.put("asset:prop:type", "foo.bar.PartTypeProp");
+        dctTypeObject.put("@id", CX_TAXO_NAMESPACE + "Submodel");
+        propertiesObject.put("cx-common:version", "3.0");
+        propertiesObject.put("aas-semantics:semanticId.@id", "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation");
         var dataAddress = MAPPER.createObjectNode();
         String url = variablesService.getParttypeInformationServerendpoint();
         if (!url.endsWith("/")) {
