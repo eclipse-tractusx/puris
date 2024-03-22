@@ -57,23 +57,27 @@ public class PartTypeInformationController {
     @Autowired
     private PartTypeInformationSammMapper sammMapper;
 
-    @Operation(description = "Ednpoint that delivers PartTypeInformation of own products to customer partners. " +
+    @Operation(description = "Endpoint that delivers PartTypeInformation of own products to customer partners. " +
         "'bpnl' must be set to the bpnl of the requesting party. 'materialnumber' must be set to the ownMaterialNumber of " +
         "the party, that receives the request")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),
         @ApiResponse(responseCode = "400", description = "Invalid request parameters. "),
         @ApiResponse(responseCode = "401", description = "Access forbidden. "),
-        @ApiResponse(responseCode = "404", description = "Product not found for given parameters. ")
+        @ApiResponse(responseCode = "404", description = "Product not found for given parameters. "),
+        @ApiResponse(responseCode = "501", description = "Unsupported representation requested. ")
     })
     @GetMapping("/{bpnl}/{materialnumber}/{representation}")
     public ResponseEntity<?> getMapping(@Parameter(description = "The BPNL of the requesting party") @PathVariable String bpnl,
                                         @Parameter(description = "The material number that the request receiving party uses for the material in question")
                                         @PathVariable String materialnumber,
                                         @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
-        if (!bpnlPattern.matcher(bpnl).matches() || !materialNumberPattern.matcher(materialnumber).matches()
-            || !"$value".equals(representation)) {
+        if (!bpnlPattern.matcher(bpnl).matches() || !materialNumberPattern.matcher(materialnumber).matches()) {
             return ResponseEntity.badRequest().build();
+        }
+
+        if (!"$value".equals(representation)) {
+            return ResponseEntity.status(501).build();
         }
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {

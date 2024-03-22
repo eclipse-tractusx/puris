@@ -513,7 +513,9 @@ public class EdcAdapterService {
                 if (dctTypeObject != null) {
                     if (("https://w3id.org/catenax/taxonomy#Submodel").equals(dctTypeObject.get("@id").asText())) {
                         if ("3.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
-                            if ("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation".equals(entry.get("aas-semantics:semanticId.@id").asText())) {
+                            var semanticId = entry.get("aas-semantics:semanticId");
+                            String idString = semanticId.get("@id").asText();
+                            if ("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation".equals(idString)) {
                                 if (targetCatalogEntry == null) {
                                     if (variablesService.isUseFrameworkPolicy()) {
                                         if (testFrameworkAgreementConstraint(entry)) {

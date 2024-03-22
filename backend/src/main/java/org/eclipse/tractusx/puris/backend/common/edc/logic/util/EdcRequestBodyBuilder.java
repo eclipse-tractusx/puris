@@ -365,7 +365,9 @@ public class EdcRequestBodyBuilder {
         propertiesObject.set("dct:type", dctTypeObject);
         dctTypeObject.put("@id", CX_TAXO_NAMESPACE + "Submodel");
         propertiesObject.put("cx-common:version", "3.0");
-        propertiesObject.put("aas-semantics:semanticId.@id", "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation");
+        var semanticIdObject = MAPPER.createObjectNode();
+        propertiesObject.set("aas-semantics:semanticId", semanticIdObject);
+        semanticIdObject.put("@id", "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation");
         var dataAddress = MAPPER.createObjectNode();
         String url = variablesService.getParttypeInformationServerendpoint();
         if (!url.endsWith("/")) {
