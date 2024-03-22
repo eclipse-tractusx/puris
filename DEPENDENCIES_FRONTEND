@@ -283,7 +283,7 @@ npm/npmjs/@babel/highlight/7.23.4, MIT AND (BSD-2-Clause AND ISC AND MIT) AND BS
 npm/npmjs/@babel/parser/7.23.6, MIT AND (BSD-2-Clause AND ISC AND MIT) AND BSD-2-Clause AND BSD-3-Clause, approved, #10663
 npm/npmjs/@babel/plugin-transform-react-jsx-self/7.23.3, MIT, approved, clearlydefined
 npm/npmjs/@babel/plugin-transform-react-jsx-source/7.23.3, MIT, approved, clearlydefined
-npm/npmjs/@babel/runtime/7.24.0, MIT, approved, clearlydefined
+npm/npmjs/@babel/runtime/7.24.0, MIT AND (BSD-2-Clause AND ISC AND MIT) AND BSD-2-Clause AND BSD-3-Clause, approved, #13900
 npm/npmjs/@babel/template/7.22.15, MIT, approved, #9017
 npm/npmjs/@babel/traverse/7.23.7, MIT AND (BSD-2-Clause AND ISC AND MIT) AND BSD-2-Clause AND BSD-3-Clause, approved, #11520
 npm/npmjs/@babel/types/7.23.6, MIT AND (BSD-2-Clause AND ISC AND MIT) AND BSD-2-Clause AND BSD-3-Clause, approved, #11521

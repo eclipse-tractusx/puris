@@ -139,6 +139,8 @@ public class EdcAdapterService {
     public boolean createPolicyAndContractDefForPartner(Partner partner) {
         boolean result = createPolicyDefinitionForPartner(partner);
         result &= createDtrContractDefinitionForPartner(partner);
+        result &= registerPartTypeAssetForPartner(partner);
+        result &= createPartTypeInfoContractDefForPartner(partner);
         result &= createContractDefinitionForPartner(partner, DT_ApiMethodEnum.REQUEST);
         result &= createContractDefinitionForPartner(partner, DT_ApiMethodEnum.STATUS_REQUEST);
         return result & createContractDefinitionForPartner(partner, DT_ApiMethodEnum.RESPONSE);
@@ -182,6 +184,21 @@ public class EdcAdapterService {
             return true;
         } catch (Exception e) {
             log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and DTR", e);
+            return false;
+        }
+    }
+
+    private boolean createPartTypeInfoContractDefForPartner(Partner partner) {
+        var body = edcRequestBodyBuilder.buildPartTypeInfoContractDefinitionForPartner(partner);
+        try (var response = sendPostRequest(body, List.of("v2", "contractdefinitions"))) {
+            if (!response.isSuccessful()) {
+                log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and PartTypeInfo asset");
+                return false;
+            }
+            log.info("Contract definition successful for PartTypeAsset and partner " + partner.getBpnl());
+            return true;
+        } catch (Exception e) {
+            log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and PartTypeInfo asset", e);
             return false;
         }
     }
@@ -242,10 +259,29 @@ public class EdcAdapterService {
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
                 }
+                return false;
             }
             return true;
         } catch (Exception e) {
             log.error("Failed to register DTR Asset", e);
+            return false;
+        }
+    }
+
+    private boolean registerPartTypeAssetForPartner(Partner partner) {
+        var body = edcRequestBodyBuilder.buildPartTypeInfoRegistrationBody(partner);
+        try (var response = sendPostRequest(body, List.of("v3", "assets"))) {
+            if (!response.isSuccessful()) {
+                log.warn("Asset registration failed for PartTypeAsset and partner " + partner.getBpnl());
+                if (response.body() != null) {
+                    log.warn("Response: \n" + response.body().string());
+                }
+                return false;
+            }
+            log.info("Asset registration successful for PartTypeAsset and partner " + partner.getBpnl());
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to register PartTypeAsset for partner " + partner.getBpnl());
             return false;
         }
     }
@@ -277,11 +313,12 @@ public class EdcAdapterService {
     /**
      * Retrieve the response to an unfiltered catalog request from the partner
      * with the given dspUrl
-     * @param dspUrl    The dspUrl of your partner
-     * @return          The response containing the full catalog, if successful
+     *
+     * @param dspUrl The dspUrl of your partner
+     * @return The response containing the full catalog, if successful
      */
     public Response getCatalogResponse(String dspUrl) throws IOException {
-         return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, null), List.of("v2", "catalog", "request"));
+        return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, null), List.of("v2", "catalog", "request"));
     }
 
     /**
@@ -429,6 +466,129 @@ public class EdcAdapterService {
         } catch (Exception e) {
             log.error("Failed to send Proxy Pull request to " + url, e);
             throw new RuntimeException(e);
+        }
+    }
+
+    public Response getProxyPullRequest(String url, String authKey, String authCode, String[] pathParams) {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(url).newBuilder();
+        for (var pathSegment : pathParams) {
+            urlBuilder.addPathSegment(pathSegment);
+        }
+        try {
+            var request = new Request.Builder()
+                .get()
+                .url(urlBuilder.build())
+                .header(authKey, authCode)
+                .build();
+            return CLIENT.newCall(request).execute();
+        } catch (Exception e) {
+            log.error("ProxyPull GET Request failed ", e);
+            return null;
+        }
+    }
+
+    /**
+     * Tries to negotiate for the PartTypeInfo-Submodel asset with the given partner
+     * and also tries to initiate the transfer of the edr token to the given endpoint.
+     * <p>
+     * It will return a String array of length 4. The authKey is stored under index 0, the
+     * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
+     *
+     * @param partner the partner
+     * @return A String array or null, if negotiation failed or the authCode did not arrive
+     */
+    public String[] getContractForPartTypeInfoSubmodel(Partner partner) {
+        try {
+            var responseNode = getCatalog(partner.getEdcUrl());
+            var catalogArray = responseNode.get("dcat:dataset");
+            // If there is exactly one asset, the catalogContent will be a JSON object.
+            // In all other cases catalogContent will be a JSON array.
+            // For the sake of uniformity we will embed a single object in an array.
+            if (catalogArray.isObject()) {
+                catalogArray = objectMapper.createArrayNode().add(catalogArray);
+            }
+            JsonNode targetCatalogEntry = null;
+            for (var entry : catalogArray) {
+                var dctTypeObject = entry.get("dct:type");
+                if (dctTypeObject != null) {
+                    if (("https://w3id.org/catenax/taxonomy#Submodel").equals(dctTypeObject.get("@id").asText())) {
+                        if ("3.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
+                            var semanticId = entry.get("aas-semantics:semanticId");
+                            String idString = semanticId.get("@id").asText();
+                            if ("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation".equals(idString)) {
+                                if (targetCatalogEntry == null) {
+                                    if (variablesService.isUseFrameworkPolicy()) {
+                                        if (testFrameworkAgreementConstraint(entry)) {
+                                            targetCatalogEntry = entry;
+                                        } else {
+                                            log.error("Contract Negotiation for PartTypeInformation Submodel asset with partner " + partner.getBpnl() + " has " +
+                                                "been aborted. This partner's contract policy does not match the policy " +
+                                                "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
+                                                "\n Received offer from Partner: \n" + entry.toPrettyString());
+                                            break;
+                                        }
+                                    } else {
+                                        targetCatalogEntry = entry;
+                                    }
+                                } else {
+                                    log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (targetCatalogEntry == null) {
+                log.error("Could not find submodel asset for PartTypeInformation at partner " + partner.getBpnl() + " 's catalog");
+                return null;
+            }
+            String assetId = targetCatalogEntry.get("@id").asText();
+            JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
+            String negotiationId = negotiationResponse.get("@id").asText();
+            // Await confirmation of contract and contractId
+            String contractId = null;
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                var responseObject = getNegotiationState(negotiationId);
+                if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
+                    contractId = responseObject.get("edc:contractAgreementId").asText();
+                    break;
+                }
+            }
+            if (contractId == null) {
+                var negotiationState = getNegotiationState(negotiationId);
+                log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
+                log.error("Failed to obtain " + assetId + " from " + partner.getEdcUrl());
+                return null;
+            }
+
+            // Initiate transfer of edr
+            var transferResp = initiateProxyPullTransfer(partner, contractId, assetId);
+            String transferId = transferResp.get("@id").asText();
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                transferResp = getTransferState(transferId);
+                if ("STARTED".equals(transferResp.get("edc:state").asText())) {
+                    break;
+                }
+            }
+
+            // Await arrival of edr
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
+                if (edr_Dto != null) {
+                    log.info("Successfully negotiated for " + assetId + " with " + partner.getEdcUrl());
+                    return new String[]{edr_Dto.authKey(), edr_Dto.authCode(), edr_Dto.endpoint(), contractId};
+                }
+            }
+            log.warn("did not receive authCode");
+            log.error("Failed to obtain " + assetId + " from " + partner.getEdcUrl());
+            return null;
+
+        } catch (Exception e) {
+            log.error("Failed to get contract for PartTypeInfo submodel asset from " + partner.getBpnl(), e);
+            return null;
         }
     }
 

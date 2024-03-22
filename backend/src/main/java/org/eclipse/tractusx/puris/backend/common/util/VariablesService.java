@@ -39,6 +39,8 @@ public class VariablesService {
      * The port used by this apps server application.
      */
     private String serverPort;
+    @Value("${puris.baseurl}")
+    private String purisBaseUrl;
     @Value("${puris.demonstrator.role}")
     /**
      * Must be set to "CUSTOMER" or "SUPPLIER" if
@@ -46,7 +48,8 @@ public class VariablesService {
      * defined in the DataInjectionCommandLineRunner
      */
     private String demoRole;
-    @Value("${puris.edr.endpoint}")
+
+    @Value("${puris.baseurl}" + "catena/edrendpoint")
     /**
      * The edrEndpoint to be used during consumer pull asset transfers.
      */
@@ -57,7 +60,7 @@ public class VariablesService {
      * in the context of a consumer pull is removed from memory
      */
     private long edrTokenDeletionTimer;
-    @Value("${puris.request.serverendpoint}")
+    @Value("${puris.baseurl}" + "catena/item-stock/request")
     /**
      * The url under which this application's request endpoint can
      * be reached by external machines.
@@ -69,7 +72,7 @@ public class VariablesService {
      * during asset creation.
      */
     private String requestApiAssetId;
-    @Value("${puris.response.serverendpoint}")
+    @Value("${puris.baseurl}" + "catena/item-stock/response")
     /**
      * The url under which this application's response endpoint can
      * be reached by external machines.
@@ -87,7 +90,7 @@ public class VariablesService {
      * during asset creation.
      */
     private String statusRequestApiAssetId;
-    @Value("${puris.statusrequest.serverendpoint}")
+    @Value("${puris.baseurl}" + "catena/item-stock/status")
     /**
      * The url under which this application's status-request endpoint
      * can be reached by external machines.
@@ -115,6 +118,9 @@ public class VariablesService {
      * The url of your decentralized DTR
      */
     private String dtrUrl;
+
+    @Value("${puris.baseurl}" + "catena/parttypeinformation")
+    private String parttypeInformationServerendpoint;
 
     @Value("${puris.generatematerialcatenaxid}")
     /**
