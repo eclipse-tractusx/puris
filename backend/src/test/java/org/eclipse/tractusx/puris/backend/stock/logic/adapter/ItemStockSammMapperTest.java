@@ -105,7 +105,6 @@ public class ItemStockSammMapperTest {
         // Given
         Material semiconductorMaterial = Material.builder()
             .ownMaterialNumber(CUSTOMER_MAT_NUMBER)
-            .materialNumberCx(CX_MAT_NUMBER)
             .materialFlag(true)
             .productFlag(false)
             .name("Semiconductor")
@@ -269,7 +268,7 @@ public class ItemStockSammMapperTest {
         customerPartner.setSites(adjustedSet);
 
         Material semiconductorProduct = Material.builder()
-            .ownMaterialNumber(CUSTOMER_MAT_NUMBER)
+            .ownMaterialNumber(SUPPLIER_MAT_NUMBER)
             .materialNumberCx(CX_MAT_NUMBER)
             .materialFlag(true)
             .productFlag(true)
@@ -281,8 +280,7 @@ public class ItemStockSammMapperTest {
         mpr.setMaterial(semiconductorProduct);
         mpr.setPartnerBuysMaterial(false);
         mpr.setPartnerSuppliesMaterial(true);
-        mpr.setPartnerMaterialNumber(SUPPLIER_MAT_NUMBER);
-        mpr.setPartnerCXNumber(CX_MAT_NUMBER);
+        mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
 
         // When
         // Find material based on CX number and mpr
@@ -379,13 +377,14 @@ public class ItemStockSammMapperTest {
         // Setup from the suppliers point of view
         Material material = new Material();
         material.setProductFlag(true);
+        material.setOwnMaterialNumber(SUPPLIER_MAT_NUMBER);
         material.setMaterialNumberCx(CX_MAT_NUMBER);
 
         MaterialPartnerRelation mpr = new MaterialPartnerRelation();
         mpr.setPartner(customerPartner);
         mpr.setMaterial(material);
         mpr.setPartnerBuysMaterial(true);
-        mpr.setPartnerMaterialNumber(SUPPLIER_MAT_NUMBER);
+        mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
         mpr.setPartnerCXNumber(CX_MAT_NUMBER);
 
         when(mprService.findByPartnerAndPartnerCXNumber(customerPartner, CX_MAT_NUMBER)).thenReturn(mpr);

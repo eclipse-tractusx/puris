@@ -94,8 +94,9 @@ public class Material {
     private String ownMaterialNumber;
 
     /**
-     * If there is a Catena-X material number defined
-     * for this material, this is stored here.
+     * The global Catena-X identifier, set based on the respective role.
+     * In case the supplier generated the material, he also generates a unique CX-ID for the material.
+     * In case it is a customer, the material uses the CX-ID set by the supplier.
      */
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String materialNumberCx;

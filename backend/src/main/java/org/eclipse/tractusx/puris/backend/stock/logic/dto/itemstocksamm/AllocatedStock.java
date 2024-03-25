@@ -25,7 +25,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import java.util.Date;
-import javax.xml.datatype.XMLGregorianCalendar;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

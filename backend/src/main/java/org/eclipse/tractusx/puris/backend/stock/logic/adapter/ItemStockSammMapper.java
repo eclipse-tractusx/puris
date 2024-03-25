@@ -72,8 +72,8 @@ public class ItemStockSammMapper {
         var groupedByPositionAttributes = itemStocks
             .stream()
             .collect(Collectors.groupingBy(
-                itemStock -> new PositionsMappingHelper(itemStock.getLastUpdatedOnDateTime(),
-                    itemStock.getNonNullCustomerOrderId(), itemStock.getNonNullSupplierOrderId(),
+                itemStock -> new PositionsMappingHelper(itemStock.getNonNullCustomerOrderId(),
+                    itemStock.getNonNullSupplierOrderId(),
                     itemStock.getNonNullCustomerOrderPositionId())));
         ItemStockSamm samm = new ItemStockSamm();
 
@@ -108,23 +108,22 @@ public class ItemStockSammMapper {
         return samm;
     }
 
-    private record PositionsMappingHelper(Date date, String customerOrderId, String supplierOrderId,
-                                          String customerOrderPositionId) {
+    private record PositionsMappingHelper(String customerOrderId, String supplierOrderId, String customerOrderPositionId) {
     }
 
 
 
     public List<ReportedProductItemStock> itemStockSammToReportedProductItemStock(ItemStockSamm samm, Partner partner) {
-        String partnerCx = samm.getMaterialGlobalAssetId();
+        String matNbrCatenaX = samm.getMaterialGlobalAssetId();
         ArrayList<ReportedProductItemStock> outputList = new ArrayList<>();
         if (samm.getDirection() != DirectionCharacteristic.INBOUND) {
             log.warn("Direction should be INBOUND, aborting");
             return outputList;
         }
-        var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, partnerCx);
+        var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, matNbrCatenaX);
 
         if (mpr == null) {
-            log.warn("Could not identify materialPartnerRelation with partnerCx " + partnerCx + " and partner bpnl " + partner.getBpnl());
+            log.warn("Could not identify materialPartnerRelation with matNbrCatenaX " + matNbrCatenaX + " and partner bpnl " + partner.getBpnl());
             return outputList;
         }
 
