@@ -21,11 +21,14 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingService;
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DtrAdapterService;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
@@ -61,7 +64,13 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     private DtrAdapterService dtrAdapterService;
 
     @Autowired
+    private EdcAdapterService edcAdapterService;
+
+    @Autowired
     private ExecutorService executorService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * Stores the given relation to the database.
@@ -76,10 +85,65 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         if (searchResult == null) {
             dtmService.update(materialPartnerRelation);
             executorService.submit(new DtrRegistrationTask(materialPartnerRelation, "CREATE", 3));
+            if (materialPartnerRelation.getMaterial().isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial()
+                && materialPartnerRelation.getPartnerCXNumber() == null) {
+                log.info("Attempting CX-Id fetch for Material " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                    " from Supplier-Partner " + materialPartnerRelation.getPartner().getBpnl());
+                executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 3));
+            }
             return mprRepository.save(materialPartnerRelation);
         }
         log.error("Could not create MaterialPartnerRelation, " + materialPartnerRelation.getKey() + " already exists");
         return null;
+    }
+
+    @AllArgsConstructor
+    private class PartTypeInformationRetrievalTask implements Callable<Boolean> {
+        final MaterialPartnerRelation materialPartnerRelation;
+        int retries;
+
+        @Override
+        public Boolean call() throws Exception {
+            Thread.sleep(100);
+            if (retries < 0) {
+                log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
+                    " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed");
+                return false;
+            }
+            String[] data = edcAdapterService.getContractForPartTypeInfoSubmodel(materialPartnerRelation.getPartner());
+            if (data != null) {
+                String authKey = data[0];
+                String authCode = data[1];
+                String endpoint = data[2];
+                var response = edcAdapterService.getProxyPullRequest(endpoint, authKey, authCode,
+                    new String[]{materialPartnerRelation.getPartnerMaterialNumber(), "$value"});
+                if (response != null && response.isSuccessful()) {
+                    var body = objectMapper.readTree(response.body().string());
+                    var cxId = body.get("catenaXId").asText();
+                    if (cxId != null && PatternStore.URN_OR_UUID_PATTERN.matcher(cxId).matches()) {
+                        materialPartnerRelation.setPartnerCXNumber(cxId);
+                        var updatedMpr = mprRepository.save(materialPartnerRelation);
+                        if (updatedMpr != null) {
+                            log.info("Successfully inserted Partner CX Id for Partner " +
+                                materialPartnerRelation.getPartner().getBpnl() + " and Material "
+                                + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+                        }
+                    }
+                } else {
+                    log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
+                        " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);
+                    retries--;
+                    return call();
+                }
+                return true;
+            } else {
+                log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
+                    " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);
+                retries--;
+                return call();
+            }
+
+        }
     }
 
 
@@ -100,7 +164,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
             if (retries < 0) {
                 return false;
             }
-            if (materialPartnerRelation.getPartnerCXNumber() == null){
+            if (materialPartnerRelation.getPartnerCXNumber() == null) {
                 log.error("Missing partnerCX Number in " + materialPartnerRelation + "\nAborting DTR call");
                 return false;
             }
@@ -111,7 +175,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                     if (materialPartnerRelation.getMaterial().isProductFlag()) {
                         var allCustomers =
                             mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
-                                materialPartnerRelation.getMaterial().getOwnMaterialNumber()).
+                                    materialPartnerRelation.getMaterial().getOwnMaterialNumber()).
                                 stream().filter(mpr -> mpr.getPartnerCXNumber() != null).toList();
                         boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
                         if (result) {
@@ -164,7 +228,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                 }
             }
             if (success) {
-               return true;
+                return true;
             } else {
                 retries--;
                 return call();
@@ -184,6 +248,12 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         var foundEntity = mprRepository.findById(materialPartnerRelation.getKey());
         if (foundEntity.isPresent()) {
             dtmService.update(materialPartnerRelation);
+            if (materialPartnerRelation.getMaterial().isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial()
+                && materialPartnerRelation.getPartnerCXNumber() == null) {
+                log.info("Attempting CX-Id fetch for Material " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                    " from Supplier-Partner " + materialPartnerRelation.getPartner().getBpnl());
+                executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 3));
+            }
             if (!foundEntity.get().isPartnerSuppliesMaterial() && materialPartnerRelation.isPartnerSuppliesMaterial()) {
                 executorService.submit(new DtrRegistrationTask(materialPartnerRelation, "CREATE", 3));
             } else {

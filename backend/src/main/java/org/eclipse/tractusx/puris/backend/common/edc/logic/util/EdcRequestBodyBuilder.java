@@ -212,6 +212,24 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+    public JsonNode buildPartTypeInfoContractDefinitionForPartner(Partner partner) {
+        var body = getEdcContextObject();
+        body.put("@id", partner.getBpnl() +"_contractdefinition_for_PartTypeInfoAsset");
+        body.put("accessPolicyId", getBpnPolicyId(partner));
+        if(variablesService.isUseFrameworkPolicy()) {
+            body.put("contractPolicyId", FRAMEWORK_POLICY_ID);
+        } else {
+            body.put("contractPolicyId", getBpnPolicyId(partner));
+        }
+        var assetsSelector = MAPPER.createObjectNode();
+        body.set("assetsSelector", assetsSelector);
+        assetsSelector.put("@type", "CriterionDto");
+        assetsSelector.put("operandLeft", EDC_NAMESPACE + "id");
+        assetsSelector.put("operator", "=");
+        assetsSelector.put("operandRight", getPartTypeInfoAssetId(partner));
+        return body;
+    }
+
     /**
      * This method helps to ensure that the buildContractDefinitionWithBpnRestrictedPolicy uses the
      * same policy-id as the one that is created with the buildContractDefinitionWithBpnRestrictedPolicy
@@ -338,8 +356,42 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+    public JsonNode buildPartTypeInfoRegistrationBody(Partner partner) {
+        var body = getAssetRegistrationContext();
+        body.put("@id", getPartTypeInfoAssetId(partner));
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", CX_TAXO_NAMESPACE + "Submodel");
+        propertiesObject.put("cx-common:version", "3.0");
+        var semanticIdObject = MAPPER.createObjectNode();
+        propertiesObject.set("aas-semantics:semanticId", semanticIdObject);
+        semanticIdObject.put("@id", "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation");
+        var dataAddress = MAPPER.createObjectNode();
+        String url = variablesService.getParttypeInformationServerendpoint();
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+        url += partner.getBpnl();
+        dataAddress.put("@type", "DataAddress");
+        dataAddress.put("proxyPath", "true");
+        dataAddress.put("proxyQueryParams", "false");
+        dataAddress.put("proxyMethod", "false");
+        dataAddress.put("type", "HttpData");
+        dataAddress.put("baseUrl", url);
+        dataAddress.put("authKey", "x-api-key");
+        dataAddress.put("authCode", variablesService.getApiKey());
+        body.set("dataAddress", dataAddress);
+        return body;
+    }
+
     private String getDtrAssetId() {
         return "DigitalTwinRegistryId@" + variablesService.getOwnBpnl();
+    }
+
+    private String getPartTypeInfoAssetId(Partner partner) {
+        return "PartTypeInformationApi_" + partner.getBpnl();
     }
 
     private ObjectNode getAssetRegistrationContext() {

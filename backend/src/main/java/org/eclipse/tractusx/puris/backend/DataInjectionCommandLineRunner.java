@@ -162,7 +162,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
             supplierPartner, semiconductorMatNbrSupplier, true, false);
-        semiconductorPartnerRelation.setPartnerCXNumber(semiconductorMatNbrCatenaX);
+//        semiconductorPartnerRelation.setPartnerCXNumber(semiconductorMatNbrCatenaX);
         mprService.create(semiconductorPartnerRelation);
         semiconductorPartnerRelation = mprService.find(semiconductorMaterial, supplierPartner);
         log.info("Found Relation: " + semiconductorPartnerRelation);
@@ -248,7 +248,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
             customerPartner, semiconductorMatNbrCustomer, false, true);
-        semiconductorPartnerRelation.setPartnerCXNumber(semiconductorMatNbrCatenaX);
+//        semiconductorPartnerRelation.setPartnerCXNumber(semiconductorMatNbrCatenaX);
         semiconductorPartnerRelation = mprService.create(semiconductorPartnerRelation);
 
         log.info("Created Relation " + semiconductorPartnerRelation);
@@ -411,7 +411,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Material getNewSemiconductorMaterialForCustomer() {
         Material material = new Material();
         material.setOwnMaterialNumber(semiconductorMatNbrCustomer);
-        material.setMaterialNumberCx(semiconductorMatNbrCatenaX);
+//        material.setMaterialNumberCx(semiconductorMatNbrCatenaX);
         material.setMaterialFlag(true);
         material.setName("Semiconductor");
         return material;
