@@ -17,7 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.domain.model.measurement;
+package org.eclipse.tractusx.puris.backend.common.domain.model.measurement;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

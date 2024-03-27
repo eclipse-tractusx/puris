@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
 
 import java.util.Objects;
 
