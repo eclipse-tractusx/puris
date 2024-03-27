@@ -29,10 +29,9 @@ This leads to two scenarios, within the shared asset approach:
 Within PURIS this results in the following steps:
 
 - when creating a material (independent of the role) a global asset id (Catena-X ID) is defined on the material, which is used for the supplier twin.
-- when creating a mpr, the global asset id (Catena-X ID)
-    - may be set externally (controller),
-    - is taken over from the suppliers PartTypeInformation (acting as supplier) **OR**
-    - is set to the material's catena-X id (acting as customer)
+- when creating a mpr, the global asset id (Catena-X ID), initially left null
+    - is usually not set (acting as supplier)
+    - is set to the supplier's material's catena-X id (acting as customer)
 
 ## Data Sovereignty
 
