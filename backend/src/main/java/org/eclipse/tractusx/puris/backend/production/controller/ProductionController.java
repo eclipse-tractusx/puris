@@ -163,12 +163,12 @@ public class ProductionController {
 
         productions = productionService.createAll(productions);
         if (productions == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stocks could not be created.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "One or more productions already exist. Use PUT instead.");
         }
         return productions.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    @PutMapping("{id}")
+    @PutMapping()
     @Operation(summary = "Updates a planned production by its UUID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Planned Productions was updated."),
@@ -177,7 +177,7 @@ public class ProductionController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     @ResponseStatus(HttpStatus.OK)
-    public ProductionDto updateProduction(@PathVariable UUID id, @RequestBody ProductionDto dto) {
+    public ProductionDto updateProduction(@RequestBody ProductionDto dto) {
         OwnProduction updatedProduction = productionService.update(convertToEntity(dto));
         if (updatedProduction == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Production does not exist.");

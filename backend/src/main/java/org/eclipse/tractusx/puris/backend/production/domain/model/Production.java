@@ -79,9 +79,18 @@ public class Production {
         return material.getOwnMaterialNumber();
     }
 
-    public boolean equals(Production production) {
-        return this.getMaterial().getOwnMaterialNumber().equals(production.getMaterial().getOwnMaterialNumber()) &&
-                this.getPartner().getUuid().equals(production.getPartner().getUuid()) &&
-                this.getEstimatedTimeOfCompletion().equals(production.getEstimatedTimeOfCompletion());
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final Production that = (Production) o;
+        return this.getMaterial().getOwnMaterialNumber().equals(that.getMaterial().getOwnMaterialNumber()) &&
+                this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
+                this.getEstimatedTimeOfCompletion().equals(that.getEstimatedTimeOfCompletion());
     }
 }
