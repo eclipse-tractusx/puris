@@ -20,6 +20,19 @@ the respective material number of a partner leading to the following constellati
     - own material number = material number supplier
     - material number partner = material number customer
 
+Furthermore, as of ItemStockSAMM v2.0.0 the supplier CX ID is the sole identifier for a material of a respective partner.
+This leads to two scenarios, within the shared asset approach:
+
+- when acting as a customer, the supplier's global asset id (Catena-X ID) is leading and taken from the PartTypeInformation of the supplier's twin.
+- when acting as a supplier, the initially generated global asset id (Catena-X ID) is handed over to the customers.
+
+Within PURIS this results in the following steps:
+
+- when creating a material (independent of the role) a global asset id (Catena-X ID) is defined on the material, which is used for the supplier twin.
+- when creating a mpr, the global asset id (Catena-X ID), initially left null
+    - is usually not set (acting as supplier)
+    - is set to the supplier's material's catena-X id (acting as customer)
+
 ## Data Sovereignty
 
 The application only provides assets (API usage) based on a Business Partner Number Legal Entity (BPNL) based access

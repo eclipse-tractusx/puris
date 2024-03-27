@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -49,19 +50,14 @@ public class Position {
 	private OrderPositionReference orderPositionReference;
 
     @NotNull
-	private Date lastUpdatedOnDateTime;
-
-	@NotNull
     @Valid
-	private List<AllocatedStock> allocatedStocks;
+    private Set<AllocatedStock> allocatedStocks;
 
 	@JsonCreator
 	public Position(
 			@JsonProperty(value = "orderPositionReference") OrderPositionReference orderPositionReference,
-			@JsonProperty(value = "lastUpdatedOnDateTime") Date lastUpdatedOnDateTime,
-			@JsonProperty(value = "allocatedStocks") List<AllocatedStock> allocatedStocks) {
+			@JsonProperty(value = "allocatedStocks") Set<AllocatedStock> allocatedStocks) {
 		this.orderPositionReference = orderPositionReference;
-		this.lastUpdatedOnDateTime = lastUpdatedOnDateTime;
 		this.allocatedStocks = allocatedStocks;
 	}
 
@@ -76,12 +72,11 @@ public class Position {
 
 		final Position that = (Position) o;
 		return Objects.equals(orderPositionReference, that.orderPositionReference)
-				&& Objects.equals(lastUpdatedOnDateTime, that.lastUpdatedOnDateTime)
 				&& Objects.equals(allocatedStocks, that.allocatedStocks);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(orderPositionReference, lastUpdatedOnDateTime, allocatedStocks);
+		return Objects.hash(orderPositionReference, allocatedStocks);
 	}
 }
