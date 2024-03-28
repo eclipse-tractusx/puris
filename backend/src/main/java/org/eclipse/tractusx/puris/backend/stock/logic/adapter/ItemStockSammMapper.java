@@ -28,6 +28,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

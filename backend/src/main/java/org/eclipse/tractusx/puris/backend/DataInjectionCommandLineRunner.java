@@ -36,7 +36,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.ItemUnitEnumeration;
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedMaterialItemStockService;
