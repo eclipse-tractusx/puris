@@ -18,15 +18,17 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package org.eclipse.tractusx.puris.backend.production.domain.repository;
+package org.eclipse.tractusx.puris.backend.production.domain.model;
 
-import java.util.UUID;
+import jakarta.persistence.Entity;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
-import org.eclipse.tractusx.puris.backend.production.domain.model.PartnerProduction;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-@Repository
-public interface PartnerProductionRepository extends JpaRepository<PartnerProduction, UUID> {
+@Entity
+@SuperBuilder
+@NoArgsConstructor
+@ToString(callSuper = true)
+public class ReportedProduction extends Production {
 
 }

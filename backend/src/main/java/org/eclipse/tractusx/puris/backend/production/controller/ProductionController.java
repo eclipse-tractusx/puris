@@ -32,10 +32,10 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
-import org.eclipse.tractusx.puris.backend.production.domain.model.PartnerProduction;
+import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedProduction;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.ProductionDto;
-import org.eclipse.tractusx.puris.backend.production.logic.service.PartnerProductionService;
-import org.eclipse.tractusx.puris.backend.production.logic.service.ProductionService;
+import org.eclipse.tractusx.puris.backend.production.logic.service.ReportedProductionService;
+import org.eclipse.tractusx.puris.backend.production.logic.service.OwnProductionService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -46,17 +46,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Validator;
-import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("production")
-@Slf4j
 public class ProductionController {
     @Autowired
-    private ProductionService productionService;
+    private OwnProductionService ownProductionService;
 
     @Autowired
-    private PartnerProductionService partnerProductionService;
+    private ReportedProductionService reportedProductionService;
 
     @Autowired
     private MaterialService materialService;
@@ -77,19 +75,15 @@ public class ProductionController {
     @ResponseBody
     @Operation(summary = "Get all planned productions for the given Material", description = "Get all planned productions for the given material number. Optionally the production site can be filtered by its bpns.")
     public List<ProductionDto> getAllProductions(String materialNumber, Optional<String> site) {
-        if (site.isEmpty()) {
-            return productionService.findAll().stream().filter(prod -> prod.getMaterial().getOwnMaterialNumber().equals(materialNumber)).map(this::convertToDto).collect(Collectors.toList());
-        }
-        return productionService.findAll().stream()
-            .filter(prod -> prod.getMaterial().getOwnMaterialNumber().equals(materialNumber) && prod.getProductionSiteBpns().equals(site.get()))
-            .map(this::convertToDto).collect(Collectors.toList());
+        return ownProductionService.findAllByFilters(Optional.of(materialNumber), null, site)
+                .stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
     @PostMapping()
     @ResponseBody
     @Operation(summary = "Creates a new planned production")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Planned Production was created."),
+            @ApiResponse(responseCode = "201", description = "Planned Production was created."),
             @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
             @ApiResponse(responseCode = "409", description = "Planned Production already exists."),
             @ApiResponse(responseCode = "500", description = "Internal Server Error.")
@@ -97,38 +91,39 @@ public class ProductionController {
     @ResponseStatus(HttpStatus.CREATED)
     public ProductionDto createProduction(@RequestBody ProductionDto productionDto) {
         if (!validator.validate(productionDto).isEmpty()) {
-            log.warn("Rejected invalid message body");
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
+
         if (productionDto.getUuid() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Production with this UUID already exists.");
         }
+
         if (productionDto.getMaterial().getMaterialNumberSupplier() == null ||
                 productionDto.getMaterial().getMaterialNumberSupplier().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Production Information misses material identification.");
         }
+
         if (productionDto.getPartner().getBpnl() == null || productionDto.getPartner().getBpnl().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Production Information misses partner identification.");
         }
+
         OwnProduction production = convertToEntity(productionDto);
-        log.info("Production: " + production);
-        if (!productionService.validate(production)) {
+        if (!ownProductionService.validate(production)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Production is invalid.");
         }
-        List<OwnProduction> existingProductions = productionService.findAll();
-        log.info("finding existing production");
-        boolean productionExists = existingProductions.stream()
-                .anyMatch(prod -> production.equals(prod));
+
+        List<OwnProduction> existingProductions = ownProductionService.findAll();
+        boolean productionExists = existingProductions.stream().anyMatch(prod -> production.equals(prod));
         if (productionExists) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Production already exists. Use PUT instead.");
         }
-        OwnProduction createdProduction = productionService.create(production);
+
+        OwnProduction createdProduction = ownProductionService.create(production);
         if (createdProduction == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock could not be created.");
         }
-        log.info("Created product-stock: " + createdProduction);
 
         return convertToDto(createdProduction);
     }
@@ -137,7 +132,7 @@ public class ProductionController {
     @ResponseBody
     @Operation(summary = "Creates a range of planned productions")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Planned Productions were created."),
+            @ApiResponse(responseCode = "201", description = "Planned Productions were created."),
             @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
             @ApiResponse(responseCode = "409", description = "Planned Productions already exist."),
             @ApiResponse(responseCode = "500", description = "Internal Server Error.")
@@ -146,8 +141,7 @@ public class ProductionController {
     public List<ProductionDto> createProductionRange(@RequestBody List<ProductionDto> productionDtos) {
         List<OwnProduction> productions = productionDtos.stream().map(dto -> {
             if (!validator.validate(dto).isEmpty()) {
-                log.warn("Rejected invalid message body");
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rejected invalid message body");
             }
             if (dto.getMaterial().getMaterialNumberSupplier() == null ||
                     dto.getMaterial().getMaterialNumberSupplier().isEmpty()) {
@@ -161,9 +155,10 @@ public class ProductionController {
             return convertToEntity(dto);
         }).collect(Collectors.toList());
 
-        productions = productionService.createAll(productions);
+        productions = ownProductionService.createAll(productions);
         if (productions == null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "One or more productions already exist. Use PUT instead.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "One or more productions already exist. Use PUT instead.");
         }
         return productions.stream().map(this::convertToDto).collect(Collectors.toList());
     }
@@ -171,14 +166,14 @@ public class ProductionController {
     @PutMapping()
     @Operation(summary = "Updates a planned production by its UUID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Planned Productions was updated."),
+            @ApiResponse(responseCode = "200", description = "Planned Productions was updated."),
             @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
             @ApiResponse(responseCode = "404", description = "Planned Production does not exist."),
             @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     @ResponseStatus(HttpStatus.OK)
     public ProductionDto updateProduction(@RequestBody ProductionDto dto) {
-        OwnProduction updatedProduction = productionService.update(convertToEntity(dto));
+        OwnProduction updatedProduction = ownProductionService.update(convertToEntity(dto));
         if (updatedProduction == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Production does not exist.");
         }
@@ -195,39 +190,23 @@ public class ProductionController {
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduction(@PathVariable UUID id) {
-        OwnProduction production = productionService.findById(id);
+        OwnProduction production = ownProductionService.findById(id);
         if (production == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Production does not exist.");
         }
-        productionService.delete(id);
+        ownProductionService.delete(id);
     }
 
-    @GetMapping("partner")
+    @GetMapping("reported")
     @ResponseBody
-    @Operation(summary = "Get all productions of partners for a material", description = "Get all productions of partners for a material number. Optionally the partners can be filtered by their bpnl and the production site can be filtered by its bpns.")
+    @Operation(
+        summary = "Get all productions of partners for a material", 
+        description = "Get all productions of partners for a material number. Optionally the partners can be filtered by their bpnl and the production site can be filtered by its bpns."
+    )
     public List<ProductionDto> getAllProductionsForPartner(String materialNumber, Optional<String> bpnl,
             Optional<String> site) {
-        if (bpnl.isEmpty()) {
-            if (site.isEmpty()) {
-                return partnerProductionService.findAll().stream()
-                        .filter(prod -> prod.getMaterial().getOwnMaterialNumber().equals(materialNumber))
-                        .map(this::convertToDto)
-                        .collect(Collectors.toList());
-            }
-            return partnerProductionService.findAll().stream()
-                    .filter(prod -> prod.getMaterial().getOwnMaterialNumber().equals(materialNumber) && prod.getProductionSiteBpns().equals(site.get()))
-                    .map(this::convertToDto).collect(Collectors.toList());
-        }
-
-        Partner partner = partnerService.findByBpnl(bpnl.get());
-        if (partner == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Partner does not exist.");
-        }
-        return partnerProductionService.findAllByPartnerId(partner.getUuid()).stream()
-                .filter(prod -> prod.getMaterial().getOwnMaterialNumber().equals(materialNumber)
-                        && (site.isEmpty() || prod.getProductionSiteBpns().equals(site.get())))
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return reportedProductionService.findAllByFilters(Optional.of(materialNumber), bpnl, site)
+                .stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
     private ProductionDto convertToDto(OwnProduction entity) {
@@ -261,13 +240,14 @@ public class ProductionController {
         return entity;
     }
 
-    private ProductionDto convertToDto(PartnerProduction entity) {
+    private ProductionDto convertToDto(ReportedProduction entity) {
         ProductionDto dto = modelMapper.map(entity, ProductionDto.class);
 
         dto.getMaterial().setMaterialNumberCx(entity.getMaterial().getMaterialNumberCx());
         dto.getMaterial().setMaterialNumberSupplier(entity.getMaterial().getOwnMaterialNumber());
 
-        var materialPartnerRelation = mprService.find(entity.getMaterial().getOwnMaterialNumber(), entity.getPartner().getUuid());
+        var materialPartnerRelation = mprService.find(entity.getMaterial().getOwnMaterialNumber(),
+                entity.getPartner().getUuid());
         dto.getMaterial().setMaterialNumberCustomer(materialPartnerRelation.getPartnerMaterialNumber());
 
         return dto;
