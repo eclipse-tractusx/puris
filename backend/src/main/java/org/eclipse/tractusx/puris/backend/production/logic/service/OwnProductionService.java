@@ -26,23 +26,27 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import javax.management.openmbean.KeyAlreadyExistsException;
+
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.eclipse.tractusx.puris.backend.production.domain.repository.OwnProductionRepository;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
 public class OwnProductionService {
     private final OwnProductionRepository repository;
 
-    private final Partner ownPartnerEntity;
+    private final PartnerService partnerService;
 
     protected final Function<OwnProduction, Boolean> validator;
 
     public OwnProductionService(OwnProductionRepository repository, PartnerService partnerService) {
         this.repository = repository;
-        this.ownPartnerEntity = partnerService.getOwnPartnerEntity();
+        this.partnerService = partnerService;
         this.validator = this::validate;
     }
 
@@ -79,22 +83,23 @@ public class OwnProductionService {
     }
 
     public final OwnProduction create(OwnProduction production) {
-        if (production.getUuid() != null && repository.findById(production.getUuid()).isPresent()) {
-            return null;
-        }
         if (!validator.apply(production)) {
-            return null;
+            
+            throw new IllegalArgumentException("Invalid production");
+        }
+        if (production.getUuid() != null && repository.findById(production.getUuid()).isPresent()) {
+            throw new KeyAlreadyExistsException("Production already exists");
         }
         return repository.save(production);
     }
 
     public final List<OwnProduction> createAll(List<OwnProduction> productions) {
         if (productions.stream().anyMatch(production -> !validator.apply(production))) {
-            return null;
+            throw new IllegalArgumentException("Invalid production");
         }
         if (repository.findAll().stream()
                 .anyMatch(existing -> productions.stream().anyMatch(production -> production.equals(existing)))) {
-            return null;
+            throw new KeyAlreadyExistsException("Production already exists");
         }
         return repository.saveAll(productions);
     }
@@ -111,6 +116,7 @@ public class OwnProductionService {
     }
 
     public boolean validate(OwnProduction production) {
+        Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
         return 
             production.getQuantity() > 0 && 
             production.getMeasurementUnit() != null && 

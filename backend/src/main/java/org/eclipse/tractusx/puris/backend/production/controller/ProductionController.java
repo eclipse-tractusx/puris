@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.management.openmbean.KeyAlreadyExistsException;
+
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
@@ -94,38 +96,24 @@ public class ProductionController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        if (productionDto.getUuid() != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Production with this UUID already exists.");
-        }
-
-        if (productionDto.getMaterial().getMaterialNumberSupplier() == null ||
-                productionDto.getMaterial().getMaterialNumberSupplier().isEmpty()) {
+        if (productionDto.getMaterial() == null || productionDto.getMaterial().getMaterialNumberSupplier() == null ||
+            productionDto.getMaterial().getMaterialNumberSupplier().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Production Information misses material identification.");
         }
 
-        if (productionDto.getPartner().getBpnl() == null || productionDto.getPartner().getBpnl().isEmpty()) {
+        if (productionDto.getPartner() == null || productionDto.getPartner().getBpnl() == null || productionDto.getPartner().getBpnl().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Production Information misses partner identification.");
         }
 
-        OwnProduction production = convertToEntity(productionDto);
-        if (!ownProductionService.validate(production)) {
+        try {
+            return convertToDto(ownProductionService.create(convertToEntity(productionDto)));
+        } catch (KeyAlreadyExistsException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Production already exists. Use PUT instead.");
+        } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Production is invalid.");
         }
-
-        List<OwnProduction> existingProductions = ownProductionService.findAll();
-        boolean productionExists = existingProductions.stream().anyMatch(prod -> production.equals(prod));
-        if (productionExists) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Production already exists. Use PUT instead.");
-        }
-
-        OwnProduction createdProduction = ownProductionService.create(production);
-        if (createdProduction == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock could not be created.");
-        }
-
-        return convertToDto(createdProduction);
     }
 
     @PostMapping("/range")
@@ -154,13 +142,13 @@ public class ProductionController {
             }
             return convertToEntity(dto);
         }).collect(Collectors.toList());
-
-        productions = ownProductionService.createAll(productions);
-        if (productions == null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "One or more productions already exist. Use PUT instead.");
-        }
-        return productions.stream().map(this::convertToDto).collect(Collectors.toList());
+        try {
+            return ownProductionService.createAll(productions).stream().map(this::convertToDto).collect(Collectors.toList());
+        } catch (KeyAlreadyExistsException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "One or more productions already exist. Use PUT instead.");
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or more productions are invalid.");
+        }      
     }
 
     @PutMapping()

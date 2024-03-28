@@ -94,9 +94,9 @@ public class Production {
                 this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
                 this.getEstimatedTimeOfCompletion().equals(that.getEstimatedTimeOfCompletion()) &&
                 (
-                    this.getCustomerOrderNumber() == that.getCustomerOrderNumber() && 
-                    this.getCustomerOrderPositionNumber() == that.getCustomerOrderPositionNumber() &&
-                    this.getSupplierOrderNumber() == that.getSupplierOrderNumber()
+                    Objects.equals(this.getCustomerOrderNumber(), that.getCustomerOrderNumber()) && 
+                    Objects.equals(this.getCustomerOrderPositionNumber(), that.getCustomerOrderPositionNumber()) &&
+                    Objects.equals(this.getSupplierOrderNumber(), that.getSupplierOrderNumber())
                 );
     }
 
