@@ -301,7 +301,7 @@ public class EdcRequestBodyBuilder {
      * @param assetId    The assetId
      * @return The request body
      */
-    public JsonNode buildProxyPullRequestBody(Partner partner, String contractID, String assetId) {
+    public JsonNode buildProxyPullRequestBody(Partner partner, String contractID, String assetId, String partnerEdcUrl) {
         var body = getEdcContextObject();
         body.put("@type", "TransferRequestDto");
         body.put("connectorId", partner.getBpnl());
@@ -433,7 +433,7 @@ public class EdcRequestBodyBuilder {
     }
 
     private String getItemStock2AssetId() {
-        return "ItemStockSubmodel@" + variablesService.getOwnBpnl();
+        return variablesService.getItemStock2ApiAssetId();
     }
 
     private String getDtrAssetId() {

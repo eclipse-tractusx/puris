@@ -105,7 +105,6 @@ public class ItemStockSammMapper {
                 allocatedStocksList.add(allocatedStock);
             }
         }
-        log.info("CREATED SAMM \n" + samm);
         return samm;
     }
 
@@ -129,8 +128,6 @@ public class ItemStockSammMapper {
         }
 
         var mpr = mprService.find(material, partner);
-
-
 
         for (var position : samm.getPositions()) {
             String supplierOrderId = null, customerOrderPositionId = null, customerOrderId = null;

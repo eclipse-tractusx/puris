@@ -54,6 +54,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -95,6 +96,9 @@ public class StockViewController {
 
     @Autowired
     private Validator validator;
+
+    @Autowired
+    private ExecutorService executorService;
 
     private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
 
@@ -543,7 +547,8 @@ public class StockViewController {
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
 
         for (Partner supplierPartner : allSupplierPartnerEntities) {
-            itemStockRequestApiService.doRequestForMaterialItemStocks(supplierPartner, materialEntity);
+            executorService.submit(() ->
+            itemStockRequestApiService.doItemStock2ReportedMaterialItemStockRequest(supplierPartner, materialEntity));
         }
 
         return ResponseEntity.ok(allSupplierPartnerEntities.stream()
@@ -569,8 +574,9 @@ public class StockViewController {
         log.info("Found material: " + (materialEntity != null) + " " + ownMaterialNumber);
         List<Partner> allCustomerPartnerEntities = mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber);
 
-        for (Partner supplierPartner : allCustomerPartnerEntities) {
-            itemStockRequestApiService.doRequestForProductItemStocks(supplierPartner, materialEntity);
+        for (Partner customerPartner : allCustomerPartnerEntities) {
+            executorService.submit(() ->
+            itemStockRequestApiService.doItemStock2ReportedProductItemStockRequest(customerPartner, materialEntity));
         }
 
         return ResponseEntity.ok(allCustomerPartnerEntities.stream()

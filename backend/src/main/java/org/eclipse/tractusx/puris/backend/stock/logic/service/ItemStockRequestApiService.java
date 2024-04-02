@@ -22,20 +22,21 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_RequestStateEnum;
-import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStockRequestMessage;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ItemStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ItemStockRequestMessageDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ItemStockResponseDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -59,6 +60,10 @@ public class ItemStockRequestApiService {
     @Autowired
     private MaterialItemStockService materialItemStockService;
     @Autowired
+    private ReportedProductItemStockService reportedProductItemStockService;
+    @Autowired
+    private ReportedMaterialItemStockService reportedMaterialItemStockService;
+    @Autowired
     private VariablesService variablesService;
     @Autowired
     private EdcAdapterService edcAdapterService;
@@ -68,6 +73,91 @@ public class ItemStockRequestApiService {
     private ObjectMapper objectMapper;
     @Autowired
     private ItemStockRequestMessageService itemStockRequestMessageService;
+
+    public ItemStockSamm handleItemStock2Request(String bpnl, String materialNumber, DirectionCharacteristic direction){
+        Partner partner = partnerService.findByBpnl(bpnl);
+        if (partner == null) {
+            log.error("Unknown Partner BPNL " + bpnl);
+            return null;
+        }
+        switch (direction) {
+            case OUTBOUND -> {
+                // Partner is customer, requesting our ProductItemStocks for him
+                // materialNumber is own CX id:
+                Material material = materialService.findByMaterialNumberCx(materialNumber);
+                var currentStocks = productItemStockService.findByPartnerAndMaterial(partner, material);
+                return sammMapper.productItemStocksToItemStockSamm(currentStocks);
+            }
+            case INBOUND -> {
+                // Partner is supplier, requesting out MaterialItemStocks from him
+                // materialNumber is partner's CX id:
+               Material material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber).getMaterial();
+               var currentStocks = materialItemStockService.findByPartnerAndMaterial(partner, material);
+               return sammMapper.materialItemStocksToItemStockSamm(currentStocks);
+            }
+            default -> {
+                return null;
+            }
+        }
+
+    }
+
+    public void doItemStock2ReportedMaterialItemStockRequest(Partner partner, Material material) {
+        try {
+            var mpr = mprService.find(material, partner);
+            var data = edcAdapterService.doItemStock2Request(mpr, DirectionCharacteristic.OUTBOUND);
+            var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
+            var stocks = sammMapper.itemStockSammToReportedMaterialItemStock(samm, partner);
+            for (var stock: stocks) {
+                var stockPartner = stock.getPartner();
+                var stockMaterial = stock.getMaterial();
+                if (!partner.equals(stockPartner)|| !material.equals(stockMaterial)){
+                    log.warn("Received inconsistent data from " + partner.getBpnl() + "\n" + stocks);
+                    return;
+                }
+            }
+            var oldStocks = reportedMaterialItemStockService.findByPartnerAndMaterial(partner, material);
+            for (var oldStock: oldStocks) {
+                reportedMaterialItemStockService.delete(oldStock.getUuid());
+            }
+            for (var newStock: stocks) {
+                reportedMaterialItemStockService.create(newStock);
+            }
+            log.info("Updated ReportedMaterialItemStocks for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+        } catch (Exception e){
+            log.error("Error in ReportedMaterialItemStockRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
+        }
+    }
+
+    public void doItemStock2ReportedProductItemStockRequest(Partner partner, Material material) {
+        try {
+            var mpr = mprService.find(material, partner);
+            var data = edcAdapterService.doItemStock2Request(mpr, DirectionCharacteristic.INBOUND);
+            var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
+            var stocks = sammMapper.itemStockSammToReportedProductItemStock(samm, partner);
+            for (var stock: stocks){
+                var stockPartner = stock.getPartner();
+                var stockMaterial = stock.getMaterial();
+                if (!partner.equals(stockPartner)|| !material.equals(stockMaterial)){
+                    log.warn("Received inconsistent data from " + partner.getBpnl() + "\n" + stocks);
+                    return;
+                }
+            }
+            // delete older data:
+            var oldStocks = reportedProductItemStockService.findByPartnerAndMaterial(partner, material);
+            for (var oldStock : oldStocks){
+                reportedProductItemStockService.delete(oldStock.getUuid());
+            }
+            for (var newStock: stocks){
+                reportedProductItemStockService.create(newStock);
+            }
+            log.info("Updated ReportedProductItemStocks for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+        } catch (Exception e){
+            log.error("Error in ReportedProductItemStockRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
+        }
+    }
+
+
 
     /**
      * This method receives a request message from a customer and
@@ -251,6 +341,10 @@ public class ItemStockRequestApiService {
             itemStockRequestMessage.getItemStock().add(request);
         }
         sendRequest(supplierPartner, itemStockRequestMessage);
+    }
+
+    public void doRequestForMaterialItemStocks2(Partner supplierPartner, Material... materials) {
+
     }
 
     /**

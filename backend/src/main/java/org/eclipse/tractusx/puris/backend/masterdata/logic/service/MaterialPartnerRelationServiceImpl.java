@@ -138,7 +138,8 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                         if (updatedMpr != null) {
                             log.info("Successfully inserted Partner CX Id for Partner " +
                                 materialPartnerRelation.getPartner().getBpnl() + " and Material "
-                                + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+                                + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                " -> " + cxId);
                         }
                     }
                 } else {
@@ -184,7 +185,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                 if (currentPartTypeFetches.contains(materialPartnerRelation)) {
                     log.info("Awaiting PartTypeInformation Fetch");
                     // await return of ongoing fetch task
-                    while(currentPartTypeFetches.contains(materialPartnerRelation)){
+                    while (currentPartTypeFetches.contains(materialPartnerRelation)) {
                         Thread.yield();
                     }
                 } else {
@@ -211,7 +212,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                     if (materialPartnerRelation.getMaterial().isProductFlag()) {
                         var allCustomers =
                             mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
-                                    materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+                                materialPartnerRelation.getMaterial().getOwnMaterialNumber());
                         boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
                         if (result) {
                             log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
@@ -237,7 +238,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                     if (materialPartnerRelation.getMaterial().isProductFlag()) {
                         var allCustomers =
                             mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
-                                    materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+                                materialPartnerRelation.getMaterial().getOwnMaterialNumber());
                         boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
                         if (result) {
                             log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());

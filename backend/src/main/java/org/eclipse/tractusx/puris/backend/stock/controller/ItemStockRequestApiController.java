@@ -30,14 +30,13 @@ import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStockRequestMessage;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ItemStockRequestMessageDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.ItemStockStatusRequestMessageDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockRequestApiService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockRequestMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -61,6 +60,32 @@ public class ItemStockRequestApiController {
     @Autowired
     private Validator validator;
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
+
+    private final Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
+
+
+    @Operation(summary = "This endpoint receives the ItemStock 2.0.0 requests")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Ok"),
+        @ApiResponse(responseCode = "400", description = "Bad Request"),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
+    @GetMapping("request/{materialnumber}/{direction}")
+    public ResponseEntity<ItemStockSamm> getMappingItemStock2(@RequestHeader("edc-bpn") String bpnl,
+                                                              @PathVariable String materialnumber,
+                                                              @PathVariable DirectionCharacteristic direction) {
+        if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumber).matches() || direction == null) {
+            log.warn("Rejecting request at ItemStock request 2.0.0 endpoint");
+            return ResponseEntity.badRequest().build();
+        }
+        log.info("Received request for " + materialnumber + " with " + direction + " from " + bpnl);
+        var samm = itemStockRequestApiService.handleItemStock2Request(bpnl, materialnumber, direction);
+        if (samm == null) {
+            return ResponseEntity.status(500).build();
+        }
+        return ResponseEntity.ok(samm);
+    }
+
 
     @Operation(summary = "This endpoint receives the item stock request messages. ")
     @ApiResponses(value = {
