@@ -215,5 +215,9 @@ public class VariablesService {
             default: throw new RuntimeException("Unknown Api Method: " + method);
         }
     }
+
+    public String getItemStock2ApiAssetId() {
+        return requestApiAssetId + "@" + ownBpnl;
+    }
     
 }
