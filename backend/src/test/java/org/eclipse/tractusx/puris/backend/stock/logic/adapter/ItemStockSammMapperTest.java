@@ -20,6 +20,8 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.adapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -29,7 +31,6 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialServi
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
-import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
 import org.junit.jupiter.api.*;
 import org.junit.platform.commons.logging.Logger;
@@ -90,6 +91,9 @@ public class ItemStockSammMapperTest {
 
     @Mock
     private MaterialPartnerRelationService mprService;
+
+    @Mock
+    private MaterialService materialService;
 
     @InjectMocks
     private ItemStockSammMapper itemStockSammMapper;
@@ -284,7 +288,8 @@ public class ItemStockSammMapperTest {
 
         // When
         // Find material based on CX number and mpr
-        when(mprService.findByPartnerAndPartnerCXNumber(customerPartner, CX_MAT_NUMBER)).thenReturn(mpr);
+        when(mprService.find(semiconductorProduct, customerPartner)).thenReturn(mpr);
+        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(semiconductorProduct);
 
         // Then we should build 5 reported product stocks:
         // - no OrderPositionReference (OPR), blocked, 10 pieces, BPNS & BPNA
@@ -386,8 +391,9 @@ public class ItemStockSammMapperTest {
         mpr.setPartnerBuysMaterial(true);
         mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
         mpr.setPartnerCXNumber(CX_MAT_NUMBER);
-
-        when(mprService.findByPartnerAndPartnerCXNumber(customerPartner, CX_MAT_NUMBER)).thenReturn(mpr);
+        
+        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(material);
+        when(mprService.find(material, customerPartner)).thenReturn(mpr);
 
         var list = itemStockSammMapper.itemStockSammToReportedProductItemStock(SAMM_FROM_CUSTOMER_PARTNER, supplierPartner);
         assertNotNull(list);
@@ -419,7 +425,8 @@ public class ItemStockSammMapperTest {
         mpr.setPartnerMaterialNumber(SUPPLIER_MAT_NUMBER);
         mpr.setPartnerCXNumber(CX_MAT_NUMBER);
 
-        when(mprService.findByPartnerAndPartnerCXNumber(customerPartner, CX_MAT_NUMBER)).thenReturn(mpr);
+        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(material);
+        when(mprService.find(material, customerPartner)).thenReturn(mpr);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
