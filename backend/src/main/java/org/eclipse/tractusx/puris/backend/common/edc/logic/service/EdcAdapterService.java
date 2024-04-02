@@ -696,8 +696,6 @@ public class EdcAdapterService {
                                     } else {
                                         log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
                                     }
-
-
                                 }
                             }
                         }
@@ -886,14 +884,12 @@ public class EdcAdapterService {
                                     var subProtocolElements = subProtocolBodyData.split(";");
                                     String id = subProtocolElements[0].replace("id=", "");
                                     String dspUrl = subProtocolElements[subProtocolElements.length - 1].replace("dspEndpoint=", "");
-                                    log.info("FOUND id " + id);
-                                    log.info("FOUND DSP URL " + dspUrl);
-                                    log.info("FOUND HREF " + href);
                                     contractMapping.setItemStockAssetId(id);
                                     contractMapping.setItemStockPublicDataPlaneApiUrl(href);
                                     contractMapping.setItemStockEdcProtocolUrl(dspUrl);
                                     edcContractMappingService.update(contractMapping);
                                     log.info("Updated contractMapping for Partner " + partner.getBpnl());
+                                    failed = false;
                                     return true;
                                 }
                             }
@@ -914,6 +910,7 @@ public class EdcAdapterService {
                 // invalidate failing contract information
                 contractMapping.setDtrContractId(null);
                 contractMapping.setDtrAssetId(null);
+                contractMapping.setItemStockEdcProtocolUrl(null);
                 edcContractMappingService.update(contractMapping);
             }
         }
