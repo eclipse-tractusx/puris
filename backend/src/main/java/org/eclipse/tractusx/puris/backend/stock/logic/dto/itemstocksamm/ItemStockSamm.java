@@ -24,13 +24,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -46,31 +46,20 @@ public class ItemStockSamm {
 
     @NotNull
     @Valid
-    private List<Position> positions;
-
-    @NotNull
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
-    private String materialNumberCustomer;
+    private Set<Position> positions;
 
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String materialGlobalAssetId;
-
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
-    private String materialNumberSupplier;
 
     @NotNull
     private DirectionCharacteristic direction;
 
     @JsonCreator
-    public ItemStockSamm(@JsonProperty(value = "positions") List<Position> positions,
-                         @JsonProperty(value = "materialNumberCustomer") String materialNumberCustomer,
+    public ItemStockSamm(@JsonProperty(value = "positions") Set<Position> positions,
                          @JsonProperty(value = "materialGlobalAssetId") String materialGlobalAssetId,
-                         @JsonProperty(value = "materialNumberSupplier") String materialNumberSupplier,
                          @JsonProperty(value = "direction") DirectionCharacteristic direction) {
         this.positions = positions;
-        this.materialNumberCustomer = materialNumberCustomer;
         this.materialGlobalAssetId = materialGlobalAssetId;
-        this.materialNumberSupplier = materialNumberSupplier;
         this.direction = direction;
     }
 
@@ -85,15 +74,12 @@ public class ItemStockSamm {
 
         final ItemStockSamm that = (ItemStockSamm) o;
         return Objects.equals(positions, that.positions)
-            && Objects.equals(materialNumberCustomer, that.materialNumberCustomer)
             && Objects.equals(materialGlobalAssetId, that.materialGlobalAssetId)
-            && Objects.equals(materialNumberSupplier, that.materialNumberSupplier)
             && Objects.equals(direction, that.direction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(positions, materialNumberCustomer, materialGlobalAssetId, materialNumberSupplier,
-            direction);
+        return Objects.hash(positions, materialGlobalAssetId, direction);
     }
 }

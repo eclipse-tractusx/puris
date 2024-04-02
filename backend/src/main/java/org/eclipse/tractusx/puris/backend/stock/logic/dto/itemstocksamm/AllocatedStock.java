@@ -24,10 +24,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
 
 import java.util.Objects;
 
@@ -61,15 +63,20 @@ public class AllocatedStock {
 	@Pattern(regexp = PatternStore.BPNA_STRING)
 	private String stockLocationBPNA;
 
+    @NotNull
+    private Date lastUpdatedOnDateTime;
+
 	@JsonCreator
 	public AllocatedStock(@JsonProperty(value = "quantityOnAllocatedStock") ItemQuantityEntity quantityOnAllocatedStock,
 			@JsonProperty(value = "stockLocationBPNS") String stockLocationBPNS,
 			@JsonProperty(value = "isBlocked") Boolean isBlocked,
-			@JsonProperty(value = "stockLocationBPNA") String stockLocationBPNA) {
+			@JsonProperty(value = "stockLocationBPNA") String stockLocationBPNA,
+            @JsonProperty(value = "lastUpdatedOnDateTime") Date lastUpdatedOnDateTime) {
 		this.quantityOnAllocatedStock = quantityOnAllocatedStock;
 		this.stockLocationBPNS = stockLocationBPNS;
 		this.isBlocked = isBlocked;
 		this.stockLocationBPNA = stockLocationBPNA;
+        this.lastUpdatedOnDateTime = lastUpdatedOnDateTime;
 	}
 
 	@Override
@@ -85,11 +92,13 @@ public class AllocatedStock {
 		return Objects.equals(quantityOnAllocatedStock, that.quantityOnAllocatedStock)
 				&& Objects.equals(stockLocationBPNS, that.stockLocationBPNS)
 				&& Objects.equals(isBlocked, that.isBlocked)
-				&& Objects.equals(stockLocationBPNA, that.stockLocationBPNA);
+				&& Objects.equals(stockLocationBPNA, that.stockLocationBPNA)
+                && Objects.equals(lastUpdatedOnDateTime, that.lastUpdatedOnDateTime);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(quantityOnAllocatedStock, stockLocationBPNS, isBlocked, stockLocationBPNA);
+		return Objects.hash(quantityOnAllocatedStock, stockLocationBPNS, isBlocked, stockLocationBPNA,
+            lastUpdatedOnDateTime);
 	}
 }

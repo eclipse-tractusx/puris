@@ -513,4 +513,17 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         return mprRepository.findAllByPartnerAndPartnerMaterialNumberAndPartnerBuysMaterialIsTrue(partner, partnerMaterialNumber);
     }
 
+    @Override
+    public MaterialPartnerRelation findByPartnerAndPartnerCXNumber(Partner partner, String partnerCXNumber) {
+        var materialPartnerRelations = mprRepository.findAllByPartnerAndAndPartnerCXNumber(partner, partnerCXNumber);
+
+        if (!materialPartnerRelations.isEmpty()) {
+            if (materialPartnerRelations.size() > 1) {
+                log.warn("Ambigious result for partner " + partner.getBpnl() + " and partnerCxNumber " + partnerCXNumber);
+            }
+            return materialPartnerRelations.get(0);
+        } else {
+            return null;
+        }
+    }
 }

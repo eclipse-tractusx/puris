@@ -66,4 +66,6 @@ public interface MaterialPartnerRelationService {
     List<MaterialPartnerRelation> findAllBySupplierPartnerAndPartnerMaterialNumber(Partner partner, String partnerMaterialNumber);
 
     List<MaterialPartnerRelation> findAllByCustomerPartnerAndPartnerMaterialNumber(Partner partner, String partnerMaterialNumber);
+
+    MaterialPartnerRelation findByPartnerAndPartnerCXNumber(Partner partner, String partnerCXNumber);
 }
