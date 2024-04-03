@@ -73,7 +73,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     /**
      * Contains all MaterialPartnerRelations, for which there are
      * currently ongoing PartTypeInformationRetrievalTasks in
-     * existance.
+     * existance. Helps to avoid duplicate tasks running simultaneously.
      */
     private Set<MaterialPartnerRelation> currentPartTypeFetches = ConcurrentHashMap.newKeySet();
 
@@ -102,6 +102,13 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         return null;
     }
 
+    @Override
+    public void triggerPartTypeRetrievalTask(MaterialPartnerRelation mpr) {
+        if (!currentPartTypeFetches.contains(mpr)) {
+            executorService.submit(new PartTypeInformationRetrievalTask(mpr, 3));
+        }
+    }
+
 
     private class PartTypeInformationRetrievalTask implements Callable<Boolean> {
         final MaterialPartnerRelation materialPartnerRelation;
@@ -114,49 +121,54 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         }
 
         @Override
-        public Boolean call() throws Exception {
-            Thread.sleep(100);
-            if (retries < 0) {
-                log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
-                    " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed");
-                currentPartTypeFetches.remove(materialPartnerRelation);
-                return false;
-            }
-            String[] data = edcAdapterService.getContractForPartTypeInfoSubmodel(materialPartnerRelation.getPartner());
-            if (data != null) {
-                String authKey = data[0];
-                String authCode = data[1];
-                String endpoint = data[2];
-                var response = edcAdapterService.getProxyPullRequest(endpoint, authKey, authCode,
-                    new String[]{materialPartnerRelation.getPartnerMaterialNumber(), "$value"});
-                if (response != null && response.isSuccessful()) {
-                    var body = objectMapper.readTree(response.body().string());
-                    var cxId = body.get("catenaXId").asText();
-                    if (cxId != null && PatternStore.URN_OR_UUID_PATTERN.matcher(cxId).matches()) {
-                        materialPartnerRelation.setPartnerCXNumber(cxId);
-                        var updatedMpr = mprRepository.save(materialPartnerRelation);
-                        if (updatedMpr != null) {
-                            log.info("Successfully inserted Partner CX Id for Partner " +
-                                materialPartnerRelation.getPartner().getBpnl() + " and Material "
-                                + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                                " -> " + cxId);
+        public Boolean call() {
+            try {
+                Thread.sleep(300);
+                if (retries < 0) {
+                    log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
+                        " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed");
+                    currentPartTypeFetches.remove(materialPartnerRelation);
+                    return false;
+                }
+                String[] data = edcAdapterService.getContractForPartTypeInfoSubmodel(materialPartnerRelation.getPartner());
+                if (data != null) {
+                    String authKey = data[0];
+                    String authCode = data[1];
+                    String endpoint = data[2];
+                    var response = edcAdapterService.getProxyPullRequest(endpoint, authKey, authCode,
+                        new String[]{materialPartnerRelation.getPartnerMaterialNumber(), "$value"});
+                    if (response != null && response.isSuccessful()) {
+                        var body = objectMapper.readTree(response.body().string());
+                        var cxId = body.get("catenaXId").asText();
+                        if (cxId != null && PatternStore.URN_OR_UUID_PATTERN.matcher(cxId).matches()) {
+                            materialPartnerRelation.setPartnerCXNumber(cxId);
+                            var updatedMpr = mprRepository.save(materialPartnerRelation);
+                            if (updatedMpr != null) {
+                                log.info("Successfully inserted Partner CX Id for Partner " +
+                                    materialPartnerRelation.getPartner().getBpnl() + " and Material "
+                                    + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                    " -> " + cxId);
+                            }
                         }
+                    } else {
+                        log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
+                            " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);
+                        retries--;
+                        return call();
                     }
+                    currentPartTypeFetches.remove(materialPartnerRelation);
+                    return true;
                 } else {
                     log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
                         " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);
                     retries--;
                     return call();
                 }
-                currentPartTypeFetches.remove(materialPartnerRelation);
-                return true;
-            } else {
-                log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
-                    " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);
-                retries--;
-                return call();
-            }
 
+            } catch (Exception e) {
+                currentPartTypeFetches.remove(materialPartnerRelation);
+                return false;
+            }
         }
     }
 

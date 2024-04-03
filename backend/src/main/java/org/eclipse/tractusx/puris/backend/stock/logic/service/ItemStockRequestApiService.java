@@ -74,7 +74,7 @@ public class ItemStockRequestApiService {
     @Autowired
     private ItemStockRequestMessageService itemStockRequestMessageService;
 
-    public ItemStockSamm handleItemStock2Request(String bpnl, String materialNumber, DirectionCharacteristic direction){
+    public ItemStockSamm handleItemStock2Request(String bpnl, String materialNumber, DirectionCharacteristic direction) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
             log.error("Unknown Partner BPNL " + bpnl);
@@ -85,15 +85,31 @@ public class ItemStockRequestApiService {
                 // Partner is customer, requesting our ProductItemStocks for him
                 // materialNumber is own CX id:
                 Material material = materialService.findByMaterialNumberCx(materialNumber);
-                var currentStocks = productItemStockService.findByPartnerAndMaterial(partner, material);
-                return sammMapper.productItemStocksToItemStockSamm(currentStocks);
+                if (material != null) {
+                    var currentStocks = productItemStockService.findByPartnerAndMaterial(partner, material);
+                    return sammMapper.productItemStocksToItemStockSamm(currentStocks);
+                }
+                return null;
             }
             case INBOUND -> {
-                // Partner is supplier, requesting out MaterialItemStocks from him
+                // Partner is supplier, requesting our MaterialItemStocks from him
                 // materialNumber is partner's CX id:
-               Material material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber).getMaterial();
-               var currentStocks = materialItemStockService.findByPartnerAndMaterial(partner, material);
-               return sammMapper.materialItemStocksToItemStockSamm(currentStocks);
+                Material material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber).getMaterial();
+                if (material != null) {
+                    var currentStocks = materialItemStockService.findByPartnerAndMaterial(partner, material);
+                    return sammMapper.materialItemStocksToItemStockSamm(currentStocks);
+                }
+                // Could not identify partner cx number. I.e. we do not have that partner's
+                // CX id in one of our MaterialPartnerRelation entities. Try to fix this by
+                // looking for MPR's, where that partner is a supplier and where we don't have
+                // a partnerCXId yet. Of course this can only work if there was previously an MPR
+                // created, but for some unforeseen reason, the initial PartTypeRetrieval didn't succeed.
+                log.warn("Could not find " + materialNumber + " from partner " + partner.getBpnl());
+                mprService.findAllMaterialsThatPartnerSupplies(partner).stream()
+                    .map(mat -> mprService.find(mat, partner))
+                    .filter(mpr -> mpr.isPartnerSuppliesMaterial() && mpr.getPartnerCXNumber() == null)
+                    .forEach(mpr -> mprService.triggerPartTypeRetrievalTask(mpr));
+                return null;
             }
             default -> {
                 return null;
@@ -108,23 +124,23 @@ public class ItemStockRequestApiService {
             var data = edcAdapterService.doItemStock2Request(mpr, DirectionCharacteristic.OUTBOUND);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedMaterialItemStock(samm, partner);
-            for (var stock: stocks) {
+            for (var stock : stocks) {
                 var stockPartner = stock.getPartner();
                 var stockMaterial = stock.getMaterial();
-                if (!partner.equals(stockPartner)|| !material.equals(stockMaterial)){
+                if (!partner.equals(stockPartner) || !material.equals(stockMaterial)) {
                     log.warn("Received inconsistent data from " + partner.getBpnl() + "\n" + stocks);
                     return;
                 }
             }
             var oldStocks = reportedMaterialItemStockService.findByPartnerAndMaterial(partner, material);
-            for (var oldStock: oldStocks) {
+            for (var oldStock : oldStocks) {
                 reportedMaterialItemStockService.delete(oldStock.getUuid());
             }
-            for (var newStock: stocks) {
+            for (var newStock : stocks) {
                 reportedMaterialItemStockService.create(newStock);
             }
             log.info("Updated ReportedMaterialItemStocks for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Error in ReportedMaterialItemStockRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
         }
     }
@@ -135,28 +151,27 @@ public class ItemStockRequestApiService {
             var data = edcAdapterService.doItemStock2Request(mpr, DirectionCharacteristic.INBOUND);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedProductItemStock(samm, partner);
-            for (var stock: stocks){
+            for (var stock : stocks) {
                 var stockPartner = stock.getPartner();
                 var stockMaterial = stock.getMaterial();
-                if (!partner.equals(stockPartner)|| !material.equals(stockMaterial)){
+                if (!partner.equals(stockPartner) || !material.equals(stockMaterial)) {
                     log.warn("Received inconsistent data from " + partner.getBpnl() + "\n" + stocks);
                     return;
                 }
             }
             // delete older data:
             var oldStocks = reportedProductItemStockService.findByPartnerAndMaterial(partner, material);
-            for (var oldStock : oldStocks){
+            for (var oldStock : oldStocks) {
                 reportedProductItemStockService.delete(oldStock.getUuid());
             }
-            for (var newStock: stocks){
+            for (var newStock : stocks) {
                 reportedProductItemStockService.create(newStock);
             }
             log.info("Updated ReportedProductItemStocks for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Error in ReportedProductItemStockRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
         }
     }
-
 
 
     /**
@@ -172,10 +187,10 @@ public class ItemStockRequestApiService {
         if (customerPartner == null || requestMessageDto.getContent().getDirection() != DirectionCharacteristic.OUTBOUND) {
             requestMessage.setState(DT_RequestStateEnum.Error);
             itemStockRequestMessageService.update(requestMessage);
-            if(requestMessageDto.getContent().getDirection() != DirectionCharacteristic.OUTBOUND){
+            if (requestMessageDto.getContent().getDirection() != DirectionCharacteristic.OUTBOUND) {
                 log.error("Wrong direction in request from customer \n" + requestMessageDto);
             }
-            if(customerPartner == null) {
+            if (customerPartner == null) {
                 log.error("Unknown Partner in request \n" + requestMessageDto);
             }
             return;
@@ -233,10 +248,10 @@ public class ItemStockRequestApiService {
         if (supplierPartner == null || requestMessageDto.getContent().getDirection() != DirectionCharacteristic.INBOUND) {
             requestMessage.setState(DT_RequestStateEnum.Error);
             itemStockRequestMessageService.update(requestMessage);
-            if(requestMessageDto.getContent().getDirection() != DirectionCharacteristic.INBOUND){
+            if (requestMessageDto.getContent().getDirection() != DirectionCharacteristic.INBOUND) {
                 log.error("Wrong direction in request from customer \n" + requestMessageDto);
             }
-            if(supplierPartner == null) {
+            if (supplierPartner == null) {
                 log.error("Unknown Partner in request \n" + requestMessageDto);
             }
             return;

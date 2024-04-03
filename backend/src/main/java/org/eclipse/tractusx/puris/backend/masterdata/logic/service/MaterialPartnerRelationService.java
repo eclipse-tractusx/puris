@@ -33,6 +33,8 @@ import java.util.UUID;
 public interface MaterialPartnerRelationService {
     MaterialPartnerRelation create(MaterialPartnerRelation materialPartnerRelation);
 
+    void triggerPartTypeRetrievalTask(MaterialPartnerRelation mpr);
+
     MaterialPartnerRelation update(MaterialPartnerRelation materialPartnerRelation);
 
     MaterialPartnerRelation find(Material material, Partner partner);
