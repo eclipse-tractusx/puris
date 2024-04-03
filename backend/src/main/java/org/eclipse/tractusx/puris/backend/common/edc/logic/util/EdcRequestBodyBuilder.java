@@ -305,7 +305,7 @@ public class EdcRequestBodyBuilder {
         var body = getEdcContextObject();
         body.put("@type", "TransferRequestDto");
         body.put("connectorId", partner.getBpnl());
-        body.put("connectorAddress", partner.getEdcUrl());
+        body.put("connectorAddress", partnerEdcUrl);
         body.put("contractId", contractID);
         body.put("assetId", assetId);
         body.put("protocol", "dataspace-protocol-http");

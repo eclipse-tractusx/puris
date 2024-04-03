@@ -358,10 +358,6 @@ public class ItemStockRequestApiService {
         sendRequest(supplierPartner, itemStockRequestMessage);
     }
 
-    public void doRequestForMaterialItemStocks2(Partner supplierPartner, Material... materials) {
-
-    }
-
     /**
      * This method creates and sends a request to the given customer-partner
      * in order to receive his current ItemStocks for the given materials.
