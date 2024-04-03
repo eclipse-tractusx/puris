@@ -121,6 +121,10 @@ public class ItemStockSammMapper {
             return outputList;
         }
 
+        // When deserializing a Samm from a customer, who has sent a report on the
+        // stocks he received from us, the materialGlobalAssetId used in the communication
+        // was set by us (as the supplying side). Therefore the materialGlobalAssetId in
+        // the Samm is the one in our Material entity.
         Material material = materialService.findByMaterialNumberCx(matNbrCatenaX);
         if (material == null) {
             log.warn("Could not identify materialPartnerRelation with matNbrCatenaX " + matNbrCatenaX + " and partner bpnl " + partner.getBpnl());
@@ -170,12 +174,15 @@ public class ItemStockSammMapper {
             log.warn("Could not identify materialPartnerRelation with matNbrCatenaX " + matNbrCatenaX + " and partner bpnl " + partner.getBpnl());
             return outputList;
         }
+        // When deserializing a Samm from a supplier, who has sent a report on the
+        // stocks he has prepared for us, the materialGlobalAssetId used in the communication
+        // was set by the supplying partner. Therefore the materialGlobalAssetId in
+        // the Samm is the one in our MaterialPartnerRelation entity with that partner.
         Material material = mpr.getMaterial();
         if (material == null) {
             log.warn("Could not identify material with CatenaXNbr " + matNbrCatenaX);
             return outputList;
         }
-
 
         for (var position : samm.getPositions()) {
             String supplierOrderId = null, customerOrderPositionId = null, customerOrderId = null;
