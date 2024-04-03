@@ -392,7 +392,6 @@ public class ItemStockSammMapperTest {
         mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
         mpr.setPartnerCXNumber(CX_MAT_NUMBER);
 
-//        when(mprService.findByPartnerAndPartnerCXNumber(customerPartner, CX_MAT_NUMBER)).thenReturn(mpr);
         when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(material);
         when(mprService.find(material, customerPartner)).thenReturn(mpr);
 
