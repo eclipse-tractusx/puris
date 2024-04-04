@@ -20,20 +20,19 @@
 
 package org.eclipse.tractusx.puris.backend.stock.logic.adapter;
 
-import java.util.HashSet;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
-import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -106,6 +105,7 @@ public class ItemStockSammMapper {
                 allocatedStocksList.add(allocatedStock);
             }
         }
+        log.info("CREATED SAMM \n" + samm);
         return samm;
     }
 
@@ -121,12 +121,18 @@ public class ItemStockSammMapper {
             log.warn("Direction should be INBOUND, aborting");
             return outputList;
         }
-        var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, matNbrCatenaX);
 
-        if (mpr == null) {
+        // When deserializing a Samm from a customer, who has sent a report on the
+        // stocks he received from us, the materialGlobalAssetId used in the communication
+        // was set by us (as the supplying side). Therefore the materialGlobalAssetId in
+        // the Samm is the one in our Material entity.
+        Material material = materialService.findByMaterialNumberCx(matNbrCatenaX);
+        if (material == null) {
             log.warn("Could not identify materialPartnerRelation with matNbrCatenaX " + matNbrCatenaX + " and partner bpnl " + partner.getBpnl());
             return outputList;
         }
+
+        var mpr = mprService.find(material, partner);
 
         for (var position : samm.getPositions()) {
             String supplierOrderId = null, customerOrderPositionId = null, customerOrderId = null;
@@ -163,11 +169,22 @@ public class ItemStockSammMapper {
             log.warn("Direction should be OUTBOUND, aborting");
             return outputList;
         }
-        Material material = materialService.findByMaterialNumberCx(matNbrCatenaX);
+        var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, matNbrCatenaX);
+
+        if (mpr == null) {
+            log.warn("Could not identify materialPartnerRelation with matNbrCatenaX " + matNbrCatenaX + " and partner bpnl " + partner.getBpnl());
+            return outputList;
+        }
+        // When deserializing a Samm from a supplier, who has sent a report on the
+        // stocks he has prepared for us, the materialGlobalAssetId used in the communication
+        // was set by the supplying partner. Therefore the materialGlobalAssetId in
+        // the Samm is the one in our MaterialPartnerRelation entity with that partner.
+        Material material = mpr.getMaterial();
         if (material == null) {
             log.warn("Could not identify material with CatenaXNbr " + matNbrCatenaX);
             return outputList;
         }
+
         for (var position : samm.getPositions()) {
             String supplierOrderId = null, customerOrderPositionId = null, customerOrderId = null;
             if (position.getOrderPositionReference() != null) {
