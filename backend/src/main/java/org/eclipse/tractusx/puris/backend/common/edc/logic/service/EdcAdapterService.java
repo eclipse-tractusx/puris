@@ -660,7 +660,7 @@ public class EdcAdapterService {
                 }
             }
         } finally {
-            if (failed) {
+            if (failed && contractMapping != null) {
                 // invalidate stored data
                 contractMapping.setItemStockAssetId(null);
                 contractMapping.setItemStockContractId(null);
@@ -943,12 +943,14 @@ public class EdcAdapterService {
             log.error("Error in transfer request for DTR at Partner " + partner.getBpnl());
             return false;
         } finally {
-            if (failed) {
+            if (failed && contractMapping != null) {
                 // invalidate failing contract information
                 contractMapping.setDtrContractId(null);
                 contractMapping.setDtrAssetId(null);
                 contractMapping.setItemStockEdcProtocolUrl(null);
                 edcContractMappingService.update(contractMapping);
+                log.warn("DTR Lookup request for " + specificAssetIdType + " " + specificAssetIdValue + " at partner " +
+                    partner.getBpnl() + " failed. Invalidating contract data. You may want to retry this request");
             }
         }
     }
