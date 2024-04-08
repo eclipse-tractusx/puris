@@ -199,7 +199,7 @@ public class EdcRequestBodyBuilder {
     }
 
 
-    public JsonNode buildItemStock2ContractDefinitionWithBpnRestrictedPolicy(Partner partner) {
+    public JsonNode buildItemStockSubmodelContractDefinitionWithBpnRestrictedPolicy(Partner partner) {
         var body = getEdcContextObject();
         body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + getItemStock2AssetId());
         body.put("accessPolicyId", getBpnPolicyId(partner));

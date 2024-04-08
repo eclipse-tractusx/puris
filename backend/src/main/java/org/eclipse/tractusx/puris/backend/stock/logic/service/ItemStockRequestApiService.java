@@ -74,7 +74,7 @@ public class ItemStockRequestApiService {
     @Autowired
     private ItemStockRequestMessageService itemStockRequestMessageService;
 
-    public ItemStockSamm handleItemStock2Request(String bpnl, String materialNumber, DirectionCharacteristic direction) {
+    public ItemStockSamm handleItemStockSubmodelRequest(String bpnl, String materialNumber, DirectionCharacteristic direction) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
             log.error("Unknown Partner BPNL " + bpnl);
@@ -118,10 +118,10 @@ public class ItemStockRequestApiService {
 
     }
 
-    public void doItemStock2ReportedMaterialItemStockRequest(Partner partner, Material material) {
+    public void doItemStockSubmodelReportedMaterialItemStockRequest(Partner partner, Material material) {
         try {
             var mpr = mprService.find(material, partner);
-            var data = edcAdapterService.doItemStock2Request(mpr, DirectionCharacteristic.OUTBOUND);
+            var data = edcAdapterService.doItemStockSubmodelRequest(mpr, DirectionCharacteristic.OUTBOUND);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedMaterialItemStock(samm, partner);
             for (var stock : stocks) {
@@ -145,10 +145,10 @@ public class ItemStockRequestApiService {
         }
     }
 
-    public void doItemStock2ReportedProductItemStockRequest(Partner partner, Material material) {
+    public void doItemStockSubmodelReportedProductItemStockRequest(Partner partner, Material material) {
         try {
             var mpr = mprService.find(material, partner);
-            var data = edcAdapterService.doItemStock2Request(mpr, DirectionCharacteristic.INBOUND);
+            var data = edcAdapterService.doItemStockSubmodelRequest(mpr, DirectionCharacteristic.INBOUND);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedProductItemStock(samm, partner);
             for (var stock : stocks) {

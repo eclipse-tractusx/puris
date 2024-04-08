@@ -548,7 +548,7 @@ public class StockViewController {
 
         for (Partner supplierPartner : allSupplierPartnerEntities) {
             executorService.submit(() ->
-            itemStockRequestApiService.doItemStock2ReportedMaterialItemStockRequest(supplierPartner, materialEntity));
+            itemStockRequestApiService.doItemStockSubmodelReportedMaterialItemStockRequest(supplierPartner, materialEntity));
         }
 
         return ResponseEntity.ok(allSupplierPartnerEntities.stream()
@@ -576,7 +576,7 @@ public class StockViewController {
 
         for (Partner customerPartner : allCustomerPartnerEntities) {
             executorService.submit(() ->
-            itemStockRequestApiService.doItemStock2ReportedProductItemStockRequest(customerPartner, materialEntity));
+            itemStockRequestApiService.doItemStockSubmodelReportedProductItemStockRequest(customerPartner, materialEntity));
         }
 
         return ResponseEntity.ok(allCustomerPartnerEntities.stream()

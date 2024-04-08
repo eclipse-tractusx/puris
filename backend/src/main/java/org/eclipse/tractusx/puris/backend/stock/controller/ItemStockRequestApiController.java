@@ -64,22 +64,29 @@ public class ItemStockRequestApiController {
     private final Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
 
 
-    @Operation(summary = "This endpoint receives the ItemStock 2.0.0 requests")
+    @Operation(summary = "This endpoint receives the ItemStock Submodel 2.0.0 requests")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),
         @ApiResponse(responseCode = "400", description = "Bad Request"),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error")
+        @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+        @ApiResponse(responseCode = "501", description = "Unsupported representation")
     })
-    @GetMapping("request/{materialnumber}/{direction}")
+    @GetMapping("request/{materialnumber}/{direction}/{representation}")
     public ResponseEntity<ItemStockSamm> getMappingItemStock2(@RequestHeader("edc-bpn") String bpnl,
                                                               @PathVariable String materialnumber,
-                                                              @PathVariable DirectionCharacteristic direction) {
+                                                              @PathVariable DirectionCharacteristic direction,
+                                                              @PathVariable String representation) {
         if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumber).matches() || direction == null) {
-            log.warn("Rejecting request at ItemStock request 2.0.0 endpoint");
+            log.warn("Rejecting request at ItemStock Submodel request 2.0.0 endpoint");
             return ResponseEntity.badRequest().build();
         }
+        if (!"$value".equals(representation)) {
+            log.warn("Rejecting request at ItemStock Submodel request 2.0.0 endpoint, missing '@value' in request");
+            log.warn("Received " + representation + " from " + bpnl + " with direction " + direction);
+            return ResponseEntity.status(501).build();
+        }
         log.info("Received request for " + materialnumber + " with " + direction + " from " + bpnl);
-        var samm = itemStockRequestApiService.handleItemStock2Request(bpnl, materialnumber, direction);
+        var samm = itemStockRequestApiService.handleItemStockSubmodelRequest(bpnl, materialnumber, direction);
         if (samm == null) {
             return ResponseEntity.status(500).build();
         }

@@ -20,9 +20,11 @@
 
 package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -46,6 +48,11 @@ public class EdcContractMapping {
     private String itemStockEdcProtocolUrl;
 
     private String itemStockPublicDataPlaneApiUrl;
+
+    @ElementCollection
+    @MapKeyColumn(name = "key")
+    @Column(name = "value")
+    private Map<String, String> materialToHrefMapping = new HashMap<>();
 
     public EdcContractMapping(String partnerBpnl){
         this.partnerBpnl = partnerBpnl;
