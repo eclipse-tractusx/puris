@@ -201,7 +201,7 @@ public class EdcRequestBodyBuilder {
 
     public JsonNode buildItemStockSubmodelContractDefinitionWithBpnRestrictedPolicy(Partner partner) {
         var body = getEdcContextObject();
-        body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + getItemStock2AssetId());
+        body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + getItemStockSubmodelAssetId());
         body.put("accessPolicyId", getBpnPolicyId(partner));
         if(variablesService.isUseFrameworkPolicy()) {
             body.put("contractPolicyId", FRAMEWORK_POLICY_ID);
@@ -213,7 +213,7 @@ public class EdcRequestBodyBuilder {
         assetsSelector.put("@type", "CriterionDto");
         assetsSelector.put("operandLeft", EDC_NAMESPACE + "id");
         assetsSelector.put("operator", "=");
-        assetsSelector.put("operandRight", getItemStock2AssetId());
+        assetsSelector.put("operandRight", getItemStockSubmodelAssetId());
         return body;
     }
 
@@ -375,7 +375,7 @@ public class EdcRequestBodyBuilder {
 
     public JsonNode buildItemStock2RegistrationBody() {
         var body = getAssetRegistrationContext();
-        body.put("@id", getItemStock2AssetId());
+        body.put("@id", getItemStockSubmodelAssetId());
         var propertiesObject = MAPPER.createObjectNode();
         body.set("properties", propertiesObject);
         var dctTypeObject = MAPPER.createObjectNode();
@@ -432,8 +432,8 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
-    private String getItemStock2AssetId() {
-        return variablesService.getItemStock2ApiAssetId();
+    private String getItemStockSubmodelAssetId() {
+        return variablesService.getItemStockSubmodelApiAssetId();
     }
 
     private String getDtrAssetId() {

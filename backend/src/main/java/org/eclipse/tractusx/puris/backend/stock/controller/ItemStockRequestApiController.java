@@ -82,6 +82,9 @@ public class ItemStockRequestApiController {
         }
         if (!"$value".equals(representation)) {
             log.warn("Rejecting request at ItemStock Submodel request 2.0.0 endpoint, missing '@value' in request");
+            if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
+                representation = "<REPLACED_INVALID_REPRESENTATION>";
+            }
             log.warn("Received " + representation + " from " + bpnl + " with direction " + direction);
             return ResponseEntity.status(501).build();
         }

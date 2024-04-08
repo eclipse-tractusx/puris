@@ -213,7 +213,7 @@ public class DtrRequestBodyBuilder {
         endpointProtocolVersionArray.add("1.1");
         protocolInformationObject.put("subprotocol", "DSP");
         protocolInformationObject.put("subprotocolBodyEncoding", "plain");
-        protocolInformationObject.put("subprotocolBody", "id=" + variablesService.getItemStock2ApiAssetId() + ";dspEndpoint=" + variablesService.getEdcProtocolUrl());
+        protocolInformationObject.put("subprotocolBody", "id=" + variablesService.getItemStockSubmodelApiAssetId() + ";dspEndpoint=" + variablesService.getEdcProtocolUrl());
         var securityAttributesArray = objectMapper.createArrayNode();
         protocolInformationObject.set("securityAttributes", securityAttributesArray);
         var securityObject = objectMapper.createObjectNode();

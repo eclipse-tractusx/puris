@@ -216,7 +216,7 @@ public class VariablesService {
         }
     }
 
-    public String getItemStock2ApiAssetId() {
+    public String getItemStockSubmodelApiAssetId() {
         return requestApiAssetId + "@" + ownBpnl;
     }
     
