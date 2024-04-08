@@ -23,7 +23,7 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype;
 /**
  * Type for asset.property.apimethod of an EDC Asset
  */
-public enum DT_ApiMethodEnum {
+public enum DT_ItemStockApiMethodEnum {
     /**
      * API is used to perform a request (Request API).
      */
@@ -36,7 +36,7 @@ public enum DT_ApiMethodEnum {
 
     STATUS_REQUEST("ItemStockRequestStatusApi", "data.res.itemStockRequestStatusApi", "Item Stock Request Status API Endpoint");
 
-    private DT_ApiMethodEnum(String cxTaxo, String type, String description) {
+    private DT_ItemStockApiMethodEnum(String cxTaxo, String type, String description) {
         this.CX_TAXO = cxTaxo;
         this.TYPE = type;
         this.DESCRIPTION = description;

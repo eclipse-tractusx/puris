@@ -22,7 +22,9 @@
 package org.eclipse.tractusx.puris.backend.common.util;
 
 import lombok.Getter;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
+
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ItemStockApiMethodEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_PlannedProductionApiMethodEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -65,37 +67,73 @@ public class VariablesService {
      * The url under which this application's request endpoint can
      * be reached by external machines.
      */
-    private String requestServerEndpoint;
-    @Value("${puris.request.apiassetid}")
+    private String itemStockRequestServerEndpoint;
+    @Value("${puris.assets.itemstock.requestid}")
     /**
      * The assetId that shall be assigned to the request API
      * during asset creation.
      */
-    private String requestApiAssetId;
+    private String itemStockRequestApiAssetId;
     @Value("${puris.baseurl}" + "catena/item-stock/response")
     /**
      * The url under which this application's response endpoint can
      * be reached by external machines.
      */
-    private String responseServerEndpoint;
-    @Value("${puris.response.apiassetid}")
+    private String itemStockResponseServerEndpoint;
+    @Value("${puris.assets.itemstock.responseid}")
     /**
      * The assetId that shall be assigned to the request API
      * during asset creation.
      */
-    private String responseApiAssetId;
-    @Value("${puris.statusrequest.apiassetid}")
+    private String itemStockResponseApiAssetId;
+    @Value("${puris.assets.itemstock.statusrequestid}")
     /**
      * The assetId that shall be assigned to the status-request API
      * during asset creation.
      */
-    private String statusRequestApiAssetId;
+    private String itemStockStatusRequestApiAssetId;
     @Value("${puris.baseurl}" + "catena/item-stock/status")
     /**
      * The url under which this application's status-request endpoint
      * can be reached by external machines.
      */
-    private String statusRequestServerEndpoint;
+    private String itemStockStatusRequestServerEndpoint;
+    @Value("${puris.baseurl}" + "catena/planned-production/request")
+    /**
+     * The url under which this application's request endpoint can
+     * be reached by external machines.
+     */
+    private String plannedProductionRequestServerEndpoint;
+    @Value("${puris.assets.plannedproduction.requestid}")
+    /**
+     * The assetId that shall be assigned to the request API
+     * during asset creation.
+     */
+    private String plannedProductionRequestApiAssetId;
+    @Value("${puris.baseurl}" + "catena/planned-production/response")
+    /**
+     * The url under which this application's response endpoint can
+     * be reached by external machines.
+     */
+    private String plannedProductionResponseServerEndpoint;
+    @Value("${puris.assets.plannedproduction.responseid}")
+    /**
+     * The assetId that shall be assigned to the request API
+     * during asset creation.
+     */
+    private String plannedProductionResponseApiAssetId;
+    @Value("${puris.assets.plannedproduction.statusrequestid}")
+    /**
+     * The assetId that shall be assigned to the status-request API
+     * during asset creation.
+     */
+    private String plannedProductionStatusRequestApiAssetId;
+    @Value("${puris.baseurl}" + "catena/planned-production/status")
+    /**
+     * The url under which this application's status-request endpoint
+     * can be reached by external machines.
+     */
+    private String plannedProductionStatusRequestServerEndpoint;
     @Value("${puris.frameworkagreement.use}")
     /**
      * A flag that signals whether a framework policy
@@ -203,17 +241,29 @@ public class VariablesService {
      * @param method
      * @return the asset-id
      */
-    public String getApiAssetId(DT_ApiMethodEnum method) {
-        if(responseApiAssetId == null || requestApiAssetId == null || statusRequestApiAssetId == null) {
-            throw new RuntimeException("You must define puris.request.apiassetid, puris.response.apiassetid " +
-                "and puris.statusrequest.apiassetid in properties file");
+    public String getItemStockApiAssetId(DT_ItemStockApiMethodEnum method) {
+        if(itemStockResponseApiAssetId == null || itemStockRequestApiAssetId == null || itemStockStatusRequestApiAssetId == null) {
+            throw new RuntimeException("You must define puris.assets.itemstock.requestid, puris.assets.itemstock.responseid " +
+                "and puris.assets.itemstock.statusrequestid in properties file");
         }
         switch (method) {
-            case REQUEST: return requestApiAssetId;
-            case RESPONSE: return responseApiAssetId;
-            case STATUS_REQUEST: return statusRequestApiAssetId;
+            case REQUEST: return itemStockRequestApiAssetId;
+            case RESPONSE: return itemStockResponseApiAssetId;
+            case STATUS_REQUEST: return itemStockStatusRequestApiAssetId;
             default: throw new RuntimeException("Unknown Api Method: " + method);
         }
     }
     
+    public String getPlannedProductionApiAssetId(DT_PlannedProductionApiMethodEnum method) {
+        if(plannedProductionResponseApiAssetId == null || plannedProductionRequestApiAssetId == null || plannedProductionStatusRequestApiAssetId == null) {
+            throw new RuntimeException("You must define puris.assets.plannedproduction.requestid, puris.assets.plannedproduction.responseid " +
+                "and puris.assets.plannedproduction.statusrequestid in properties file");
+        }
+        switch (method) {
+            case REQUEST: return plannedProductionRequestApiAssetId;
+            case RESPONSE: return plannedProductionResponseApiAssetId;
+            case STATUS_REQUEST: return plannedProductionStatusRequestApiAssetId;
+            default: throw new RuntimeException("Unknown Api Method: " + method);
+        }
+    }
 }

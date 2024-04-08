@@ -24,9 +24,12 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ItemStockApiMethodEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_PlannedProductionApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -77,9 +80,9 @@ public class EdcRequestBodyBuilder {
         return objectNode;
     }
 
-    public JsonNode buildCreateItemStockAssetBody(DT_ApiMethodEnum apiMethod) {
+    public JsonNode buildCreateItemStockAssetBody(DT_ItemStockApiMethodEnum apiMethod) {
         var body = getAssetRegistrationContext();
-        body.put("@id", variablesService.getApiAssetId(apiMethod));
+        body.put("@id", variablesService.getItemStockApiAssetId(apiMethod));
         var propertiesObject = MAPPER.createObjectNode();
         body.set("properties", propertiesObject);
         var dctTypeObject = MAPPER.createObjectNode();
@@ -91,9 +94,9 @@ public class EdcRequestBodyBuilder {
 
         var dataAddress = MAPPER.createObjectNode();
         String url = switch (apiMethod) {
-            case REQUEST -> variablesService.getRequestServerEndpoint();
-            case RESPONSE -> variablesService.getResponseServerEndpoint();
-            case STATUS_REQUEST -> variablesService.getStatusRequestServerEndpoint();
+            case REQUEST -> variablesService.getItemStockRequestServerEndpoint();
+            case RESPONSE -> variablesService.getItemStockResponseServerEndpoint();
+            case STATUS_REQUEST -> variablesService.getItemStockStatusRequestServerEndpoint();
         };
         dataAddress.put("baseUrl", url);
         dataAddress.put("type", "HttpData");
@@ -103,6 +106,36 @@ public class EdcRequestBodyBuilder {
         dataAddress.put("authKey", "x-api-key");
         dataAddress.put("authCode", variablesService.getApiKey());
         body.set("dataAddress", dataAddress);
+        return body;
+    }
+
+    public JsonNode buildCreatePlannedProductionAssetBody(DT_PlannedProductionApiMethodEnum apiMethod) {
+        var body = getAssetRegistrationContext();
+        body.put("@id", variablesService.getPlannedProductionApiAssetId(apiMethod));
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", "cx-taxo:" + apiMethod.CX_TAXO);
+        propertiesObject.put("asset:prop:type", apiMethod.TYPE);
+        propertiesObject.put("cx-common:version", "1.0");
+        propertiesObject.put("description", apiMethod.DESCRIPTION);
+
+        var dataAddress = MAPPER.createObjectNode();
+        String url = switch (apiMethod) {
+            case REQUEST -> variablesService.getPlannedProductionRequestServerEndpoint();
+            case RESPONSE -> variablesService.getPlannedProductionResponseServerEndpoint();
+            case STATUS_REQUEST -> variablesService.getPlannedProductionStatusRequestServerEndpoint();
+        };
+        dataAddress.put("baseUrl", url);
+        dataAddress.put("type", "HttpData");
+        dataAddress.put("proxyPath", "true");
+        dataAddress.put("proxyBody", "true");
+        dataAddress.put("proxyMethod", "true");
+        dataAddress.put("authKey", "x-api-key");
+        dataAddress.put("authCode", variablesService.getApiKey());
+        body.set("dataAddress", dataAddress);
+        log.info("PlannedProductionAssetBody: " + body);
         return body;
     }
 
@@ -180,9 +213,9 @@ public class EdcRequestBodyBuilder {
      * @param apiMethod the api method
      * @return the request body
      */
-    public JsonNode buildContractDefinitionWithBpnRestrictedPolicy(Partner partner, DT_ApiMethodEnum apiMethod) {
+    public JsonNode buildStockContractDefinitionWithBpnRestrictedPolicy(Partner partner, DT_ItemStockApiMethodEnum apiMethod) {
         var body = getEdcContextObject();
-        body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + apiMethod);
+        body.put("@id", partner.getBpnl() + "_contractdefinition_for_item_stock_" + apiMethod);
         body.put("accessPolicyId", getBpnPolicyId(partner));
         if(variablesService.isUseFrameworkPolicy()) {
             body.put("contractPolicyId", FRAMEWORK_POLICY_ID);
@@ -194,7 +227,25 @@ public class EdcRequestBodyBuilder {
         assetsSelector.put("@type", "CriterionDto");
         assetsSelector.put("operandLeft", EDC_NAMESPACE + "id");
         assetsSelector.put("operator", "=");
-        assetsSelector.put("operandRight", variablesService.getApiAssetId(apiMethod));
+        assetsSelector.put("operandRight", variablesService.getItemStockApiAssetId(apiMethod));
+        return body;
+    }
+
+    public JsonNode buildProductionContractDefinitionWithBpnRestrictedPolicy(Partner partner, DT_PlannedProductionApiMethodEnum apiMethod) {
+        var body = getEdcContextObject();
+        body.put("@id", partner.getBpnl() + "_contractdefinition_for_planned_production_" + apiMethod);
+        body.put("accessPolicyId", getBpnPolicyId(partner));
+        if(variablesService.isUseFrameworkPolicy()) {
+            body.put("contractPolicyId", FRAMEWORK_POLICY_ID);
+        } else {
+            body.put("contractPolicyId", getBpnPolicyId(partner));
+        }
+        var assetsSelector = MAPPER.createObjectNode();
+        body.set("assetsSelector", assetsSelector);
+        assetsSelector.put("@type", "CriterionDto");
+        assetsSelector.put("operandLeft", EDC_NAMESPACE + "id");
+        assetsSelector.put("operator", "=");
+        assetsSelector.put("operandRight", variablesService.getPlannedProductionApiAssetId(apiMethod));
         return body;
     }
 

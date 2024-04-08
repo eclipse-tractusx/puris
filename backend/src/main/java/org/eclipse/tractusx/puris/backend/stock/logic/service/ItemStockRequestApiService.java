@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.datatype.DT_RequestStateEnum;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ItemStockApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -199,7 +199,7 @@ public class ItemStockRequestApiService {
      * @param responseDto the responseDto
      */
     private void sendResponse(Partner partner, ItemStockResponseDto responseDto, ItemStockRequestMessage requestMessage) {
-        var data = edcAdapterService.getContractForItemStockApi(partner, DT_ApiMethodEnum.RESPONSE);
+        var data = edcAdapterService.getContractForItemStockApi(partner, DT_ItemStockApiMethodEnum.RESPONSE);
         if (data == null) {
             requestMessage.setState(DT_RequestStateEnum.Error);
             itemStockRequestMessageService.update(requestMessage);
@@ -296,7 +296,7 @@ public class ItemStockRequestApiService {
         itemStockRequestMessage = itemStockRequestMessageService.create(itemStockRequestMessage);
         log.info("Created Message : \n" + (itemStockRequestMessage != null));
         itemStockRequestMessage.setState(DT_RequestStateEnum.Working);
-        String[] data = edcAdapterService.getContractForItemStockApi(partner, DT_ApiMethodEnum.REQUEST);
+        String[] data = edcAdapterService.getContractForItemStockApi(partner, DT_ItemStockApiMethodEnum.REQUEST);
         if (data == null) {
             log.error("Failed to obtain request api from " + partner.getEdcUrl());
             itemStockRequestMessage.setState(DT_RequestStateEnum.Error);
