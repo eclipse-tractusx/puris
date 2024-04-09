@@ -22,6 +22,7 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.EdcContractMapping;
@@ -123,13 +124,8 @@ public class EdcAdapterService {
      * @return true if all registrations were successful, otherwise false
      */
     public boolean registerAssetsInitially() {
-        boolean result = true;
-        if (variablesService.isUseFrameworkPolicy()) {
-            log.info("Registration of framework agreement policy successful " + (result = createFrameWorkPolicy()));
-            if (!result) return false;
-        } else {
-            log.info("Skipping registration of framework agreement policy");
-        }
+        boolean result;
+        log.info("Registration of framework agreement policy successful " + (result = createFrameWorkPolicy()));
         log.info("Registration of DTR Asset successful " + (result &= registerDtrAsset()));
         log.info("Registration of ItemStock 2.0.0 submodel successful " + (result &= registerItemStockSubmodel()));
         return result;
@@ -168,7 +164,6 @@ public class EdcAdapterService {
             return false;
         }
     }
-
 
     private boolean createDtrContractDefinitionForPartner(Partner partner) {
         var body = edcRequestBodyBuilder.buildDtrContractDefinitionForPartner(partner);
@@ -229,8 +224,8 @@ public class EdcAdapterService {
      *
      * @return true, if registration ran successfully
      */
-    private boolean createFrameWorkPolicy() {
-        var body = edcRequestBodyBuilder.buildFrameworkAgreementPolicy();
+    private boolean createContractPolicy() {
+        var body = edcRequestBodyBuilder.buildFrameworkAndMembershipPolicy();
         try (var response = sendPostRequest(body, List.of("v2", "policydefinitions"))) {
             if (!response.isSuccessful()) {
                 log.warn("Framework Policy Registration failed");
@@ -642,18 +637,14 @@ public class EdcAdapterService {
                             if ("urn:samm:io.catenax.item_stock:2.0.0#ItemStock".equals(aasSemantics.get("@id").asText())) {
                                 if (itemStockAssetId.equals(entry.get("edc:id").asText())) {
                                     if (targetCatalogEntry == null) {
-                                        if (variablesService.isUseFrameworkPolicy()) {
-                                            if (testFrameworkAgreementConstraint(entry)) {
-                                                targetCatalogEntry = entry;
-                                            } else {
-                                                log.error("Contract Negotiation with partner " + partner.getBpnl() + " has " +
-                                                    "been aborted. This partner's contract policy does not match the policy " +
-                                                    "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
-                                                    "\n Received offer from Partner: \n" + entry.toPrettyString());
-                                                break;
-                                            }
-                                        } else {
+                                        if (testFrameworkAgreementConstraint(entry)) {
                                             targetCatalogEntry = entry;
+                                        } else {
+                                            log.error("Contract Negotiation with partner " + partner.getBpnl() + " has " +
+                                                "been aborted. This partner's contract policy does not match the policy " +
+                                                "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
+                                                "\n Received offer from Partner: \n" + entry.toPrettyString());
+                                            break;
                                         }
                                     } else {
                                         log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
@@ -896,8 +887,9 @@ public class EdcAdapterService {
      * It will return a String array of length 4. The authKey is stored under index 0, the
      * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
      *
-     * @param partner the partner
-     * @return A String array or null, if negotiation failed or the authCode did not arrive
+     * @param partner   the partner
+     * @param apiMethod the api method
+     * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
     public String[] getContractForPartTypeInfoSubmodel(Partner partner) {
         try {
@@ -919,18 +911,14 @@ public class EdcAdapterService {
                             String idString = semanticId.get("@id").asText();
                             if ("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation".equals(idString)) {
                                 if (targetCatalogEntry == null) {
-                                    if (variablesService.isUseFrameworkPolicy()) {
-                                        if (testFrameworkAgreementConstraint(entry)) {
-                                            targetCatalogEntry = entry;
-                                        } else {
-                                            log.error("Contract Negotiation for PartTypeInformation Submodel asset with partner " + partner.getBpnl() + " has " +
-                                                "been aborted. This partner's contract policy does not match the policy " +
-                                                "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
-                                                "\n Received offer from Partner: \n" + entry.toPrettyString());
-                                            break;
-                                        }
-                                    } else {
+                                    if (testFrameworkAgreementConstraint(entry)) {
                                         targetCatalogEntry = entry;
+                                    } else {
+                                        log.error("Contract Negotiation for PartTypeInformation Submodel asset with partner " + partner.getBpnl() + " has " +
+                                            "been aborted. This partner's contract policy does not match the policy " +
+                                            "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
+                                            "\n Received offer from Partner: \n" + entry.toPrettyString());
+                                        break;
                                     }
                                 } else {
                                     log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
@@ -1001,36 +989,47 @@ public class EdcAdapterService {
      * @param catalogEntry the catalog item containing the desired api asset
      * @return true, if the policy matches yours, otherwise false
      */
-    private boolean testFrameworkAgreementConstraint(JsonNode catalogEntry) {
-        try {
-            var policyObject = catalogEntry.get("odrl:hasPolicy");
-            if (policyObject == null) {
-                return false;
-            }
-            var permissionObject = policyObject.get("odrl:permission");
-            if (permissionObject == null) {
-                return false;
-            }
-            var constraintObject = permissionObject.get("odrl:constraint");
-            if (constraintObject == null) {
-                return false;
-            }
-            var leftOperandObject = constraintObject.get("odrl:leftOperand");
-            if (!variablesService.getPurisFrameworkAgreement().equals(leftOperandObject.asText())) {
-                return false;
-            }
-            var operatorObject = constraintObject.get("odrl:operator");
-            if (!"odrl:eq".equals(operatorObject.get("@id").asText())) {
-                return false;
-            }
-            var rightOperandObject = constraintObject.get("odrl:rightOperand");
-            if (!"active".equals(rightOperandObject.asText())) {
-                return false;
-            }
-        } catch (Exception e) {
-            log.error("Failed in Framework Agreement Test ", e);
+    private boolean testContractPolicyConstraints(JsonNode catalogEntry) {
+        var constraints = Optional.ofNullable(catalogEntry.get("odrl:hasPolicy"))
+            .map(policy -> policy.get("odrl:permission"))
+            .map(permission -> permission.get("odrl:constraint"))
+            .map(and -> and.get("odrl:and"));
+        if (constraints.isEmpty()) return false;
+
+        var firstConstraint = constraints.map(membership -> membership.get(0));
+        var secondConstraint = constraints.map(membership -> membership.get(1));
+
+        var firstLeftOperandOptional = firstConstraint.map(constraint -> constraint.get("odrl:leftOperand"));
+        var secondLeftOperandOptional = secondConstraint.map(constraint -> constraint.get("odrl:leftOperand"));
+        if (firstLeftOperandOptional.isEmpty() || secondLeftOperandOptional.isEmpty()) {
             return false;
+        } else {
+            var firstLeftOperand = firstLeftOperandOptional.get();
+            var secondLeftOperand = secondLeftOperandOptional.get();
+            var frameworkCredential = variablesService.getPurisFrameworkAgreement();
+
+            if (!((frameworkCredential.equals(firstLeftOperand.asText()) && "Membership".equals(secondLeftOperand.asText()))
+                || ("Membership".equals(firstLeftOperand.asText()) && frameworkCredential.equals(secondLeftOperand.asText())))) {
+                return false;
+            }
         }
+
+        var firstOperator = firstConstraint.map(constraint -> constraint.get("odrl:operator"))
+            .map(operator -> operator.get("@id"))
+            .filter(operand -> "odrl:eq".equals(operand.asText()));
+
+        var secondOperator = secondConstraint.map(constraint -> constraint.get("odrl:operator"))
+            .map(operator -> operator.get("@id"))
+            .filter(operand -> "odrl:eq".equals(operand.asText()));
+
+        var firstRightOperand = firstConstraint.map(constraint -> constraint.get("odrl:rightOperand"))
+            .filter(operand -> "active".equals(operand.asText()));
+
+        var secondRightOperand = secondConstraint.map(constraint -> constraint.get("odrl:rightOperand"))
+            .filter(operand -> "active".equals(operand.asText()));
+
+        if (firstOperator.isEmpty() || secondOperator.isEmpty() || firstRightOperand.isEmpty() || secondRightOperand.isEmpty()) return false;
+
         return true;
     }
 }
