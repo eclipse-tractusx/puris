@@ -77,45 +77,71 @@ public class EdcRequestBodyBuilder {
     }
 
     /**
-     * Creates a request body in order to register a policy that
-     * allows only the BPNL of the given partner.
+     * Creates a request body that demands all of the following conditions:
+     * 1. The BPNL of the requesting connector is equal to the BPNL of the partner
+     * 2. There's a valid CX membership credential present
      *
-     * @param partner the partner
-     * @return the request body
+     * @param partner the partner to create the policy for
+     * @return the request body as a {@link JsonNode}
      */
-    public JsonNode buildBpnRestrictedPolicy(Partner partner) {
+    public JsonNode buildBpnAndMembershipRestrictedPolicy(Partner partner) {
         var body = MAPPER.createObjectNode();
         var context = MAPPER.createObjectNode();
         context.put("odrl", ODRL_NAMESPACE);
         body.set("@context", context);
         body.put("@type", "PolicyDefinitionRequestDto");
         body.put("@id", getBpnPolicyId(partner));
+
         var policy = MAPPER.createObjectNode();
         body.set("policy", policy);
         policy.put("@type", "Policy");
+
         var permissionsArray = MAPPER.createArrayNode();
         policy.set("odrl:permission", permissionsArray);
+
         var permissionsObject = MAPPER.createObjectNode();
         permissionsArray.add(permissionsObject);
         permissionsObject.put("odrl:action", "USE");
+
         var constraintObject = MAPPER.createObjectNode();
         permissionsObject.set("odrl:constraint", constraintObject);
         constraintObject.put("@type", "LogicalConstraint");
-        constraintObject.put("odrl:leftOperand", "BusinessPartnerNumber");
-        var operatorObject = MAPPER.createObjectNode();
-        constraintObject.set("odrl:operator", operatorObject);
-        operatorObject.put("@id", "odrl:eq");
-        constraintObject.put("odrl:rightOperand", partner.getBpnl());
+
+        var andArray = MAPPER.createArrayNode();
+        constraintObject.set("odrl:and", andArray);
+
+        var bpnlpConstraint = MAPPER.createObjectNode();
+        andArray.add(bpnlpConstraint);
+        bpnlpConstraint.put("@type", "Constraint");
+        bpnlpConstraint.put("odrl:leftOperand", "BusinessPartnerNumber");
+
+        var bpnlOperator = MAPPER.createObjectNode();
+        bpnlpConstraint.set("odrl:operator", bpnlOperator);
+        bpnlOperator.put("@id", "odrl:eq");
+
+        bpnlpConstraint.put("odrl:rightOperand", partner.getBpnl());
+
+        var membershipConstraint = MAPPER.createObjectNode();
+        andArray.add(membershipConstraint);
+        membershipConstraint.put("@type", "Constraint");
+        membershipConstraint.put("odrl:leftOperand", "Membership");
+
+        var membershipOperator = MAPPER.createObjectNode();
+        membershipConstraint.set("odrl:operator", membershipOperator);
+        membershipOperator.put("@id", "odrl:eq");
+
+        membershipConstraint.put("odrl:rightOperand", "active");
+
         return body;
     }
 
     /**
      * Creates a request body in order to register a policy that
-     * allows only participants of the framework agreement with valid membership credentials.
+     * allows only participants of the framework agreement.
      *
      * @return the request body
      */
-    public JsonNode buildFrameworkAndMembershipPolicy() {
+    public JsonNode buildFrameworkPolicy() {
         var body = MAPPER.createObjectNode();
         var context = MAPPER.createObjectNode();
         context.put("odrl", ODRL_NAMESPACE);
@@ -137,31 +163,12 @@ public class EdcRequestBodyBuilder {
         var constraintObject = MAPPER.createObjectNode();
         permissionObject.set("odrl:constraint", constraintObject);
         constraintObject.put("@type", "LogicalConstraint");
+        constraintObject.put("odrl:leftOperand", variablesService.getPurisFrameworkAgreement());
 
-        var andArray = MAPPER.createArrayNode();
-        constraintObject.set("odrl:and", andArray);
-
-        var membershipConstraint = MAPPER.createObjectNode();
-        andArray.add(membershipConstraint);
-        membershipConstraint.put("@type", "Constraint");
-        membershipConstraint.put("odrl:leftOperand", "Membership");
-
-        var membershipOperator = MAPPER.createObjectNode();
-        membershipConstraint.set("odrl:operator", membershipOperator);
-        membershipOperator.put("@id", "odrl:eq");
-
-        membershipConstraint.put("odrl:rightOperand", "active");
-
-        var frameworkAgreementConstraint = MAPPER.createObjectNode();
-        andArray.add(frameworkAgreementConstraint);
-        frameworkAgreementConstraint.put("@type", "Constraint");
-        frameworkAgreementConstraint.put("odrl:leftOperand", variablesService.getPurisFrameworkAgreement());
-
-        var frameworkAgreementOperator = MAPPER.createObjectNode();
-        frameworkAgreementConstraint.set("odrl:operator", frameworkAgreementOperator);
-        frameworkAgreementOperator.put("@id", "odrl:eq");
-
-        frameworkAgreementConstraint.put("odrl:rightOperand", "active");
+        var operatorObject = MAPPER.createObjectNode();
+        constraintObject.set("odrl:operator", operatorObject);
+        operatorObject.put("@id", "odrl:eq");
+        constraintObject.put("odrl:rightOperand", "active");
 
         return body;
     }
