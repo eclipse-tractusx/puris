@@ -23,10 +23,11 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.EdcContractMapping;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcContractMappingService;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.PartnerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,9 +48,6 @@ public class PartnerServiceImpl implements PartnerService {
     private PartnerRepository partnerRepository;
 
     @Autowired
-    private MaterialRepository materialRepository;
-
-    @Autowired
     private MaterialPartnerRelationService mprService;
 
     @Autowired
@@ -60,6 +58,9 @@ public class PartnerServiceImpl implements PartnerService {
 
     @Autowired
     private EdcAdapterService edcAdapterService;
+
+    @Autowired
+    private EdcContractMappingService edcContractMappingService;
 
     private final Pattern bpnlPattern = Pattern.compile("^BPNL[0-9a-zA-Z]{12}$");
     private final Pattern bpnsPattern = Pattern.compile("^BPNS[0-9a-zA-Z]{12}$");
@@ -73,6 +74,7 @@ public class PartnerServiceImpl implements PartnerService {
         }
         if (partner.getUuid() == null && partnerRepository.findFirstByBpnl(partner.getBpnl()).isEmpty()) {
             prepareApiAssetsForPartner(partner);
+            edcContractMappingService.create(new EdcContractMapping(partner.getBpnl()));
             return partnerRepository.save(partner);
         }
         log.error("Could not create Partner " + partner.getBpnl() + " because it already existed before");

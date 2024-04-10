@@ -105,7 +105,6 @@ public class ItemStockSammMapper {
                 allocatedStocksList.add(allocatedStock);
             }
         }
-        log.info("CREATED SAMM \n" + samm);
         return samm;
     }
 
