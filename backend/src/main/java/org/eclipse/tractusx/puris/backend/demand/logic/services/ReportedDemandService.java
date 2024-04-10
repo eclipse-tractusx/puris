@@ -32,6 +32,7 @@ public class ReportedDemandService extends DemandService<ReportedDemand, Reporte
         super(repository, partnerService);
     }
 
+    @Override
     public boolean validate(ReportedDemand demand) {
         Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
         return 

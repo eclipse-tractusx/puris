@@ -32,6 +32,7 @@ public class OwnDemandService extends DemandService<OwnDemand, OwnDemandReposito
         super(repository, partnerService);
     }
 
+    @Override
     public boolean validate(OwnDemand demand) {
         Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
         return 
@@ -42,9 +43,9 @@ public class OwnDemandService extends DemandService<OwnDemand, OwnDemandReposito
             demand.getDay() != null && 
             demand.getDemandCategoryCode() != null &&
             demand.getDemandLocationBpns() != null &&
-            demand.getSupplierLocationBpns() != null /* &&
+            demand.getSupplierLocationBpns() != null &&
             !demand.getPartner().equals(ownPartnerEntity) &&
             ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns())) &&
-            !ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns())) */;
+            !ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns()));
     }
 }

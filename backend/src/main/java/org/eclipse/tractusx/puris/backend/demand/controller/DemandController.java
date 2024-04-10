@@ -47,11 +47,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Validator;
-import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("demand")
-@Slf4j
 public class DemandController {
     @Autowired
     private OwnDemandService ownDemandService;
@@ -116,41 +114,6 @@ public class DemandController {
         }
     }
 
-    /* @PostMapping("/range")
-    @ResponseBody
-    @Operation(summary = "Creates a range of planned demands")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Planned Demands were created."),
-            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-            @ApiResponse(responseCode = "409", description = "Planned Demands already exist."),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error.")
-    })
-    @ResponseStatus(HttpStatus.CREATED)
-    public List<DemandDto> createDemandRange(@RequestBody List<DemandDto> dtos) {
-        List<OwnDemand> demands = dtos.stream().map(dto -> {
-            if (!validator.validate(dto).isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rejected invalid message body");
-            }
-            if (dto.getMaterial().getMaterialNumberSupplier() == null ||
-                    dto.getMaterial().getMaterialNumberSupplier().isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Demand Information misses material identification.");
-            }
-            if (dto.getPartner().getBpnl() == null || dto.getPartner().getBpnl().isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Demand Information misses partner identification.");
-            }
-            return convertToEntity(dto);
-        }).toList();
-        try {
-            return ownDemandService.createAll(demands).stream().map(this::convertToDto).collect(Collectors.toList());
-        } catch (KeyAlreadyExistsException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "One or more demands already exist. Use PUT instead.");
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or more demands are invalid.");
-        }      
-    } */
-
     @PutMapping()
     @Operation(summary = "Updates a demand by its UUID")
     @ApiResponses(value = {
@@ -209,9 +172,7 @@ public class DemandController {
 
     private OwnDemand convertToEntity(DemandDto dto) {
         OwnDemand entity = modelMapper.map(dto, OwnDemand.class);
-
         Material material = materialService.findByOwnMaterialNumber(dto.getOwnMaterialNumber());
-        log.info("Found material: " + material.toString());
         entity.setMaterial(material);
 
         Partner existingPartner = partnerService.findByBpnl(dto.getPartnerBpnl());
@@ -221,10 +182,7 @@ public class DemandController {
                     "Partner for bpnl %s could not be found",
                     dto.getPartnerBpnl()));
         }
-        log.info("Found partner: " + existingPartner.toString());
         entity.setPartner(existingPartner);
-        log.info("Dto: " + dto.toString());
-        log.info("Entity: " + entity.toString());
         return entity;
     }
 
