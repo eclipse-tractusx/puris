@@ -75,7 +75,7 @@ public class EdcContractMapping {
      * @param value     the HREF
      */
     public void putMaterialToHrefMapping(String key, String value){
-        materialToHrefMapping.put(key + "@" + partnerBpnl, value);
+        materialToHrefMapping.put(key, value);
     }
 
     /**
@@ -85,7 +85,7 @@ public class EdcContractMapping {
      * @return          the HREF
      */
     public String getMaterialToHrefMapping(String key){
-        return materialToHrefMapping.get(key + "@" + partnerBpnl);
+        return materialToHrefMapping.get(key);
     }
 
 }
