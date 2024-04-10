@@ -198,6 +198,25 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+
+    public JsonNode buildItemStockSubmodelContractDefinitionWithBpnRestrictedPolicy(Partner partner) {
+        var body = getEdcContextObject();
+        body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + getItemStockSubmodelAssetId());
+        body.put("accessPolicyId", getBpnPolicyId(partner));
+        if(variablesService.isUseFrameworkPolicy()) {
+            body.put("contractPolicyId", FRAMEWORK_POLICY_ID);
+        } else {
+            body.put("contractPolicyId", getBpnPolicyId(partner));
+        }
+        var assetsSelector = MAPPER.createObjectNode();
+        body.set("assetsSelector", assetsSelector);
+        assetsSelector.put("@type", "CriterionDto");
+        assetsSelector.put("operandLeft", EDC_NAMESPACE + "id");
+        assetsSelector.put("operator", "=");
+        assetsSelector.put("operandRight", getItemStockSubmodelAssetId());
+        return body;
+    }
+
     public JsonNode buildDtrContractDefinitionForPartner(Partner partner) {
         var body = getEdcContextObject();
         body.put("@id", partner.getBpnl() +"_contractdefinition_for_dtr");
@@ -282,11 +301,11 @@ public class EdcRequestBodyBuilder {
      * @param assetId    The assetId
      * @return The request body
      */
-    public JsonNode buildProxyPullRequestBody(Partner partner, String contractID, String assetId) {
+    public JsonNode buildProxyPullRequestBody(Partner partner, String contractID, String assetId, String partnerEdcUrl) {
         var body = getEdcContextObject();
         body.put("@type", "TransferRequestDto");
         body.put("connectorId", partner.getBpnl());
-        body.put("connectorAddress", partner.getEdcUrl());
+        body.put("connectorAddress", partnerEdcUrl);
         body.put("contractId", contractID);
         body.put("assetId", assetId);
         body.put("protocol", "dataspace-protocol-http");
@@ -339,8 +358,6 @@ public class EdcRequestBodyBuilder {
         dctTypeObject.put("@id", "cx-taxo:DigitalTwinRegistry");
         propertiesObject.set("dct:type", dctTypeObject);
         propertiesObject.put("cx-common:version", "3.0");
-        propertiesObject.put("asset:prop:type", "data.core.digitalTwinRegistry");
-        propertiesObject.put("description", "");
         body.set("properties", propertiesObject);
 
         var dataAddress = MAPPER.createObjectNode();
@@ -351,6 +368,35 @@ public class EdcRequestBodyBuilder {
         dataAddress.put("proxyMethod", "false");
         dataAddress.put("type", "HttpData");
         dataAddress.put("baseUrl", url);
+        body.set("dataAddress", dataAddress);
+
+        return body;
+    }
+
+    public JsonNode buildItemStock2RegistrationBody() {
+        var body = getAssetRegistrationContext();
+        body.put("@id", getItemStockSubmodelAssetId());
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", "cx-taxo:Submodel");
+        propertiesObject.put("cx-common:version", "3.0");
+        var semanticId = MAPPER.createObjectNode();
+        propertiesObject.set("aas-semantics:semanticId", semanticId);
+        semanticId.put("@id", "urn:samm:io.catenax.item_stock:2.0.0#ItemStock");
+        body.set("privateProperties", MAPPER.createObjectNode());
+
+        String url = variablesService.getRequestServerEndpoint();
+        var dataAddress = MAPPER.createObjectNode();
+        dataAddress.put("@type", "DataAddress");
+        dataAddress.put("proxyPath", "true");
+        dataAddress.put("proxyQueryParams", "false");
+        dataAddress.put("proxyMethod", "false");
+        dataAddress.put("type", "HttpData");
+        dataAddress.put("baseUrl", url);
+        dataAddress.put("authKey", "x-api-key");
+        dataAddress.put("authCode", variablesService.getApiKey());
         body.set("dataAddress", dataAddress);
 
         return body;
@@ -384,6 +430,10 @@ public class EdcRequestBodyBuilder {
         dataAddress.put("authCode", variablesService.getApiKey());
         body.set("dataAddress", dataAddress);
         return body;
+    }
+
+    private String getItemStockSubmodelAssetId() {
+        return variablesService.getItemStockSubmodelApiAssetId();
     }
 
     private String getDtrAssetId() {

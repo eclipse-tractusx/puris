@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,13 +56,13 @@ public class DtrRequestBodyBuilder {
     /**
      * Creates a RequestBody for registering or updating a <b>Material-Type</b> Material
      *
-     * @param materialPartnerRelation   The MaterialPartnerRelation that defines the Material and the corresponding supplier partner.
-     * @return                          The Request Body
+     * @param materialPartnerRelation The MaterialPartnerRelation that defines the Material and the corresponding supplier partner.
+     * @return The Request Body
      */
 
     public JsonNode createMaterialRegistrationRequestBody(MaterialPartnerRelation materialPartnerRelation) {
         Material material = materialPartnerRelation.getMaterial();
-        if(!material.isMaterialFlag() || !materialPartnerRelation.isPartnerSuppliesMaterial()) {
+        if (!material.isMaterialFlag() || !materialPartnerRelation.isPartnerSuppliesMaterial()) {
             return null;
         }
         var body = objectMapper.createObjectNode();
@@ -87,7 +88,7 @@ public class DtrRequestBodyBuilder {
         var submodelDescriptorsArray = objectMapper.createArrayNode();
         body.set("submodelDescriptors", submodelDescriptorsArray);
 
-        var itemStockRequestSubmodelObject = createItemStockSubmodelObject();
+        var itemStockRequestSubmodelObject = createItemStockSubmodelObject(materialPartnerRelation.getPartnerCXNumber(), DirectionCharacteristic.INBOUND);
         submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
         log.debug("Created body for material " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
         return body;
@@ -96,10 +97,10 @@ public class DtrRequestBodyBuilder {
     /**
      * Creates a RequestBody for registering or updating a <b>Product-Type</b> Material
      *
-     * @param material          The Material
-     * @param productTwinId     The ProductTwinId
-     * @param mprs              The list of all MaterialProductRelations that exist with customers of the given Material
-     * @return                  The Request Body
+     * @param material      The Material
+     * @param productTwinId The ProductTwinId
+     * @param mprs          The list of all MaterialProductRelations that exist with customers of the given Material
+     * @return The Request Body
      */
     public JsonNode createProductRegistrationRequestBody(Material material, String productTwinId, List<MaterialPartnerRelation> mprs) {
         var body = objectMapper.createObjectNode();
@@ -128,7 +129,7 @@ public class DtrRequestBodyBuilder {
         var submodelDescriptorsArray = objectMapper.createArrayNode();
         body.set("submodelDescriptors", submodelDescriptorsArray);
 
-        var itemStockRequestSubmodelObject = createItemStockSubmodelObject();
+        var itemStockRequestSubmodelObject = createItemStockSubmodelObject(material.getMaterialNumberCx(), DirectionCharacteristic.OUTBOUND);
         submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
 
         log.debug("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
@@ -179,7 +180,7 @@ public class DtrRequestBodyBuilder {
         return createReferenceObject(variablesService.getOwnBpnl());
     }
 
-    private JsonNode createItemStockSubmodelObject() {
+    private JsonNode createItemStockSubmodelObject(String materialId, DirectionCharacteristic direction) {
         var itemStockRequestSubmodelObject = objectMapper.createObjectNode();
 
         itemStockRequestSubmodelObject.put("id", UUID.randomUUID().toString());
@@ -200,14 +201,19 @@ public class DtrRequestBodyBuilder {
         submodel3EndpointObject.put("interface", "SUBMODEL-3.0");
         var protocolInformationObject = objectMapper.createObjectNode();
         submodel3EndpointObject.set("protocolInformation", protocolInformationObject);
-        protocolInformationObject.put("href", variablesService.getEdcDataplanePublicUrl());
+        String href = variablesService.getEdcDataplanePublicUrl();
+        if (!href.endsWith("/")) {
+            href += "/";
+        }
+        href += materialId + "/" + direction + "/";
+        protocolInformationObject.put("href", href);
         protocolInformationObject.put("endpointProtocol", "HTTP");
         var endpointProtocolVersionArray = objectMapper.createArrayNode();
         protocolInformationObject.set("endpointProtocolVersion", endpointProtocolVersionArray);
         endpointProtocolVersionArray.add("1.1");
         protocolInformationObject.put("subprotocol", "DSP");
         protocolInformationObject.put("subprotocolBodyEncoding", "plain");
-        protocolInformationObject.put("subprotocolBody", "id=FOO;dspEndpoint=" + variablesService.getEdcProtocolUrl());
+        protocolInformationObject.put("subprotocolBody", "id=" + variablesService.getItemStockSubmodelApiAssetId() + ";dspEndpoint=" + variablesService.getEdcProtocolUrl());
         var securityAttributesArray = objectMapper.createArrayNode();
         protocolInformationObject.set("securityAttributes", securityAttributesArray);
         var securityObject = objectMapper.createObjectNode();
