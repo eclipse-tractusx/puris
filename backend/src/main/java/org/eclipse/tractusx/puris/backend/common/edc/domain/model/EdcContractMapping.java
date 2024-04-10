@@ -33,6 +33,13 @@ import java.util.Map;
 @NoArgsConstructor
 @EqualsAndHashCode
 @ToString
+/**
+ * This entity stores EDC contract information for a given partner.
+ * Persisting this data helps to improve the efficiency, since in
+ * general contract negotiations take a considerable amount of time
+ * and EDC contracts in general are not time-limited and allow for
+ * multiple transfer requests from the consuming party.
+ */
 public class EdcContractMapping {
     @Id
     private String partnerBpnl;
@@ -52,11 +59,31 @@ public class EdcContractMapping {
     @ElementCollection
     @MapKeyColumn(name = "key")
     @Column(name = "value")
+    @Getter(AccessLevel.NONE)
     private Map<String, String> materialToHrefMapping = new HashMap<>();
 
     public EdcContractMapping(String partnerBpnl){
         this.partnerBpnl = partnerBpnl;
     }
 
+    /**
+     * Assign the DTR HREF value to the respective MaterialNumber.
+     *
+     * @param key       the MaterialNumber
+     * @param value     the HREF
+     */
+    public void putMaterialToHrefMapping(String key, String value){
+        materialToHrefMapping.put(key + "@" + partnerBpnl, value);
+    }
+
+    /**
+     * Retrieve the DTR HREF for a given MaterialNumber.
+     *
+     * @param key       the MaterialNumber
+     * @return          the HREF
+     */
+    public String getMaterialToHrefMapping(String key){
+        return materialToHrefMapping.get(key + "@" + partnerBpnl);
+    }
 
 }

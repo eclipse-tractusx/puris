@@ -138,7 +138,7 @@ public class EdcAdapterService {
             log.info("Skipping registration of framework agreement policy");
         }
         log.info("Registration of DTR Asset successful " + (result = registerDtrAsset()));
-        log.info("Registration of ItemStock2 submodel successful " + (result = registerItemStockSubmodel()));
+        log.info("Registration of ItemStock 2.0.0 submodel successful " + (result = registerItemStockSubmodel()));
         return result;
     }
 
@@ -574,7 +574,7 @@ public class EdcAdapterService {
         EdcContractMapping contractMapping = edcContractMappingService.find(partner.getBpnl());
         try {
             if (contractMapping != null) {
-                String href = contractMapping.getMaterialToHrefMapping().get(materialNumber);
+                String href = contractMapping.getMaterialToHrefMapping(materialNumber);
                 if (href == null) {
                     log.info("Need href for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
                     switch (direction) {
@@ -582,7 +582,7 @@ public class EdcAdapterService {
                         case INBOUND -> getPartnerAasForProduct(partner, mpr.getPartnerMaterialNumber());
                     }
                     contractMapping = edcContractMappingService.find(partner.getBpnl());
-                    href = contractMapping.getMaterialToHrefMapping().get(materialNumber);
+                    href = contractMapping.getMaterialToHrefMapping(materialNumber);
                 }
                 String itemStockContractId = contractMapping.getItemStockContractId();
                 String assetId = contractMapping.getItemStockAssetId();
@@ -595,7 +595,7 @@ public class EdcAdapterService {
                         itemStockContractId = contractMapping.getItemStockContractId();
                         assetId = contractMapping.getItemStockEdcProtocolUrl();
                         partnerItemStockEdcUrl = contractMapping.getItemStockEdcProtocolUrl();
-                        href = contractMapping.getMaterialToHrefMapping().get(materialNumber);
+                        href = contractMapping.getMaterialToHrefMapping(materialNumber);
                     } else {
                         log.error("Failed to contract for ItemStock Submodel 2.0.0 with " + partner.getBpnl());
                         return null;
@@ -631,15 +631,9 @@ public class EdcAdapterService {
                         log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
                         return null;
                     }
-                    var edrURL = edrDto.endpoint();
-                    if (!edrURL.endsWith("/")){
-                        edrURL += "/";
-                    }
+                    var edrURL = edrDto.endpoint().endsWith("/") ? edrDto.endpoint() : edrDto.endpoint() + "/";
                     edrURL += materialNumber + "/" + direction;
-                    if (href.endsWith("/")) {
-                        edrURL+= "/";
-                    }
-                    if (!edrURL.equals(href)) {
+                    if (!href.startsWith(edrURL)) {
                         log.warn("Diverging URLs in ItemStock Submodel request");
                         log.warn("href: " + href);
                         log.warn("URL from EDR: " + edrURL);
@@ -665,7 +659,7 @@ public class EdcAdapterService {
                 contractMapping.setItemStockAssetId(null);
                 contractMapping.setItemStockContractId(null);
                 contractMapping.setItemStockEdcProtocolUrl(null);
-                contractMapping.getMaterialToHrefMapping().put(materialNumber, null);
+                contractMapping.putMaterialToHrefMapping(materialNumber, null);
                 edcContractMappingService.update(contractMapping);
                 log.warn("ItemStock Submodel request for material " + material.getOwnMaterialNumber() + " at partner " +
                     partner.getBpnl() + " failed. Invalidating contract data. You may want to retry this request");
@@ -923,7 +917,7 @@ public class EdcAdapterService {
                                     contractMapping.setItemStockAssetId(id);
                                     contractMapping.setItemStockPublicDataPlaneApiUrl(href);
                                     contractMapping.setItemStockEdcProtocolUrl(dspUrl);
-                                    contractMapping.getMaterialToHrefMapping().put(materialNumber, href);
+                                    contractMapping.putMaterialToHrefMapping(materialNumber, href);
                                     edcContractMappingService.update(contractMapping);
                                     log.info("Updated contractMapping for Partner " + partner.getBpnl());
                                     failed = false;
