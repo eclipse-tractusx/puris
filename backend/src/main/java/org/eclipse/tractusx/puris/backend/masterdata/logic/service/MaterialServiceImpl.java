@@ -64,9 +64,6 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Override
     public Material create(Material material) {
-        if (material.getOwnMaterialNumber() == null) {
-            log.error("Could not create material without ownMaterialNumber");
-        }
         if (material.getMaterialNumberCx() == null) {
             if (variablesService.isGenerateMaterialCatenaXId()) {
                 UUID uuid;

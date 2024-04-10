@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.stock.domain.repository;
+package org.eclipse.tractusx.puris.backend.common.edc.domain.repository;
 
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStockRequestMessage;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.EdcContractMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-@Repository
-public interface ItemStockRequestMessageRepository extends JpaRepository<ItemStockRequestMessage, ItemStockRequestMessage.Key> {
-
+public interface EdcContractMappingRepository extends JpaRepository<EdcContractMapping, String> {
 }
