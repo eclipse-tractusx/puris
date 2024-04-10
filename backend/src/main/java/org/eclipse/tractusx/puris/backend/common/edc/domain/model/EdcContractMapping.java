@@ -54,7 +54,9 @@ public class EdcContractMapping {
 
     private String itemStockEdcProtocolUrl;
 
-    private String itemStockPublicDataPlaneApiUrl;
+    private String partTypeContractId;
+
+    private String partTypeAssetId;
 
     @ElementCollection
     @MapKeyColumn(name = "key")

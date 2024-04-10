@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.EdcContractMapping;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDRDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
@@ -557,7 +557,7 @@ public class EdcAdapterService {
                             break;
                         }
                     }
-                    EDR_Dto edrDto = null;
+                    EDRDto edrDto = null;
                     // Await arrival of edr
                     for (int i = 0; i < 100; i++) {
                         Thread.sleep(100);
@@ -781,7 +781,7 @@ public class EdcAdapterService {
                     break;
                 }
             }
-            EDR_Dto edrDto = null;
+            EDRDto edrDto = null;
             // Await arrival of edr
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
@@ -855,7 +855,6 @@ public class EdcAdapterService {
                                     String id = subProtocolElements[0].replace("id=", "");
                                     String dspUrl = subProtocolElements[subProtocolElements.length - 1].replace("dspEndpoint=", "");
                                     contractMapping.setItemStockAssetId(id);
-                                    contractMapping.setItemStockPublicDataPlaneApiUrl(href);
                                     contractMapping.setItemStockEdcProtocolUrl(dspUrl);
                                     contractMapping.putMaterialToHrefMapping(materialNumber, href);
                                     edcContractMappingService.update(contractMapping);
@@ -890,16 +889,16 @@ public class EdcAdapterService {
     }
 
     /**
-     * Tries to negotiate for the PartTypeInfo-Submodel asset with the given partner
-     * and also tries to initiate the transfer of the edr token to the given endpoint.
-     * <p>
-     * It will return a String array of length 4. The authKey is stored under index 0, the
-     * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
+     * Tries to negotiate for a partner's PartType API.<p>
+     * If successful, the contractId as well as the assetId
+     * are stored to the EdcContractMapping of that partner
+     * and can be retrieved from there to be used in later
+     * transfer requests for that api asset.
      *
-     * @param partner the partner
-     * @return A String array or null, if negotiation failed or the authCode did not arrive
+     * @param partner   the partner
+     * @return          true, if contract was agreed
      */
-    public String[] getContractForPartTypeInfoSubmodel(Partner partner) {
+    private boolean negotiateForPartTypeApi(Partner partner) {
         try {
             var responseNode = getCatalog(partner.getEdcUrl());
             var catalogArray = responseNode.get("dcat:dataset");
@@ -941,8 +940,9 @@ public class EdcAdapterService {
                 }
             }
             if (targetCatalogEntry == null) {
-                log.error("Could not find submodel asset for PartTypeInformation at partner " + partner.getBpnl() + " 's catalog");
-                return null;
+                log.error("Could not find asset for DigitalTwinRegistry at partner " + partner.getBpnl() + "'s catalog");
+                log.warn("CATALOG CONTENT \n" + catalogArray.toPrettyString());
+                return false;
             }
             String assetId = targetCatalogEntry.get("@id").asText();
             JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
@@ -961,9 +961,75 @@ public class EdcAdapterService {
                 var negotiationState = getNegotiationState(negotiationId);
                 log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
                 log.error("Failed to obtain " + assetId + " from " + partner.getEdcUrl());
-                return null;
+                return false;
+            }
+            var contractMapping = edcContractMappingService.find(partner.getBpnl());
+            contractMapping.setPartTypeContractId(contractId);
+            contractMapping.setPartTypeAssetId(assetId);
+            edcContractMappingService.update(contractMapping);
+            log.info("Got contract for PartType api with partner " + partner.getBpnl());
+            return true;
+        } catch (Exception e) {
+            log.error("Error in Negotiation for PartType of " + partner.getBpnl(), e);
+            return false;
+        }
+    }
+
+    /**
+     * This method will return the partnerCXId from the partner and
+     * for the material that are contained in the given MaterialPartnerRelation
+     *
+     * @param mpr   the MaterialPartnerRelation
+     * @return      the partner's CXid for that material
+     */
+    public String getPartTypeInformationFromPartner(MaterialPartnerRelation mpr) {
+        var edrDto = initiatePartTypeTransferFromPartner(mpr.getPartner());
+        if (edrDto == null) {
+            return null;
+        }
+        try (var response = getProxyPullRequest(edrDto.endpoint(), edrDto.authKey(),edrDto.authCode(),
+            new String[]{mpr.getPartnerMaterialNumber(), "$value"})){
+            if (response != null && response.isSuccessful()) {
+                var body = objectMapper.readTree(response.body().string());
+                var cxId = body.get("catenaXId").asText();
+                return cxId;
             }
 
+        } catch (Exception e) {
+            log.error("Error in PartType information request with partne " + mpr.getPartner().getBpnl() + " for " +
+                mpr.getMaterial().getOwnMaterialNumber(), e);
+        }
+        return null;
+    }
+
+    /**
+     * This method will obtain the EDR data needed to send an
+     * EDC transfer request to a partner's PartType information
+     * api.<p>
+     *
+     * It will return a String array of length 4. The authKey is stored under index 0, the
+     * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
+     *
+     * @param partner
+     * @return A String array or null, if negotiation failed or the EDR data did not arrive
+     */
+    private EDRDto initiatePartTypeTransferFromPartner(Partner partner) {
+        EdcContractMapping contractMapping = edcContractMappingService.find(partner.getBpnl());
+        if (contractMapping == null) {
+            log.error("Missing contract mapping for Partner " + partner.getBpnl());
+            return null;
+        }
+        boolean failed = true;
+        try {
+            String contractId = contractMapping.getPartTypeContractId();
+            String assetId = contractMapping.getPartTypeAssetId();
+            if (contractId == null || assetId == null) {
+                log.info("Need contract for PartType with partner " + partner.getBpnl());
+                negotiateForPartTypeApi(partner);
+                contractMapping = edcContractMappingService.find(partner.getBpnl());
+                contractId = contractMapping.getPartTypeContractId();
+                assetId = contractMapping.getPartTypeAssetId();
+            }
             // Initiate transfer of edr
             var transferResp = initiateProxyPullTransfer(partner, contractId, assetId);
             String transferId = transferResp.get("@id").asText();
@@ -978,20 +1044,27 @@ public class EdcAdapterService {
             // Await arrival of edr
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
-                EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
-                if (edr_Dto != null) {
+                EDRDto edrDto = edrService.findByTransferId(transferId);
+                if (edrDto != null) {
                     log.info("Successfully negotiated for " + assetId + " with " + partner.getEdcUrl());
-                    return new String[]{edr_Dto.authKey(), edr_Dto.authCode(), edr_Dto.endpoint(), contractId};
+                    failed = false;
+                    return edrDto;
                 }
             }
-            log.warn("did not receive authCode");
-            log.error("Failed to obtain " + assetId + " from " + partner.getEdcUrl());
-            return null;
-
+            log.warn("Did not receive EDR");
+            log.error("Failed to request transfer for " + assetId + " from " + partner.getEdcUrl());
         } catch (Exception e) {
-            log.error("Failed to get contract for PartTypeInfo submodel asset from " + partner.getBpnl(), e);
-            return null;
+            log.error("Error during EDC request for PartType information api from partner " + partner.getBpnl(), e);
+        } finally {
+          if (failed && contractMapping != null) {
+              contractMapping.setPartTypeAssetId(null);
+              contractMapping.setPartTypeContractId(null);
+              edcContractMappingService.update(contractMapping);
+              log.warn("Invalidating PartType contract data with partner " + partner.getBpnl() +
+                  "You may want to do a retry. ");
+          }
         }
+        return null;
     }
 
     /**
