@@ -139,10 +139,6 @@ spec:
               value: "{{ .Values.backend.puris.edr.deletiontimer }}"
             - name: PURIS_REQUEST_APIASSETID
               value: "{{ .Values.backend.puris.request.apiassetid }}"
-            - name: PURIS_RESPONSE_APIASSETID
-              value: "{{ .Values.backend.puris.response.apiassetid }}"
-            - name: PURIS_STATUSREQUEST_APIASSETID
-              value: "{{ .Values.backend.puris.statusrequest.apiassetid }}"
             - name: PURIS_FRAMEWORKAGREEMENT_USE
               value: "{{ .Values.backend.puris.frameworkagreement.use }}"
             - name: PURIS_FRAMEWORKAGREEMENT_CREDENTIAL

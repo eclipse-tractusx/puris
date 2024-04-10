@@ -414,12 +414,6 @@ backend:
     request:
       # -- Asset ID for request API
       apiassetid: request-api-asset
-    response:
-      # -- Asset ID for response API
-      apiassetid: response-api-asset
-    statusrequest:
-      # -- Asset ID for status-request API
-      apiassetid: statusrequest-api-asset
     frameworkagreement:
       # -- Flag to determine whether to use a framework agreement in puris
       use: false
