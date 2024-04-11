@@ -68,14 +68,14 @@ public class VariablesService {
      * The url under which this application's request endpoint can
      * be reached by external machines.
      */
-    private String requestServerEndpoint;
+    private String itemStockSubmodelEndpoint;
 
-    @Value("${puris.request.apiassetid}")
+    @Value("${puris.itemstocksubmodel.apiassetid}")
     /**
      * The assetId that shall be assigned to the request API
      * during asset creation.
      */
-    private String requestApiAssetId;
+    private String itemStockSubmodelAssetId;
 
     @Value("${puris.frameworkagreement.use}")
     /**
@@ -188,7 +188,7 @@ public class VariablesService {
     private String ownDefaultCountry;
 
     public String getItemStockSubmodelApiAssetId() {
-        return requestApiAssetId + "@" + ownBpnl;
+        return itemStockSubmodelAssetId + "@" + ownBpnl;
     }
 
     public String getPartTypeSubmodelApiAssetId() {
