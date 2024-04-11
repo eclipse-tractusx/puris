@@ -47,6 +47,6 @@ public class OwnDemandService extends DemandService<OwnDemand, OwnDemandReposito
             demand.getSupplierLocationBpns() != null &&
             !demand.getPartner().equals(ownPartnerEntity) &&
             ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns())) &&
-            !ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns()));
+            demand.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns()));
     }
 }
