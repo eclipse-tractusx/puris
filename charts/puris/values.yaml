@@ -411,15 +411,9 @@ backend:
         hibernate:
           # -- Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction
           enable_lazy_load_no_trans: true
-    request:
-      # -- Asset ID for request API
-      apiassetid: request-api-asset
-    response:
-      # -- Asset ID for response API
-      apiassetid: response-api-asset
-    statusrequest:
-      # -- Asset ID for status-request API
-      apiassetid: statusrequest-api-asset
+    itemstocksubmodel:
+      # -- Asset ID for ItemStockSubmodel API
+      apiassetid: itemstocksubmodel-api-asset
     frameworkagreement:
       # -- Flag to determine whether to use a framework agreement in puris
       use: false
