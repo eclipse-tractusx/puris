@@ -315,7 +315,7 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
-    public JsonNode buildItemStock2RegistrationBody() {
+    public JsonNode buildItemStockSubmodelRegistrationBody() {
         var body = getAssetRegistrationContext();
         body.put("@id", getItemStockSubmodelAssetId());
         var propertiesObject = MAPPER.createObjectNode();
@@ -329,7 +329,7 @@ public class EdcRequestBodyBuilder {
         semanticId.put("@id", "urn:samm:io.catenax.item_stock:2.0.0#ItemStock");
         body.set("privateProperties", MAPPER.createObjectNode());
 
-        String url = variablesService.getRequestServerEndpoint();
+        String url = variablesService.getItemStockSubmodelEndpoint();
         var dataAddress = MAPPER.createObjectNode();
         dataAddress.put("@type", "DataAddress");
         dataAddress.put("proxyPath", "true");

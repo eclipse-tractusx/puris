@@ -283,7 +283,7 @@ public class EdcAdapterService {
     }
 
     private boolean registerItemStockSubmodel() {
-        var body = edcRequestBodyBuilder.buildItemStock2RegistrationBody();
+        var body = edcRequestBodyBuilder.buildItemStockSubmodelRegistrationBody();
         try (var response = sendPostRequest(body, List.of("v3", "assets"))) {
             if (!response.isSuccessful()) {
                 log.warn("ItemStock Submodel Asset registration failed");
