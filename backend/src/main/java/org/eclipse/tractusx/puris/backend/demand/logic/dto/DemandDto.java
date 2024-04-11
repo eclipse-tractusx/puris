@@ -24,8 +24,10 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.DemandCategoryEnumeration;
 
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,7 +40,9 @@ import lombok.ToString;
 public class DemandDto implements Serializable {
     private UUID uuid;
 
+    @Pattern(regexp = PatternStore.BPNL_STRING)
     private String partnerBpnl;
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String ownMaterialNumber;
 
     private double quantity;
@@ -46,7 +50,9 @@ public class DemandDto implements Serializable {
 
     private Date day;
 
+    @Pattern(regexp = PatternStore.BPNS_STRING)
     private String demandLocationBpns;
+    @Pattern(regexp = PatternStore.BPNS_STRING)
     private String supplierLocationBpns;
 
     private DemandCategoryEnumeration demandCategoryCode;

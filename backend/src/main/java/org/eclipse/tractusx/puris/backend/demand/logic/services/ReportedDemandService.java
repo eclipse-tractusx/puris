@@ -22,14 +22,15 @@ package org.eclipse.tractusx.puris.backend.demand.logic.services;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.ReportedDemand;
 import org.eclipse.tractusx.puris.backend.demand.domain.repository.ReportedDemandRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ReportedDemandService extends DemandService<ReportedDemand, ReportedDemandRepository> {
 
-    public ReportedDemandService(ReportedDemandRepository repository, PartnerService partnerService) {
-        super(repository, partnerService);
+    public ReportedDemandService(ReportedDemandRepository repository, PartnerService partnerService, MaterialPartnerRelationService mprService) {
+        super(repository, partnerService, mprService);
     }
 
     @Override
@@ -38,6 +39,7 @@ public class ReportedDemandService extends DemandService<ReportedDemand, Reporte
         return 
             demand.getMaterial() != null &&
             demand.getPartner() != null &&
+            mprService.partnerOrdersProduct(demand.getMaterial(), demand.getPartner()) &&
             demand.getQuantity() > 0 && 
             demand.getMeasurementUnit() != null && 
             demand.getDay() != null && 

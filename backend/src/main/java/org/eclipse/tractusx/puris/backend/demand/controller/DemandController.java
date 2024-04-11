@@ -92,7 +92,7 @@ public class DemandController {
     @ResponseStatus(HttpStatus.CREATED)
     public DemandDto createDemand(@RequestBody DemandDto demandDto) {
         if (!validator.validate(demandDto).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Demand Information: \n" + demandDto.toString());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Demand Information");
         }
 
         if (demandDto.getOwnMaterialNumber().isEmpty()) {

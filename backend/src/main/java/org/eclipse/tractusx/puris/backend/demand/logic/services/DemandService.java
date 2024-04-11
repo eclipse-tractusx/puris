@@ -27,18 +27,21 @@ import java.util.function.Function;
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.demand.domain.model.Demand;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public abstract class DemandService<TEntity extends Demand, TRepository extends JpaRepository<TEntity, UUID> >  {
     protected final TRepository repository;
     protected final PartnerService partnerService;
+    protected final MaterialPartnerRelationService mprService;
 
     protected final Function<TEntity, Boolean> validator;
 
-    public DemandService(TRepository repository, PartnerService partnerService) {
+    public DemandService(TRepository repository, PartnerService partnerService, MaterialPartnerRelationService mprService) {
         this.repository = repository;
         this.partnerService = partnerService;
+        this.mprService = mprService;
         this.validator = this::validate;
     }
 
