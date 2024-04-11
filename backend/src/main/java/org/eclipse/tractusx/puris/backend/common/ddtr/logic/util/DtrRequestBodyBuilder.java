@@ -131,8 +131,9 @@ public class DtrRequestBodyBuilder {
 
         var itemStockRequestSubmodelObject = createItemStockSubmodelObject(material.getMaterialNumberCx(), DirectionCharacteristic.OUTBOUND);
         submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
+        submodelDescriptorsArray.add(createPartTypeSubmodelObject(material.getOwnMaterialNumber()));
 
-        log.debug("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
+        log.info("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
         return body;
     }
 
@@ -223,6 +224,48 @@ public class DtrRequestBodyBuilder {
         securityObject.put("value", "NONE");
         return itemStockRequestSubmodelObject;
     }
+    private JsonNode createPartTypeSubmodelObject(String materialId) {
+        var partTypeSubmodelObject = objectMapper.createObjectNode();
 
+        partTypeSubmodelObject.put("id", UUID.randomUUID().toString());
+        var semanticIdObject = objectMapper.createObjectNode();
+        partTypeSubmodelObject.set("semanticId", semanticIdObject);
+        semanticIdObject.put("type", "ExternalReference");
+        var keysArray = objectMapper.createArrayNode();
+        semanticIdObject.set("keys", keysArray);
+        var keyObject = objectMapper.createObjectNode();
+        keysArray.add(keyObject);
+        keyObject.put("type", "GlobalReference");
+        keyObject.put("value", "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation");
+
+        var endpointsArray = objectMapper.createArrayNode();
+        partTypeSubmodelObject.set("endpoints", endpointsArray);
+        var submodel3EndpointObject = objectMapper.createObjectNode();
+        endpointsArray.add(submodel3EndpointObject);
+        submodel3EndpointObject.put("interface", "SUBMODEL-3.0");
+        var protocolInformationObject = objectMapper.createObjectNode();
+        submodel3EndpointObject.set("protocolInformation", protocolInformationObject);
+        String href = variablesService.getEdcDataplanePublicUrl();
+        if (!href.endsWith("/")) {
+            href += "/";
+        }
+        href += materialId;
+        protocolInformationObject.put("href", href);
+        protocolInformationObject.put("endpointProtocol", "HTTP");
+        var endpointProtocolVersionArray = objectMapper.createArrayNode();
+        protocolInformationObject.set("endpointProtocolVersion", endpointProtocolVersionArray);
+        endpointProtocolVersionArray.add("1.1");
+        protocolInformationObject.put("subprotocol", "DSP");
+        protocolInformationObject.put("subprotocolBodyEncoding", "plain");
+        protocolInformationObject.put("subprotocolBody", "id=" + variablesService.getPartTypeSubmodelApiAssetId() + ";dspEndpoint=" + variablesService.getEdcProtocolUrl());
+        var securityAttributesArray = objectMapper.createArrayNode();
+        protocolInformationObject.set("securityAttributes", securityAttributesArray);
+        var securityObject = objectMapper.createObjectNode();
+        securityAttributesArray.add(securityObject);
+        securityObject.put("type", "NONE");
+        securityObject.put("key", "NONE");
+        securityObject.put("value", "NONE");
+        return partTypeSubmodelObject;
+    }
 
 }

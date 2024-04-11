@@ -34,10 +34,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialServi
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.regex.Pattern;
 
@@ -58,7 +55,7 @@ public class PartTypeInformationController {
     private PartTypeInformationSammMapper sammMapper;
 
     @Operation(description = "Endpoint that delivers PartTypeInformation of own products to customer partners. " +
-        "'bpnl' must be set to the bpnl of the requesting party. 'materialnumber' must be set to the ownMaterialNumber of " +
+        "'materialnumber' must be set to the ownMaterialNumber of " +
         "the party, that receives the request")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),
@@ -67,8 +64,8 @@ public class PartTypeInformationController {
         @ApiResponse(responseCode = "404", description = "Product not found for given parameters. "),
         @ApiResponse(responseCode = "501", description = "Unsupported representation requested. ")
     })
-    @GetMapping("/{bpnl}/{materialnumber}/{representation}")
-    public ResponseEntity<?> getMapping(@Parameter(description = "The BPNL of the requesting party") @PathVariable String bpnl,
+    @GetMapping("/{materialnumber}/{representation}")
+    public ResponseEntity<?> getMapping(@RequestHeader("edc-bpn") String bpnl,
                                         @Parameter(description = "The material number that the request receiving party uses for the material in question")
                                         @PathVariable String materialnumber,
                                         @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
