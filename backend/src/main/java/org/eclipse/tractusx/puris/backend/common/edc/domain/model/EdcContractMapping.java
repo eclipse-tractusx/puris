@@ -54,15 +54,23 @@ public class EdcContractMapping {
 
     private String itemStockEdcProtocolUrl;
 
-    private String partTypeContractId;
-
-    private String partTypeAssetId;
-
     @ElementCollection
     @MapKeyColumn(name = "key")
     @Column(name = "value")
     @Getter(AccessLevel.NONE)
     private Map<String, String> materialToHrefMapping = new HashMap<>();
+
+    private String partTypeContractId;
+
+    private String partTypeAssetId;
+
+    private String partTypeEdcProtocolUrl;
+
+    @ElementCollection
+    @MapKeyColumn(name = "key")
+    @Column(name = "value")
+    @Getter(AccessLevel.NONE)
+    private Map<String, String> partTypeToHrefMapping = new HashMap<>();
 
     public EdcContractMapping(String partnerBpnl){
         this.partnerBpnl = partnerBpnl;
@@ -86,6 +94,14 @@ public class EdcContractMapping {
      */
     public String getMaterialToHrefMapping(String key){
         return materialToHrefMapping.get(key);
+    }
+
+    public void putPartTypeToHrefMapping(String key, String value){
+        partTypeToHrefMapping.put(key, value);
+    }
+
+    public String getPartTypeToHrefMapping(String key){
+        return partTypeToHrefMapping.get(key);
     }
 
 }

@@ -133,7 +133,7 @@ public class DtrRequestBodyBuilder {
         submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
         submodelDescriptorsArray.add(createPartTypeSubmodelObject(material.getOwnMaterialNumber()));
 
-        log.info("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
+        log.debug("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
         return body;
     }
 
