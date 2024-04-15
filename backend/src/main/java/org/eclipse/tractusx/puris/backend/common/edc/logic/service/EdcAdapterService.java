@@ -24,7 +24,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.EdcContractMapping;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.ContractMapping;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDRDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
@@ -488,25 +489,22 @@ public class EdcAdapterService {
     }
 
     private boolean getPartnerAasForMaterial(MaterialPartnerRelation mpr) {
-        EdcContractMapping contractMapping = edcContractMappingService.find(mpr.getPartner().getBpnl());
-        if (contractMapping != null) {
-            if (contractMapping.getDtrContractId() == null || contractMapping.getDtrAssetId() == null) {
-                negotiateForPartnerDtr(mpr.getPartner());
-            }
-            return initiateDtrTransferForLookupApi("manufacturerPartId", mpr.getPartnerMaterialNumber(), mpr);
+        ContractMapping contractMapping = edcContractMappingService.getContractMapping(mpr.getPartner(), SubmodelType.DTR);
+        if (contractMapping.getContractId() == null || contractMapping.getAssetId() == null) {
+            if (!negotiateForPartnerDtr(mpr.getPartner()))
+                return false;
         }
-        return false;
+        return initiateDtrTransferForLookupApi("manufacturerPartId", mpr.getPartnerMaterialNumber(), mpr);
     }
 
     private boolean getPartnerAasForProduct(MaterialPartnerRelation mpr) {
-        EdcContractMapping contractMapping = edcContractMappingService.find(mpr.getPartner().getBpnl());
-        if (contractMapping != null) {
-            if (contractMapping.getDtrContractId() == null || contractMapping.getDtrAssetId() == null) {
-                negotiateForPartnerDtr(mpr.getPartner());
+        ContractMapping contractMapping = edcContractMappingService.getContractMapping(mpr.getPartner(), SubmodelType.DTR);
+        if (contractMapping.getContractId() == null || contractMapping.getAssetId() == null) {
+            if (!negotiateForPartnerDtr(mpr.getPartner())) {
+                return false;
             }
-            return initiateDtrTransferForLookupApi("customerPartId", mpr.getPartnerMaterialNumber(), mpr);
         }
-        return false;
+        return initiateDtrTransferForLookupApi("customerPartId", mpr.getPartnerMaterialNumber(), mpr);
     }
 
     public JsonNode doItemStockSubmodelRequest(MaterialPartnerRelation mpr, DirectionCharacteristic direction) {
@@ -517,98 +515,90 @@ public class EdcAdapterService {
             case OUTBOUND -> mpr.getPartnerCXNumber();
         };
         boolean failed = true;
-        EdcContractMapping contractMapping = edcContractMappingService.find(partner.getBpnl());
+        ContractMapping contractMapping = edcContractMappingService.getContractMapping(mpr.getPartner(), SubmodelType.ITEMSTOCK);
+
         try {
-            if (contractMapping != null) {
-                String href = contractMapping.getMaterialToHrefMapping(materialNumber);
-                if (href == null) {
-                    log.info("Need href for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
-                    switch (direction) {
-                        case OUTBOUND -> getPartnerAasForMaterial(mpr);
-                        case INBOUND -> getPartnerAasForProduct(mpr);
-                    }
-                    contractMapping = edcContractMappingService.find(partner.getBpnl());
-                    href = contractMapping.getMaterialToHrefMapping(materialNumber);
+            String href = edcContractMappingService.getHrefMapping(partner, SubmodelType.ITEMSTOCK, materialNumber);
+            if (href == null) {
+                log.info("Need href for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+                switch (direction) {
+                    case OUTBOUND -> getPartnerAasForMaterial(mpr);
+                    case INBOUND -> getPartnerAasForProduct(mpr);
                 }
-                String itemStockContractId = contractMapping.getItemStockContractId();
-                String assetId = contractMapping.getItemStockAssetId();
-                String partnerItemStockEdcUrl = contractMapping.getItemStockEdcProtocolUrl();
+                href = edcContractMappingService.getHrefMapping(partner, SubmodelType.ITEMSTOCK, materialNumber);
+            }
+            String itemStockContractId = contractMapping.getContractId();
+            String assetId = contractMapping.getAssetId();
+            String partnerItemStockEdcUrl = contractMapping.getPartnerDspUrl();
 
-                if (itemStockContractId == null || assetId == null || partnerItemStockEdcUrl == null) {
-                    log.info("Need Contract for ItemStock Submodel 2.0.0 with " + partner.getBpnl());
-                    if (negotiateForPartnerItemStockSubmodel(mpr, direction)) {
-                        contractMapping = edcContractMappingService.find(partner.getBpnl());
-                        itemStockContractId = contractMapping.getItemStockContractId();
-                        assetId = contractMapping.getItemStockEdcProtocolUrl();
-                        partnerItemStockEdcUrl = contractMapping.getItemStockEdcProtocolUrl();
-                        href = contractMapping.getMaterialToHrefMapping(materialNumber);
-                    } else {
-                        log.error("Failed to contract for ItemStock Submodel 2.0.0 with " + partner.getBpnl());
-                        return null;
+            if (itemStockContractId == null || assetId == null || partnerItemStockEdcUrl == null) {
+                log.info("Need Contract for ItemStock Submodel 2.0.0 with " + partner.getBpnl());
+                if (negotiateForPartnerItemStockSubmodel(mpr, direction)) {
+                    contractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.ITEMSTOCK);
+                    itemStockContractId = contractMapping.getContractId();
+                    assetId = contractMapping.getAssetId();
+                    partnerItemStockEdcUrl = contractMapping.getPartnerDspUrl();
+                } else {
+                    log.error("Failed to contract for ItemStock Submodel 2.0.0 with " + partner.getBpnl());
+                    return null;
+                }
+            }
+            try {
+                if (!partnerItemStockEdcUrl.equals(partner.getEdcUrl())) {
+                    log.warn("Diverging EDC URL's for partner " + partner.getBpnl());
+                    log.warn("Edc URL from AAS " + partnerItemStockEdcUrl);
+                    log.warn("General Edc Url of partner " + partner.getEdcUrl());
+                }
+                // Request EdrToken
+                var transferResp = initiateProxyPullTransfer(partner, itemStockContractId, assetId, partnerItemStockEdcUrl);
+                String transferId = transferResp.get("@id").asText();
+                for (int i = 0; i < 100; i++) {
+                    Thread.sleep(100);
+                    transferResp = getTransferState(transferId);
+                    if ("STARTED".equals(transferResp.get("edc:state").asText())) {
+                        break;
                     }
                 }
-                try {
-                    if (!partnerItemStockEdcUrl.equals(partner.getEdcUrl())) {
-                        log.warn("Diverging EDC URL's for partner " + partner.getBpnl());
-                        log.warn("Edc URL from AAS " + partnerItemStockEdcUrl);
-                        log.warn("General Edc Url of partner " + partner.getEdcUrl());
+                EDRDto edrDto = null;
+                // Await arrival of edr
+                for (int i = 0; i < 100; i++) {
+                    Thread.sleep(100);
+                    edrDto = edrService.findByTransferId(transferId);
+                    if (edrDto != null) {
+                        log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
+                        break;
                     }
-                    // Request EdrToken
-                    var transferResp = initiateProxyPullTransfer(partner, itemStockContractId, assetId, partnerItemStockEdcUrl);
-                    String transferId = transferResp.get("@id").asText();
-                    for (int i = 0; i < 100; i++) {
-                        Thread.sleep(100);
-                        transferResp = getTransferState(transferId);
-                        if ("STARTED".equals(transferResp.get("edc:state").asText())) {
-                            break;
-                        }
+                }
+                if (edrDto == null) {
+                    log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
+                    return null;
+                }
+                var edrURL = edrDto.endpoint().endsWith("/") ? edrDto.endpoint() : edrDto.endpoint() + "/";
+                edrURL += materialNumber + "/" + direction;
+                if (!href.startsWith(edrURL)) {
+                    log.warn("Diverging URLs in ItemStock Submodel request");
+                    log.warn("href: " + href);
+                    log.warn("URL from EDR: " + edrURL);
+                }
+                try (var response = getProxyPullRequest(href, edrDto.authKey(), edrDto.authCode(), new String[]{"$value"})) {
+                    if (response.isSuccessful()) {
+                        String responseString = response.body().string();
+                        failed = false;
+                        return objectMapper.readTree(responseString);
                     }
-                    EDRDto edrDto = null;
-                    // Await arrival of edr
-                    for (int i = 0; i < 100; i++) {
-                        Thread.sleep(100);
-                        edrDto = edrService.findByTransferId(transferId);
-                        if (edrDto != null) {
-                            log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
-                            break;
-                        }
-                    }
-                    if (edrDto == null) {
-                        log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
-                        return null;
-                    }
-                    var edrURL = edrDto.endpoint().endsWith("/") ? edrDto.endpoint() : edrDto.endpoint() + "/";
-                    edrURL += materialNumber + "/" + direction;
-                    if (!href.startsWith(edrURL)) {
-                        log.warn("Diverging URLs in ItemStock Submodel request");
-                        log.warn("href: " + href);
-                        log.warn("URL from EDR: " + edrURL);
-                    }
-                    try (var response = getProxyPullRequest(href, edrDto.authKey(), edrDto.authCode(), new String[]{"$value"})) {
-                        if (response.isSuccessful()) {
-                            String responseString = response.body().string();
-                            failed = false;
-                            return objectMapper.readTree(responseString);
-                        }
-                    } catch (Exception e) {
-                        log.error("Error in ItemStock Submodel 2.0.0 transfer request for partner " + partner.getBpnl(), e);
-                    }
-
-
                 } catch (Exception e) {
                     log.error("Error in ItemStock Submodel 2.0.0 transfer request for partner " + partner.getBpnl(), e);
                 }
+            } catch (Exception e) {
+                log.error("Error in ItemStock Submodel 2.0.0 transfer request for partner " + partner.getBpnl(), e);
             }
         } finally {
-            if (failed && contractMapping != null) {
-                // invalidate stored data
-                contractMapping.setItemStockAssetId(null);
-                contractMapping.setItemStockContractId(null);
-                contractMapping.setItemStockEdcProtocolUrl(null);
-                contractMapping.putMaterialToHrefMapping(materialNumber, null);
-                edcContractMappingService.update(contractMapping);
+            if (failed) {
+                // Invalidate stored data
+                edcContractMappingService.invalidateContractMapping(partner, SubmodelType.ITEMSTOCK);
+                edcContractMappingService.invalidateHrefMapping(partner, SubmodelType.ITEMSTOCK, materialNumber);
                 log.warn("ItemStock Submodel request for material " + material.getOwnMaterialNumber() + " at partner " +
-                    partner.getBpnl() + " failed. Invalidating contract data. You may want to retry this request");
+                    partner.getBpnl() + " failed. Invalidating stored contract data. You may want to retry this request");
             }
         }
         return null;
@@ -617,18 +607,18 @@ public class EdcAdapterService {
     private boolean negotiateForPartnerItemStockSubmodel(MaterialPartnerRelation mpr, DirectionCharacteristic direction) {
         Partner partner = mpr.getPartner();
         try {
-            EdcContractMapping contractMapping = edcContractMappingService.find(mpr.getPartner().getBpnl());
-            String itemStockEdcUrl = contractMapping.getItemStockEdcProtocolUrl();
-            String itemStockAssetId = contractMapping.getItemStockAssetId();
+            ContractMapping contractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.ITEMSTOCK);
+            String itemStockEdcUrl = contractMapping.getPartnerDspUrl();
+            String itemStockAssetId = contractMapping.getAssetId();
             if (itemStockEdcUrl == null || itemStockAssetId == null) {
-                log.info("Need ItemStock Submodel Edc URL for " + mpr.getPartner().getBpnl());
+                log.info("Need ItemStock Submodel Edc URL or AssetId from " + mpr.getPartner().getBpnl());
                 switch (direction) {
                     case INBOUND -> getPartnerAasForProduct(mpr);
                     case OUTBOUND -> getPartnerAasForMaterial(mpr);
                 }
-                contractMapping = edcContractMappingService.find(mpr.getPartner().getBpnl());
-                itemStockEdcUrl = contractMapping.getItemStockEdcProtocolUrl();
-                itemStockAssetId = contractMapping.getItemStockAssetId();
+                contractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.ITEMSTOCK);
+                itemStockEdcUrl = contractMapping.getPartnerDspUrl();
+                itemStockAssetId = contractMapping.getAssetId();
             }
             var responseNode = getCatalog(itemStockEdcUrl);
             var catalogArray = responseNode.get("dcat:dataset");
@@ -694,9 +684,9 @@ public class EdcAdapterService {
                 log.error("Failed to obtain " + assetId + " from " + partner.getEdcUrl());
                 return false;
             }
-            contractMapping.setItemStockContractId(contractId);
-            contractMapping.setItemStockAssetId(assetId);
-            edcContractMappingService.update(contractMapping);
+            contractMapping.setContractId(contractId);
+            contractMapping.setAssetId(assetId);
+            edcContractMappingService.saveContractMapping(partner, SubmodelType.ITEMSTOCK, contractMapping);
             log.info("Got contract for ItemStock Submodel 2.0.0 api with partner " + partner.getBpnl());
             return true;
         } catch (Exception e) {
@@ -754,11 +744,12 @@ public class EdcAdapterService {
                 log.error("Failed to obtain " + assetId + " from " + partner.getEdcUrl());
                 return false;
             }
-            var contractMapping = edcContractMappingService.find(partner.getBpnl());
-            contractMapping.setDtrContractId(contractId);
-            contractMapping.setDtrAssetId(assetId);
-            edcContractMappingService.update(contractMapping);
             log.info("Got contract for DTR api with partner {}", partner.getBpnl());
+            var contractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.DTR);
+            contractMapping.setContractId(contractId);
+            contractMapping.setAssetId(assetId);
+            edcContractMappingService.saveContractMapping(partner, SubmodelType.DTR, contractMapping);
+
             return true;
         } catch (Exception e) {
             log.error("Error in Negotiation for DTR of " + partner.getBpnl(), e);
@@ -769,18 +760,20 @@ public class EdcAdapterService {
     private boolean initiateDtrTransferForLookupApi(String specificAssetIdType, String specificAssetIdValue,
                                                     MaterialPartnerRelation mpr) {
         Partner partner = mpr.getPartner();
-        var contractMapping = edcContractMappingService.find(partner.getBpnl());
+        var contractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.DTR);
         boolean needPartTypeInformation = mpr.isPartnerSuppliesMaterial();
         boolean foundItemStockInformation = false;
         boolean foundPartTypeInformation = false;
         try {
-            String contractId = contractMapping.getDtrContractId();
-            String assetId = contractMapping.getDtrAssetId();
+            String contractId = contractMapping.getContractId();
+            String assetId = contractMapping.getAssetId();
             if (contractId == null || assetId == null) {
-                negotiateForPartnerDtr(partner);
-                contractMapping = edcContractMappingService.find(partner.getBpnl());
-                contractId = contractMapping.getDtrContractId();
-                assetId = contractMapping.getDtrAssetId();
+                if (!negotiateForPartnerDtr(partner)) {
+                    return false;
+                }
+                contractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.DTR);
+                contractId = contractMapping.getContractId();
+                assetId = contractMapping.getAssetId();
             }
             var transferResp = initiateProxyPullTransfer(partner, contractId, assetId);
             String transferId = transferResp.get("@id").asText();
@@ -867,10 +860,11 @@ public class EdcAdapterService {
                                             log.error("Found invalid URL in ItemStockSubmodel Descriptor: " + dspUrl);
                                             continue;
                                         }
-                                        contractMapping.setItemStockAssetId(id);
-                                        contractMapping.setItemStockEdcProtocolUrl(dspUrl);
-                                        contractMapping.putMaterialToHrefMapping(materialNumber, href);
-                                        edcContractMappingService.update(contractMapping);
+                                        var itemStockContractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.ITEMSTOCK);
+                                        itemStockContractMapping.setAssetId(id);
+                                        itemStockContractMapping.setPartnerDspUrl(dspUrl);
+                                        edcContractMappingService.saveContractMapping(partner, SubmodelType.ITEMSTOCK, itemStockContractMapping);
+                                        edcContractMappingService.saveHrefMapping(partner, SubmodelType.ITEMSTOCK, materialNumber, href);
                                         log.info("Updated ItemStock Submodel contractMapping for Partner " + partner.getBpnl());
                                         foundItemStockInformation = true;
                                     }
@@ -893,11 +887,13 @@ public class EdcAdapterService {
                                             log.error("Found invalid URL in PartTypeSubmodel Descriptor: " + dspUrl);
                                             continue;
                                         }
-                                        contractMapping.setPartTypeAssetId(id);
-                                        contractMapping.setPartTypeEdcProtocolUrl(dspUrl);
-                                        contractMapping.putPartTypeToHrefMapping(mpr.getPartnerMaterialNumber(), href);
-                                        edcContractMappingService.update(contractMapping);
-                                        log.info("Updated PartType Submodel contractMapping for Partner " + partner.getBpnl());
+                                        var partTypeContractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.PARTTYPE);
+                                        partTypeContractMapping.setAssetId(id);
+                                        partTypeContractMapping.setPartnerDspUrl(dspUrl);
+                                        edcContractMappingService.saveContractMapping(partner, SubmodelType.PARTTYPE, partTypeContractMapping);
+                                        edcContractMappingService.saveHrefMapping(partner, SubmodelType.PARTTYPE, mpr.getPartnerMaterialNumber(), href);
+                                        log.info("Updated PartType Submodel contractMapping and HREF for Partner " + partner.getBpnl()
+                                        + " and partner materialNumber: " + href);
                                         foundPartTypeInformation = true;
                                     }
                                 }
@@ -918,11 +914,9 @@ public class EdcAdapterService {
             return false;
         } finally {
             boolean failed = !foundItemStockInformation || (needPartTypeInformation && !foundPartTypeInformation);
-            if (failed && contractMapping != null) {
-                // invalidate failing dtr contract information
-                contractMapping.setDtrContractId(null);
-                contractMapping.setDtrAssetId(null);
-                edcContractMappingService.update(contractMapping);
+            if (failed) {
+                // Invalidate failing dtr contract information
+                edcContractMappingService.invalidateContractMapping(partner, SubmodelType.DTR);
                 log.warn("DTR Lookup request for {} {} at partner {} failed. Invalidating contract data. You may want " +
                     "to retry this request", specificAssetIdType, specificAssetIdValue, partner.getBpnl());
             }
@@ -941,15 +935,15 @@ public class EdcAdapterService {
      */
     private boolean negotiateForPartTypeApi(MaterialPartnerRelation mpr) {
         Partner partner = mpr.getPartner();
-        EdcContractMapping contractMapping = edcContractMappingService.find(partner.getBpnl());
+        ContractMapping contractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.PARTTYPE);
         try {
-            String partnerDSPUrl = contractMapping.getPartTypeEdcProtocolUrl();
-            String partTypeAssetId = contractMapping.getPartTypeAssetId();
+            String partnerDSPUrl = contractMapping.getPartnerDspUrl();
+            String partTypeAssetId = contractMapping.getAssetId();
             if (partnerDSPUrl == null || partTypeAssetId == null) {
                 getPartnerAasForMaterial(mpr);
-                contractMapping = edcContractMappingService.find(partner.getBpnl());
-                partnerDSPUrl = contractMapping.getPartTypeEdcProtocolUrl();
-                partTypeAssetId = contractMapping.getPartTypeAssetId();
+                contractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.PARTTYPE);
+                partnerDSPUrl = contractMapping.getPartnerDspUrl();
+                partTypeAssetId = contractMapping.getAssetId();
             }
 
             var responseNode = getCatalog(partnerDSPUrl);
@@ -1017,9 +1011,8 @@ public class EdcAdapterService {
                 log.error("Failed to obtain " + assetId + " from " + partner.getEdcUrl());
                 return false;
             }
-            contractMapping.setPartTypeContractId(contractId);
-            contractMapping.setPartTypeAssetId(assetId);
-            edcContractMappingService.update(contractMapping);
+            contractMapping.setContractId(contractId);
+            edcContractMappingService.saveContractMapping(partner, SubmodelType.PARTTYPE, contractMapping);
             log.info("Got contract for PartType api with partner " + partner.getBpnl());
             return true;
         } catch (Exception e) {
@@ -1040,27 +1033,22 @@ public class EdcAdapterService {
      */
     public String getPartTypeInformationFromPartner(MaterialPartnerRelation mpr) {
         var edrDto = initiatePartTypeTransferFromPartner(mpr);
-        EdcContractMapping contractMapping = edcContractMappingService.find(mpr.getPartner().getBpnl());
-        if (edrDto == null || contractMapping == null) {
+        if (edrDto == null) {
             return null;
         }
-        String href = contractMapping.getPartTypeToHrefMapping(mpr.getPartnerMaterialNumber());
+        String href = edcContractMappingService.getHrefMapping(mpr.getPartner(), SubmodelType.PARTTYPE, mpr.getPartnerMaterialNumber());
         if (href == null) {
-            if (mpr.isPartnerBuysMaterial()) {
-                log.info("Retrieving PartType Submodel HREF for PRODUCT " + mpr.getMaterial().getOwnMaterialNumber()
-                    + " from " + mpr.getPartner().getBpnl());
-                getPartnerAasForProduct(mpr);
-            }
             if (mpr.isPartnerSuppliesMaterial()) {
                 log.info("Retrieving PartType Submodel HREF for MATERIAL " + mpr.getMaterial().getOwnMaterialNumber()
                     + " from " + mpr.getPartner().getBpnl());
-                getPartnerAasForMaterial(mpr);
+                if (getPartnerAasForMaterial(mpr)) {
+                    href = edcContractMappingService.getHrefMapping(mpr.getPartner(), SubmodelType.PARTTYPE, mpr.getPartnerMaterialNumber());
+                } else {
+                    log.warn("PartType fetch failed");
+                    return null;
+                }
             }
-            contractMapping = edcContractMappingService.find(mpr.getPartner().getBpnl());
-            href = contractMapping.getPartTypeToHrefMapping(mpr.getPartnerMaterialNumber());
         }
-
-
         try (var response = getProxyPullRequest(href, edrDto.authKey(), edrDto.authCode(),
             new String[]{"$value"})) {
             if (response != null && response.isSuccessful()) {
@@ -1070,7 +1058,7 @@ public class EdcAdapterService {
             }
 
         } catch (Exception e) {
-            log.error("Error in PartType information request with partne " + mpr.getPartner().getBpnl() + " for " +
+            log.error("Error in PartType information request with partner " + mpr.getPartner().getBpnl() + " for " +
                 mpr.getMaterial().getOwnMaterialNumber(), e);
         }
         return null;
@@ -1089,21 +1077,17 @@ public class EdcAdapterService {
      */
     private EDRDto initiatePartTypeTransferFromPartner(MaterialPartnerRelation mpr) {
         Partner partner = mpr.getPartner();
-        EdcContractMapping contractMapping = edcContractMappingService.find(partner.getBpnl());
-        if (contractMapping == null) {
-            log.error("Missing contract mapping for Partner " + partner.getBpnl());
-            return null;
-        }
+        ContractMapping contractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.PARTTYPE);
         boolean failed = true;
         try {
-            String contractId = contractMapping.getPartTypeContractId();
-            String assetId = contractMapping.getPartTypeAssetId();
+            String contractId = contractMapping.getContractId();
+            String assetId = contractMapping.getAssetId();
             if (contractId == null || assetId == null) {
                 log.info("Need contract for PartType with partner " + partner.getBpnl());
                 negotiateForPartTypeApi(mpr);
-                contractMapping = edcContractMappingService.find(partner.getBpnl());
-                contractId = contractMapping.getPartTypeContractId();
-                assetId = contractMapping.getPartTypeAssetId();
+                contractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.PARTTYPE);
+                contractId = contractMapping.getContractId();
+                assetId = contractMapping.getAssetId();
             }
             // Initiate transfer of edr
             var transferResp = initiateProxyPullTransfer(partner, contractId, assetId);
@@ -1131,10 +1115,8 @@ public class EdcAdapterService {
         } catch (Exception e) {
             log.error("Error during EDC request for PartType information api from partner " + partner.getBpnl(), e);
         } finally {
-            if (failed && contractMapping != null) {
-                contractMapping.setPartTypeAssetId(null);
-                contractMapping.setPartTypeContractId(null);
-                edcContractMappingService.update(contractMapping);
+            if (failed) {
+                edcContractMappingService.invalidateContractMapping(partner, SubmodelType.PARTTYPE);
                 log.warn("Invalidating PartType contract data with partner " + partner.getBpnl() +
                     "You may want to do a retry. ");
             }

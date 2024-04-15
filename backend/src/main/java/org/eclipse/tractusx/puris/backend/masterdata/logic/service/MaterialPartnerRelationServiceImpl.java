@@ -111,7 +111,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         final MaterialPartnerRelation materialPartnerRelation;
         int retries;
         final int initialRetries;
-        boolean failed = false;
+        boolean done = false;
 
         public PartTypeInformationRetrievalTask(MaterialPartnerRelation materialPartnerRelation, int retries) {
             this.materialPartnerRelation = materialPartnerRelation;
@@ -127,7 +127,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                     log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
                         " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed");
                     currentPartTypeFetches.remove(materialPartnerRelation);
-                    failed = true;
+                    done = true;
                     return false;
                 }
                 if (retries < initialRetries) {
@@ -137,20 +137,19 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                 if (partnerCXId != null && PatternStore.URN_OR_UUID_PATTERN.matcher(partnerCXId).matches()) {
 
                     materialPartnerRelation.setPartnerCXNumber(partnerCXId);
-                    var updatedMpr = mprRepository.save(materialPartnerRelation);
-                    if (updatedMpr != null) {
-                        log.info("Successfully inserted Partner CX Id for Partner " +
-                            materialPartnerRelation.getPartner().getBpnl() + " and Material "
-                            + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                            " -> " + partnerCXId);
-                    }
+                    mprRepository.save(materialPartnerRelation);
+                    log.info("Successfully inserted Partner CX Id for Partner " +
+                        materialPartnerRelation.getPartner().getBpnl() + " and Material "
+                        + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                        " -> " + partnerCXId);
                 } else {
                     log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
                         " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);
                     retries--;
                     return call();
                 }
-                currentPartTypeFetches.remove(materialPartnerRelation);
+                
+                done = true;
                 return true;
             } catch (Exception e) {
                 log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
@@ -158,7 +157,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                 retries--;
                 return call();
             } finally {
-                if (failed) {
+                if (done) {
                     currentPartTypeFetches.remove(materialPartnerRelation);
                 }
             }
