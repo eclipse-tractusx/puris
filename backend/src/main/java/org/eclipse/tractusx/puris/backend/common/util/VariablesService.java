@@ -190,17 +190,4 @@ public class VariablesService {
     public String getItemStockSubmodelApiAssetId() {
         return itemStockSubmodelAssetId + "@" + ownBpnl;
     }
-    
-    public String getPlannedProductionApiAssetId(DT_PlannedProductionApiMethodEnum method) {
-        if(plannedProductionResponseApiAssetId == null || plannedProductionRequestApiAssetId == null || plannedProductionStatusRequestApiAssetId == null) {
-            throw new RuntimeException("You must define puris.assets.plannedproduction.requestid, puris.assets.plannedproduction.responseid " +
-                "and puris.assets.plannedproduction.statusrequestid in properties file");
-        }
-        switch (method) {
-            case REQUEST: return plannedProductionRequestApiAssetId;
-            case RESPONSE: return plannedProductionResponseApiAssetId;
-            case STATUS_REQUEST: return plannedProductionStatusRequestApiAssetId;
-            default: throw new RuntimeException("Unknown Api Method: " + method);
-        }
-    }
 }
