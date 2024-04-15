@@ -17,23 +17,26 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
+package org.eclipse.tractusx.puris.backend.demand.domain.model;
 
-package org.eclipse.tractusx.puris.backend.production.domain.model;
-
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import java.util.Date;
+import java.util.Objects;
+import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 
-import java.util.Date;
-import java.util.Objects;
-import java.util.UUID;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -43,7 +46,7 @@ import java.util.UUID;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
 @ToString
-public abstract class Production {
+public abstract class Demand {
     @Id
     @GeneratedValue
     protected UUID uuid;
@@ -63,17 +66,15 @@ public abstract class Production {
     private double quantity;
     private ItemUnitEnumeration measurementUnit;
 
+    private Date day;
+
     @Pattern(regexp = PatternStore.BPNS_STRING)
-    private String productionSiteBpns;
+    private String demandLocationBpns;
 
-    private Date estimatedTimeOfCompletion;
+    @Pattern(regexp = PatternStore.BPNS_STRING)
+    private String supplierLocationBpns;
 
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
-    private String customerOrderNumber;
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
-    private String customerOrderPositionNumber;
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
-    private String supplierOrderNumber;
+    private DemandCategoryEnumeration demandCategoryCode;
 
     @ToString.Include
     private String material_ownMaterialNumber() {
@@ -89,23 +90,19 @@ public abstract class Production {
             return false;
         }
 
-        final Production that = (Production) o;
-        return  this.getMaterial().getOwnMaterialNumber().equals(that.getMaterial().getOwnMaterialNumber()) &&
+        final Demand that = (Demand) o;
+        return this.getMaterial().getOwnMaterialNumber().equals(that.getMaterial().getOwnMaterialNumber()) &&
                 this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
-                this.getEstimatedTimeOfCompletion().equals(that.getEstimatedTimeOfCompletion()) &&
-                (
-                    Objects.equals(this.getCustomerOrderNumber(), that.getCustomerOrderNumber()) && 
-                    Objects.equals(this.getCustomerOrderPositionNumber(), that.getCustomerOrderPositionNumber()) &&
-                    Objects.equals(this.getSupplierOrderNumber(), that.getSupplierOrderNumber())
-                );
+                this.getDay().equals(that.getDay()) &&
+                this.getDemandCategoryCode().equals(that.getDemandCategoryCode()) &&
+                this.getDemandLocationBpns().equals(that.getDemandLocationBpns()) &&
+                this.getSupplierLocationBpns().equals(that.getSupplierLocationBpns());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-            partner, material, quantity, measurementUnit, productionSiteBpns,
-            estimatedTimeOfCompletion, customerOrderNumber, 
-            customerOrderPositionNumber, supplierOrderNumber
-        );
+                partner, material, quantity, measurementUnit, demandLocationBpns, supplierLocationBpns, day,
+                demandCategoryCode);
     }
 }
