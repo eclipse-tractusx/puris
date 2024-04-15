@@ -22,9 +22,6 @@
 package org.eclipse.tractusx.puris.backend.common.util;
 
 import lombok.Getter;
-
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ItemStockApiMethodEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_PlannedProductionApiMethodEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -41,8 +38,10 @@ public class VariablesService {
      * The port used by this apps server application.
      */
     private String serverPort;
+
     @Value("${puris.baseurl}")
     private String purisBaseUrl;
+
     @Value("${puris.demonstrator.role}")
     /**
      * Must be set to "CUSTOMER" or "SUPPLIER" if
@@ -56,95 +55,41 @@ public class VariablesService {
      * The edrEndpoint to be used during consumer pull asset transfers.
      */
     private String edrEndpoint;
+
     @Value("${puris.edr.deletiontimer}")
     /**
      * The number of minutes before received authentication data
      * in the context of a consumer pull is removed from memory
      */
     private long edrTokenDeletionTimer;
+
     @Value("${puris.baseurl}" + "catena/item-stock/request")
     /**
      * The url under which this application's request endpoint can
      * be reached by external machines.
      */
-    private String itemStockRequestServerEndpoint;
-    @Value("${puris.assets.itemstock.requestid}")
+    private String itemStockSubmodelEndpoint;
+
+    @Value("${puris.itemstocksubmodel.apiassetid}")
     /**
      * The assetId that shall be assigned to the request API
      * during asset creation.
      */
-    private String itemStockRequestApiAssetId;
-    @Value("${puris.baseurl}" + "catena/item-stock/response")
-    /**
-     * The url under which this application's response endpoint can
-     * be reached by external machines.
-     */
-    private String itemStockResponseServerEndpoint;
-    @Value("${puris.assets.itemstock.responseid}")
-    /**
-     * The assetId that shall be assigned to the request API
-     * during asset creation.
-     */
-    private String itemStockResponseApiAssetId;
-    @Value("${puris.assets.itemstock.statusrequestid}")
-    /**
-     * The assetId that shall be assigned to the status-request API
-     * during asset creation.
-     */
-    private String itemStockStatusRequestApiAssetId;
-    @Value("${puris.baseurl}" + "catena/item-stock/status")
-    /**
-     * The url under which this application's status-request endpoint
-     * can be reached by external machines.
-     */
-    private String itemStockStatusRequestServerEndpoint;
-    @Value("${puris.baseurl}" + "catena/planned-production/request")
-    /**
-     * The url under which this application's request endpoint can
-     * be reached by external machines.
-     */
-    private String plannedProductionRequestServerEndpoint;
-    @Value("${puris.assets.plannedproduction.requestid}")
-    /**
-     * The assetId that shall be assigned to the request API
-     * during asset creation.
-     */
-    private String plannedProductionRequestApiAssetId;
-    @Value("${puris.baseurl}" + "catena/planned-production/response")
-    /**
-     * The url under which this application's response endpoint can
-     * be reached by external machines.
-     */
-    private String plannedProductionResponseServerEndpoint;
-    @Value("${puris.assets.plannedproduction.responseid}")
-    /**
-     * The assetId that shall be assigned to the request API
-     * during asset creation.
-     */
-    private String plannedProductionResponseApiAssetId;
-    @Value("${puris.assets.plannedproduction.statusrequestid}")
-    /**
-     * The assetId that shall be assigned to the status-request API
-     * during asset creation.
-     */
-    private String plannedProductionStatusRequestApiAssetId;
-    @Value("${puris.baseurl}" + "catena/planned-production/status")
-    /**
-     * The url under which this application's status-request endpoint
-     * can be reached by external machines.
-     */
-    private String plannedProductionStatusRequestServerEndpoint;
+    private String itemStockSubmodelAssetId;
+
     @Value("${puris.frameworkagreement.use}")
     /**
      * A flag that signals whether a framework policy
      * shall be used as contract policy for your api assets.
      */
     private boolean useFrameworkPolicy;
+
     @Value("${puris.frameworkagreement.credential}")
     /**
      * The name of the framework agreement to be used.
      */
     private String purisFrameworkAgreement;
+
     @Value("${puris.api.key}")
     /**
      * The key for accessing the api.
@@ -178,80 +123,72 @@ public class VariablesService {
      * Your control plane's management url
      */
     private String edcManagementUrl;
+
     @Value("${edc.controlplane.protocol.url}")
     /**
      * Your control plane's protocol url
      */
     private String edcProtocolUrl;
+
     @Value("${edc.dataplane.public.url}")
     /**
      * Your data plane's public url
      */
     private String edcDataplanePublicUrl;
 
-
     @Value("${own.bpnl}")
     /**
      * The BPNL that was assigned to you.
      */
     private String ownBpnl;
+
     @Value("${own.name}")
     /**
      * A human-readable description of yourself, e.g.
      * the name of your company.
      */
     private String ownName;
+
     @Value("${own.bpns}")
     /**
      * A BPNS that was assigned to you.
      */
     private String ownDefaultBpns;
+
     @Value("${own.site.name}")
     /**
      * A human-readable description of the site that you referenced in
      * the ownDefaultBpns.
      */
     private String ownDefaultSiteName;
+
     @Value("${own.bpna}")
     /** A BPNA that was assigned to you. If you initialised the
      * ownDefaultBpns variable, then it must be a BPNA that is associated
      * to that BPNS.
      */
     private String ownDefaultBpna;
+
     @Value("${own.streetandnumber}")
     /**
      * The street and number associated to the ownDefaultBpna
      */
     private String ownDefaultStreetAndNumber;
+
     @Value("${own.zipcodeandcity}")
     /**
      * The zip code and name of the city associated to the ownDefaultBpna
      */
     private String ownDefaultZipCodeAndCity;
+
     @Value("${own.country}")
     /**
      * The country in which your ownDefaultBpna-address is located.
      */
     private String ownDefaultCountry;
 
-
-    /**
-     * Returns the asset-id as defined in the properties file for the given api method
-     * under request.apiassetid or response.apiassetid respectively.
-     * @param method
-     * @return the asset-id
-     */
-    public String getItemStockApiAssetId(DT_ItemStockApiMethodEnum method) {
-        if(itemStockResponseApiAssetId == null || itemStockRequestApiAssetId == null || itemStockStatusRequestApiAssetId == null) {
-            throw new RuntimeException("You must define puris.assets.itemstock.requestid, puris.assets.itemstock.responseid " +
-                "and puris.assets.itemstock.statusrequestid in properties file");
-        }
-        switch (method) {
-            case REQUEST: return itemStockRequestApiAssetId;
-            case RESPONSE: return itemStockResponseApiAssetId;
-            case STATUS_REQUEST: return itemStockStatusRequestApiAssetId;
-            default: throw new RuntimeException("Unknown Api Method: " + method);
-        }
+    public String getItemStockSubmodelApiAssetId() {
+        return itemStockSubmodelAssetId + "@" + ownBpnl;
     }
     
     public String getPlannedProductionApiAssetId(DT_PlannedProductionApiMethodEnum method) {

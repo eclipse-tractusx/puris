@@ -24,17 +24,23 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.EdcContractMapping;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ItemStockApiMethodEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_PlannedProductionApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
@@ -51,6 +57,11 @@ public class EdcAdapterService {
     private EdcRequestBodyBuilder edcRequestBodyBuilder;
     @Autowired
     private EndpointDataReferenceService edrService;
+
+    @Autowired
+    private EdcContractMappingService edcContractMappingService;
+
+    private Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
 
     public EdcAdapterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -112,31 +123,7 @@ public class EdcAdapterService {
      * @return true if all registrations were successful, otherwise false
      */
     public boolean registerAssetsInitially() {
-        if(!registerItemStockApiAsset(DT_ItemStockApiMethodEnum.REQUEST)) {
-            return false;
-        }
-        log.info("Registration of ItemStockApi Request successful");
-        if(!registerItemStockApiAsset(DT_ItemStockApiMethodEnum.RESPONSE)) {
-            return false;
-        }
-        log.info("Registration of ItemStockApi Response successful");
-        if(!registerItemStockApiAsset(DT_ItemStockApiMethodEnum.STATUS_REQUEST)) {
-            return false;
-        }
-        log.info("Registration of ItemStockApi StatusRequest successful");
-        if(!registerPlannedProductionApiAsset(DT_PlannedProductionApiMethodEnum.REQUEST)) {
-            return false;
-        }
-        log.info("Registration of PlannedProductionApi Request successful");
-        if(!registerPlannedProductionApiAsset(DT_PlannedProductionApiMethodEnum.RESPONSE)) {
-            return false;
-        }
-        log.info("Registration of PlannedProductionApi Response successful");
-        if(!registerPlannedProductionApiAsset(DT_PlannedProductionApiMethodEnum.STATUS_REQUEST)) {
-            return false;
-        }
-        log.info("Registration of PlannedProductionApi StatusRequest successful");
-
+        boolean result = true;
         if (variablesService.isUseFrameworkPolicy()) {
             if (!createFrameWorkPolicy()) {
                 return false;
@@ -145,11 +132,9 @@ public class EdcAdapterService {
         } else {
             log.info("Skipping registration of framework agreement policy");
         }
-        if (!registerDtrAsset()) {
-            return false;
-        }
-        log.info("Registration of DTR Asset successful ");
-        return true;
+        log.info("Registration of DTR Asset successful " + (result &= registerDtrAsset()));
+        log.info("Registration of ItemStock 2.0.0 submodel successful " + (result &= registerItemStockSubmodel()));
+        return result;
     }
 
 
@@ -162,41 +147,18 @@ public class EdcAdapterService {
      */
     public boolean createPolicyAndContractDefForPartner(Partner partner) {
         boolean result = createPolicyDefinitionForPartner(partner);
+        result &= createItemStockSubmodelContractDefinitionForPartner(partner);
         result &= createDtrContractDefinitionForPartner(partner);
         result &= registerPartTypeAssetForPartner(partner);
-        result &= createPartTypeInfoContractDefForPartner(partner);
-        result &= createContractDefinitionForPartner(partner, DT_PlannedProductionApiMethodEnum.REQUEST);
-        result &= createContractDefinitionForPartner(partner, DT_PlannedProductionApiMethodEnum.STATUS_REQUEST);
-        result &= createContractDefinitionForPartner(partner, DT_PlannedProductionApiMethodEnum.RESPONSE);
-        result &= createContractDefinitionForPartner(partner, DT_ItemStockApiMethodEnum.REQUEST);
-        result &= createContractDefinitionForPartner(partner, DT_ItemStockApiMethodEnum.STATUS_REQUEST);
-        return result & createContractDefinitionForPartner(partner, DT_ItemStockApiMethodEnum.RESPONSE);
+        return createPartTypeInfoContractDefForPartner(partner) && result;
+
     }
 
-    /**
-     * Registers a contract definition using a policy that
-     * allows only the given partner's BPNL for the given Api Method.
-     * Prior to this method you must always have successfully completed the
-     * createPolicyDefinitionForPartner - method first.
-     *
-     * @param partner   the partner
-     * @param apiMethod the api method
-     * @return true, if registration ran successfully
-     */
-    private boolean createContractDefinitionForPartner(Partner partner, DT_ItemStockApiMethodEnum apiMethod) {
-        var body = edcRequestBodyBuilder.buildStockContractDefinitionWithBpnRestrictedPolicy(partner, apiMethod);
-        return sendContractDefinitionRequest(body, partner);
-    }
-    
-    private boolean createContractDefinitionForPartner(Partner partner, DT_PlannedProductionApiMethodEnum apiMethod) {
-        var body = edcRequestBodyBuilder.buildProductionContractDefinitionWithBpnRestrictedPolicy(partner, apiMethod);
-        return sendContractDefinitionRequest(body, partner);
-    }
-
-    private boolean sendContractDefinitionRequest(JsonNode body, Partner partner) {
+    private boolean createItemStockSubmodelContractDefinitionForPartner(Partner partner) {
+        var body = edcRequestBodyBuilder.buildItemStockSubmodelContractDefinitionWithBpnRestrictedPolicy(partner);
         try (var response = sendPostRequest(body, List.of("v2", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
-                log.warn("Contract definition registration failed for partner " + partner.getBpnl());
+                log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and ItemStock Submodel");
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
                 }
@@ -204,10 +166,11 @@ public class EdcAdapterService {
             }
             return true;
         } catch (Exception e) {
-            log.error("Contract definition registration failed for partner " + partner.getBpnl());
+            log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and ItemStock Submodel");
             return false;
         }
     }
+
 
     private boolean createDtrContractDefinitionForPartner(Partner partner) {
         var body = edcRequestBodyBuilder.buildDtrContractDefinitionForPartner(partner);
@@ -321,17 +284,11 @@ public class EdcAdapterService {
         }
     }
 
-    /**
-     * Util method to register an API asset to your control plane.
-     *
-     * @param apiMethod the api method to register.
-     * @return true if successful.
-     */
-    private boolean registerItemStockApiAsset(DT_ItemStockApiMethodEnum apiMethod) {
-        var body = edcRequestBodyBuilder.buildCreateItemStockAssetBody(apiMethod);
+    private boolean registerItemStockSubmodel() {
+        var body = edcRequestBodyBuilder.buildItemStockSubmodelRegistrationBody();
         try (var response = sendPostRequest(body, List.of("v3", "assets"))) {
             if (!response.isSuccessful()) {
-                log.warn("Asset registration failed");
+                log.warn("ItemStock Submodel Asset registration failed");
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
                 }
@@ -339,30 +296,7 @@ public class EdcAdapterService {
             }
             return true;
         } catch (Exception e) {
-            log.error("Failed to register api asset " + apiMethod.CX_TAXO, e);
-            return false;
-        }
-    }
-
-    /**
-     * Util method to register an API asset to your control plane.
-     *
-     * @param apiMethod the api method to register.
-     * @return true if successful.
-     */
-    private boolean registerPlannedProductionApiAsset(DT_PlannedProductionApiMethodEnum apiMethod) {
-        var body = edcRequestBodyBuilder.buildCreatePlannedProductionAssetBody(apiMethod);
-        try (var response = sendPostRequest(body, List.of("v3", "assets"))) {
-            if (!response.isSuccessful()) {
-                log.warn("Asset registration failed");
-                if (response.body() != null) {
-                    log.warn("Response: \n" + response.body().string());
-                }
-                return false;
-            }
-            return true;
-        } catch (Exception e) {
-            log.error("Failed to register api asset " + apiMethod.CX_TAXO, e);
+            log.error("Failed to register ItemStock Submodel", e);
             return false;
         }
     }
@@ -450,12 +384,16 @@ public class EdcAdapterService {
      * @return The response object
      * @throws IOException If the connection to your control plane fails
      */
-    public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String assetId) throws IOException {
-        var body = edcRequestBodyBuilder.buildProxyPullRequestBody(partner, contractId, assetId);
+    public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String assetId, String partnerEdcUrl) throws IOException {
+        var body = edcRequestBodyBuilder.buildProxyPullRequestBody(partner, contractId, assetId, partnerEdcUrl);
         try (var response = sendPostRequest(body, List.of("v2", "transferprocesses"))) {
             String data = response.body().string();
             return objectMapper.readTree(data);
         }
+    }
+
+    public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String assetId) throws IOException {
+        return initiateProxyPullTransfer(partner, contractId, assetId, partner.getEdcUrl());
     }
 
     /**
@@ -542,6 +480,414 @@ public class EdcAdapterService {
         } catch (Exception e) {
             log.error("ProxyPull GET Request failed ", e);
             return null;
+        }
+    }
+
+    private boolean getPartnerAasForMaterial(Partner partner, String partnerMaterialNumber) {
+        EdcContractMapping contractMapping = edcContractMappingService.find(partner.getBpnl());
+        if (contractMapping != null) {
+            if (contractMapping.getDtrContractId() == null || contractMapping.getDtrAssetId() == null) {
+                negotiateForPartnerDtr(partner);
+            }
+            return initiateDtrTransferForLookupApi(partner, "manufacturerPartId", partnerMaterialNumber);
+        }
+        return false;
+    }
+
+    private boolean getPartnerAasForProduct(Partner partner, String partnerMaterialNumber) {
+        EdcContractMapping contractMapping = edcContractMappingService.find(partner.getBpnl());
+        if (contractMapping != null) {
+            if (contractMapping.getDtrContractId() == null || contractMapping.getDtrAssetId() == null) {
+                negotiateForPartnerDtr(partner);
+            }
+            return initiateDtrTransferForLookupApi(partner, "customerPartId", partnerMaterialNumber);
+        }
+        return false;
+    }
+
+    public JsonNode doItemStockSubmodelRequest(MaterialPartnerRelation mpr, DirectionCharacteristic direction) {
+        Partner partner = mpr.getPartner();
+        Material material = mpr.getMaterial();
+        String materialNumber = switch (direction) {
+            case INBOUND -> material.getMaterialNumberCx();
+            case OUTBOUND -> mpr.getPartnerCXNumber();
+        };
+        boolean failed = true;
+        EdcContractMapping contractMapping = edcContractMappingService.find(partner.getBpnl());
+        try {
+            if (contractMapping != null) {
+                String href = contractMapping.getMaterialToHrefMapping(materialNumber);
+                if (href == null) {
+                    log.info("Need href for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+                    switch (direction) {
+                        case OUTBOUND -> getPartnerAasForMaterial(partner, mpr.getPartnerMaterialNumber());
+                        case INBOUND -> getPartnerAasForProduct(partner, mpr.getPartnerMaterialNumber());
+                    }
+                    contractMapping = edcContractMappingService.find(partner.getBpnl());
+                    href = contractMapping.getMaterialToHrefMapping(materialNumber);
+                }
+                String itemStockContractId = contractMapping.getItemStockContractId();
+                String assetId = contractMapping.getItemStockAssetId();
+                String partnerItemStockEdcUrl = contractMapping.getItemStockEdcProtocolUrl();
+
+                if (itemStockContractId == null || assetId == null || partnerItemStockEdcUrl == null) {
+                    log.info("Need Contract for ItemStock Submodel 2.0.0 with " + partner.getBpnl());
+                    if (negotiateForPartnerItemStockSubmodel(mpr, direction)) {
+                        contractMapping = edcContractMappingService.find(partner.getBpnl());
+                        itemStockContractId = contractMapping.getItemStockContractId();
+                        assetId = contractMapping.getItemStockEdcProtocolUrl();
+                        partnerItemStockEdcUrl = contractMapping.getItemStockEdcProtocolUrl();
+                        href = contractMapping.getMaterialToHrefMapping(materialNumber);
+                    } else {
+                        log.error("Failed to contract for ItemStock Submodel 2.0.0 with " + partner.getBpnl());
+                        return null;
+                    }
+                }
+                try {
+                    if (!partnerItemStockEdcUrl.equals(partner.getEdcUrl())) {
+                        log.warn("Diverging EDC URL's for partner " + partner.getBpnl());
+                        log.warn("Edc URL from AAS " + partnerItemStockEdcUrl);
+                        log.warn("General Edc Url of partner " + partner.getEdcUrl());
+                    }
+                    // Request EdrToken
+                    var transferResp = initiateProxyPullTransfer(partner, itemStockContractId, assetId, partnerItemStockEdcUrl);
+                    String transferId = transferResp.get("@id").asText();
+                    for (int i = 0; i < 100; i++) {
+                        Thread.sleep(100);
+                        transferResp = getTransferState(transferId);
+                        if ("STARTED".equals(transferResp.get("edc:state").asText())) {
+                            break;
+                        }
+                    }
+                    EDR_Dto edrDto = null;
+                    // Await arrival of edr
+                    for (int i = 0; i < 100; i++) {
+                        Thread.sleep(100);
+                        edrDto = edrService.findByTransferId(transferId);
+                        if (edrDto != null) {
+                            log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
+                            break;
+                        }
+                    }
+                    if (edrDto == null) {
+                        log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
+                        return null;
+                    }
+                    var edrURL = edrDto.endpoint().endsWith("/") ? edrDto.endpoint() : edrDto.endpoint() + "/";
+                    edrURL += materialNumber + "/" + direction;
+                    if (!href.startsWith(edrURL)) {
+                        log.warn("Diverging URLs in ItemStock Submodel request");
+                        log.warn("href: " + href);
+                        log.warn("URL from EDR: " + edrURL);
+                    }
+                    try (var response = getProxyPullRequest(href, edrDto.authKey(), edrDto.authCode(), new String[]{"$value"})) {
+                        if (response.isSuccessful()) {
+                            String responseString = response.body().string();
+                            failed = false;
+                            return objectMapper.readTree(responseString);
+                        }
+                    } catch (Exception e) {
+                        log.error("Error in ItemStock Submodel 2.0.0 transfer request for partner " + partner.getBpnl(), e);
+                    }
+
+
+                } catch (Exception e) {
+                    log.error("Error in ItemStock Submodel 2.0.0 transfer request for partner " + partner.getBpnl(), e);
+                }
+            }
+        } finally {
+            if (failed && contractMapping != null) {
+                // invalidate stored data
+                contractMapping.setItemStockAssetId(null);
+                contractMapping.setItemStockContractId(null);
+                contractMapping.setItemStockEdcProtocolUrl(null);
+                contractMapping.putMaterialToHrefMapping(materialNumber, null);
+                edcContractMappingService.update(contractMapping);
+                log.warn("ItemStock Submodel request for material " + material.getOwnMaterialNumber() + " at partner " +
+                    partner.getBpnl() + " failed. Invalidating contract data. You may want to retry this request");
+            }
+        }
+        return null;
+    }
+
+    private boolean negotiateForPartnerItemStockSubmodel(MaterialPartnerRelation mpr, DirectionCharacteristic direction) {
+        Partner partner = mpr.getPartner();
+        try {
+            EdcContractMapping contractMapping = edcContractMappingService.find(mpr.getPartner().getBpnl());
+            String itemStockEdcUrl = contractMapping.getItemStockEdcProtocolUrl();
+            String itemStockAssetId = contractMapping.getItemStockAssetId();
+            if (itemStockEdcUrl == null || itemStockAssetId == null) {
+                log.info("Need ItemStock Submodel Edc URL for " + mpr.getPartner().getBpnl());
+                switch (direction) {
+                    case INBOUND -> getPartnerAasForProduct(mpr.getPartner(), mpr.getPartnerMaterialNumber());
+                    case OUTBOUND -> getPartnerAasForMaterial(mpr.getPartner(), mpr.getPartnerMaterialNumber());
+                }
+                contractMapping = edcContractMappingService.find(mpr.getPartner().getBpnl());
+                itemStockEdcUrl = contractMapping.getItemStockEdcProtocolUrl();
+                itemStockAssetId = contractMapping.getItemStockAssetId();
+            }
+            var responseNode = getCatalog(itemStockEdcUrl);
+            var catalogArray = responseNode.get("dcat:dataset");
+            // If there is exactly one asset, the catalogContent will be a JSON object.
+            // In all other cases catalogContent will be a JSON array.
+            // For the sake of uniformity we will embed a single object in an array.
+            if (catalogArray.isObject()) {
+                catalogArray = objectMapper.createArrayNode().add(catalogArray);
+            }
+            JsonNode targetCatalogEntry = null;
+            for (var entry : catalogArray) {
+                var dctTypeObject = entry.get("dct:type");
+                if (dctTypeObject != null) {
+                    if (("https://w3id.org/catenax/taxonomy#Submodel").equals(dctTypeObject.get("@id").asText())) {
+                        if ("3.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
+                            var aasSemantics = entry.get("aas-semantics:semanticId");
+                            if ("urn:samm:io.catenax.item_stock:2.0.0#ItemStock".equals(aasSemantics.get("@id").asText())) {
+                                if (itemStockAssetId.equals(entry.get("edc:id").asText())) {
+                                    if (targetCatalogEntry == null) {
+                                        if (variablesService.isUseFrameworkPolicy()) {
+                                            if (testFrameworkAgreementConstraint(entry)) {
+                                                targetCatalogEntry = entry;
+                                            } else {
+                                                log.error("Contract Negotiation with partner " + partner.getBpnl() + " has " +
+                                                    "been aborted. This partner's contract policy does not match the policy " +
+                                                    "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
+                                                    "\n Received offer from Partner: \n" + entry.toPrettyString());
+                                                break;
+                                            }
+                                        } else {
+                                            targetCatalogEntry = entry;
+                                        }
+                                    } else {
+                                        log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (targetCatalogEntry == null) {
+                log.error("Could not find asset for ItemStock Submodel 2.0.0 at partner " + partner.getBpnl() + "'s catalog");
+                log.warn("CATALOG CONTENT \n" + catalogArray.toPrettyString());
+                return false;
+            }
+            String assetId = targetCatalogEntry.get("@id").asText();
+            JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
+            String negotiationId = negotiationResponse.get("@id").asText();
+            // Await confirmation of contract and contractId
+            String contractId = null;
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                var responseObject = getNegotiationState(negotiationId);
+                if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
+                    contractId = responseObject.get("edc:contractAgreementId").asText();
+                    break;
+                }
+            }
+            if (contractId == null) {
+                var negotiationState = getNegotiationState(negotiationId);
+                log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
+                log.error("Failed to obtain " + assetId + " from " + partner.getEdcUrl());
+                return false;
+            }
+            contractMapping.setItemStockContractId(contractId);
+            contractMapping.setItemStockAssetId(assetId);
+            edcContractMappingService.update(contractMapping);
+            log.info("Got contract for ItemStock Submodel 2.0.0 api with partner " + partner.getBpnl());
+            return true;
+        } catch (Exception e) {
+            log.error("Error in Negotiation for ItemStock Submodel 2.0.0 of " + partner.getBpnl(), e);
+            return false;
+        }
+    }
+
+    private boolean negotiateForPartnerDtr(Partner partner) {
+        try {
+            var responseNode = getCatalog(partner.getEdcUrl());
+            var catalogArray = responseNode.get("dcat:dataset");
+            // If there is exactly one asset, the catalogContent will be a JSON object.
+            // In all other cases catalogContent will be a JSON array.
+            // For the sake of uniformity we will embed a single object in an array.
+            if (catalogArray.isObject()) {
+                catalogArray = objectMapper.createArrayNode().add(catalogArray);
+            }
+            JsonNode targetCatalogEntry = null;
+            for (var entry : catalogArray) {
+                var dctTypeObject = entry.get("dct:type");
+                if (dctTypeObject != null) {
+                    if (("https://w3id.org/catenax/taxonomy#DigitalTwinRegistry").equals(dctTypeObject.get("@id").asText())) {
+                        if ("3.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
+                            if (targetCatalogEntry == null) {
+                                targetCatalogEntry = entry;
+                            } else {
+                                log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
+                            }
+                        }
+                    }
+                }
+            }
+            if (targetCatalogEntry == null) {
+                log.error("Could not find asset for DigitalTwinRegistry at partner " + partner.getBpnl() + "'s catalog");
+                log.warn("CATALOG CONTENT \n" + catalogArray.toPrettyString());
+                return false;
+            }
+            String assetId = targetCatalogEntry.get("@id").asText();
+            JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
+            String negotiationId = negotiationResponse.get("@id").asText();
+            // Await confirmation of contract and contractId
+            String contractId = null;
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                var responseObject = getNegotiationState(negotiationId);
+                if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
+                    contractId = responseObject.get("edc:contractAgreementId").asText();
+                    break;
+                }
+            }
+            if (contractId == null) {
+                var negotiationState = getNegotiationState(negotiationId);
+                log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
+                log.error("Failed to obtain " + assetId + " from " + partner.getEdcUrl());
+                return false;
+            }
+            var contractMapping = edcContractMappingService.find(partner.getBpnl());
+            contractMapping.setDtrContractId(contractId);
+            contractMapping.setDtrAssetId(assetId);
+            edcContractMappingService.update(contractMapping);
+            log.info("Got contract for DTR api with partner " + partner.getBpnl());
+            return true;
+        } catch (Exception e) {
+            log.error("Error in Negotiation for DTR of " + partner.getBpnl(), e);
+            return false;
+        }
+    }
+
+    private boolean initiateDtrTransferForLookupApi(Partner partner, String specificAssetIdType, String specificAssetIdValue) {
+        var contractMapping = edcContractMappingService.find(partner.getBpnl());
+        boolean failed = true;
+        try {
+            String contractId = contractMapping.getDtrContractId();
+            String assetId = contractMapping.getDtrAssetId();
+            if (contractId == null || assetId == null) {
+                negotiateForPartnerDtr(partner);
+                contractMapping = edcContractMappingService.find(partner.getBpnl());
+                contractId = contractMapping.getDtrContractId();
+                assetId = contractMapping.getDtrAssetId();
+            }
+            var transferResp = initiateProxyPullTransfer(partner, contractId, assetId);
+            String transferId = transferResp.get("@id").asText();
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                transferResp = getTransferState(transferId);
+                if ("STARTED".equals(transferResp.get("edc:state").asText())) {
+                    break;
+                }
+            }
+            EDR_Dto edrDto = null;
+            // Await arrival of edr
+            for (int i = 0; i < 100; i++) {
+                Thread.sleep(100);
+                edrDto = edrService.findByTransferId(transferId);
+                if (edrDto != null) {
+                    log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
+                    break;
+                }
+            }
+            if (edrDto == null) {
+                log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
+                return false;
+            }
+            HttpUrl.Builder urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
+                .addPathSegment("api")
+                .addPathSegment("v3.0")
+                .addPathSegment("lookup")
+                .addPathSegment("shells");
+            String query = "{\"name\":\"" + specificAssetIdType + "\",\"value\":\"" + specificAssetIdValue + "\"}";
+            query += ",{\"name\":\"digitalTwinType\",\"value\":\"PartType\"}";
+            urlBuilder.addQueryParameter("assetIds", Base64.getEncoder().encodeToString(query.getBytes(StandardCharsets.UTF_8)));
+            var request = new Request.Builder()
+                .get()
+                .header(edrDto.authKey(), edrDto.authCode())
+                .url(urlBuilder.build())
+                .build();
+            try (var response = CLIENT.newCall(request).execute()) {
+                var bodyString = response.body().string();
+                var jsonResponse = objectMapper.readTree(bodyString);
+                var resultArray = jsonResponse.get("result");
+                if (resultArray.isArray()) {
+                    String aasId = resultArray.get(0).asText();
+                    urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
+                        .addPathSegment("api")
+                        .addPathSegment("v3.0")
+                        .addPathSegment("shell-descriptors");
+                    String base64AasId = Base64.getEncoder().encodeToString(aasId.getBytes(StandardCharsets.UTF_8));
+                    urlBuilder.addQueryParameter("aasIdentifier", base64AasId);
+                    request = new Request.Builder()
+                        .get()
+                        .header(edrDto.authKey(), edrDto.authCode())
+                        .url(urlBuilder.build())
+                        .build();
+                    try (var response2 = CLIENT.newCall(request).execute()) {
+                        var body2String = response2.body().string();
+                        var aasJson = objectMapper.readTree(body2String);
+                        var resultObject = aasJson.get("result").get(0);
+                        var submodelDescriptors = resultObject.get("submodelDescriptors");
+
+                        var submodelDescriptor = submodelDescriptors.get(0);
+                        var semanticId = submodelDescriptor.get("semanticId");
+                        var keys = semanticId.get("keys");
+                        for (var key : keys) {
+                            var keyType = key.get("type").asText();
+                            var keyValue = key.get("value").asText();
+                            if ("GlobalReference".equals(keyType) && "urn:samm:io.catenax.item_stock:2.0.0#ItemStock".equals(keyValue)) {
+                                var endpoints = submodelDescriptor.get("endpoints");
+                                var endpoint = endpoints.get(0);
+                                var interfaceObject = endpoint.get("interface").asText();
+                                if ("SUBMODEL-3.0".equals(interfaceObject)) {
+                                    var protocolInformationObject = endpoint.get("protocolInformation");
+                                    String href = protocolInformationObject.get("href").asText();
+                                    var findMaterialNumber = HttpUrl.parse(href).encodedPathSegments().stream().filter(segment -> urnPattern.matcher(segment).matches()).findFirst();
+                                    if (findMaterialNumber.isEmpty()) {
+                                        log.error("Failed to find materialNumber segment in HREF URL");
+                                        return false;
+                                    }
+                                    String materialNumber = findMaterialNumber.get();
+                                    String subProtocolBodyData = protocolInformationObject.get("subprotocolBody").asText();
+                                    var subProtocolElements = subProtocolBodyData.split(";");
+                                    String id = subProtocolElements[0].replace("id=", "");
+                                    String dspUrl = subProtocolElements[subProtocolElements.length - 1].replace("dspEndpoint=", "");
+                                    contractMapping.setItemStockAssetId(id);
+                                    contractMapping.setItemStockPublicDataPlaneApiUrl(href);
+                                    contractMapping.setItemStockEdcProtocolUrl(dspUrl);
+                                    contractMapping.putMaterialToHrefMapping(materialNumber, href);
+                                    edcContractMappingService.update(contractMapping);
+                                    log.info("Updated contractMapping for Partner " + partner.getBpnl());
+                                    failed = false;
+                                    return true;
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.error("Error in shell-descriptors aas request ", e);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error in lookup api request", e);
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Error in transfer request for DTR at Partner " + partner.getBpnl());
+            return false;
+        } finally {
+            if (failed && contractMapping != null) {
+                // invalidate failing contract information
+                contractMapping.setDtrContractId(null);
+                contractMapping.setDtrAssetId(null);
+                contractMapping.setItemStockEdcProtocolUrl(null);
+                edcContractMappingService.update(contractMapping);
+                log.warn("DTR Lookup request for " + specificAssetIdType + " " + specificAssetIdValue + " at partner " +
+                    partner.getBpnl() + " failed. Invalidating contract data. You may want to retry this request");
+            }
         }
     }
 
@@ -646,205 +992,6 @@ public class EdcAdapterService {
 
         } catch (Exception e) {
             log.error("Failed to get contract for PartTypeInfo submodel asset from " + partner.getBpnl(), e);
-            return null;
-        }
-    }
-
-    /**
-     * Tries to negotiate for the given api Method with the given partner
-     * and also tries to initiate the transfer of the edr token to the given endpoint.
-     * <p>
-     * It will return a String array of length 4. The authKey is stored under index 0, the
-     * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
-     *
-     * @param partner   the partner
-     * @param apiMethod the api method
-     * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
-     */
-    public String[] getContractForItemStockApi(Partner partner, DT_ItemStockApiMethodEnum apiMethod) {
-        try {
-            var responseNode = getCatalog(partner.getEdcUrl());
-            var catalogArray = responseNode.get("dcat:dataset");
-            // If there is exactly one asset, the catalogContent will be a JSON object.
-            // In all other cases catalogContent will be a JSON array.
-            // For the sake of uniformity we will embed a single object in an array.
-            if (catalogArray.isObject()) {
-                catalogArray = objectMapper.createArrayNode().add(catalogArray);
-            }
-            JsonNode targetCatalogEntry = null;
-
-            for (var entry : catalogArray) {
-                var dctTypeObject = entry.get("dct:type");
-                if (dctTypeObject != null) {
-                    if (("https://w3id.org/catenax/taxonomy#" + apiMethod.CX_TAXO).equals(dctTypeObject.get("@id").asText())) {
-                        if (apiMethod.TYPE.equals(entry.get("asset:prop:type").asText())) {
-                            if ("1.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
-                                if (targetCatalogEntry == null) {
-                                    if (variablesService.isUseFrameworkPolicy()) {
-                                        if (testFrameworkAgreementConstraint(entry)) {
-                                            targetCatalogEntry = entry;
-                                        } else {
-                                            log.error("Contract Negotiation with partner " + partner.getBpnl() + " has " +
-                                                "been aborted. This partner's contract policy does not match the policy " +
-                                                "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
-                                                "\n Received offer from Partner: \n" + entry.toPrettyString());
-                                            break;
-                                        }
-                                    } else {
-                                        targetCatalogEntry = entry;
-                                    }
-                                } else {
-                                    log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (targetCatalogEntry == null) {
-                log.error("Could not find api asset " + apiMethod + " at partner " + partner.getBpnl() + " 's catalog");
-                return null;
-            }
-            String assetApiId = targetCatalogEntry.get("@id").asText();
-            JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
-            String negotiationId = negotiationResponse.get("@id").asText();
-            // Await confirmation of contract and contractId
-            String contractId = null;
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
-                var responseObject = getNegotiationState(negotiationId);
-                if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
-                    contractId = responseObject.get("edc:contractAgreementId").asText();
-                    break;
-                }
-            }
-            if (contractId == null) {
-                var negotiationState = getNegotiationState(negotiationId);
-                log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
-                log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
-                return null;
-            }
-
-            // Initiate transfer of edr
-            var transferResp = initiateProxyPullTransfer(partner, contractId, assetApiId);
-            String transferId = transferResp.get("@id").asText();
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
-                transferResp = getTransferState(transferId);
-                if ("STARTED".equals(transferResp.get("edc:state").asText())) {
-                    break;
-                }
-            }
-
-            // Await arrival of edr
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
-                EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
-                if (edr_Dto != null) {
-                    log.info("Successfully negotiated for " + assetApiId + " with " + partner.getEdcUrl());
-                    return new String[]{edr_Dto.authKey(), edr_Dto.authCode(), edr_Dto.endpoint(), contractId};
-                }
-            }
-            log.warn("did not receive authCode");
-            log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
-            return null;
-
-        } catch (Exception e) {
-            log.error("Failed to get contract for " + apiMethod + " from " + partner.getBpnl(), e);
-            return null;
-        }
-    }
-
-    public String[] getContractForPlannedProductionApi(Partner partner, DT_PlannedProductionApiMethodEnum apiMethod) {
-        try {
-            var responseNode = getCatalog(partner.getEdcUrl());
-            var catalogArray = responseNode.get("dcat:dataset");
-            // If there is exactly one asset, the catalogContent will be a JSON object.
-            // In all other cases catalogContent will be a JSON array.
-            // For the sake of uniformity we will embed a single object in an array.
-            if (catalogArray.isObject()) {
-                catalogArray = objectMapper.createArrayNode().add(catalogArray);
-            }
-            JsonNode targetCatalogEntry = null;
-
-            for (var entry : catalogArray) {
-                var dctTypeObject = entry.get("dct:type");
-                if (dctTypeObject != null) {
-                    if (("https://w3id.org/catenax/taxonomy#" + apiMethod.CX_TAXO).equals(dctTypeObject.get("@id").asText())) {
-                        if (apiMethod.TYPE.equals(entry.get("asset:prop:type").asText())) {
-                            if ("1.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
-                                if (targetCatalogEntry == null) {
-                                    if (variablesService.isUseFrameworkPolicy()) {
-                                        if (testFrameworkAgreementConstraint(entry)) {
-                                            targetCatalogEntry = entry;
-                                        } else {
-                                            log.error("Contract Negotiation with partner " + partner.getBpnl() + " has " +
-                                                "been aborted. This partner's contract policy does not match the policy " +
-                                                "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
-                                                "\n Received offer from Partner: \n" + entry.toPrettyString());
-                                            break;
-                                        }
-                                    } else {
-                                        targetCatalogEntry = entry;
-                                    }
-                                } else {
-                                    log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (targetCatalogEntry == null) {
-                log.error("Could not find api asset " + apiMethod + " at partner " + partner.getBpnl() + " 's catalog");
-                return null;
-            }
-            String assetApiId = targetCatalogEntry.get("@id").asText();
-            JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
-            String negotiationId = negotiationResponse.get("@id").asText();
-            // Await confirmation of contract and contractId
-            String contractId = null;
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
-                var responseObject = getNegotiationState(negotiationId);
-                if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
-                    contractId = responseObject.get("edc:contractAgreementId").asText();
-                    break;
-                }
-            }
-            if (contractId == null) {
-                var negotiationState = getNegotiationState(negotiationId);
-                log.warn("no contract id, last negotiation state: \n" + negotiationState.toPrettyString());
-                log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
-                return null;
-            }
-
-            // Initiate transfer of edr
-            var transferResp = initiateProxyPullTransfer(partner, contractId, assetApiId);
-            String transferId = transferResp.get("@id").asText();
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
-                transferResp = getTransferState(transferId);
-                if ("STARTED".equals(transferResp.get("edc:state").asText())) {
-                    break;
-                }
-            }
-
-            // Await arrival of edr
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
-                EDR_Dto edr_Dto = edrService.findByTransferId(transferId);
-                if (edr_Dto != null) {
-                    log.info("Successfully negotiated for " + assetApiId + " with " + partner.getEdcUrl());
-                    return new String[]{edr_Dto.authKey(), edr_Dto.authCode(), edr_Dto.endpoint(), contractId};
-                }
-            }
-            log.warn("did not receive authCode");
-            log.error("Failed to obtain " + assetApiId + " from " + partner.getEdcUrl());
-            return null;
-
-        } catch (Exception e) {
-            log.error("Failed to get contract for " + apiMethod + " from " + partner.getBpnl(), e);
             return null;
         }
     }

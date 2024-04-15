@@ -37,11 +37,9 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialP
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
@@ -73,6 +71,13 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     private ObjectMapper objectMapper;
 
     /**
+     * Contains all MaterialPartnerRelations, for which there are
+     * currently ongoing PartTypeInformationRetrievalTasks in
+     * existance. Helps to avoid duplicate tasks running simultaneously.
+     */
+    private Set<MaterialPartnerRelation> currentPartTypeFetches = ConcurrentHashMap.newKeySet();
+
+    /**
      * Stores the given relation to the database.
      *
      * @param materialPartnerRelation
@@ -97,59 +102,80 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         return null;
     }
 
-    @AllArgsConstructor
+    @Override
+    public void triggerPartTypeRetrievalTask(MaterialPartnerRelation mpr) {
+        if (!currentPartTypeFetches.contains(mpr)) {
+            executorService.submit(new PartTypeInformationRetrievalTask(mpr, 3));
+        }
+    }
+
+
     private class PartTypeInformationRetrievalTask implements Callable<Boolean> {
         final MaterialPartnerRelation materialPartnerRelation;
         int retries;
 
+        public PartTypeInformationRetrievalTask(MaterialPartnerRelation materialPartnerRelation, int retries) {
+            this.materialPartnerRelation = materialPartnerRelation;
+            this.retries = retries;
+            currentPartTypeFetches.add(materialPartnerRelation);
+        }
+
         @Override
-        public Boolean call() throws Exception {
-            Thread.sleep(100);
-            if (retries < 0) {
-                log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
-                    " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed");
-                return false;
-            }
-            String[] data = edcAdapterService.getContractForPartTypeInfoSubmodel(materialPartnerRelation.getPartner());
-            if (data != null) {
-                String authKey = data[0];
-                String authCode = data[1];
-                String endpoint = data[2];
-                var response = edcAdapterService.getProxyPullRequest(endpoint, authKey, authCode,
-                    new String[]{materialPartnerRelation.getPartnerMaterialNumber(), "$value"});
-                if (response != null && response.isSuccessful()) {
-                    var body = objectMapper.readTree(response.body().string());
-                    var cxId = body.get("catenaXId").asText();
-                    if (cxId != null && PatternStore.URN_OR_UUID_PATTERN.matcher(cxId).matches()) {
-                        materialPartnerRelation.setPartnerCXNumber(cxId);
-                        var updatedMpr = mprRepository.save(materialPartnerRelation);
-                        if (updatedMpr != null) {
-                            log.info("Successfully inserted Partner CX Id for Partner " +
-                                materialPartnerRelation.getPartner().getBpnl() + " and Material "
-                                + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+        public Boolean call() {
+            try {
+                Thread.sleep(300);
+                if (retries < 0) {
+                    log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
+                        " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed");
+                    currentPartTypeFetches.remove(materialPartnerRelation);
+                    return false;
+                }
+                String[] data = edcAdapterService.getContractForPartTypeInfoSubmodel(materialPartnerRelation.getPartner());
+                if (data != null) {
+                    String authKey = data[0];
+                    String authCode = data[1];
+                    String endpoint = data[2];
+                    var response = edcAdapterService.getProxyPullRequest(endpoint, authKey, authCode,
+                        new String[]{materialPartnerRelation.getPartnerMaterialNumber(), "$value"});
+                    if (response != null && response.isSuccessful()) {
+                        var body = objectMapper.readTree(response.body().string());
+                        var cxId = body.get("catenaXId").asText();
+                        if (cxId != null && PatternStore.URN_OR_UUID_PATTERN.matcher(cxId).matches()) {
+                            materialPartnerRelation.setPartnerCXNumber(cxId);
+                            var updatedMpr = mprRepository.save(materialPartnerRelation);
+                            if (updatedMpr != null) {
+                                log.info("Successfully inserted Partner CX Id for Partner " +
+                                    materialPartnerRelation.getPartner().getBpnl() + " and Material "
+                                    + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                    " -> " + cxId);
+                            }
                         }
+                    } else {
+                        log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
+                            " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);
+                        retries--;
+                        return call();
                     }
+                    currentPartTypeFetches.remove(materialPartnerRelation);
+                    return true;
                 } else {
                     log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
                         " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);
                     retries--;
                     return call();
                 }
-                return true;
-            } else {
-                log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
-                    " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);
-                retries--;
-                return call();
-            }
 
+            } catch (Exception e) {
+                currentPartTypeFetches.remove(materialPartnerRelation);
+                return false;
+            }
         }
     }
 
 
     @AllArgsConstructor
     private class DtrRegistrationTask implements Callable<Boolean> {
-        final MaterialPartnerRelation materialPartnerRelation;
+        MaterialPartnerRelation materialPartnerRelation;
         /**
          * Must be either "CREATE" or "UPDATE". The distinction is important,
          * because for an existing AAS, the PUT endpoint on the DTR must be called.
@@ -164,19 +190,41 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
             if (retries < 0) {
                 return false;
             }
-            if (materialPartnerRelation.getPartnerCXNumber() == null) {
-                log.error("Missing partnerCX Number in " + materialPartnerRelation + "\nAborting DTR call");
-                return false;
+            Thread.sleep(2000);
+            if (materialPartnerRelation.isPartnerSuppliesMaterial() && materialPartnerRelation.getPartnerCXNumber() == null) {
+                log.info("Missing partnerCX Number in " + materialPartnerRelation);
+                log.info("Current list " + currentPartTypeFetches.stream().map(mpr -> mpr.getPartner().getBpnl() + " / " + mpr.getMaterial().getOwnMaterialNumber()).toList());
+                if (currentPartTypeFetches.contains(materialPartnerRelation)) {
+                    log.info("Awaiting PartTypeInformation Fetch");
+                    // await return of ongoing fetch task
+                    while (currentPartTypeFetches.contains(materialPartnerRelation)) {
+                        Thread.yield();
+                    }
+                } else {
+                    // initiate new fetch
+                    log.info("Initiating new PartTypeInformation Fetch");
+                    var futureResult = executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 3));
+                    while (!futureResult.isDone()) {
+                        Thread.yield();
+                    }
+                }
+                Thread.sleep(500);
+                // get result from database
+                materialPartnerRelation = find(materialPartnerRelation.getMaterial(), materialPartnerRelation.getPartner());
+                if (materialPartnerRelation.getPartnerCXNumber() == null) {
+                    log.error("Missing partnerCX Number in " + materialPartnerRelation + ", retries left: " + retries);
+                    retries--;
+                    return call();
+                }
             }
-            Thread.sleep(500);
+
             boolean success = true;
             switch (job) {
                 case "UPDATE" -> {
                     if (materialPartnerRelation.getMaterial().isProductFlag()) {
                         var allCustomers =
                             mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
-                                    materialPartnerRelation.getMaterial().getOwnMaterialNumber()).
-                                stream().filter(mpr -> mpr.getPartnerCXNumber() != null).toList();
+                                materialPartnerRelation.getMaterial().getOwnMaterialNumber());
                         boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
                         if (result) {
                             log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
@@ -202,8 +250,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                     if (materialPartnerRelation.getMaterial().isProductFlag()) {
                         var allCustomers =
                             mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
-                                    materialPartnerRelation.getMaterial().getOwnMaterialNumber()).
-                                stream().filter(mpr -> mpr.getPartnerCXNumber() != null).toList();
+                                materialPartnerRelation.getMaterial().getOwnMaterialNumber());
                         boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
                         if (result) {
                             log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
