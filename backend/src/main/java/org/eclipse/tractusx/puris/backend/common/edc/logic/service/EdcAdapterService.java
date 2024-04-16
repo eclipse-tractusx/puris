@@ -784,7 +784,7 @@ public class EdcAdapterService {
             String assetId = contractMapping.getAssetId();
             if (contractId == null || assetId == null) {
                 if (!negotiateForPartnerDtr(partner)) {
-                    return false;
+                    return initiateDtrTransferForLookupApi(specificAssetIdType, specificAssetIdValue, mpr, --retries);
                 }
                 contractMapping = edcContractMappingService.getContractMapping(partner, SubmodelType.DTR);
                 contractId = contractMapping.getContractId();
@@ -811,7 +811,7 @@ public class EdcAdapterService {
             }
             if (edrDto == null) {
                 log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
-                return false;
+                return initiateDtrTransferForLookupApi(specificAssetIdType, specificAssetIdValue, mpr, --retries);
             }
             HttpUrl.Builder urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
                 .addPathSegment("api")
