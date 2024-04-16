@@ -3,9 +3,11 @@
 [Tractus-X EDC] as edc
 [Sovereign Data Exchange] as sov
 [PURIS FOSS] as puris
+[Digital Twins &\n Industry Core] as dt
 
 samm -- puris
 edc - puris
 puris - sov
+puris -- dt
 
 @enduml

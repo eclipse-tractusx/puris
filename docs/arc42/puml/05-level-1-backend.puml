@@ -3,20 +3,22 @@ skinparam linetype ortho
 
 package "<<system>> PURIS FOSS Backend"{
 
+  [DTR] as dtr
   [EDC] as edc
-  edc - "EDC Client Interface"
-
   [Stock] as stock
-  stock - "Stock Interface"
-  "Stock Request &\n Response Interfaces\n(through EDC)" - stock
+  [MAD] as mad
 
+  edc - "EDC Client Interface"
+  "Registry & Discovery Interfaces" - dtr
+
+  dtr -- "Register and discover twins\n& submodesls" stock
+' TODO make look great
   edc -- "query catalog &\nrequest data (via edc)" stock
 
-  [MAD] as mad
   mad - "MAD Interface"
 
-  stock -- mad
-
 }
+stock - "Stock Submodel \n& internalInterface"
+stock -- mad
 
 @enduml

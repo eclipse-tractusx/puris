@@ -3,9 +3,11 @@
 [Eclipse DataSpace Components Connector] as edc
 [Postgresql DB] as postgres
 [Keycloak] as idp
+[Digital Twin Registry] as dtr
 
 data_prov -( "Interface internal systems"
 edc -- "EDC APIs"
+dtr - "Registration &\n Discovery Interfaces"
 
 package "<<system>> PURIS"{
 
@@ -18,6 +20,9 @@ package "<<system>> PURIS"{
   puris_frontend -- idp
   puris_backend --> postgres
 
+  puris_backend --( "Registration &\n Discovery Interfaces"
 }
+
+puris_backend - "Submodel value-only interfaces"
 
 @enduml

@@ -3,13 +3,15 @@
 
 package "PURIS"{
 
-  [Tractus-X Connector Customer] as edc
+  [Tractus-X Connector] as edc
+  [Digital Twin Registry] as dtr
 
   [Postgresql DB] as postgres
   [PURIS FOSS Backend] as puris_backend
   [PURIS FOSS Frontend] as puris_frontend
 
   puris_backend - edc
+  dtr -- puris_backend
   postgres -- puris_backend
   "Interface internal systems\n" - puris_backend
   puris_backend -- puris_frontend

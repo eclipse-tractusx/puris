@@ -63,7 +63,7 @@ Catena-X specific implementation of
 the [Eclipse Dataspace Components Connector (EDC)](https://github.com/eclipse-edc/Connector) is an open-source framework
 which can be used to participate within an International Data Space (IDS).
 
-*Sovereign Data exchange*
+*Sovereign Data Exchange*
 
 To ensure data sovereignty, access and usage policies (prohibitions, permissions, obligations) may be attached as a
 machine readable defintion by data owners before sharing their data. The data consumer has to accept the policies before
@@ -71,3 +71,12 @@ processing the data (human readable, machine readable). Connectors (and the unde
 technically enforce usage policies while there is also legal governance. An access and usage contract can be negotiated
 beforehand along with access and usage policies to ensure parties agree upon. It is necessary that data apps are
 compliant to the usage policies, since the policies define data processing rules.
+Within Catena-X an odrl policy profile has been defined. The implementation of sovereign data exchange is explained in
+the [concepts section](./08_concepts.md).
+
+**Digital Twins & Industry Core**
+The Industry Core defines a layer on top of the combination of IDS and Digital Twin platform capabilities. It defines
+the Part Type Twin as a "catalog item" representing a material that has not yet been built (serialized) but sourced. The
+[Digital Twin KIT](https://eclipse-tractusx.github.io/docs-kits/kits/Digital%20Twin%20Kit/Adoption%20View%20Digital%20Twin%20Kit)
+describes the shared asset pattern used by puris to distribute Digital Twins between the two partners.
+For more information refer to the [concepts section](./08_concepts.md)..

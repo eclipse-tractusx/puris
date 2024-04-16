@@ -6,9 +6,6 @@ package "<<system>> PURIS FOSS Frontend"{
   [Stock View] as stock_view
   [Dashboard] as dashboard
   [Authentication Service] as auth_service
-  [Access Service] as access_service
-
-  auth_service <-- access_service
 
 }
 
@@ -16,10 +13,11 @@ package "<<system>> PURIS FOSS Frontend"{
 
 idp - auth_service
 
-stock_view --> "Stock Interface"
-stock_view --> "MAD interface"
+stock_view --( "Stock Interface"
+stock_view --( "MAD interface"
 
-dashboard --> "Stock Interface"
-dashboard --> "MAD interface"
+dashboard --( "Stock Interface"
+dashboard --( "MAD interface"
+dashboard -( "Interfaces for\n- Planned Production Output\n-Short-Term Material Demand\n-Delivery Information"
 
 @enduml
