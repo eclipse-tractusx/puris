@@ -47,6 +47,11 @@ public class MaterialPartnerRelation {
     @EmbeddedId
     private Key key;
 
+    /**
+     * The global Catena-X identifier, set based on the respective role.
+     * In case the supplier generated the MPR, it is usually left empty.
+     * In case it was a customer, the material uses the CX-ID provided by the supplier.
+     */
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String partnerCXNumber;
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)

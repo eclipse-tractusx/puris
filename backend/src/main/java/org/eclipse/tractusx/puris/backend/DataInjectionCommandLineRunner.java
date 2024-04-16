@@ -36,7 +36,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.ItemUnitEnumeration;
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedMaterialItemStockService;
@@ -162,6 +162,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
             supplierPartner, semiconductorMatNbrSupplier, true, false);
+//        semiconductorPartnerRelation.setPartnerCXNumber(semiconductorMatNbrCatenaX);
         mprService.create(semiconductorPartnerRelation);
         semiconductorPartnerRelation = mprService.find(semiconductorMaterial, supplierPartner);
         log.info("Found Relation: " + semiconductorPartnerRelation);
@@ -174,6 +175,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         MaterialPartnerRelation ccuPartnerRelation = new MaterialPartnerRelation(centralControlUnitEntity,
             nonScenarioCustomer, "MNR-4177-C", false, true);
+        ccuPartnerRelation.setPartnerCXNumber("89f9c477-7e6e-4899-9b4b-d2c1081455ec");
         ccuPartnerRelation = mprService.create(ccuPartnerRelation);
         log.info("Found Relation: " + ccuPartnerRelation);
 
@@ -246,6 +248,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
             customerPartner, semiconductorMatNbrCustomer, false, true);
+//        semiconductorPartnerRelation.setPartnerCXNumber(semiconductorMatNbrCatenaX);
         semiconductorPartnerRelation = mprService.create(semiconductorPartnerRelation);
 
         log.info("Created Relation " + semiconductorPartnerRelation);
@@ -408,7 +411,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
     private Material getNewSemiconductorMaterialForCustomer() {
         Material material = new Material();
         material.setOwnMaterialNumber(semiconductorMatNbrCustomer);
-        material.setMaterialNumberCx(semiconductorMatNbrCatenaX);
+//        material.setMaterialNumberCx(semiconductorMatNbrCatenaX);
         material.setMaterialFlag(true);
         material.setName("Semiconductor");
         return material;

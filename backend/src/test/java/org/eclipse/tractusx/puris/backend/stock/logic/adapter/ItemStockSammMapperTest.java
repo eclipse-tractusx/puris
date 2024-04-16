@@ -20,6 +20,8 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.adapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -29,7 +31,6 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialServi
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
 import org.junit.jupiter.api.*;
 import org.junit.platform.commons.logging.Logger;
@@ -52,7 +53,6 @@ public class ItemStockSammMapperTest {
     final static String CUSTOMER_MAT_NUMBER = "MNR-7307-AU340474.002";
     final static String SUPPLIER_MAT_NUMBER = "MNR-8101-ID146955.001";
     final static String CX_MAT_NUMBER = UUID.randomUUID().toString();
-    final static String OWN_BPNL = "BPNL4444444444LL";
     final static String OWN_BPNS = "BPNS4444444444SS";
     final static String OWN_BPNA = "BPNA4444444444AA";
     final static String SUPPLIER_BPNL = "BPNL1111111111LE";
@@ -90,10 +90,10 @@ public class ItemStockSammMapperTest {
     );
 
     @Mock
-    private MaterialService materialService;
+    private MaterialPartnerRelationService mprService;
 
     @Mock
-    private MaterialPartnerRelationService mprService;
+    private MaterialService materialService;
 
     @InjectMocks
     private ItemStockSammMapper itemStockSammMapper;
@@ -120,6 +120,7 @@ public class ItemStockSammMapperTest {
         mpr.setPartnerBuysMaterial(false);
         mpr.setPartnerSuppliesMaterial(true);
         mpr.setPartnerMaterialNumber(SUPPLIER_MAT_NUMBER);
+        mpr.setPartnerCXNumber(CX_MAT_NUMBER);
 
         MaterialItemStock materialItemStock = MaterialItemStock.builder()
             .partner(supplierPartner)
@@ -150,9 +151,7 @@ public class ItemStockSammMapperTest {
         assertNotNull(materialItemStockSamm);
 
         assertEquals(DirectionCharacteristic.INBOUND, materialItemStockSamm.getDirection());
-        assertEquals(CUSTOMER_MAT_NUMBER, materialItemStockSamm.getMaterialNumberCustomer());
-        assertEquals(SUPPLIER_MAT_NUMBER, materialItemStockSamm.getMaterialNumberSupplier());
-        assertNull(materialItemStockSamm.getMaterialGlobalAssetId());
+        assertEquals(CX_MAT_NUMBER, materialItemStockSamm.getMaterialGlobalAssetId());
 
         assertEquals(1, materialItemStockSamm.getPositions().size());
 
@@ -161,13 +160,13 @@ public class ItemStockSammMapperTest {
 
         assertEquals(1, position.getAllocatedStocks().size());
 
-        AllocatedStock allocatedStock = position.getAllocatedStocks().get(0);
+        AllocatedStock allocatedStock = position.getAllocatedStocks().stream().toList().get(0);
         assertEquals(20, allocatedStock.getQuantityOnAllocatedStock().getValue());
         assertEquals(ItemUnitEnumeration.UNIT_PIECE, allocatedStock.getQuantityOnAllocatedStock().getUnit());
         assertEquals(OWN_BPNS, allocatedStock.getStockLocationBPNS());
         assertEquals(OWN_BPNA, allocatedStock.getStockLocationBPNA());
 
-        assertEquals(materialItemStock.getLastUpdatedOnDateTime(), position.getLastUpdatedOnDateTime());
+        assertEquals(materialItemStock.getLastUpdatedOnDateTime(), allocatedStock.getLastUpdatedOnDateTime());
     }
 
     /**
@@ -177,7 +176,7 @@ public class ItemStockSammMapperTest {
      *
      * In technical terms, this means the following:
      * <li>Given: Create INBOUND ItemStock to represent the Stock level on Customer side</li>
-     * <li>When: Use mapper to create the ReportedProductItemSoc</li>
+     * <li>When: Use mapper to create the ReportedProductItemStock</li>
      * <li>Then: Validate the Mappings</li>
      *
      * Note: The test brings fills the {@code SAMM_FROM_CUSTOMER_PARTNER}.
@@ -196,13 +195,10 @@ public class ItemStockSammMapperTest {
         ItemStockSamm inboundProductStockSamm = new ItemStockSamm();
 
         inboundProductStockSamm.setDirection(DirectionCharacteristic.INBOUND);
-        inboundProductStockSamm.setMaterialNumberCustomer(CUSTOMER_MAT_NUMBER);
-        inboundProductStockSamm.setMaterialNumberSupplier(SUPPLIER_MAT_NUMBER);
         inboundProductStockSamm.setMaterialGlobalAssetId(CX_MAT_NUMBER);
 
         // first position
         Position anonymousPosition = new Position();
-        anonymousPosition.setLastUpdatedOnDateTime(new Date());
 
         // with three allocatedStocks
         ItemQuantityEntity tenPieces = new ItemQuantityEntity();
@@ -213,7 +209,8 @@ public class ItemStockSammMapperTest {
             tenPieces,
             SUPPLIER_BPNS,
             true,
-            SUPPLIER_BPNA
+            SUPPLIER_BPNA,
+            new Date()
         );
 
         ItemQuantityEntity twentyKilo = new ItemQuantityEntity();
@@ -224,45 +221,48 @@ public class ItemStockSammMapperTest {
             twentyKilo,
             SUPPLIER_BPNS,
             false,
-            SUPPLIER_BPNA
+            SUPPLIER_BPNA,
+            new Date()
         );
 
         AllocatedStock stockOtherSite = new AllocatedStock(
             twentyKilo,
             SUPPLIER_BPNS2,
             false,
-            SUPPLIER_BPNA2
+            SUPPLIER_BPNA2,
+            new Date()
         );
 
-        anonymousPosition.setAllocatedStocks(Arrays.asList(stockBlocked, stockNotBlocked, stockOtherSite));
+        anonymousPosition.setAllocatedStocks(Set.of(stockBlocked, stockNotBlocked, stockOtherSite));
 
         // second position WITH OrderPositionReference
         Position positionWithOrderPositionReference = new Position();
-        anonymousPosition.setLastUpdatedOnDateTime(new Date());
 
         // with two allocatedStocks
         AllocatedStock oprStockBlocked = new AllocatedStock(
             tenPieces,
             SUPPLIER_BPNS,
             true,
-            SUPPLIER_BPNA
+            SUPPLIER_BPNA,
+            new Date()
         );
 
         AllocatedStock oprStockNotBlocked = new AllocatedStock(
             twentyKilo,
             SUPPLIER_BPNS,
             false,
-            SUPPLIER_BPNA
+            SUPPLIER_BPNA,
+            new Date()
         );
 
-        positionWithOrderPositionReference.setAllocatedStocks(Arrays.asList(oprStockBlocked, oprStockNotBlocked));
+        positionWithOrderPositionReference.setAllocatedStocks(Set.of(oprStockBlocked, oprStockNotBlocked));
         positionWithOrderPositionReference.setOrderPositionReference(new OrderPositionReference(
             OPR_REF_SUPPLIER_ORDER_ID,
             OPR_REF_CUSTOMER_ORDER_ID,
             OPR_REF_CUSTOMER_POS_ID
         ));
 
-        inboundProductStockSamm.setPositions(Arrays.asList(anonymousPosition, positionWithOrderPositionReference));
+        inboundProductStockSamm.setPositions(Set.of(anonymousPosition, positionWithOrderPositionReference));
 
         Site site2 = new Site(SUPPLIER_BPNS2, "Site 2", SUPPLIER_BPNA2, "Test Street 2", "44174 Dortmund", "Germany");
 
@@ -272,7 +272,7 @@ public class ItemStockSammMapperTest {
         customerPartner.setSites(adjustedSet);
 
         Material semiconductorProduct = Material.builder()
-            .ownMaterialNumber(CUSTOMER_MAT_NUMBER)
+            .ownMaterialNumber(SUPPLIER_MAT_NUMBER)
             .materialNumberCx(CX_MAT_NUMBER)
             .materialFlag(true)
             .productFlag(true)
@@ -284,12 +284,12 @@ public class ItemStockSammMapperTest {
         mpr.setMaterial(semiconductorProduct);
         mpr.setPartnerBuysMaterial(false);
         mpr.setPartnerSuppliesMaterial(true);
-        mpr.setPartnerMaterialNumber(SUPPLIER_MAT_NUMBER);
+        mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
 
         // When
         // Find material based on CX number and mpr
-        when(materialService.findFromSupplierPerspective(CX_MAT_NUMBER, CUSTOMER_MAT_NUMBER, SUPPLIER_MAT_NUMBER, customerPartner)).thenReturn(semiconductorProduct);
         when(mprService.find(semiconductorProduct, customerPartner)).thenReturn(mpr);
+        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(semiconductorProduct);
 
         // Then we should build 5 reported product stocks:
         // - no OrderPositionReference (OPR), blocked, 10 pieces, BPNS & BPNA
@@ -307,7 +307,7 @@ public class ItemStockSammMapperTest {
             reportedProductItemStocks,
             stockBlocked,
             anonymousPosition,
-            CUSTOMER_MAT_NUMBER
+            CX_MAT_NUMBER
         );
 
         assertEquals(1, potentialBlockedAnonymousStock.size());
@@ -323,7 +323,7 @@ public class ItemStockSammMapperTest {
             reportedProductItemStocks,
             stockNotBlocked,
             anonymousPosition,
-            CUSTOMER_MAT_NUMBER
+            CX_MAT_NUMBER
         );
 
         assertEquals(1, potentialNotBlockedAnonymousStock.size());
@@ -333,7 +333,7 @@ public class ItemStockSammMapperTest {
             reportedProductItemStocks,
             stockOtherSite,
             anonymousPosition,
-            CUSTOMER_MAT_NUMBER
+            CX_MAT_NUMBER
         );
         assertEquals(1, potentialAnonymousStockOtherSite.size());
 
@@ -344,7 +344,7 @@ public class ItemStockSammMapperTest {
             reportedProductItemStocks,
             oprStockBlocked,
             positionWithOrderPositionReference,
-            CUSTOMER_MAT_NUMBER
+            CX_MAT_NUMBER
         );
         assertEquals(1, potentialOprStockBlocked.size());
 
@@ -359,12 +359,12 @@ public class ItemStockSammMapperTest {
             reportedProductItemStocks,
             oprStockBlocked,
             positionWithOrderPositionReference,
-            CUSTOMER_MAT_NUMBER
+            CX_MAT_NUMBER
         );
         assertEquals(1, potentialOprStockNotBlocked.size());
 
         // ATTENTION: This variable is used in marshalling tests
-        // This has ben done to do the perspective Switch (supplier
+        // This has been done to do the perspective Switch (supplier)
         SAMM_FROM_CUSTOMER_PARTNER = inboundProductStockSamm;
     }
 
@@ -390,8 +390,10 @@ public class ItemStockSammMapperTest {
         mpr.setMaterial(material);
         mpr.setPartnerBuysMaterial(true);
         mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
+        mpr.setPartnerCXNumber(CX_MAT_NUMBER);
 
-        when(materialService.findFromSupplierPerspective(CX_MAT_NUMBER, CUSTOMER_MAT_NUMBER, SUPPLIER_MAT_NUMBER, customerPartner)).thenReturn(material);
+        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(material);
+        when(mprService.find(material, customerPartner)).thenReturn(mpr);
 
         var list = itemStockSammMapper.itemStockSammToReportedProductItemStock(SAMM_FROM_CUSTOMER_PARTNER, supplierPartner);
         assertNotNull(list);
@@ -414,16 +416,17 @@ public class ItemStockSammMapperTest {
 
         Material material = new Material();
         material.setProductFlag(true);
-        material.setOwnMaterialNumber(SUPPLIER_MAT_NUMBER);
         material.setMaterialNumberCx(CX_MAT_NUMBER);
 
         MaterialPartnerRelation mpr = new MaterialPartnerRelation();
         mpr.setPartner(customerPartner);
         mpr.setMaterial(material);
         mpr.setPartnerBuysMaterial(true);
-        mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
-
-        when(materialService.findFromSupplierPerspective(CX_MAT_NUMBER, CUSTOMER_MAT_NUMBER, SUPPLIER_MAT_NUMBER, customerPartner)).thenReturn(material);
+        mpr.setPartnerMaterialNumber(SUPPLIER_MAT_NUMBER);
+        mpr.setPartnerCXNumber(CX_MAT_NUMBER);
+        
+        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(material);
+        when(mprService.find(material, customerPartner)).thenReturn(mpr);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -441,7 +444,7 @@ public class ItemStockSammMapperTest {
         assertEquals(5, list.size());
     }
 
-    private List<? extends ItemStock> filterReportedItemStock(List<? extends ItemStock> reportedProductItemStocks, AllocatedStock allocatedStock, Position position, String ownMaterialNumber) {
+    private List<? extends ItemStock> filterReportedItemStock(List<? extends ItemStock> reportedProductItemStocks, AllocatedStock allocatedStock, Position position, String cxMaterialNumber) {
 
         if (position.getOrderPositionReference() == null) {
 
@@ -449,10 +452,10 @@ public class ItemStockSammMapperTest {
                 .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
                 .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
                 .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
-                .filter(item -> item.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
+                .filter(item -> item.getMaterial().getMaterialNumberCx().equals(cxMaterialNumber))
                 .filter(item -> item.getLocationBpna().equals(allocatedStock.getStockLocationBPNA()))
                 .filter(item -> item.getLocationBpns().equals(allocatedStock.getStockLocationBPNS()))
-                .filter(item -> item.getLastUpdatedOnDateTime() == position.getLastUpdatedOnDateTime())
+                .filter(item -> item.getLastUpdatedOnDateTime() == allocatedStock.getLastUpdatedOnDateTime())
                 .filter(item -> item.getCustomerOrderId() == null)
                 .filter(item -> item.getSupplierOrderId() == null)
                 .filter(item -> item.getCustomerOrderPositionId() == null)
@@ -463,10 +466,10 @@ public class ItemStockSammMapperTest {
                 .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
                 .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
                 .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
-                .filter(item -> item.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
+                .filter(item -> item.getMaterial().getMaterialNumberCx().equals(cxMaterialNumber))
                 .filter(item -> item.getLocationBpna().equals(allocatedStock.getStockLocationBPNA()))
                 .filter(item -> item.getLocationBpns().equals(allocatedStock.getStockLocationBPNS()))
-                .filter(item -> item.getLastUpdatedOnDateTime() == position.getLastUpdatedOnDateTime())
+                .filter(item -> item.getLastUpdatedOnDateTime() == allocatedStock.getLastUpdatedOnDateTime())
                 .filter(item -> item.getCustomerOrderId().equals(position.getOrderPositionReference().getCustomerOrderId()))
                 .filter(item -> item.getSupplierOrderId().equals(position.getOrderPositionReference().getSupplierOrderId()))
                 .filter(item -> item.getCustomerOrderPositionId().equals(position.getOrderPositionReference().getCustomerOrderPositionId()))

@@ -285,3 +285,8 @@ overwrite the existing stocks.
 The PURIS Backend uses a postgres Database. The helm installation already has a dependency that may be installed with
 the chart. Optionally it may be disabled to use your own installation. Refer to the overall
 [INSTALL.md](../../INSTALL.md) for further information.
+
+## Encryption of confidential data at rest
+
+Encryption at rest for databases works. It has been tested by either encrypting the docker folder or encrypting the whole
+filesystem of the machine running.

@@ -21,6 +21,7 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.adapter;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
@@ -31,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,67 +72,68 @@ public class ItemStockSammMapper {
         var groupedByPositionAttributes = itemStocks
             .stream()
             .collect(Collectors.groupingBy(
-                itemStock -> new PositionsMappingHelper(itemStock.getLastUpdatedOnDateTime(),
-                    itemStock.getNonNullCustomerOrderId(), itemStock.getNonNullSupplierOrderId(),
+                itemStock -> new PositionsMappingHelper(itemStock.getNonNullCustomerOrderId(),
+                    itemStock.getNonNullSupplierOrderId(),
                     itemStock.getNonNullCustomerOrderPositionId())));
         ItemStockSamm samm = new ItemStockSamm();
-        samm.setMaterialGlobalAssetId(material.getMaterialNumberCx());
 
-        String partnerMaterialNumber = mprService.find(material, partner).getPartnerMaterialNumber();
-        String customerMatNbr = directionCharacteristic ==
-            DirectionCharacteristic.INBOUND ? material.getOwnMaterialNumber() : partnerMaterialNumber;
-        String supplierMatNbr = directionCharacteristic ==
-            DirectionCharacteristic.INBOUND ? partnerMaterialNumber : material.getOwnMaterialNumber();
-        samm.setMaterialNumberCustomer(customerMatNbr);
-        samm.setMaterialNumberSupplier(supplierMatNbr);
+        if (directionCharacteristic == DirectionCharacteristic.INBOUND) {
+            samm.setMaterialGlobalAssetId(mprService.find(material, partner).getPartnerCXNumber());
+        } else {
+            samm.setMaterialGlobalAssetId(material.getMaterialNumberCx());
+        }
+
         samm.setDirection(directionCharacteristic);
-        var posList = new ArrayList<Position>();
+        var posList = new HashSet<Position>();
         samm.setPositions(posList);
         for (var mappingHelperListEntry : groupedByPositionAttributes.entrySet()) {
             var key = mappingHelperListEntry.getKey();
             var stock = mappingHelperListEntry.getValue().get(0);
             Position position = new Position();
             posList.add(position);
-            position.setLastUpdatedOnDateTime(key.date());
             if (!key.customerOrderId.isEmpty() || !key.supplierOrderId.isEmpty() || !key.customerOrderPositionId.isEmpty()) {
                 // get opr from stock as this is nullable and prevents mapping empty strings to the samm.
                 OrderPositionReference opr = new OrderPositionReference(stock.getSupplierOrderId(), stock.getCustomerOrderId(),
                     stock.getCustomerOrderPositionId());
                 position.setOrderPositionReference(opr);
             }
-            var allocatedStocksList = new ArrayList<AllocatedStock>();
+            var allocatedStocksList = new HashSet<AllocatedStock>();
             position.setAllocatedStocks(allocatedStocksList);
             for (var v : mappingHelperListEntry.getValue()) {
                 ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(v.getQuantity(), v.getMeasurementUnit());
-                AllocatedStock allocatedStock = new AllocatedStock(itemQuantityEntity, v.getLocationBpns(), v.isBlocked(), v.getLocationBpna());
+                AllocatedStock allocatedStock = new AllocatedStock(itemQuantityEntity, v.getLocationBpns(), v.isBlocked(), v.getLocationBpna(), v.getLastUpdatedOnDateTime());
                 allocatedStocksList.add(allocatedStock);
             }
         }
         return samm;
     }
 
-    private record PositionsMappingHelper(Date date, String customerOrderId, String supplierOrderId,
-                                          String customerOrderPositionId) {
+    private record PositionsMappingHelper(String customerOrderId, String supplierOrderId, String customerOrderPositionId) {
     }
 
 
 
     public List<ReportedProductItemStock> itemStockSammToReportedProductItemStock(ItemStockSamm samm, Partner partner) {
-        String matNbrCustomer = samm.getMaterialNumberCustomer();
-        String matNbrSupplier = samm.getMaterialNumberSupplier(); // should be ownMaterialNumber
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
         ArrayList<ReportedProductItemStock> outputList = new ArrayList<>();
         if (samm.getDirection() != DirectionCharacteristic.INBOUND) {
             log.warn("Direction should be INBOUND, aborting");
             return outputList;
         }
-        Material material = materialService.findFromSupplierPerspective(matNbrCatenaX, matNbrCustomer, matNbrSupplier, partner);
+
+        // When deserializing a Samm from a customer, who has sent a report on the
+        // stocks he received from us, the materialGlobalAssetId used in the communication
+        // was set by us (as the supplying side). Therefore the materialGlobalAssetId in
+        // the Samm is the one in our Material entity.
+        Material material = materialService.findByMaterialNumberCx(matNbrCatenaX);
         if (material == null) {
-            log.warn("Could not identify material with CatenaXNbr " + matNbrCatenaX + " ,CustomerMaterialNbr " + matNbrCustomer + " and SupplierMaterialNbr " + matNbrSupplier);
+            log.warn("Could not identify materialPartnerRelation with matNbrCatenaX " + matNbrCatenaX + " and partner bpnl " + partner.getBpnl());
             return outputList;
         }
+
+        var mpr = mprService.find(material, partner);
+
         for (var position : samm.getPositions()) {
-            Date lastUpdated = position.getLastUpdatedOnDateTime();
             String supplierOrderId = null, customerOrderPositionId = null, customerOrderId = null;
             if (position.getOrderPositionReference() != null) {
                 supplierOrderId = position.getOrderPositionReference().getSupplierOrderId();
@@ -142,11 +144,11 @@ public class ItemStockSammMapper {
                 var builder = ReportedProductItemStock.builder();
                 var itemStock = builder
                     .partner(partner)
-                    .material(material)
+                    .material(mpr.getMaterial())
                     .isBlocked(allocatedStock.getIsBlocked())
                     .locationBpna(allocatedStock.getStockLocationBPNA())
                     .locationBpns(allocatedStock.getStockLocationBPNS())
-                    .lastUpdatedOnDateTime(lastUpdated)
+                    .lastUpdatedOnDateTime(allocatedStock.getLastUpdatedOnDateTime())
                     .customerOrderId(customerOrderId)
                     .supplierOrderId(supplierOrderId)
                     .customerOrderPositionId(customerOrderPositionId)
@@ -160,21 +162,29 @@ public class ItemStockSammMapper {
     }
 
     public List<ReportedMaterialItemStock> itemStockSammToReportedMaterialItemStock(ItemStockSamm samm, Partner partner) {
-        String matNbrCustomer = samm.getMaterialNumberCustomer(); // should be ownMaterialNumber
-        String matNbrSupplier = samm.getMaterialNumberSupplier();
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
         ArrayList<ReportedMaterialItemStock> outputList = new ArrayList<>();
         if (samm.getDirection() != DirectionCharacteristic.OUTBOUND) {
             log.warn("Direction should be OUTBOUND, aborting");
             return outputList;
         }
-        Material material = materialService.findFromCustomerPerspective(matNbrCatenaX, matNbrCustomer, matNbrSupplier, partner);
-        if (material == null) {
-            log.warn("Could not identify material with CatenaXNbr " + matNbrCatenaX + " ,CustomerMaterialNbr " + matNbrCustomer + " and SupplierMaterialNbr " + matNbrSupplier);
+        var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, matNbrCatenaX);
+
+        if (mpr == null) {
+            log.warn("Could not identify materialPartnerRelation with matNbrCatenaX " + matNbrCatenaX + " and partner bpnl " + partner.getBpnl());
             return outputList;
         }
+        // When deserializing a Samm from a supplier, who has sent a report on the
+        // stocks he has prepared for us, the materialGlobalAssetId used in the communication
+        // was set by the supplying partner. Therefore the materialGlobalAssetId in
+        // the Samm is the one in our MaterialPartnerRelation entity with that partner.
+        Material material = mpr.getMaterial();
+        if (material == null) {
+            log.warn("Could not identify material with CatenaXNbr " + matNbrCatenaX);
+            return outputList;
+        }
+
         for (var position : samm.getPositions()) {
-            Date lastUpdated = position.getLastUpdatedOnDateTime();
             String supplierOrderId = null, customerOrderPositionId = null, customerOrderId = null;
             if (position.getOrderPositionReference() != null) {
                 supplierOrderId = position.getOrderPositionReference().getSupplierOrderId();
@@ -189,7 +199,7 @@ public class ItemStockSammMapper {
                     .isBlocked(allocatedStock.getIsBlocked())
                     .locationBpna(allocatedStock.getStockLocationBPNA())
                     .locationBpns(allocatedStock.getStockLocationBPNS())
-                    .lastUpdatedOnDateTime(lastUpdated)
+                    .lastUpdatedOnDateTime(allocatedStock.getLastUpdatedOnDateTime())
                     .customerOrderId(customerOrderId)
                     .supplierOrderId(supplierOrderId)
                     .customerOrderPositionId(customerOrderPositionId)

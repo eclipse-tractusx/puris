@@ -1,6 +1,6 @@
 # puris
 
-![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 2.0.1](https://img.shields.io/badge/Version-2.0.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
@@ -59,6 +59,7 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.podSecurityContext | object | `{}` | Added security contexts for a pod |
 | backend.puris.api.key | string | `"test"` | The API key of the PURIS application |
 | backend.puris.api.rootDir | string | `"/catena"` | The root directory of the API |
+| backend.puris.baseurl | string | `"your-backend-host-address.com"` | Base url of the PURIS backend |
 | backend.puris.datasource.driverClassName | string | `"org.postgresql.Driver"` | Driver class name of the database |
 | backend.puris.datasource.password | string | `nil` | Password for the database user. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.url | string | `"jdbc:postgresql://postgresql-name:5432/puris-database"` | URL of the database. Ignored if postgres.enabled is true. |
@@ -69,12 +70,13 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.edc.controlplane.key | string | `"password"` | Key for the EDC control plane |
 | backend.puris.edc.controlplane.management.url | string | `"https:/your-edc-address:8181/management"` | Url to the EDC controlplane management of the edc |
 | backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc |
+| backend.puris.edc.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api |
 | backend.puris.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
-| backend.puris.edr.endpoint | string | `"your-backend-host-address.com"` | Endpoint for EDR |
 | backend.puris.existingSecret | string | `"secret-backend-puris"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
 | backend.puris.frameworkagreement.credential | string | `"FrameworkAgreement.traceability"` | The name of the framework agreement |
 | backend.puris.frameworkagreement.use | bool | `false` | Flag to determine whether to use a framework agreement in puris |
 | backend.puris.generatematerialcatenaxid | bool | `true` | Flag that decides whether the auto-generation feature of the puris backend is enabled. Since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing CatenaX-Id via the materials-API of the backend, when you are inserting a new Material entity to the backend's database. If a CatenaX-Id was not assigned to your Material so far, then this feature can auto-generate one randomly. In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that Material entity. |
+| backend.puris.itemstocksubmodel.apiassetid | string | `"itemstocksubmodel-api-asset"` | Asset ID for ItemStockSubmodel API |
 | backend.puris.jpa.hibernate.ddl-auto | string | `"create"` | Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones |
 | backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans | bool | `true` | Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction |
 | backend.puris.own.bpna | string | `"BPNA4444444444ZZ"` | Own BPNA of the EDC |
@@ -85,12 +87,6 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.own.site.name | string | `"YOUR-SITE-NAME"` | Own site name |
 | backend.puris.own.streetnumber | string | `"Musterstraße 110A"` | Own street and number |
 | backend.puris.own.zipcodeandcity | string | `"12345 Musterhausen"` | Own zipcode and city |
-| backend.puris.request.apiassetid | string | `"request-api-asset"` | Asset ID for request API |
-| backend.puris.request.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for request |
-| backend.puris.response.apiassetid | string | `"response-api-asset"` | Asset ID for response API |
-| backend.puris.response.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for response |
-| backend.puris.statusrequest.apiassetid | string | `"statusrequest-api-asset"` | Asset ID for status-request API |
-| backend.puris.statusrequest.serverendpoint | string | `"your-backend-host-address.com"` | Endpoint of server for statusrequest |
 | backend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":120,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
 | backend.readinessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a readiness probe |
 | backend.readinessProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial readiness probe is checked |

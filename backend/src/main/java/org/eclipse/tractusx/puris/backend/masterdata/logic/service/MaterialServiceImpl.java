@@ -21,7 +21,10 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingService;
+import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DtrAdapterService;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
@@ -33,6 +36,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 
 @Service
 @Slf4j
@@ -47,13 +52,20 @@ public class MaterialServiceImpl implements MaterialService {
     @Autowired
     private VariablesService variablesService;
 
+    @Autowired
+    private DtrAdapterService dtrAdapterService;
+
+    @Autowired
+    private DigitalTwinMappingService dtmService;
+
+    @Autowired
+    private ExecutorService executorService;
+
+
     @Override
     public Material create(Material material) {
-        if(material.getOwnMaterialNumber() == null) {
-            log.error("Could not create material without ownMaterialNumber");
-        }
-        if(material.getMaterialNumberCx() == null) {
-            if(variablesService.isGenerateMaterialCatenaXId()) {
+        if (material.getMaterialNumberCx() == null) {
+            if (variablesService.isGenerateMaterialCatenaXId()) {
                 UUID uuid;
                 do {
                     uuid = UUID.randomUUID();
@@ -64,16 +76,48 @@ public class MaterialServiceImpl implements MaterialService {
                 return null;
             }
         } else {
-            if(!materialRepository.findByMaterialNumberCx(material.getMaterialNumberCx()).isEmpty()) {
+            if (!materialRepository.findByMaterialNumberCx(material.getMaterialNumberCx()).isEmpty()) {
                 log.error("Could not create material " + material.getOwnMaterialNumber() + " because CatenaXId already exists: " + material.getMaterialNumberCx());
             }
         }
         var searchResult = materialRepository.findById(material.getOwnMaterialNumber());
         if (searchResult.isEmpty()) {
+            dtmService.create(material);
+            if (material.isProductFlag()) {
+                executorService.submit(new DtrRegistrationTask(material, 3));
+            }
             return materialRepository.save(material);
         }
         log.error("Could not create material " + material.getOwnMaterialNumber() + " because it already exists");
         return null;
+    }
+
+    /**
+     * Registers a Product at the dDTR.
+     */
+    @AllArgsConstructor
+    private class DtrRegistrationTask implements Callable<Boolean> {
+
+        private Material material;
+        int retries;
+
+        @Override
+        public Boolean call() throws Exception {
+            if (retries < 0) {
+                return false;
+            }
+            boolean result = dtrAdapterService.registerProductAtDtr(material);
+            if (result) {
+                log.info("Registered " + material.getOwnMaterialNumber() + " as a Product at DTR");
+                return true;
+            } else {
+                log.warn("Registration for " + material.getOwnMaterialNumber() + " as a Product at DTR failed. Retries left: " + retries);
+                Thread.sleep(500);
+                retries--;
+                return call();
+            }
+
+        }
     }
 
     @Override
@@ -82,9 +126,15 @@ public class MaterialServiceImpl implements MaterialService {
             materialRepository.findById(material.getOwnMaterialNumber());
         if (existingMaterial.isPresent()) {
             var foundMaterial = existingMaterial.get();
-            if(!foundMaterial.getMaterialNumberCx().equals(material.getMaterialNumberCx())) {
+            if (!foundMaterial.getMaterialNumberCx().equals(material.getMaterialNumberCx())) {
                 log.error("Could not update material " + material.getOwnMaterialNumber() + " because changing the CatenaXId is not allowed");
             }
+
+            if (!foundMaterial.isProductFlag() && material.isProductFlag()) {
+                dtmService.update(material);
+                executorService.submit(new DtrRegistrationTask(material, 3));
+            }
+
             return materialRepository.save(material);
         }
         log.error("Could not update material " + material.getOwnMaterialNumber() + " because it didn't exist before");
@@ -198,7 +248,7 @@ public class MaterialServiceImpl implements MaterialService {
                 if (supplierMatNbr != null && !material.equals(findByOwnMaterialNumber(supplierMatNbr))) {
                     log.warn("Mismatch between " + material + " and " + supplierMatNbr);
                 }
-                if(partner != null && ! mprService.partnerOrdersProduct(material, partner)) {
+                if (partner != null && !mprService.partnerOrdersProduct(material, partner)) {
                     log.warn("Partner " + partner + " does not order material " + material);
                 }
             }
@@ -243,7 +293,7 @@ public class MaterialServiceImpl implements MaterialService {
                 if (customerMatNbr != null) {
                     log.warn("Unknown customer Material Number " + customerMatNbr + " for Material " + material);
                 }
-                if(partner != null && ! mprService.partnerOrdersProduct(material, partner)) {
+                if (partner != null && !mprService.partnerOrdersProduct(material, partner)) {
                     log.warn("Partner " + partner + " does not order material " + material);
                 }
             }

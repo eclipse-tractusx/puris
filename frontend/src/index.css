@@ -22,3 +22,34 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+    @apply text-gray-700;
+}
+
+[role='tabpanel'] {
+    @apply w-full;
+}
+
+.MuiDataGrid-root > .MuiBox-root h5 > span {
+    display: none;
+}
+
+.table-container {
+    display: flex;
+    width: 100%;
+    border: 1px solid #e0e0e0;
+}
+
+.table-container .MuiDataGrid-root > .MuiBox-root {
+    display: none;
+}
+
+.table-container .MuiDataGrid-root {
+    border: none !important;
+    border-radius: 0;
+}
+
+.table-container .MuiDataGrid-columnHeader button {
+    display: none;
+}

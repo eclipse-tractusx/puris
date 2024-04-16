@@ -53,4 +53,6 @@ public interface MaterialPartnerRelationRepository extends JpaRepository<Materia
     List<MaterialPartnerRelation> findAllByPartnerAndPartnerMaterialNumberAndPartnerSuppliesMaterialIsTrue(Partner partner, String partnerMaterialNumber);
 
     List<MaterialPartnerRelation> findAllByPartnerAndPartnerMaterialNumberAndPartnerBuysMaterialIsTrue(Partner partner, String partnerMaterialNumber);
+
+    List<MaterialPartnerRelation> findAllByPartnerAndAndPartnerCXNumber(Partner partner, String partnerCXNumber);
 }

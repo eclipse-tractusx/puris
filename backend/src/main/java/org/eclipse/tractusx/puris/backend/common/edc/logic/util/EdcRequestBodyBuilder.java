@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.datatype.DT_ApiMethodEnum;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -75,35 +74,6 @@ public class EdcRequestBodyBuilder {
             }
         }
         return objectNode;
-    }
-
-    public JsonNode buildCreateItemStockAssetBody(DT_ApiMethodEnum apiMethod) {
-        var body = getAssetRegistrationContext();
-        body.put("@id", variablesService.getApiAssetId(apiMethod));
-        var propertiesObject = MAPPER.createObjectNode();
-        body.set("properties", propertiesObject);
-        var dctTypeObject = MAPPER.createObjectNode();
-        propertiesObject.set("dct:type", dctTypeObject);
-        dctTypeObject.put("@id", "cx-taxo:" + apiMethod.CX_TAXO);
-        propertiesObject.put("asset:prop:type", apiMethod.TYPE);
-        propertiesObject.put("cx-common:version", "1.0");
-        propertiesObject.put("description", apiMethod.DESCRIPTION);
-
-        var dataAddress = MAPPER.createObjectNode();
-        String url = switch (apiMethod) {
-            case REQUEST -> variablesService.getRequestServerEndpoint();
-            case RESPONSE -> variablesService.getResponseServerEndpoint();
-            case STATUS_REQUEST -> variablesService.getStatusRequestServerEndpoint();
-        };
-        dataAddress.put("baseUrl", url);
-        dataAddress.put("type", "HttpData");
-        dataAddress.put("proxyPath", "true");
-        dataAddress.put("proxyBody", "true");
-        dataAddress.put("proxyMethod", "true");
-        dataAddress.put("authKey", "x-api-key");
-        dataAddress.put("authCode", variablesService.getApiKey());
-        body.set("dataAddress", dataAddress);
-        return body;
     }
 
     /**
@@ -171,18 +141,9 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
-    /**
-     * Creates a request body in order to register a contract definition for the given partner and the given
-     * api method that uses the BPNL-restricted policy created with the buildBpnRestrictedPolicy - method.
-     * Depending on your configuration, it will also use the Framework Agreement Policy as the contract policy.
-     *
-     * @param partner   the partner
-     * @param apiMethod the api method
-     * @return the request body
-     */
-    public JsonNode buildContractDefinitionWithBpnRestrictedPolicy(Partner partner, DT_ApiMethodEnum apiMethod) {
+    public JsonNode buildItemStockSubmodelContractDefinitionWithBpnRestrictedPolicy(Partner partner) {
         var body = getEdcContextObject();
-        body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + apiMethod);
+        body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + getItemStockSubmodelAssetId());
         body.put("accessPolicyId", getBpnPolicyId(partner));
         if(variablesService.isUseFrameworkPolicy()) {
             body.put("contractPolicyId", FRAMEWORK_POLICY_ID);
@@ -194,7 +155,7 @@ public class EdcRequestBodyBuilder {
         assetsSelector.put("@type", "CriterionDto");
         assetsSelector.put("operandLeft", EDC_NAMESPACE + "id");
         assetsSelector.put("operator", "=");
-        assetsSelector.put("operandRight", variablesService.getApiAssetId(apiMethod));
+        assetsSelector.put("operandRight", getItemStockSubmodelAssetId());
         return body;
     }
 
@@ -209,6 +170,24 @@ public class EdcRequestBodyBuilder {
         assetsSelector.put("operandLeft", EDC_NAMESPACE + "id");
         assetsSelector.put("operator", "=");
         assetsSelector.put("operandRight", getDtrAssetId());
+        return body;
+    }
+
+    public JsonNode buildPartTypeInfoContractDefinitionForPartner(Partner partner) {
+        var body = getEdcContextObject();
+        body.put("@id", partner.getBpnl() +"_contractdefinition_for_PartTypeInfoAsset");
+        body.put("accessPolicyId", getBpnPolicyId(partner));
+        if(variablesService.isUseFrameworkPolicy()) {
+            body.put("contractPolicyId", FRAMEWORK_POLICY_ID);
+        } else {
+            body.put("contractPolicyId", getBpnPolicyId(partner));
+        }
+        var assetsSelector = MAPPER.createObjectNode();
+        body.set("assetsSelector", assetsSelector);
+        assetsSelector.put("@type", "CriterionDto");
+        assetsSelector.put("operandLeft", EDC_NAMESPACE + "id");
+        assetsSelector.put("operator", "=");
+        assetsSelector.put("operandRight", getPartTypeInfoAssetId(partner));
         return body;
     }
 
@@ -264,11 +243,11 @@ public class EdcRequestBodyBuilder {
      * @param assetId    The assetId
      * @return The request body
      */
-    public JsonNode buildProxyPullRequestBody(Partner partner, String contractID, String assetId) {
+    public JsonNode buildProxyPullRequestBody(Partner partner, String contractID, String assetId, String partnerEdcUrl) {
         var body = getEdcContextObject();
         body.put("@type", "TransferRequestDto");
         body.put("connectorId", partner.getBpnl());
-        body.put("connectorAddress", partner.getEdcUrl());
+        body.put("connectorAddress", partnerEdcUrl);
         body.put("contractId", contractID);
         body.put("assetId", assetId);
         body.put("protocol", "dataspace-protocol-http");
@@ -321,8 +300,6 @@ public class EdcRequestBodyBuilder {
         dctTypeObject.put("@id", "cx-taxo:DigitalTwinRegistry");
         propertiesObject.set("dct:type", dctTypeObject);
         propertiesObject.put("cx-common:version", "3.0");
-        propertiesObject.put("asset:prop:type", "data.core.digitalTwinRegistry");
-        propertiesObject.put("description", "");
         body.set("properties", propertiesObject);
 
         var dataAddress = MAPPER.createObjectNode();
@@ -338,8 +315,75 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+    public JsonNode buildItemStockSubmodelRegistrationBody() {
+        var body = getAssetRegistrationContext();
+        body.put("@id", getItemStockSubmodelAssetId());
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", "cx-taxo:Submodel");
+        propertiesObject.put("cx-common:version", "3.0");
+        var semanticId = MAPPER.createObjectNode();
+        propertiesObject.set("aas-semantics:semanticId", semanticId);
+        semanticId.put("@id", "urn:samm:io.catenax.item_stock:2.0.0#ItemStock");
+        body.set("privateProperties", MAPPER.createObjectNode());
+
+        String url = variablesService.getItemStockSubmodelEndpoint();
+        var dataAddress = MAPPER.createObjectNode();
+        dataAddress.put("@type", "DataAddress");
+        dataAddress.put("proxyPath", "true");
+        dataAddress.put("proxyQueryParams", "false");
+        dataAddress.put("proxyMethod", "false");
+        dataAddress.put("type", "HttpData");
+        dataAddress.put("baseUrl", url);
+        dataAddress.put("authKey", "x-api-key");
+        dataAddress.put("authCode", variablesService.getApiKey());
+        body.set("dataAddress", dataAddress);
+
+        return body;
+    }
+
+    public JsonNode buildPartTypeInfoRegistrationBody(Partner partner) {
+        var body = getAssetRegistrationContext();
+        body.put("@id", getPartTypeInfoAssetId(partner));
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", CX_TAXO_NAMESPACE + "Submodel");
+        propertiesObject.put("cx-common:version", "3.0");
+        var semanticIdObject = MAPPER.createObjectNode();
+        propertiesObject.set("aas-semantics:semanticId", semanticIdObject);
+        semanticIdObject.put("@id", "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation");
+        var dataAddress = MAPPER.createObjectNode();
+        String url = variablesService.getParttypeInformationServerendpoint();
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+        url += partner.getBpnl();
+        dataAddress.put("@type", "DataAddress");
+        dataAddress.put("proxyPath", "true");
+        dataAddress.put("proxyQueryParams", "false");
+        dataAddress.put("proxyMethod", "false");
+        dataAddress.put("type", "HttpData");
+        dataAddress.put("baseUrl", url);
+        dataAddress.put("authKey", "x-api-key");
+        dataAddress.put("authCode", variablesService.getApiKey());
+        body.set("dataAddress", dataAddress);
+        return body;
+    }
+
+    private String getItemStockSubmodelAssetId() {
+        return variablesService.getItemStockSubmodelApiAssetId();
+    }
+
     private String getDtrAssetId() {
         return "DigitalTwinRegistryId@" + variablesService.getOwnBpnl();
+    }
+
+    private String getPartTypeInfoAssetId(Partner partner) {
+        return "PartTypeInformationApi_" + partner.getBpnl();
     }
 
     private ObjectNode getAssetRegistrationContext() {
