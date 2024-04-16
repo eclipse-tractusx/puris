@@ -36,8 +36,8 @@ export const useCatalog = (edcUrl: string | null) => {
                   assetType: item['asset:prop:type'],
                   assetVersion: item['https://w3id.org/catenax/ontology/common#version'],
                   permission: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:permission'],
-                  prohibitions: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:prohibitions'],
-                  obligations: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:obligations'],
+                  prohibitions: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:prohibition'],
+                  obligations: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:obligation'],
               };
           }) ?? null)
         : null;

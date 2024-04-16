@@ -49,8 +49,8 @@ export type RawCatalogData = {
         'https://w3id.org/catenax/ontology/common#version': string;
         'odrl:hasPolicy': {
             'odrl:permission': CatalogPermission;
-            'odrl:prohibitions': CatalogOperation[];
-            'odrl:obligations': CatalogOperation[];
+            'odrl:prohibition': CatalogOperation[];
+            'odrl:obligation': CatalogOperation[];
         };
     }[];
 };
