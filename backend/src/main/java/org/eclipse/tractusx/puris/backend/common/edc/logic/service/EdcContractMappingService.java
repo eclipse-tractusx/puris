@@ -39,19 +39,16 @@ public class EdcContractMappingService {
     @Autowired
     private DtrContractMappingRepository dtrContractMappingRepository;
 
-
     @Autowired
     private ItemStockContractMappingRepository itemStockContractMappingRepository;
     @Autowired
     private ItemStockHrefMappingRepositoryRepository itemStockHrefMappingRepository;
 
-
     @Autowired
     private PartTypeContractMappingRepository partTypeContractMappingRepository;
     @Autowired
     private PartTypeHrefMappingRepository partTypeHrefMappingRepository;
-
-
+    
 
     public ContractMapping getContractMapping(Partner partner, SubmodelType type) {
         return getOrCreateContractMapping(partner, type);
@@ -152,7 +149,7 @@ public class EdcContractMappingService {
         GeneralHrefMappingRepository<? extends HrefMapping> repository = switch (type) {
             case DTR -> throw new IllegalArgumentException("No HREF Mapping for DTR type");
             case ITEMSTOCK -> itemStockHrefMappingRepository;
-            case PARTTYPE -> partTypeHrefMappingRepository;
+            case PART_TYPE_INFORMATION -> partTypeHrefMappingRepository;
         };
         return repository;
     }
@@ -161,7 +158,7 @@ public class EdcContractMappingService {
         GeneralContractMappingRepository<? extends ContractMapping> repository = switch (type) {
             case DTR -> dtrContractMappingRepository;
             case ITEMSTOCK -> itemStockContractMappingRepository;
-            case PARTTYPE -> partTypeContractMappingRepository;
+            case PART_TYPE_INFORMATION -> partTypeContractMappingRepository;
         };
         return repository;
     }

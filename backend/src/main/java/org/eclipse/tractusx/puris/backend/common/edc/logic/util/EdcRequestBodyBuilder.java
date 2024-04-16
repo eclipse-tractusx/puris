@@ -344,7 +344,7 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
-    public JsonNode buildPartTypeInfoRegistrationBody() {
+    public JsonNode buildPartTypeInfoSubmodelRegistrationBody() {
         var body = getAssetRegistrationContext();
         body.put("@id", getPartTypeInfoAssetId());
         var propertiesObject = MAPPER.createObjectNode();

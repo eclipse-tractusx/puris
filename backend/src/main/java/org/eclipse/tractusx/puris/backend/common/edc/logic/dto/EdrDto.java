@@ -35,5 +35,5 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EndpointDataR
  * @param endpoint The address of the data plane that has
  *                 to handle the consumer pull.
  */
-public record EDRDto(String authKey, String authCode, String endpoint) {
+public record EdrDto(String authKey, String authCode, String endpoint) {
 }
