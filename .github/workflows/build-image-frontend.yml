@@ -57,7 +57,6 @@ jobs:
                 run: |
                     cp ./DEPENDENCIES_FRONTEND ./frontend/DEPENDENCIES
                     cp ./LICENSE ./frontend/LICENSE
-                    cp ./NOTICE.md ./frontend/NOTICE.md
                     cp ./SECURITY.md ./frontend/SECURITY.md
     docker:
         if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
