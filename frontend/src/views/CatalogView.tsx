@@ -98,7 +98,7 @@ export const CatalogView = () => {
                                         <div className="flex">
                                             <h4 className="font-semibold w-[20ch]">Asset condition(s): </h4>
                                             <div className="flex flex-col gap-1 w-[30ch]">
-                                                {item.permission['odrl:constraint']['odrl:and'] ?
+                                                {'odrl:and' in item.permission['odrl:constraint'] ?
                                                     (item.permission['odrl:constraint']['odrl:and'].map(constraint => (
                                                         <div className="flex">
                                                             {constraint['odrl:leftOperand'] + ' '}

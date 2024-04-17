@@ -33,12 +33,22 @@ export type CatalogPermission = {
     'odrl:action': {
         'odrl:type': string;
     }
-  'odrl:constraint': {
+    'odrl:constraint': {
       'odrl:leftOperand': string;
       'odrl:operator': {
           '@id': string;
       };
       'odrl:rightOperand': string;
+    } | {
+        '@type': string,
+        'odrl:and': {
+           '@type': string,
+            'odrl:leftOperand': string;
+            'odrl:operator': {
+                '@id': string;
+            };
+            'odrl:rightOperand': string;
+        }[]
   };
 };
 
