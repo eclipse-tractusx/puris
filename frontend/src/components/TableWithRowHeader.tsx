@@ -31,6 +31,7 @@ export const TableWithRowHeader = ({ rows, ...tableProps }: TableWithRowHeaderPr
                     title=''
                     columns={[{ field: 'name', headerName: '', width: 180 }]}
                     rows={rows}
+                    density='standard'
                     rowSelection={false}
                     hideFooter={true}
                     disableColumnFilter
@@ -38,7 +39,7 @@ export const TableWithRowHeader = ({ rows, ...tableProps }: TableWithRowHeaderPr
                     sortingMode={'server'}
                 />
                 <Box sx={{width: '100%', display: 'flex', overflowX: 'auto'}}>
-                    <Table {...tableProps} rows={rows} disableColumnFilter disableColumnMenu sortingMode={'server'} showCellVerticalBorder showColumnVerticalBorder />
+                    <Table {...tableProps} rows={rows} density='standard' disableColumnFilter disableColumnMenu sortingMode={'server'} showCellVerticalBorder showColumnVerticalBorder />
                 </Box>
             </div>
         </Box>
