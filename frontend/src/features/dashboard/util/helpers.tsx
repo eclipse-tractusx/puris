@@ -25,11 +25,18 @@ export const createDateColumnHeaders = (numberOfDays: number) => {
         date.setDate(date.getDate() + index);
         return {
             field: `${index}`,
-            headerName: date.toLocaleDateString('en-US', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }),
+            headerName: date.toISOString(),
             headerAlign: 'center' as const,
             sortable: false,
             disableColumnMenu: true,
             width: 180,
+            renderHeader: (data: { colDef: { headerName?: string } }) => {
+                return (
+                    <Box display="flex" justifyContent="center" alignItems="center">
+                        {new Date(data.colDef.headerName!).toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    </Box>
+                );
+            },
             renderCell: (data: { value?: number, field: string } & { row: { id: number | string } }) => {
                 return (
                     <Box

@@ -303,7 +303,6 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                         id="supplier-order-number"
                                         label="Supplier Order Number"
                                         type="text"
-                                        error={formError && !isValidOrderReference(temporaryProduction)}
                                         value={temporaryProduction?.supplierOrderNumber ?? ''}
                                         onChange={(event) =>
                                             setTemporaryProduction({
@@ -320,7 +319,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     title={`Planned Production ${
                                         temporaryProduction?.estimatedTimeOfCompletion
                                             ? ' on ' +
-                                              new Date(temporaryProduction?.estimatedTimeOfCompletion).toLocaleDateString('en-UK', {
+                                              new Date(temporaryProduction?.estimatedTimeOfCompletion).toLocaleDateString(undefined, {
                                                   weekday: 'long',
                                                   day: '2-digit',
                                                   month: '2-digit',

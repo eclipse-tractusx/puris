@@ -34,7 +34,7 @@ const createProductionRow = (numberOfDays: number, productions: Production[]) =>
             date.setDate(date.getDate() + index);
             const prod = productions
                 .filter(
-                    (production) => new Date(`${new Date(production.estimatedTimeOfCompletion)}Z`).toDateString() === date.toDateString()
+                    (production) => new Date(production.estimatedTimeOfCompletion).toDateString() === date.toDateString()
                 )
                 .reduce((sum, production) => sum + production.quantity, 0);
             return { ...acc, [index]: prod };
