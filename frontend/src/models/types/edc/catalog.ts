@@ -55,7 +55,9 @@ export type CatalogPermission = {
 export type RawCatalogData = {
     'dcat:dataset': {
         '@id': string;
-        'asset:prop:type': string;
+        'dct:type': {
+            '@id': string;
+        }
         'https://w3id.org/catenax/ontology/common#version': string;
         'odrl:hasPolicy': {
             'odrl:permission': CatalogPermission;

@@ -125,7 +125,7 @@ public class EdcAdapterService {
      */
     public boolean registerAssetsInitially() {
         boolean result;
-        log.info("Registration of framework agreement policy successful " + (result = createFrameWorkPolicy()));
+        log.info("Registration of framework agreement policy successful " + (result = createContractPolicy()));
         log.info("Registration of DTR Asset successful " + (result &= registerDtrAsset()));
         log.info("Registration of ItemStock 2.0.0 submodel successful " + (result &= registerItemStockSubmodel()));
         return result;
@@ -638,7 +638,7 @@ public class EdcAdapterService {
                             if ("urn:samm:io.catenax.item_stock:2.0.0#ItemStock".equals(aasSemantics.get("@id").asText())) {
                                 if (itemStockAssetId.equals(entry.get("edc:id").asText())) {
                                     if (targetCatalogEntry == null) {
-                                        if (testFrameworkAgreementConstraint(entry)) {
+                                        if (testContractPolicyConstraints(entry)) {
                                             targetCatalogEntry = entry;
                                         } else {
                                             log.error("Contract Negotiation with partner " + partner.getBpnl() + " has " +
@@ -889,7 +889,6 @@ public class EdcAdapterService {
      * authCode under index 1, the endpoint under index 2 and the contractId under index 3.
      *
      * @param partner   the partner
-     * @param apiMethod the api method
      * @return A String array or null, if negotiation or transfer have failed or the authCode did not arrive
      */
     public String[] getContractForPartTypeInfoSubmodel(Partner partner) {
@@ -912,7 +911,7 @@ public class EdcAdapterService {
                             String idString = semanticId.get("@id").asText();
                             if ("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation".equals(idString)) {
                                 if (targetCatalogEntry == null) {
-                                    if (testFrameworkAgreementConstraint(entry)) {
+                                    if (testContractPolicyConstraints(entry)) {
                                         targetCatalogEntry = entry;
                                     } else {
                                         log.error("Contract Negotiation for PartTypeInformation Submodel asset with partner " + partner.getBpnl() + " has " +
