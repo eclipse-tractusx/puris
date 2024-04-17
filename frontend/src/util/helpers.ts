@@ -37,7 +37,6 @@ export const getCatalogOperator = (operatorId: string) => {
 
 /***
  * Type predicate to check if a value is an array
- * 
  * Unlike Array.isArray, this predicate asserts the members of the array to be unknown rather than any
  */
 export const isArray = (value: unknown): value is unknown[] => Array.isArray(value);

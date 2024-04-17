@@ -22,77 +22,121 @@ import { TableWithRowHeader } from '@components/TableWithRowHeader';
 import { Stock } from '@models/types/data/stock';
 import { Site } from '@models/types/edc/site';
 import { createDateColumnHeaders } from '../util/helpers';
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { Delivery } from '@models/types/data/delivery';
+import { Add } from '@mui/icons-material';
+import { Demand } from '@models/types/data/demand';
 
-const createDemandRows = (numberOfDays: number, stocks: Stock[], site: Site) => {
-    const demands = { ...Object.keys(Array.from({ length: numberOfDays })).reduce((acc, _, index) => ({ ...acc, [index]: 30 }), {}) };
-    const deliveries = {
-        ...Object.keys(Array.from({ length: numberOfDays })).reduce((acc, _, index) => ({ ...acc, [index]: index % 3 === 0 ? 45 : 0 }), {}),
+const createDemandRow = (numberOfDays: number, demands: Demand[]) => {
+    return {
+        ...Object.keys(Array.from({ length: numberOfDays })).reduce((acc, _, index) => {
+            const date = new Date();
+            date.setDate(date.getDate() + index);
+            const demand = demands
+                .filter((d) => new Date(`${new Date(d.day ?? Date.now())}Z`).toDateString() === date.toDateString())
+                .reduce((sum, d) => sum + d.quantity, 0);
+            return { ...acc, [index]: demand };
+        }, {}),
     };
+};
+
+const createDeliveryRow = (numberOfDays: number) => {
+    return {
+        ...Object.keys(Array.from({ length: numberOfDays })).reduce((acc, _, index) => ({ ...acc, [index]: 0 }), {}),
+    };
+}
+
+const createTableRows = (numberOfDays: number, stocks: Stock[], demands: Demand[], site: Site) => {
+    const demandRow = createDemandRow(numberOfDays, demands);
+    const deliveryRow = createDeliveryRow(numberOfDays);
     const currentStock = stocks.find((s) => s.stockLocationBpns === site.bpns)?.quantity ?? 0;
     const itemStock = {
         ...Object.keys(Array.from({ length: numberOfDays })).reduce(
             (acc, _, index) => ({
                 ...acc,
                 [index]:
-                    (index === 0 ? currentStock : acc[(index - 1) as keyof typeof acc]) +
-                    deliveries[index as keyof typeof deliveries] -
-                    demands[index as keyof typeof demands],
-            }),
-            {}
-        ),
-    };
-    const daysOfSupply = {
-        ...Object.keys(Array.from({ length: numberOfDays })).reduce(
-            (acc, _, index) => ({
-                ...acc,
-                [index]: Math.max(itemStock[index as keyof typeof itemStock] / demands[index as keyof typeof demands], 0).toFixed(2),
+                    index === 0 ? currentStock : (acc[(index - 1) as keyof typeof acc] +
+                    deliveryRow[(index - 1) as keyof typeof deliveryRow] -
+                    demandRow[(index - 1) as keyof typeof demandRow]),
             }),
             {}
         ),
     };
     return [
-        { id: 'demand', name: 'Demand', ...demands },
-        { id: 'itemStock', name: 'Item Stock', ...itemStock },
-        { id: 'daysOfSupply', name: 'Days of Supply', ...daysOfSupply },
-        { id: 'delivery', name: 'Delivery', ...deliveries },
+        { id: 'demand', name: 'Demand', ...demandRow },
+        { id: 'itemStock', name: 'Projected Item Stock', ...itemStock },
+        { id: 'delivery', name: 'Incoming Deliveries', ...deliveryRow },
     ];
 };
 
-type DemandTableProps = { numberOfDays: number; stocks: Stock[] | null; site: Site; onDeliveryClick: (delivery: Delivery) => void };
+type DemandTableProps = {
+    numberOfDays: number;
+    stocks: Stock[] | null;
+    demands: Demand[] | null;
+    site: Site;
+    readOnly?: boolean;
+    onDeliveryClick: (delivery: Partial<Delivery>) => void;
+    onDemandClick: (demand: Partial<Demand>, mode: 'create' | 'edit') => void;
+};
 
-export const DemandTable = ({ numberOfDays, stocks, site, onDeliveryClick }: DemandTableProps) => {
+export const DemandTable = ({ numberOfDays, stocks, demands, site, readOnly, onDeliveryClick, onDemandClick }: DemandTableProps) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleDeliveryClick = (cellData: any) => {
-        if (cellData.id !== 'delivery') return;
+    const handleCellClick = (cellData: any) => {
         if (cellData.value === 0) return;
-        onDeliveryClick({
-            quantity: cellData.value,
-            etd: cellData.colDef.headerName,
-            origin: {
-                bpns: site?.bpns,
-            },
-            destination: {
-                bpns: site?.bpns,
-            },
-        });
+        switch (cellData.id) {
+            case 'delivery':
+                onDeliveryClick({
+                    quantity: cellData.value,
+                    etd: cellData.colDef.headerName,
+                    origin: {
+                        bpns: site?.bpns,
+                    },
+                    destination: {
+                        bpns: site?.bpns,
+                    },
+                });
+                break;
+            case 'demand':
+                onDemandClick({
+                    quantity: parseFloat(cellData.value),
+                    ownMaterialNumber: stocks ? stocks[0].material?.materialNumberCustomer : undefined,
+                    demandLocationBpns: site.bpns,
+                    day: new Date(cellData.colDef.headerName),
+                }, 'edit');
+                break;
+            default:
+                break;
+        }
     };
     return (
-        <>
+        <Stack spacing={2}>
             <Box display="flex" justifyContent="start" width="100%" gap="0.5rem" marginBlock="0.5rem" paddingLeft=".5rem">
-                <Typography variant="caption1" component="h3" fontWeight={600}> Site: </Typography>
+                <Typography variant="caption1" component="h3" fontWeight={600}>
+                    Site:
+                </Typography>
                 {site.name} ({site.bpns})
+                {!readOnly && <Button
+                    variant="contained"
+                    onClick={() =>
+                        onDemandClick({
+                            demandLocationBpns: site.bpns,
+                            ownMaterialNumber: stocks?.length ? stocks[0].material.materialNumberCustomer : null,
+                        }, 'create')
+                    }
+                    sx={{ marginLeft: 'auto' }}
+                >
+                    <Add></Add> Create Demand
+                </Button> }
             </Box>
             <TableWithRowHeader
                 title=""
                 noRowsMsg="Select a Material to show the customer demand"
                 columns={createDateColumnHeaders(numberOfDays)}
-                rows={createDemandRows(numberOfDays, stocks ?? [], site)}
-                onCellClick={handleDeliveryClick}
+                rows={createTableRows(numberOfDays, stocks ?? [], demands ?? [], site)}
+                onCellClick={handleCellClick}
                 getRowId={(row) => row.id}
                 hideFooter={true}
             />
-        </>
+        </Stack>
     );
 };

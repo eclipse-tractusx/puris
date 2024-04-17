@@ -28,7 +28,7 @@ body {
 }
 
 [role='tabpanel'] {
-    @apply w-full;
+    width: 100%;
 }
 
 .MuiDataGrid-root > .MuiBox-root h5 > span {
@@ -42,7 +42,7 @@ body {
 }
 
 .table-container .MuiDataGrid-root > .MuiBox-root {
-    display: none;
+    height: 0;
 }
 
 .table-container .MuiDataGrid-root {
@@ -52,4 +52,8 @@ body {
 
 .table-container .MuiDataGrid-columnHeader button {
     display: none;
+}
+
+.MuiDialog-container .MuiPaper-root {
+    max-width: unset !important;
 }

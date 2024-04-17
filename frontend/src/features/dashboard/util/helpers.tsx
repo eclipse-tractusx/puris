@@ -17,8 +17,6 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-
-import { Info } from '@mui/icons-material';
 import { Box, Button } from '@mui/material';
 
 export const createDateColumnHeaders = (numberOfDays: number) => {
@@ -28,11 +26,30 @@ export const createDateColumnHeaders = (numberOfDays: number) => {
         return {
             field: `${index}`,
             headerName: date.toLocaleDateString('en-US', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }),
+            headerAlign: 'center' as const,
+            sortable: false,
+            disableColumnMenu: true,
             width: 180,
-            renderCell: (data: { value?: number } & { row: {id: number | string }}) => {
+            renderCell: (data: { value?: number, field: string } & { row: { id: number | string } }) => {
                 return (
-                    <Box display='flex' textAlign='center' alignItems='center' justifyContent='center' width='100%' height='100%' color={data.value !== undefined && data.value < 0 ? 'red' : undefined}>
-                        {(data.row.id === 'delivery' || data.row.id === 'shipment') && data.value !== 0 ? <Button variant='text'>{data.value} <Info sx={{fontSize: '1.25rem'}}></Info></Button> : data.value} 
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        textAlign="center"
+                        alignItems="center"
+                        justifyContent="center"
+                        width="100%"
+                        height="100%"
+                    >
+                        {(data.row.id === 'delivery' || data.row.id === 'shipment' || data.row.id === 'plannedProduction' || data.row.id === 'demand') &&
+                        data.value !== 0 ? (
+                            <Button variant="text">
+                                {data.value}
+                            </Button>
+                        ) : (<>
+                            {(data.value ?? 0) > 0 ? data.value : 0}
+                            <Box fontStyle='italic'>{data.row.id === 'itemStock' && data.field === '0' && '(current)'}</Box></>
+                        )}
                     </Box>
                 );
             },

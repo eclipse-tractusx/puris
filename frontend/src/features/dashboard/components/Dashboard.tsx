@@ -22,98 +22,204 @@ import { usePartnerStocks } from '@features/stock-view/hooks/usePartnerStocks';
 import { useStocks } from '@features/stock-view/hooks/useStocks';
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
 import { Site } from '@models/types/edc/site';
-import { useState } from 'react';
+import { useCallback, useReducer } from 'react';
 import { DashboardFilters } from './DashboardFilters';
 import { DemandTable } from './DemandTable';
 import { ProductionTable } from './ProductionTable';
-import { Stack, Typography, capitalize } from '@mui/material';
+import { Box, Button, Stack, Typography, capitalize } from '@mui/material';
 import { Delivery } from '@models/types/data/delivery';
 import { DeliveryInformationModal } from './DeliveryInformationModal';
 import { getPartnerType } from '../util/helpers';
+import { Demand } from '@models/types/data/demand';
+import { DemandCategoryModal } from './DemandCategoryModal';
+import { DEMAND_CATEGORY } from '@models/constants/demand-category';
+import { LoadingButton } from '@catena-x/portal-shared-components';
+import { Refresh } from '@mui/icons-material';
+import { useDemand } from '../hooks/useDemand';
+import { useReportedDemand } from '../hooks/useReportedDemand';
+import { refreshPartnerStocks } from '@services/stocks-service';
 
-const NUMBER_OF_DAYS = 42;
+const NUMBER_OF_DAYS = 28;
+
+type DashboardState = {
+    selectedMaterial: MaterialDescriptor | null;
+    selectedSite: Site | null;
+    selectedPartnerSites: Site[] | null;
+    deliveryDialogOptions: { open: boolean; mode: 'create' | 'edit' };
+    demandDialogOptions: { open: boolean; mode: 'create' | 'edit' };
+    productionDialogOptions: { open: boolean; mode: 'create' | 'edit' };
+    delivery: Delivery | null;
+    demand: Partial<Demand> | null;
+    isRefreshing: boolean;
+};
+
+type DashboardAction = {
+    type: keyof DashboardState;
+    payload: DashboardState[keyof DashboardState];
+};
+
+const reducer = (state: DashboardState, action: DashboardAction): DashboardState => {
+    return { ...state, [action.type]: action.payload };
+};
+
+const initialState: DashboardState = {
+    selectedMaterial: null,
+    selectedSite: null,
+    selectedPartnerSites: null,
+    deliveryDialogOptions: { open: false, mode: 'create' },
+    demandDialogOptions: { open: false, mode: 'edit' },
+    productionDialogOptions: { open: false, mode: 'edit' },
+    delivery: null,
+    demand: null,
+    isRefreshing: false,
+};
 
 export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
-    const [selectedMaterial, setSelectedMaterial] = useState<MaterialDescriptor | null>(null);
-    const [selectedSite, setSelectedSite] = useState<Site | null>(null);
-    const [selectedPartnerSites, setSelectedPartnerSites] = useState<Site[] | null>(null);
+    const [state, dispatch] = useReducer(reducer, initialState);
     const { stocks } = useStocks(type === 'customer' ? 'material' : 'product');
-    const { partnerStocks } = usePartnerStocks(type === 'customer' ? 'material' : 'product', selectedMaterial?.ownMaterialNumber ?? null);
-    const [open, setOpen] = useState(false);
-    const [delivery, setDelivery] = useState<Delivery | null>(null);
-    const openDeliveryDialog = (d: Delivery) => {
-        setDelivery(d);
-        setOpen(true);
+    const { partnerStocks, refreshPartnerStocks: refresh } = usePartnerStocks(
+        type === 'customer' ? 'material' : 'product',
+        state.selectedMaterial?.ownMaterialNumber ?? null
+    );
+    const { demands, refreshDemand } = useDemand(state.selectedMaterial?.ownMaterialNumber ?? null, state.selectedSite?.bpns ?? null);
+    const { reportedDemands } = useReportedDemand(state.selectedMaterial?.ownMaterialNumber ?? null);
+
+    const handleRefresh = () => {
+        dispatch({ type: 'isRefreshing', payload: true });
+        refreshPartnerStocks( type === 'customer' ? 'material' : 'product', state.selectedMaterial?.ownMaterialNumber ?? null )
+            .then(refresh)
+            .finally(() => dispatch({ type: 'isRefreshing', payload: false }));
     };
-    const handleMaterialSelect = (material: MaterialDescriptor | null) => {
-        setSelectedMaterial(material);
-        setSelectedSite(null);
-        setSelectedPartnerSites(null);
+    const openDeliveryDialog = (d: Partial<Delivery>) => {
+            dispatch({ type: 'delivery', payload: d });
+            dispatch({ type: 'deliveryDialogOptions', payload: { open: true, mode: 'edit' } });
+        };
+    const handleMaterialSelect = useCallback((material: MaterialDescriptor | null) => {
+        dispatch({ type: 'selectedMaterial', payload: material });
+        dispatch({ type: 'selectedSite', payload: null });
+        dispatch({ type: 'selectedPartnerSites', payload: null });
+    }, []);
+    const openDemandDialog = (d: Partial<Demand>, mode: 'create' | 'edit') => {
+        d.measurementUnit ??= 'unit:piece';
+        d.demandCategoryCode ??= DEMAND_CATEGORY[0]?.key;
+        dispatch({ type: 'demand', payload: d });
+        dispatch({ type: 'demandDialogOptions', payload: { open: true, mode } });
     };
     return (
         <>
-            <Stack spacing={3} alignItems={'center'}>
+            <Stack spacing={3} alignItems={'center'} useFlexGap>
                 <DashboardFilters
                     type={type}
-                    material={selectedMaterial}
-                    site={selectedSite}
-                    partnerSites={selectedPartnerSites}
+                    material={state.selectedMaterial}
+                    site={state.selectedSite}
+                    partnerSites={state.selectedPartnerSites}
                     onMaterialChange={handleMaterialSelect}
-                    onSiteChange={setSelectedSite}
-                    onPartnerSitesChange={setSelectedPartnerSites}
+                    onSiteChange={(site) => dispatch({ type: 'selectedSite', payload: site })}
+                    onPartnerSitesChange={(sites) => dispatch({ type: 'selectedPartnerSites', payload: sites })}
                 />
-                <Typography variant="h5" component="h2" marginBottom={0}>
-                    Our Stock Information {selectedMaterial && selectedSite && <>for {selectedMaterial.description}</>}
-                </Typography>
-                {selectedSite ? (
-                    type === 'supplier' ? (
-                        <ProductionTable
-                            numberOfDays={NUMBER_OF_DAYS}
-                            stocks={stocks}
-                            site={selectedSite}
-                            onDeliveryClick={openDeliveryDialog}
-                        />
+                <Box width="100%" marginTop="1rem">
+                    <Typography variant="h5" component="h2">
+                        Production Information
+                        {state.selectedMaterial && state.selectedSite && <> for {state.selectedMaterial.description} ({state.selectedMaterial.ownMaterialNumber})</>}
+                    </Typography>
+                    {state.selectedSite && state.selectedMaterial ? (
+                        type === 'supplier' ? (
+                            <ProductionTable
+                                numberOfDays={NUMBER_OF_DAYS}
+                                stocks={stocks ?? []}
+                                site={state.selectedSite}
+                                onDeliveryClick={openDeliveryDialog}
+                            />
+                        ) : (
+                            <DemandTable
+                                numberOfDays={NUMBER_OF_DAYS}
+                                stocks={stocks}
+                                site={state.selectedSite}
+                                onDeliveryClick={openDeliveryDialog}
+                                onDemandClick={openDemandDialog}
+                                demands={demands}
+                            />
+                        )
                     ) : (
-                        <DemandTable
-                            numberOfDays={NUMBER_OF_DAYS}
-                            stocks={stocks}
-                            site={selectedSite}
-                            onDeliveryClick={openDeliveryDialog}
-                        />
-                    )
-                ) : (
-                    <Typography variant="body1">Select a Site to show production data</Typography>
-                )}
-                {selectedSite && (
-                    <>
-                        <Typography variant="h5" component="h2">
-                            {`${capitalize(getPartnerType(type))} Stocks ${selectedMaterial ? `for ${selectedMaterial?.description}` : ''}`}
-                        </Typography>
-                        {selectedPartnerSites ? (
-                            selectedPartnerSites.map((ps) =>
-                                type === 'supplier' ? (
-                                    <DemandTable
-                                        numberOfDays={NUMBER_OF_DAYS}
-                                        stocks={partnerStocks}
-                                        site={ps}
-                                        onDeliveryClick={openDeliveryDialog}
+                        <Typography variant="body1">Select a Site to show production data</Typography>
+                    )}
+                </Box>
+                {state.selectedSite && (
+                    <Stack width="100%">
+                        <Box display="flex" justifyContent="space-between">
+                            <Typography variant="h5" component="h2">
+                                {`${capitalize(getPartnerType(type))} Information ${
+                                    state.selectedMaterial ? `for ${state.selectedMaterial.description} (${state.selectedMaterial.ownMaterialNumber})` : ''
+                                }`}
+                            </Typography>
+                            {state.selectedPartnerSites?.length &&
+                                (state.isRefreshing ? (
+                                    <LoadingButton
+                                        label="Refresh"
+                                        loadIndicator="refreshing..."
+                                        loading={state.isRefreshing}
+                                        variant="contained"
+                                        onButtonClick={handleRefresh}
+                                        sx={{ width: '10rem' }}
                                     />
                                 ) : (
-                                    <ProductionTable
-                                        numberOfDays={NUMBER_OF_DAYS}
-                                        stocks={partnerStocks}
-                                        site={ps}
-                                        onDeliveryClick={openDeliveryDialog}
-                                    />
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleRefresh}
+                                        sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '10rem' }}
+                                    >
+                                        <Refresh></Refresh> Refresh
+                                    </Button>
+                                ))}
+                        </Box>
+                        <Stack spacing={4}>
+                            {state.selectedPartnerSites ? (
+                                state.selectedPartnerSites.map((ps) =>
+                                    type === 'supplier' ? (
+                                        <DemandTable
+                                            key={ps.bpns}
+                                            numberOfDays={NUMBER_OF_DAYS}
+                                            stocks={partnerStocks}
+                                            site={ps}
+                                            onDeliveryClick={openDeliveryDialog}
+                                            onDemandClick={openDemandDialog}
+                                            demands={reportedDemands?.filter((d) => d.demandLocationBpns === ps.bpns) ?? []}
+                                            readOnly
+                                        />
+                                    ) : (
+                                        <ProductionTable
+                                            key={ps.bpns}
+                                            numberOfDays={NUMBER_OF_DAYS}
+                                            stocks={partnerStocks ?? []}
+                                            site={ps}
+                                            onDeliveryClick={openDeliveryDialog}
+                                        />
+                                    )
                                 )
-                            )
-                        ) : (
-                            <Typography variant="body1">{`Select a ${getPartnerType(type)} site to show their stock information`}</Typography>
-                        )}
-                    </>
+                            ) : (
+                                <Typography variant="body1">{`Select a ${getPartnerType(
+                                    type
+                                )} site to show their stock information`}</Typography>
+                            )}
+                        </Stack>
+                    </Stack>
                 )}
             </Stack>
-            <DeliveryInformationModal open={open} onClose={() => setOpen(false)} delivery={delivery} />
+            <DeliveryInformationModal
+                open={state.deliveryDialogOptions.open}
+                onClose={() =>
+                    dispatch({ type: 'deliveryDialogOptions', payload: { open: false, mode: state.deliveryDialogOptions.mode } })
+                }
+                delivery={state.delivery}
+            />
+            <DemandCategoryModal
+                open={state.demandDialogOptions.open}
+                mode={state.demandDialogOptions.mode}
+                onClose={() => dispatch({ type: 'demandDialogOptions', payload: { open: false, mode: state.demandDialogOptions.mode } })}
+                onSave={refreshDemand}
+                demand={state.demand}
+                demands={demands ?? []}
+            />
         </>
     );
 };
