@@ -119,9 +119,7 @@ public class OwnDeliveryService {
             delivery.getPartner() != null &&
             delivery.getTrackingNumber() != null &&
             delivery.getIncoterm() != null &&
-            !(delivery.isHasDeparted() == false && delivery.isHasArrived() == true) &&
-            delivery.getDepartureType() != null && (delivery.getDepartureType() == EventTypeEnumeration.ESTIMATED_DEPARTURE || delivery.getDepartureType() == EventTypeEnumeration.ACTUAL_DEPARTURE) &&
-            delivery.getArrivalType() != null && (delivery.getArrivalType() == EventTypeEnumeration.ESTIMATED_ARRIVAL || delivery.getArrivalType() == EventTypeEnumeration.ACTUAL_ARRIVAL) &&
+            this.validateTransitEvent(delivery) &&
             !delivery.getPartner().equals(ownPartnerEntity) &&
             !ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())) &&
             ((
@@ -133,5 +131,15 @@ public class OwnDeliveryService {
                 delivery.getCustomerOrderPositionNumber() == null &&
                 delivery.getSupplierOrderNumber() == null
             ));
+    }
+
+    private boolean validateTransitEvent(OwnDelivery delivery) {
+        return
+            delivery.getDepartureType() != null &&
+            (delivery.getDepartureType() == EventTypeEnumeration.ESTIMATED_DEPARTURE || delivery.getDepartureType() == EventTypeEnumeration.ACTUAL_DEPARTURE) &&
+            delivery.getArrivalType() != null &&
+            (delivery.getArrivalType() == EventTypeEnumeration.ESTIMATED_ARRIVAL || delivery.getArrivalType() == EventTypeEnumeration.ACTUAL_ARRIVAL) &&
+            !(delivery.getDepartureType() == EventTypeEnumeration.ESTIMATED_DEPARTURE && delivery.getArrivalType() == EventTypeEnumeration.ACTUAL_ARRIVAL) &&
+            delivery.getDateOfDeparture().getTime() < delivery.getDateOfArrival().getTime();
     }
 }

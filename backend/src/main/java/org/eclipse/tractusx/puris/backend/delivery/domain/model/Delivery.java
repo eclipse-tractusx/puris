@@ -89,8 +89,6 @@ public abstract class Delivery {
     // Transit Event
     private Date dateOfDeparture;
     private Date dateOfArrival;
-    private boolean hasDeparted;
-    private boolean hasArrived;
     private EventTypeEnumeration departureType;
     private EventTypeEnumeration arrivalType;
 
@@ -119,8 +117,6 @@ public abstract class Delivery {
                 this.getOriginBpna().equals(that.getOriginBpna()) &&
                 this.getDateOfDeparture().equals(that.getDateOfDeparture()) &&
                 this.getDateOfArrival().equals(that.getDateOfArrival()) &&
-                this.isHasDeparted() == that.isHasDeparted() &&
-                this.isHasArrived() == that.isHasArrived() &&
                 this.getDepartureType().equals(that.getDepartureType()) &&
                 this.getArrivalType().equals(that.getArrivalType()) &&
                 this.getIncoterm().equals(that.getIncoterm()) &&
@@ -138,7 +134,7 @@ public abstract class Delivery {
             trackingNumber, incoterm,
             supplierOrderNumber, customerOrderNumber, customerOrderPositionNumber,
             destinationBpns, destinationBpna, originBpns, originBpna,
-            dateOfDeparture, dateOfArrival, hasDeparted, hasArrived, departureType, arrivalType
+            dateOfDeparture, dateOfArrival, departureType, arrivalType
         );
     }
 }

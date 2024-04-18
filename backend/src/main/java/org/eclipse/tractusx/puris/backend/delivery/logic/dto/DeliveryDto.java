@@ -76,8 +76,6 @@ public class DeliveryDto implements Serializable {
     // Transit Event
     private Date dateOfDeparture;
     private Date dateOfArrival;
-    private boolean hasDeparted;
-    private boolean hasArrived;
     private EventTypeEnumeration departureType;
     private EventTypeEnumeration arrivalType;
 }
