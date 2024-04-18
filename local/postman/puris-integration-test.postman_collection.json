@@ -466,6 +466,8 @@
 													"pm.test(\"Verify own site values (one BPNS with one BPNA)\", function () {",
 													"    const responseJson = pm.response.json();",
 													"",
+													"    pm.expect(responseJson).to.be.an(\"array\").with.lengthOf(1);",
+													"",
 													"    const sites = responseJson.filter(function (site) {",
 													"        return site.bpns === pm.environment.get(\"CUSTOMER_BPNS\");",
 													"    });",
@@ -477,7 +479,8 @@
 													"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"CUSTOMER_BPNA\"));",
 													"});"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -575,27 +578,46 @@
 													"",
 													"pm.test(\"Verify response contains one stock\", function () {",
 													"    pm.expect(pm.response.json()).to.be.an(\"array\").with.lengthOf(1);",
+													"});",
+													"",
+													"pm.test(\"Verify stock composition (material number with BPNS, BPNA and Partner BPNL)\", function () {",
+													"    var stock = pm.response.json()[0];",
+													"",
+													"    pm.expect(stock).to.have.property(\"material\");",
+													"    pm.expect(stock.material).to.have.property(\"materialNumberCustomer\");",
+													"    pm.expect(stock.material.materialNumberCustomer).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\"));",
+													"",
+													"    pm.expect(stock.material).to.have.property(\"materialNumberSupplier\");",
+													"    pm.expect(stock.material.materialNumberSupplier).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"));",
+													"",
+													"    pm.expect(stock.material).to.have.property(\"materialNumberCx\");",
+													"    pm.expect(stock.material.materialNumberCx).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_CX\"));",
+													"",
+													"    pm.expect(stock.material).to.have.property(\"materialFlag\");",
+													"    pm.expect(stock.material.materialFlag).to.be.true;",
+													"",
+													"    pm.expect(stock.material).to.have.property(\"productFlag\");",
+													"    pm.expect(stock.material.productFlag).to.be.false;",
+													"",
+													"    pm.expect(stock).to.have.property(\"stockLocationBpns\");",
+													"    pm.expect(stock.stockLocationBpns).to.equal(pm.environment.get(\"CUSTOMER_BPNS\"));",
+													"",
+													"    pm.expect(stock).to.have.property(\"stockLocationBpna\");",
+													"    pm.expect(stock.stockLocationBpna).to.equal(pm.environment.get(\"CUSTOMER_BPNA\"));",
+													"",
+													"    pm.expect(stock).to.have.property(\"partner\");",
+													"    pm.expect(stock.partner).to.have.property(\"bpnl\");",
+													"    pm.expect(stock.partner.bpnl).to.equal(pm.environment.get(\"SUPPLIER_BPNL\"));",
 													"});"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
-									"protocolProfileBehavior": {
-										"disableBodyPruning": true
-									},
 									"request": {
 										"method": "GET",
 										"header": [],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"material\": {\n        \"materialFlag\": true,\n        \"productFlag\": false,\n        \"materialNumberCustomer\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n        \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n        \"name\": \"Semiconductor\"\n    },\n    \"quantity\": 5.0,\n    \"measurementUnit\": \"unit:piece\",\n    \"stockLocationBpns\": \"{{CUSTOMER_BPNS}}\",\n    \"stockLocationBpna\": \"{{CUSTOMER_BPNA}}\",\n    \"type\": \"MATERIAL\",\n    \"lastUpdatedOn\": \"2023-12-18T13:12:48.466+00:00\",\n    \"isBlocked\": true,\n    \"customerOrderNumber\": \"\",\n    \"customerOrderPositionNumber\": \"\",\n    \"supplierOrderNumber\": \"\",\n    \"partner\":{\n        \"bpnl\": \"{{SUPPLIER_BPNL}}\"\n    }\n}",
-											"options": {
-												"raw": {
-													"language": "json"
-												}
-											}
-										},
 										"url": {
 											"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/stockView/material-stocks",
 											"host": [
@@ -1438,6 +1460,8 @@
 													"pm.test(\"Verify own site values (one BPNS with one BPNA)\", function () {",
 													"    const responseJson = pm.response.json();",
 													"",
+													"    pm.expect(responseJson).to.be.an(\"array\").with.lengthOf(2);",
+													"",
 													"    const sites = responseJson.filter(function (site) {",
 													"        return site.bpns === pm.environment.get(\"SUPPLIER_BPNS\");",
 													"    });",
@@ -1449,7 +1473,8 @@
 													"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"SUPPLIER_BPNA\"));",
 													"});"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -1582,7 +1607,19 @@
 													"",
 													"    pm.expect(stockNy).to.have.property(\"material\");",
 													"    pm.expect(stockNy.material).to.have.property(\"materialNumberCustomer\");",
+													"    pm.expect(stockNy.material.materialNumberCustomer).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\"));",
+													"",
+													"    pm.expect(stockNy.material).to.have.property(\"materialNumberSupplier\");",
 													"    pm.expect(stockNy.material.materialNumberSupplier).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"));",
+													"",
+													"    pm.expect(stockNy.material).to.have.property(\"materialNumberCx\");",
+													"    pm.expect(stockNy.material.materialNumberCx).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_CX\"));",
+													"",
+													"    pm.expect(stockNy.material).to.have.property(\"materialFlag\");",
+													"    pm.expect(stockNy.material.materialFlag).to.be.false;",
+													"",
+													"    pm.expect(stockNy.material).to.have.property(\"productFlag\");",
+													"    pm.expect(stockNy.material.productFlag).to.be.true;",
 													"",
 													"    pm.expect(stockNy).to.have.property(\"stockLocationBpns\");",
 													"    pm.expect(stockNy.stockLocationBpns).to.equal(pm.environment.get(\"SUPPLIER_BPNS\"));",
@@ -1604,7 +1641,7 @@
 													"    })[0];",
 													"",
 													"    pm.expect(stockLa).to.have.property(\"material\");",
-													"    pm.expect(stockLa.material).to.have.property(\"materialNumberCustomer\");",
+													"    pm.expect(stockLa.material).to.have.property(\"materialNumberSupplier\");",
 													"    pm.expect(stockLa.material.materialNumberSupplier).to.equal(pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\"));",
 													"",
 													"    pm.expect(stockLa).to.have.property(\"stockLocationBpns\");",
@@ -1618,7 +1655,8 @@
 													"    pm.expect(stockLa.partner.bpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
 													"});"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -2284,17 +2322,6 @@
 											"",
 											"const jsonData = pm.response.json();",
 											"",
-											"pm.test(\"Verify that ShellDescriptor contains specific Assset Ids\", function () {",
-											"",
-											"    pm.expect(jsonData.specificAssetIds).to.be.an(\"array\");",
-											"",
-											"    // for loop",
-											"    var submodelDescriptor = jsonData.submodelDescriptors.filter(function (submodelDescriptor) {",
-											"        return submodelDescriptor.semanticId.keys[0].value === \"urn:samm:io.catenax.item_stock:2.0.0#ItemStock\";",
-											"    })[0];",
-											"    pm.expect(submodelDescriptor).to.not.NaN;",
-											"});",
-											"",
 											"const expectedSpecificAssetIds = [",
 											"    { name: \"customerPartId\", value: pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\") },",
 											"    { name: \"digitalTwinType\", value: \"PartType\" },",
@@ -2485,7 +2512,7 @@
 							"response": []
 						},
 						{
-							"name": "Get ShellDescriptor by found AAS ID Copy",
+							"name": "Get ShellDescriptor by found AAS ID",
 							"event": [
 								{
 									"listen": "test",
@@ -2496,17 +2523,6 @@
 											"});",
 											"",
 											"const jsonData = pm.response.json();",
-											"",
-											"pm.test(\"Verify that ShellDescriptor contains specific Assset Ids\", function () {",
-											"",
-											"    pm.expect(jsonData.specificAssetIds).to.be.an(\"array\");",
-											"",
-											"    // for loop",
-											"    var submodelDescriptor = jsonData.submodelDescriptors.filter(function (submodelDescriptor) {",
-											"        return submodelDescriptor.semanticId.keys[0].value === \"urn:samm:io.catenax.item_stock:2.0.0#ItemStock\";",
-											"    })[0];",
-											"    pm.expect(submodelDescriptor).to.not.NaN;",
-											"});",
 											"",
 											"const expectedSpecificAssetIds = [",
 											"    { name: \"customerPartId\", value: pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\") },",
