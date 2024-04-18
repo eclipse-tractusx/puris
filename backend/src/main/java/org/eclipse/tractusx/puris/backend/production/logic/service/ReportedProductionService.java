@@ -119,7 +119,8 @@ public class ReportedProductionService {
                 production.getCustomerOrderPositionNumber() != null
             ) || (
                 production.getCustomerOrderNumber() == null && 
-                production.getCustomerOrderPositionNumber() == null
+                production.getCustomerOrderPositionNumber() == null && 
+                production.getSupplierOrderNumber() == null
             ));
     }
 }

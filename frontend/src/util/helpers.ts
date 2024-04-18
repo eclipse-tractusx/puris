@@ -64,4 +64,4 @@ export const isErrorResponse = (response: unknown): response is ErrorResponse =>
 
 export const isValidOrderReference = (ref: Partial<OrderReference>) =>
     (ref.customerOrderNumber && ref.customerOrderPositionNumber) ||
-    (!ref.customerOrderNumber && !ref.customerOrderPositionNumber);
+    (!ref.customerOrderNumber && !ref.customerOrderPositionNumber && !ref.supplierOrderNumber);

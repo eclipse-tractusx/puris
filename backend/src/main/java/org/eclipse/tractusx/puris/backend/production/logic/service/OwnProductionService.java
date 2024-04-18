@@ -131,7 +131,8 @@ public class OwnProductionService {
                 production.getCustomerOrderPositionNumber() != null
             ) || (
                 production.getCustomerOrderNumber() == null && 
-                production.getCustomerOrderPositionNumber() == null
+                production.getCustomerOrderPositionNumber() == null && 
+                production.getSupplierOrderNumber() == null
             ));
     }
 }
