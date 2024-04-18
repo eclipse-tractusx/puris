@@ -25,7 +25,7 @@ import { Dashboard } from '@features/dashboard/components/Dashboard';
 import { Box, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 
-export const SupplierDashboardView = () => {
+export const DashboardView = () => {
     const [selectedTab, setSelectedTab] = useState<number>(0);
     return (
         <Stack spacing={2} alignItems='center' width='100%' height='100%'>
