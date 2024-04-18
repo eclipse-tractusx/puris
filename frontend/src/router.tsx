@@ -26,7 +26,7 @@ import { CatalogView } from '@views/CatalogView';
 import { NegotiationView } from '@views/NegotiationView';
 import { TransferView } from '@views/TransferView';
 import { StockView } from '@views/StockView';
-import { SupplierDashboardView } from '@views/SupplierDashboardView';
+import { DashboardView } from '@views/DashboardView';
 import { AboutLicenseView } from '@views/AboutLicenseView';
 import { UnauthorizedView } from '@views/errors/UnauthorizedView';
 import { ErrorView } from '@views/errors/ErrorView';
@@ -46,8 +46,8 @@ export const router = createBrowserRouter([
                         element: <StockView />,
                     },
                     {
-                        path: 'supplierDashboard',
-                        element: <SupplierDashboardView />,
+                        path: 'dashboard',
+                        element: <DashboardView />,
                     },
                 ],
             },
@@ -71,7 +71,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: '/',
-                loader: () => redirect('/stocks'),
+                loader: () => redirect('/dashboard'),
             },
             {
                 path: 'aboutLicense',

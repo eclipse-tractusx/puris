@@ -56,7 +56,7 @@ export const DashboardFilters = ({
                     id="material"
                     value={material}
                     options={materials ?? []}
-                    getOptionLabel={(option) => option.ownMaterialNumber}
+                    getOptionLabel={(option) => `${option.description} (${option.ownMaterialNumber})`}
                     renderInput={(params) => <Input {...params} label="Material*" placeholder="Select a Material" />}
                     onChange={(_, newValue) => onMaterialChange(newValue || null)}
                 />
