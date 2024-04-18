@@ -84,10 +84,10 @@ const createProductionColumns = (handleDelete: (row: Production) => void) =>
             width: 200,
             renderCell: (data: { row: Production }) => (
                 <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    {data.row.customerOrderNumber ? (
+                    {data.row.customerOrderNumber || data.row.supplierOrderNumber ? (
                         <Stack>
-                            <Box>{`${data.row.customerOrderNumber} / ${data.row.customerOrderPositionNumber}`}</Box>
-                            <Box>{data.row.supplierOrderNumber}</Box>
+                            <Box>{`${data.row.customerOrderNumber || '-' } / ${data.row.customerOrderPositionNumber || '-'}  `}</Box>
+                            <Box>{data.row.supplierOrderNumber || '-'}</Box>
                         </Stack>
                     ) : (
                         '-'
