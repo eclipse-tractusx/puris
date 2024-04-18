@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
- * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional

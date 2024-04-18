@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
- * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -27,6 +26,7 @@ import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.delivery.domain.model.EventTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.IncotermEnumeration;
 
 import jakarta.validation.constraints.Pattern;
@@ -42,7 +42,9 @@ import lombok.ToString;
 public class DeliveryDto implements Serializable {
     private UUID uuid;
 
+    @Pattern(regexp = PatternStore.BPNL_STRING)
     private String partnerBpnl;
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String ownMaterialNumber;
 
     private double quantity;
@@ -76,4 +78,6 @@ public class DeliveryDto implements Serializable {
     private Date dateOfArrival;
     private boolean hasDeparted;
     private boolean hasArrived;
+    private EventTypeEnumeration departureType;
+    private EventTypeEnumeration arrivalType;
 }

@@ -22,22 +22,15 @@ package org.eclipse.tractusx.puris.backend.delivery.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum IncotermEnumeration {
-    EXW("EXW"),
-    FCA("FCA"),
-    FAS("FAS"),
-    FOB("FOB"),
-    CFR("CFR"),
-    CIF("CIF"),
-    DAP("DAP"),
-    DPU("DPU"),
-    CPT("CPT"),
-    CIP("CIP"),
-    DDP("DDP");
+public enum EventTypeEnumeration {
+    ESTIMATED_DEPARTURE("estimated-departure"),
+    ACTUAL_DEPARTURE("actual-departure"),
+    ESTIMATED_ARRIVAL("estimated-arrival"),
+    ACTUAL_ARRIVAL("actual-arrival");
 
     private String value;
 
-    IncotermEnumeration(String value) {
+    EventTypeEnumeration(String value) {
         this.value = value;
     }
 

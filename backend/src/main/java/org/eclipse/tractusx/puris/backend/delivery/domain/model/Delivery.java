@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
- * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -92,6 +91,8 @@ public abstract class Delivery {
     private Date dateOfArrival;
     private boolean hasDeparted;
     private boolean hasArrived;
+    private EventTypeEnumeration departureType;
+    private EventTypeEnumeration arrivalType;
 
     @ToString.Include
     private String material_ownMaterialNumber() {
@@ -112,6 +113,17 @@ public abstract class Delivery {
                 this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
                 this.getTrackingNumber().equals(that.getTrackingNumber()) &&
                 this.getIncoterm().equals(that.getIncoterm()) &&
+                this.getDestinationBpns().equals(that.getDestinationBpns()) &&
+                this.getDestinationBpna().equals(that.getDestinationBpna()) &&
+                this.getOriginBpns().equals(that.getOriginBpns()) &&
+                this.getOriginBpna().equals(that.getOriginBpna()) &&
+                this.getDateOfDeparture().equals(that.getDateOfDeparture()) &&
+                this.getDateOfArrival().equals(that.getDateOfArrival()) &&
+                this.isHasDeparted() == that.isHasDeparted() &&
+                this.isHasArrived() == that.isHasArrived() &&
+                this.getDepartureType().equals(that.getDepartureType()) &&
+                this.getArrivalType().equals(that.getArrivalType()) &&
+                this.getIncoterm().equals(that.getIncoterm()) &&
                 (
                     Objects.equals(this.getCustomerOrderNumber(), that.getCustomerOrderNumber()) && 
                     Objects.equals(this.getCustomerOrderPositionNumber(), that.getCustomerOrderPositionNumber()) &&
@@ -126,7 +138,7 @@ public abstract class Delivery {
             trackingNumber, incoterm,
             supplierOrderNumber, customerOrderNumber, customerOrderPositionNumber,
             destinationBpns, destinationBpna, originBpns, originBpna,
-            dateOfDeparture, dateOfArrival, hasDeparted, hasArrived
+            dateOfDeparture, dateOfArrival, hasDeparted, hasArrived, departureType, arrivalType
         );
     }
 }
