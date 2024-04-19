@@ -17,33 +17,19 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-
 import { UUID } from 'crypto';
-import { BPNA, BPNS } from '../edc/bpn';
-import { Partner } from '../edc/partner';
 import { UnitOfMeasurementKey } from './uom';
+import { MaterialDetails } from './stock';
+import { BPNS } from '../edc/bpn';
+import { Partner } from '../edc/partner';
 import { OrderReference } from './order-reference';
 
-export type MaterialDetails = {
-    uuid?: UUID | null;
-    materialFlag: boolean;
-    productFlag: boolean;
-    materialNumberCustomer: string | null;
-    materialNumberSupplier: string | null;
-    materialNumberCx: string | null;
-    name: string;
-};
-
-export type Stock = {
-    uuid?: UUID | null;
-    material: MaterialDetails
-    quantity: number;
-    measurementUnit: UnitOfMeasurementKey;
-    stockLocationBpns: BPNS;
-    stockLocationBpna: BPNA;
-    lastUpdatedOn: string;
-    partner: Partner;
-    isBlocked: boolean;
+export type Production = {
+  uuid?: UUID;
+  partner: Partner;
+  material: MaterialDetails;
+  quantity: number;
+  measurementUnit: UnitOfMeasurementKey;
+  productionSiteBpns: BPNS;
+  estimatedTimeOfCompletion: Date;
 } & OrderReference;
-
-export type StockType = 'material' | 'product';

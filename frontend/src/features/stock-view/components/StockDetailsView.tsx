@@ -31,15 +31,10 @@ import { StockTable } from './StockTable';
 import { useStocks } from '../hooks/useStocks';
 import { usePartnerStocks } from '../hooks/usePartnerStocks';
 import { compareStocks } from '@util/stock-helpers';
+import { Notification } from '@models/types/data/notification';
 
 type StockDetailsViewProps<T extends StockType> = {
     type: T;
-};
-
-type Notification = {
-    title: string;
-    description: string;
-    severity: 'success' | 'error';
 };
 
 export const StockDetailsView = <T extends StockType>({ type }: StockDetailsViewProps<T>) => {
