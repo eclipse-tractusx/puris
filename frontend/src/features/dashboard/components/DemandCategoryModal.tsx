@@ -42,90 +42,91 @@ const GridItem = ({ label, value }: { label: string; value: string }) => (
     </Grid>
 );
 
-const createDemandColumns = (handleDelete: (row: Demand) => void) => [
-    {
-        field: 'quantity',
-        headerName: 'Quantity',
-        sortable: false,
-        disableColumnMenu: true,
-        headerAlign: 'center',
-        type: 'string',
-        width: 120,
-        renderCell: (data: { row: Demand }) => {
-            return (
-                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    {`${data.row.quantity} ${getUnitOfMeasurement(data.row.measurementUnit)}`}
-                </Box>
-            );
+const createDemandColumns = (handleDelete: (row: Demand) => void) =>
+    [
+        {
+            field: 'quantity',
+            headerName: 'Quantity',
+            sortable: false,
+            disableColumnMenu: true,
+            headerAlign: 'center',
+            type: 'string',
+            width: 120,
+            renderCell: (data: { row: Demand }) => {
+                return (
+                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                        {`${data.row.quantity} ${getUnitOfMeasurement(data.row.measurementUnit)}`}
+                    </Box>
+                );
+            },
         },
-    },
-    {
-        field: 'partner',
-        headerName: 'Partner',
-        sortable: false,
-        disableColumnMenu: true,
-        headerAlign: 'center',
-        type: 'string',
-        width: 200,
-        renderCell: (data: { row: Demand }) => {
-            return (
-                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    {data.row.partnerBpnl}
-                </Box>
-            );
+        {
+            field: 'partner',
+            headerName: 'Partner',
+            sortable: false,
+            disableColumnMenu: true,
+            headerAlign: 'center',
+            type: 'string',
+            width: 200,
+            renderCell: (data: { row: Demand }) => {
+                return (
+                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                        {data.row.partnerBpnl}
+                    </Box>
+                );
+            },
         },
-    },
-    {
-        field: 'supplierLocationBpns',
-        headerName: 'Expected Supplier Location',
-        sortable: false,
-        disableColumnMenu: true,
-        headerAlign: 'center',
-        type: 'string',
-        width: 200,
-        renderCell: (data: { row: Demand }) => {
-            return (
-                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    {data.row.supplierLocationBpns}
-                </Box>
-            );
+        {
+            field: 'supplierLocationBpns',
+            headerName: 'Expected Supplier Location',
+            sortable: false,
+            disableColumnMenu: true,
+            headerAlign: 'center',
+            type: 'string',
+            width: 200,
+            renderCell: (data: { row: Demand }) => {
+                return (
+                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                        {data.row.supplierLocationBpns}
+                    </Box>
+                );
+            },
         },
-    },
-    {
-        field: 'category',
-        headerName: 'Demand Category',
-        sortable: false,
-        disableColumnMenu: true,
-        headerAlign: 'center',
-        type: 'string',
-        width: 200,
-        renderCell: (data: { row: Demand }) => {
-            return (
-                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    {DEMAND_CATEGORY.find(cat => cat.key === data.row.demandCategoryCode)?.value ?? DEMAND_CATEGORY[0].value}
-                </Box>
-            );
+        {
+            field: 'category',
+            headerName: 'Demand Category',
+            sortable: false,
+            disableColumnMenu: true,
+            headerAlign: 'center',
+            type: 'string',
+            width: 200,
+            renderCell: (data: { row: Demand }) => {
+                return (
+                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                        {DEMAND_CATEGORY.find((cat) => cat.key === data.row.demandCategoryCode)?.value ?? DEMAND_CATEGORY[0].value}
+                    </Box>
+                );
+            },
         },
-    },
-    {
-        field: 'delete',
-        headerName: '',
-        sortable: false,
-        disableColumnMenu: true,
-        headerAlign: 'center',
-        type: 'string',
-        width: 30,
-        renderCell: (data: { row: Demand }) => {
-            return (
-                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
-                        <Delete></Delete>
-                    </Button>
-                </Box>
-            );
+        {
+            field: 'delete',
+            headerName: '',
+            sortable: false,
+            disableColumnMenu: true,
+            headerAlign: 'center',
+            type: 'string',
+            width: 30,
+            renderCell: (data: { row: Demand }) => {
+                return (
+                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                        <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
+                            <Delete></Delete>
+                        </Button>
+                    </Box>
+                );
+            },
         },
-    },
-] as const;
+    ] as const;
 
 type DemandCategoryModalProps = {
     open: boolean;
@@ -141,8 +142,7 @@ const isValidDemand = (demand: Partial<Demand>) =>
     demand?.quantity &&
     demand.demandCategoryCode &&
     demand?.measurementUnit &&
-    demand?.partnerBpnl &&
-    demand?.supplierLocationBpns;
+    demand?.partnerBpnl;
 
 export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, demands }: DemandCategoryModalProps) => {
     const [temporaryDemand, setTemporaryDemand] = useState<Partial<Demand>>(demand ?? {});
@@ -152,9 +152,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
     const dailyDemands = useMemo(
         () =>
             demands?.filter(
-                (d) =>
-                    d.day && (new Date(d.day).toLocaleDateString() ===
-                    new Date(demand?.day ?? Date.now()).toLocaleDateString())
+                (d) => d.day && new Date(d.day).toLocaleDateString() === new Date(demand?.day ?? Date.now()).toLocaleDateString()
             ),
         [demands, demand?.day]
     );
@@ -219,7 +217,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                     error={formError && !temporaryDemand?.day}
                                     readOnly={false}
                                     value={temporaryDemand?.day}
-                                    onChangeItem={(value) => setTemporaryDemand((curr) => ({ ...curr, day: value }))}
+                                    onChangeItem={(value) => setTemporaryDemand((curr) => ({ ...curr, day: value ?? undefined }))}
                                 />
                             </Grid>
                             <Grid item xs={6}>
@@ -252,7 +250,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                 <Input
                                     label="Quantity*"
                                     type="number"
-                                    placeholder='Enter quantity'
+                                    placeholder="Enter quantity"
                                     value={temporaryDemand.quantity ?? ''}
                                     error={formError && !temporaryDemand?.quantity}
                                     onChange={(e) =>
@@ -297,7 +295,9 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                     getOptionLabel={(option) => option?.name ?? ''}
                                     isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
                                     value={partners?.find((s) => s.bpnl === temporaryDemand.partnerBpnl) ?? null}
-                                    onChange={(_, value) => setTemporaryDemand({ ...temporaryDemand, partnerBpnl: value?.bpnl ?? undefined })}
+                                    onChange={(_, value) =>
+                                        setTemporaryDemand({ ...temporaryDemand, partnerBpnl: value?.bpnl ?? undefined })
+                                    }
                                     renderInput={(params) => (
                                         <Input
                                             {...params}
@@ -315,16 +315,19 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                     getOptionLabel={(option) => option.name ?? ''}
                                     disabled={!temporaryDemand?.partnerBpnl}
                                     isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
-                                    onChange={(_, value) => setTemporaryDemand({ ...temporaryDemand, supplierLocationBpns: value?.bpns ?? undefined })}
-                                    value={partners
-                                        ?.find((s) => s.bpnl === temporaryDemand.partnerBpnl)
-                                        ?.sites.find((s) => s.bpns === temporaryDemand.supplierLocationBpns) ?? null}
+                                    onChange={(_, value) =>
+                                        setTemporaryDemand({ ...temporaryDemand, supplierLocationBpns: value?.bpns ?? undefined })
+                                    }
+                                    value={
+                                        partners
+                                            ?.find((s) => s.bpnl === temporaryDemand.partnerBpnl)
+                                            ?.sites.find((s) => s.bpns === temporaryDemand.supplierLocationBpns) ?? null
+                                    }
                                     renderInput={(params) => (
                                         <Input
                                             {...params}
-                                            label="Supplier Site*"
+                                            label="Supplier Site"
                                             placeholder="Select a Site"
-                                            error={formError && !temporaryDemand?.supplierLocationBpns}
                                         />
                                     )}
                                 />
@@ -335,7 +338,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                             title={`Material Demand ${
                                 temporaryDemand?.day
                                     ? ' on ' +
-                                      new Date(temporaryDemand?.day).toLocaleDateString('en-UK', {
+                                      new Date(temporaryDemand?.day).toLocaleDateString(undefined, {
                                           weekday: 'long',
                                           day: '2-digit',
                                           month: '2-digit',
@@ -343,7 +346,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                       })
                                     : ''
                             }`}
-                            density='standard'
+                            density="standard"
                             getRowId={(row) => row.uuid}
                             columns={createDemandColumns(handleDelete)}
                             rows={dailyDemands ?? []}

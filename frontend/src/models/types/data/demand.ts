@@ -25,12 +25,12 @@ import { DemandCategoryCode } from './demand-category';
 
 export type Demand = {
   uuid?: UUID;
-  ownMaterialNumber: string | null;
+  ownMaterialNumber: string;
   demandLocationBpns: BPNS;
   partnerBpnl: string;
-  supplierLocationBpns: string;
+  supplierLocationBpns?: string;
   quantity: number;
   measurementUnit: UnitOfMeasurementKey;
-  day: Date | null;
+  day: Date;
   demandCategoryCode: DemandCategoryCode;
 }

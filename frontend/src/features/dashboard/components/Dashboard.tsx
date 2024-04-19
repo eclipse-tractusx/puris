@@ -105,16 +105,13 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
             dispatch({ type: 'delivery', payload: d });
             dispatch({ type: 'deliveryDialogOptions', payload: { open: true, mode: 'edit' } });
         };
-    const handleMaterialSelect = useCallback((material: MaterialDescriptor | null) => {
-        dispatch({ type: 'selectedMaterial', payload: material });
-        dispatch({ type: 'selectedSite', payload: null });
-        dispatch({ type: 'selectedPartnerSites', payload: null });
-    }, []);
     const openDemandDialog = (d: Partial<Demand>, mode: 'create' | 'edit') => {
         d.measurementUnit ??= 'unit:piece';
         d.demandCategoryCode ??= DEMAND_CATEGORY[0]?.key;
+        d.ownMaterialNumber = state.selectedMaterial?.ownMaterialNumber ?? '';
         dispatch({ type: 'demand', payload: d });
         dispatch({ type: 'demandDialogOptions', payload: { open: true, mode } });
+    }
     const openProductionDialog = (p: Partial<Production>, mode: 'create' | 'edit') => {
         p.material ??= {
             materialFlag: true,
@@ -253,6 +250,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                 onSave={refreshDemand}
                 demand={state.demand}
                 demands={demands ?? []}
+            />
             <PlannedProductionModal
                 {...state.productionDialogOptions}
                 onClose={() => dispatch({ type: 'productionDialogOptions', payload: { open: false, mode: state.productionDialogOptions.mode } })}
@@ -262,4 +260,4 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
             />
         </>
     );
-};
+}

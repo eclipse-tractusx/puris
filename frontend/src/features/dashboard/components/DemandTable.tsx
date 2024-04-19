@@ -33,7 +33,7 @@ const createDemandRow = (numberOfDays: number, demands: Demand[]) => {
             const date = new Date();
             date.setDate(date.getDate() + index);
             const demand = demands
-                .filter((d) => new Date(`${new Date(d.day ?? Date.now())}Z`).toDateString() === date.toDateString())
+                .filter((d) => new Date(d.day).toDateString() === date.toDateString())
                 .reduce((sum, d) => sum + d.quantity, 0);
             return { ...acc, [index]: demand };
         }, {}),
@@ -99,7 +99,6 @@ export const DemandTable = ({ numberOfDays, stocks, demands, site, readOnly, onD
             case 'demand':
                 onDemandClick({
                     quantity: parseFloat(cellData.value),
-                    ownMaterialNumber: stocks ? stocks[0].material?.materialNumberCustomer : undefined,
                     demandLocationBpns: site.bpns,
                     day: new Date(cellData.colDef.headerName),
                 }, 'edit');
@@ -120,7 +119,6 @@ export const DemandTable = ({ numberOfDays, stocks, demands, site, readOnly, onD
                     onClick={() =>
                         onDemandClick({
                             demandLocationBpns: site.bpns,
-                            ownMaterialNumber: stocks?.length ? stocks[0].material.materialNumberCustomer : null,
                         }, 'create')
                     }
                     sx={{ marginLeft: 'auto' }}
