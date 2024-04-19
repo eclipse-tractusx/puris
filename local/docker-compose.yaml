@@ -41,6 +41,9 @@ services:
       - ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS=stockView/update-reported-material-stocks?ownMaterialNumber=
       - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
       - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
+      - ENDPOINT_DEMAND=demand
+      - ENDPOINT_PRODUCTION=production
+      - ENDPOINT_PRODUCTION_RANGE=production/range
       - IDP_DISABLE=true
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
@@ -182,6 +185,9 @@ services:
       - ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS=stockView/update-reported-material-stocks?ownMaterialNumber=
       - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
       - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
+      - ENDPOINT_DEMAND=demand
+      - ENDPOINT_PRODUCTION=production
+      - ENDPOINT_PRODUCTION_RANGE=production/range
       - IDP_DISABLE=true
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
