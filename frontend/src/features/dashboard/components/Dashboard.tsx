@@ -111,7 +111,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
         d.ownMaterialNumber = state.selectedMaterial?.ownMaterialNumber ?? '';
         dispatch({ type: 'demand', payload: d });
         dispatch({ type: 'demandDialogOptions', payload: { open: true, mode } });
-    }
+    };
     const openProductionDialog = (p: Partial<Production>, mode: 'create' | 'edit') => {
         p.material ??= {
             materialFlag: true,
