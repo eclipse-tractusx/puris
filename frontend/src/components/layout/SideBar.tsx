@@ -46,6 +46,11 @@ type SideBarItemProps = (
 
 const sideBarItems: SideBarItemProps[] = [
     {
+        name: 'Dashboard',
+        icon: HomeIcon,
+        path: '/dashboard',
+    },
+    {
         name: 'Stocks',
         icon: StockIcon,
         path: '/stocks',
@@ -67,11 +72,6 @@ const sideBarItems: SideBarItemProps[] = [
         icon: CatalogIcon,
         path: '/transfers',
         requiredRoles: ['PURIS_ADMIN'],
-    },
-    {
-        name: 'Supplier Dashboard',
-        icon: HomeIcon,
-        path: '/supplierDashboard',
     },
     {
         name: 'Logout',

@@ -51,7 +51,7 @@ export const DeliveryInformationModal = ({ open, onClose, delivery }: DeliveryIn
                     <GridItem label="Origin" value={delivery?.origin?.bpns ?? ''} />
                     <GridItem label="Destination" value={delivery?.destination?.bpns ?? ''} />
                     <GridItem label="ETD" value={delivery?.etd ?? ''} />
-                    <GridItem label="ETA" value={new Date().toLocaleDateString('en-US', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })} />
+                    <GridItem label="ETA" value={new Date().toLocaleDateString(undefined, { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })} />
                     <GridItem label="Delivery Quantity" value={`${delivery?.quantity} pieces`} />
                 </Grid>
                 <Button variant="contained" sx={{ marginTop: '2rem' }} onClick={onClose}>
