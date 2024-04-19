@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
+import { OrderReference } from '@models/types/data/order-reference';
 import { UnitOfMeasurementKey } from '@models/types/data/uom';
 
 export const getUnitOfMeasurement = (unitOfMeasurementKey: UnitOfMeasurementKey) =>
@@ -60,3 +61,7 @@ export const isErrorResponse = (response: unknown): response is ErrorResponse =>
         typeof response[0].message === 'string'
     );
 };
+
+export const isValidOrderReference = (ref: Partial<OrderReference>) =>
+    (ref.customerOrderNumber && ref.customerOrderPositionNumber) ||
+    (!ref.customerOrderNumber && !ref.customerOrderPositionNumber && !ref.supplierOrderNumber);

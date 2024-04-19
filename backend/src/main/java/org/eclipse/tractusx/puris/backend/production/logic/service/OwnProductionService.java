@@ -34,8 +34,6 @@ import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.eclipse.tractusx.puris.backend.production.domain.repository.OwnProductionRepository;
 import org.springframework.stereotype.Service;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Service
 public class OwnProductionService {
     private final OwnProductionRepository repository;
@@ -128,11 +126,10 @@ public class OwnProductionService {
             ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(production.getProductionSiteBpns())) &&
             ((
                 production.getCustomerOrderNumber() != null && 
-                production.getCustomerOrderPositionNumber() != null &&
-                production.getSupplierOrderNumber() != null
+                production.getCustomerOrderPositionNumber() != null
             ) || (
                 production.getCustomerOrderNumber() == null && 
-                production.getCustomerOrderPositionNumber() == null &&
+                production.getCustomerOrderPositionNumber() == null && 
                 production.getSupplierOrderNumber() == null
             ));
     }

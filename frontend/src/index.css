@@ -50,10 +50,30 @@ body {
     border-radius: 0;
 }
 
-.table-container .MuiDataGrid-columnHeader button {
-    display: none;
-}
-
 .MuiDialog-container .MuiPaper-root {
     max-width: unset !important;
+}
+
+input[type='time'] {
+    box-sizing: border-box;
+    padding: 0.875rem;
+    border-radius: 4px;
+    border: 1px solid #c5c7cb;
+    
+}
+
+input[type='time']:hover {
+    border-color: rgba(0, 0, 0, 0.87)
+}
+
+input[type='time']:focus,
+input[type='time']:focus-within,
+input[type='time']:focus-visible,
+input[type='time']:active {
+    outline: 1px solid #2563eb;
+    border-color: #2563eb;
+}
+
+input[type='time'].error {
+    border-color: #f44336;
 }

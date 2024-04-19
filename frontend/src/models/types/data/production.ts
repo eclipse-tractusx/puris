@@ -17,8 +17,19 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-export type Notification = {
-  title: string;
-  description: string;
-  severity: 'success' | 'error';
-};
+import { UUID } from 'crypto';
+import { UnitOfMeasurementKey } from './uom';
+import { MaterialDetails } from './stock';
+import { BPNS } from '../edc/bpn';
+import { Partner } from '../edc/partner';
+import { OrderReference } from './order-reference';
+
+export type Production = {
+  uuid?: UUID;
+  partner: Partner;
+  material: MaterialDetails;
+  quantity: number;
+  measurementUnit: UnitOfMeasurementKey;
+  productionSiteBpns: BPNS;
+  estimatedTimeOfCompletion: Date;
+} & OrderReference;

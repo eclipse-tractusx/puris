@@ -22,8 +22,9 @@ import { UUID } from 'crypto';
 import { BPNA, BPNS } from '../edc/bpn';
 import { Partner } from '../edc/partner';
 import { UnitOfMeasurementKey } from './uom';
+import { OrderReference } from './order-reference';
 
-type MaterialDetails = {
+export type MaterialDetails = {
     uuid?: UUID | null;
     materialFlag: boolean;
     productFlag: boolean;
@@ -40,12 +41,9 @@ export type Stock = {
     measurementUnit: UnitOfMeasurementKey;
     stockLocationBpns: BPNS;
     stockLocationBpna: BPNA;
-    customerOrderNumber: string | null;
-    customerOrderPositionNumber: string | null;
-    supplierOrderNumber: string | null;
     lastUpdatedOn: string;
     partner: Partner;
     isBlocked: boolean;
-};
+} & OrderReference;
 
 export type StockType = 'material' | 'product';

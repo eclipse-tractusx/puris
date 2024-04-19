@@ -17,7 +17,6 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-
 import { usePartnerStocks } from '@features/stock-view/hooks/usePartnerStocks';
 import { useStocks } from '@features/stock-view/hooks/useStocks';
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
@@ -30,13 +29,18 @@ import { Box, Button, Stack, Typography, capitalize } from '@mui/material';
 import { Delivery } from '@models/types/data/delivery';
 import { DeliveryInformationModal } from './DeliveryInformationModal';
 import { getPartnerType } from '../util/helpers';
+import { LoadingButton } from '@catena-x/portal-shared-components';
+import { Refresh } from '@mui/icons-material';
 import { Demand } from '@models/types/data/demand';
 import { DemandCategoryModal } from './DemandCategoryModal';
 import { DEMAND_CATEGORY } from '@models/constants/demand-category';
-import { LoadingButton } from '@catena-x/portal-shared-components';
-import { Refresh } from '@mui/icons-material';
 import { useDemand } from '../hooks/useDemand';
 import { useReportedDemand } from '../hooks/useReportedDemand';
+import { Production } from '@models/types/data/production';
+import { PlannedProductionModal } from './PlannedProductionModal';
+import { useProduction } from '../hooks/useProduction';
+import { useReportedProduction } from '../hooks/useReportedProduction';
+
 import { refreshPartnerStocks } from '@services/stocks-service';
 
 const NUMBER_OF_DAYS = 28;
@@ -50,6 +54,7 @@ type DashboardState = {
     productionDialogOptions: { open: boolean; mode: 'create' | 'edit' };
     delivery: Delivery | null;
     demand: Partial<Demand> | null;
+    production: Partial<Production> | null;
     isRefreshing: boolean;
 };
 
@@ -71,6 +76,7 @@ const initialState: DashboardState = {
     productionDialogOptions: { open: false, mode: 'edit' },
     delivery: null,
     demand: null,
+    production: null,
     isRefreshing: false,
 };
 
@@ -83,6 +89,11 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
     );
     const { demands, refreshDemand } = useDemand(state.selectedMaterial?.ownMaterialNumber ?? null, state.selectedSite?.bpns ?? null);
     const { reportedDemands } = useReportedDemand(state.selectedMaterial?.ownMaterialNumber ?? null);
+    const { productions, refreshProduction } = useProduction(
+        state.selectedMaterial?.ownMaterialNumber ?? null,
+        state.selectedSite?.bpns ?? null
+    );
+    const { reportedProductions } = useReportedProduction(state.selectedMaterial?.ownMaterialNumber ?? null);
 
     const handleRefresh = () => {
         dispatch({ type: 'isRefreshing', payload: true });
@@ -104,7 +115,24 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
         d.demandCategoryCode ??= DEMAND_CATEGORY[0]?.key;
         dispatch({ type: 'demand', payload: d });
         dispatch({ type: 'demandDialogOptions', payload: { open: true, mode } });
+    const openProductionDialog = (p: Partial<Production>, mode: 'create' | 'edit') => {
+        p.material ??= {
+            materialFlag: true,
+            productFlag: false,
+            materialNumberSupplier: state.selectedMaterial?.ownMaterialNumber ?? '',
+            materialNumberCustomer: null,
+            materialNumberCx: null,
+            name: state.selectedMaterial?.description ?? '',
+        };
+        p.measurementUnit ??= 'unit:piece';
+        dispatch({ type: 'production', payload: p });
+        dispatch({ type: 'productionDialogOptions', payload: { open: true, mode } });
     };
+    const handleMaterialSelect = useCallback((material: MaterialDescriptor | null) => {
+        dispatch({ type: 'selectedMaterial', payload: material });
+        dispatch({ type: 'selectedSite', payload: null });
+        dispatch({ type: 'selectedPartnerSites', payload: null });
+    }, []);
     return (
         <>
             <Stack spacing={3} alignItems={'center'} useFlexGap>
@@ -125,10 +153,13 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                     {state.selectedSite && state.selectedMaterial ? (
                         type === 'supplier' ? (
                             <ProductionTable
+                                readOnly={false}
                                 numberOfDays={NUMBER_OF_DAYS}
                                 stocks={stocks ?? []}
                                 site={state.selectedSite}
                                 onDeliveryClick={openDeliveryDialog}
+                                onProductionClick={openProductionDialog}
+                                productions={productions ?? []}
                             />
                         ) : (
                             <DemandTable
@@ -193,6 +224,9 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                             stocks={partnerStocks ?? []}
                                             site={ps}
                                             onDeliveryClick={openDeliveryDialog}
+                                            onProductionClick={openProductionDialog}
+                                            productions={reportedProductions?.filter((p) => p.productionSiteBpns === ps.bpns) ?? []}
+                                            readOnly
                                         />
                                     )
                                 )
@@ -219,6 +253,12 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                 onSave={refreshDemand}
                 demand={state.demand}
                 demands={demands ?? []}
+            <PlannedProductionModal
+                {...state.productionDialogOptions}
+                onClose={() => dispatch({ type: 'productionDialogOptions', payload: { open: false, mode: state.productionDialogOptions.mode } })}
+                onSave={refreshProduction}
+                production={state.production}
+                productions={state.productionDialogOptions.mode === 'edit' ? productions ?? [] : []}
             />
         </>
     );
