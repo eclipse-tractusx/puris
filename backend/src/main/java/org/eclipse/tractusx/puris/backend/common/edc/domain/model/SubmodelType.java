@@ -22,6 +22,6 @@ package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
 public enum SubmodelType {
     DTR,
-    ITEMSTOCK,
+    ITEM_STOCK,
     PART_TYPE_INFORMATION;
 }

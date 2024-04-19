@@ -32,6 +32,8 @@ import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.Directio
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -181,7 +183,7 @@ public class DtrRequestBodyBuilder {
         return createReferenceObject(variablesService.getOwnBpnl());
     }
 
-    private JsonNode createItemStockSubmodelObject(String materialId, DirectionCharacteristic direction) {
+    private JsonNode createGenericSubmodelObject(String type, String href, String assetId) {
         var itemStockRequestSubmodelObject = objectMapper.createObjectNode();
 
         itemStockRequestSubmodelObject.put("id", UUID.randomUUID().toString());
@@ -193,7 +195,7 @@ public class DtrRequestBodyBuilder {
         var keyObject = objectMapper.createObjectNode();
         keysArray.add(keyObject);
         keyObject.put("type", "GlobalReference");
-        keyObject.put("value", "urn:samm:io.catenax.item_stock:2.0.0#ItemStock");
+        keyObject.put("value", type);
 
         var endpointsArray = objectMapper.createArrayNode();
         itemStockRequestSubmodelObject.set("endpoints", endpointsArray);
@@ -202,11 +204,6 @@ public class DtrRequestBodyBuilder {
         submodel3EndpointObject.put("interface", "SUBMODEL-3.0");
         var protocolInformationObject = objectMapper.createObjectNode();
         submodel3EndpointObject.set("protocolInformation", protocolInformationObject);
-        String href = variablesService.getEdcDataplanePublicUrl();
-        if (!href.endsWith("/")) {
-            href += "/";
-        }
-        href += materialId + "/" + direction + "/";
         protocolInformationObject.put("href", href);
         protocolInformationObject.put("endpointProtocol", "HTTP");
         var endpointProtocolVersionArray = objectMapper.createArrayNode();
@@ -214,7 +211,7 @@ public class DtrRequestBodyBuilder {
         endpointProtocolVersionArray.add("1.1");
         protocolInformationObject.put("subprotocol", "DSP");
         protocolInformationObject.put("subprotocolBodyEncoding", "plain");
-        protocolInformationObject.put("subprotocolBody", "id=" + variablesService.getItemStockSubmodelApiAssetId() + ";dspEndpoint=" + variablesService.getEdcProtocolUrl());
+        protocolInformationObject.put("subprotocolBody", "id=" + assetId + ";dspEndpoint=" + variablesService.getEdcProtocolUrl());
         var securityAttributesArray = objectMapper.createArrayNode();
         protocolInformationObject.set("securityAttributes", securityAttributesArray);
         var securityObject = objectMapper.createObjectNode();
@@ -224,48 +221,19 @@ public class DtrRequestBodyBuilder {
         securityObject.put("value", "NONE");
         return itemStockRequestSubmodelObject;
     }
-    private JsonNode createPartTypeSubmodelObject(String materialId) {
-        var partTypeSubmodelObject = objectMapper.createObjectNode();
 
-        partTypeSubmodelObject.put("id", UUID.randomUUID().toString());
-        var semanticIdObject = objectMapper.createObjectNode();
-        partTypeSubmodelObject.set("semanticId", semanticIdObject);
-        semanticIdObject.put("type", "ExternalReference");
-        var keysArray = objectMapper.createArrayNode();
-        semanticIdObject.set("keys", keysArray);
-        var keyObject = objectMapper.createObjectNode();
-        keysArray.add(keyObject);
-        keyObject.put("type", "GlobalReference");
-        keyObject.put("value", "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation");
-
-        var endpointsArray = objectMapper.createArrayNode();
-        partTypeSubmodelObject.set("endpoints", endpointsArray);
-        var submodel3EndpointObject = objectMapper.createObjectNode();
-        endpointsArray.add(submodel3EndpointObject);
-        submodel3EndpointObject.put("interface", "SUBMODEL-3.0");
-        var protocolInformationObject = objectMapper.createObjectNode();
-        submodel3EndpointObject.set("protocolInformation", protocolInformationObject);
+    private JsonNode createItemStockSubmodelObject(String materialId, DirectionCharacteristic direction) {
         String href = variablesService.getEdcDataplanePublicUrl();
-        if (!href.endsWith("/")) {
-            href += "/";
-        }
-        href += materialId;
-        protocolInformationObject.put("href", href);
-        protocolInformationObject.put("endpointProtocol", "HTTP");
-        var endpointProtocolVersionArray = objectMapper.createArrayNode();
-        protocolInformationObject.set("endpointProtocolVersion", endpointProtocolVersionArray);
-        endpointProtocolVersionArray.add("1.1");
-        protocolInformationObject.put("subprotocol", "DSP");
-        protocolInformationObject.put("subprotocolBodyEncoding", "plain");
-        protocolInformationObject.put("subprotocolBody", "id=" + variablesService.getPartTypeSubmodelApiAssetId() + ";dspEndpoint=" + variablesService.getEdcProtocolUrl());
-        var securityAttributesArray = objectMapper.createArrayNode();
-        protocolInformationObject.set("securityAttributes", securityAttributesArray);
-        var securityObject = objectMapper.createObjectNode();
-        securityAttributesArray.add(securityObject);
-        securityObject.put("type", "NONE");
-        securityObject.put("key", "NONE");
-        securityObject.put("value", "NONE");
-        return partTypeSubmodelObject;
+        href = href.endsWith("/") ? href : href + "/";
+        href += materialId + "/" + direction + "/";
+        return createGenericSubmodelObject("urn:samm:io.catenax.item_stock:2.0.0#ItemStock", href, variablesService.getItemStockSubmodelApiAssetId());
+    }
+
+    private JsonNode createPartTypeSubmodelObject(String materialId) {
+        String href = variablesService.getEdcDataplanePublicUrl();
+        href = href.endsWith("/") ? href : href + "/";
+        href += Base64.getEncoder().encodeToString(materialId.getBytes(StandardCharsets.UTF_8));
+        return createGenericSubmodelObject("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", href, variablesService.getPartTypeSubmodelApiAssetId());
     }
 
 }

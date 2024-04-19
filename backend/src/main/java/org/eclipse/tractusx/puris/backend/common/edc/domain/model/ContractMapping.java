@@ -20,11 +20,11 @@
 
 package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -38,9 +38,9 @@ public abstract class ContractMapping {
 
     @Id
     protected String partnerBpnl;
-    protected String contractId;
-    protected String assetId;
-    protected String partnerDspUrl;
+
+    @ElementCollection
+    protected Map<String, String> assetToContractMapping = new HashMap<>();
 
 
 }
