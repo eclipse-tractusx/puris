@@ -133,7 +133,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                 if (retries < initialRetries) {
                     Thread.sleep(300);
                 }
-                String partnerCXId = edcAdapterService.getPartTypeInformationFromPartner(materialPartnerRelation);
+                String partnerCXId = edcAdapterService.getCxIdFromPartTypeInformation(materialPartnerRelation);
                 if (partnerCXId != null && PatternStore.URN_OR_UUID_PATTERN.matcher(partnerCXId).matches()) {
 
                     materialPartnerRelation.setPartnerCXNumber(partnerCXId);

@@ -21,7 +21,15 @@
 package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
 public enum SubmodelType {
-    DTR,
-    ITEM_STOCK,
-    PART_TYPE_INFORMATION;
+    DTR("none", "none"),
+    ITEM_STOCK("urn:samm:io.catenax.item_stock:2.0.0#ItemStock", "$value"),
+    PART_TYPE_INFORMATION("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value");
+
+    public final String TYPE_URN;
+    public final String REPRESENTATION;
+
+    SubmodelType(String TYPE_URN, String REPRESENTATION) {
+        this.TYPE_URN = TYPE_URN;
+        this.REPRESENTATION = REPRESENTATION;
+    }
 }

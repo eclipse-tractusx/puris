@@ -183,7 +183,7 @@ public class DtrRequestBodyBuilder {
         return createReferenceObject(variablesService.getOwnBpnl());
     }
 
-    private JsonNode createGenericSubmodelObject(String type, String href, String assetId) {
+    private JsonNode createSubmodelObject(String type, String href, String assetId) {
         var itemStockRequestSubmodelObject = objectMapper.createObjectNode();
 
         itemStockRequestSubmodelObject.put("id", UUID.randomUUID().toString());
@@ -226,14 +226,14 @@ public class DtrRequestBodyBuilder {
         String href = variablesService.getEdcDataplanePublicUrl();
         href = href.endsWith("/") ? href : href + "/";
         href += materialId + "/" + direction + "/";
-        return createGenericSubmodelObject("urn:samm:io.catenax.item_stock:2.0.0#ItemStock", href, variablesService.getItemStockSubmodelApiAssetId());
+        return createSubmodelObject("urn:samm:io.catenax.item_stock:2.0.0#ItemStock", href, variablesService.getItemStockSubmodelApiAssetId());
     }
 
     private JsonNode createPartTypeSubmodelObject(String materialId) {
         String href = variablesService.getEdcDataplanePublicUrl();
         href = href.endsWith("/") ? href : href + "/";
         href += Base64.getEncoder().encodeToString(materialId.getBytes(StandardCharsets.UTF_8));
-        return createGenericSubmodelObject("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", href, variablesService.getPartTypeSubmodelApiAssetId());
+        return createSubmodelObject("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", href, variablesService.getPartTypeSubmodelApiAssetId());
     }
 
 }
