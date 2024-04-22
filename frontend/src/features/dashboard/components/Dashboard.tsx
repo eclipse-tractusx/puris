@@ -29,12 +29,18 @@ import { Box, Button, Stack, Typography, capitalize } from '@mui/material';
 import { Delivery } from '@models/types/data/delivery';
 import { DeliveryInformationModal } from './DeliveryInformationModal';
 import { getPartnerType } from '../util/helpers';
+import { LoadingButton } from '@catena-x/portal-shared-components';
+import { Refresh } from '@mui/icons-material';
+import { Demand } from '@models/types/data/demand';
+import { DemandCategoryModal } from './DemandCategoryModal';
+import { DEMAND_CATEGORY } from '@models/constants/demand-category';
+import { useDemand } from '../hooks/useDemand';
+import { useReportedDemand } from '../hooks/useReportedDemand';
 import { Production } from '@models/types/data/production';
 import { PlannedProductionModal } from './PlannedProductionModal';
 import { useProduction } from '../hooks/useProduction';
 import { useReportedProduction } from '../hooks/useReportedProduction';
-import { LoadingButton } from '@catena-x/portal-shared-components';
-import { Refresh } from '@mui/icons-material';
+
 import { refreshPartnerStocks } from '@services/stocks-service';
 
 const NUMBER_OF_DAYS = 28;
@@ -44,8 +50,10 @@ type DashboardState = {
     selectedSite: Site | null;
     selectedPartnerSites: Site[] | null;
     deliveryDialogOptions: { open: boolean; mode: 'create' | 'edit' };
+    demandDialogOptions: { open: boolean; mode: 'create' | 'edit' };
     productionDialogOptions: { open: boolean; mode: 'create' | 'edit' };
     delivery: Delivery | null;
+    demand: Partial<Demand> | null;
     production: Partial<Production> | null;
     isRefreshing: boolean;
 };
@@ -64,8 +72,10 @@ const initialState: DashboardState = {
     selectedSite: null,
     selectedPartnerSites: null,
     deliveryDialogOptions: { open: false, mode: 'create' },
+    demandDialogOptions: { open: false, mode: 'edit' },
     productionDialogOptions: { open: false, mode: 'edit' },
     delivery: null,
+    demand: null,
     production: null,
     isRefreshing: false,
 };
@@ -77,6 +87,8 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
         type === 'customer' ? 'material' : 'product',
         state.selectedMaterial?.ownMaterialNumber ?? null
     );
+    const { demands, refreshDemand } = useDemand(state.selectedMaterial?.ownMaterialNumber ?? null, state.selectedSite?.bpns ?? null);
+    const { reportedDemands } = useReportedDemand(state.selectedMaterial?.ownMaterialNumber ?? null);
     const { productions, refreshProduction } = useProduction(
         state.selectedMaterial?.ownMaterialNumber ?? null,
         state.selectedSite?.bpns ?? null
@@ -90,8 +102,15 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
             .finally(() => dispatch({ type: 'isRefreshing', payload: false }));
     };
     const openDeliveryDialog = (d: Partial<Delivery>) => {
-        dispatch({ type: 'delivery', payload: d });
-        dispatch({ type: 'deliveryDialogOptions', payload: { open: true, mode: 'edit' } });
+            dispatch({ type: 'delivery', payload: d });
+            dispatch({ type: 'deliveryDialogOptions', payload: { open: true, mode: 'edit' } });
+        };
+    const openDemandDialog = (d: Partial<Demand>, mode: 'create' | 'edit') => {
+        d.measurementUnit ??= 'unit:piece';
+        d.demandCategoryCode ??= DEMAND_CATEGORY[0]?.key;
+        d.ownMaterialNumber = state.selectedMaterial?.ownMaterialNumber ?? '';
+        dispatch({ type: 'demand', payload: d });
+        dispatch({ type: 'demandDialogOptions', payload: { open: true, mode } });
     };
     const openProductionDialog = (p: Partial<Production>, mode: 'create' | 'edit') => {
         p.material ??= {
@@ -145,6 +164,8 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                 stocks={stocks}
                                 site={state.selectedSite}
                                 onDeliveryClick={openDeliveryDialog}
+                                onDemandClick={openDemandDialog}
+                                demands={demands}
                             />
                         )
                     ) : (
@@ -189,6 +210,9 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                             stocks={partnerStocks}
                                             site={ps}
                                             onDeliveryClick={openDeliveryDialog}
+                                            onDemandClick={openDemandDialog}
+                                            demands={reportedDemands?.filter((d) => d.demandLocationBpns === ps.bpns) ?? []}
+                                            readOnly
                                         />
                                     ) : (
                                         <ProductionTable
@@ -219,6 +243,14 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                 }
                 delivery={state.delivery}
             />
+            <DemandCategoryModal
+                open={state.demandDialogOptions.open}
+                mode={state.demandDialogOptions.mode}
+                onClose={() => dispatch({ type: 'demandDialogOptions', payload: { open: false, mode: state.demandDialogOptions.mode } })}
+                onSave={refreshDemand}
+                demand={state.demand}
+                demands={demands ?? []}
+            />
             <PlannedProductionModal
                 {...state.productionDialogOptions}
                 onClose={() => dispatch({ type: 'productionDialogOptions', payload: { open: false, mode: state.productionDialogOptions.mode } })}
@@ -228,4 +260,4 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
             />
         </>
     );
-};
+}

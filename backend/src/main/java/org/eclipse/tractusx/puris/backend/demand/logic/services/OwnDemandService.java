@@ -44,9 +44,8 @@ public class OwnDemandService extends DemandService<OwnDemand, OwnDemandReposito
             demand.getDay() != null && 
             demand.getDemandCategoryCode() != null &&
             demand.getDemandLocationBpns() != null &&
-            demand.getSupplierLocationBpns() != null &&
             !demand.getPartner().equals(ownPartnerEntity) &&
             ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns())) &&
-            demand.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns()));
+            (demand.getSupplierLocationBpns() == null || demand.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns())));
     }
 }

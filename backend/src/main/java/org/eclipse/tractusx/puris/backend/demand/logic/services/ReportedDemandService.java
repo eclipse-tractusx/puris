@@ -45,9 +45,8 @@ public class ReportedDemandService extends DemandService<ReportedDemand, Reporte
             demand.getDay() != null && 
             demand.getDemandCategoryCode() != null &&
             demand.getDemandLocationBpns() != null &&
-            demand.getSupplierLocationBpns() != null &&
             !demand.getPartner().equals(ownPartnerEntity) &&
-            ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns())) &&
+            (demand.getSupplierLocationBpns() == null || ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns()))) &&
             demand.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns()));
     }
 }
