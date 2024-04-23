@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
@@ -32,6 +33,8 @@ import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.Directio
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -131,6 +134,7 @@ public class DtrRequestBodyBuilder {
 
         var itemStockRequestSubmodelObject = createItemStockSubmodelObject(material.getMaterialNumberCx(), DirectionCharacteristic.OUTBOUND);
         submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
+        submodelDescriptorsArray.add(createPartTypeSubmodelObject(material.getOwnMaterialNumber()));
 
         log.debug("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
         return body;
@@ -180,7 +184,7 @@ public class DtrRequestBodyBuilder {
         return createReferenceObject(variablesService.getOwnBpnl());
     }
 
-    private JsonNode createItemStockSubmodelObject(String materialId, DirectionCharacteristic direction) {
+    private JsonNode createSubmodelObject(String semanticId, String href, String assetId) {
         var itemStockRequestSubmodelObject = objectMapper.createObjectNode();
 
         itemStockRequestSubmodelObject.put("id", UUID.randomUUID().toString());
@@ -192,7 +196,7 @@ public class DtrRequestBodyBuilder {
         var keyObject = objectMapper.createObjectNode();
         keysArray.add(keyObject);
         keyObject.put("type", "GlobalReference");
-        keyObject.put("value", "urn:samm:io.catenax.item_stock:2.0.0#ItemStock");
+        keyObject.put("value", semanticId);
 
         var endpointsArray = objectMapper.createArrayNode();
         itemStockRequestSubmodelObject.set("endpoints", endpointsArray);
@@ -201,11 +205,6 @@ public class DtrRequestBodyBuilder {
         submodel3EndpointObject.put("interface", "SUBMODEL-3.0");
         var protocolInformationObject = objectMapper.createObjectNode();
         submodel3EndpointObject.set("protocolInformation", protocolInformationObject);
-        String href = variablesService.getEdcDataplanePublicUrl();
-        if (!href.endsWith("/")) {
-            href += "/";
-        }
-        href += materialId + "/" + direction + "/";
         protocolInformationObject.put("href", href);
         protocolInformationObject.put("endpointProtocol", "HTTP");
         var endpointProtocolVersionArray = objectMapper.createArrayNode();
@@ -213,7 +212,7 @@ public class DtrRequestBodyBuilder {
         endpointProtocolVersionArray.add("1.1");
         protocolInformationObject.put("subprotocol", "DSP");
         protocolInformationObject.put("subprotocolBodyEncoding", "plain");
-        protocolInformationObject.put("subprotocolBody", "id=" + variablesService.getItemStockSubmodelApiAssetId() + ";dspEndpoint=" + variablesService.getEdcProtocolUrl());
+        protocolInformationObject.put("subprotocolBody", "id=" + assetId + ";dspEndpoint=" + variablesService.getEdcProtocolUrl());
         var securityAttributesArray = objectMapper.createArrayNode();
         protocolInformationObject.set("securityAttributes", securityAttributesArray);
         var securityObject = objectMapper.createObjectNode();
@@ -224,5 +223,18 @@ public class DtrRequestBodyBuilder {
         return itemStockRequestSubmodelObject;
     }
 
+    private JsonNode createItemStockSubmodelObject(String materialId, DirectionCharacteristic direction) {
+        String href = variablesService.getEdcDataplanePublicUrl();
+        href = href.endsWith("/") ? href : href + "/";
+        href += materialId + "/" + direction + "/";
+        return createSubmodelObject(SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID, href, variablesService.getItemStockSubmodelApiAssetId());
+    }
+
+    private JsonNode createPartTypeSubmodelObject(String materialId) {
+        String href = variablesService.getEdcDataplanePublicUrl();
+        href = href.endsWith("/") ? href : href + "/";
+        href += Base64.getEncoder().encodeToString(materialId.getBytes(StandardCharsets.UTF_8));
+        return createSubmodelObject(SubmodelType.PART_TYPE_INFORMATION.URN_SEMANTIC_ID, href, variablesService.getPartTypeSubmodelApiAssetId());
+    }
 
 }

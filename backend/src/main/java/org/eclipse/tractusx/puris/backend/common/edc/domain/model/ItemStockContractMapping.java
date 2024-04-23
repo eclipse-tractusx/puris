@@ -18,10 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.common.edc.domain.repository;
+package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.EdcContractMapping;
-import org.springframework.data.jpa.repository.JpaRepository;
+import jakarta.persistence.Entity;
+import lombok.ToString;
 
-public interface EdcContractMappingRepository extends JpaRepository<EdcContractMapping, String> {
+@Entity
+@ToString(callSuper = true)
+public class ItemStockContractMapping extends ContractMapping {
 }

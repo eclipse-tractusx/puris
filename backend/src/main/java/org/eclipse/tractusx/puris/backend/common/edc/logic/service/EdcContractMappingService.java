@@ -20,40 +20,93 @@
 
 package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.EdcContractMapping;
-import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.EdcContractMappingRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.ContractMapping;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DtrContractMapping;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DtrContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.GeneralContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ItemStockContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.PartTypeContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Constructor;
+
 @Service
+@Slf4j
 public class EdcContractMappingService {
 
     @Autowired
-    private EdcContractMappingRepository repository;
+    private DtrContractMappingRepository dtrContractMappingRepository;
 
-    public EdcContractMapping find(String partnerBpnl) {
-        return repository.findById(partnerBpnl).orElse(null);
+    @Autowired
+    private ItemStockContractMappingRepository itemStockContractMappingRepository;
+
+    @Autowired
+    private PartTypeContractMappingRepository partTypeContractMappingRepository;
+
+    private final String SEPARATOR = "\n@\n";
+
+    public String getContractId(Partner partner, SubmodelType type, String assetId, String dspUrl) {
+        ContractMapping contractMapping = getOrCreateContractMapping(partner, type);
+        return contractMapping.getAssetToContractMapping().get(assetId + SEPARATOR + dspUrl);
     }
 
-    public EdcContractMapping create(EdcContractMapping edcContractMapping) {
-        if (repository.findById(edcContractMapping.getPartnerBpnl()).isPresent()) {
-            return null;
+    public void putContractId(Partner partner, SubmodelType type, String assetId, String dspUrl, String contractId) {
+        ContractMapping contractMapping = getOrCreateContractMapping(partner, type);
+        contractMapping.getAssetToContractMapping().put(assetId + SEPARATOR + dspUrl, contractId);
+        var repository = getContractMappingRepository(type);
+        repository.checkedSave(contractMapping);
+    }
+
+    public void putDtrContractData(Partner partner, String dtrAssetId, String dtrContractId) {
+        ContractMapping contractMapping = getOrCreateContractMapping(partner, SubmodelType.DTR);
+        contractMapping.getAssetToContractMapping().put("dtrContractId", dtrContractId);
+        contractMapping.getAssetToContractMapping().put("dtrAssetId", dtrAssetId);
+        dtrContractMappingRepository.save((DtrContractMapping) contractMapping);
+    }
+
+    /**
+     * Returns a String [] containing the assetId at index 0 and
+     * the contractId at index 1.
+     *
+     * @param partner the Partner
+     * @return  a String array as described above
+     */
+    public String [] getDtrAssetAndContractId(Partner partner) {
+        ContractMapping contractMapping = getOrCreateContractMapping(partner, SubmodelType.DTR);
+        String assetId = contractMapping.getAssetToContractMapping().get("dtrAssetId");
+        String contractId = contractMapping.getAssetToContractMapping().get("dtrContractId");
+        return new String[] {assetId, contractId};
+    }
+
+
+    private ContractMapping getOrCreateContractMapping(Partner partner, SubmodelType type) {
+        GeneralContractMappingRepository<? extends ContractMapping> repository = getContractMappingRepository(type);
+        ContractMapping entity = repository.findById(partner.getBpnl()).orElse(null);
+        if (entity == null) {
+            try {
+                Constructor<? extends ContractMapping> constructor = repository.getType().getConstructor();
+                entity = constructor.newInstance();
+                entity.setPartnerBpnl(partner.getBpnl());
+            } catch (Exception e) {
+                log.error("Error in GetOrCreateContractMapping for partner " + partner.getBpnl() +
+                    " and type " + type, e);
+                return null;
+            }
         }
-        return repository.save(edcContractMapping);
+        return entity;
     }
 
-    public EdcContractMapping update(EdcContractMapping edcContractMapping) {
-        if (!repository.findById(edcContractMapping.getPartnerBpnl()).isPresent()) {
-            return null;
-        }
-        return repository.save(edcContractMapping);
+    private GeneralContractMappingRepository<? extends ContractMapping> getContractMappingRepository(SubmodelType type) {
+        GeneralContractMappingRepository<? extends ContractMapping> repository = switch (type) {
+            case DTR -> dtrContractMappingRepository;
+            case ITEM_STOCK -> itemStockContractMappingRepository;
+            case PART_TYPE_INFORMATION -> partTypeContractMappingRepository;
+        };
+        return repository;
     }
 
-    public void delete (String partnerBpnl) {
-        repository.deleteById(partnerBpnl);
-    }
-
-    public void delete(EdcContractMapping edcContractMapping) {
-        delete(edcContractMapping.getPartnerBpnl());
-    }
 }
