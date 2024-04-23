@@ -25,11 +25,11 @@ public enum SubmodelType {
     ITEM_STOCK("urn:samm:io.catenax.item_stock:2.0.0#ItemStock", "$value"),
     PART_TYPE_INFORMATION("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value");
 
-    public final String TYPE_URN;
+    public final String URN_SEMANTIC_ID;
     public final String REPRESENTATION;
 
-    SubmodelType(String TYPE_URN, String REPRESENTATION) {
-        this.TYPE_URN = TYPE_URN;
+    SubmodelType(String URN_SEMANTIC_ID, String REPRESENTATION) {
+        this.URN_SEMANTIC_ID = URN_SEMANTIC_ID;
         this.REPRESENTATION = REPRESENTATION;
     }
 }

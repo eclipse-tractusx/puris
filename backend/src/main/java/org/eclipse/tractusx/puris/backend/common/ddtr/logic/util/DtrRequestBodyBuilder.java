@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
@@ -183,7 +184,7 @@ public class DtrRequestBodyBuilder {
         return createReferenceObject(variablesService.getOwnBpnl());
     }
 
-    private JsonNode createSubmodelObject(String type, String href, String assetId) {
+    private JsonNode createSubmodelObject(String semanticId, String href, String assetId) {
         var itemStockRequestSubmodelObject = objectMapper.createObjectNode();
 
         itemStockRequestSubmodelObject.put("id", UUID.randomUUID().toString());
@@ -195,7 +196,7 @@ public class DtrRequestBodyBuilder {
         var keyObject = objectMapper.createObjectNode();
         keysArray.add(keyObject);
         keyObject.put("type", "GlobalReference");
-        keyObject.put("value", type);
+        keyObject.put("value", semanticId);
 
         var endpointsArray = objectMapper.createArrayNode();
         itemStockRequestSubmodelObject.set("endpoints", endpointsArray);
@@ -226,14 +227,14 @@ public class DtrRequestBodyBuilder {
         String href = variablesService.getEdcDataplanePublicUrl();
         href = href.endsWith("/") ? href : href + "/";
         href += materialId + "/" + direction + "/";
-        return createSubmodelObject("urn:samm:io.catenax.item_stock:2.0.0#ItemStock", href, variablesService.getItemStockSubmodelApiAssetId());
+        return createSubmodelObject(SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID, href, variablesService.getItemStockSubmodelApiAssetId());
     }
 
     private JsonNode createPartTypeSubmodelObject(String materialId) {
         String href = variablesService.getEdcDataplanePublicUrl();
         href = href.endsWith("/") ? href : href + "/";
         href += Base64.getEncoder().encodeToString(materialId.getBytes(StandardCharsets.UTF_8));
-        return createSubmodelObject("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", href, variablesService.getPartTypeSubmodelApiAssetId());
+        return createSubmodelObject(SubmodelType.PART_TYPE_INFORMATION.URN_SEMANTIC_ID, href, variablesService.getPartTypeSubmodelApiAssetId());
     }
 
 }

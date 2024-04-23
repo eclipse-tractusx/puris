@@ -651,15 +651,15 @@ public class EdcAdapterService {
     private record SubmodelData(String assetId, String dspUrl, String href) {
     }
 
-    private SubmodelData fetchSubmodelData(MaterialPartnerRelation mpr, String globalReference, String manufacturerPartId, String manufacturerId) {
+    private SubmodelData fetchSubmodelData(MaterialPartnerRelation mpr, String semanticId, String manufacturerPartId, String manufacturerId) {
         JsonNode submodelDescriptors = getAasSubmodelDescriptors(manufacturerPartId, manufacturerId, mpr, 1);
         for (var submodelDescriptor : submodelDescriptors) {
-            var semanticId = submodelDescriptor.get("semanticId");
-            var keys = semanticId.get("keys");
+            var semanticIdObject = submodelDescriptor.get("semanticId");
+            var keys = semanticIdObject.get("keys");
             for (var key : keys) {
                 var keyType = key.get("type").asText();
                 var keyValue = key.get("value").asText();
-                if ("GlobalReference".equals(keyType) && globalReference.equals(keyValue)) {
+                if ("GlobalReference".equals(keyType) && semanticId.equals(keyValue)) {
                     var endpoints = submodelDescriptor.get("endpoints");
                     var endpoint = endpoints.get(0);
                     var interfaceObject = endpoint.get("interface").asText();
@@ -815,7 +815,7 @@ public class EdcAdapterService {
                 if (idString == null) {
                     continue;
                 }
-                if (type.TYPE_URN.equals(idString) && submodelData.assetId.equals(entry.get("edc:id").asText())) {
+                if (type.URN_SEMANTIC_ID.equals(idString) && submodelData.assetId.equals(entry.get("edc:id").asText())) {
                     if (targetCatalogEntry == null) {
                         if (variablesService.isUseFrameworkPolicy()) {
                             if (testFrameworkAgreementConstraint(entry)) {
