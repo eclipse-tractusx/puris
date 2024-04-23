@@ -1,0 +1,14 @@
+{
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://www.w3.org/2018/credentials/examples/v1"
+    ],
+    "id": "https://exapmle.com/test-vp",
+    "holder": "%s",
+    "type": [
+        "VerifiablePresentation"
+    ],
+    "verifiableCredential": [
+        %s
+]
+}
