@@ -21,7 +21,6 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,8 +66,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     @Autowired
     private ExecutorService executorService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
 
     /**
      * Contains all MaterialPartnerRelations, for which there are
@@ -113,61 +110,56 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     private class PartTypeInformationRetrievalTask implements Callable<Boolean> {
         final MaterialPartnerRelation materialPartnerRelation;
         int retries;
+        final int initialRetries;
+        boolean done = false;
 
         public PartTypeInformationRetrievalTask(MaterialPartnerRelation materialPartnerRelation, int retries) {
             this.materialPartnerRelation = materialPartnerRelation;
             this.retries = retries;
+            this.initialRetries = retries;
             currentPartTypeFetches.add(materialPartnerRelation);
         }
 
         @Override
         public Boolean call() {
             try {
-                Thread.sleep(300);
                 if (retries < 0) {
                     log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
                         " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed");
                     currentPartTypeFetches.remove(materialPartnerRelation);
+                    done = true;
                     return false;
                 }
-                String[] data = edcAdapterService.getContractForPartTypeInfoSubmodel(materialPartnerRelation.getPartner());
-                if (data != null) {
-                    String authKey = data[0];
-                    String authCode = data[1];
-                    String endpoint = data[2];
-                    var response = edcAdapterService.getProxyPullRequest(endpoint, authKey, authCode,
-                        new String[]{materialPartnerRelation.getPartnerMaterialNumber(), "$value"});
-                    if (response != null && response.isSuccessful()) {
-                        var body = objectMapper.readTree(response.body().string());
-                        var cxId = body.get("catenaXId").asText();
-                        if (cxId != null && PatternStore.URN_OR_UUID_PATTERN.matcher(cxId).matches()) {
-                            materialPartnerRelation.setPartnerCXNumber(cxId);
-                            var updatedMpr = mprRepository.save(materialPartnerRelation);
-                            if (updatedMpr != null) {
-                                log.info("Successfully inserted Partner CX Id for Partner " +
-                                    materialPartnerRelation.getPartner().getBpnl() + " and Material "
-                                    + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                                    " -> " + cxId);
-                            }
-                        }
-                    } else {
-                        log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
-                            " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);
-                        retries--;
-                        return call();
-                    }
-                    currentPartTypeFetches.remove(materialPartnerRelation);
-                    return true;
+                if (retries < initialRetries) {
+                    Thread.sleep(300);
+                }
+                String partnerCXId = edcAdapterService.getCxIdFromPartTypeInformation(materialPartnerRelation);
+                if (partnerCXId != null && PatternStore.URN_OR_UUID_PATTERN.matcher(partnerCXId).matches()) {
+
+                    materialPartnerRelation.setPartnerCXNumber(partnerCXId);
+                    mprRepository.save(materialPartnerRelation);
+                    log.info("Successfully inserted Partner CX Id for Partner " +
+                        materialPartnerRelation.getPartner().getBpnl() + " and Material "
+                        + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                        " -> " + partnerCXId);
                 } else {
                     log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
                         " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);
                     retries--;
                     return call();
                 }
-
+                
+                done = true;
+                return true;
             } catch (Exception e) {
-                currentPartTypeFetches.remove(materialPartnerRelation);
-                return false;
+                log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
+                    " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);
+                retries--;
+                return call();
+            } finally {
+                if (done) {
+                    currentPartTypeFetches.remove(materialPartnerRelation);
+                }
             }
         }
     }
@@ -184,13 +176,23 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
          */
         final String job;
         int retries;
+        final int initialRetries;
+
+        public DtrRegistrationTask(MaterialPartnerRelation materialPartnerRelation, String job, int retries) {
+            this.materialPartnerRelation = materialPartnerRelation;
+            this.job = job;
+            this.retries = retries;
+            this.initialRetries = retries;
+        }
 
         @Override
         public Boolean call() throws Exception {
             if (retries < 0) {
                 return false;
             }
-            Thread.sleep(2000);
+            if (retries < initialRetries) {
+                Thread.sleep(2000);
+            }
             if (materialPartnerRelation.isPartnerSuppliesMaterial() && materialPartnerRelation.getPartnerCXNumber() == null) {
                 log.info("Missing partnerCX Number in " + materialPartnerRelation);
                 log.info("Current list " + currentPartTypeFetches.stream().map(mpr -> mpr.getPartner().getBpnl() + " / " + mpr.getMaterial().getOwnMaterialNumber()).toList());
@@ -314,10 +316,15 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     private void flagConsistencyTest(MaterialPartnerRelation materialPartnerRelation) {
         Material material = materialPartnerRelation.getMaterial();
-        boolean test = material.isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial();
-        test = test || (material.isProductFlag() && materialPartnerRelation.isPartnerBuysMaterial());
-        if (!test) {
-            log.warn("Flags of " + materialPartnerRelation + " are not consistent with flags of " + material.getOwnMaterialNumber());
+        boolean inconsistentFlag = !material.isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial();
+        if (inconsistentFlag) {
+            log.warn(material.getOwnMaterialNumber() + " has no Material Flag, but " + materialPartnerRelation.getPartner()
+                .getBpnl() + " is marked as a Supplier!");
+        }
+        inconsistentFlag = (!material.isProductFlag() && materialPartnerRelation.isPartnerBuysMaterial());
+        if (inconsistentFlag) {
+            log.warn(material.getOwnMaterialNumber() + " has no Product Flag, but " + materialPartnerRelation.getPartner()
+                .getBpnl() + " is marked as a Customer!");
         }
     }
 
