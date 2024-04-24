@@ -183,5 +183,9 @@ public class VariablesService {
     public String getItemStockSubmodelApiAssetId() {
         return itemStockSubmodelAssetId + "@" + ownBpnl;
     }
+
+    public String getPartTypeSubmodelApiAssetId() {
+        return "PartTypeInformationSubmodelApi@" + getOwnBpnl();
+    }
     
 }

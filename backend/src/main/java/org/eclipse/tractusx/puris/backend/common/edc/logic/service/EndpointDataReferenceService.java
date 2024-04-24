@@ -22,7 +22,7 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EdrDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +43,7 @@ public class EndpointDataReferenceService {
      *  therefore it's not really useful to persist them in the database. 
      *  The key is the transferId, the value is the authCode
      */ 
-    final private HashMap<String, EDR_Dto> nonpersistantRepository = new HashMap<>();
+    final private HashMap<String, EdrDto> nonpersistantRepository = new HashMap<>();
     @Autowired
     private VariablesService variablesService;
     @Autowired
@@ -56,7 +56,7 @@ public class EndpointDataReferenceService {
      * @param transferId
      * @param edr_Dto
      */
-    public void save(String transferId, EDR_Dto edr_Dto) {
+    public void save(String transferId, EdrDto edr_Dto) {
         nonpersistantRepository.put(transferId, edr_Dto);
         final long timer = variablesService.getEdrTokenDeletionTimer() * 60 * 1000;
         // Start timer for deletion
@@ -76,7 +76,7 @@ public class EndpointDataReferenceService {
      * @param transferId The key under which the Dto is supposed to be stored
      * @return the Dto or null, if there is no authCode recorded under the given parameter
      */
-    public EDR_Dto findByTransferId(String transferId) {
+    public EdrDto findByTransferId(String transferId) {
         return nonpersistantRepository.get(transferId);
     }
     

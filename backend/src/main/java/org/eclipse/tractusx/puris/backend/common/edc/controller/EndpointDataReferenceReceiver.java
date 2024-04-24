@@ -28,7 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EDR_Dto;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EdrDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EndpointDataReferenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -88,7 +88,7 @@ public class EndpointDataReferenceReceiver {
             return ResponseEntity.status(400).build();
         }
 
-        edrService.save(transferId, new EDR_Dto(authKey, authCode, endpoint));
+        edrService.save(transferId, new EdrDto(authKey, authCode, endpoint));
         log.debug("EDR endpoint stored authCode for " + transferId);
         return ResponseEntity.status(200).build();
     }

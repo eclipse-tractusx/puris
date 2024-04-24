@@ -23,7 +23,6 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.EdcContractMapping;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcContractMappingService;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
@@ -74,7 +73,6 @@ public class PartnerServiceImpl implements PartnerService {
         }
         if (partner.getUuid() == null && partnerRepository.findFirstByBpnl(partner.getBpnl()).isEmpty()) {
             prepareApiAssetsForPartner(partner);
-            edcContractMappingService.create(new EdcContractMapping(partner.getBpnl()));
             return partnerRepository.save(partner);
         }
         log.error("Could not create Partner " + partner.getBpnl() + " because it already existed before");

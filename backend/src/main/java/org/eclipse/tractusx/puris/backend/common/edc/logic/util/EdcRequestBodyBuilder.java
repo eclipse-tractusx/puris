@@ -211,7 +211,7 @@ public class EdcRequestBodyBuilder {
         assetsSelector.put("@type", "CriterionDto");
         assetsSelector.put("operandLeft", EDC_NAMESPACE + "id");
         assetsSelector.put("operator", "=");
-        assetsSelector.put("operandRight", getPartTypeInfoAssetId(partner));
+        assetsSelector.put("operandRight", getPartTypeInfoAssetId());
         return body;
     }
 
@@ -368,9 +368,9 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
-    public JsonNode buildPartTypeInfoRegistrationBody(Partner partner) {
+    public JsonNode buildPartTypeInfoSubmodelRegistrationBody() {
         var body = getAssetRegistrationContext();
-        body.put("@id", getPartTypeInfoAssetId(partner));
+        body.put("@id", getPartTypeInfoAssetId());
         var propertiesObject = MAPPER.createObjectNode();
         body.set("properties", propertiesObject);
         var dctTypeObject = MAPPER.createObjectNode();
@@ -385,7 +385,6 @@ public class EdcRequestBodyBuilder {
         if (!url.endsWith("/")) {
             url += "/";
         }
-        url += partner.getBpnl();
         dataAddress.put("@type", "DataAddress");
         dataAddress.put("proxyPath", "true");
         dataAddress.put("proxyQueryParams", "false");
@@ -406,8 +405,8 @@ public class EdcRequestBodyBuilder {
         return "DigitalTwinRegistryId@" + variablesService.getOwnBpnl();
     }
 
-    private String getPartTypeInfoAssetId(Partner partner) {
-        return "PartTypeInformationApi_" + partner.getBpnl();
+    private String getPartTypeInfoAssetId() {
+        return variablesService.getPartTypeSubmodelApiAssetId();
     }
 
     private ObjectNode getAssetRegistrationContext() {
