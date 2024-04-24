@@ -126,7 +126,7 @@ public class EdcAdapterService {
      */
     public boolean registerAssetsInitially() {
         boolean result;
-        log.info("Registration of framework agreement policy successful {}", (result = createFrameWorkPolicy()));
+        log.info("Registration of framework agreement policy successful {}", (result = createContractPolicy()));
         boolean assetRegistration;
         log.info("Registration of DTR Asset successful {}", (assetRegistration = registerDtrAsset()));
         result &= assetRegistration;
