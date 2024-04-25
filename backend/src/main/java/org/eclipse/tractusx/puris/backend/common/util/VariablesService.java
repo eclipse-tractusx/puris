@@ -77,6 +77,48 @@ public class VariablesService {
      */
     private String itemStockSubmodelAssetId;
 
+    @Value("${puris.baseurl}" + "catena/planned-production/request")
+    /**
+     * The url under which this application's request endpoint can
+     * be reached by external machines.
+     */
+    private String productionSubmodelEndpoint;
+
+    @Value("${puris.productionsubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the request API
+     * during asset creation.
+     */
+    private String productionSubmodelAssetId;
+
+    @Value("${puris.baseurl}" + "catena/material-demand/request")
+    /**
+     * The url under which this application's request endpoint can
+     * be reached by external machines.
+     */
+    private String demandSubmodelEndpoint;
+
+    @Value("${puris.demandsubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the request API
+     * during asset creation.
+     */
+    private String demandSubmodelAssetId;
+
+    @Value("${puris.baseurl}" + "catena/delivery-information/request")
+    /**
+     * The url under which this application's request endpoint can
+     * be reached by external machines.
+     */
+    private String deliverySubmodelEndpoint;
+
+    @Value("${puris.deliverysubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the request API
+     * during asset creation.
+     */
+    private String deliverySubmodelAssetId;
+
     @Value("${puris.frameworkagreement.use}")
     /**
      * A flag that signals whether a framework policy
@@ -191,8 +233,19 @@ public class VariablesService {
         return itemStockSubmodelAssetId + "@" + ownBpnl;
     }
 
+    public String getProductionSubmodelApiAssetId() {
+        return productionSubmodelAssetId + "@" + ownBpnl;
+    }
+
+    public String getDemandSubmodelApiAssetId() {
+        return demandSubmodelAssetId + "@" + ownBpnl;
+    }
+
+    public String getDeliverySubmodelApiAssetId() {
+        return deliverySubmodelAssetId + "@" + ownBpnl;
+    }
+
     public String getPartTypeSubmodelApiAssetId() {
         return "PartTypeInformationSubmodelApi@" + getOwnBpnl();
     }
-    
 }

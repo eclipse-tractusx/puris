@@ -143,9 +143,9 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
-    public JsonNode buildItemStockSubmodelContractDefinitionWithBpnRestrictedPolicy(Partner partner) {
+    public JsonNode buildSubmodelContractDefinitionWithBpnRestrictedPolicy(String assetId, Partner partner) {
         var body = getEdcContextObject();
-        body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + getItemStockSubmodelAssetId());
+        body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + assetId);
         body.put("accessPolicyId", getBpnPolicyId(partner));
         if(variablesService.isUseFrameworkPolicy()) {
             body.put("contractPolicyId", FRAMEWORK_POLICY_ID);
@@ -157,7 +157,7 @@ public class EdcRequestBodyBuilder {
         assetsSelector.put("@type", "CriterionDto");
         assetsSelector.put("operandLeft", EDC_NAMESPACE + "id");
         assetsSelector.put("operator", "=");
-        assetsSelector.put("operandRight", getItemStockSubmodelAssetId());
+        assetsSelector.put("operandRight", assetId);
         return body;
     }
 
@@ -317,28 +317,27 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
-    public JsonNode buildItemStockSubmodelRegistrationBody() {
+    public JsonNode buildSubmodelRegistrationBody(String assetId, String endpoint, String semanticId) {
         var body = getAssetRegistrationContext();
-        body.put("@id", getItemStockSubmodelAssetId());
+        body.put("@id", assetId);
         var propertiesObject = MAPPER.createObjectNode();
         body.set("properties", propertiesObject);
         var dctTypeObject = MAPPER.createObjectNode();
         propertiesObject.set("dct:type", dctTypeObject);
         dctTypeObject.put("@id", "cx-taxo:Submodel");
         propertiesObject.put("cx-common:version", "3.0");
-        var semanticId = MAPPER.createObjectNode();
-        propertiesObject.set("aas-semantics:semanticId", semanticId);
-        semanticId.put("@id", "urn:samm:io.catenax.item_stock:2.0.0#ItemStock");
+        var semanticIdPart = MAPPER.createObjectNode();
+        propertiesObject.set("aas-semantics:semanticId", semanticIdPart);
+        semanticIdPart.put("@id", semanticId);
         body.set("privateProperties", MAPPER.createObjectNode());
 
-        String url = variablesService.getItemStockSubmodelEndpoint();
         var dataAddress = MAPPER.createObjectNode();
         dataAddress.put("@type", "DataAddress");
         dataAddress.put("proxyPath", "true");
         dataAddress.put("proxyQueryParams", "false");
         dataAddress.put("proxyMethod", "false");
         dataAddress.put("type", "HttpData");
-        dataAddress.put("baseUrl", url);
+        dataAddress.put("baseUrl", endpoint);
         dataAddress.put("authKey", "x-api-key");
         dataAddress.put("authCode", variablesService.getApiKey());
         body.set("dataAddress", dataAddress);
@@ -373,10 +372,6 @@ public class EdcRequestBodyBuilder {
         dataAddress.put("authCode", variablesService.getApiKey());
         body.set("dataAddress", dataAddress);
         return body;
-    }
-
-    private String getItemStockSubmodelAssetId() {
-        return variablesService.getItemStockSubmodelApiAssetId();
     }
 
     private String getDtrAssetId() {

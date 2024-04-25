@@ -24,10 +24,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.ContractMapping;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DtrContractMapping;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DeliveryContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DtrContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.GeneralContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ItemStockContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.PartTypeContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ProductionContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +46,15 @@ public class EdcContractMappingService {
 
     @Autowired
     private ItemStockContractMappingRepository itemStockContractMappingRepository;
+
+    @Autowired
+    private ProductionContractMappingRepository productionContractMappingRepository;
+
+    @Autowired
+    private DemandContractMappingRepository demandContractMappingRepository;
+
+    @Autowired
+    private DeliveryContractMappingRepository deliveryContractMappingRepository;
 
     @Autowired
     private PartTypeContractMappingRepository partTypeContractMappingRepository;
@@ -104,6 +116,9 @@ public class EdcContractMappingService {
         GeneralContractMappingRepository<? extends ContractMapping> repository = switch (type) {
             case DTR -> dtrContractMappingRepository;
             case ITEM_STOCK -> itemStockContractMappingRepository;
+            case PRODUCTION -> productionContractMappingRepository;
+            case DEMAND -> demandContractMappingRepository;
+            case DELIVERY -> deliveryContractMappingRepository;
             case PART_TYPE_INFORMATION -> partTypeContractMappingRepository;
         };
         return repository;

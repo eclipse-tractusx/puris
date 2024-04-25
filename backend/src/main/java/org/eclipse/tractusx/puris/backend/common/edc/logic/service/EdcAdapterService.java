@@ -60,8 +60,6 @@ public class EdcAdapterService {
     @Autowired
     private EdcContractMappingService edcContractMappingService;
 
-    private Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
-
     private Pattern urlPattern = PatternStore.URL_PATTERN;
 
     public EdcAdapterService(ObjectMapper objectMapper) {
@@ -134,7 +132,30 @@ public class EdcAdapterService {
         boolean assetRegistration;
         log.info("Registration of DTR Asset successful {}", (assetRegistration = registerDtrAsset()));
         result &= assetRegistration;
-        log.info("Registration of ItemStock 2.0.0 submodel successful {}", (assetRegistration = registerItemStockSubmodel()));
+        log.info("Registration of ItemStock 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            "ItemStock",
+            variablesService.getItemStockSubmodelApiAssetId(),
+            variablesService.getItemStockSubmodelEndpoint(),
+            SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID
+        )));
+        log.info("Registration of Planned Production 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            "Planned Production",
+            variablesService.getProductionSubmodelApiAssetId(),
+            variablesService.getProductionSubmodelEndpoint(),
+            SubmodelType.PRODUCTION.URN_SEMANTIC_ID
+        )));
+        log.info("Registration of Short Term Material Demand 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            "Short Term Material Demand",
+            variablesService.getDemandSubmodelApiAssetId(),
+            variablesService.getDemandSubmodelEndpoint(),
+            SubmodelType.DEMAND.URN_SEMANTIC_ID
+        )));
+        log.info("Registration of Delivery Information 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            "Delivery Information",
+            variablesService.getDeliverySubmodelApiAssetId(),
+            variablesService.getDeliverySubmodelEndpoint(),
+            SubmodelType.DELIVERY.URN_SEMANTIC_ID
+        )));
         result &= assetRegistration;
         log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
         result &= assetRegistration;
@@ -151,17 +172,20 @@ public class EdcAdapterService {
      */
     public boolean createPolicyAndContractDefForPartner(Partner partner) {
         boolean result = createPolicyDefinitionForPartner(partner);
-        result &= createItemStockSubmodelContractDefinitionForPartner(partner);
+        result &= createSubmodelContractDefinitionForPartner("ItemStock", variablesService.getItemStockSubmodelApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner("Planned Production", variablesService.getProductionSubmodelApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner("Short Term Material Demand", variablesService.getDemandSubmodelApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner("Delivery Information", variablesService.getDeliverySubmodelApiAssetId(), partner);
         result &= createDtrContractDefinitionForPartner(partner);
-        return createPartTypeInfoContractDefForPartner(partner) && result;
+        return createSubmodelContractDefinitionForPartner("Part Type Information", variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
 
     }
 
-    private boolean createItemStockSubmodelContractDefinitionForPartner(Partner partner) {
-        var body = edcRequestBodyBuilder.buildItemStockSubmodelContractDefinitionWithBpnRestrictedPolicy(partner);
+    private boolean createSubmodelContractDefinitionForPartner(String submodelName, String assetId, Partner partner) {
+        var body = edcRequestBodyBuilder.buildSubmodelContractDefinitionWithBpnRestrictedPolicy(assetId, partner);
         try (var response = sendPostRequest(body, List.of("v2", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
-                log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and ItemStock Submodel");
+                log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", submodelName);
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
                 }
@@ -169,11 +193,10 @@ public class EdcAdapterService {
             }
             return true;
         } catch (Exception e) {
-            log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and ItemStock Submodel");
+            log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", submodelName);
             return false;
         }
     }
-
 
     private boolean createDtrContractDefinitionForPartner(Partner partner) {
         var body = edcRequestBodyBuilder.buildDtrContractDefinitionForPartner(partner);
@@ -188,22 +211,6 @@ public class EdcAdapterService {
             return false;
         }
     }
-
-    private boolean createPartTypeInfoContractDefForPartner(Partner partner) {
-        var body = edcRequestBodyBuilder.buildPartTypeInfoContractDefinitionForPartner(partner);
-        try (var response = sendPostRequest(body, List.of("v2", "contractdefinitions"))) {
-            if (!response.isSuccessful()) {
-                log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and PartTypeInfo asset");
-                return false;
-            }
-            log.info("Contract definition successful for PartTypeAsset and partner " + partner.getBpnl());
-            return true;
-        } catch (Exception e) {
-            log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and PartTypeInfo asset", e);
-            return false;
-        }
-    }
-
 
     /**
      * Registers a policy definition that allows only the given partner's
@@ -287,11 +294,11 @@ public class EdcAdapterService {
         }
     }
 
-    private boolean registerItemStockSubmodel() {
-        var body = edcRequestBodyBuilder.buildItemStockSubmodelRegistrationBody();
+    private boolean registerSubmodelAsset(String submodelName, String assetId, String endpoint, String semanticId) {
+        var body = edcRequestBodyBuilder.buildSubmodelRegistrationBody(assetId, endpoint, semanticId);
         try (var response = sendPostRequest(body, List.of("v3", "assets"))) {
             if (!response.isSuccessful()) {
-                log.warn("ItemStock Submodel Asset registration failed");
+                log.warn("{} Submodel Asset registration failed", submodelName);
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
                 }
@@ -299,11 +306,10 @@ public class EdcAdapterService {
             }
             return true;
         } catch (Exception e) {
-            log.error("Failed to register ItemStock Submodel", e);
+            log.error("Failed to register {} Submodel", submodelName, e);
             return false;
         }
     }
-
 
     /**
      * Retrieve the response to an unfiltered catalog request from the partner
@@ -493,7 +499,10 @@ public class EdcAdapterService {
         Partner partner = mpr.getPartner();
         SubmodelData submodelData = switch (type) {
             case DTR -> throw new IllegalArgumentException("DTR not supported");
-            case ITEM_STOCK -> fetchItemStockSubmodelData(mpr, direction);
+            case ITEM_STOCK -> fetchSubmodelDataByDirection(mpr, SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID, direction);
+            case PRODUCTION -> fetchSubmodelDataByDirection(mpr, SubmodelType.PRODUCTION.URN_SEMANTIC_ID, direction);
+            case DEMAND -> fetchSubmodelDataByDirection(mpr, SubmodelType.DEMAND.URN_SEMANTIC_ID, direction);
+            case DELIVERY -> fetchSubmodelDataByDirection(mpr, SubmodelType.DELIVERY.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION -> fetchPartTypeSubmodelData(mpr);
         };
         boolean failed = true;
@@ -631,7 +640,7 @@ public class EdcAdapterService {
         }
     }
 
-    private SubmodelData fetchItemStockSubmodelData(MaterialPartnerRelation mpr, DirectionCharacteristic direction) {
+    private SubmodelData fetchSubmodelDataByDirection(MaterialPartnerRelation mpr, String semanticId, DirectionCharacteristic direction) {
         String manufacturerPartId = switch (direction) {
             case INBOUND -> mpr.getMaterial().getOwnMaterialNumber();
             case OUTBOUND -> mpr.getPartnerMaterialNumber();
@@ -640,7 +649,7 @@ public class EdcAdapterService {
             case INBOUND -> variablesService.getOwnBpnl();
             case OUTBOUND -> mpr.getPartner().getBpnl();
         };
-        return fetchSubmodelData(mpr, "urn:samm:io.catenax.item_stock:2.0.0#ItemStock", manufacturerPartId, manufacturerId);
+        return fetchSubmodelData(mpr, semanticId, manufacturerPartId, manufacturerId);
     }
 
     private SubmodelData fetchPartTypeSubmodelData(MaterialPartnerRelation mpr) {
@@ -793,7 +802,10 @@ public class EdcAdapterService {
         Partner partner = mpr.getPartner();
         SubmodelData submodelData = switch (type) {
             case DTR -> throw new IllegalArgumentException("DTR not supported");
-            case ITEM_STOCK -> fetchItemStockSubmodelData(mpr, direction);
+            case ITEM_STOCK -> fetchSubmodelDataByDirection(mpr, SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID, direction);
+            case PRODUCTION -> fetchSubmodelDataByDirection(mpr, SubmodelType.PRODUCTION.URN_SEMANTIC_ID, direction);
+            case DEMAND -> fetchSubmodelDataByDirection(mpr, SubmodelType.DEMAND.URN_SEMANTIC_ID, direction);
+            case DELIVERY -> fetchSubmodelDataByDirection(mpr, SubmodelType.DELIVERY.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION -> fetchPartTypeSubmodelData(mpr);
         };
         try {
