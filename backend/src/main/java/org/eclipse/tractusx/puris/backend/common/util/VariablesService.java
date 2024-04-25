@@ -119,13 +119,6 @@ public class VariablesService {
      */
     private String deliverySubmodelAssetId;
 
-    @Value("${puris.frameworkagreement.use}")
-    /**
-     * A flag that signals whether a framework policy
-     * shall be used as contract policy for your api assets.
-     */
-    private boolean useFrameworkPolicy;
-
     @Value("${puris.frameworkagreement.credential}")
     /**
      * The name of the framework agreement to be used.

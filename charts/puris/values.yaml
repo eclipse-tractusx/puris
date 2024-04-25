@@ -424,8 +424,6 @@ backend:
       # -- Asset ID for DeliverySubmodel API
       apiassetid: deliverysubmodel-api-asset
     frameworkagreement:
-      # -- Flag to determine whether to use a framework agreement in puris
-      use: false
       # -- The name of the framework agreement
       credential: FrameworkAgreement.traceability
     edr:
