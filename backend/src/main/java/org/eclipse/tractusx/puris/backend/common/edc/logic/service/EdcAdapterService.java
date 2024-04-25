@@ -181,7 +181,7 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildSubmodelContractDefinitionWithBpnRestrictedPolicy(assetId, partner);
         try (var response = sendPostRequest(body, List.of("v2", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
-                log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", assetId);
+                log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
                 }
@@ -189,7 +189,7 @@ public class EdcAdapterService {
             }
             return true;
         } catch (Exception e) {
-            log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", assetId);
+            log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
             return false;
         }
     }
