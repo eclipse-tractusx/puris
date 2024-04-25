@@ -96,10 +96,25 @@ export const CatalogView = () => {
                                             {item.permission['odrl:action']['odrl:type']} {item.permission['odrl:target']}
                                         </div>
                                         <div className="flex">
-                                            <h4 className="font-semibold w-[20ch]">Asset condition: </h4>
-                                            {item.permission['odrl:constraint']['odrl:leftOperand'] + ' '}
-                                            {getCatalogOperator(item.permission['odrl:constraint']['odrl:operator']['@id']) + ' '}
-                                            {item.permission['odrl:constraint']['odrl:rightOperand']}
+                                            <h4 className="font-semibold w-[20ch]">Asset condition(s): </h4>
+                                            <div className="flex flex-col gap-1 w-[30ch]">
+                                                {'odrl:and' in item.permission['odrl:constraint'] ?
+                                                    (item.permission['odrl:constraint']['odrl:and'].map(constraint => (
+                                                        <div className="flex">
+                                                            {constraint['odrl:leftOperand'] + ' '}
+                                                            {getCatalogOperator(constraint['odrl:operator']['@id']) + ' '}
+                                                            {constraint['odrl:rightOperand']}
+                                                        </div>
+                                                    ))) :
+                                                    (
+                                                        <div className="flex">
+                                                            {item.permission['odrl:constraint']['odrl:leftOperand'] + ' '}
+                                                            {getCatalogOperator(item.permission['odrl:constraint']['odrl:operator']['@id']) + ' '}
+                                                            {item.permission['odrl:constraint']['odrl:rightOperand']}
+                                                        </div>
+                                                    )
+                                                }
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="flex flex-col w-1/3 flex-shrink-0">

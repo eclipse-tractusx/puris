@@ -22,6 +22,7 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
@@ -124,13 +125,8 @@ public class EdcAdapterService {
      * @return true if all registrations were successful, otherwise false
      */
     public boolean registerAssetsInitially() {
-        boolean result = true;
-        if (variablesService.isUseFrameworkPolicy()) {
-            log.info("Registration of framework agreement policy successful {}", (result = createFrameWorkPolicy()));
-            if (!result) return false;
-        } else {
-            log.info("Skipping registration of framework agreement policy");
-        }
+        boolean result;
+        log.info("Registration of framework agreement policy successful {}", (result = createContractPolicy()));
         boolean assetRegistration;
         log.info("Registration of DTR Asset successful {}", (assetRegistration = registerDtrAsset()));
         result &= assetRegistration;
@@ -150,7 +146,7 @@ public class EdcAdapterService {
      * @return true, if all registrations ran successfully
      */
     public boolean createPolicyAndContractDefForPartner(Partner partner) {
-        boolean result = createPolicyDefinitionForPartner(partner);
+        boolean result = createBpnlAndMembershipPolicyDefinitionForPartner(partner);
         result &= createItemStockSubmodelContractDefinitionForPartner(partner);
         result &= createDtrContractDefinitionForPartner(partner);
         return createPartTypeInfoContractDefForPartner(partner) && result;
@@ -173,7 +169,6 @@ public class EdcAdapterService {
             return false;
         }
     }
-
 
     private boolean createDtrContractDefinitionForPartner(Partner partner) {
         var body = edcRequestBodyBuilder.buildDtrContractDefinitionForPartner(partner);
@@ -206,14 +201,15 @@ public class EdcAdapterService {
 
 
     /**
-     * Registers a policy definition that allows only the given partner's
-     * BPNL.
+     * Registers a policy definition that evaluates to true in case all the following conditions apply:
+     * 1. The BPNL of the requesting connector is equal to the BPNL of the partner
+     * 2. There's a CX membership credential present
      *
-     * @param partner the partner
+     * @param partner the partner to create the policy for
      * @return true, if registration ran successfully
      */
-    private boolean createPolicyDefinitionForPartner(Partner partner) {
-        var body = edcRequestBodyBuilder.buildBpnRestrictedPolicy(partner);
+    private boolean createBpnlAndMembershipPolicyDefinitionForPartner(Partner partner) {
+        var body = edcRequestBodyBuilder.buildBpnAndMembershipRestrictedPolicy(partner);
         try (var response = sendPostRequest(body, List.of("v2", "policydefinitions"))) {
             if (!response.isSuccessful()) {
                 log.warn("Policy Registration failed");
@@ -224,7 +220,7 @@ public class EdcAdapterService {
             }
             return true;
         } catch (Exception e) {
-            log.error("Failed to register policy definition for partner " + partner.getBpnl(), e);
+            log.error("Failed to register bpnl and membership policy definition for partner " + partner.getBpnl(), e);
             return false;
         }
     }
@@ -234,8 +230,8 @@ public class EdcAdapterService {
      *
      * @return true, if registration ran successfully
      */
-    private boolean createFrameWorkPolicy() {
-        var body = edcRequestBodyBuilder.buildFrameworkAgreementPolicy();
+    private boolean createContractPolicy() {
+        var body = edcRequestBodyBuilder.buildFrameworkPolicy();
         try (var response = sendPostRequest(body, List.of("v2", "policydefinitions"))) {
             if (!response.isSuccessful()) {
                 log.warn("Framework Policy Registration failed");
@@ -817,18 +813,14 @@ public class EdcAdapterService {
                 }
                 if (type.URN_SEMANTIC_ID.equals(idString) && submodelData.assetId.equals(entry.get("edc:id").asText())) {
                     if (targetCatalogEntry == null) {
-                        if (variablesService.isUseFrameworkPolicy()) {
-                            if (testFrameworkAgreementConstraint(entry)) {
-                                targetCatalogEntry = entry;
-                            } else {
-                                log.error("Contract Negotiation for " + type + " Submodel asset with partner " + partner.getBpnl() + " has " +
-                                    "been aborted. This partner's contract policy does not match the policy " +
-                                    "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
-                                    "\n Received offer from Partner: \n" + entry.toPrettyString());
-                                break;
-                            }
-                        } else {
+                        if (testContractPolicyConstraints(entry)) {
                             targetCatalogEntry = entry;
+                        } else {
+                            log.error("Contract Negotiation for " + type + " Submodel asset with partner " + partner.getBpnl() + " has " +
+                                "been aborted. This partner's contract policy does not match the policy " +
+                                "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
+                                "\n Received offer from Partner: \n" + entry.toPrettyString());
+                            break;
                         }
                     } else {
                         log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
@@ -890,36 +882,24 @@ public class EdcAdapterService {
      * @param catalogEntry the catalog item containing the desired api asset
      * @return true, if the policy matches yours, otherwise false
      */
-    private boolean testFrameworkAgreementConstraint(JsonNode catalogEntry) {
-        try {
-            var policyObject = catalogEntry.get("odrl:hasPolicy");
-            if (policyObject == null) {
-                return false;
-            }
-            var permissionObject = policyObject.get("odrl:permission");
-            if (permissionObject == null) {
-                return false;
-            }
-            var constraintObject = permissionObject.get("odrl:constraint");
-            if (constraintObject == null) {
-                return false;
-            }
-            var leftOperandObject = constraintObject.get("odrl:leftOperand");
-            if (!variablesService.getPurisFrameworkAgreement().equals(leftOperandObject.asText())) {
-                return false;
-            }
-            var operatorObject = constraintObject.get("odrl:operator");
-            if (!"odrl:eq".equals(operatorObject.get("@id").asText())) {
-                return false;
-            }
-            var rightOperandObject = constraintObject.get("odrl:rightOperand");
-            if (!"active".equals(rightOperandObject.asText())) {
-                return false;
-            }
-        } catch (Exception e) {
-            log.error("Failed in Framework Agreement Test ", e);
-            return false;
-        }
+    private boolean testContractPolicyConstraints(JsonNode catalogEntry) {
+        var constraint = Optional.ofNullable(catalogEntry.get("odrl:hasPolicy"))
+            .map(policy -> policy.get("odrl:permission"))
+            .map(permission -> permission.get("odrl:constraint"));
+        if (constraint.isEmpty()) return false;
+
+        var leftOperand = constraint.map(cons -> cons.get("odrl:leftOperand"))
+            .filter(operand -> variablesService.getPurisFrameworkAgreement().equals(operand.asText()));
+
+        var operator = constraint.map(cons -> cons.get("odrl:operator"))
+            .map(op -> op.get("@id"))
+            .filter(operand -> "odrl:eq".equals(operand.asText()));
+
+        var rightOperand = constraint.map(cons -> cons.get("odrl:rightOperand"))
+            .filter(operand -> "active".equals(operand.asText()));
+
+        if (leftOperand.isEmpty() || operator.isEmpty() || rightOperand.isEmpty()) return false;
+
         return true;
     }
 }
