@@ -33,24 +33,36 @@ export type CatalogPermission = {
     'odrl:action': {
         'odrl:type': string;
     }
-  'odrl:constraint': {
+    'odrl:constraint': {
       'odrl:leftOperand': string;
       'odrl:operator': {
           '@id': string;
       };
       'odrl:rightOperand': string;
+    } | {
+        '@type': string,
+        'odrl:and': {
+           '@type': string,
+            'odrl:leftOperand': string;
+            'odrl:operator': {
+                '@id': string;
+            };
+            'odrl:rightOperand': string;
+        }[]
   };
 };
 
 export type RawCatalogData = {
     'dcat:dataset': {
         '@id': string;
-        'asset:prop:type': string;
+        'dct:type': {
+            '@id': string;
+        }
         'https://w3id.org/catenax/ontology/common#version': string;
         'odrl:hasPolicy': {
             'odrl:permission': CatalogPermission;
-            'odrl:prohibitions': CatalogOperation[];
-            'odrl:obligations': CatalogOperation[];
+            'odrl:prohibition': CatalogOperation[];
+            'odrl:obligation': CatalogOperation[];
         };
     }[];
 };

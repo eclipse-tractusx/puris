@@ -81,9 +81,8 @@ _Note: The application does NOT make use of the `Client Authentication` (private
 ## Configure Framework Agreement Credential Usage
 
 To configure the usage of a framework agreement credential, that is automatically enforced by the EDC during contracting
-(see further details in [ARC42 - Chapter 8](../arc42/08_concepts.md)), the following properties need to be configures:
+(see further details in [ARC42 - Chapter 8](../arc42/08_concepts.md)), the following property needs to be configured:
 
-- `backend.frameworkagreement.use` (docker `PURIS_FRAMEWORKAGREEMENT_USE`) = true
 - `backend.frameworkagreement.credential` (docker `PURIS_FRAMEWORKAGREEMENT_CREDENTIAL`) = 'puris' (NOTE: not available
   for R24.03)
 

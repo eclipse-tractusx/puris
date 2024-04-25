@@ -39,3 +39,9 @@ echo ""
 # register supplier for framework agreement at miw
 curl -X POST -H "Authorization: Bearer $token" -H "Content-Type: application/json" -d '{ "holderIdentifier": "BPNL1234567890ZZ", "type": "TraceabilityCredential", "contract-template": "https://public.catena-x.org/contracts/traceabilty.v1.pdf", "contract-version": "1.0.0" }' http://localhost:8000/api/credentials/issuer/framework | jq
 echo ""
+# register customer for membership credential at miw
+curl -X POST -H "Authorization: Bearer $token" -H "Content-Type: application/json" -d '{ "bpn": "BPNL4444444444XX" }' http://localhost:8000/api/credentials/issuer/membership | jq
+echo ""
+# register supplier for membership credential at miw
+curl -X POST -H "Authorization: Bearer $token" -H "Content-Type: application/json" -d '{ "bpn": "BPNL1234567890ZZ" }' http://localhost:8000/api/credentials/issuer/membership | jq
+echo ""

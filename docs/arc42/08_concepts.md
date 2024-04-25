@@ -42,10 +42,10 @@ information is routed through the EDC data plane using the proxy pull mechanism.
 Whenever a partner is created, all exchanged information APIs that comply to a Catena-X standard are registered as
 contract offer for the partner's BPNL.
 
-Additionally, the administrator may configure the application to use a framework agreement policy for data offers (see
-[Administration Guide](../adminGuide/Admin_Guide.md)). When activated,
+Additionally, the application is configured to demand several policies to be fulfilled when accessing or exchanging data, that is:
 
-- the application requires the respective credential to be active for the partner.
+- the application requires the BPNL of the partner as part of the access policy when accessing any asset.
+- the application requires the membership credential as part of the access policy when accessing any asset.
 - the application requires the framework agreement credential as contract policy when contracting a partner's offer as a
   consumer.
 
