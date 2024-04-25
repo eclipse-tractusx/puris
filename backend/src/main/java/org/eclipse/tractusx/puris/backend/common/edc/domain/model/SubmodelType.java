@@ -23,8 +23,8 @@ package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 public enum SubmodelType {
     DTR("none", "none"),
     ITEM_STOCK("urn:samm:io.catenax.item_stock:2.0.0#ItemStock", "$value"),
-    PRODUCTION("urn:samm:io.catenax.planned_production_output:2.0.0 ", "$value"),
-    DEMAND("urn:samm:io.catenax.short_term_material_demand:2.0.0 ", "$value"),
+    PRODUCTION("urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput", "$value"),
+    DEMAND("urn:samm:io.catenax.short_term_material_demand:1.0.0#ShortTermMaterialDemand", "$value"),
     DELIVERY("urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation", "$value"),
     PART_TYPE_INFORMATION("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value");
 

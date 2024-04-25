@@ -326,9 +326,9 @@ public class EdcRequestBodyBuilder {
         propertiesObject.set("dct:type", dctTypeObject);
         dctTypeObject.put("@id", "cx-taxo:Submodel");
         propertiesObject.put("cx-common:version", "3.0");
-        var semanticIdPart = MAPPER.createObjectNode();
-        propertiesObject.set("aas-semantics:semanticId", semanticIdPart);
-        semanticIdPart.put("@id", semanticId);
+        var semanticIdObject = MAPPER.createObjectNode();
+        propertiesObject.set("aas-semantics:semanticId", semanticIdObject);
+        semanticIdObject.put("@id", semanticId);
         body.set("privateProperties", MAPPER.createObjectNode());
 
         var dataAddress = MAPPER.createObjectNode();

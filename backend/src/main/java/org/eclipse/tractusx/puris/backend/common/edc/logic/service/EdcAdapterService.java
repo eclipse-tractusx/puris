@@ -133,25 +133,21 @@ public class EdcAdapterService {
         log.info("Registration of DTR Asset successful {}", (assetRegistration = registerDtrAsset()));
         result &= assetRegistration;
         log.info("Registration of ItemStock 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
-            "ItemStock",
             variablesService.getItemStockSubmodelApiAssetId(),
             variablesService.getItemStockSubmodelEndpoint(),
             SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID
         )));
         log.info("Registration of Planned Production 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
-            "Planned Production",
             variablesService.getProductionSubmodelApiAssetId(),
             variablesService.getProductionSubmodelEndpoint(),
             SubmodelType.PRODUCTION.URN_SEMANTIC_ID
         )));
-        log.info("Registration of Short Term Material Demand 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
-            "Short Term Material Demand",
+        log.info("Registration of Short Term Material Demand 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getDemandSubmodelApiAssetId(),
             variablesService.getDemandSubmodelEndpoint(),
             SubmodelType.DEMAND.URN_SEMANTIC_ID
         )));
         log.info("Registration of Delivery Information 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
-            "Delivery Information",
             variablesService.getDeliverySubmodelApiAssetId(),
             variablesService.getDeliverySubmodelEndpoint(),
             SubmodelType.DELIVERY.URN_SEMANTIC_ID
@@ -172,20 +168,20 @@ public class EdcAdapterService {
      */
     public boolean createPolicyAndContractDefForPartner(Partner partner) {
         boolean result = createPolicyDefinitionForPartner(partner);
-        result &= createSubmodelContractDefinitionForPartner("ItemStock", variablesService.getItemStockSubmodelApiAssetId(), partner);
-        result &= createSubmodelContractDefinitionForPartner("Planned Production", variablesService.getProductionSubmodelApiAssetId(), partner);
-        result &= createSubmodelContractDefinitionForPartner("Short Term Material Demand", variablesService.getDemandSubmodelApiAssetId(), partner);
-        result &= createSubmodelContractDefinitionForPartner("Delivery Information", variablesService.getDeliverySubmodelApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner(SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID, variablesService.getItemStockSubmodelApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner(SubmodelType.PRODUCTION.URN_SEMANTIC_ID, variablesService.getProductionSubmodelApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner(SubmodelType.DEMAND.URN_SEMANTIC_ID, variablesService.getDemandSubmodelApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner(SubmodelType.DELIVERY.URN_SEMANTIC_ID, variablesService.getDeliverySubmodelApiAssetId(), partner);
         result &= createDtrContractDefinitionForPartner(partner);
-        return createSubmodelContractDefinitionForPartner("Part Type Information", variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
+        return createSubmodelContractDefinitionForPartner(SubmodelType.PART_TYPE_INFORMATION.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
 
     }
 
-    private boolean createSubmodelContractDefinitionForPartner(String submodelName, String assetId, Partner partner) {
+    private boolean createSubmodelContractDefinitionForPartner(String semanticId, String assetId, Partner partner) {
         var body = edcRequestBodyBuilder.buildSubmodelContractDefinitionWithBpnRestrictedPolicy(assetId, partner);
         try (var response = sendPostRequest(body, List.of("v2", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
-                log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", submodelName);
+                log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", assetId);
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
                 }
@@ -193,7 +189,7 @@ public class EdcAdapterService {
             }
             return true;
         } catch (Exception e) {
-            log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", submodelName);
+            log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", assetId);
             return false;
         }
     }
@@ -294,11 +290,11 @@ public class EdcAdapterService {
         }
     }
 
-    private boolean registerSubmodelAsset(String submodelName, String assetId, String endpoint, String semanticId) {
+    private boolean registerSubmodelAsset(String assetId, String endpoint, String semanticId) {
         var body = edcRequestBodyBuilder.buildSubmodelRegistrationBody(assetId, endpoint, semanticId);
         try (var response = sendPostRequest(body, List.of("v3", "assets"))) {
             if (!response.isSuccessful()) {
-                log.warn("{} Submodel Asset registration failed", submodelName);
+                log.warn("{} Submodel Asset registration failed", semanticId);
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
                 }
@@ -306,7 +302,7 @@ public class EdcAdapterService {
             }
             return true;
         } catch (Exception e) {
-            log.error("Failed to register {} Submodel", submodelName, e);
+            log.error("Failed to register {} Submodel", semanticId, e);
             return false;
         }
     }
