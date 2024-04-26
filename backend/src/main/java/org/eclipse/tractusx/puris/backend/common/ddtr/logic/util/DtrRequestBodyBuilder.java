@@ -91,8 +91,13 @@ public class DtrRequestBodyBuilder {
         var submodelDescriptorsArray = objectMapper.createArrayNode();
         body.set("submodelDescriptors", submodelDescriptorsArray);
 
-        var itemStockRequestSubmodelObject = createItemStockSubmodelObject(materialPartnerRelation.getPartnerCXNumber(), DirectionCharacteristic.INBOUND);
-        submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
+        String href = variablesService.getEdcDataplanePublicUrl();
+        href = href.endsWith("/") ? href : href + "/";
+        href += materialPartnerRelation.getPartnerCXNumber() + "/";
+
+        submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID, href + DirectionCharacteristic.INBOUND + "/", variablesService.getItemStockSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.DEMAND.URN_SEMANTIC_ID, href, variablesService.getDemandSubmodelApiAssetId()));
+        
         log.debug("Created body for material " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
         return body;
     }
@@ -132,8 +137,13 @@ public class DtrRequestBodyBuilder {
         var submodelDescriptorsArray = objectMapper.createArrayNode();
         body.set("submodelDescriptors", submodelDescriptorsArray);
 
-        var itemStockRequestSubmodelObject = createItemStockSubmodelObject(material.getMaterialNumberCx(), DirectionCharacteristic.OUTBOUND);
-        submodelDescriptorsArray.add(itemStockRequestSubmodelObject);
+        String href = variablesService.getEdcDataplanePublicUrl();
+        href = href.endsWith("/") ? href : href + "/";
+        href += material.getMaterialNumberCx() + "/";
+        
+        submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID, href + DirectionCharacteristic.OUTBOUND + "/", variablesService.getItemStockSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.PRODUCTION.URN_SEMANTIC_ID, href, variablesService.getProductionSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.DELIVERY.URN_SEMANTIC_ID, href, variablesService.getDeliverySubmodelApiAssetId()));
         submodelDescriptorsArray.add(createPartTypeSubmodelObject(material.getOwnMaterialNumber()));
 
         log.debug("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
@@ -185,11 +195,11 @@ public class DtrRequestBodyBuilder {
     }
 
     private JsonNode createSubmodelObject(String semanticId, String href, String assetId) {
-        var itemStockRequestSubmodelObject = objectMapper.createObjectNode();
+        var requestSubmodelObject = objectMapper.createObjectNode();
 
-        itemStockRequestSubmodelObject.put("id", UUID.randomUUID().toString());
+        requestSubmodelObject.put("id", UUID.randomUUID().toString());
         var semanticIdObject = objectMapper.createObjectNode();
-        itemStockRequestSubmodelObject.set("semanticId", semanticIdObject);
+        requestSubmodelObject.set("semanticId", semanticIdObject);
         semanticIdObject.put("type", "ExternalReference");
         var keysArray = objectMapper.createArrayNode();
         semanticIdObject.set("keys", keysArray);
@@ -199,7 +209,7 @@ public class DtrRequestBodyBuilder {
         keyObject.put("value", semanticId);
 
         var endpointsArray = objectMapper.createArrayNode();
-        itemStockRequestSubmodelObject.set("endpoints", endpointsArray);
+        requestSubmodelObject.set("endpoints", endpointsArray);
         var submodel3EndpointObject = objectMapper.createObjectNode();
         endpointsArray.add(submodel3EndpointObject);
         submodel3EndpointObject.put("interface", "SUBMODEL-3.0");
@@ -220,14 +230,7 @@ public class DtrRequestBodyBuilder {
         securityObject.put("type", "NONE");
         securityObject.put("key", "NONE");
         securityObject.put("value", "NONE");
-        return itemStockRequestSubmodelObject;
-    }
-
-    private JsonNode createItemStockSubmodelObject(String materialId, DirectionCharacteristic direction) {
-        String href = variablesService.getEdcDataplanePublicUrl();
-        href = href.endsWith("/") ? href : href + "/";
-        href += materialId + "/" + direction + "/";
-        return createSubmodelObject(SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID, href, variablesService.getItemStockSubmodelApiAssetId());
+        return requestSubmodelObject;
     }
 
     private JsonNode createPartTypeSubmodelObject(String materialId) {

@@ -538,7 +538,7 @@ public class EdcAdapterService {
             }
             if (edrDto == null) {
                 log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
-                return doItemStockSubmodelRequest(mpr, direction, --retries);
+                return doSubmodelRequest(type, mpr, direction, --retries);
             }
             if (!submodelData.href().startsWith(edrDto.endpoint())) {
                 log.warn("Diverging URLs in ItemStock Submodel request");
@@ -563,13 +563,13 @@ public class EdcAdapterService {
         return getSubmodelFromPartner(mpr, type, direction, --retries);
     }
 
-    public JsonNode doItemStockSubmodelRequest(MaterialPartnerRelation mpr, DirectionCharacteristic direction, int retries) {
+    public JsonNode doSubmodelRequest(SubmodelType type, MaterialPartnerRelation mpr, DirectionCharacteristic direction, int retries) {
         if (retries < 0) {
             return null;
         }
-        var data = getSubmodelFromPartner(mpr, SubmodelType.ITEM_STOCK ,direction, 1);
+        var data = getSubmodelFromPartner(mpr, type, direction, 1);
         if (data == null) {
-            return doItemStockSubmodelRequest(mpr, direction, --retries);
+            return doSubmodelRequest(type, mpr, direction, --retries);
         }
         return data;
     }
@@ -713,12 +713,12 @@ public class EdcAdapterService {
             EdrDto edrDto = null;
             // Await arrival of edr
             for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
                 edrDto = edrService.findByTransferId(transferId);
                 if (edrDto != null) {
                     log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
                     break;
                 }
+                Thread.sleep(100);
             }
             if (edrDto == null) {
                 log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());

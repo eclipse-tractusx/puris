@@ -64,13 +64,13 @@ public class OwnProductionService {
 
     public final List<OwnProduction> findAllByFilters(Optional<String> ownMaterialNumber, Optional<String> bpnl, Optional<String> bpns) {
         Stream<OwnProduction> stream = repository.findAll().stream();
-        if (ownMaterialNumber != null) {
+        if (ownMaterialNumber.isPresent()) {
             stream = stream.filter(production -> production.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
         }
-        if (bpnl != null) {
+        if (bpnl.isPresent()) {
             stream = stream.filter(production -> production.getPartner().getBpnl().equals(bpnl.get()));
         }
-        if (bpns != null) {
+        if (bpns.isPresent()) {
             stream = stream.filter(production -> production.getProductionSiteBpns().equals(bpns.get()));
         }
         return stream.toList();

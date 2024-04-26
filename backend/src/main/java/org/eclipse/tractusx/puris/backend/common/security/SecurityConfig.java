@@ -28,7 +28,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.DispatcherType;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,7 +47,6 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
-@Slf4j
 @SecurityScheme(type = SecuritySchemeType.APIKEY, name = SecurityConfig.API_KEY_HEADER_NAME, in = SecuritySchemeIn.HEADER)
 @OpenAPIDefinition(info = @Info(title = "PURIS FOSS Open API", version = "1.0.0"), security = {@SecurityRequirement(name = "X-API-KEY")})
 public class SecurityConfig {
@@ -79,7 +77,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(
                 // any request in spring context
                 (authorizeHttpRequests) -> authorizeHttpRequests
-                    .requestMatchers("/stockView/**", "/partners/**", "/materials/**", "/materialpartnerrelations/**", "/item-stock/**", "/production/**", "/delivery/**", "/demand/**","/edrendpoint/**", "/edc/**", "/parttypeinformation/**").authenticated()
+                    .requestMatchers("/stockView/**", "/partners/**", "/materials/**", "/materialpartnerrelations/**", "/item-stock/**", "/production/**", "/delivery/**", "/demand/**", "/planned-production/**", "/edrendpoint/**", "/edc/**", "/parttypeinformation/**")
+                    .authenticated()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/health/**").permitAll()
                     .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
             )
