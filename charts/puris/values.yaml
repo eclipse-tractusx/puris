@@ -414,6 +414,15 @@ backend:
     itemstocksubmodel:
       # -- Asset ID for ItemStockSubmodel API
       apiassetid: itemstocksubmodel-api-asset
+    productionsubmodel:
+      # -- Asset ID for ProductionSubmodel API
+      apiassetid: productionsubmodel-api-asset
+    demandsubmodel:
+      # -- Asset ID for DemandSubmodel API
+      apiassetid: demandsubmodel-api-asset
+    deliverysubmodel:
+      # -- Asset ID for DeliverySubmodel API
+      apiassetid: deliverysubmodel-api-asset
     frameworkagreement:
       # -- The name of the framework agreement
       credential: FrameworkAgreement.traceability
