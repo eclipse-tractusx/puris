@@ -46,6 +46,7 @@ public class DemandCategoryType {
 	@JsonCreator
 	public DemandCategoryType(@JsonProperty(value = "demandCategoryCode") String demandCategoryCode, @JsonProperty(value = "demandCategoryName") String demandCategoryName) {
 		this.demandCategoryCode = demandCategoryCode;
+		this.demandCategoryName = demandCategoryName;
 	}
 
 	@Override

@@ -61,12 +61,12 @@ public class DemandRequestApiService {
     public ShortTermMaterialDemand handleDemandSubmodelRequest(String bpnl, String materialNumber) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
-            log.error("Unknown Partner BPNL " + bpnl);
+            log.error("Unknown Partner BPNL");
             return null;
         }
         Material material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber).getMaterial();
         if (material == null) {
-            log.error("Unknown Material " + materialNumber);
+            log.error("Unknown Material");
             return null;
         }
         var currentDemands = ownDemandService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());

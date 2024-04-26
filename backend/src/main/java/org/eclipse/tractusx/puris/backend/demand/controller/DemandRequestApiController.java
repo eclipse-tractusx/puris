@@ -71,7 +71,6 @@ public class DemandRequestApiController {
             if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
                 representation = "<REPLACED_INVALID_REPRESENTATION>";
             }
-            log.warn("Received " + representation + " from " + bpnl);
             return ResponseEntity.status(501).build();
         }
         var samm = demandRequestApiService.handleDemandSubmodelRequest(bpnl, materialnumber);
