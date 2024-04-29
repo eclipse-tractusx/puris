@@ -58,26 +58,6 @@ services:
     container_name: customer-control-plane
     env_file:
       - ./tractus-x-edc/config/customer/control-plane.properties
-    environment:
-      # bdrs client
-      TX_IAM_IATP_BDRS_SERVER_URL: http://brds:8582/api/directory
-      TX_IAM_IATP_BDRS_CACHE_VALIDITY: 600
-      # iatp / dim
-      EDC_IAM_ISSUER_ID: did:web:edr-service/customer #TODO fehlconfig?
-      EDC_IAM_STS_OAUTH_TOKEN_URL: http://keycloak:8080/realms/miw_test/protocol/openid-connect/token
-      EDC_IAM_STS_OAUTH_CLIENT_ID: ${CUSTOMER_OAUTH_CLIENT_ID}
-      EDC_IAM_STS_OAUTH_CLIENT_SECRET_ALIAS: ${CUSTOMER_OAUTH_SECRET_ALIAS} #TODO
-      EDC_IAM_STS_DIM_URL: http://edr-service:80/sts
-      EDC_IAM_TRUSTED-ISSUER_PORTAL-ISSUER-ID_ID: did:web:edr-service/trusted-issuer
-      # configure one Credential service for all (else pulled from did): https://github.com/eclipse-tractusx/tractusx-edc/blob/d7d3586ffc4ef03c858e38fde6bfa8687efa50c9/edc-extensions/bdrs-client/src/main/java/org/eclipse/tractusx/edc/identity/mapper/BdrsClientExtension.java#L50
-      TX_IAM_IATP_CREDENTIALSERVICE_URL: http://edr-service:80
-      # don't use https during did resolving in catalog request
-      EDC_IAM_DID_WEB_USE_HTTPS: false
-    #    environment:
-    #      SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
-    #      SPRING_DATASOURCE_URL: jdbc:postgresql://supplier-postgres:5432/dtr_database
-    #      SPRING_DATASOURCE_USERNAME: ${PG_USER}
-    #      SPRING_DATASOURCE_PASSWORD: ${PG_PW}
     ports:
       - "127.0.0.1:8180:8180"
       - "127.0.0.1:8181:8181"
@@ -89,24 +69,26 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
-  #  edc-customer-data-plane:
-  #    restart: on-failure
-  #    extends:
-  #      file: ./tractus-x-edc/docker-compose.yaml
-  #      service: data-plane
-  #    container_name: customer-data-plane
-  #    ports:
-  #      - "127.0.0.1:8280:8280"
-  #      - "127.0.0.1:8285:8285"
-  #      - "127.0.0.1:8299:8299"
-  #    environment:
-  #      edc.vault.hashicorp.token: ${VAULT_DEV_ROOT_TOKEN_ID}
-  #    env_file:
-  #      - ./tractus-x-edc/config/customer/data-plane.properties
-  #    networks:
-  #      - miw-net
-  #    extra_hosts:
-  #      - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
+  edc-customer-data-plane:
+    depends_on:
+      postgres-customer:
+        condition: service_healthy
+    restart: on-failure
+    extends:
+      file: ./tractus-x-edc/docker-compose.yaml
+      service: data-plane
+    container_name: customer-data-plane
+    ports:
+      - "127.0.0.1:8280:8280"
+      - "127.0.0.1:8283:8283"
+      - "127.0.0.1:8285:8285"
+      - "127.0.0.1:8299:8299"
+    env_file:
+      - ./tractus-x-edc/config/customer/data-plane.properties
+    networks:
+      - miw-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   #  postgres-supplier:
   #    image: postgres:15.4-alpine
@@ -152,46 +134,31 @@ services:
       - "127.0.0.1:1044:1044"
     env_file:
       - ./tractus-x-edc/config/supplier/control-plane.properties
-    environment:
-      TX_IAM_IATP_BDRS_SERVER_URL: http://bdrs:8582/api/directory
-      #      TX_IAM_IATP_BDRS_SERVER_URL: http://brds:8582
-      TX_IAM_IATP_BDRS_CACHE_VALIDITY: 600
-      # iatp / dim
-      EDC_IAM_ISSUER_ID: did:web:edr-service/supplier
-      # locally we don't actually care, because our dim service will accept all
-      EDC_IAM_STS_OAUTH_TOKEN_URL: http://keycloak:8080/realms/miw_test/protocol/openid-connect/token
-      EDC_IAM_STS_OAUTH_CLIENT_ID: ${SUPPLIER_OAUTH_CLIENT_ID}
-      EDC_IAM_STS_OAUTH_CLIENT_SECRET_ALIAS: ${SUPPLIER_OAUTH_SECRET_ALIAS} #TODO
-      EDC_IAM_STS_DIM_URL: http://edr-service:80/sts
-      EDC_IAM_TRUSTED-ISSUER_PORTAL-ISSUER-ID_ID: did:web:edr-service/trusted-issuer
-      # configure one Credential service for all (else pulled from did)
-      TX_IAM_IATP_CREDENTIALSERVICE_URL: http://edr-service:80
-      # don't use https during did resolving
-      EDC_IAM_DID_WEB_USE_HTTPS: false
     networks:
       - miw-net
     extra_hosts:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
-#
-#
-#  edc-supplier-data-plane:
-#    restart: on-failure
-#    extends:
-#      file: ./tractus-x-edc/docker-compose.yaml
-#      service: data-plane
-#    container_name: supplier-data-plane
-#    ports:
-#      - "127.0.0.1:9280:9280"
-#      - "127.0.0.1:9285:9285"
-#      - "127.0.0.1:9299:9299"
-#    environment:
-#      edc.vault.hashicorp.token: ${VAULT_DEV_ROOT_TOKEN_ID}
-#    env_file:
-#      - ./tractus-x-edc/config/supplier/data-plane.properties
-#    networks:
-#      - miw-net
-#    extra_hosts:
-#      - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
+
+  edc-supplier-data-plane:
+    depends_on:
+      postgres-customer:
+        condition: service_healthy
+    restart: on-failure
+    extends:
+      file: ./tractus-x-edc/docker-compose.yaml
+      service: data-plane
+    container_name: supplier-data-plane
+    ports:
+      - "127.0.0.1:9280:9280"
+      - "127.0.0.1:9283:9283"
+      - "127.0.0.1:9285:9285"
+      - "127.0.0.1:9299:9299"
+    env_file:
+      - ./tractus-x-edc/config/supplier/data-plane.properties
+    networks:
+      - miw-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
 networks:
   miw-net:

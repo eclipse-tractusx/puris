@@ -51,78 +51,7 @@ error
 
 policy.@type = "odrl:Set"
 
-catalog request results in unexpected null pinter during membershipPresentation call
-
-SEVERE 2024-04-18T18:14:41.467647124 JerseyExtension: Unexpected exception caught
-java.lang.NullPointerException
-at java.base/java.util.Objects.requireNonNull(Unknown Source)
-at java.base/java.util.ImmutableCollections$MapN.<init>(Unknown Source)
-at java.base/java.util.Map.of(Unknown Source)
-at org.eclipse.tractusx.edc.identity.mapper.BdrsClientImpl.createMembershipPresentation(BdrsClientImpl.java:153)
-at org.eclipse.tractusx.edc.identity.mapper.BdrsClientImpl.updateCache(BdrsClientImpl.java:121)
-at org.eclipse.tractusx.edc.identity.mapper.BdrsClientImpl.resolve(BdrsClientImpl.java:101)
-at org.eclipse.tractusx.edc.identity.mapper.BdrsClientAudienceMapper.resolve(BdrsClientAudienceMapper.java:39)
-at org.eclipse.edc.protocol.dsp.http.dispatcher.DspHttpRemoteMessageDispatcherImpl.dispatch(
-DspHttpRemoteMessageDispatcherImpl.java:121)
-at org.eclipse.edc.connector.core.message.RemoteMessageDispatcherRegistryImpl.dispatch(
-RemoteMessageDispatcherRegistryImpl.java:48)
-at org.eclipse.edc.connector.controlplane.services.catalog.CatalogServiceImpl.requestCatalog(CatalogServiceImpl.java:44)
-at org.eclipse.edc.connector.controlplane.api.management.catalog.CatalogApiController.requestCatalog(
-CatalogApiController.java:64)
-at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
-at java.base/java.lang.reflect.Method.invoke(Unknown Source)
-at org.glassfish.jersey.server.model.internal.ResourceMethodInvocationHandlerFactory.lambda$static$0(
-ResourceMethodInvocationHandlerFactory.java:52)
-at org.glassfish.jersey.server.model.internal.AbstractJavaResourceMethodDispatcher$1.run(
-AbstractJavaResourceMethodDispatcher.java:146)
-at org.glassfish.jersey.server.model.internal.AbstractJavaResourceMethodDispatcher.invoke(
-AbstractJavaResourceMethodDispatcher.java:189)
-at org.glassfish.jersey.server.model.internal.JavaResourceMethodDispatcherProvider$VoidOutInvoker.doDispatch(
-JavaResourceMethodDispatcherProvider.java:159)
-at org.glassfish.jersey.server.model.internal.AbstractJavaResourceMethodDispatcher.dispatch(
-AbstractJavaResourceMethodDispatcher.java:93)
-at org.glassfish.jersey.server.model.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:478)
-at org.glassfish.jersey.server.model.ResourceMethodInvoker.apply(ResourceMethodInvoker.java:400)
-at org.glassfish.jersey.server.model.ResourceMethodInvoker.apply(ResourceMethodInvoker.java:81)
-at org.glassfish.jersey.server.ServerRuntime$1.run(ServerRuntime.java:261)
-at org.glassfish.jersey.internal.Errors$1.call(Errors.java:248)
-at org.glassfish.jersey.internal.Errors$1.call(Errors.java:244)
-at org.glassfish.jersey.internal.Errors.process(Errors.java:292)
-at org.glassfish.jersey.internal.Errors.process(Errors.java:274)
-at org.glassfish.jersey.internal.Errors.process(Errors.java:244)
-at org.glassfish.jersey.process.internal.RequestScope.runInScope(RequestScope.java:265)
-at org.glassfish.jersey.server.ServerRuntime.process(ServerRuntime.java:240)
-at org.glassfish.jersey.server.ApplicationHandler.handle(ApplicationHandler.java:697)
-at org.glassfish.jersey.servlet.WebComponent.serviceImpl(WebComponent.java:394)
-at org.glassfish.jersey.servlet.WebComponent.service(WebComponent.java:346)
-at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:357)
-at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:311)
-at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:205)
-at org.eclipse.jetty.servlet.ServletHolder.handle(ServletHolder.java:764)
-at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:529)
-at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:221)
-at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1381)
-at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:176)
-at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:484)
-at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:174)
-at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1303)
-at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:129)
-at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:192)
-at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:122)
-at org.eclipse.jetty.server.Server.handle(Server.java:563)
-at org.eclipse.jetty.server.HttpChannel$RequestDispatchable.dispatch(HttpChannel.java:1598)
-at org.eclipse.jetty.server.HttpChannel.dispatch(HttpChannel.java:753)
-at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:501)
-at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:287)
-at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:314)
-at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:100)
-at org.eclipse.jetty.io.SelectableChannelEndPoint$1.run(SelectableChannelEndPoint.java:53)
-at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:969)
-at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1194)
-at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1149)
-at java.base/java.lang.Thread.run(Unknown Source)
-
---> bpdrs service needed
+Catalog Request needs `counterPartyId`
 
 # bdrs
 
@@ -131,23 +60,7 @@ Calls needed:
 - management -> create bpn directory
 - BPN-Directory -> map of bpn and did reachable
 
-bpn directory is securied by jwt containing:
-
-- vp holder key
-- vp holder id
-- null
-- bdrs-server-audience
-- map with
-    - vp following content example with holderId and vcJwt
-
-vcJwt inserted is build with
-
-- spoofedKey
-- issuerId
-- degreeSub
-- holderId
-- map with
-    - vc = membership_credential with holderId inserted
+The EDC needs to self-IATP to get a `MembershipCredential` to use the BDRS
 
 DIDs are build following JsonWebKey2020
 DID-ID like did:web:name-to-use
@@ -187,32 +100,88 @@ https://github.com/eclipse-edc/Connector/blob/4fd16b8e34d685239ea40fc3d8e9b02cc8
 
 - a key is somehow resolved. This may be from the did.json
 
-bdrs | WARNING 2024-04-21T19:34:23.497508523 Error validating BDRS client VP: Credential is not yet valid., Not all
-credential subject IDs match the expected subject ID 'did:web:edr-service/trusted-issuer'. Violating subject
-IDs: [did:web:edr-service/supplier]
-
-- I need to check on subjects - likely this is wrong
-- not sure why the credential should not be valid
-
 Following
 this [test](https://github.com/eclipse-tractusx/tractusx-edc/blob/main/edc-extensions/bdrs-client/src/test/java/org/eclipse/tractusx/edc/identity/mapper/BdrsClientImplComponentTest.java),
 
 - the VC is signed by the issuer
 - the VP is signed by the holder
 
-Why does the catalog request on consumer side result in port 443 / ssl?
-
-Overall request is the dim request
--> check in dim test
-
 Following Tractus-X Connector Setup
 
-- DIM = your wallet that already contains VCs
+- DIM = your wallet that already contains VCs -> encapsulated STS and CS
 - Credential Service = get your own VP to hand over. (something like the miw)
 - SecureTokenService = get auth for something and then request presentation
 
-customer-control-plane | DEBUG 2024-04-22T17:49:36.200763912 DSP: Incoming CatalogRequestMessage for class
-org.eclipse.edc.connector.controlplane.catalog.spi.Catalog process
-customer-control-plane | DEBUG 2024-04-22T17:49:36.267334896 Unauthorized: No Service endpoint 'CredentialService' found
-on DID Document.
-customer-control-plane | DEBUG 2024-04-22T17:49:36.267812038 DSP: Service call failed: Unauthorized
+# Updates EDR
+
+edr callback payload
+
+```json
+{
+    "id": "3099e0f1-e255-4a00-8a8b-8ec5c16e8758",
+    "at": 1714325393313,
+    "payload": {
+        "transferProcessId": "07231854-112b-45bb-957b-4fb01dc2718f",
+        "callbackAddresses": [
+            {
+                "uri": "http://edr-service:80/edr-log",
+                "events": [
+                    "transfer.process.started"
+                ],
+                "transactional": false,
+                "authKey": "None",
+                "authCodeId": "None"
+            }
+        ],
+        "assetId": "ASSET_1",
+        "type": "CONSUMER",
+        "contractId": "54dd6fe4-7a4e-4de6-b7b8-2f131fc99f79",
+        "dataAddress": {
+            "properties": {
+                "process_id": "6570b7a5-7df9-42be-9fd7-80f200427fc3",
+                "participant_id": "BPNL1234567890ZZ",
+                "asset_id": "ASSET_1",
+                "https://w3id.org/edc/v0.0.1/ns/endpointType": "https://w3id.org/idsa/v4.1/HTTP",
+                "https://w3id.org/tractusx/auth/refreshEndpoint": "http://customer-data-plane:8285/api/public",
+                "https://w3id.org/tractusx/auth/audience": "did:web:edr-service/supplier",
+                "agreement_id": "54dd6fe4-7a4e-4de6-b7b8-2f131fc99f79",
+                "flow_type": "PULL",
+                "https://w3id.org/edc/v0.0.1/ns/type": "https://w3id.org/idsa/v4.1/HTTP",
+                "https://w3id.org/edc/v0.0.1/ns/endpoint": "http://customer-data-plane:8285/api/public",
+                "https://w3id.org/tractusx/auth/refreshToken": "eyJraWQiOiJjdXN0b21lci1jZXJ0IiwiYWxnIjoiUlMyNTYifQ.eyJleHAiOjE3MTQzMjU2OTMsImlhdCI6MTcxNDMyNTM5MywianRpIjoiMGY2YzM4NjItOGYxZS00YzU1LWIwMzEtNGMzM2NhZWIxMzY5In0.L_r5a_hZY3aFYw4SYOoV_Ct5yWuDJBRwPeujAPKv8aPVB_buRZHDPwwnrlYAIWa4j4QIiKjmMMFQN7NUi56tIYr3An3KGwfycekCAS5CSMMAx7x6In5JTRPyyBEi897gjXYGHDlfFa_j7G5bG4__InwDt5HF_2_BKTrPMGEEGL62pAm2cm9qfZJCNJx2R6tnkSymlR0E6Dju2FsCWiOIbYlPP6JHjDkU9aKRIv6l_n0HodRUELBLKBGi565O5zwkec9sNxYdv4mTwskU4IMOvGJPNgHE3QKpzyPCIl7CzVJICCaMszl698rAp9BYP0tokUNj8yNAKbR5ZutYFnAwSA",
+                "https://w3id.org/tractusx/auth/expiresIn": "300",
+                "https://w3id.org/edc/v0.0.1/ns/authorization": "eyJraWQiOiJjdXN0b21lci1jZXJ0IiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJCUE5MNDQ0NDQ0NDQ0NFhYIiwiYXVkIjoiQlBOTDEyMzQ1Njc4OTBaWiIsInN1YiI6IkJQTkw0NDQ0NDQ0NDQ0WFgiLCJleHAiOjE3MTQzMjU2OTMsImlhdCI6MTcxNDMyNTM5MywianRpIjoiMzMwMjhjZDEtMTVlZC00Njk1LWE0NjMtNDc2MTJlNmZhNDk5In0.AP8BY0gjnKFxeswCPRaalKPD-nyLtXqe8hpEQH_CcWoN48KLXLJzgyQXo04WtcCPe7QBU0dyOd9UBi71tmxPNNACLRg_HZVmAFfRZWSkCY9pr-sreChP0EJcTT7AXgHnBIT0mKZbcQ_8b8g9BI-nS43eAd52I_WAg6oTK5hvyMOha7H-HvPeyNDGPA5QQ2RKuf3JKEw-26RALZdgkLz0VDjHd9CMDJJC0nvkbzP928LvzmLs8r-e1YFJwFtZ-ipVlxb7OiFrg7UeAwwb46spi2epMj3Px1QLXrd-Fd9skV2Iw8PugPIUFm5ehyK2d5mQYB4waAm5kEmgVVLLvwVX8A",
+                "https://w3id.org/tractusx/auth/refreshAudience": "did:web:edr-service/supplier"
+            }
+        }
+    },
+    "type": "TransferProcessStarted"
+}
+```
+
+Get against EDR API after Transfer Process:
+`{{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v2/transferprocesses/{{TRANSFER_PROCESS_ID}}`
+
+```json
+{
+    "@type": "DataAddress",
+    "endpointType": "https://w3id.org/idsa/v4.1/HTTP",
+    "tx-auth:refreshEndpoint": "http://customer-data-plane:8285/api/public",
+    "tx-auth:audience": "did:web:edr-service/supplier",
+    "type": "https://w3id.org/idsa/v4.1/HTTP",
+    "endpoint": "http://customer-data-plane:8285/api/public",
+    "tx-auth:refreshToken": "eyJraWQiOiJjdXN0b21lci1jZXJ0IiwiYWxnIjoiUlMyNTYifQ.eyJleHAiOjE3MTQzMjU2OTMsImlhdCI6MTcxNDMyNTM5MywianRpIjoiMGY2YzM4NjItOGYxZS00YzU1LWIwMzEtNGMzM2NhZWIxMzY5In0.L_r5a_hZY3aFYw4SYOoV_Ct5yWuDJBRwPeujAPKv8aPVB_buRZHDPwwnrlYAIWa4j4QIiKjmMMFQN7NUi56tIYr3An3KGwfycekCAS5CSMMAx7x6In5JTRPyyBEi897gjXYGHDlfFa_j7G5bG4__InwDt5HF_2_BKTrPMGEEGL62pAm2cm9qfZJCNJx2R6tnkSymlR0E6Dju2FsCWiOIbYlPP6JHjDkU9aKRIv6l_n0HodRUELBLKBGi565O5zwkec9sNxYdv4mTwskU4IMOvGJPNgHE3QKpzyPCIl7CzVJICCaMszl698rAp9BYP0tokUNj8yNAKbR5ZutYFnAwSA",
+    "tx-auth:expiresIn": "300",
+    // use Header Authorization <authorization token>
+    "authorization": "eyJraWQiOiJjdXN0b21lci1jZXJ0IiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJCUE5MNDQ0NDQ0NDQ0NFhYIiwiYXVkIjoiQlBOTDEyMzQ1Njc4OTBaWiIsInN1YiI6IkJQTkw0NDQ0NDQ0NDQ0WFgiLCJleHAiOjE3MTQzMjU2OTMsImlhdCI6MTcxNDMyNTM5MywianRpIjoiMzMwMjhjZDEtMTVlZC00Njk1LWE0NjMtNDc2MTJlNmZhNDk5In0.AP8BY0gjnKFxeswCPRaalKPD-nyLtXqe8hpEQH_CcWoN48KLXLJzgyQXo04WtcCPe7QBU0dyOd9UBi71tmxPNNACLRg_HZVmAFfRZWSkCY9pr-sreChP0EJcTT7AXgHnBIT0mKZbcQ_8b8g9BI-nS43eAd52I_WAg6oTK5hvyMOha7H-HvPeyNDGPA5QQ2RKuf3JKEw-26RALZdgkLz0VDjHd9CMDJJC0nvkbzP928LvzmLs8r-e1YFJwFtZ-ipVlxb7OiFrg7UeAwwb46spi2epMj3Px1QLXrd-Fd9skV2Iw8PugPIUFm5ehyK2d5mQYB4waAm5kEmgVVLLvwVX8A",
+    "tx-auth:refreshAudience": "did:web:edr-service/supplier",
+    "@context": {
+        "@vocab": "https://w3id.org/edc/v0.0.1/ns/",
+        "edc": "https://w3id.org/edc/v0.0.1/ns/",
+        "tx": "https://w3id.org/tractusx/v0.0.1/ns/",
+        "tx-auth": "https://w3id.org/tractusx/auth/",
+        "cx-policy": "https://w3id.org/catenax/policy/",
+        "odrl": "http://www.w3.org/ns/odrl/2/"
+    }
+}
+```
