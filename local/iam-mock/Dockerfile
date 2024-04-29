@@ -1,8 +1,6 @@
-#!/bin/bash
-
 #
-# Copyright (c) 2022,2024 Volkswagen AG
-# Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+# Copyright (c) 2024 Volkswagen AG
+# Copyright (c) 2024 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -19,12 +17,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+FROM python:3.10
 
-docker compose down -v
-docker compose -f docker-compose-infrastructure.yaml down -v
-docker image rm local-vault
-docker image rm local-mock-util-service
-rm .env
-rm ./vault/secrets -r
-rm ./iam-mock/keys -r
-echo "Deleted .env and vault/secrets"
+WORKDIR /code
+COPY ./requirements.txt /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+COPY ./ /code
+COPY ./keys /code/keys
+
+CMD ["uvicorn", "mock_util:app", "--host", "0.0.0.0", "--port", "80"]

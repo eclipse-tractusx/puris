@@ -82,6 +82,16 @@ services:
     networks:
       - miw-net
 
+  mock-util-service:
+    build: ./iam-mock
+    container_name: mock-util-service
+    ports:
+      - "127.0.0.1:8888:80"
+    networks:
+      - miw-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
+
   bdrs:
     image: tractusx/bdrs-server-memory:0.0.4
     container_name: bdrs

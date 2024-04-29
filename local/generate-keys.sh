@@ -24,6 +24,7 @@
 
 # create folders, if not existing
 mkdir -p ./vault/secrets
+mkdir -p ./iam-mock/keys
 
 # generate .env
 echo "Creating .env"
@@ -88,6 +89,10 @@ jq ".clients[6].secret = \"$miw_secret\"" ./miw/keycloak-setup-temp.json > ./miw
 rm ./miw/keycloak-setup-temp.json
 
 SUPPLIER_CERT_SHA="$(openssl x509 -in "$SUPPLIER_CERT" -noout -sha256 -fingerprint | tr '[:upper:]' '[:lower:]' | tr -d : | sed 's/.*=//')"
+
+echo "Creating key pair for mock iam"
+openssl ecparam -name prime256v1 -genkey -out ./iam-mock/keys/private_key.pem
+openssl ec -in ./iam-mock/keys/private_key.pem -pubout -out ./iam-mock/keys/public_key.pem
 
 # let everyone access the files so that the non-root user in vault container can put them
 chmod -R 755 ./vault/secrets
