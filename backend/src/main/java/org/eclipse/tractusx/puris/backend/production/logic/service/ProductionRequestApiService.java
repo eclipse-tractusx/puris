@@ -61,15 +61,15 @@ public class ProductionRequestApiService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public PlannedProductionOutput handleProductionSubmodelRequest(String bpnl, String materialNumber) {
+    public PlannedProductionOutput handleProductionSubmodelRequest(String bpnl, String materialNumberCx) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
             log.error("Unknown Partner BPNL " + bpnl);
             return null;
         }
-        Material material = materialService.findByMaterialNumberCx(materialNumber);
+        Material material = materialService.findByMaterialNumberCx(materialNumberCx);
         if (material == null) {
-            log.error("Unknown Material " + materialNumber);
+            log.error("Unknown Material " + materialNumberCx);
             return null;
         }
         var currentProduction = ownProductionService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
@@ -86,7 +86,7 @@ public class ProductionRequestApiService {
                 var productionPartner = production.getPartner();
                 var productionMaterial = production.getMaterial();
                 if (!partner.equals(productionPartner) || !material.equals(productionMaterial)) {
-                    log.warn("Received inconsistent data from " + partner.getBpnl() + "\n" + productions);
+                    log.warn("Received inconsistent data from " + partner.getBpnl());
                     return;
                 }
             }

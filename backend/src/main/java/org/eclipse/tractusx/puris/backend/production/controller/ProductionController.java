@@ -90,8 +90,8 @@ public class ProductionController {
     @GetMapping()
     @ResponseBody
     @Operation(summary = "Get all planned productions for the given Material", description = "Get all planned productions for the given material number. Optionally the production site can be filtered by its bpns.")
-    public List<ProductionDto> getAllProductions(String materialNumber, Optional<String> site) {
-        return ownProductionService.findAllByFilters(Optional.of(materialNumber), Optional.empty(), site)
+    public List<ProductionDto> getAllProductions(String ownMaterialNumber, Optional<String> site) {
+        return ownProductionService.findAllByFilters(Optional.of(ownMaterialNumber), Optional.empty(), site)
                 .stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
@@ -205,9 +205,9 @@ public class ProductionController {
         summary = "Get all productions of partners for a material", 
         description = "Get all productions of partners for a material number. Optionally the partners can be filtered by their bpnl and the production site can be filtered by its bpns."
     )
-    public List<ProductionDto> getAllProductionsForPartner(String materialNumber, Optional<String> bpnl,
+    public List<ProductionDto> getAllProductionsForPartner(String ownMaterialNumber, Optional<String> bpnl,
             Optional<String> site) {
-        return reportedProductionService.findAllByFilters(Optional.of(materialNumber), bpnl, site)
+        return reportedProductionService.findAllByFilters(Optional.of(ownMaterialNumber), bpnl, site)
                 .stream().map(this::convertToDto).collect(Collectors.toList());
     }
 

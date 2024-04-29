@@ -22,7 +22,7 @@ import { config } from '@models/constants/config'
 import { Production } from '@models/types/data/production';
 
 export const useReportedProduction = (materialNumber: string | null) => {
-  const {data: reportedProductions, error: reportedProductionsError, isLoading: isLoadingReportedProductions, refresh: refreshProduction } = useFetch<Production[]>(materialNumber ? `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_PRODUCTION}/reported?materialNumber=${materialNumber}` : undefined);
+  const {data: reportedProductions, error: reportedProductionsError, isLoading: isLoadingReportedProductions, refresh: refreshProduction } = useFetch<Production[]>(materialNumber ? `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_PRODUCTION}/reported?ownMaterialNumber=${materialNumber}` : undefined);
   return {
     reportedProductions,
     reportedProductionsError,

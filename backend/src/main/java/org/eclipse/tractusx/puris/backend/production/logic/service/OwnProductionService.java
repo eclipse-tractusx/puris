@@ -85,7 +85,7 @@ public class OwnProductionService {
             
             throw new IllegalArgumentException("Invalid production");
         }
-        if (production.getUuid() != null && repository.findById(production.getUuid()).isPresent()) {
+        if (repository.findAll().stream().anyMatch(prod -> prod.equals(production))) {
             throw new KeyAlreadyExistsException("Production already exists");
         }
         return repository.save(production);

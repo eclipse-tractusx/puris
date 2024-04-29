@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -56,13 +56,13 @@ public class ProductionRequestApiController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error"),
         @ApiResponse(responseCode = "501", description = "Unsupported representation")
     })
-    @GetMapping("request/{materialnumber}/{representation}")
+    @GetMapping("request/{materialnumbercx}/{representation}")
     public ResponseEntity<PlannedProductionOutput> getProductionMapping(
         @RequestHeader("edc-bpn") String bpnl,
-        @PathVariable String materialnumber,
+        @PathVariable String materialnumbercx,
         @PathVariable String representation
     ) {
-        if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumber).matches()) {
+        if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumbercx).matches()) {
             log.warn("Rejecting request at PlannedProduction Submodel request 2.0.0 endpoint");
             return ResponseEntity.badRequest().build();
         }
@@ -74,7 +74,7 @@ public class ProductionRequestApiController {
             log.warn("Received " + representation + " from " + bpnl);
             return ResponseEntity.status(501).build();
         }
-        var samm = productionRequestApiService.handleProductionSubmodelRequest(bpnl, materialnumber);
+        var samm = productionRequestApiService.handleProductionSubmodelRequest(bpnl, materialnumbercx);
         if (samm == null) {
             return ResponseEntity.status(500).build();
         }

@@ -74,7 +74,7 @@ public class ReportedProductionService {
     }
 
     public final ReportedProduction create(ReportedProduction production) {
-        if (production.getUuid() != null && repository.findById(production.getUuid()).isPresent()) {
+        if (repository.findAll().stream().anyMatch(prod -> prod.equals(production))) {
             return null;
         }
         if (!validator.apply(production)) {

@@ -52,26 +52,15 @@ public class PlannedProductionOutput {
     @Valid
     private HashSet<Position> positions;
 
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
-    private String materialNumberCustomer;
-
     @NotNull
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String materialGlobalAssetId;
 
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
-    private String materialNumberSupplier;
-
     @JsonCreator
     public PlannedProductionOutput(@JsonProperty(value = "positions") HashSet<Position> positions,
-            @JsonProperty(value = "materialNumberCustomer") String materialNumberCustomer,
-            @JsonProperty(value = "materialGlobalAssetId") String materialGlobalAssetId,
-            @JsonProperty(value = "materialNumberSupplier") String materialNumberSupplier) {
-        super();
+            @JsonProperty(value = "materialGlobalAssetId") String materialGlobalAssetId) {
         this.positions = positions;
-        this.materialNumberCustomer = materialNumberCustomer;
         this.materialGlobalAssetId = materialGlobalAssetId;
-        this.materialNumberSupplier = materialNumberSupplier;
     }
 
     @Override
@@ -85,13 +74,11 @@ public class PlannedProductionOutput {
 
         final PlannedProductionOutput that = (PlannedProductionOutput) o;
         return Objects.equals(positions, that.positions)
-                && Objects.equals(materialNumberCustomer, that.materialNumberCustomer)
-                && Objects.equals(materialGlobalAssetId, that.materialGlobalAssetId)
-                && Objects.equals(materialNumberSupplier, that.materialNumberSupplier);
+                && Objects.equals(materialGlobalAssetId, that.materialGlobalAssetId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(positions, materialNumberCustomer, materialGlobalAssetId, materialNumberSupplier);
+        return Objects.hash(positions, materialGlobalAssetId);
     }
 }

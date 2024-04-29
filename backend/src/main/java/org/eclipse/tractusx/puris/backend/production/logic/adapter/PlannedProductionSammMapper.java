@@ -68,16 +68,14 @@ public class PlannedProductionSammMapper {
         PlannedProductionOutput samm = new PlannedProductionOutput();
 
         samm.setMaterialGlobalAssetId(material.getMaterialNumberCx());
-        samm.setMaterialNumberCustomer(material.getOwnMaterialNumber());
-        samm.setMaterialNumberSupplier(material.getOwnMaterialNumber());
 
         var posList = new HashSet<Position>();
         samm.setPositions(posList);
+        var currentDate = new Date();
         for (var mappingHelperListEntry : groupedByPositionAttributes.entrySet()) {
             var key = mappingHelperListEntry.getKey();
             var prod = mappingHelperListEntry.getValue().get(0);
             Position position = new Position();
-            position.setLastUpdatedOnDateTime(new Date());
             posList.add(position);
             if (key.customerOrderId != null || key.customerOrderPositionId != null || key.supplierOrderId != null) {
                 OrderPositionReference opr = new OrderPositionReference(
@@ -92,7 +90,7 @@ public class PlannedProductionSammMapper {
             for (var v : mappingHelperListEntry.getValue()) {
                 ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(v.getQuantity(), v.getMeasurementUnit());
                 AllocatedPlannedProductionOutput allocatedProduction = new AllocatedPlannedProductionOutput(
-                        itemQuantityEntity, v.getProductionSiteBpns(), v.getEstimatedTimeOfCompletion());
+                        itemQuantityEntity, v.getProductionSiteBpns(), v.getEstimatedTimeOfCompletion(), currentDate);
                 allocatedProductionList.add(allocatedProduction);
             }
         }
@@ -102,7 +100,7 @@ public class PlannedProductionSammMapper {
     public List<ReportedProduction> sammToReportedProduction(PlannedProductionOutput samm, Partner partner) {
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
         ArrayList<ReportedProduction> outputList = new ArrayList<>();
-        var mpr = mprService.findAllBySupplierPartnerMaterialNumber(samm.getMaterialNumberSupplier()).stream().filter(mr -> mr.getPartner().getBpnl().equals(partner.getBpnl())).findFirst().orElse(null);
+        var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, samm.getMaterialGlobalAssetId());
 
         if (mpr == null) {
             log.warn("Could not identify materialPartnerRelation with matNbrCatenaX " + matNbrCatenaX
