@@ -94,7 +94,7 @@ public abstract class Demand {
         return this.getMaterial().getOwnMaterialNumber().equals(that.getMaterial().getOwnMaterialNumber()) &&
                 this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
                 this.getDay().equals(that.getDay()) &&
-                this.getDemandCategoryCode().equals(that.getDemandCategoryCode()) &&
+                this.getDemandCategoryCode().getValue().equals(that.getDemandCategoryCode().getValue()) &&
                 this.getDemandLocationBpns().equals(that.getDemandLocationBpns()) &&
                 this.getSupplierLocationBpns().equals(that.getSupplierLocationBpns());
     }

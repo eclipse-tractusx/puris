@@ -24,7 +24,7 @@ import { Demand } from '@models/types/data/demand';
 import { BPNS } from '@models/types/edc/bpn';
 
 export const useDemand = (materialNumber: string | null, site: BPNS | null) => {
-  const {data: demands, error: demandsError, isLoading: isLoadingDemands, refresh: refreshDemand } = useFetch<Demand[]>(materialNumber && site ? `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_DEMAND}?materialNumber=${materialNumber}&site=${site}` : undefined);
+  const {data: demands, error: demandsError, isLoading: isLoadingDemands, refresh: refreshDemand } = useFetch<Demand[]>(materialNumber && site ? `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_DEMAND}?ownMaterialNumber=${materialNumber}&site=${site}` : undefined);
   return {
     demands,
     demandsError,

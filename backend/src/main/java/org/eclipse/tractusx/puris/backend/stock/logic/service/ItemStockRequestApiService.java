@@ -22,6 +22,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -108,7 +109,7 @@ public class ItemStockRequestApiService {
     public void doItemStockSubmodelReportedMaterialItemStockRequest(Partner partner, Material material) {
         try {
             var mpr = mprService.find(material, partner);
-            var data = edcAdapterService.doItemStockSubmodelRequest(mpr, DirectionCharacteristic.OUTBOUND, 1);
+            var data = edcAdapterService.doSubmodelRequest(SubmodelType.ITEM_STOCK, mpr, DirectionCharacteristic.OUTBOUND, 1);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedMaterialItemStock(samm, partner);
             for (var stock : stocks) {
@@ -135,7 +136,7 @@ public class ItemStockRequestApiService {
     public void doItemStockSubmodelReportedProductItemStockRequest(Partner partner, Material material) {
         try {
             var mpr = mprService.find(material, partner);
-            var data = edcAdapterService.doItemStockSubmodelRequest(mpr, DirectionCharacteristic.INBOUND, 1);
+            var data = edcAdapterService.doSubmodelRequest(SubmodelType.ITEM_STOCK ,mpr, DirectionCharacteristic.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedProductItemStock(samm, partner);
             for (var stock : stocks) {
