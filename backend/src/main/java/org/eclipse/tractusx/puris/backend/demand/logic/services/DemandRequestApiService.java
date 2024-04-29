@@ -58,13 +58,13 @@ public class DemandRequestApiService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public ShortTermMaterialDemand handleDemandSubmodelRequest(String bpnl, String materialNumber) {
+    public ShortTermMaterialDemand handleDemandSubmodelRequest(String bpnl, String materialNumberCx) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
             log.error("Unknown Partner BPNL");
             return null;
         }
-        Material material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber).getMaterial();
+        Material material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx).getMaterial();
         if (material == null) {
             log.error("Unknown Material");
             return null;

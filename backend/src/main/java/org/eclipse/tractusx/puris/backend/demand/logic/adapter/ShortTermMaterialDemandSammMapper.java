@@ -101,13 +101,12 @@ public class ShortTermMaterialDemandSammMapper {
     }
 
     public List<ReportedDemand> sammToReportedDemand(ShortTermMaterialDemand samm, Partner partner) {
-        log.info("Mapping SAMM: " + samm);
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
         ArrayList<ReportedDemand> outputList = new ArrayList<>();
 
         var material = materialService.findByMaterialNumberCx(matNbrCatenaX);
         if (material == null) {
-            log.warn("Could not identify material with CatenaXNbr " + matNbrCatenaX);
+            log.warn("Could not identify material with given CatenaXNbr ");
             return outputList;
         }
 

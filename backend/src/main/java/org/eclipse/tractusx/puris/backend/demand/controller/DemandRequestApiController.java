@@ -56,13 +56,13 @@ public class DemandRequestApiController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error"),
         @ApiResponse(responseCode = "501", description = "Unsupported representation")
     })
-    @GetMapping("request/{materialnumber}/{representation}")
+    @GetMapping("request/{materialnumbercx}/{representation}")
     public ResponseEntity<ShortTermMaterialDemand> getDemandMapping(
         @RequestHeader("edc-bpn") String bpnl,
-        @PathVariable String materialnumber,
+        @PathVariable String materialnumbercx,
         @PathVariable String representation
     ) {
-        if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumber).matches()) {
+        if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumbercx).matches()) {
             log.warn("Rejecting request at ShortTermMaterialDemand Submodel request 1.0.0 endpoint");
             return ResponseEntity.badRequest().build();
         }
@@ -73,7 +73,7 @@ public class DemandRequestApiController {
             }
             return ResponseEntity.status(501).build();
         }
-        var samm = demandRequestApiService.handleDemandSubmodelRequest(bpnl, materialnumber);
+        var samm = demandRequestApiService.handleDemandSubmodelRequest(bpnl, materialnumbercx);
         if (samm == null) {
             return ResponseEntity.status(500).build();
         }
