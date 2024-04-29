@@ -81,7 +81,7 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
         if (!validator.apply(demand)) {
             throw new IllegalArgumentException("Invalid demand");
         }
-        if (demand.getUuid() != null && repository.findById(demand.getUuid()).isPresent()) {
+        if (repository.findAll().stream().anyMatch(d -> d.equals(demand))) {
             throw new KeyAlreadyExistsException("Demand already exists");
         }
         return repository.save(demand);

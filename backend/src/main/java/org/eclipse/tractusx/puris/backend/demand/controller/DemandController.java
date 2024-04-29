@@ -22,17 +22,22 @@ package org.eclipse.tractusx.puris.backend.demand.controller;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.OwnDemand;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.ReportedDemand;
 import org.eclipse.tractusx.puris.backend.demand.logic.dto.DemandDto;
+import org.eclipse.tractusx.puris.backend.demand.logic.services.DemandRequestApiService;
 import org.eclipse.tractusx.puris.backend.demand.logic.services.OwnDemandService;
 import org.eclipse.tractusx.puris.backend.demand.logic.services.ReportedDemandService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -40,6 +45,8 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -58,6 +65,9 @@ public class DemandController {
     private ReportedDemandService reportedDemandService;
 
     @Autowired
+    private DemandRequestApiService demandRequestApiService;
+
+    @Autowired
     private MaterialService materialService;
 
     @Autowired
@@ -72,11 +82,16 @@ public class DemandController {
     @Autowired
     private Validator validator;
 
+    private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
+
+    @Autowired
+    private ExecutorService executorService;
+
     @GetMapping()
     @ResponseBody
     @Operation(summary = "Get all own demands for the given Material", description = "Get all own demands for the given material number. Optionally the demanding site can be filtered by its bpns.")
-    public List<DemandDto> getAllDemands(String materialNumber, Optional<String> site) {
-        return ownDemandService.findAllByFilters(Optional.of(materialNumber), Optional.empty(), site)
+    public List<DemandDto> getAllDemands(String ownMaterialNumber, Optional<String> site) {
+        return ownDemandService.findAllByFilters(Optional.of(ownMaterialNumber), Optional.empty(), site)
                 .stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
@@ -154,10 +169,32 @@ public class DemandController {
         summary = "Get all demands of partners for a material", 
         description = "Get all demands of partners for a material number. Optionally the partners can be filtered by their bpnl and the demanding site can be filtered by its bpns."
     )
-    public List<DemandDto> getAllDemandsForPartner(String materialNumber, Optional<String> bpnl,
+    public List<DemandDto> getAllDemandsForPartner(String ownMaterialNumber, Optional<String> bpnl,
             Optional<String> site) {
-        return reportedDemandService.findAllByFilters(Optional.of(materialNumber), bpnl, site)
+        return reportedDemandService.findAllByFilters(Optional.of(ownMaterialNumber), bpnl, site)
                 .stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    @GetMapping("reported/refresh")
+    @ResponseBody
+    @Operation(
+        summary = "Refreshes all reported demands", 
+        description = "Refreshes all reported demands from the demand request API."
+    )
+    public ResponseEntity<List<PartnerDto>> refreshReportedProductions(@RequestParam String ownMaterialNumber) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        List<Partner> allCustomerPartnerEntities = mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber);
+        for (Partner customerPartner : allCustomerPartnerEntities) {
+            executorService.submit(() ->
+            demandRequestApiService.doReportedDemandRequest(customerPartner, materialEntity));
+        }
+
+        return ResponseEntity.ok(allCustomerPartnerEntities.stream()
+            .map(partner -> modelMapper.map(partner, PartnerDto.class))
+            .toList());
     }
 
     private DemandDto convertToDto(OwnDemand entity) {
