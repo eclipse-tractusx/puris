@@ -47,9 +47,6 @@ public class Position {
     private OrderPositionReference orderPositionReference;
 
     @NotNull
-    private Date lastUpdatedOnDateTime;
-
-    @NotNull
     @Valid
     private HashSet<AllocatedPlannedProductionOutput> allocatedPlannedProductionOutputs;
 
@@ -60,7 +57,6 @@ public class Position {
             @JsonProperty(value = "allocatedPlannedProductionOutputs") HashSet<AllocatedPlannedProductionOutput> allocatedPlannedProductionOutputs) {
         super();
         this.orderPositionReference = orderPositionReference;
-        this.lastUpdatedOnDateTime = lastUpdatedOnDateTime;
         this.allocatedPlannedProductionOutputs = allocatedPlannedProductionOutputs;
     }
 
@@ -75,12 +71,11 @@ public class Position {
 
         final Position that = (Position) o;
         return Objects.equals(orderPositionReference, that.orderPositionReference)
-                && Objects.equals(lastUpdatedOnDateTime, that.lastUpdatedOnDateTime)
                 && Objects.equals(allocatedPlannedProductionOutputs, that.allocatedPlannedProductionOutputs);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(orderPositionReference, lastUpdatedOnDateTime, allocatedPlannedProductionOutputs);
+        return Objects.hash(orderPositionReference, allocatedPlannedProductionOutputs);
     }
 }

@@ -58,15 +58,19 @@ public class AllocatedPlannedProductionOutput {
     @NotNull
     private Date estimatedTimeOfCompletion;
 
+    @NotNull
+    private Date lastUpdatedOnDateTime;
+
     @JsonCreator
     public AllocatedPlannedProductionOutput(
             @JsonProperty(value = "plannedProductionQuantity") ItemQuantityEntity plannedProductionQuantity,
             @JsonProperty(value = "productionSiteBpns") String productionSiteBpns,
-            @JsonProperty(value = "estimatedTimeOfCompletion") Date estimatedTimeOfCompletion) {
-        super();
+            @JsonProperty(value = "estimatedTimeOfCompletion") Date estimatedTimeOfCompletion,
+            @JsonProperty(value = "lastUpdatedOnDateTime") Date lastUpdatedOnDateTime) {
         this.plannedProductionQuantity = plannedProductionQuantity;
         this.productionSiteBpns = productionSiteBpns;
         this.estimatedTimeOfCompletion = estimatedTimeOfCompletion;
+        this.lastUpdatedOnDateTime = lastUpdatedOnDateTime;
     }
 
     @Override
@@ -81,11 +85,12 @@ public class AllocatedPlannedProductionOutput {
         final AllocatedPlannedProductionOutput that = (AllocatedPlannedProductionOutput) o;
         return Objects.equals(plannedProductionQuantity, that.plannedProductionQuantity)
                 && Objects.equals(productionSiteBpns, that.productionSiteBpns)
-                && Objects.equals(estimatedTimeOfCompletion, that.estimatedTimeOfCompletion);
+                && Objects.equals(estimatedTimeOfCompletion, that.estimatedTimeOfCompletion)
+                && Objects.equals(lastUpdatedOnDateTime, that.lastUpdatedOnDateTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(plannedProductionQuantity, productionSiteBpns, estimatedTimeOfCompletion);
+        return Objects.hash(plannedProductionQuantity, productionSiteBpns, estimatedTimeOfCompletion, lastUpdatedOnDateTime);
     }
 }

@@ -93,6 +93,7 @@ public abstract class Production {
         return  this.getMaterial().getOwnMaterialNumber().equals(that.getMaterial().getOwnMaterialNumber()) &&
                 this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
                 this.getEstimatedTimeOfCompletion().equals(that.getEstimatedTimeOfCompletion()) &&
+                this.getProductionSiteBpns().equals(that.getProductionSiteBpns()) &&
                 (
                     Objects.equals(this.getCustomerOrderNumber(), that.getCustomerOrderNumber()) && 
                     Objects.equals(this.getCustomerOrderPositionNumber(), that.getCustomerOrderPositionNumber()) &&
