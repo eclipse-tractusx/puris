@@ -87,12 +87,16 @@ services:
     container_name: bdrs
     env_file:
       - ./bdrs/application.properties
+    environment:
+      WEB_HTTP_PORT: 8580
+      WEB_HTTP_PATH: /api
     ports:
       - "127.0.0.1:8580:8580"
       - "127.0.0.1:8581:8581"
       - "127.0.0.1:8582:8582"
     networks:
       - miw-net
+    # TODO check cacerts need in deployment.yaml
 networks:
   miw-net:
     name: miw-net

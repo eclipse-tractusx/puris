@@ -20,13 +20,18 @@
 
 #!/bin/bash
 
-KEY=password
+KEY=
 
-curl -X POST -H "x-api-key: $KEY" -H "Content-Type: application/json" -d '{ "bpn": "BPNL4444444444XX", "did": "did:web:edr-service/customer" }' http://localhost:8581/api/management/bpn-directory | jq
+if [ -z "$KEY" ]; then
+  echo "KEY is not set. Please specify the key (see bdrs docker compose definition). Exiting..."
+  exit 1
+fi
+
+curl -X POST -H "x-api-key: $KEY" -H "Content-Type: application/json" -d '{ "bpn": "BPNL4444444444XX", "did": "did:web:mock-util-service/customer" }' http://localhost:8581/api/management/bpn-directory | jq
 echo ""
 
-curl -X POST -H "x-api-key: $KEY" -H "Content-Type: application/json" -d '{ "bpn": "BPNL1234567890ZZ", "did": "did:web:edr-service/supplier" }' http://localhost:8581/api/management/bpn-directory | jq
+curl -X POST -H "x-api-key: $KEY" -H "Content-Type: application/json" -d '{ "bpn": "BPNL1234567890ZZ", "did": "did:web:mock-util-service/supplier" }' http://localhost:8581/api/management/bpn-directory | jq
 echo ""
 
-curl -X POST -H "x-api-key: $KEY" -H "Content-Type: application/json" -d '{ "bpn": "BPNL000000000000", "did": "did:web:edr-service/trusted-issuer" }' http://localhost:8581/api/management/bpn-directory | jq
+curl -X POST -H "x-api-key: $KEY" -H "Content-Type: application/json" -d '{ "bpn": "BPNL000000000000", "did": "did:web:mock-util-service/trusted-issuer" }' http://localhost:8581/api/management/bpn-directory | jq
 echo ""
