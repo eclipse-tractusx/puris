@@ -21,9 +21,9 @@
 version: "3"
 services:
 
-  postgres-customer:
+  postgres-all:
     image: postgres:15.4-alpine
-    container_name: customer-postgres
+    container_name: postgres-all
     environment:
       POSTGRES_DB: edc
       POSTGRES_USER: ${PG_USER}
@@ -49,7 +49,7 @@ services:
 
   edc-customer-control-plane:
     depends_on:
-      postgres-customer:
+      postgres-all:
         condition: service_healthy
     #    restart: on-failure
     extends:
@@ -71,7 +71,7 @@ services:
 
   edc-customer-data-plane:
     depends_on:
-      postgres-customer:
+      postgres-all:
         condition: service_healthy
     restart: on-failure
     extends:
@@ -90,35 +90,9 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
-  #  postgres-supplier:
-  #    image: postgres:15.4-alpine
-  #    container_name: supplier-postgres
-  #    environment:
-  #      POSTGRES_DB: puris-supplier
-  #      POSTGRES_USER: ${PG_USER}
-  #      POSTGRES_PASSWORD: ${PG_PW}
-  #    ports:
-  #      - "127.0.0.1:5435:5432"
-  #    healthcheck:
-  #      test: ["CMD-SHELL", "pg_isready -d puris-supplier -U ${PG_USER}"]
-  #      interval: 4s
-  #      timeout: 3s
-  #      retries: 15
-  #    networks:
-  #      - miw-net
-  #    deploy:
-  #      resources:
-  #        limits:
-  #          memory: 512mb
-  #          cpus: "0.5"
-  #    security_opt:
-  #      - no-new-privileges:true
-  #    volumes:
-  #      - ./postgres/init-dtr.sql:/docker-entrypoint-initdb.d/init-dtr.sql
-  #
   edc-supplier-control-plane:
     depends_on:
-      postgres-customer:
+      postgres-all:
         condition: service_healthy
     #    restart: on-failure
     extends:
@@ -141,7 +115,7 @@ services:
 
   edc-supplier-data-plane:
     depends_on:
-      postgres-customer:
+      postgres-all:
         condition: service_healthy
     restart: on-failure
     extends:
