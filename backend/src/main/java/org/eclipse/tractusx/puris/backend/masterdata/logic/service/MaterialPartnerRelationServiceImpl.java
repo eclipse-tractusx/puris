@@ -21,7 +21,6 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingService;
@@ -86,7 +85,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         var searchResult = find(materialPartnerRelation.getMaterial(), materialPartnerRelation.getPartner());
         if (searchResult == null) {
             dtmService.update(materialPartnerRelation);
-            executorService.submit(new DtrRegistrationTask(materialPartnerRelation, "CREATE", 3));
+            executorService.submit(new DtrRegistrationTask(materialPartnerRelation, 3));
             if (materialPartnerRelation.getMaterial().isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial()
                 && materialPartnerRelation.getPartnerCXNumber() == null) {
                 log.info("Attempting CX-Id fetch for Material " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
@@ -135,7 +134,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                 }
                 String partnerCXId = edcAdapterService.getCxIdFromPartTypeInformation(materialPartnerRelation);
                 if (partnerCXId != null && PatternStore.URN_OR_UUID_PATTERN.matcher(partnerCXId).matches()) {
-
                     materialPartnerRelation.setPartnerCXNumber(partnerCXId);
                     mprRepository.save(materialPartnerRelation);
                     log.info("Successfully inserted Partner CX Id for Partner " +
@@ -148,7 +146,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                     retries--;
                     return call();
                 }
-                
+
                 done = true;
                 return true;
             } catch (Exception e) {
@@ -165,7 +163,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     }
 
 
-    @AllArgsConstructor
     private class DtrRegistrationTask implements Callable<Boolean> {
         MaterialPartnerRelation materialPartnerRelation;
         /**
@@ -174,15 +171,19 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
          * While, on the other hand, for a new AAS the POST endpoint must be called
          * at the DTR.
          */
-        final String job;
         int retries;
         final int initialRetries;
+        final boolean needProductRegistration;
+        boolean completedProductRegistration = false;
+        final boolean needMaterialRegistration;
+        boolean completedMaterialRegistration = false;
 
-        public DtrRegistrationTask(MaterialPartnerRelation materialPartnerRelation, String job, int retries) {
+        public DtrRegistrationTask(MaterialPartnerRelation materialPartnerRelation, int retries) {
             this.materialPartnerRelation = materialPartnerRelation;
-            this.job = job;
             this.retries = retries;
             this.initialRetries = retries;
+            this.needProductRegistration = materialPartnerRelation.getMaterial().isProductFlag();
+            this.needMaterialRegistration = materialPartnerRelation.getMaterial().isMaterialFlag();
         }
 
         @Override
@@ -193,95 +194,100 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
             if (retries < initialRetries) {
                 Thread.sleep(2000);
             }
-            if (materialPartnerRelation.isPartnerSuppliesMaterial() && materialPartnerRelation.getPartnerCXNumber() == null) {
-                log.info("Missing partnerCX Number in " + materialPartnerRelation);
-                log.info("Current list " + currentPartTypeFetches.stream().map(mpr -> mpr.getPartner().getBpnl() + " / " + mpr.getMaterial().getOwnMaterialNumber()).toList());
-                if (currentPartTypeFetches.contains(materialPartnerRelation)) {
-                    log.info("Awaiting PartTypeInformation Fetch");
-                    // await return of ongoing fetch task
-                    while (currentPartTypeFetches.contains(materialPartnerRelation)) {
-                        Thread.yield();
+
+            if (needProductRegistration && !completedProductRegistration) {
+                var allCustomers =
+                    mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
+                        materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+                Integer result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
+                if (result != null) {
+                    if (result < 400) {
+                        log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+                        completedProductRegistration = true;
+                    } else {
+                        if (result == 404) {
+                            Integer registrationResult = dtrAdapterService.registerProductAtDtr(materialPartnerRelation.getMaterial());
+                            log.info("Tried to create product AAS for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber()
+                                + ", result: " + registrationResult);
+                            if (registrationResult != null && registrationResult < 400) {
+                                result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
+                                if (result != null && result < 400) {
+                                    log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                        ", result: " + result);
+                                    completedProductRegistration = true;
+                                }
+                            }
+                        }
                     }
                 } else {
-                    // initiate new fetch
-                    log.info("Initiating new PartTypeInformation Fetch");
-                    var futureResult = executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 3));
-                    while (!futureResult.isDone()) {
-                        Thread.yield();
-                    }
+                    log.warn("Update of product ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
                 }
-                Thread.sleep(500);
-                // get result from database
-                materialPartnerRelation = find(materialPartnerRelation.getMaterial(), materialPartnerRelation.getPartner());
+            }
+
+            if (needMaterialRegistration && !completedMaterialRegistration) {
                 if (materialPartnerRelation.getPartnerCXNumber() == null) {
-                    log.error("Missing partnerCX Number in " + materialPartnerRelation + ", retries left: " + retries);
-                    retries--;
-                    return call();
+                    if (currentPartTypeFetches.contains(materialPartnerRelation)) {
+                        log.info("Awaiting PartTypeInformation Fetch");
+                        // await return of ongoing fetch task
+                        while (currentPartTypeFetches.contains(materialPartnerRelation)) {
+                            Thread.yield();
+                        }
+                    } else {
+                        // initiate new fetch
+                        log.info("Initiating new PartTypeInformation Fetch");
+                        var futureResult = executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 3));
+                        while (!futureResult.isDone()) {
+                            Thread.yield();
+                        }
+                    }
+                    Thread.sleep(500);
+                    // get result from database
+                    materialPartnerRelation = find(materialPartnerRelation.getMaterial(), materialPartnerRelation.getPartner());
+                    if (materialPartnerRelation.getPartnerCXNumber() == null) {
+                        log.error("Missing partnerCX Number in " + materialPartnerRelation + ", retries left: " + retries);
+                        retries--;
+                        return call();
+                    }
+                }
+
+                Integer result = dtrAdapterService.updateMaterialAtDtr(materialPartnerRelation);
+                if (result != null) {
+                    if (result < 400) {
+                        completedMaterialRegistration = true;
+                        log.info("Updated material ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                            " and supplier partner " + materialPartnerRelation.getPartner().getBpnl());
+                    } else {
+                        if (result == 404) {
+                            Integer registrationResult = dtrAdapterService.registerMaterialAtDtr(materialPartnerRelation);
+                            log.info("Tried to create material AAS for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                " and partner " + materialPartnerRelation.getPartner().getBpnl() +
+                                ", result: " + registrationResult);
+                            if (registrationResult != null && registrationResult < 400) {
+                                Thread.sleep(600);
+                                result = dtrAdapterService.updateMaterialAtDtr(materialPartnerRelation);
+                                if (result != null && result < 400) {
+                                    completedMaterialRegistration = true;
+                                    log.info("Updated material ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
+                                        " and supplier partner " + materialPartnerRelation.getPartner().getBpnl() + ", result: " + result);
+                                }
+                            }
+                        }
+                    }
                 }
             }
-
-            boolean success = true;
-            switch (job) {
-                case "UPDATE" -> {
-                    if (materialPartnerRelation.getMaterial().isProductFlag()) {
-                        var allCustomers =
-                            mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
-                                materialPartnerRelation.getMaterial().getOwnMaterialNumber());
-                        boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
-                        if (result) {
-                            log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
-                        } else {
-                            log.warn("Update of product ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " Retries left: " + retries);
-                        }
-                        success &= result;
-                    }
-                    if (materialPartnerRelation.getMaterial().isMaterialFlag()) {
-                        boolean result = dtrAdapterService.updateMaterialAtDtr(materialPartnerRelation);
-                        if (result) {
-                            log.info("Updated material ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                                " and supplier partner " + materialPartnerRelation.getPartner().getBpnl());
-                        } else {
-                            log.warn("Update of material ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                                " and supplier partner " + materialPartnerRelation.getPartner().getBpnl() + " Retries left: " + retries);
-                        }
-                        success &= result;
-                    }
-                    return success;
-                }
-                case "CREATE" -> {
-                    if (materialPartnerRelation.getMaterial().isProductFlag()) {
-                        var allCustomers =
-                            mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
-                                materialPartnerRelation.getMaterial().getOwnMaterialNumber());
-                        boolean result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
-                        if (result) {
-                            log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
-                        } else {
-                            log.warn("Update of product ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " Retries left: " + retries);
-                        }
-                        success &= result;
-
-                    }
-                    if (materialPartnerRelation.getMaterial().isMaterialFlag()) {
-                        boolean result = dtrAdapterService.registerMaterialAtDtr(materialPartnerRelation);
-                        if (result) {
-                            log.info("Created material ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                                " and supplier partner " + materialPartnerRelation.getPartner().getBpnl());
-                        } else {
-                            log.warn("Creation of material ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                                " and supplier partner " + materialPartnerRelation.getPartner().getBpnl() + " Retries left: " + retries);
-                        }
-                        success &= result;
-                    }
-
-                }
-            }
-            if (success) {
-                return true;
-            } else {
+            if ((needMaterialRegistration && !completedMaterialRegistration) || (needProductRegistration && !completedProductRegistration)) {
                 retries--;
+                String message = "DTR Registration for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " and " + materialPartnerRelation.getPartner().getBpnl() + " failed, ";
+                if (needMaterialRegistration && !completedMaterialRegistration) {
+                    message += "Material Registration still needed ";
+                }
+                if (needProductRegistration && !completedProductRegistration) {
+                    message += "Product Registration still needed ";
+                }
+                log.warn(message);
                 return call();
             }
+            return true;
         }
     }
 
@@ -303,11 +309,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                     " from Supplier-Partner " + materialPartnerRelation.getPartner().getBpnl());
                 executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 3));
             }
-            if (!foundEntity.get().isPartnerSuppliesMaterial() && materialPartnerRelation.isPartnerSuppliesMaterial()) {
-                executorService.submit(new DtrRegistrationTask(materialPartnerRelation, "CREATE", 3));
-            } else {
-                executorService.submit(new DtrRegistrationTask(materialPartnerRelation, "UPDATE", 3));
-            }
+            executorService.submit(new DtrRegistrationTask(materialPartnerRelation, 3));
             return mprRepository.save(materialPartnerRelation);
         }
         log.error("Could not update MaterialPartnerRelation, " + materialPartnerRelation.getKey() + " didn't exist before");

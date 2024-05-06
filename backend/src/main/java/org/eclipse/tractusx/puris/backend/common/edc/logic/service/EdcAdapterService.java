@@ -22,7 +22,6 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
@@ -40,6 +39,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -743,6 +743,13 @@ public class EdcAdapterService {
                 var jsonResponse = objectMapper.readTree(bodyString);
                 var resultArray = jsonResponse.get("result");
                 if (resultArray.isArray()) {
+                    if (resultArray.isEmpty()) {
+                        log.warn("No results found for query " + query);
+                    }
+                    if (resultArray.size() > 1) {
+                        log.warn("Found more than one result for query " + query);
+                        log.info(resultArray.toPrettyString());
+                    }
                     String aasId = resultArray.get(0).asText();
                     urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
                         .addPathSegment("api")

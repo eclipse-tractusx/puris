@@ -90,6 +90,7 @@ services:
     ports:
       - "127.0.0.1:4243:4243"
     environment:
+      REGISTRY_IDM_OWNING_TENANT_ID: BPNL4444444444XX
       SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
       SPRING_DATASOURCE_URL: jdbc:postgresql://customer-postgres:5432/dtr_database
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
@@ -234,6 +235,7 @@ services:
     ports:
       - "127.0.0.1:4244:4243"
     environment:
+      REGISTRY_IDM_OWNING_TENANT_ID: BPNL1234567890ZZ
       SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
       SPRING_DATASOURCE_URL: jdbc:postgresql://supplier-postgres:5432/dtr_database
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
