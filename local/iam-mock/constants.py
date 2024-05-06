@@ -34,10 +34,15 @@ def read_file(path: Path):
 ES256_PRIVATE_KEY = read_file(Path("keys/private_key.pem"))
 ES256_PUBLIC_KEY = read_file(Path("keys/public_key.pem"))
 
+# must be same as used in edc for edc.transfer.proxy.signer.privatekey.alias
+CUSTOMER_PRIVATE_KEY = read_file(Path("keys/customer.key"))
+SUPPLIER_PRIVATE_KEY = read_file(Path("keys/supplier.key"))
+
 DID_CUSTOMER = "did:web:mock-util-service/customer"
 DID_SUPPLIER = "did:web:mock-util-service/supplier"
 DID_TRUSTED_ISSUER = "did:web:mock-util-service/trusted-issuer"
 
+# note: kid_vault = alias used for public key, set in edc.transer.proxy.token.verifier.publickey.alias
 DID_DICT = {
     DID_TRUSTED_ISSUER: {
         "bpnl": "NONE",
@@ -46,18 +51,40 @@ DID_DICT = {
     DID_SUPPLIER: {
         "bpnl": "BPNL1234567890ZZ",
         "did_resolve_name": "supplier",
+        "kid_vault": "supplier-cert",
+        "private_key": SUPPLIER_PRIVATE_KEY,
     },
     DID_CUSTOMER: {
         "bpnl": "BPNL4444444444XX",
         "did_resolve_name": "customer",
+        "kid_vault": "customer-cert",
+        "private_key": CUSTOMER_PRIVATE_KEY,
     }
 }
 
 """
-lookup bpnl by did
+lookup did by did_resolve_name
 """
-def get_did_for_bpnl(did_resolve_name: str):
+def get_did_for_resolve_name(did_resolve_name: str):
     for key, value in DID_DICT.items():
         if value["did_resolve_name"] == did_resolve_name:
             return key
     return None
+
+
+"""
+lookup did by bpnl
+"""
+def get_did_for_bpnl(bpnl: str):
+    for key, value in DID_DICT.items():
+        if value["bpnl"] == bpnl:
+            return key
+    return None
+
+
+"""
+lookup bpnl by did
+"""
+def get_bpnl_for_did(did: str):
+    entry = DID_DICT.get(did, None)
+    return entry["bpnl"] if entry else None

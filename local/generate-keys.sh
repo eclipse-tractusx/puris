@@ -94,5 +94,10 @@ echo "Creating key pair for mock iam"
 openssl ecparam -name prime256v1 -genkey -out ./iam-mock/keys/private_key.pem
 openssl ec -in ./iam-mock/keys/private_key.pem -pubout -out ./iam-mock/keys/public_key.pem
 
+echo "Copy private keys for supplier and customer edr refresh signing in mock iam"
+cp $SUPPLIER_KEY ./iam-mock/keys/supplier.key
+cp $CUSTOMER_KEY ./iam-mock/keys/customer.key
+
 # let everyone access the files so that the non-root user in vault container can put them
 chmod -R 755 ./vault/secrets
+chmod -R 755 ./iam-mock/keys

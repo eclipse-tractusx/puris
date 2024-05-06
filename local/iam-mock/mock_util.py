@@ -25,7 +25,7 @@ import logging
 import base64
 from cryptography.hazmat.primitives import serialization
 from jwtUtils import decode_token, create_jwt_from_claims
-from constants import ES256_PUBLIC_KEY, DID_TRUSTED_ISSUER, get_did_for_bpnl
+from constants import ES256_PUBLIC_KEY, DID_TRUSTED_ISSUER, get_did_for_resolve_name, get_did_for_bpnl
 from credential_service import create_verifiable_presentation
 import uuid
 from pathlib import Path
@@ -39,7 +39,7 @@ app = FastAPI()
 logger = logging.getLogger("fastapi")
 
 """
-store STS GRANT ACCESS Request JWT token for uuid. 
+store STS GRANT ACCESS Request JWT token for uuid.
 
 Uuid is inserted into token as 'token_id' to use the token in SIGN TOKEN Request (remember request granted)
 """
@@ -74,27 +74,53 @@ async def secure_token_service(request: Request):
 
     print("POST with body ", body)
     print("bearer of requestor is set as auth header" if request.headers["authorization"] else "bearer of requestor is NOT set as auth header")
+    print(f"bearer: {request.headers['authorization']}")
+    print(f"Request params received: {request.query_params}")
 
     # handle body similar to https://github.com/eclipse-tractusx/tractusx-edc/blob/d7d3586ffc4ef03c858e38fde6bfa8687efa50c9/edc-tests/edc-controlplane/iatp-tests/src/test/java/org/eclipse/tractusx/edc/tests/transfer/iatp/dispatchers/DimDispatcher.java
     grant_access = body.get("grantAccess", None)
     if sign_token_flag:
         sign_token = body["signToken"]
 
-        # lookup existing token
-        token_id = decode_token(sign_token["token"])['token_id']
-        token = id_token_map[token_id]
-        decoded_token = decode_token(token)
-        print(f"Identified matching token (decoded) {decoded_token}")
-        id_token_map.pop(token_id)
+        decoded_token = decode_token(sign_token["token"])
 
-        claims = {
-            "iss": DID_TRUSTED_ISSUER,
-            "sub": decoded_token["sub"],
-            "aud": decoded_token["aud"]
-        }
-        print(f"Request contains issuer {claims['iss']}, subject {claims['sub']}, audience {claims['aud']}, token {token if token else '*no token*'}")
-        token = create_jwt_from_claims(claims, sign_token["issuer"], None)
-        vp = token
+        # try to lookup existing token, if found use it
+        # else we're in token refresh
+        token_id = decoded_token.get('token_id', None)
+        if token_id:
+            token = id_token_map[token_id]
+            decoded_token = decode_token(token)
+            print(f"Identified matching token (decoded) {decoded_token}")
+            id_token_map.pop(token_id)
+
+            # common reqeust: issued by trusted issuer
+            claims = {
+                "iss": DID_TRUSTED_ISSUER,
+                "sub": decoded_token["sub"],
+                "aud": decoded_token["aud"]
+            }
+
+            print(f"Request contains issuer {claims['iss']}, subject {claims['sub']}, audience {claims['aud']}, token {token}")
+            token = create_jwt_from_claims(claims, sign_token["issuer"], None)
+            print(f"Created jwt token: {token}")
+            vp = token
+
+        else:
+            # refresh token request: iss, sub = client did
+            claims = {
+                "iss": get_did_for_bpnl(decoded_token["aud"]),
+                "sub": get_did_for_bpnl(decoded_token["aud"]),
+                "aud": get_did_for_bpnl(decoded_token["sub"]),
+                "jti": decoded_token["jti"],
+                "iat": decoded_token["iat"],
+                "exp": decoded_token["exp"],
+            }
+
+            print(f"Request contains issuer {claims['iss']}, subject {claims['sub']}, audience {claims['aud']}, token {decoded_token}")
+            token = create_jwt_from_claims(claims, claims["iss"], None, True)
+            print(f"Created jwt token: {token}")
+            vp = token
+
     else:
         token_id = str(uuid.uuid4())
 
@@ -186,7 +212,7 @@ def return_did(request: Request, partner_did: str, did_path: str):
     print(f"CALLED /{partner_did}/{did_path} from ", hostname)
 
     # get DID constant for path used
-    did_id = get_did_for_bpnl(partner_did)
+    did_id = get_did_for_resolve_name(partner_did)
 
     # put elyptic curves accordingly
     public_key = serialization.load_pem_public_key(ES256_PUBLIC_KEY.encode(), backend=default_backend())
