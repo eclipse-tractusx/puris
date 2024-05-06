@@ -27,9 +27,9 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EdrDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EndpointDataReferenceService;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.regex.Pattern;
 
 /**
@@ -57,7 +58,7 @@ public class EndpointDataReferenceReceiver {
      * This endpoint awaits incoming EDR Tokens from external
      * partners during a consumer pull transfer.
      *
-     * @param body
+     * @param body received from edc containing access information
      * @return Status code 200 if request body was found, otherwise 400
      */
     @PostMapping("/edrendpoint")
@@ -88,7 +89,7 @@ public class EndpointDataReferenceReceiver {
             return ResponseEntity.status(400).build();
         }
 
-        edrService.save(transferId, new EdrDto(authKey, authCode, endpoint));
+        edrService.save(transferId, new EdrDto(authKey, authCode, endpoint, new Date()));
         log.debug("EDR endpoint stored authCode for " + transferId);
         return ResponseEntity.status(200).build();
     }

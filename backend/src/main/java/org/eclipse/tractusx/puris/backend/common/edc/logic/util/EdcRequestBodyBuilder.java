@@ -23,15 +23,17 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import lombok.extern.slf4j.Slf4j;
-
+import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.PolicyConstraintDto;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,13 +47,14 @@ public class EdcRequestBodyBuilder {
     private VariablesService variablesService;
     @Autowired
     private ObjectMapper MAPPER;
-    private final String EDC_NAMESPACE = "https://w3id.org/edc/v0.0.1/ns/";
-    private final String VOCAB_KEY = "@vocab";
-    private final String ODRL_NAMESPACE = "http://www.w3.org/ns/odrl/2/";
-    private final String CX_TAXO_NAMESPACE = "https://w3id.org/catenax/taxonomy#";
-    private final String CX_COMMON_NAMESPACE = "https://w3id.org/catenax/ontology/common#";
-    private final String DCT_NAMESPACE = "https://purl.org/dc/terms/";
-    private final String CONTRACT_POLICY_ID = "Contract_Policy";
+    public static final String EDC_NAMESPACE = "https://w3id.org/edc/v0.0.1/ns/";
+    public static final String VOCAB_KEY = "@vocab";
+    public static final String ODRL_NAMESPACE = "http://www.w3.org/ns/odrl/2/";
+    public static final String CX_TAXO_NAMESPACE = "https://w3id.org/catenax/taxonomy#";
+    public static final String CX_COMMON_NAMESPACE = "https://w3id.org/catenax/ontology/common#";
+    public static final String DCT_NAMESPACE = "https://purl.org/dc/terms/";
+    public static final String AAS_SEMANTICS_NAMESPACE = "https://admin-shell.io/aas/3/0/HasSemantics/";
+    public static final String CONTRACT_POLICY_ID = "Contract_Policy";
 
     /**
      * Creates a request body for requesting a catalog in DSP protocol.
@@ -60,22 +63,77 @@ public class EdcRequestBodyBuilder {
      * for the filter criteria programmatically.
      *
      * @param counterPartyDspUrl The protocol url of the other party
+     * @param counterPartyBpnl   The bpnl of the other party
      * @param filter             Key-value-pairs, may be empty or null
      * @return The request body
      */
-    public ObjectNode buildBasicCatalogRequestBody(String counterPartyDspUrl, Map<String, String> filter) {
+    public ObjectNode buildBasicCatalogRequestBody(String counterPartyDspUrl, String counterPartyBpnl, Map<String, String> filter) {
         var objectNode = getEdcContextObject();
         objectNode.put("protocol", "dataspace-protocol-http");
         objectNode.put("@type", "CatalogRequest");
         objectNode.put("counterPartyAddress", counterPartyDspUrl);
+        objectNode.put("counterPartyId", counterPartyBpnl);
         if (filter != null && !filter.isEmpty()) {
-            var querySpecNode = MAPPER.createObjectNode();
-            objectNode.set("querySpec", querySpecNode);
+            ObjectNode querySpecObject = MAPPER.createObjectNode();
+            ArrayNode filterExpressionsArray = MAPPER.createArrayNode();
+            querySpecObject.set("filterExpression", filterExpressionsArray);
             for (var entry : filter.entrySet()) {
-                querySpecNode.put(entry.getKey(), entry.getValue());
+                ObjectNode filterExpressionObject = MAPPER.createObjectNode();
+                filterExpressionObject.put("operandLeft", entry.getKey());
+                filterExpressionObject.put("operator", "=");
+                filterExpressionObject.put("operandRight", entry.getValue());
+                filterExpressionsArray.add(filterExpressionObject);
             }
+            objectNode.set("querySpec", querySpecObject);
         }
+        log.debug("Built Catalog Request: \n" + objectNode.toPrettyString());
         return objectNode;
+    }
+
+    private JsonNode buildPolicy(String policyId, List<PolicyConstraintDto> constraints) {
+        var body = MAPPER.createObjectNode();
+        var context = MAPPER.createObjectNode();
+        context.put("odrl", ODRL_NAMESPACE);
+        body.set("@context", context);
+        body.put("@type", "PolicyDefinitionRequestDto");
+        body.put("@id", policyId);
+
+        var policy = MAPPER.createObjectNode();
+        body.set("policy", policy);
+        policy.put("@type", "odrl:Set");
+
+        // TODO profile etc.
+
+        var permissionsArray = MAPPER.createArrayNode();
+        policy.set("odrl:permission", permissionsArray);
+
+        var permissionsObject = MAPPER.createObjectNode();
+        permissionsArray.add(permissionsObject);
+        var useActionObject = MAPPER.createObjectNode();
+        useActionObject.put("@id", "odrl:use");
+        permissionsObject.set("odrl:action", useActionObject);
+
+        var constraintObject = MAPPER.createObjectNode();
+        permissionsObject.set("odrl:constraint", constraintObject);
+        constraintObject.put("@type", "LogicalConstraint");
+
+        var andArray = MAPPER.createArrayNode();
+        constraintObject.set("odrl:and", andArray);
+
+        for (PolicyConstraintDto policyConstraintDto : constraints) {
+            ObjectNode constraint = MAPPER.createObjectNode();
+            constraint.put("@type", "LogicalConstraint");
+            constraint.put("odrl:leftOperand", policyConstraintDto.getLeftOperand());
+
+            ObjectNode operatorObject = MAPPER.createObjectNode();
+            operatorObject.put("@id", policyConstraintDto.getOperator());
+            constraint.set("odrl:operator", operatorObject);
+
+            constraint.put("odrl:rightOperand", policyConstraintDto.getRightOperand());
+            andArray.add(constraint);
+        }
+
+        return body;
     }
 
     /**
@@ -87,54 +145,25 @@ public class EdcRequestBodyBuilder {
      * @return the request body as a {@link JsonNode}
      */
     public JsonNode buildBpnAndMembershipRestrictedPolicy(Partner partner) {
-        var body = MAPPER.createObjectNode();
-        var context = MAPPER.createObjectNode();
-        context.put("odrl", ODRL_NAMESPACE);
-        body.set("@context", context);
-        body.put("@type", "PolicyDefinitionRequestDto");
-        body.put("@id", getBpnPolicyId(partner));
 
-        var policy = MAPPER.createObjectNode();
-        body.set("policy", policy);
-        policy.put("@type", "Policy");
+        List<PolicyConstraintDto> constraints = new ArrayList<>();
 
-        var permissionsArray = MAPPER.createArrayNode();
-        policy.set("odrl:permission", permissionsArray);
+        constraints.add(new PolicyConstraintDto(
+            "BusinessPartnerNumber",
+            "odrl:eq",
+            partner.getBpnl()
+        ));
 
-        var permissionsObject = MAPPER.createObjectNode();
-        permissionsArray.add(permissionsObject);
-        permissionsObject.put("odrl:action", "USE");
+        constraints.add(new PolicyConstraintDto(
+            "Membership",
+            "odrl:eq",
+            "active"
+        ));
 
-        var constraintObject = MAPPER.createObjectNode();
-        permissionsObject.set("odrl:constraint", constraintObject);
-        constraintObject.put("@type", "LogicalConstraint");
-
-        var andArray = MAPPER.createArrayNode();
-        constraintObject.set("odrl:and", andArray);
-
-        var bpnlpConstraint = MAPPER.createObjectNode();
-        andArray.add(bpnlpConstraint);
-        bpnlpConstraint.put("@type", "Constraint");
-        bpnlpConstraint.put("odrl:leftOperand", "BusinessPartnerNumber");
-
-        var bpnlOperator = MAPPER.createObjectNode();
-        bpnlpConstraint.set("odrl:operator", bpnlOperator);
-        bpnlOperator.put("@id", "odrl:eq");
-
-        bpnlpConstraint.put("odrl:rightOperand", partner.getBpnl());
-
-        var membershipConstraint = MAPPER.createObjectNode();
-        andArray.add(membershipConstraint);
-        membershipConstraint.put("@type", "Constraint");
-        membershipConstraint.put("odrl:leftOperand", "Membership");
-
-        var membershipOperator = MAPPER.createObjectNode();
-        membershipConstraint.set("odrl:operator", membershipOperator);
-        membershipOperator.put("@id", "odrl:eq");
-
-        membershipConstraint.put("odrl:rightOperand", "active");
-
-        return body;
+        return buildPolicy(
+            getBpnPolicyId(partner),
+            constraints
+        );
     }
 
     /**
@@ -144,35 +173,20 @@ public class EdcRequestBodyBuilder {
      * @return the request body
      */
     public JsonNode buildFrameworkPolicy() {
-        var body = MAPPER.createObjectNode();
-        var context = MAPPER.createObjectNode();
-        context.put("odrl", ODRL_NAMESPACE);
-        body.set("@context", context);
-        body.put("@type", "PolicyDefinitionRequestDto");
-        body.put("@id", CONTRACT_POLICY_ID);
 
-        var policy = MAPPER.createObjectNode();
-        body.set("policy", policy);
-        policy.put("@type", "Policy");
+        List<PolicyConstraintDto> constraints = new ArrayList<>();
 
-        var permissionsArray = MAPPER.createArrayNode();
-        policy.set("odrl:permission", permissionsArray);
+        // TODO add version and migrate to new version
+        constraints.add(new PolicyConstraintDto(
+            variablesService.getPurisFrameworkAgreement(),
+            "odrl:eq",
+            "active"
+        ));
 
-        var permissionObject = MAPPER.createObjectNode();
-        permissionsArray.add(permissionObject);
-        permissionObject.put("odrl:action", "USE");
-
-        var constraintObject = MAPPER.createObjectNode();
-        permissionObject.set("odrl:constraint", constraintObject);
-        constraintObject.put("@type", "LogicalConstraint");
-        constraintObject.put("odrl:leftOperand", variablesService.getPurisFrameworkAgreement());
-
-        var operatorObject = MAPPER.createObjectNode();
-        constraintObject.set("odrl:operator", operatorObject);
-        operatorObject.put("@id", "odrl:eq");
-        constraintObject.put("odrl:rightOperand", "active");
-
-        return body;
+        return buildPolicy(
+            CONTRACT_POLICY_ID,
+            constraints
+        );
     }
 
     public JsonNode buildSubmodelContractDefinitionWithBpnRestrictedPolicy(String assetId, Partner partner) {
@@ -191,7 +205,7 @@ public class EdcRequestBodyBuilder {
 
     public JsonNode buildDtrContractDefinitionForPartner(Partner partner) {
         var body = getEdcContextObject();
-        body.put("@id", partner.getBpnl() +"_contractdefinition_for_dtr");
+        body.put("@id", partner.getBpnl() + "_contractdefinition_for_dtr");
         body.put("accessPolicyId", getBpnPolicyId(partner));
         body.put("contractPolicyId", getBpnPolicyId(partner));
         var assetsSelector = MAPPER.createObjectNode();
@@ -205,7 +219,7 @@ public class EdcRequestBodyBuilder {
 
     public JsonNode buildPartTypeInfoContractDefinitionForPartner(Partner partner) {
         var body = getEdcContextObject();
-        body.put("@id", partner.getBpnl() +"_contractdefinition_for_PartTypeInfoAsset");
+        body.put("@id", partner.getBpnl() + "_contractdefinition_for_PartTypeInfoAsset");
         body.put("accessPolicyId", getBpnPolicyId(partner));
         body.put("contractPolicyId", CONTRACT_POLICY_ID);
         var assetsSelector = MAPPER.createObjectNode();
@@ -238,25 +252,35 @@ public class EdcRequestBodyBuilder {
      * @return The request body
      */
     public JsonNode buildAssetNegotiationBody(Partner partner, JsonNode dcatCatalogItem) {
-        var body = MAPPER.createObjectNode();
-        var contextNode = MAPPER.createObjectNode();
+        ObjectNode body = MAPPER.createObjectNode();
+        ObjectNode contextNode = MAPPER.createObjectNode();
         contextNode.put(VOCAB_KEY, EDC_NAMESPACE);
         contextNode.put("odrl", ODRL_NAMESPACE);
         body.set("@context", contextNode);
-        body.put("@type", "NegotiationInitiateRequestDto");
-        body.put("connectorId", partner.getBpnl());
-        body.put("connectorAddress", partner.getEdcUrl());
-        body.put("consumerId", variablesService.getOwnBpnl());
-        body.put("providerId", partner.getBpnl());
+        body.put("@type", "ContractRequest");
+        body.put("counterPartyAddress", partner.getEdcUrl()); // TODO this might result in a bug
         body.put("protocol", "dataspace-protocol-http");
+
+        // extract policy and information from offer
+        // framework agreement and co has been checked during catalog request
         String assetId = dcatCatalogItem.get("@id").asText();
         var policyNode = dcatCatalogItem.get("odrl:hasPolicy");
+
+        ObjectNode targetIdObject = MAPPER.createObjectNode();
+        targetIdObject.put("@id", assetId);
+        ((ObjectNode) policyNode).put("@context", "http://www.w3.org/ns/odrl.jsonld");
+        ((ObjectNode) policyNode).set("odrl:target", targetIdObject);
+        ((ObjectNode) policyNode).put("assigner", partner.getBpnl());
+
         var offerNode = MAPPER.createObjectNode();
         String offerId = policyNode.get("@id").asText();
         offerNode.put("offerId", offerId);
         offerNode.put("assetId", assetId);
         offerNode.set("policy", policyNode);
-        body.set("offer", offerNode);
+        //TODO
+        body.set("policy", policyNode);
+
+        log.debug("Created asset negotiation body:\n" + body.toPrettyString());
         return body;
     }
 
@@ -271,21 +295,24 @@ public class EdcRequestBodyBuilder {
      */
     public JsonNode buildProxyPullRequestBody(Partner partner, String contractID, String assetId, String partnerEdcUrl) {
         var body = getEdcContextObject();
-        body.put("@type", "TransferRequestDto");
         body.put("connectorId", partner.getBpnl());
-        body.put("connectorAddress", partnerEdcUrl);
+        body.put("counterPartyAddress", partnerEdcUrl);
         body.put("contractId", contractID);
         body.put("assetId", assetId);
         body.put("protocol", "dataspace-protocol-http");
         body.put("managedResources", false);
+        body.put("transferType", "HttpData-PULL");
 
         var dataDestination = MAPPER.createObjectNode();
         dataDestination.put("type", "HttpProxy");
         body.set("dataDestination", dataDestination);
 
+        // TODO replace by callbackAddress or use EDR api
         var privateProperties = MAPPER.createObjectNode();
         privateProperties.put("receiverHttpEndpoint", variablesService.getEdrEndpoint());
         body.set("privateProperties", privateProperties);
+
+        log.debug("Built Proxy Pull Request:\n{}", body.toPrettyString());
         return body;
     }
 
@@ -413,6 +440,7 @@ public class EdcRequestBodyBuilder {
         context.put("cx-taxo", CX_TAXO_NAMESPACE);
         context.put("cx-common", CX_COMMON_NAMESPACE);
         context.put("dct", DCT_NAMESPACE);
+        context.put("aas-semantics", AAS_SEMANTICS_NAMESPACE);
         body.set("@context", context);
         body.put("@type", "Asset");
         return body;

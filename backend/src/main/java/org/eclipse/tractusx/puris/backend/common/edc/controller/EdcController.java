@@ -68,7 +68,9 @@ public class EdcController {
             if (!PatternStore.URL_PATTERN.matcher(dspUrl).matches()) {
                 return ResponseEntity.badRequest().build();
             }
-            var catalogResponse = edcAdapter.getCatalogResponse(dspUrl);
+            // TODO implement bpnl resolver or update frontend to use bpnl / partner
+            String partnerBpnl = "not yet implemented";
+            var catalogResponse = edcAdapter.getCatalogResponse(dspUrl, partnerBpnl, null);
             if (catalogResponse != null && catalogResponse.isSuccessful()) {
                 var responseString = catalogResponse.body().string();
                 catalogResponse.body().close();

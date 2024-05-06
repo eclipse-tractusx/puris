@@ -22,7 +22,10 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
@@ -38,8 +41,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.List;
+import java.text.ParseException;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -52,7 +55,7 @@ public class EdcAdapterService {
     private static final OkHttpClient CLIENT = new OkHttpClient();
     @Autowired
     private VariablesService variablesService;
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
     @Autowired
     private EdcRequestBodyBuilder edcRequestBodyBuilder;
     @Autowired
@@ -61,10 +64,36 @@ public class EdcAdapterService {
     @Autowired
     private EdcContractMappingService edcContractMappingService;
 
-    private Pattern urlPattern = PatternStore.URL_PATTERN;
+    private final Pattern urlPattern = PatternStore.URL_PATTERN;
 
     public EdcAdapterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+    }
+
+    /**
+     * Util method for issuing a GET request to the management api of your control plane.
+     * Any caller of this method has the responsibility to close
+     * the returned Response object after using it.
+     *
+     * @param pathSegments The path segments
+     * @param queryParams  The query parameters to use
+     * @return The response
+     * @throws IOException If the connection to your control plane fails
+     */
+    public Response sendGetRequest(List<String> pathSegments, Map<String, String> queryParams) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getEdcManagementUrl()).newBuilder();
+        for (var pathSegment : pathSegments) {
+            urlBuilder.addPathSegment(pathSegment);
+        }
+        for (Map.Entry<String, String> entry : queryParams.entrySet()) {
+            urlBuilder.addQueryParameter(entry.getKey(), entry.getValue());
+        }
+        var request = new Request.Builder()
+            .get()
+            .url(urlBuilder.build())
+            .header("X-Api-Key", variablesService.getEdcApiKey())
+            .build();
+        return CLIENT.newCall(request).execute();
     }
 
     /**
@@ -77,16 +106,7 @@ public class EdcAdapterService {
      * @throws IOException If the connection to your control plane fails
      */
     public Response sendGetRequest(List<String> pathSegments) throws IOException {
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getEdcManagementUrl()).newBuilder();
-        for (var pathSegment : pathSegments) {
-            urlBuilder.addPathSegment(pathSegment);
-        }
-        var request = new Request.Builder()
-            .get()
-            .url(urlBuilder.build())
-            .header("X-Api-Key", variablesService.getEdcApiKey())
-            .build();
-        return CLIENT.newCall(request).execute();
+        return sendGetRequest(pathSegments, new HashMap<>());
     }
 
     /**
@@ -95,7 +115,7 @@ public class EdcAdapterService {
      * the returned Response object after using it.
      *
      * @param requestBody  The request body
-     * @param pathSegments The path segments
+     * @param pathSegments The path se&gments
      * @return The response from your control plane
      * @throws IOException If the connection to your control plane fails
      */
@@ -133,16 +153,19 @@ public class EdcAdapterService {
             variablesService.getItemStockSubmodelEndpoint(),
             SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID
         )));
+        result &= assetRegistration;
         log.info("Registration of Planned Production 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getProductionSubmodelApiAssetId(),
             variablesService.getProductionSubmodelEndpoint(),
             SubmodelType.PRODUCTION.URN_SEMANTIC_ID
         )));
+        result &= assetRegistration;
         log.info("Registration of Short Term Material Demand 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getDemandSubmodelApiAssetId(),
             variablesService.getDemandSubmodelEndpoint(),
             SubmodelType.DEMAND.URN_SEMANTIC_ID
         )));
+        result &= assetRegistration;
         log.info("Registration of Delivery Information 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getDeliverySubmodelApiAssetId(),
             variablesService.getDeliverySubmodelEndpoint(),
@@ -307,23 +330,28 @@ public class EdcAdapterService {
      * Retrieve the response to an unfiltered catalog request from the partner
      * with the given dspUrl
      *
-     * @param dspUrl The dspUrl of your partner
+     * @param dspUrl      The dspUrl of your partner
+     * @param partnerBpnl The bpnl of your partner
+     * @param filter      Map of key (leftOperand) and values (rightOperand) to use as filterExpression with equal operand
      * @return The response containing the full catalog, if successful
      */
-    public Response getCatalogResponse(String dspUrl) throws IOException {
-        return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, null), List.of("v2", "catalog", "request"));
+    public Response getCatalogResponse(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException {
+        // TODO check if we need the method here
+        return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, partnerBpnl, filter), List.of("v2", "catalog", "request"));
     }
 
     /**
      * Retrieve an (unfiltered) catalog from the partner with the
      * given dspUrl
      *
-     * @param dspUrl The dspUrl of your partner
+     * @param dspUrl      The dspUrl of your partner
+     * @param partnerBpnl The bpnl of your partner
+     * @param filter      Map of key (leftOperand) and values (rightOperand) to use as filterExpression with equal operand
      * @return The full catalog
      * @throws IOException If the connection to the partners control plane fails
      */
-    public JsonNode getCatalog(String dspUrl) throws IOException {
-        try (var response = getCatalogResponse(dspUrl)) {
+    public JsonNode getCatalog(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException { // TODO: use partner to get the catalog
+        try (var response = getCatalogResponse(dspUrl, partnerBpnl, filter)) {
             String stringData = response.body().string();
             return objectMapper.readTree(stringData);
         }
@@ -343,6 +371,7 @@ public class EdcAdapterService {
         var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(partner, catalogItem);
         try (var response = sendPostRequest(requestBody, List.of("v2", "contractnegotiations"))) {
             String responseString = response.body().string();
+            log.debug("Result from negotiation" + responseString);
             return objectMapper.readTree(responseString);
         }
     }
@@ -389,7 +418,9 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildProxyPullRequestBody(partner, contractId, assetId, partnerEdcUrl);
         try (var response = sendPostRequest(body, List.of("v2", "transferprocesses"))) {
             String data = response.body().string();
-            return objectMapper.readTree(data);
+            JsonNode result = objectMapper.readTree(data);
+            log.debug("Got response from Proxy pull transfer init: {}", result.toPrettyString());
+            return result;
         }
     }
 
@@ -518,11 +549,12 @@ public class EdcAdapterService {
             }
             // Request EdrToken
             var transferResp = initiateProxyPullTransfer(partner, submodelContractId, assetId, partnerDspUrl);
+            log.debug("Transfer Request {}", transferResp.toPrettyString());
             String transferId = transferResp.get("@id").asText();
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
                 transferResp = getTransferState(transferId);
-                if ("STARTED".equals(transferResp.get("edc:state").asText())) {
+                if ("STARTED".equals(transferResp.get("state").asText())) {
                     break;
                 }
             }
@@ -530,7 +562,7 @@ public class EdcAdapterService {
             // Await arrival of edr
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
-                edrDto = edrService.findByTransferId(transferId);
+                edrDto = getEdrForTransferProcessId(transferId); //edrService.findByTransferId(transferId);
                 if (edrDto != null) {
                     log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
                     break;
@@ -576,7 +608,13 @@ public class EdcAdapterService {
 
     private boolean negotiateForPartnerDtr(Partner partner) {
         try {
-            var responseNode = getCatalog(partner.getEdcUrl());
+            Map<String, String> equalFilters = new HashMap<>();
+            equalFilters.put(EdcRequestBodyBuilder.CX_COMMON_NAMESPACE + "version", "3.0");
+            equalFilters.put(
+                "'" + EdcRequestBodyBuilder.DCT_NAMESPACE + "type'.'@id'",
+                EdcRequestBodyBuilder.CX_TAXO_NAMESPACE + "DigitalTwinRegistry"
+            );
+            var responseNode = getCatalog(partner.getEdcUrl(), partner.getBpnl(), equalFilters);
             var catalogArray = responseNode.get("dcat:dataset");
             // If there is exactly one asset, the catalogContent will be a JSON object.
             // In all other cases catalogContent will be a JSON array.
@@ -584,36 +622,28 @@ public class EdcAdapterService {
             if (catalogArray.isObject()) {
                 catalogArray = objectMapper.createArrayNode().add(catalogArray);
             }
-            JsonNode targetCatalogEntry = null;
-            for (var entry : catalogArray) {
-                var dctTypeObject = entry.get("dct:type");
-                if (dctTypeObject != null) {
-                    if (("https://w3id.org/catenax/taxonomy#DigitalTwinRegistry").equals(dctTypeObject.get("@id").asText())) {
-                        if ("3.0".equals(entry.get("https://w3id.org/catenax/ontology/common#version").asText())) {
-                            if (targetCatalogEntry == null) {
-                                targetCatalogEntry = entry;
-                            } else {
-                                log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
-                            }
-                        }
-                    }
-                }
+            if (catalogArray.size() > 1) {
+                log.warn("Ambiguous catalog entries found! Will take the first\n" + catalogArray.toPrettyString());
+                // TODO constraint check
             }
+            JsonNode targetCatalogEntry = catalogArray.get(0);
             if (targetCatalogEntry == null) {
                 log.error("Could not find asset for DigitalTwinRegistry at partner " + partner.getBpnl() + "'s catalog");
-                log.warn("CATALOG CONTENT \n" + catalogArray.toPrettyString());
                 return false;
             }
             String assetId = targetCatalogEntry.get("@id").asText();
+            log.debug("Found contract offer for asset {}", assetId);
             JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
             String negotiationId = negotiationResponse.get("@id").asText();
+            log.info("Started negotiation with id {}", negotiationId);
             // Await confirmation of contract and contractId
             String contractId = null;
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
                 var responseObject = getNegotiationState(negotiationId);
-                if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
-                    contractId = responseObject.get("edc:contractAgreementId").asText();
+                if ("FINALIZED".equals(responseObject.get("state").asText())) {
+                    contractId = responseObject.get("contractAgreementId").asText();
+                    log.info("Contracted DTR with contractAgreementId {}", contractId);
                     break;
                 }
             }
@@ -706,14 +736,15 @@ public class EdcAdapterService {
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
                 transferResp = getTransferState(transferId);
-                if ("STARTED".equals(transferResp.get("edc:state").asText())) {
+                if ("STARTED".equals(transferResp.get("state").asText())) {
                     break;
                 }
             }
             EdrDto edrDto = null;
             // Await arrival of edr
             for (int i = 0; i < 100; i++) {
-                edrDto = edrService.findByTransferId(transferId);
+                // TODO use external EDR Service provided by EDC
+                edrDto = getEdrForTransferProcessId(transferId);//edrService.findByTransferId(transferId);
                 if (edrDto != null) {
                     log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
                     break;
@@ -778,6 +809,66 @@ public class EdcAdapterService {
     }
 
     /**
+     * Requests an EDR for the communication from edc
+     * <p>
+     * The edc already handles the expiry as configured in the provider data plane and refreshs the token before
+     * answering.
+     *
+     * @param transferProcessId to get the EDR for
+     * @return unpersisted EdrDto.
+     */
+    private EdrDto getEdrForTransferProcessId(String transferProcessId) {
+
+        // Note: If we decode the auth token, we could add the exp as expiresAt so that I can store the EDR and lookup
+        // again
+        EdrDto storedEdr = edrService.findByTransferId(transferProcessId);
+        log.debug("storedEdr: {}", storedEdr);
+
+        // got a stored edr that has an auth token that will not expire within 5 seconds
+        // Notes:
+        // - this might cause an issue if there are different time zones between EDC and us
+        // - we could also implement an ProxyRequestInterceptor that gets a fresh token for a TransferProcessId
+        if (storedEdr != null && storedEdr.expiresAt().before(new Date(System.currentTimeMillis() + 5000))) {
+            log.info("Reuse EDR directly as it will not expire within 5 seconds");
+            return storedEdr;
+        }
+
+        if (storedEdr != null) {
+            log.debug("Expiry edr: {} VS expiry within 5 sec {}", storedEdr.expiresAt(), new Date(System.currentTimeMillis() + 5000));
+        } else {
+            log.debug("No EDR token found");
+        }
+
+        try (Response response = sendGetRequest(
+            List.of("v2", "edrs", transferProcessId, "dataaddress"),
+            Map.of("auto_refresh", "true"))
+        ) {
+            ObjectNode responseObject = (ObjectNode) objectMapper.readTree(response.body().string());
+
+            // TODO pattern check dataPlaneEndpoint
+            String dataPlaneEndpoint = responseObject.get("endpoint").asText();
+            String authToken = responseObject.get("authorization").asText();
+
+            JWT jwt = JWTParser.parse(authToken);
+            JWTClaimsSet claims = jwt.getJWTClaimsSet();
+            Date expirationTime = claims.getExpirationTime();
+
+            storedEdr = new EdrDto("Authorization", authToken, dataPlaneEndpoint, expirationTime);
+            edrService.save(transferProcessId, storedEdr);
+            log.debug("Requested EDR successfully: {}", storedEdr);
+
+            return storedEdr;
+
+        } catch (ParseException e) {
+            log.error("EDR token could not be parsed: {}", e);
+        } catch (IOException e) {
+            log.error("EDR token for transfer process with ID {} could not be obtained", transferProcessId);
+        }
+
+        return null;
+    }
+
+    /**
      * Tries to negotiate for a partner's Submodel API.<p>
      * If successful, the contractId as well as the assetId
      * are stored to the EdcContractMapping of that partner
@@ -801,7 +892,15 @@ public class EdcAdapterService {
             case PART_TYPE_INFORMATION -> fetchPartTypeSubmodelData(mpr);
         };
         try {
-            var responseNode = getCatalog(submodelData.dspUrl());
+            // TODO: why is semantics not expanded?
+            Map<String, String> equalFilters = new HashMap<>();
+            equalFilters.put(EdcRequestBodyBuilder.CX_COMMON_NAMESPACE + "version", "3.0");
+            equalFilters.put(
+                "'" + EdcRequestBodyBuilder.DCT_NAMESPACE + "type'.'@id'",
+                EdcRequestBodyBuilder.CX_TAXO_NAMESPACE + "Submodel"
+            );
+            equalFilters.put("'" + EdcRequestBodyBuilder.AAS_SEMANTICS_NAMESPACE + "semanticId'.'@id'", type.URN_SEMANTIC_ID);
+            var responseNode = getCatalog(submodelData.dspUrl(), partner.getBpnl(), equalFilters);
             var catalogArray = responseNode.get("dcat:dataset");
             // If there is exactly one asset, the catalogContent will be a JSON object.
             // In all other cases catalogContent will be a JSON array.
@@ -810,31 +909,18 @@ public class EdcAdapterService {
                 catalogArray = objectMapper.createArrayNode().add(catalogArray);
             }
             JsonNode targetCatalogEntry = null;
-            for (var entry : catalogArray) {
-                var semanticId = entry.get("aas-semantics:semanticId");
-                if (semanticId == null) {
-                    continue;
-                }
-                String idString = semanticId.get("@id").asText();
-                if (idString == null) {
-                    continue;
-                }
-                if (type.URN_SEMANTIC_ID.equals(idString) && submodelData.assetId.equals(entry.get("edc:id").asText())) {
-                    if (targetCatalogEntry == null) {
-                        if (testContractPolicyConstraints(entry)) {
-                            targetCatalogEntry = entry;
-                        } else {
-                            log.error("Contract Negotiation for " + type + " Submodel asset with partner " + partner.getBpnl() + " has " +
-                                "been aborted. This partner's contract policy does not match the policy " +
-                                "supported by this application. \n Supported Policy: " + variablesService.getPurisFrameworkAgreement() +
-                                "\n Received offer from Partner: \n" + entry.toPrettyString());
-                            break;
-                        }
-                    } else {
-                        log.warn("Ambiguous catalog entries found! \n" + catalogArray.toPrettyString());
+            if (catalogArray.size() > 1) {
+                log.debug("Ambiguous catalog entries found! Will take the first with supported policy \n" + catalogArray.toPrettyString());
+                for (JsonNode entry : catalogArray) {
+                    if (testContractPolicyConstraints(entry)) {
+                        targetCatalogEntry = entry;
+                        break;
                     }
                 }
+            } else {
+                targetCatalogEntry = catalogArray.get(0);
             }
+
             if (targetCatalogEntry == null) {
                 log.error("Could not find asset for " + type + " Submodel at partner " + partner.getBpnl() + "'s catalog");
                 log.warn("CATALOG CONTENT \n" + catalogArray.toPrettyString());
@@ -847,8 +933,8 @@ public class EdcAdapterService {
             for (int i = 0; i < 100; i++) {
                 Thread.sleep(100);
                 var responseObject = getNegotiationState(negotiationId);
-                if ("FINALIZED".equals(responseObject.get("edc:state").asText())) {
-                    contractId = responseObject.get("edc:contractAgreementId").asText();
+                if ("FINALIZED".equals(responseObject.get("state").asText())) {
+                    contractId = responseObject.get("contractAgreementId").asText();
                     break;
                 }
             }
@@ -879,7 +965,7 @@ public class EdcAdapterService {
      * @return the partner's CXid for that material
      */
     public String getCxIdFromPartTypeInformation(MaterialPartnerRelation mpr) {
-        var data =  getSubmodelFromPartner(mpr, SubmodelType.PART_TYPE_INFORMATION, null, 1);
+        var data = getSubmodelFromPartner(mpr, SubmodelType.PART_TYPE_INFORMATION, null, 1);
         return data.get("catenaXId").asText();
     }
 
