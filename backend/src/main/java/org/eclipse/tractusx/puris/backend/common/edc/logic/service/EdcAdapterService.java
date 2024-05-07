@@ -356,8 +356,9 @@ public class EdcAdapterService {
      */
     public JsonNode getCatalog(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException { // TODO: use partner to get the catalog
         try (var response = getCatalogResponse(dspUrl, partnerBpnl, filter)) {
-            String stringData = response.body().string();
-            return objectMapper.readTree(stringData);
+            JsonNode responseNode = objectMapper.readTree(response.body().string());
+            log.debug("Got Catalog response {}", responseNode.toPrettyString());
+            return responseNode;
         }
 
     }
@@ -457,6 +458,7 @@ public class EdcAdapterService {
      */
     public Response getAllTransfers() throws IOException {
         var requestBody = edcRequestBodyBuilder.buildTransfersRequestBody();
+        log.debug("GetAllTransfers Request: {}", requestBody.toPrettyString());
         return sendPostRequest(requestBody, List.of("v2", "transferprocesses", "request"));
     }
 

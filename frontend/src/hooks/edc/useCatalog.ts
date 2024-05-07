@@ -18,28 +18,31 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { config } from '@models/constants/config';
-import { RawCatalogData } from '@models/types/edc/catalog';
-import { useFetch } from '../useFetch';
-import { isErrorResponse } from '@util/helpers';
+import {config} from '@models/constants/config';
+import {RawCatalogData} from '@models/types/edc/catalog';
+import {useFetch} from '../useFetch';
+import {isErrorResponse} from '@util/helpers';
+import {Partner} from '@models/types/edc/partner';
 
-export const useCatalog = (edcUrl: string | null) => {
+export const useCatalog = (partner: Partner | null) => {
     const {
         data,
         error,
         isLoading: isLoadingCatalog,
-    } = useFetch<RawCatalogData>(edcUrl ? config.app.BACKEND_BASE_URL + 'edc/catalog?dspUrl=' + encodeURIComponent(edcUrl) : undefined);
+    } = useFetch<RawCatalogData>(partner ? config.app.BACKEND_BASE_URL +
+        'edc/catalog?dspUrl=' + encodeURIComponent(partner.edcUrl) +
+        '&partnerBpnl=' + encodeURIComponent(partner.bpnl) : undefined);
     const catalog = data && !isErrorResponse(data)
         ? (data['dcat:dataset']?.map((item) => {
-              return {
-                  assetId: item['@id'],
-                  assetType: item['dct:type']['@id'],
-                  assetVersion: item['https://w3id.org/catenax/ontology/common#version'],
-                  permission: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:permission'],
-                  prohibitions: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:prohibition'],
-                  obligations: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:obligation'],
-              };
-          }) ?? null)
+            return {
+                assetId: item['@id'],
+                assetType: item['https://purl.org/dc/terms/type']['@id'],
+                assetVersion: item['https://w3id.org/catenax/ontology/common#version'],
+                permission: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:permission'],
+                prohibitions: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:prohibition'],
+                obligations: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:obligation'],
+            };
+        }) ?? null)
         : null;
     const catalogError = error ?? (data && isErrorResponse(data) ? data : null);
     return {
