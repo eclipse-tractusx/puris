@@ -23,22 +23,30 @@ package org.eclipse.tractusx.puris.backend.delivery.controller;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.Delivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.logic.dto.DeliveryDto;
+import org.eclipse.tractusx.puris.backend.delivery.logic.service.DeliveryRequestApiService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.OwnDeliveryService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.ReportedDeliveryService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,6 +54,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -68,16 +77,27 @@ public class DeliveryController {
     private ReportedDeliveryService reportedDeliveryService;
 
     @Autowired
+    private DeliveryRequestApiService deliveryRequestApiService;
+
+    @Autowired
     private MaterialService materialService;
 
     @Autowired
     private PartnerService partnerService;
 
     @Autowired
+    private MaterialPartnerRelationService mprService;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
     private Validator validator;
+
+    private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
+
+    @Autowired
+    private ExecutorService executorService;
 
     @GetMapping()
     @ResponseBody
@@ -164,6 +184,28 @@ public class DeliveryController {
     public List<DeliveryDto> getAllDeliveriesForPartner(String materialNumber, Optional<String> bpnl) {
         return reportedDeliveryService.findAllByFilters(Optional.of(materialNumber), bpnl)
                 .stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    @GetMapping("reported/refresh")
+    @ResponseBody
+    @Operation(
+        summary = "Refreshes all reported deliveries", 
+        description = "Refreshes all reported deliveries from the delivery request API."
+    )
+    public ResponseEntity<List<PartnerDto>> refreshReportedDeliveries(@RequestParam String ownMaterialNumber) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
+        for (Partner supplierPartner : allSupplierPartnerEntities) {
+            executorService.submit(() ->
+            deliveryRequestApiService.doReportedDeliveryRequest(supplierPartner, materialEntity));
+        }
+
+        return ResponseEntity.ok(allSupplierPartnerEntities.stream()
+            .map(partner -> modelMapper.map(partner, PartnerDto.class))
+            .toList());
     }
 
     private OwnDelivery convertToEntity(DeliveryDto dto) {

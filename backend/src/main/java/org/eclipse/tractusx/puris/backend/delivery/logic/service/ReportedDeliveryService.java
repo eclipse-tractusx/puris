@@ -107,7 +107,7 @@ public class ReportedDeliveryService {
             delivery.getTrackingNumber() != null &&
             delivery.getIncoterm() != null &&
             this.validateTransitEvent(delivery) &&
-            !delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
+            delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
             ((
                 delivery.getCustomerOrderNumber() != null && 
                 delivery.getCustomerOrderPositionNumber() != null &&
