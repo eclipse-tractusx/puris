@@ -726,13 +726,14 @@ public class EdcAdapterService {
             }
             HttpUrl.Builder urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
                 .addPathSegment("api")
-                .addPathSegment("v3.0")
+                .addPathSegment("v3")
                 .addPathSegment("lookup")
                 .addPathSegment("shells");
             String query = "{\"name\":\"manufacturerPartId\",\"value\":\"" + manufacturerPartId + "\"}";
             query += ",{\"name\":\"digitalTwinType\",\"value\":\"PartType\"}";
             query += ",{\"name\":\"manufacturerId\",\"value\":\"" + manufacturerId + "\"}";
-            urlBuilder.addQueryParameter("assetIds", Base64.getEncoder().encodeToString(query.getBytes(StandardCharsets.UTF_8)));
+            String encodedQuery = Base64.getEncoder().encodeToString(query.getBytes(StandardCharsets.UTF_8));
+            urlBuilder.addQueryParameter("assetIds", encodedQuery);
             var request = new Request.Builder()
                 .get()
                 .header(edrDto.authKey(), edrDto.authCode())
@@ -742,10 +743,7 @@ public class EdcAdapterService {
                 var bodyString = response.body().string();
                 var jsonResponse = objectMapper.readTree(bodyString);
                 var resultArray = jsonResponse.get("result");
-                if (resultArray.isArray()) {
-                    if (resultArray.isEmpty()) {
-                        log.warn("No results found for query " + query);
-                    }
+                if (resultArray != null && resultArray.isArray() && !resultArray.isEmpty()) {
                     if (resultArray.size() > 1) {
                         log.warn("Found more than one result for query " + query);
                         log.info(resultArray.toPrettyString());
@@ -753,10 +751,10 @@ public class EdcAdapterService {
                     String aasId = resultArray.get(0).asText();
                     urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
                         .addPathSegment("api")
-                        .addPathSegment("v3.0")
+                        .addPathSegment("v3")
                         .addPathSegment("shell-descriptors");
                     String base64AasId = Base64.getEncoder().encodeToString(aasId.getBytes(StandardCharsets.UTF_8));
-                    urlBuilder.addQueryParameter("aasIdentifier", base64AasId);
+                    urlBuilder.addPathSegment(base64AasId);
                     request = new Request.Builder()
                         .get()
                         .header(edrDto.authKey(), edrDto.authCode())
@@ -765,10 +763,23 @@ public class EdcAdapterService {
                     try (var response2 = CLIENT.newCall(request).execute()) {
                         var body2String = response2.body().string();
                         var aasJson = objectMapper.readTree(body2String);
-                        var resultObject = aasJson.get("result").get(0);
-                        var submodelDescriptors = resultObject.get("submodelDescriptors");
-                        failed = false;
-                        return submodelDescriptors;
+                        var submodelDescriptors = aasJson.get("submodelDescriptors");
+                        if (submodelDescriptors != null) {
+                            failed = false;
+                            return submodelDescriptors;
+                        } else {
+                            log.warn("No SubmodelDescriptors found in DTR shell-descriptors response:\n" + aasJson.toPrettyString());
+                        }
+                    }
+                } else {
+                    if (resultArray != null) {
+                        if (resultArray.isArray() && resultArray.isEmpty()) {
+                            log.warn("Empty Result array received");
+                        } else {
+                            log.warn("Unexpected Response for DTR lookup with query " + query + "\n" + resultArray.toPrettyString());
+                        }
+                    } else {
+                        log.warn("No Result Array received in DTR lookup response: \n" + jsonResponse.toPrettyString());
                     }
                 }
             }

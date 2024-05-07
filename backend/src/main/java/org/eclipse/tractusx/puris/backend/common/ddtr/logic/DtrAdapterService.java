@@ -111,7 +111,7 @@ public class DtrAdapterService {
         String twinId = digitalTwinMappingService.get(material).getProductTwinId();
         String idAsBase64 = Base64.getEncoder().encodeToString(twinId.getBytes(StandardCharsets.UTF_8));
         var body = dtrRequestBodyBuilder.createProductRegistrationRequestBody(material, twinId, mprs);
-        try (var response = sendDtrPutRequest(body, List.of("api", "v3.0", "shell-descriptors", idAsBase64))) {
+        try (var response = sendDtrPutRequest(body, List.of("api", "v3", "shell-descriptors", idAsBase64))) {
             return response.code();
         } catch (Exception e) {
             log.error("Failure in update for product twin " + material.getOwnMaterialNumber(), e);
@@ -131,7 +131,7 @@ public class DtrAdapterService {
     public Integer registerProductAtDtr(Material material) {
         String twinId = digitalTwinMappingService.get(material).getProductTwinId();
         var body = dtrRequestBodyBuilder.createProductRegistrationRequestBody(material, twinId, List.of());
-        try (var response = sendDtrPostRequest(body, List.of("api", "v3.0", "shell-descriptors"))) {
+        try (var response = sendDtrPostRequest(body, List.of("api", "v3", "shell-descriptors"))) {
             return response.code();
         } catch (Exception e) {
             log.error("Failed to register product at DTR " + material.getOwnMaterialNumber(), e);
@@ -148,7 +148,7 @@ public class DtrAdapterService {
      */
     public Integer registerMaterialAtDtr(MaterialPartnerRelation supplierPartnerRelation) {
         var body = dtrRequestBodyBuilder.createMaterialRegistrationRequestBody(supplierPartnerRelation);
-        try (var response = sendDtrPostRequest(body, List.of("api", "v3.0", "shell-descriptors"))) {
+        try (var response = sendDtrPostRequest(body, List.of("api", "v3", "shell-descriptors"))) {
             return response.code();
         } catch (Exception e) {
             log.error("Failed to register material at DTR " + supplierPartnerRelation.getMaterial().getOwnMaterialNumber(), e);
@@ -165,7 +165,7 @@ public class DtrAdapterService {
     public Integer updateMaterialAtDtr(MaterialPartnerRelation supplierPartnerRelation) {
         var body = dtrRequestBodyBuilder.createMaterialRegistrationRequestBody(supplierPartnerRelation);
         String idAsBase64 = Base64.getEncoder().encodeToString(supplierPartnerRelation.getPartnerCXNumber().getBytes(StandardCharsets.UTF_8));
-        try (var response = sendDtrPutRequest(body, List.of("api", "v3.0", "shell-descriptors", idAsBase64))) {
+        try (var response = sendDtrPutRequest(body, List.of("api", "v3", "shell-descriptors", idAsBase64))) {
             return response.code();
         } catch (Exception e) {
             log.error("Failed to register material at DTR " + supplierPartnerRelation.getMaterial().getOwnMaterialNumber(), e);

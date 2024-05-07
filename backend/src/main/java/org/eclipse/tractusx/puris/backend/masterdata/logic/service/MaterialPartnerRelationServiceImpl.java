@@ -84,13 +84,12 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         flagConsistencyTest(materialPartnerRelation);
         var searchResult = find(materialPartnerRelation.getMaterial(), materialPartnerRelation.getPartner());
         if (searchResult == null) {
-            dtmService.update(materialPartnerRelation);
             executorService.submit(new DtrRegistrationTask(materialPartnerRelation, 3));
             if (materialPartnerRelation.getMaterial().isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial()
                 && materialPartnerRelation.getPartnerCXNumber() == null) {
                 log.info("Attempting CX-Id fetch for Material " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
                     " from Supplier-Partner " + materialPartnerRelation.getPartner().getBpnl());
-                executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 3));
+                executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 1));
             }
             return mprRepository.save(materialPartnerRelation);
         }
@@ -101,7 +100,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     @Override
     public void triggerPartTypeRetrievalTask(MaterialPartnerRelation mpr) {
         if (!currentPartTypeFetches.contains(mpr)) {
-            executorService.submit(new PartTypeInformationRetrievalTask(mpr, 3));
+            executorService.submit(new PartTypeInformationRetrievalTask(mpr, 1));
         }
     }
 
@@ -164,13 +163,8 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
 
     private class DtrRegistrationTask implements Callable<Boolean> {
+
         MaterialPartnerRelation materialPartnerRelation;
-        /**
-         * Must be either "CREATE" or "UPDATE". The distinction is important,
-         * because for an existing AAS, the PUT endpoint on the DTR must be called.
-         * While, on the other hand, for a new AAS the POST endpoint must be called
-         * at the DTR.
-         */
         int retries;
         final int initialRetries;
         final boolean needProductRegistration;
@@ -180,10 +174,10 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
         public DtrRegistrationTask(MaterialPartnerRelation materialPartnerRelation, int retries) {
             this.materialPartnerRelation = materialPartnerRelation;
-            this.retries = retries;
-            this.initialRetries = retries;
-            this.needProductRegistration = materialPartnerRelation.getMaterial().isProductFlag();
-            this.needMaterialRegistration = materialPartnerRelation.getMaterial().isMaterialFlag();
+            this.initialRetries = Math.max(retries, 1);
+            this.retries = initialRetries;
+            this.needProductRegistration = materialPartnerRelation.isPartnerBuysMaterial();
+            this.needMaterialRegistration = materialPartnerRelation.isPartnerSuppliesMaterial();
         }
 
         @Override
@@ -202,21 +196,14 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                 Integer result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
                 if (result != null) {
                     if (result < 400) {
-                        log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
+                        log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " and "
+                        + allCustomers.size() + " customer partners. Result: " + result);
                         completedProductRegistration = true;
                     } else {
                         if (result == 404) {
                             Integer registrationResult = dtrAdapterService.registerProductAtDtr(materialPartnerRelation.getMaterial());
                             log.info("Tried to create product AAS for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber()
                                 + ", result: " + registrationResult);
-                            if (registrationResult != null && registrationResult < 400) {
-                                result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
-                                if (result != null && result < 400) {
-                                    log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                                        ", result: " + result);
-                                    completedProductRegistration = true;
-                                }
-                            }
                         }
                     }
                 } else {
@@ -235,7 +222,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                     } else {
                         // initiate new fetch
                         log.info("Initiating new PartTypeInformation Fetch");
-                        var futureResult = executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 3));
+                        var futureResult = executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 1));
                         while (!futureResult.isDone()) {
                             Thread.yield();
                         }
@@ -262,27 +249,18 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                             log.info("Tried to create material AAS for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
                                 " and partner " + materialPartnerRelation.getPartner().getBpnl() +
                                 ", result: " + registrationResult);
-                            if (registrationResult != null && registrationResult < 400) {
-                                Thread.sleep(600);
-                                result = dtrAdapterService.updateMaterialAtDtr(materialPartnerRelation);
-                                if (result != null && result < 400) {
-                                    completedMaterialRegistration = true;
-                                    log.info("Updated material ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                                        " and supplier partner " + materialPartnerRelation.getPartner().getBpnl() + ", result: " + result);
-                                }
-                            }
                         }
                     }
                 }
             }
             if ((needMaterialRegistration && !completedMaterialRegistration) || (needProductRegistration && !completedProductRegistration)) {
                 retries--;
-                String message = "DTR Registration for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " and " + materialPartnerRelation.getPartner().getBpnl() + " failed, ";
+                String message = "DTR Registration for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " and " + materialPartnerRelation.getPartner().getBpnl() + " failed";
                 if (needMaterialRegistration && !completedMaterialRegistration) {
-                    message += "Material Registration still needed ";
+                    message += ", Material Registration still needed";
                 }
                 if (needProductRegistration && !completedProductRegistration) {
-                    message += "Product Registration still needed ";
+                    message += ", Product Registration still needed";
                 }
                 log.warn(message);
                 return call();
@@ -302,7 +280,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         flagConsistencyTest(materialPartnerRelation);
         var foundEntity = mprRepository.findById(materialPartnerRelation.getKey());
         if (foundEntity.isPresent()) {
-            dtmService.update(materialPartnerRelation);
             if (materialPartnerRelation.getMaterial().isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial()
                 && materialPartnerRelation.getPartnerCXNumber() == null) {
                 log.info("Attempting CX-Id fetch for Material " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +

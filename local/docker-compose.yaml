@@ -77,13 +77,13 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   dtr-customer:
-    image: tractusx/sldt-digital-twin-registry:0.3.23
+    image: tractusx/sldt-digital-twin-registry:0.4.3
     container_name: dtr-customer
     depends_on:
       postgres-customer:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3.0/shell-descriptors" ]
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors" ]
       interval: 4s
       timeout: 3s
       retries: 15
@@ -222,13 +222,13 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   dtr-supplier:
-    image: tractusx/sldt-digital-twin-registry:0.3.23
+    image: tractusx/sldt-digital-twin-registry:0.4.3
     container_name: dtr-supplier
     depends_on:
       postgres-supplier:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3.0/shell-descriptors" ]
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors" ]
       interval: 4s
       timeout: 3s
       retries: 15
