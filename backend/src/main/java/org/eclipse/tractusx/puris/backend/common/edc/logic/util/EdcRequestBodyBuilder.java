@@ -462,4 +462,19 @@ public class EdcRequestBodyBuilder {
     }
 
 
+    /**
+     * builds a body to terminate the transfer process
+     *
+     * @param reason why transfer is terminated
+     * @return transfer process termination request body
+     */
+    public JsonNode buildTransferProcessTerminationBody(String reason) {
+
+        ObjectNode body = getEdcContextObject();
+
+        body.put("@type", "TerminateTransfer");
+        body.put("reason", reason);
+
+        return body;
+    }
 }

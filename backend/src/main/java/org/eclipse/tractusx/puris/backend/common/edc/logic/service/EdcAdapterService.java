@@ -114,8 +114,8 @@ public class EdcAdapterService {
      * Any caller of this method has the responsibility to close
      * the returned Response object after using it.
      *
-     * @param requestBody  The request body
-     * @param pathSegments The path se&gments
+     * @param requestBody  The request body; null if no body is needed
+     * @param pathSegments The path segments
      * @return The response from your control plane
      * @throws IOException If the connection to your control plane fails
      */
@@ -124,7 +124,11 @@ public class EdcAdapterService {
         for (var pathSegment : pathSegments) {
             urlBuilder.addPathSegment(pathSegment);
         }
-        RequestBody body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json"));
+        RequestBody body = null;
+
+        if (requestBody != null) {
+            body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json"));
+        }
 
         var request = new Request.Builder()
             .post(body)
@@ -132,6 +136,7 @@ public class EdcAdapterService {
             .header("X-Api-Key", variablesService.getEdcApiKey())
             .header("Content-Type", "application/json")
             .build();
+
         return CLIENT.newCall(request).execute();
     }
 
@@ -336,7 +341,6 @@ public class EdcAdapterService {
      * @return The response containing the full catalog, if successful
      */
     public Response getCatalogResponse(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException {
-        // TODO check if we need the method here
         return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, partnerBpnl, filter), List.of("v2", "catalog", "request"));
     }
 
@@ -551,37 +555,44 @@ public class EdcAdapterService {
             var transferResp = initiateProxyPullTransfer(partner, submodelContractId, assetId, partnerDspUrl);
             log.debug("Transfer Request {}", transferResp.toPrettyString());
             String transferId = transferResp.get("@id").asText();
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
-                transferResp = getTransferState(transferId);
-                if ("STARTED".equals(transferResp.get("state").asText())) {
-                    break;
+            // try proxy pull and terminate request
+            try {
+                for (int i = 0; i < 100; i++) {
+                    Thread.sleep(100);
+                    transferResp = getTransferState(transferId);
+                    if ("STARTED".equals(transferResp.get("state").asText())) {
+                        break;
+                    }
                 }
-            }
-            EdrDto edrDto = null;
-            // Await arrival of edr
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
-                edrDto = getEdrForTransferProcessId(transferId); //edrService.findByTransferId(transferId);
-                if (edrDto != null) {
-                    log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
-                    break;
+                EdrDto edrDto = null;
+                // Await arrival of edr
+                for (int i = 0; i < 100; i++) {
+                    Thread.sleep(100);
+                    edrDto = getEdrForTransferProcessId(transferId); //edrService.findByTransferId(transferId);
+                    if (edrDto != null) {
+                        log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
+                        break;
+                    }
                 }
-            }
-            if (edrDto == null) {
-                log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
-                return doSubmodelRequest(type, mpr, direction, --retries);
-            }
-            if (!submodelData.href().startsWith(edrDto.endpoint())) {
-                log.warn("Diverging URLs in ItemStock Submodel request");
-                log.warn("href: " + submodelData.href());
-                log.warn("Data plane base URL from EDR: " + edrDto.endpoint());
-            }
-            try (var response = getProxyPullRequest(submodelData.href, edrDto.authKey(), edrDto.authCode(), new String[]{type.REPRESENTATION})) {
-                if (response.isSuccessful()) {
-                    String responseString = response.body().string();
-                    failed = false;
-                    return objectMapper.readTree(responseString);
+                if (edrDto == null) {
+                    log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
+                    return doSubmodelRequest(type, mpr, direction, --retries);
+                }
+                if (!submodelData.href().startsWith(edrDto.endpoint())) {
+                    log.warn("Diverging URLs in ItemStock Submodel request");
+                    log.warn("href: " + submodelData.href());
+                    log.warn("Data plane base URL from EDR: " + edrDto.endpoint());
+                }
+                try (var response = getProxyPullRequest(submodelData.href, edrDto.authKey(), edrDto.authCode(), new String[]{type.REPRESENTATION})) {
+                    if (response.isSuccessful()) {
+                        String responseString = response.body().string();
+                        failed = false;
+                        return objectMapper.readTree(responseString);
+                    }
+                }
+            } finally {
+                if (transferId != null) {
+                    terminateTransfer(transferId);
                 }
             }
         } catch (Exception e) {
@@ -712,6 +723,17 @@ public class EdcAdapterService {
         return null;
     }
 
+    /**
+     * quries the dtr of a pratner for the given mpr / material and returns submodel descriptors
+     * <p>
+     * Method assumes that the query at dtr only finds one shell (else take first entry)
+     *
+     * @param manufacturerPartId material number of the supplier party
+     * @param manufacturerId     bpnl of the supplier party
+     * @param mpr                containing the mapping between material and partner to lookup at dtr
+     * @param retries            number of times to retry in case the shell could not (yet) been found
+     * @return array of submodelDescriptors of the found shell
+     */
     private JsonNode getAasSubmodelDescriptors(String manufacturerPartId, String manufacturerId, MaterialPartnerRelation mpr, int retries) {
         if (retries < 0) {
             log.error("AasSubmodelDescriptors Request failed for " + manufacturerPartId + " and " + manufacturerId);
@@ -733,67 +755,73 @@ public class EdcAdapterService {
             }
             var transferResp = initiateProxyPullTransfer(partner, contractId, assetId);
             String transferId = transferResp.get("@id").asText();
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(100);
-                transferResp = getTransferState(transferId);
-                if ("STARTED".equals(transferResp.get("state").asText())) {
-                    break;
-                }
-            }
-            EdrDto edrDto = null;
-            // Await arrival of edr
-            for (int i = 0; i < 100; i++) {
-                // TODO use external EDR Service provided by EDC
-                edrDto = getEdrForTransferProcessId(transferId);//edrService.findByTransferId(transferId);
-                if (edrDto != null) {
-                    log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
-                    break;
-                }
-                Thread.sleep(100);
-            }
-            if (edrDto == null) {
-                log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
-                return getAasSubmodelDescriptors(manufacturerPartId, manufacturerId, mpr, --retries);
-            }
-            HttpUrl.Builder urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
-                .addPathSegment("api")
-                .addPathSegment("v3.0")
-                .addPathSegment("lookup")
-                .addPathSegment("shells");
-            String query = "{\"name\":\"manufacturerPartId\",\"value\":\"" + manufacturerPartId + "\"}";
-            query += ",{\"name\":\"digitalTwinType\",\"value\":\"PartType\"}";
-            query += ",{\"name\":\"manufacturerId\",\"value\":\"" + manufacturerId + "\"}";
-            urlBuilder.addQueryParameter("assetIds", Base64.getEncoder().encodeToString(query.getBytes(StandardCharsets.UTF_8)));
-            var request = new Request.Builder()
-                .get()
-                .header(edrDto.authKey(), edrDto.authCode())
-                .url(urlBuilder.build())
-                .build();
-            try (var response = CLIENT.newCall(request).execute()) {
-                var bodyString = response.body().string();
-                var jsonResponse = objectMapper.readTree(bodyString);
-                var resultArray = jsonResponse.get("result");
-                if (resultArray.isArray()) {
-                    String aasId = resultArray.get(0).asText();
-                    urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
-                        .addPathSegment("api")
-                        .addPathSegment("v3.0")
-                        .addPathSegment("shell-descriptors");
-                    String base64AasId = Base64.getEncoder().encodeToString(aasId.getBytes(StandardCharsets.UTF_8));
-                    urlBuilder.addQueryParameter("aasIdentifier", base64AasId);
-                    request = new Request.Builder()
-                        .get()
-                        .header(edrDto.authKey(), edrDto.authCode())
-                        .url(urlBuilder.build())
-                        .build();
-                    try (var response2 = CLIENT.newCall(request).execute()) {
-                        var body2String = response2.body().string();
-                        var aasJson = objectMapper.readTree(body2String);
-                        var resultObject = aasJson.get("result").get(0);
-                        var submodelDescriptors = resultObject.get("submodelDescriptors");
-                        failed = false;
-                        return submodelDescriptors;
+            try {
+                for (int i = 0; i < 100; i++) {
+                    Thread.sleep(100);
+                    transferResp = getTransferState(transferId);
+                    if ("STARTED".equals(transferResp.get("state").asText())) {
+                        break;
                     }
+                }
+                EdrDto edrDto = null;
+                // Await arrival of edr
+                for (int i = 0; i < 100; i++) {
+                    edrDto = getEdrForTransferProcessId(transferId);//edrService.findByTransferId(transferId);
+                    if (edrDto != null) {
+                        log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
+                        break;
+                    }
+                    Thread.sleep(100);
+                }
+                if (edrDto == null) {
+                    log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
+                    return getAasSubmodelDescriptors(manufacturerPartId, manufacturerId, mpr, --retries);
+                }
+                HttpUrl.Builder urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
+                    .addPathSegment("api")
+                    .addPathSegment("v3.0")
+                    .addPathSegment("lookup")
+                    .addPathSegment("shells");
+                String query = "{\"name\":\"manufacturerPartId\",\"value\":\"" + manufacturerPartId + "\"}";
+                query += ",{\"name\":\"digitalTwinType\",\"value\":\"PartType\"}";
+                query += ",{\"name\":\"manufacturerId\",\"value\":\"" + manufacturerId + "\"}";
+                urlBuilder.addQueryParameter("assetIds", Base64.getEncoder().encodeToString(query.getBytes(StandardCharsets.UTF_8)));
+                var request = new Request.Builder()
+                    .get()
+                    .header(edrDto.authKey(), edrDto.authCode())
+                    .url(urlBuilder.build())
+                    .build();
+                try (var response = CLIENT.newCall(request).execute()) {
+                    var bodyString = response.body().string();
+                    var jsonResponse = objectMapper.readTree(bodyString);
+                    var resultArray = jsonResponse.get("result");
+                    if (resultArray.isArray()) {
+                        String aasId = resultArray.get(0).asText();
+                        urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
+                            .addPathSegment("api")
+                            .addPathSegment("v3.0")
+                            .addPathSegment("shell-descriptors");
+                        String base64AasId = Base64.getEncoder().encodeToString(aasId.getBytes(StandardCharsets.UTF_8));
+                        urlBuilder.addQueryParameter("aasIdentifier", base64AasId);
+                        request = new Request.Builder()
+                            .get()
+                            .header(edrDto.authKey(), edrDto.authCode())
+                            .url(urlBuilder.build())
+                            .build();
+                        try (var response2 = CLIENT.newCall(request).execute()) {
+                            var body2String = response2.body().string();
+                            var aasJson = objectMapper.readTree(body2String);
+                            var resultObject = aasJson.get("result").get(0);
+                            var submodelDescriptors = resultObject.get("submodelDescriptors");
+                            failed = false;
+                            return submodelDescriptors;
+                        }
+                    }
+                }
+
+            } finally {
+                if (transferId != null) {
+                    terminateTransfer(transferId);
                 }
             }
         } catch (Exception e) {
@@ -845,7 +873,6 @@ public class EdcAdapterService {
         ) {
             ObjectNode responseObject = (ObjectNode) objectMapper.readTree(response.body().string());
 
-            // TODO pattern check dataPlaneEndpoint
             String dataPlaneEndpoint = responseObject.get("endpoint").asText();
             String authToken = responseObject.get("authorization").asText();
 
@@ -866,6 +893,36 @@ public class EdcAdapterService {
         }
 
         return null;
+    }
+
+    /**
+     * terminate the transfer with reason "Transfer done."
+     * <p>
+     * Edr in {@link EndpointDataReferenceService} is not removed because it is removed automatically by a job after
+     * time period x.
+     *
+     * @param transferProcessId to terminate
+     */
+    private void terminateTransfer(String transferProcessId) {
+
+        JsonNode body = edcRequestBodyBuilder.buildTransferProcessTerminationBody("Transfer done.");
+
+        try (Response response = sendPostRequest(body, List.of("v2", "transferprocesses", transferProcessId, "terminate"))) {
+
+            JsonNode resultNode = objectMapper.readTree(response.body().string());
+            if (!response.isSuccessful()) {
+                log.error(
+                    "Transfer process with id {} could not be termianted; status code {}, reason: {}",
+                    transferProcessId,
+                    response.code(),
+                    resultNode.get("message").asText("MESSAGE NOT FOUND")
+                );
+            } else {
+                log.info("Terminated transfer process with id {}.", transferProcessId);
+            }
+        } catch (IOException e) {
+            log.error("Error while trying to terminate transfer: {}", e);
+        }
     }
 
     /**
@@ -892,7 +949,6 @@ public class EdcAdapterService {
             case PART_TYPE_INFORMATION -> fetchPartTypeSubmodelData(mpr);
         };
         try {
-            // TODO: why is semantics not expanded?
             Map<String, String> equalFilters = new HashMap<>();
             equalFilters.put(EdcRequestBodyBuilder.CX_COMMON_NAMESPACE + "version", "3.0");
             equalFilters.put(
