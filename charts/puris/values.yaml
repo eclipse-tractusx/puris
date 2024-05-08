@@ -425,7 +425,9 @@ backend:
       apiassetid: deliverysubmodel-api-asset
     frameworkagreement:
       # -- The name of the framework agreement
-      credential: FrameworkAgreement.traceability
+      credential: puris
+      # -- The version of the framework agreement, NEEDS TO BE PUT AS "STRING"!
+      version: "1.0"
     edr:
       # -- Number of minutes before received authentication data of a consumer pull is removed from memory
       deletiontimer: 2

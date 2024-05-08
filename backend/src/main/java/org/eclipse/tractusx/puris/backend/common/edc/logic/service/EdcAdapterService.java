@@ -985,7 +985,7 @@ public class EdcAdapterService {
                 catalogArray = objectMapper.createArrayNode().add(catalogArray);
             }
             JsonNode targetCatalogEntry = null;
-            if (catalogArray.size() >= 1) {
+            if (!catalogArray.isEmpty()) {
                 log.debug("Ambiguous catalog entries found! Will take the first with supported policy \n" + catalogArray.toPrettyString());
                 for (JsonNode entry : catalogArray) {
                     if (testContractPolicyConstraints(entry)) {
@@ -1055,19 +1055,42 @@ public class EdcAdapterService {
         var constraint = Optional.ofNullable(catalogEntry.get("odrl:hasPolicy"))
             .map(policy -> policy.get("odrl:permission"))
             .map(permission -> permission.get("odrl:constraint"));
-        if (constraint.isEmpty()) return false;
+        if (constraint.isEmpty()) {
+            log.debug("Constraint mismatch: we expect to have a constraint in permission node.");
+            return false;
+        }
+
+        if (constraint.map(con -> con.get("odrl:and")).isPresent()) {
+            log.debug("constraint uses ordl:and");
+            constraint = constraint.map(con -> con.get("odrl:and"));
+        }
 
         var leftOperand = constraint.map(cons -> cons.get("odrl:leftOperand"))
-            .filter(operand -> variablesService.getPurisFrameworkAgreement().equals(operand.asText()));
+            .filter(
+                operand -> (EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "FrameworkAgreement").equals(operand.asText())
+            );
 
         var operator = constraint.map(cons -> cons.get("odrl:operator"))
             .map(op -> op.get("@id"))
             .filter(operand -> "odrl:eq".equals(operand.asText()));
 
         var rightOperand = constraint.map(cons -> cons.get("odrl:rightOperand"))
-            .filter(operand -> "active".equals(operand.asText()));
+            .filter(operand -> variablesService.getPurisFrameworkAgreementWithVersion().equals(operand.asText()));
 
-        if (leftOperand.isEmpty() || operator.isEmpty() || rightOperand.isEmpty()) return false;
+        if (leftOperand.isEmpty() || operator.isEmpty() || rightOperand.isEmpty()) {
+            log.debug(
+                "Did not found leftOperand {}, operator {}, rightOperand {}",
+                leftOperand.isEmpty(),
+                operator.isEmpty(),
+                rightOperand.isEmpty()
+            );
+            log.info(
+                "Framework Agreement Policy (cx-policy:FrameworkAgreement) not fulfilled. Application supports {}:{}",
+                variablesService.getPurisFrameworkAgreement(),
+                variablesService.getPurisFrameworkAgreementVersion()
+            );
+            return false;
+        }
         log.info("Contract Offer constraints can be fulfilled by PURIS FOSS application (passed).");
 
         return true;

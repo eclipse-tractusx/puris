@@ -125,6 +125,12 @@ public class VariablesService {
      */
     private String purisFrameworkAgreement;
 
+    @Value("${puris.frameworkagreement.version}")
+    /**
+     * The version of the framework agreement to be used.
+     */
+    private String purisFrameworkAgreementVersion;
+
     @Value("${puris.api.key}")
     /**
      * The key for accessing the api.
@@ -240,5 +246,9 @@ public class VariablesService {
 
     public String getPartTypeSubmodelApiAssetId() {
         return "PartTypeInformationSubmodelApi@" + getOwnBpnl();
+    }
+
+    public String getPurisFrameworkAgreementWithVersion() {
+        return getPurisFrameworkAgreement() + ":" + getPurisFrameworkAgreementVersion();
     }
 }

@@ -185,11 +185,10 @@ public class EdcRequestBodyBuilder {
 
         List<PolicyConstraintDto> constraints = new ArrayList<>();
 
-        // TODO add version and migrate to new version
         constraints.add(new PolicyConstraintDto(
-            variablesService.getPurisFrameworkAgreement(),
+            CX_POLICY_NAMESPACE + ":FrameworkAgreement",
             "eq",
-            "active"
+            variablesService.getPurisFrameworkAgreementWithVersion()
         ));
 
         JsonNode body = buildPolicy(
