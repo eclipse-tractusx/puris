@@ -985,7 +985,7 @@ public class EdcAdapterService {
                 catalogArray = objectMapper.createArrayNode().add(catalogArray);
             }
             JsonNode targetCatalogEntry = null;
-            if (catalogArray.size() > 1) {
+            if (catalogArray.size() >= 1) {
                 log.debug("Ambiguous catalog entries found! Will take the first with supported policy \n" + catalogArray.toPrettyString());
                 for (JsonNode entry : catalogArray) {
                     if (testContractPolicyConstraints(entry)) {
@@ -993,8 +993,6 @@ public class EdcAdapterService {
                         break;
                     }
                 }
-            } else {
-                targetCatalogEntry = catalogArray.get(0);
             }
 
             if (targetCatalogEntry == null) {
@@ -1053,6 +1051,7 @@ public class EdcAdapterService {
      * @return true, if the policy matches yours, otherwise false
      */
     private boolean testContractPolicyConstraints(JsonNode catalogEntry) {
+        log.debug("Testing constraints in the following catalogEntry: {}", catalogEntry.toPrettyString());
         var constraint = Optional.ofNullable(catalogEntry.get("odrl:hasPolicy"))
             .map(policy -> policy.get("odrl:permission"))
             .map(permission -> permission.get("odrl:constraint"));
@@ -1069,6 +1068,7 @@ public class EdcAdapterService {
             .filter(operand -> "active".equals(operand.asText()));
 
         if (leftOperand.isEmpty() || operator.isEmpty() || rightOperand.isEmpty()) return false;
+        log.info("Contract Offer constraints can be fulfilled by PURIS FOSS application (passed).");
 
         return true;
     }
