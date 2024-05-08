@@ -262,22 +262,23 @@ public class EdcRequestBodyBuilder {
      *
      * @param partner         The Partner to negotiate with
      * @param dcatCatalogItem The catalog entry that describes the target asset.
+     * @param dspUrl          The dspUrl if a specific (not from MAD Partner) needs to be used, not null
      * @return The request body
      */
-    public JsonNode buildAssetNegotiationBody(Partner partner, JsonNode dcatCatalogItem) {
+    public JsonNode buildAssetNegotiationBody(Partner partner, JsonNode dcatCatalogItem, String dspUrl) {
         ObjectNode body = MAPPER.createObjectNode();
         ObjectNode contextNode = MAPPER.createObjectNode();
         contextNode.put(VOCAB_KEY, EDC_NAMESPACE);
         contextNode.put("odrl", ODRL_NAMESPACE);
         body.set("@context", contextNode);
         body.put("@type", "ContractRequest");
-        body.put("counterPartyAddress", partner.getEdcUrl()); // TODO this might result in a bug
+        body.put("counterPartyAddress", dspUrl);
         body.put("protocol", "dataspace-protocol-http");
 
         // extract policy and information from offer
         // framework agreement and co has been checked during catalog request
         String assetId = dcatCatalogItem.get("@id").asText();
-        var policyNode = dcatCatalogItem.get("odrl:hasPolicy");
+        JsonNode policyNode = dcatCatalogItem.get("odrl:hasPolicy");
 
         ObjectNode targetIdObject = MAPPER.createObjectNode();
         targetIdObject.put("@id", assetId);
@@ -285,12 +286,12 @@ public class EdcRequestBodyBuilder {
         ((ObjectNode) policyNode).set("odrl:target", targetIdObject);
         ((ObjectNode) policyNode).put("assigner", partner.getBpnl());
 
-        var offerNode = MAPPER.createObjectNode();
+        ObjectNode offerNode = MAPPER.createObjectNode();
         String offerId = policyNode.get("@id").asText();
         offerNode.put("offerId", offerId);
         offerNode.put("assetId", assetId);
         offerNode.set("policy", policyNode);
-        //TODO
+
         body.set("policy", policyNode);
 
         log.debug("Created asset negotiation body:\n" + body.toPrettyString());
@@ -320,7 +321,8 @@ public class EdcRequestBodyBuilder {
         dataDestination.put("type", "HttpProxy");
         body.set("dataDestination", dataDestination);
 
-        // TODO replace by callbackAddress or use EDR api
+        // This private property is not evaluated in EDC 0.7.0 anymore due to data plane signalling
+        // EDRs are taken manually
         var privateProperties = MAPPER.createObjectNode();
         privateProperties.put("receiverHttpEndpoint", variablesService.getEdrEndpoint());
         body.set("privateProperties", privateProperties);

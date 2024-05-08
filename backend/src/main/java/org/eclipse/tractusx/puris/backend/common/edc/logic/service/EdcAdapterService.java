@@ -366,6 +366,8 @@ public class EdcAdapterService {
     /**
      * Helper method for contracting a certain asset as specified in the catalog item from
      * a specific Partner.
+     * <p>
+     * Uses the dspUrl of the partner.
      *
      * @param partner     The Partner to negotiate with
      * @param catalogItem An excerpt from a catalog.
@@ -373,11 +375,27 @@ public class EdcAdapterService {
      * @throws IOException If the connection to the partners control plane fails
      */
     private JsonNode initiateNegotiation(Partner partner, JsonNode catalogItem) throws IOException {
-        var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(partner, catalogItem);
-        try (var response = sendPostRequest(requestBody, List.of("v2", "contractnegotiations"))) {
-            String responseString = response.body().string();
-            log.debug("Result from negotiation" + responseString);
-            return objectMapper.readTree(responseString);
+        return initiateNegotiation(partner, catalogItem, null);
+    }
+
+    /**
+     * Helper method for contracting a certain asset as specified in the catalog item from
+     * a specific Partner.
+     *
+     * @param partner     The Partner to negotiate with
+     * @param catalogItem An excerpt from a catalog.
+     * @param dspUrl      The dspUrl if a specific (not from MAD Partner) needs to be used, if null, the partners edcUrl is taken
+     * @return The JSON response to your contract offer.
+     * @throws IOException If the connection to the partners control plane fails
+     */
+    private JsonNode initiateNegotiation(Partner partner, JsonNode catalogItem, String dspUrl) throws IOException {
+        // use dspUrl as provided, if set - else use partner
+        dspUrl = dspUrl != null && !dspUrl.isEmpty() ? dspUrl : partner.getEdcUrl();
+        var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(partner, catalogItem, dspUrl);
+        try (Response response = sendPostRequest(requestBody, List.of("v2", "contractnegotiations"))) {
+            JsonNode responseNode = objectMapper.readTree(response.body().string());
+            log.debug("Result from negotiation {}", responseNode.toPrettyString());
+            return responseNode;
         }
     }
 
@@ -984,7 +1002,7 @@ public class EdcAdapterService {
                 log.warn("CATALOG CONTENT \n" + catalogArray.toPrettyString());
                 return false;
             }
-            JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
+            JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry, submodelData.dspUrl());
             String negotiationId = negotiationResponse.get("@id").asText();
             // Await confirmation of contract and contractId
             String contractId = null;
