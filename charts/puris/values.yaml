@@ -428,6 +428,11 @@ backend:
       credential: puris
       # -- The version of the framework agreement, NEEDS TO BE PUT AS "STRING"!
       version: "1.0"
+    purpose:
+      # -- The name of the purpose to use for submodel contracts
+      name: "cx.puris.base"
+      # -- The version of the purpose to use for submodel contracts. NEEDS TO BE PUT AS "STRING"!
+      version: "1"
     edr:
       # -- Number of minutes before received authentication data of a consumer pull is removed from memory
       deletiontimer: 2

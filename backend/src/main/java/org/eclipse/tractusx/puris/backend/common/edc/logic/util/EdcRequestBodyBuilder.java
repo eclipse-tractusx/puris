@@ -186,9 +186,15 @@ public class EdcRequestBodyBuilder {
         List<PolicyConstraintDto> constraints = new ArrayList<>();
 
         constraints.add(new PolicyConstraintDto(
-            CX_POLICY_NAMESPACE + ":FrameworkAgreement",
+            CX_POLICY_NAMESPACE + "FrameworkAgreement",
             "eq",
             variablesService.getPurisFrameworkAgreementWithVersion()
+        ));
+
+        constraints.add(new PolicyConstraintDto(
+            CX_POLICY_NAMESPACE + "UsagePurpose",
+            "eq",
+            variablesService.getPurisPuposeWithVersion()
         ));
 
         JsonNode body = buildPolicy(

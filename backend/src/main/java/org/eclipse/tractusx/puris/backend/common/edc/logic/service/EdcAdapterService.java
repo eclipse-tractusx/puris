@@ -1054,43 +1054,84 @@ public class EdcAdapterService {
         log.debug("Testing constraints in the following catalogEntry: {}", catalogEntry.toPrettyString());
         var constraint = Optional.ofNullable(catalogEntry.get("odrl:hasPolicy"))
             .map(policy -> policy.get("odrl:permission"))
-            .map(permission -> permission.get("odrl:constraint"));
+            .map(permission -> permission.get("odrl:constraint"))
+            .map(con -> con.get("odrl:and"));
         if (constraint.isEmpty()) {
             log.debug("Constraint mismatch: we expect to have a constraint in permission node.");
             return false;
         }
+        boolean result = true;
 
-        if (constraint.map(con -> con.get("odrl:and")).isPresent()) {
-            log.debug("constraint uses ordl:and");
-            constraint = constraint.map(con -> con.get("odrl:and"));
-        }
+        if (constraint.isPresent() && constraint.get().isArray() && constraint.get().size() == 2) {
+            Optional<JsonNode> frameworkAgreementConstraint = Optional.empty();
+            Optional<JsonNode> purposeConstraint = Optional.empty();
 
-        var leftOperand = constraint.map(cons -> cons.get("odrl:leftOperand"))
-            .filter(
-                operand -> (EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "FrameworkAgreement").equals(operand.asText())
-            );
+            for (JsonNode con : constraint.get()) { // Iterate over array elements and find the nodes
+                JsonNode leftOperandNode = con.get("odrl:leftOperand");
+                if (leftOperandNode != null && (EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "FrameworkAgreement").equals(leftOperandNode.asText())) {
+                    frameworkAgreementConstraint = Optional.of(con);
+                }
+                if (leftOperandNode != null && (EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "UsagePurpose").equals(leftOperandNode.asText())) {
+                    purposeConstraint = Optional.of(con);
+                }
+            }
 
-        var operator = constraint.map(cons -> cons.get("odrl:operator"))
-            .map(op -> op.get("@id"))
-            .filter(operand -> "odrl:eq".equals(operand.asText()));
+            if (frameworkAgreementConstraint.isPresent()) {
+                result = result && testSingleConstraint(
+                    frameworkAgreementConstraint,
+                    EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "FrameworkAgreement",
+                    "odrl:eq",
+                    variablesService.getPurisFrameworkAgreementWithVersion()
+                );
+            } else {
+                log.debug("FrameworkAgreement Policy not found.");
+            }
 
-        var rightOperand = constraint.map(cons -> cons.get("odrl:rightOperand"))
-            .filter(operand -> variablesService.getPurisFrameworkAgreementWithVersion().equals(operand.asText()));
-
-        if (leftOperand.isEmpty() || operator.isEmpty() || rightOperand.isEmpty()) {
-            log.debug(
-                "Did not found leftOperand {}, operator {}, rightOperand {}",
-                leftOperand.isEmpty(),
-                operator.isEmpty(),
-                rightOperand.isEmpty()
-            );
+            if (purposeConstraint.isPresent()) {
+                result = result && testSingleConstraint(
+                    purposeConstraint,
+                    EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "UsagePurpose",
+                    "odrl:eq",
+                    variablesService.getPurisPuposeWithVersion()
+                );
+            } else {
+                log.debug("Usage Purpose Policy not found.");
+            }
+        } else {
             log.info(
-                "Framework Agreement Policy (cx-policy:FrameworkAgreement) not fulfilled. Application supports {}:{}",
-                variablesService.getPurisFrameworkAgreement(),
-                variablesService.getPurisFrameworkAgreementVersion()
+                "2 Constraints (Framework Agreement, Purpose) are expected but got {} constraints.",
+                constraint.get().size()
             );
             return false;
         }
+
+        return result;
+    }
+
+    private boolean testSingleConstraint(Optional<JsonNode> constraintToTest, String targetLeftOperand, String targetOperator, String targetRightOperand) {
+
+        if (!constraintToTest.isPresent()) return false;
+
+        JsonNode con = constraintToTest.get();
+
+        JsonNode leftOperandNode = con.get("odrl:leftOperand");
+        if (leftOperandNode == null || !targetLeftOperand.equals(leftOperandNode.asText())) {
+            log.debug("Left operand {} odes not equal expected value {}.", leftOperandNode.asText(), targetLeftOperand);
+            return false;
+        }
+
+        JsonNode operatorNode = con.get("odrl:operator").get("@id");
+        if (operatorNode == null || !targetOperator.equals(operatorNode.asText())) {
+            log.debug("Operator {} does not equal expected value {}.", operatorNode.asText(), targetOperator);
+            return false;
+        }
+
+        JsonNode rightOperandNode = con.get("odrl:rightOperand");
+        if (operatorNode == null || !targetRightOperand.equals(rightOperandNode.asText())) {
+            log.debug("Right operand {} odes not equal expected value {}.", rightOperandNode.asText(), targetRightOperand);
+            return false;
+        }
+
         log.info("Contract Offer constraints can be fulfilled by PURIS FOSS application (passed).");
 
         return true;

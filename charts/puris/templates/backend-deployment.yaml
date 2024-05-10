@@ -151,6 +151,10 @@ spec:
               value: "{{ .Values.backend.puris.frameworkagreement.credential }}"
             - name: PURIS_FRAMEWORKAGREEMENT_VERSION
               value: "{{ .Values.backend.puris.frameworkagreement.version }}"
+            - name: PURIS_PURPOSE_NAME
+              value: "{{ .Values.backend.puris.purpose.name }}"
+            - name: PURIS_PURPOSE_VERSION
+              value: "{{ .Values.backend.puris.purpose.version }}"
             - name: PURIS_DTR_URL
               value: "{{ .Values.backend.puris.dtr.url  }}"
             - name: PURIS_GENERATEMATERIALCATENAXID
