@@ -1948,13 +1948,13 @@
 													"    pm.expect(responseJson.destinationBpns).to.equal(pm.environment.get(\"CUSTOMER_BPNS\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"destinationBpna\");",
-													"    pm.expect(responseJson.destinationBpna).to.equal(null);",
+													"    pm.expect(responseJson.destinationBpna).to.equal(pm.environment.get(\"CUSTOMER_BPNA\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"originBpns\");",
 													"    pm.expect(responseJson.originBpns).to.equal(pm.environment.get(\"SUPPLIER_BPNS\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"originBpna\");",
-													"    pm.expect(responseJson.originBpna).to.equal(null);",
+													"    pm.expect(responseJson.originBpna).to.equal(pm.environment.get(\"SUPPLIER_BPNA\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"dateOfDeparture\");",
 													"    pm.expect(new Date(responseJson.dateOfDeparture).toISOString()).to.equal(pm.variables.get(\"DEPARTURE_TIME_CALCULATED\"));",
@@ -2000,7 +2000,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"partnerBpnl\": \"{{CUSTOMER_BPNL}}\",\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n  \"quantity\": 100,\n  \"measurementUnit\": \"unit:piece\",\n  \"trackingNumber\": \"TN1\",\n  \"incoterm\": \"EXW\",\n  \"supplierOrderNumber\": null,\n  \"customerOrderNumber\": null,\n  \"customerOrderPositionNumber\": null,\n  \"destinationBpns\": \"{{CUSTOMER_BPNS}}\",\n  \"destinationBpna\": null,\n  \"originBpns\": \"{{SUPPLIER_BPNS}}\",\n  \"originBpna\": null,\n  \"dateOfDeparture\": \"{{DEPARTURE_TIME_CALCULATED}}\",\n  \"dateOfArrival\": \"{{ARRIVAL_TIME_CALCULATED}}\",\n  \"departureType\": \"estimated-departure\",\n  \"arrivalType\": \"estimated-arrival\"\n}",
+											"raw": "{\n  \"partnerBpnl\": \"{{CUSTOMER_BPNL}}\",\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n  \"quantity\": 100,\n  \"measurementUnit\": \"unit:piece\",\n  \"trackingNumber\": \"TN1\",\n  \"incoterm\": \"EXW\",\n  \"supplierOrderNumber\": null,\n  \"customerOrderNumber\": null,\n  \"customerOrderPositionNumber\": null,\n  \"destinationBpns\": \"{{CUSTOMER_BPNS}}\",\n  \"destinationBpna\": \"{{CUSTOMER_BPNA}}\",\n  \"originBpns\": \"{{SUPPLIER_BPNS}}\",\n  \"originBpna\": \"{{SUPPLIER_BPNA}}\",\n  \"dateOfDeparture\": \"{{DEPARTURE_TIME_CALCULATED}}\",\n  \"dateOfArrival\": \"{{ARRIVAL_TIME_CALCULATED}}\",\n  \"departureType\": \"estimated-departure\",\n  \"arrivalType\": \"estimated-arrival\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2044,7 +2044,7 @@
 													"    pm.expect(responseJson.partnerBpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"quantity\");",
-													"    pm.expect(responseJson.quantity).to.equal(100);",
+													"    pm.expect(responseJson.quantity).to.equal(200);",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"measurementUnit\");",
 													"    pm.expect(responseJson.measurementUnit).to.equal(\"unit:piece\");",
@@ -2053,7 +2053,7 @@
 													"    pm.expect(responseJson.trackingNumber).to.equal(\"TN1\");",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"incoterm\");",
-													"    pm.expect(responseJson.incoterm).to.equal(\"EXW\");",
+													"    pm.expect(responseJson.incoterm).to.equal(\"FCA\");",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"supplierOrderNumber\");",
 													"    pm.expect(responseJson.supplierOrderNumber).to.equal(null);",
@@ -2074,7 +2074,7 @@
 													"    pm.expect(responseJson.originBpns).to.equal(pm.environment.get(\"SUPPLIER_BPNS\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"originBpna\");",
-													"    pm.expect(responseJson.originBpna).to.equal(null);",
+													"    pm.expect(responseJson.originBpna).to.equal(pm.environment.get(\"SUPPLIER_BPNA\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"dateOfDeparture\");",
 													"    pm.expect(new Date(responseJson.dateOfDeparture).toISOString()).to.equal(pm.variables.get(\"DEPARTURE_TIME_CALCULATED\"));",
@@ -2083,7 +2083,7 @@
 													"    pm.expect(new Date(responseJson.dateOfArrival).toISOString()).to.equal(pm.variables.get(\"ARRIVAL_TIME_CALCULATED\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"departureType\");",
-													"    pm.expect(responseJson.departureType).to.equal(\"estimated-departure\");",
+													"    pm.expect(responseJson.departureType).to.equal(\"actual-departure\");",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"arrivalType\");",
 													"    pm.expect(responseJson.arrivalType).to.equal(\"estimated-arrival\");",
@@ -2121,7 +2121,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"partnerBpnl\": \"{{CUSTOMER_BPNL}}\",\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n  \"quantity\": 100,\n  \"measurementUnit\": \"unit:piece\",\n  \"trackingNumber\": \"TN1\",\n  \"incoterm\": \"EXW\",\n  \"supplierOrderNumber\": null,\n  \"customerOrderNumber\": \"C-Nbr-1\",\n  \"customerOrderPositionNumber\": \"C-Position-01\",\n  \"destinationBpns\": \"{{CUSTOMER_BPNS}}\",\n  \"destinationBpna\": null,\n  \"originBpns\": \"{{SUPPLIER_BPNS}}\",\n  \"originBpna\": null,\n  \"dateOfDeparture\": \"{{DEPARTURE_TIME_CALCULATED}}\",\n  \"dateOfArrival\": \"{{ARRIVAL_TIME_CALCULATED}}\",\n  \"departureType\": \"estimated-departure\",\n  \"arrivalType\": \"estimated-arrival\"\n}",
+											"raw": "{\n  \"partnerBpnl\": \"{{CUSTOMER_BPNL}}\",\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n  \"quantity\": 200,\n  \"measurementUnit\": \"unit:piece\",\n  \"trackingNumber\": \"TN1\",\n  \"incoterm\": \"FCA\",\n  \"supplierOrderNumber\": null,\n  \"customerOrderNumber\": \"C-Nbr-1\",\n  \"customerOrderPositionNumber\": \"C-Position-01\",\n  \"destinationBpns\": \"{{CUSTOMER_BPNS}}\",\n  \"destinationBpna\": null,\n  \"originBpns\": \"{{SUPPLIER_BPNS}}\",\n  \"originBpna\": \"{{SUPPLIER_BPNA}}\",\n  \"dateOfDeparture\": \"{{DEPARTURE_TIME_CALCULATED}}\",\n  \"dateOfArrival\": \"{{ARRIVAL_TIME_CALCULATED}}\",\n  \"departureType\": \"actual-departure\",\n  \"arrivalType\": \"estimated-arrival\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2165,7 +2165,7 @@
 													"    pm.expect(responseJson.partnerBpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"quantity\");",
-													"    pm.expect(responseJson.quantity).to.equal(100);",
+													"    pm.expect(responseJson.quantity).to.equal(300);",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"measurementUnit\");",
 													"    pm.expect(responseJson.measurementUnit).to.equal(\"unit:piece\");",
@@ -2174,7 +2174,7 @@
 													"    pm.expect(responseJson.trackingNumber).to.equal(\"TN1\");",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"incoterm\");",
-													"    pm.expect(responseJson.incoterm).to.equal(\"EXW\");",
+													"    pm.expect(responseJson.incoterm).to.equal(\"FAS\");",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"supplierOrderNumber\");",
 													"    pm.expect(responseJson.supplierOrderNumber).to.equal(\"S-Nbr-1\");",
@@ -2189,7 +2189,7 @@
 													"    pm.expect(responseJson.destinationBpns).to.equal(pm.environment.get(\"CUSTOMER_BPNS\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"destinationBpna\");",
-													"    pm.expect(responseJson.destinationBpna).to.equal(null);",
+													"    pm.expect(responseJson.destinationBpna).to.equal(pm.environment.get(\"CUSTOMER_BPNA\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"originBpns\");",
 													"    pm.expect(responseJson.originBpns).to.equal(pm.environment.get(\"SUPPLIER_BPNS\"));",
@@ -2204,10 +2204,10 @@
 													"    pm.expect(new Date(responseJson.dateOfArrival).toISOString()).to.equal(pm.variables.get(\"ARRIVAL_TIME_CALCULATED\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"departureType\");",
-													"    pm.expect(responseJson.departureType).to.equal(\"estimated-departure\");",
+													"    pm.expect(responseJson.departureType).to.equal(\"actual-departure\");",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"arrivalType\");",
-													"    pm.expect(responseJson.arrivalType).to.equal(\"estimated-arrival\");",
+													"    pm.expect(responseJson.arrivalType).to.equal(\"actual-arrival\");",
 													"});"
 												],
 												"type": "text/javascript",
@@ -2242,7 +2242,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"partnerBpnl\": \"{{CUSTOMER_BPNL}}\",\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n  \"quantity\": 100,\n  \"measurementUnit\": \"unit:piece\",\n  \"trackingNumber\": \"TN1\",\n  \"incoterm\": \"EXW\",\n  \"supplierOrderNumber\": \"S-Nbr-1\",\n  \"customerOrderNumber\": \"C-Nbr-1\",\n  \"customerOrderPositionNumber\": \"C-Position-01\",\n  \"destinationBpns\": \"{{CUSTOMER_BPNS}}\",\n  \"destinationBpna\": null,\n  \"originBpns\": \"{{SUPPLIER_BPNS}}\",\n  \"originBpna\": null,\n  \"dateOfDeparture\": \"{{DEPARTURE_TIME_CALCULATED}}\",\n  \"dateOfArrival\": \"{{ARRIVAL_TIME_CALCULATED}}\",\n  \"departureType\": \"estimated-departure\",\n  \"arrivalType\": \"estimated-arrival\"\n}",
+											"raw": "{\n  \"partnerBpnl\": \"{{CUSTOMER_BPNL}}\",\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n  \"quantity\": 300,\n  \"measurementUnit\": \"unit:piece\",\n  \"trackingNumber\": \"TN1\",\n  \"incoterm\": \"FAS\",\n  \"supplierOrderNumber\": \"S-Nbr-1\",\n  \"customerOrderNumber\": \"C-Nbr-1\",\n  \"customerOrderPositionNumber\": \"C-Position-01\",\n  \"destinationBpns\": \"{{CUSTOMER_BPNS}}\",\n  \"destinationBpna\": \"{{CUSTOMER_BPNA}}\",\n  \"originBpns\": \"{{SUPPLIER_BPNS}}\",\n  \"originBpna\": null,\n  \"dateOfDeparture\": \"{{DEPARTURE_TIME_CALCULATED}}\",\n  \"dateOfArrival\": \"{{ARRIVAL_TIME_CALCULATED}}\",\n  \"departureType\": \"actual-departure\",\n  \"arrivalType\": \"actual-arrival\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2286,7 +2286,7 @@
 													"    pm.expect(responseJson.partnerBpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"quantity\");",
-													"    pm.expect(responseJson.quantity).to.equal(100);",
+													"    pm.expect(responseJson.quantity).to.equal(400);",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"measurementUnit\");",
 													"    pm.expect(responseJson.measurementUnit).to.equal(\"unit:piece\");",
@@ -2295,7 +2295,7 @@
 													"    pm.expect(responseJson.trackingNumber).to.equal(\"TN1\");",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"incoterm\");",
-													"    pm.expect(responseJson.incoterm).to.equal(\"EXW\");",
+													"    pm.expect(responseJson.incoterm).to.equal(\"FOB\");",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"supplierOrderNumber\");",
 													"    pm.expect(responseJson.supplierOrderNumber).to.equal(null);",
@@ -2363,7 +2363,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"partnerBpnl\": \"{{CUSTOMER_BPNL}}\",\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n  \"quantity\": 100,\n  \"measurementUnit\": \"unit:piece\",\n  \"trackingNumber\": \"TN1\",\n  \"incoterm\": \"EXW\",\n  \"supplierOrderNumber\": null,\n  \"customerOrderNumber\": null,\n  \"customerOrderPositionNumber\": null,\n  \"destinationBpns\": \"{{CUSTOMER_BPNS}}\",\n  \"destinationBpna\": null,\n  \"originBpns\": \"{{SUPPLIER_BPNS}}\",\n  \"originBpna\": null,\n  \"dateOfDeparture\": \"{{DEPARTURE_TIME_CALCULATED}}\",\n  \"dateOfArrival\": \"{{ARRIVAL_TIME_CALCULATED}}\",\n  \"departureType\": \"estimated-departure\",\n  \"arrivalType\": \"estimated-arrival\"\n}",
+											"raw": "{\n  \"partnerBpnl\": \"{{CUSTOMER_BPNL}}\",\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n  \"quantity\": 400,\n  \"measurementUnit\": \"unit:piece\",\n  \"trackingNumber\": \"TN1\",\n  \"incoterm\": \"FOB\",\n  \"supplierOrderNumber\": null,\n  \"customerOrderNumber\": null,\n  \"customerOrderPositionNumber\": null,\n  \"destinationBpns\": \"{{CUSTOMER_BPNS}}\",\n  \"destinationBpna\": null,\n  \"originBpns\": \"{{SUPPLIER_BPNS}}\",\n  \"originBpna\": null,\n  \"dateOfDeparture\": \"{{DEPARTURE_TIME_CALCULATED}}\",\n  \"dateOfArrival\": \"{{ARRIVAL_TIME_CALCULATED}}\",\n  \"departureType\": \"estimated-departure\",\n  \"arrivalType\": \"estimated-arrival\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2407,16 +2407,16 @@
 													"    pm.expect(responseJson.partnerBpnl).to.equal(pm.environment.get(\"CUSTOMER_BPNL\"));",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"quantity\");",
-													"    pm.expect(responseJson.quantity).to.equal(100);",
+													"    pm.expect(responseJson.quantity).to.equal(500);",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"measurementUnit\");",
 													"    pm.expect(responseJson.measurementUnit).to.equal(\"unit:piece\");",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"trackingNumber\");",
-													"    pm.expect(responseJson.trackingNumber).to.equal(\"TN1\");",
+													"    pm.expect(responseJson.trackingNumber).to.equal(\"TN5\");",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"incoterm\");",
-													"    pm.expect(responseJson.incoterm).to.equal(\"EXW\");",
+													"    pm.expect(responseJson.incoterm).to.equal(\"CFR\");",
 													"",
 													"    pm.expect(responseJson).to.have.property(\"supplierOrderNumber\");",
 													"    pm.expect(responseJson.supplierOrderNumber).to.equal(null);",
@@ -2484,7 +2484,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"partnerBpnl\": \"{{CUSTOMER_BPNL}}\",\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n  \"quantity\": 100,\n  \"measurementUnit\": \"unit:piece\",\n  \"trackingNumber\": \"TN1\",\n  \"incoterm\": \"EXW\",\n  \"supplierOrderNumber\": null,\n  \"customerOrderNumber\": null,\n  \"customerOrderPositionNumber\": null,\n  \"destinationBpns\": \"{{CUSTOMER_BPNS}}\",\n  \"destinationBpna\": null,\n  \"originBpns\": \"{{SUPPLIER_BPNS}}\",\n  \"originBpna\": null,\n  \"dateOfDeparture\": \"{{DEPARTURE_TIME_CALCULATED}}\",\n  \"dateOfArrival\": \"{{ARRIVAL_TIME_CALCULATED}}\",\n  \"departureType\": \"estimated-departure\",\n  \"arrivalType\": \"estimated-arrival\"\n}",
+											"raw": "{\n  \"partnerBpnl\": \"{{CUSTOMER_BPNL}}\",\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_SUPPLIER}}\",\n  \"quantity\": 500,\n  \"measurementUnit\": \"unit:piece\",\n  \"trackingNumber\": \"TN5\",\n  \"incoterm\": \"CFR\",\n  \"supplierOrderNumber\": null,\n  \"customerOrderNumber\": null,\n  \"customerOrderPositionNumber\": null,\n  \"destinationBpns\": \"{{CUSTOMER_BPNS}}\",\n  \"destinationBpna\": null,\n  \"originBpns\": \"{{SUPPLIER_BPNS}}\",\n  \"originBpna\": null,\n  \"dateOfDeparture\": \"{{DEPARTURE_TIME_CALCULATED}}\",\n  \"dateOfArrival\": \"{{ARRIVAL_TIME_CALCULATED}}\",\n  \"departureType\": \"estimated-departure\",\n  \"arrivalType\": \"estimated-arrival\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
