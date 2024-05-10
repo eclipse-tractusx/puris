@@ -124,8 +124,7 @@ public class OwnDeliveryService {
             !ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())) &&
             ((
                 delivery.getCustomerOrderNumber() != null && 
-                delivery.getCustomerOrderPositionNumber() != null &&
-                delivery.getSupplierOrderNumber() != null
+                delivery.getCustomerOrderPositionNumber() != null
             ) || (
                 delivery.getCustomerOrderNumber() == null && 
                 delivery.getCustomerOrderPositionNumber() == null &&

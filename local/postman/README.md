@@ -80,6 +80,25 @@ The following table shows the differences.
 | now +3 day | 500 pieces | Series (SR99)  | yes                        |
 | now +4 day | 400 pieces | Series (SR99)  | no                         |
 
+### Delivery
+
+There are 5 Deliveries created by the collection. They all share the same
+
+- ownMaterialNumber (MATERIAL_NUMBER_SUPPLIER)
+- partnerBpnl (CUSTOMER_BPNL)
+- originBpns (SUPPLIER_BPNS)
+- destinationBpns (CUSTOMER_BPNS)
+
+The following table shows the differences.
+
+| Departure   | Type       | Arrival      | Type       | Quantity   | Incoterm       | Origin BPNA set | Destination BPNA set | Customer Order Number | Customer Position Number | Supplier Order Number |
+|-------------|------------|--------------|------------|------------|----------------|-----------------|----------------------|-----------------------|--------------------------|-----------------------|
+| now         | estimated  | now + 2 days | estimated  | 100 pieces | EXW            | yes             | yes                  | null                  | null                     | null                  |
+| now +1 day  | actual     | now + 3 days | estimated  | 200 pieces | FCA            | yes             | no                   | C-Nbr-1               | C-Position-01            | null                  |
+| now +2 days | actual     | now + 4 days | actual     | 300 pieces | FAS            | no              | yes                  | C-Nbr-1               | C-Position-01            | S-Nbr-1               |
+| now +3 days | estimated  | now + 5 days | estimated  | 400 pieces | FOB            | no              | no                   | null                  | null                     | null                  |
+| now +4 days | estimated  | now + 6 days | estimated  | 500 pieces | CFR            | no              | no                   | null                  | null                     | null                  |
+
 ### Supplier
 
 Overall the supplier has the following information:
