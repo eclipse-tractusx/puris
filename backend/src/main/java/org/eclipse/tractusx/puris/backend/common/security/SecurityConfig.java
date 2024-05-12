@@ -20,6 +20,7 @@
 package org.eclipse.tractusx.puris.backend.common.security;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
@@ -29,6 +30,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.DispatcherType;
 import lombok.AllArgsConstructor;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationFilter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -54,6 +56,10 @@ public class SecurityConfig {
     public static final String API_KEY_HEADER_NAME = "X-API-KEY";
 
     private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
+
+    private final ObjectMapper objectMapper;
+
+    private DtrSecurityConfiguration dtrSecurityConfiguration;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -94,6 +100,12 @@ public class SecurityConfig {
         http.addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "puris.dtr.idp.enabled", havingValue = "true")
+    public OAuth2ClientInterceptor oAuth2ClientInterceptor() {
+        return new OAuth2ClientInterceptor(objectMapper, dtrSecurityConfiguration.getTokenUrl(), dtrSecurityConfiguration.getPurisClientId(), dtrSecurityConfiguration.getPurisClientSecret(), dtrSecurityConfiguration.getGrant_type());
     }
 
 }

@@ -150,7 +150,22 @@ spec:
             - name: PURIS_FRAMEWORKAGREEMENT_CREDENTIAL
               value: "{{ .Values.backend.puris.frameworkagreement.credential }}"
             - name: PURIS_DTR_URL
-              value: "{{ .Values.backend.puris.dtr.url  }}"
+              value: "{{ .Values.backend.puris.dtr.url }}"
+            - name: PURIS_DTR_IDP_ENABLED
+              value: "{{ .Values.backend.puris.dtr.idp.enabled }}"
+            - name: PURIS_DTR_IDP_TOKENURL
+              value: "{{ .Values.backend.puris.dtr.idp.tokenurl }}"
+            - name: PURIS_DTR_IDP_EDC-CLIENT_ID
+              value: "{{ .Values.backend.puris.dtr.idp.clients.edc.id }}"
+            - name: PURIS_DTR_IDP_EDC-CLIENT_SECRET_ALIAS
+              value: "{{ .Values.backend.puris.dtr.idp.clients.edc.secret.alias }}"
+            - name: PURIS_DTR_IDP_PURIS_CLIENT_ID
+              value: "{{ .Values.backend.puris.dtr.idp.clients.puris.id}}"
+            - name: PURIS_DTR_IDP_PURIS-CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.backend.puris.existingSecret }}"
+                  key: "puris-dtr-idp-puris-client-secret"
             - name: PURIS_GENERATEMATERIALCATENAXID
               value: "{{ .Values.backend.puris.generatematerialcatenaxid  | default true}}"
             ######################################
