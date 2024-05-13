@@ -34,6 +34,15 @@ ommitted.
 
 ![Overview of request and response with EDC](img/06-api-flow-detailed.svg)
 
+## Scenario: Create Digital Twins for Material or Product
+
+A Digital Twin is created for partners as soon as at least one buyer or supplier is known.
+Following the Digital Twin Shared Asset Approach, each partner needs his view on the digital twin.
+Following the Industry Core, the Supplier Twin dictates the Catena-X ID. Thus, the Customer needs to lookup and use this
+Catena-X ID as the `globalAssetId` and during data exchange scenarios.
+
+The following Diagram illustrates the registration (create and update) process for digital twins:
+
 ## Scenario: Interact with data in web-ui
 
 When reloading the UI, the latest data is pulled from the backend. Whenever an update on the information is performed,

@@ -1,24 +1,25 @@
 @startuml
-skinparam linetype ortho
+skinparam linetype polyline
+skinparam nodesep 150
+skinparam ranksep 50
 
 package "<<system>> PURIS FOSS Backend"{
 
   [DTR] as dtr
   [EDC] as edc
-  [Stock] as stock
+  [Stock, Production, Demand,\nDelivery Information] as stock
   [MAD] as mad
-
-  edc - "EDC Client Interface"
-  "Registry & Discovery Interfaces" - dtr
-
-  dtr -- "Register and discover twins\n& submodesls" stock
-' TODO make look great
-  edc -- "query catalog &\nrequest data (via edc)" stock
-
-  mad - "MAD Interface"
-
 }
-stock - "Stock Submodel \n& internalInterface"
-stock -- mad
+
+"Registry & Discovery Interfaces" )-- dtr
+"MAD Interface" - mad
+edc -( "EDC Client Interface"
+stock --( "Submodel \n& internal interface"
+
+dtr -- "Register and discover twins\n& submodels" stock
+stock - "query catalog &\nget data (via edc)" edc
+mad - stock
+
+
 
 @enduml

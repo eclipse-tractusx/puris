@@ -1,5 +1,7 @@
 @startuml
-skinparam linetype ortho
+skinparam linetype polyline
+skinparam nodesep 20
+skinparam ranksep 50
 
 package "<<system>> PURIS FOSS Frontend"{
 
@@ -8,7 +10,7 @@ package "<<system>> PURIS FOSS Frontend"{
   [Authentication Service] as auth_service
 
 }
-
+"Interfaces for\n- Planned Production Output\n- Short-Term Material Demand\n- Delivery Information" -- dashboard
 [Keycloak] as idp
 
 idp - auth_service
@@ -18,6 +20,5 @@ stock_view --( "MAD interface"
 
 dashboard --( "Stock Interface"
 dashboard --( "MAD interface"
-dashboard -( "Interfaces for\n- Planned Production Output\n-Short-Term Material Demand\n-Delivery Information"
 
 @enduml
