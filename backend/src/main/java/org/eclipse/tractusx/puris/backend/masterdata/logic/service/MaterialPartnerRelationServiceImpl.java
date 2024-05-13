@@ -39,6 +39,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -106,18 +107,45 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
 
     private class PartTypeInformationRetrievalTask implements Callable<Boolean> {
+        /**
+         * The MaterialPartnerRelation indicating the supplier partner we want to retrieve data from
+         * and the material entity we want to fetch the partner's CatenaX-Id for.
+         */
         final MaterialPartnerRelation materialPartnerRelation;
+        /**
+         * The number of retries that this task has currently left.
+         */
         int retries;
+        /**
+         * The number of retries that this task was given at creation.
+         */
         final int initialRetries;
+
+        /**
+         * Is set to true if all goals of this task were accomplished or otherwise
+         * if the task failed and has no more retries left.
+         */
         boolean done = false;
 
-        public PartTypeInformationRetrievalTask(MaterialPartnerRelation materialPartnerRelation, int retries) {
+        /**
+         * Constructor for a Task that tries to asynchronously fetch the CatenaX-Id from a
+         * supplier partner for a material entity, as specified by the materialPartnerRelation parameter.
+         *
+         * @param materialPartnerRelation the MaterialPartnerRelation
+         * @param retries                 a non-negative number of possible retry-attempts.
+         */
+        PartTypeInformationRetrievalTask(MaterialPartnerRelation materialPartnerRelation, int retries) {
             this.materialPartnerRelation = materialPartnerRelation;
             this.retries = retries;
             this.initialRetries = retries;
             currentPartTypeFetches.add(materialPartnerRelation);
         }
 
+        /**
+         * This method contains all the duties which the PartTypeInformationRetrievalTask is trying to fulfill.
+         *
+         * @return  true, if the task finished successfully
+         */
         @Override
         public Boolean call() {
             try {
@@ -164,14 +192,45 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     private class DtrRegistrationTask implements Callable<Boolean> {
 
+        /**
+         * The MaterialPartnerRelation that was created or updated and therefore makes it necessary to
+         * create or update material- and/or product AAS's in the dDTR.
+         */
         MaterialPartnerRelation materialPartnerRelation;
+        /**
+         * The number of retries that this task has currently left.
+         */
         int retries;
+        /**
+         * The number of retries that this task was given at creation (minimum value is 1).
+         */
         final int initialRetries;
+        /**
+         * If the materialPartnerRelation indicates that the partner is a customer, this
+         * is set to true
+         */
         final boolean needProductRegistration;
+        /**
+         * Is set to true during runtime if a product registration call to the dDTR ran successfully
+         */
         boolean completedProductRegistration = false;
+        /**
+         * If the materialPartnerRelation indicates that the partner is a supplier, this
+         * is set to true
+         */
         final boolean needMaterialRegistration;
+        /**
+         * Is set to true during runtime if a material registration call to the dDTR ran successfully
+         */
         boolean completedMaterialRegistration = false;
 
+        /**
+         * Constructor for a task that makes sure that all potentially needed material and/or product AAS's
+         * are inserted into the dDTR, when a MaterialPartnerRelation entity is created or updated.
+         *
+         * @param materialPartnerRelation
+         * @param retries
+         */
         public DtrRegistrationTask(MaterialPartnerRelation materialPartnerRelation, int retries) {
             this.materialPartnerRelation = materialPartnerRelation;
             this.initialRetries = Math.max(retries, 1);
@@ -180,6 +239,11 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
             this.needMaterialRegistration = materialPartnerRelation.isPartnerSuppliesMaterial();
         }
 
+        /**
+         * This method contains all the duties which the DtrRegistrationTask is trying to fulfill.
+         *
+         * @return  true, if the task finished successfully
+         */
         @Override
         public Boolean call() throws Exception {
             if (retries < 0) {
@@ -187,26 +251,33 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
             }
             if (retries < initialRetries) {
                 Thread.sleep(2000);
+            } else {
+                Thread.sleep(400);
             }
 
             if (needProductRegistration && !completedProductRegistration) {
                 var allCustomers =
                     mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerBuysMaterialIsTrue(
                         materialPartnerRelation.getMaterial().getOwnMaterialNumber());
-                Integer result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
-                if (result != null) {
-                    if (result < 400) {
-                        log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " and "
-                        + allCustomers.size() + " customer partners. Result: " + result);
-                        completedProductRegistration = true;
-                    } else {
-                        if (result == 404) {
-                            Integer registrationResult = dtrAdapterService.registerProductAtDtr(materialPartnerRelation.getMaterial());
-                            log.info("Tried to create product AAS for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber()
-                                + ", result: " + registrationResult);
+                if (allCustomers.contains(materialPartnerRelation)) {
+                    Integer result = dtrAdapterService.updateProduct(materialPartnerRelation.getMaterial(), allCustomers);
+                    if (result != null) {
+                        if (result < 400) {
+                            log.info("Updated product ShellDescriptor at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " and "
+                                + allCustomers.size() + " customer partners. Result: " + result);
+                            completedProductRegistration = true;
+                        } else {
+                            if (result == 404) {
+                                Integer registrationResult = dtrAdapterService.registerProductAtDtr(materialPartnerRelation.getMaterial());
+                                log.info("Tried to create product AAS for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber()
+                                    + ", result: " + registrationResult);
+                            }
                         }
+                    } else {
+                        log.warn("Update of product ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
                     }
                 } else {
+                    log.warn("AllCustomers did not contain " + materialPartnerRelation.getKey());
                     log.warn("Update of product ShellDescriptor failed at DTR for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber());
                 }
             }
@@ -222,7 +293,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                     } else {
                         // initiate new fetch
                         log.info("Initiating new PartTypeInformation Fetch");
-                        var futureResult = executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 1));
+                        Future<Boolean> futureResult = executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 1));
                         while (!futureResult.isDone()) {
                             Thread.yield();
                         }
