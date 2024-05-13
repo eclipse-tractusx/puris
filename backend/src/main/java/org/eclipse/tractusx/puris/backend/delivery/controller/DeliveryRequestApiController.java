@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -66,6 +66,7 @@ public class DeliveryRequestApiController {
             log.warn("Rejecting request at Delivery Information Submodel request 2.0.0 endpoint");
             return ResponseEntity.badRequest().build();
         }
+        
         if (!"$value".equals(representation)) {
             log.warn("Rejecting request at Delivery Information Submodel request 2.0.0 endpoint, missing '$value' in request");
             if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {

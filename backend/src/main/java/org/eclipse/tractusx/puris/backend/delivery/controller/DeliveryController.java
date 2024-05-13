@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
-import org.eclipse.tractusx.puris.backend.delivery.domain.model.Delivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
+import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.logic.dto.DeliveryDto;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.DeliveryRequestApiService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.OwnDeliveryService;
@@ -102,10 +102,17 @@ public class DeliveryController {
     @GetMapping()
     @ResponseBody
     @Operation(summary = "Get all planned deliveries for the given Material",
-        description = "Get all planned deliveries for the given material number. Optionally the delivery can be filtered by its partner bpnl.")
-    public List<DeliveryDto> getAllDeliveries(String materialNumber, Optional<String> bpnl) {
-        return ownDeliveryService.findAllByFilters(Optional.of(materialNumber), bpnl)
+        description = "Get all planned deliveries for the given material number. Optionally a bpns and partner bpnl can be provided to filter the deliveries further.")
+    public List<DeliveryDto> getAllDeliveries(String ownMaterialNumber, Optional<String> bpns, Optional<String> bpnl) {
+        Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        if (material == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material does not exist.");
+        }
+        var reportedDeliveries = reportedDeliveryService.findAllByFilters(Optional.of(ownMaterialNumber), bpns, bpnl)
             .stream().map(this::convertToDto).collect(Collectors.toList());
+        var ownDeliveries = ownDeliveryService.findAllByFilters(Optional.of(ownMaterialNumber), bpns, bpnl)
+            .stream().map(this::convertToDto).collect(Collectors.toList());
+        return List.of(reportedDeliveries, ownDeliveries).stream().flatMap(List::stream).toList();
     }
 
     @PostMapping()
@@ -177,15 +184,6 @@ public class DeliveryController {
         ownDeliveryService.delete(id);
     }
 
-    @GetMapping("reported")
-    @ResponseBody
-    @Operation(summary = "Get all deliveries of partners for a material",
-        description = "Get all deliveries of partners for a material number. Optionally the partners can be filtered by their bpnl.")
-    public List<DeliveryDto> getAllDeliveriesForPartner(String materialNumber, Optional<String> bpnl) {
-        return reportedDeliveryService.findAllByFilters(Optional.of(materialNumber), bpnl)
-                .stream().map(this::convertToDto).collect(Collectors.toList());
-    }
-
     @GetMapping("reported/refresh")
     @ResponseBody
     @Operation(
@@ -197,13 +195,22 @@ public class DeliveryController {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
-        List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
-        for (Partner supplierPartner : allSupplierPartnerEntities) {
-            executorService.submit(() ->
-            deliveryRequestApiService.doReportedDeliveryRequest(supplierPartner, materialEntity));
+        if (materialEntity == null) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(404));
         }
 
-        return ResponseEntity.ok(allSupplierPartnerEntities.stream()
+        List<Partner> partners;
+        if (materialEntity.isMaterialFlag()) {
+            partners = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
+        } else {
+            partners = mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber);
+        }
+        for (Partner partner : partners) {
+            executorService.submit(() ->
+            deliveryRequestApiService.doReportedDeliveryRequest(partner, materialEntity));
+        }
+
+        return ResponseEntity.ok(partners.stream()
             .map(partner -> modelMapper.map(partner, PartnerDto.class))
             .toList());
     }
@@ -225,13 +232,19 @@ public class DeliveryController {
         return entity;
     }
 
-    private DeliveryDto convertToDto(Delivery entity) {
+    private DeliveryDto convertToDto(OwnDelivery entity) {
         DeliveryDto dto = modelMapper.map(entity, DeliveryDto.class);
-
         dto.setOwnMaterialNumber(entity.getMaterial().getOwnMaterialNumber());
-
         dto.setPartnerBpnl(entity.getPartner().getBpnl());
-        
+        dto.setReported(false);
+        return dto;
+    }
+
+    private DeliveryDto convertToDto(ReportedDelivery entity) {
+        DeliveryDto dto = modelMapper.map(entity, DeliveryDto.class);
+        dto.setOwnMaterialNumber(entity.getMaterial().getOwnMaterialNumber());
+        dto.setPartnerBpnl(entity.getPartner().getBpnl());
+        dto.setReported(true);
         return dto;
     }
 }

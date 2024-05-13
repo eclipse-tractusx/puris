@@ -30,6 +30,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterSer
 import org.eclipse.tractusx.puris.backend.delivery.logic.adapter.DeliveryInformationSammMapper;
 import org.eclipse.tractusx.puris.backend.delivery.logic.dto.deliverysamm.DeliveryInformation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -67,19 +68,24 @@ public class DeliveryRequestApiService {
             log.error("Unknown Partner BPNL " + bpnl);
             return null;
         }
+        MaterialPartnerRelation mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx);
         Material material = materialService.findByMaterialNumberCx(materialNumberCx);
-        if (material == null) {
+        if (material == null && mpr == null) {
             log.error("Unknown Material " + materialNumberCx);
             return null;
         }
-        var currentDeliveries = ownDeliveryService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()));
+        if (material == null) {
+            material = mpr.getMaterial();
+        }
+        var currentDeliveries = ownDeliveryService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.empty(), Optional.of(partner.getBpnl()));
         return sammMapper.ownDeliveryToSamm(currentDeliveries);
     }
 
     public void doReportedDeliveryRequest(Partner partner, Material material) {
         try {
             var mpr = mprService.find(material, partner);
-            var data = edcAdapterService.doSubmodelRequest(SubmodelType.DELIVERY, mpr, DirectionCharacteristic.OUTBOUND, 1);
+            var direction = material.isMaterialFlag() ? DirectionCharacteristic.OUTBOUND : DirectionCharacteristic.INBOUND;
+            var data = edcAdapterService.doSubmodelRequest(SubmodelType.DELIVERY, mpr, direction, 1);
             var samm = objectMapper.treeToValue(data, DeliveryInformation.class);
             var deliveries = sammMapper.sammToReportedDeliveries(samm, partner);
             for (var delivery : deliveries) {
@@ -91,7 +97,7 @@ public class DeliveryRequestApiService {
                 }
             }
             // delete older data:
-            var oldDeliveries = reportedDeliveryService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()));
+            var oldDeliveries = reportedDeliveryService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.empty(), Optional.of(partner.getBpnl()));
             for (var oldDelivery : oldDeliveries) {
                 reportedDeliveryService.delete(oldDelivery.getUuid());
             }

@@ -33,7 +33,7 @@ import org.eclipse.tractusx.puris.backend.delivery.logic.dto.deliverysamm.Transi
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
-
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +49,9 @@ import java.util.stream.Collectors;
 public class DeliveryInformationSammMapper {
     @Autowired
     private MaterialPartnerRelationService mprService;
+
+    @Autowired
+    private MaterialService materialService;
 
     public DeliveryInformation ownDeliveryToSamm(List<OwnDelivery> deliveryList) {
         if (deliveryList == null || deliveryList.isEmpty()) {
@@ -73,8 +76,8 @@ public class DeliveryInformationSammMapper {
                     prod.getCustomerOrderPositionNumber()
                 )));
         DeliveryInformation samm = new DeliveryInformation();
-
-        samm.setMaterialGlobalAssetId(material.getMaterialNumberCx());
+        var matNumberCx = material.isProductFlag() ? material.getMaterialNumberCx() : mprService.find(material, partner).getPartnerCXNumber();
+        samm.setMaterialGlobalAssetId(matNumberCx);
 
         var posList = new HashSet<Position>();
         samm.setPositions(posList);
@@ -112,16 +115,13 @@ public class DeliveryInformationSammMapper {
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
         ArrayList<ReportedDelivery> outputList = new ArrayList<>();
         var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, matNbrCatenaX);
-
-        if (mpr == null) {
-            log.warn("Could not identify materialPartnerRelation with matNbrCatenaX " + matNbrCatenaX
-                    + " and partner bpnl " + partner.getBpnl());
-            return outputList;
-        }
-        Material material = mpr.getMaterial();
-        if (material == null) {
+        Material material = materialService.findByMaterialNumberCx(matNbrCatenaX);
+        if (material == null && mpr == null) {
             log.warn("Could not identify material with CatenaXNbr " + matNbrCatenaX);
             return outputList;
+        }
+        if (material == null) {
+            material = mpr.getMaterial();
         }
 
         for (var position : samm.getPositions()) {
@@ -139,7 +139,7 @@ public class DeliveryInformationSammMapper {
                 var departureEvent = delivery.getTransitEvents().stream()
                     .filter(e -> e.getEventType().equals(EventTypeEnumeration.ACTUAL_DEPARTURE) || e.getEventType().equals(EventTypeEnumeration.ESTIMATED_DEPARTURE))
                     .findFirst().get();
-                var production = builder
+                var newDelivery = builder
                     .material(material)
                     .partner(partner)
                     .customerOrderNumber(customerOrderNumber)
@@ -158,7 +158,7 @@ public class DeliveryInformationSammMapper {
                     .trackingNumber(delivery.getTrackingNumber())
                     .incoterm(delivery.getIncoterm())
                     .build();
-                outputList.add(production);
+                outputList.add(newDelivery);
             }
         }
         return outputList;
