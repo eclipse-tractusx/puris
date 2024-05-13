@@ -64,7 +64,7 @@ export const useFetch = <T = unknown>(url?: string, options?: RequestInit) => {
     }, [fetchData]);
 
     const refresh = () => {
-        fetchData();
+        return fetchData();
     }
     return {
         data,

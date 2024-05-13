@@ -80,7 +80,15 @@ spec:
             - name: ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS
               value: "{{ .Values.frontend.puris.endpointUpdateReportedProductStocks }}"
             - name: ENDPOINT_PARTNER_OWNSITES
-              value: "{{ .Values.frontend.puris.endpointPartnerOwnSites }}"
+              value: "{{ .Values.frontend.puris.endpointPartnerOwnSites }}"    
+            - name: ENDPOINT_DEMAND
+              value: "{{ .Values.frontend.puris.endpointDemand }}"
+            - name: ENDPOINT_PRODUCTION
+              value: "{{ .Values.frontend.puris.endpointProduction }}"
+            - name: ENDPOINT_PRODUCTION_RANGE
+              value: "{{ .Values.frontend.puris.endpointProductionRange }}"
+            - name: ENDPOINT_DELIVERY
+              value: "{{ .Values.frontend.puris.endpointDelivery }}"
             - name: BACKEND_API_KEY
               value: "{{ .Values.backend.puris.api.key}}"
             - name: IDP_DISABLE

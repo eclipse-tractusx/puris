@@ -26,6 +26,7 @@ import { Box, Button, Stack, Typography } from '@mui/material';
 import { Delivery } from '@models/types/data/delivery';
 import { Add } from '@mui/icons-material';
 import { Demand } from '@models/types/data/demand';
+import { ModalMode } from '@models/types/data/modal-mode';
 
 const createDemandRow = (numberOfDays: number, demands: Demand[]) => {
     return {
@@ -40,15 +41,22 @@ const createDemandRow = (numberOfDays: number, demands: Demand[]) => {
     };
 };
 
-const createDeliveryRow = (numberOfDays: number) => {
+const createDeliveryRow = (numberOfDays: number, deliveries: Delivery[], site: Site) => {
     return {
-        ...Object.keys(Array.from({ length: numberOfDays })).reduce((acc, _, index) => ({ ...acc, [index]: 0 }), {}),
+        ...Object.keys(Array.from({ length: numberOfDays })).reduce((acc, _, index) => {
+            const date = new Date();
+            date.setDate(date.getDate() + index);
+            const delivery = deliveries
+                .filter((d) => new Date(d.dateOfArrival ?? Date.now()).toDateString() === date.toDateString() && d.destinationBpns === site.bpns)
+                .reduce((sum, d) => sum + d.quantity, 0);
+            return { ...acc, [index]: delivery };
+        }, {}),
     };
 }
 
-const createTableRows = (numberOfDays: number, stocks: Stock[], demands: Demand[], site: Site) => {
+const createTableRows = (numberOfDays: number, stocks: Stock[], demands: Demand[], deliveries: Delivery[], site: Site) => {
     const demandRow = createDemandRow(numberOfDays, demands);
-    const deliveryRow = createDeliveryRow(numberOfDays);
+    const deliveryRow = createDeliveryRow(numberOfDays, deliveries, site);
     const currentStock = stocks.find((s) => s.stockLocationBpns === site.bpns)?.quantity ?? 0;
     const itemStock = {
         ...Object.keys(Array.from({ length: numberOfDays })).reduce(
@@ -73,13 +81,14 @@ type DemandTableProps = {
     numberOfDays: number;
     stocks: Stock[] | null;
     demands: Demand[] | null;
+    deliveries: Delivery[] | null;
     site: Site;
     readOnly?: boolean;
-    onDeliveryClick: (delivery: Partial<Delivery>) => void;
-    onDemandClick: (demand: Partial<Demand>, mode: 'create' | 'edit') => void;
+    onDeliveryClick: (delivery: Partial<Delivery>, mode: ModalMode) => void;
+    onDemandClick: (demand: Partial<Demand>, mode: ModalMode) => void;
 };
 
-export const DemandTable = ({ numberOfDays, stocks, demands, site, readOnly, onDeliveryClick, onDemandClick }: DemandTableProps) => {
+export const DemandTable = ({ numberOfDays, stocks, demands, deliveries, site, readOnly, onDeliveryClick, onDemandClick }: DemandTableProps) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleCellClick = (cellData: any) => {
         if (cellData.value === 0) return;
@@ -87,21 +96,16 @@ export const DemandTable = ({ numberOfDays, stocks, demands, site, readOnly, onD
             case 'delivery':
                 onDeliveryClick({
                     quantity: cellData.value,
-                    etd: cellData.colDef.headerName,
-                    origin: {
-                        bpns: site?.bpns,
-                    },
-                    destination: {
-                        bpns: site?.bpns,
-                    },
-                });
+                    dateOfArrival: cellData.colDef.headerName,
+                    destinationBpns: site.bpns,
+                }, readOnly ? 'view' : 'edit');
                 break;
             case 'demand':
                 onDemandClick({
                     quantity: parseFloat(cellData.value),
                     demandLocationBpns: site.bpns,
                     day: new Date(cellData.colDef.headerName),
-                }, 'edit');
+                }, readOnly ? 'view' : 'edit');
                 break;
             default:
                 break;
@@ -130,7 +134,7 @@ export const DemandTable = ({ numberOfDays, stocks, demands, site, readOnly, onD
                 title=""
                 noRowsMsg="Select a Material to show the customer demand"
                 columns={createDateColumnHeaders(numberOfDays)}
-                rows={createTableRows(numberOfDays, stocks ?? [], demands ?? [], site)}
+                rows={createTableRows(numberOfDays, stocks ?? [], demands ?? [], deliveries ?? [], site)}
                 onCellClick={handleCellClick}
                 getRowId={(row) => row.id}
                 hideFooter={true}
