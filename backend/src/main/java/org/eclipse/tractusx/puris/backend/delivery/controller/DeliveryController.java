@@ -23,22 +23,30 @@ package org.eclipse.tractusx.puris.backend.delivery.controller;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
-import org.eclipse.tractusx.puris.backend.delivery.domain.model.Delivery;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
+import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.logic.dto.DeliveryDto;
+import org.eclipse.tractusx.puris.backend.delivery.logic.service.DeliveryRequestApiService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.OwnDeliveryService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.ReportedDeliveryService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,6 +54,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -68,10 +77,16 @@ public class DeliveryController {
     private ReportedDeliveryService reportedDeliveryService;
 
     @Autowired
+    private DeliveryRequestApiService deliveryRequestApiService;
+
+    @Autowired
     private MaterialService materialService;
 
     @Autowired
     private PartnerService partnerService;
+
+    @Autowired
+    private MaterialPartnerRelationService mprService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -79,13 +94,25 @@ public class DeliveryController {
     @Autowired
     private Validator validator;
 
+    private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
+
+    @Autowired
+    private ExecutorService executorService;
+
     @GetMapping()
     @ResponseBody
     @Operation(summary = "Get all planned deliveries for the given Material",
-        description = "Get all planned deliveries for the given material number. Optionally the delivery can be filtered by its partner bpnl.")
-    public List<DeliveryDto> getAllDeliveries(String materialNumber, Optional<String> bpnl) {
-        return ownDeliveryService.findAllByFilters(Optional.of(materialNumber), bpnl)
+        description = "Get all planned deliveries for the given material number. Optionally a bpns and partner bpnl can be provided to filter the deliveries further.")
+    public List<DeliveryDto> getAllDeliveries(String ownMaterialNumber, Optional<String> bpns, Optional<String> bpnl) {
+        Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        if (material == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material does not exist.");
+        }
+        var reportedDeliveries = reportedDeliveryService.findAllByFilters(Optional.of(ownMaterialNumber), bpns, bpnl)
             .stream().map(this::convertToDto).collect(Collectors.toList());
+        var ownDeliveries = ownDeliveryService.findAllByFilters(Optional.of(ownMaterialNumber), bpns, bpnl)
+            .stream().map(this::convertToDto).collect(Collectors.toList());
+        return List.of(reportedDeliveries, ownDeliveries).stream().flatMap(List::stream).toList();
     }
 
     @PostMapping()
@@ -157,13 +184,35 @@ public class DeliveryController {
         ownDeliveryService.delete(id);
     }
 
-    @GetMapping("reported")
+    @GetMapping("reported/refresh")
     @ResponseBody
-    @Operation(summary = "Get all deliveries of partners for a material",
-        description = "Get all deliveries of partners for a material number. Optionally the partners can be filtered by their bpnl.")
-    public List<DeliveryDto> getAllDeliveriesForPartner(String materialNumber, Optional<String> bpnl) {
-        return reportedDeliveryService.findAllByFilters(Optional.of(materialNumber), bpnl)
-                .stream().map(this::convertToDto).collect(Collectors.toList());
+    @Operation(
+        summary = "Refreshes all reported deliveries", 
+        description = "Refreshes all reported deliveries from the delivery request API."
+    )
+    public ResponseEntity<List<PartnerDto>> refreshReportedDeliveries(@RequestParam String ownMaterialNumber) {
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        if (materialEntity == null) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(404));
+        }
+
+        List<Partner> partners;
+        if (materialEntity.isMaterialFlag()) {
+            partners = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
+        } else {
+            partners = mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber);
+        }
+        for (Partner partner : partners) {
+            executorService.submit(() ->
+            deliveryRequestApiService.doReportedDeliveryRequest(partner, materialEntity));
+        }
+
+        return ResponseEntity.ok(partners.stream()
+            .map(partner -> modelMapper.map(partner, PartnerDto.class))
+            .toList());
     }
 
     private OwnDelivery convertToEntity(DeliveryDto dto) {
@@ -183,13 +232,19 @@ public class DeliveryController {
         return entity;
     }
 
-    private DeliveryDto convertToDto(Delivery entity) {
+    private DeliveryDto convertToDto(OwnDelivery entity) {
         DeliveryDto dto = modelMapper.map(entity, DeliveryDto.class);
-
         dto.setOwnMaterialNumber(entity.getMaterial().getOwnMaterialNumber());
-
         dto.setPartnerBpnl(entity.getPartner().getBpnl());
-        
+        dto.setReported(false);
+        return dto;
+    }
+
+    private DeliveryDto convertToDto(ReportedDelivery entity) {
+        DeliveryDto dto = modelMapper.map(entity, DeliveryDto.class);
+        dto.setOwnMaterialNumber(entity.getMaterial().getOwnMaterialNumber());
+        dto.setPartnerBpnl(entity.getPartner().getBpnl());
+        dto.setReported(true);
         return dto;
     }
 }

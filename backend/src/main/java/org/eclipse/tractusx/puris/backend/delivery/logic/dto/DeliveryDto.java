@@ -78,4 +78,6 @@ public class DeliveryDto implements Serializable {
     private Date dateOfArrival;
     private EventTypeEnumeration departureType;
     private EventTypeEnumeration arrivalType;
+
+    private boolean isReported;
 }
