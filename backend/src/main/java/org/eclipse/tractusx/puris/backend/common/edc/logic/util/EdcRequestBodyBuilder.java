@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.PolicyConstraintDto;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +56,12 @@ public class EdcRequestBodyBuilder {
     public static final String DCT_NAMESPACE = "https://purl.org/dc/terms/";
     public static final String AAS_SEMANTICS_NAMESPACE = "https://admin-shell.io/aas/3/0/HasSemantics/";
     public static final String CONTRACT_POLICY_ID = "Contract_Policy";
+
+    /**
+     * helper class to encapsulate PolicyConstraint
+     **/
+    private record PolicyConstraint(String leftOperand, String operator, String rightOperand) {
+    }
 
     /**
      * Creates a request body for requesting a catalog in DSP protocol.
@@ -100,7 +105,7 @@ public class EdcRequestBodyBuilder {
      * @param policyProfile profile to use for odrl:policy, may be null (should only be used for contract policies)
      * @return body to use for policy request
      */
-    private JsonNode buildPolicy(String policyId, List<PolicyConstraintDto> constraints, String policyProfile) {
+    private JsonNode buildPolicy(String policyId, List<PolicyConstraint> constraints, String policyProfile) {
         ObjectNode body = getPolicyContextObject();
         body.put("@type", "PolicyDefinitionRequestDto");
         body.put("@id", policyId);
@@ -127,14 +132,14 @@ public class EdcRequestBodyBuilder {
         var andArray = MAPPER.createArrayNode();
         constraintObject.set("and", andArray);
 
-        for (PolicyConstraintDto policyConstraintDto : constraints) {
+        for (PolicyConstraint policyConstraint : constraints) {
             ObjectNode constraint = MAPPER.createObjectNode();
             constraint.put("@type", "LogicalConstraint");
-            constraint.put("leftOperand", policyConstraintDto.getLeftOperand());
+            constraint.put("leftOperand", policyConstraint.leftOperand);
 
-            constraint.put("operator", policyConstraintDto.getOperator());
+            constraint.put("operator", policyConstraint.operator);
 
-            constraint.put("rightOperand", policyConstraintDto.getRightOperand());
+            constraint.put("rightOperand", policyConstraint.rightOperand);
             andArray.add(constraint);
         }
 
@@ -151,15 +156,15 @@ public class EdcRequestBodyBuilder {
      */
     public JsonNode buildBpnAndMembershipRestrictedPolicy(Partner partner) {
 
-        List<PolicyConstraintDto> constraints = new ArrayList<>();
+        List<PolicyConstraint> constraints = new ArrayList<>();
 
-        constraints.add(new PolicyConstraintDto(
+        constraints.add(new PolicyConstraint(
             "BusinessPartnerNumber",
             "eq",
             partner.getBpnl()
         ));
 
-        constraints.add(new PolicyConstraintDto(
+        constraints.add(new PolicyConstraint(
             "Membership",
             "eq",
             "active"
@@ -183,15 +188,15 @@ public class EdcRequestBodyBuilder {
      */
     public JsonNode buildFrameworkPolicy() {
 
-        List<PolicyConstraintDto> constraints = new ArrayList<>();
+        List<PolicyConstraint> constraints = new ArrayList<>();
 
-        constraints.add(new PolicyConstraintDto(
+        constraints.add(new PolicyConstraint(
             CX_POLICY_NAMESPACE + "FrameworkAgreement",
             "eq",
             variablesService.getPurisFrameworkAgreementWithVersion()
         ));
 
-        constraints.add(new PolicyConstraintDto(
+        constraints.add(new PolicyConstraint(
             CX_POLICY_NAMESPACE + "UsagePurpose",
             "eq",
             variablesService.getPurisPuposeWithVersion()
