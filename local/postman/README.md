@@ -82,22 +82,36 @@ The following table shows the differences.
 
 ### Delivery
 
-There are 5 Deliveries created by the collection. They all share the same
+There are 5 Deliveries created for each collection. They all share the same
 
-- ownMaterialNumber (MATERIAL_NUMBER_SUPPLIER)
-- partnerBpnl (CUSTOMER_BPNL)
 - originBpns (SUPPLIER_BPNS)
 - destinationBpns (CUSTOMER_BPNS)
 
-The following table shows the differences.
+#### Supplier deliveries
+
+- ownMaterialNumber (MATERIAL_NUMBER_SUPPLIER)
+- partnerBpnl (CUSTOMER_BPNL)
 
 | Departure   | Type       | Arrival      | Type       | Quantity   | Incoterm       | Origin BPNA set | Destination BPNA set | Customer Order Number | Customer Position Number | Supplier Order Number |
 |-------------|------------|--------------|------------|------------|----------------|-----------------|----------------------|-----------------------|--------------------------|-----------------------|
-| now         | estimated  | now + 2 days | estimated  | 100 pieces | EXW            | yes             | yes                  | null                  | null                     | null                  |
-| now +1 day  | actual     | now + 3 days | estimated  | 200 pieces | FCA            | yes             | no                   | C-Nbr-1               | C-Position-01            | null                  |
-| now +2 days | actual     | now + 4 days | actual     | 300 pieces | FAS            | no              | yes                  | C-Nbr-1               | C-Position-01            | S-Nbr-1               |
-| now +3 days | estimated  | now + 5 days | estimated  | 400 pieces | FOB            | no              | no                   | null                  | null                     | null                  |
-| now +4 days | estimated  | now + 6 days | estimated  | 500 pieces | CFR            | no              | no                   | null                  | null                     | null                  |
+| now -1 day  | actual     | now          | actual     | 50  pieces | FAS            | yes             | yes                  | null                  | null                     | null                  |
+| now         | actual     | now + 1 days | estimated  | 100 pieces | DAP            | yes             | yes                  | null                  | null                     | null                  |
+| now +1 day  | estimated  | now + 2 days | estimated  | 200 pieces | DPU            | yes             | no                   | C-Nbr-1               | C-Position-01            | null                  |
+| now +2 days | estimated  | now + 3 days | estimated  | 300 pieces | CPT            | no              | yes                  | C-Nbr-1               | C-Position-01            | S-Nbr-1               |
+| now +3 days | estimated  | now + 4 days | estimated  | 400 pieces | CIP            | no              | no                   | null                  | null                     | null                  |
+
+#### Customer deliveries
+
+- ownMaterialNumber (MATERIAL_NUMBER_CUSTOMER)
+- partnerBpnl (SUPPLIER_BPNL)
+
+| Departure   | Type       | Arrival      | Type       | Quantity   | Incoterm       | Origin BPNA set | Destination BPNA set | Customer Order Number | Customer Position Number | Supplier Order Number |
+|-------------|------------|--------------|------------|------------|----------------|-----------------|----------------------|-----------------------|--------------------------|-----------------------|
+| now -1 day  | actual     | now          | actual     | 50  pieces | CIF            | yes             | yes                  | null                  | null                     | null                  |
+| now         | actual     | now + 1 days | estimated  | 100 pieces | EXW            | yes             | yes                  | null                  | null                     | null                  |
+| now +1 day  | estimated  | now + 2 days | estimated  | 200 pieces | FAS            | yes             | no                   | C-Nbr-1               | C-Position-01            | null                  |
+| now +2 days | estimated  | now + 3 days | estimated  | 300 pieces | FOB            | no              | yes                  | C-Nbr-1               | C-Position-01            | S-Nbr-1               |
+| now +3 days | estimated  | now + 4 days | estimated  | 400 pieces | CFR            | no              | no                   | null                  | null                     | null                  |
 
 ### Supplier
 
