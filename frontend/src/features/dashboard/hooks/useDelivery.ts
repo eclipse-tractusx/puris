@@ -31,7 +31,7 @@ export const useDelivery = (materialNumber: string | null, site: BPNS | null) =>
         refresh: refreshDelivery,
     } = useFetch<Delivery[]>(
         materialNumber && site
-            ? `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_DELIVERY}?materialNumber=${materialNumber}&site=${site}`
+            ? `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_DELIVERY}?ownMaterialNumber=${materialNumber}&site=${site}`
             : undefined
     );
     return {

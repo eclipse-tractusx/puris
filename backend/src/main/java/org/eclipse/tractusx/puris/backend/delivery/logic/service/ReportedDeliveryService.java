@@ -144,12 +144,12 @@ public class ReportedDeliveryService {
         return delivery.getIncoterm() != null && switch (delivery.getIncoterm().getResponsibility()) {
             case CUSTOMER ->
                 delivery.getMaterial().isProductFlag() &&
-                ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())) &&
-                delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns()));
+                ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
+                delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()));
             case SUPPLIER ->
                 delivery.getMaterial().isMaterialFlag() &&
-                delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())) &&
-                ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns()));
+                delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
+                ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()));
             case PARTIAL ->
                 (
                     delivery.getMaterial().isMaterialFlag() &&

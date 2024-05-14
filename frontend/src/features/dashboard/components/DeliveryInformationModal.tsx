@@ -25,7 +25,7 @@ import { Delivery } from '@models/types/data/delivery';
 import { Close, Delete, Save } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Dialog, DialogTitle, Grid, Stack, Typography, capitalize } from '@mui/material';
 import { deleteDelivery, postDelivery } from '@services/delivery-service';
-import { getIncoterm, getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
+import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { useEffect, useMemo, useState } from 'react';
 import { Notification } from '@models/types/data/notification';
 import { INCOTERMS } from '@models/constants/incoterms';
@@ -46,8 +46,8 @@ const GridItem = ({ label, value }: { label: string; value: string }) => (
     </Grid>
 );
 
-const createDeliveryColumns = (handleDelete?: (row: Delivery) => void) => {
-    const columns = [
+const createDeliveryColumns = (handleDelete: (row: Delivery) => void) => {
+    return [
         {
             field: 'dateOfDeparture',
             headerName: 'Departure Time',
@@ -186,31 +186,25 @@ const createDeliveryColumns = (handleDelete?: (row: Delivery) => void) => {
                 );
             },
         },
-    ] as const;
-    if (handleDelete) {
-        return [
-            ...columns,
-            {
-                field: 'delete',
-                headerName: '',
-                sortable: false,
-                disableColumnMenu: true,
-                headerAlign: 'center',
-                type: 'string',
-                width: 30,
-                renderCell: (data: { row: Delivery }) => {
-                    return (
-                        <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
-                                <Delete></Delete>
-                            </Button>
-                        </Box>
-                    );
-                },
+        {
+            field: 'delete',
+            headerName: '',
+            sortable: false,
+            disableColumnMenu: true,
+            headerAlign: 'center',
+            type: 'string',
+            width: 30,
+            renderCell: (data: { row: Delivery }) => {
+                return (
+                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                        {!data.row.reported && <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
+                            <Delete></Delete>
+                        </Button>}
+                    </Box>
+                );
             },
-        ] as const;
-    }
-    return columns;
+        },
+    ] as const;
 };
 
 const isValidDelivery = (delivery: Partial<Delivery>) =>
@@ -276,7 +270,7 @@ export const DeliveryInformationModal = ({
                     ...ns,
                     {
                         title: 'Delivery Added',
-                        description: 'The Delivery has been saved added',
+                        description: 'The Delivery has been added',
                         severity: 'success',
                     },
                 ]);
@@ -314,7 +308,10 @@ export const DeliveryInformationModal = ({
                         {mode === 'create' ? (
                             <>
                                 <GridItem label="Material Number" value={temporaryDelivery.ownMaterialNumber ?? ''} />
-                                <GridItem label="Origin Site" value={temporaryDelivery.originBpns ?? ''} />
+                                <GridItem 
+                                    label={direction === 'incoming' ? 'Destination Site' : 'Origin Site'} 
+                                    value={(direction === 'incoming' ? temporaryDelivery.destinationBpns : temporaryDelivery.originBpns) ?? ''} 
+                                />
                                 <Grid item xs={6}>
                                     <Autocomplete
                                         id="departure-type"
@@ -408,12 +405,16 @@ export const DeliveryInformationModal = ({
                                         disabled={!temporaryDelivery?.partnerBpnl}
                                         isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
                                         onChange={(_, value) =>
-                                            setTemporaryDelivery({ ...temporaryDelivery, destinationBpns: value?.bpns ?? undefined })
+                                            setTemporaryDelivery({ ...temporaryDelivery, ...(direction === 'incoming' ? { originBpns: value?.bpns ?? undefined } : { destinationBpns: value?.bpns ?? undefined }) })
                                         }
                                         value={
                                             partners
                                                 ?.find((s) => s.bpnl === temporaryDelivery?.partnerBpnl)
-                                                ?.sites.find((s) => s.bpns === temporaryDelivery?.destinationBpns) ?? null
+                                                ?.sites.find((s) => (
+                                                    direction === 'incoming' 
+                                                    ? s.bpns === temporaryDelivery.originBpns
+                                                    : s.bpns === temporaryDelivery.destinationBpns) ?? ''
+                                                ) ?? null
                                         }
                                         renderInput={(params) => (
                                             <Input
@@ -480,20 +481,17 @@ export const DeliveryInformationModal = ({
                                         id="incoterm"
                                         value={
                                             temporaryDelivery.incoterm
-                                                ? {
-                                                      key: temporaryDelivery.incoterm,
-                                                      value: getIncoterm(temporaryDelivery.incoterm),
-                                                  }
+                                                ? INCOTERMS.find((i) => i.key === temporaryDelivery.incoterm) ?? null
                                                 : null
                                         }
-                                        options={INCOTERMS}
+                                        options={INCOTERMS.filter((i) => direction === 'incoming' ? i.responsibility !== 'supplier' : i.responsibility !== 'customer')}
                                         getOptionLabel={(option) => option?.value ?? ''}
                                         renderInput={(params) => (
                                             <Input
                                                 {...params}
                                                 label="Incoterm*"
                                                 placeholder="Select Incoterm"
-                                                error={formError && !temporaryDelivery?.measurementUnit}
+                                                error={formError && !temporaryDelivery?.incoterm}
                                             />
                                         )}
                                         onChange={(_, value) => setTemporaryDelivery((curr) => ({ ...curr, incoterm: value?.key }))}
@@ -557,7 +555,7 @@ export const DeliveryInformationModal = ({
                                         }`}
                                         density="standard"
                                         getRowId={(row) => row.uuid}
-                                        columns={createDeliveryColumns(mode === 'view' ? undefined : handleDelete)}
+                                        columns={createDeliveryColumns(handleDelete)}
                                         rows={dailyDeliveries}
                                         hideFooter
                                     />

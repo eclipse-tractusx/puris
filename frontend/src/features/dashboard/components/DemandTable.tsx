@@ -118,17 +118,14 @@ export const DemandTable = ({ numberOfDays, stocks, demands, deliveries, site, r
                     Site:
                 </Typography>
                 {site.name} ({site.bpns})
-                {!readOnly && <Button
-                    variant="contained"
-                    onClick={() =>
-                        onDemandClick({
-                            demandLocationBpns: site.bpns,
-                        }, 'create')
-                    }
-                    sx={{ marginLeft: 'auto' }}
-                >
-                    <Add></Add> Create Demand
-                </Button> }
+                {!readOnly && <Box marginLeft="auto" display="flex" gap="1rem">
+                        <Button variant="contained" onClick={() => onDeliveryClick({ destinationBpns: site.bpns, departureType: 'estimated-departure', arrivalType: 'estimated-arrival' }, 'create')}>
+                            <Add></Add> Add Delivery
+                        </Button>
+                        <Button variant="contained" onClick={() => onDemandClick({ demandLocationBpns: site.bpns }, 'create')} sx={{ marginLeft: 'auto' }} >
+                            <Add></Add> Create Demand
+                        </Button>
+                    </Box>}
             </Box>
             <TableWithRowHeader
                 title=""

@@ -42,7 +42,6 @@ import { useProduction } from '../hooks/useProduction';
 import { useReportedProduction } from '../hooks/useReportedProduction';
 
 import { requestReportedStocks } from '@services/stocks-service';
-import { useReportedDelivery } from '../hooks/useReportedDelivery';
 import { useDelivery } from '../hooks/useDelivery';
 import { requestReportedDeliveries } from '@services/delivery-service';
 import { requestReportedProductions } from '@services/productions-service';
@@ -104,15 +103,14 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
         state.selectedMaterial?.ownMaterialNumber ?? null,
         state.selectedSite?.bpns ?? null
     );
-    const { reportedDeliveries } = useReportedDelivery(state.selectedMaterial?.ownMaterialNumber ?? null);
 
     const handleRefresh = () => {
         dispatch({ type: 'isRefreshing', payload: true });
         Promise.all([
-            requestReportedStocks(type === 'customer' ? 'material' : 'product', state.selectedMaterial?.ownMaterialNumber ?? null), 
-            requestReportedDeliveries(state.selectedMaterial?.ownMaterialNumber ?? null), 
-            type === 'customer' 
-                ? requestReportedProductions(state.selectedMaterial?.ownMaterialNumber ?? null) 
+            requestReportedStocks(type === 'customer' ? 'material' : 'product', state.selectedMaterial?.ownMaterialNumber ?? null),
+            requestReportedDeliveries(state.selectedMaterial?.ownMaterialNumber ?? null),
+            type === 'customer'
+                ? requestReportedProductions(state.selectedMaterial?.ownMaterialNumber ?? null)
                 : requestReportedDemands(state.selectedMaterial?.ownMaterialNumber ?? null)
         ]).finally(() => dispatch({ type: 'isRefreshing', payload: false }));
     };
@@ -186,7 +184,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                 onDeliveryClick={(delivery, mode) => openDeliveryDialog(delivery, mode, 'incoming', state.selectedSite)}
                                 onDemandClick={openDemandDialog}
                                 demands={demands}
-                                deliveries={reportedDeliveries}
+                                deliveries={deliveries ?? []}
                             />
                         )
                     ) : (
@@ -245,7 +243,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                             onDeliveryClick={(delivery, mode) => openDeliveryDialog(delivery, mode, 'outgoing', ps)}
                                             onProductionClick={openProductionDialog}
                                             productions={reportedProductions?.filter((p) => p.productionSiteBpns === ps.bpns) ?? []}
-                                            deliveries={reportedDeliveries ?? []}
+                                            deliveries={deliveries ?? []}
                                             readOnly
                                         />
                                     )
@@ -280,7 +278,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                 }
                 onSave={refreshDelivery}
                 delivery={state.delivery}
-                deliveries={(type === 'customer' ? reportedDeliveries : deliveries) ?? []}
+                deliveries={deliveries ?? []}
             />
         </>
     );

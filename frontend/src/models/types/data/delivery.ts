@@ -42,4 +42,5 @@ export type Delivery = {
   dateOfArrival: Date;
   departureType: DepartureType;
   arrivalType: ArrivalType;
+  reported: boolean;
 } & OrderReference;
