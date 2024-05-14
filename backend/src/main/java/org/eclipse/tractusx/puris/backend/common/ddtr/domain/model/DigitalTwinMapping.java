@@ -20,12 +20,10 @@
 
 package org.eclipse.tractusx.puris.backend.common.ddtr.domain.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Entity
 @AllArgsConstructor
@@ -40,11 +38,5 @@ public class DigitalTwinMapping {
     private String ownMaterialNumber;
 
     private String productTwinId;
-
-    @ElementCollection
-    @CollectionTable(name = "suppliersmap", joinColumns = @JoinColumn(name = "own_mat_nbr", referencedColumnName = "ownMaterialNumber"))
-    @MapKeyColumn(name = "key")
-    @Column(name = "value")
-    private Map<String, String> materialSupplierTwinIds = new HashMap<>();
 
 }

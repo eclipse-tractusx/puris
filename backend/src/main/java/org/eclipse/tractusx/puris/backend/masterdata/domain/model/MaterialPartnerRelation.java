@@ -92,6 +92,18 @@ public class MaterialPartnerRelation {
             '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MaterialPartnerRelation that)) return false;
+        return Objects.equals(key, that.key);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(key);
+    }
+
     @Embeddable
     @Getter
     @Setter
