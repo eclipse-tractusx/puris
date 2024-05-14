@@ -97,6 +97,7 @@ public class DtrRequestBodyBuilder {
 
         submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID, href + DirectionCharacteristic.INBOUND + "/", variablesService.getItemStockSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.DEMAND.URN_SEMANTIC_ID, href, variablesService.getDemandSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.DELIVERY.URN_SEMANTIC_ID, href, variablesService.getDeliverySubmodelApiAssetId()));
         
         log.debug("Created body for material " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
         return body;

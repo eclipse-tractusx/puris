@@ -543,6 +543,7 @@ public class StockViewController {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        log.info("Trigger Reported MaterialStockUpdate");
         log.info("Found material: " + (materialEntity != null) + " " + ownMaterialNumber);
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
 
@@ -571,6 +572,7 @@ public class StockViewController {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        log.info("Trigger Reported ProductStockUpdate");
         log.info("Found material: " + (materialEntity != null) + " " + ownMaterialNumber);
         List<Partner> allCustomerPartnerEntities = mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber);
 
