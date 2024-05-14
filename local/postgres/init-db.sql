@@ -28,18 +28,3 @@ CREATE DATABASE "dtr_supplier";
 -- already created via docker init
 -- CREATE DATABASE "puris_customer";
 CREATE DATABASE "puris_supplier";
-
--- CREATE DATABASE "edc_customer_transferprocess";
---
--- CREATE DATABASE "edc_customer_policy_monitor";
--- CREATE DATABASE "edc_customer_bpn";
--- CREATE DATABASE "edc_customer_edrs";
---
---
--- CREATE DATABASE "edc_supplier_asset";
--- CREATE DATABASE "edc_supplier_contractdefinition";
--- CREATE DATABASE "edc_supplier_contractnegotiation";
--- CREATE DATABASE "edc_supplier_policy";
--- CREATE DATABASE "edc_supplier_transferprocess";
---
--- CREATE DATABASE "edc_supplier_policy_monitor";
