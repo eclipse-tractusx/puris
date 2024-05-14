@@ -77,19 +77,20 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   dtr-customer:
-    image: tractusx/sldt-digital-twin-registry:0.3.23
+    image: tractusx/sldt-digital-twin-registry:0.4.3
     container_name: dtr-customer
     depends_on:
       postgres-customer:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3.0/shell-descriptors" ]
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors" ]
       interval: 4s
       timeout: 3s
       retries: 15
     ports:
       - "127.0.0.1:4243:4243"
     environment:
+      REGISTRY_IDM_OWNING_TENANT_ID: BPNL4444444444XX
       SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
       SPRING_DATASOURCE_URL: jdbc:postgresql://customer-postgres:5432/dtr_database
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
@@ -221,19 +222,20 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   dtr-supplier:
-    image: tractusx/sldt-digital-twin-registry:0.3.23
+    image: tractusx/sldt-digital-twin-registry:0.4.3
     container_name: dtr-supplier
     depends_on:
       postgres-supplier:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3.0/shell-descriptors" ]
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors" ]
       interval: 4s
       timeout: 3s
       retries: 15
     ports:
       - "127.0.0.1:4244:4243"
     environment:
+      REGISTRY_IDM_OWNING_TENANT_ID: BPNL1234567890ZZ
       SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
       SPRING_DATASOURCE_URL: jdbc:postgresql://supplier-postgres:5432/dtr_database
       SPRING_DATASOURCE_USERNAME: ${PG_USER}

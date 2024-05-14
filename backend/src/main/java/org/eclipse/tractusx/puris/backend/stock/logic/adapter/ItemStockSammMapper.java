@@ -117,8 +117,7 @@ public class ItemStockSammMapper {
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
         ArrayList<ReportedProductItemStock> outputList = new ArrayList<>();
         if (samm.getDirection() != DirectionCharacteristic.INBOUND) {
-            log.warn("Direction should be INBOUND, aborting");
-            return outputList;
+            throw new IllegalArgumentException("Direction should be INBOUND, aborting");
         }
 
         // When deserializing a Samm from a customer, who has sent a report on the
@@ -127,11 +126,14 @@ public class ItemStockSammMapper {
         // the Samm is the one in our Material entity.
         Material material = materialService.findByMaterialNumberCx(matNbrCatenaX);
         if (material == null) {
-            log.warn("Could not identify materialPartnerRelation with matNbrCatenaX " + matNbrCatenaX + " and partner bpnl " + partner.getBpnl());
-            return outputList;
+            throw new IllegalArgumentException("Could not identify material with CatenaXNbr " + matNbrCatenaX);
         }
 
         var mpr = mprService.find(material, partner);
+        if (mpr == null) {
+            throw new IllegalArgumentException("Could not identify materialPartnerRelation with matNbrCatenaX "
+                + matNbrCatenaX + " and partner bpnl " + partner.getBpnl());
+        }
 
         for (var position : samm.getPositions()) {
             String supplierOrderId = null, customerOrderPositionId = null, customerOrderId = null;
@@ -165,23 +167,21 @@ public class ItemStockSammMapper {
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
         ArrayList<ReportedMaterialItemStock> outputList = new ArrayList<>();
         if (samm.getDirection() != DirectionCharacteristic.OUTBOUND) {
-            log.warn("Direction should be OUTBOUND, aborting");
-            return outputList;
+            throw new IllegalArgumentException("Direction should be OUTBOUND, aborting");
         }
         var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, matNbrCatenaX);
 
         if (mpr == null) {
-            log.warn("Could not identify materialPartnerRelation with matNbrCatenaX " + matNbrCatenaX + " and partner bpnl " + partner.getBpnl());
-            return outputList;
+            throw new IllegalArgumentException("Could not identify materialPartnerRelation with matNbrCatenaX "
+                + matNbrCatenaX + " and partner bpnl " + partner.getBpnl());
         }
         // When deserializing a Samm from a supplier, who has sent a report on the
         // stocks he has prepared for us, the materialGlobalAssetId used in the communication
-        // was set by the supplying partner. Therefore the materialGlobalAssetId in
+        // was set by the supplying partner. Therefore, the materialGlobalAssetId in
         // the Samm is the one in our MaterialPartnerRelation entity with that partner.
         Material material = mpr.getMaterial();
         if (material == null) {
-            log.warn("Could not identify material with CatenaXNbr " + matNbrCatenaX);
-            return outputList;
+            throw new IllegalArgumentException("Could not identify material with CatenaXNbr " + matNbrCatenaX);
         }
 
         for (var position : samm.getPositions()) {

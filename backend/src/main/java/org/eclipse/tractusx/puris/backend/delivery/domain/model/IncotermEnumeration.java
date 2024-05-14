@@ -45,4 +45,33 @@ public enum IncotermEnumeration {
     public String getValue() {
         return value;
     }
+
+    public DeliveryResponsibilityEnumeration getResponsibility() {
+        switch (this) {
+            case EXW:
+                return DeliveryResponsibilityEnumeration.CUSTOMER;
+            case FCA:
+                return DeliveryResponsibilityEnumeration.PARTIAL;
+            case FAS:
+                return DeliveryResponsibilityEnumeration.PARTIAL;
+            case FOB:
+                return DeliveryResponsibilityEnumeration.PARTIAL;
+            case CFR:
+                return DeliveryResponsibilityEnumeration.PARTIAL;
+            case CIF:
+                return DeliveryResponsibilityEnumeration.PARTIAL;
+            case DAP:
+                return DeliveryResponsibilityEnumeration.SUPPLIER;
+            case DPU:
+                return DeliveryResponsibilityEnumeration.SUPPLIER;
+            case CPT:
+                return DeliveryResponsibilityEnumeration.SUPPLIER;
+            case CIP:
+                return DeliveryResponsibilityEnumeration.SUPPLIER;
+            case DDP:
+                return DeliveryResponsibilityEnumeration.SUPPLIER;
+            default:
+                throw new IllegalArgumentException("Unknown Incoterm");
+        }
+    }
 }
