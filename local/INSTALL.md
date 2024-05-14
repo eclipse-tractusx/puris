@@ -62,8 +62,8 @@ customer and supplier:
 sh init-wallets.sh
 ```
 
-After starting the central infrastructure, initialize the bdrs-service. To do so, in file `seed-bdrs.sh` set the key
-to the value of `EDC_API_PW` from `.env` file generated earlier.
+After starting the central infrastructure, initialize the bdrs-service. To do so, just run the script `seed-bdrs.sh`
+created during the run of script `generate-keys.sh`.
 
 ```shell
 sh seed-brds.sh
