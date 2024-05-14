@@ -114,7 +114,7 @@ public class EdcAdapterService {
      * Any caller of this method has the responsibility to close
      * the returned Response object after using it.
      *
-     * @param requestBody  The request body; null if no body is needed
+     * @param requestBody  The request body, not null
      * @param pathSegments The path segments
      * @return The response from your control plane
      * @throws IOException If the connection to your control plane fails
@@ -124,11 +124,7 @@ public class EdcAdapterService {
         for (var pathSegment : pathSegments) {
             urlBuilder.addPathSegment(pathSegment);
         }
-        RequestBody body = null;
-
-        if (requestBody != null) {
-            body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json"));
-        }
+        RequestBody body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json"));
 
         var request = new Request.Builder()
             .post(body)
@@ -1116,19 +1112,23 @@ public class EdcAdapterService {
 
         JsonNode leftOperandNode = con.get("odrl:leftOperand");
         if (leftOperandNode == null || !targetLeftOperand.equals(leftOperandNode.asText())) {
-            log.debug("Left operand {} odes not equal expected value {}.", leftOperandNode.asText(), targetLeftOperand);
+            String leftOperand = leftOperandNode == null ? "null" : leftOperandNode.asText();
+            log.debug("Left operand '{}' does not equal expected value '{}'.", leftOperand, targetLeftOperand);
             return false;
         }
 
-        JsonNode operatorNode = con.get("odrl:operator").get("@id");
+        JsonNode operatorNode = con.get("odrl:operator");
+        operatorNode = operatorNode == null ? null : operatorNode.get("@id");
         if (operatorNode == null || !targetOperator.equals(operatorNode.asText())) {
-            log.debug("Operator {} does not equal expected value {}.", operatorNode.asText(), targetOperator);
+            String operator = operatorNode == null ? "null" : operatorNode.asText();
+            log.debug("Operator '{}' does not equal expected value '{}'.", operator, targetOperator);
             return false;
         }
 
         JsonNode rightOperandNode = con.get("odrl:rightOperand");
         if (operatorNode == null || !targetRightOperand.equals(rightOperandNode.asText())) {
-            log.debug("Right operand {} odes not equal expected value {}.", rightOperandNode.asText(), targetRightOperand);
+            String rightOperand = rightOperandNode == null ? "null" : rightOperandNode.asText();
+            log.debug("Right operand '{}' odes not equal expected value '{}'.", rightOperand, targetRightOperand);
             return false;
         }
 
