@@ -17,26 +17,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+package org.eclipse.tractusx.puris.backend.delivery.domain.model;
 
-package org.eclipse.tractusx.puris.backend.common.ddtr.domain.model;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
-
-@Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-@ToString
-public class DigitalTwinMapping {
-
-    @Id
-    @NotNull
-    private String ownMaterialNumber;
-
-    private String productTwinId;
-
+public enum DeliveryResponsibilityEnumeration {
+  CUSTOMER, SUPPLIER, PARTIAL
 }
