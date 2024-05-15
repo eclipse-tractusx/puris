@@ -21,10 +21,8 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingService;
-import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DtrAdapterService;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
@@ -36,8 +34,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 
 @Service
 @Slf4j
@@ -53,13 +49,7 @@ public class MaterialServiceImpl implements MaterialService {
     private VariablesService variablesService;
 
     @Autowired
-    private DtrAdapterService dtrAdapterService;
-
-    @Autowired
     private DigitalTwinMappingService dtmService;
-
-    @Autowired
-    private ExecutorService executorService;
 
 
     @Override
@@ -70,6 +60,7 @@ public class MaterialServiceImpl implements MaterialService {
                 do {
                     uuid = UUID.randomUUID();
                 } while (!materialRepository.findByMaterialNumberCx(uuid.toString()).isEmpty());
+                log.info("Auto-generated CX Id for " + material.getOwnMaterialNumber() + " number: " + uuid);
                 material.setMaterialNumberCx(uuid.toString());
             } else {
                 log.error("Could not create material " + material.getOwnMaterialNumber() + " because of missing CatenaXId");
@@ -83,42 +74,12 @@ public class MaterialServiceImpl implements MaterialService {
         var searchResult = materialRepository.findById(material.getOwnMaterialNumber());
         if (searchResult.isEmpty()) {
             dtmService.create(material);
-            if (material.isProductFlag()) {
-                executorService.submit(new DtrRegistrationTask(material, 3));
-            }
             return materialRepository.save(material);
         }
         log.error("Could not create material " + material.getOwnMaterialNumber() + " because it already exists");
         return null;
     }
 
-    /**
-     * Registers a Product at the dDTR.
-     */
-    @AllArgsConstructor
-    private class DtrRegistrationTask implements Callable<Boolean> {
-
-        private Material material;
-        int retries;
-
-        @Override
-        public Boolean call() throws Exception {
-            if (retries < 0) {
-                return false;
-            }
-            boolean result = dtrAdapterService.registerProductAtDtr(material);
-            if (result) {
-                log.info("Registered " + material.getOwnMaterialNumber() + " as a Product at DTR");
-                return true;
-            } else {
-                log.warn("Registration for " + material.getOwnMaterialNumber() + " as a Product at DTR failed. Retries left: " + retries);
-                Thread.sleep(500);
-                retries--;
-                return call();
-            }
-
-        }
-    }
 
     @Override
     public Material update(Material material) {
@@ -132,7 +93,6 @@ public class MaterialServiceImpl implements MaterialService {
 
             if (!foundMaterial.isProductFlag() && material.isProductFlag()) {
                 dtmService.update(material);
-                executorService.submit(new DtrRegistrationTask(material, 3));
             }
 
             return materialRepository.save(material);
@@ -154,10 +114,7 @@ public class MaterialServiceImpl implements MaterialService {
     @Override
     public Material findByOwnMaterialNumber(String ownMaterialNumber) {
         var searchResult = materialRepository.findById(ownMaterialNumber);
-        if (searchResult.isPresent()) {
-            return searchResult.get();
-        }
-        return null;
+        return searchResult.orElse(null);
     }
 
     @Override
