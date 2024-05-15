@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (c) 2022,2023 Volkswagen AG
-    Copyright (c) 2022,2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-    Copyright (c) 2022,2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2022,2024 Volkswagen AG
+    Copyright (c) 2022,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+    Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -41,7 +41,6 @@
         <springdoc.version>2.3.0</springdoc.version>
         <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
         <snakeyaml.version>2.2</snakeyaml.version>
-        <nimbus.version>9.37.3</nimbus.version>
     </properties>
     <dependencies>
         <dependency>
@@ -113,12 +112,6 @@
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
             <version>3.2.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt -->
-        <dependency>
-            <groupId>com.nimbusds</groupId>
-            <artifactId>nimbus-jose-jwt</artifactId>
-            <version>${nimbus.version}</version>
         </dependency>
 
     </dependencies>

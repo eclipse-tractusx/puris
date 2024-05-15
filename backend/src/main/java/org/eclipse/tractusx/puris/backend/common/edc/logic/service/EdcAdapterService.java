@@ -23,9 +23,6 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.nimbusds.jwt.JWT;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTParser;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
@@ -36,12 +33,12 @@ import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -58,8 +55,6 @@ public class EdcAdapterService {
     private final ObjectMapper objectMapper;
     @Autowired
     private EdcRequestBodyBuilder edcRequestBodyBuilder;
-    @Autowired
-    private EndpointDataReferenceService edrService;
 
     @Autowired
     private EdcContractMappingService edcContractMappingService;
@@ -580,16 +575,8 @@ public class EdcAdapterService {
                         break;
                     }
                 }
-                EdrDto edrDto = null;
-                // Await arrival of edr
-                for (int i = 0; i < 100; i++) {
-                    Thread.sleep(100);
-                    edrDto = getEdrForTransferProcessId(transferId); //edrService.findByTransferId(transferId);
-                    if (edrDto != null) {
-                        log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
-                        break;
-                    }
-                }
+                EdrDto edrDto = getAndAwaitEdrDto(transferId);
+                log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
                 if (edrDto == null) {
                     log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
                     return doSubmodelRequest(type, mpr, direction, --retries);
@@ -620,6 +607,26 @@ public class EdcAdapterService {
             }
         }
         return getSubmodelFromPartner(mpr, type, direction, --retries);
+    }
+
+    /**
+     * get the EDR via edr api and retry multiple times in case the EDR has not yet been available
+     *
+     * @param transferProcessId to get the EDR for, not null
+     * @return edr received, or null if not yet available
+     * @throws InterruptedException if thread was not able to sleep
+     */
+    private @Nullable EdrDto getAndAwaitEdrDto(String transferProcessId) throws InterruptedException {
+        EdrDto edrDto = null;
+        // retry, if Data Space Protocol / Data Plane Provisioning communication needs time to prepare
+        for (int i = 0; i < 100; i++) {
+            edrDto = getEdrForTransferProcessId(transferProcessId);
+            if (edrDto != null) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+        return edrDto;
     }
 
     public JsonNode doSubmodelRequest(SubmodelType type, MaterialPartnerRelation mpr, DirectionCharacteristic direction, int retries) {
@@ -779,19 +786,12 @@ public class EdcAdapterService {
                         break;
                     }
                 }
-                EdrDto edrDto = null;
-                // Await arrival of edr
-                for (int i = 0; i < 100; i++) {
-                    edrDto = getEdrForTransferProcessId(transferId);//edrService.findByTransferId(transferId);
-                    if (edrDto != null) {
-                        log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
-                        break;
-                    }
-                    Thread.sleep(100);
-                }
+                EdrDto edrDto = getAndAwaitEdrDto(transferId);
                 if (edrDto == null) {
                     log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
                     return getAasSubmodelDescriptors(manufacturerPartId, manufacturerId, mpr, --retries);
+                } else {
+                    log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
                 }
                 HttpUrl.Builder urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
                     .addPathSegment("api")
@@ -863,26 +863,6 @@ public class EdcAdapterService {
      */
     private EdrDto getEdrForTransferProcessId(String transferProcessId) {
 
-        // Note: If we decode the auth token, we could add the exp as expiresAt so that I can store the EDR and lookup
-        // again
-        EdrDto storedEdr = edrService.findByTransferId(transferProcessId);
-        log.debug("storedEdr: {}", storedEdr);
-
-        // got a stored edr that has an auth token that will not expire within 5 seconds
-        // Notes:
-        // - this might cause an issue if there are different time zones between EDC and us
-        // - we could also implement an ProxyRequestInterceptor that gets a fresh token for a TransferProcessId
-        if (storedEdr != null && storedEdr.expiresAt().before(new Date(System.currentTimeMillis() + 5000))) {
-            log.info("Reuse EDR directly as it will not expire within 5 seconds");
-            return storedEdr;
-        }
-
-        if (storedEdr != null) {
-            log.debug("Expiry edr: {} VS expiry within 5 sec {}", storedEdr.expiresAt(), new Date(System.currentTimeMillis() + 5000));
-        } else {
-            log.debug("No EDR token found");
-        }
-
         try (Response response = sendGetRequest(
             List.of("v2", "edrs", transferProcessId, "dataaddress"),
             Map.of("auto_refresh", "true"))
@@ -892,18 +872,11 @@ public class EdcAdapterService {
             String dataPlaneEndpoint = responseObject.get("endpoint").asText();
             String authToken = responseObject.get("authorization").asText();
 
-            JWT jwt = JWTParser.parse(authToken);
-            JWTClaimsSet claims = jwt.getJWTClaimsSet();
-            Date expirationTime = claims.getExpirationTime();
+            EdrDto edr = new EdrDto("Authorization", authToken, dataPlaneEndpoint);
+            log.debug("Requested EDR successfully: {}", edr);
 
-            storedEdr = new EdrDto("Authorization", authToken, dataPlaneEndpoint, expirationTime);
-            edrService.save(transferProcessId, storedEdr);
-            log.debug("Requested EDR successfully: {}", storedEdr);
+            return edr;
 
-            return storedEdr;
-
-        } catch (ParseException e) {
-            log.error("EDR token could not be parsed: {}", e);
         } catch (IOException e) {
             log.error("EDR token for transfer process with ID {} could not be obtained", transferProcessId);
         }
@@ -937,7 +910,7 @@ public class EdcAdapterService {
                 log.info("Terminated transfer process with id {}.", transferProcessId);
             }
         } catch (IOException e) {
-            log.error("Error while trying to terminate transfer: {}", e);
+            log.error("Error while trying to terminate transfer: ", e);
         }
     }
 
@@ -1058,7 +1031,7 @@ public class EdcAdapterService {
         }
         boolean result = true;
 
-        if (constraint.isPresent() && constraint.get().isArray() && constraint.get().size() == 2) {
+        if (constraint.get().isArray() && constraint.get().size() == 2) {
             Optional<JsonNode> frameworkAgreementConstraint = Optional.empty();
             Optional<JsonNode> purposeConstraint = Optional.empty();
 
@@ -1106,7 +1079,7 @@ public class EdcAdapterService {
 
     private boolean testSingleConstraint(Optional<JsonNode> constraintToTest, String targetLeftOperand, String targetOperator, String targetRightOperand) {
 
-        if (!constraintToTest.isPresent()) return false;
+        if (constraintToTest.isEmpty()) return false;
 
         JsonNode con = constraintToTest.get();
 
@@ -1126,7 +1099,7 @@ public class EdcAdapterService {
         }
 
         JsonNode rightOperandNode = con.get("odrl:rightOperand");
-        if (operatorNode == null || !targetRightOperand.equals(rightOperandNode.asText())) {
+        if (rightOperandNode == null || !targetRightOperand.equals(rightOperandNode.asText())) {
             String rightOperand = rightOperandNode == null ? "null" : rightOperandNode.asText();
             log.debug("Right operand '{}' odes not equal expected value '{}'.", rightOperand, targetRightOperand);
             return false;

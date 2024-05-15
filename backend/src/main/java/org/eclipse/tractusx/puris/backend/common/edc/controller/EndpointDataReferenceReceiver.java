@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
 import java.util.regex.Pattern;
 
 /**
@@ -89,7 +88,7 @@ public class EndpointDataReferenceReceiver {
             return ResponseEntity.status(400).build();
         }
 
-        edrService.save(transferId, new EdrDto(authKey, authCode, endpoint, new Date()));
+        edrService.save(transferId, new EdrDto(authKey, authCode, endpoint));
         log.debug("EDR endpoint stored authCode for " + transferId);
         return ResponseEntity.status(200).build();
     }
