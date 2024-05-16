@@ -37,7 +37,7 @@ def create_jwt_vc(did_issuer: str, did_subject: str, did_audience: str, bpnl_sub
         "nbf": 1541493724,
         "iat": 1541493724,
         "exp": 32481718133,
-        "vc": create_verifiable_credential(did_issuer=did_issuer, did_subject=did_subject, bpnl_subject=bpnl_subject, scope=scope, self_iatp_flag=self_iatp_flag),
+        "vc": create_verifiable_credential(did_issuer=did_issuer, did_subject=did_subject, bpnl_subject=bpnl_subject, scope=scope),
     }
 
     return create_token_from_payload(payload, did_issuer)
@@ -45,11 +45,8 @@ def create_jwt_vc(did_issuer: str, did_subject: str, did_audience: str, bpnl_sub
 
 """
 creates a plain VC (no jwt) for a given scope
-
-For self-IATP case the subject will be the issuer / id of the credentialSubject
 """
-def create_verifiable_credential(did_issuer: str, did_subject: str, bpnl_subject: str, scope: str, self_iatp_flag: bool):
-    credential_subject_did = did_subject if self_iatp_flag else did_issuer
+def create_verifiable_credential(did_issuer: str, did_subject: str, bpnl_subject: str, scope: str):
 
     needs_version = False if scope.startswith("Membership") else True
 
@@ -70,7 +67,7 @@ def create_verifiable_credential(did_issuer: str, did_subject: str, bpnl_subject
             scope
         ],
         "credentialSubject": {
-            "id": credential_subject_did,
+            "id": did_subject,
             "holderIdentifier": bpnl_subject
         },
     }
