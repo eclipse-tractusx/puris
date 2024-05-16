@@ -12,14 +12,16 @@ participant "DtrAdapterService" as dtr_s
 end box
 
 
-=== Create Material or Product ==
-m_c -> m_s: Create Material or Product
+=== Create or Update Material or Product ==
+m_c -> m_s: Create or Update Material or Product
 activate m_s
+alt create material or product
 m_s -> m_s: Generate or take\nCatena-X ID\n(save on material)
+end
 m_s --> m_c: OK
 deactivate m_s
 
-mpr_c -> mpr_s: Create MPR for partner\nand material / product
+mpr_c -> mpr_s: Create or Updae MPR for partner\nand material / product
 activate mpr_s
 mpr_s -> mpr_s: Create DtrRegistrationTask
 mpr_s -> mpr_s: Determine Partners who\nbuy material and supply product

@@ -61,6 +61,8 @@ needs to lookup and use this Catena-X ID as the `globalAssetId`
 The following diagram illustrates the registration (create and update) process for digital twins. It is always triggered
 as soon as a MaterialPartnerRelation is changed. The Digital Twin is always recreated fully.
 
+![Overview of Digital Twin Creation](img/06-twin-creation.svg)
+
 ## Scenario: Interact with Data in the Web-UI
 
 When reloading the UI, the latest data is pulled from the backend. Whenever a partner-related update on the information
