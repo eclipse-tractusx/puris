@@ -54,6 +54,7 @@ First start the infrastructure by navigating your shell to the local folder and 
 docker compose -f docker-compose-infrastructure.yaml up
 ```
 
+<!-- Note: Currently no MIW needed, don't show documentation rendered.
 Note: sh init-wallets.sh is temporarily not needed
 After the MIW container has finished booting, use this script (also in the local folder) to initialise two wallets for
 customer and supplier:
@@ -61,6 +62,7 @@ customer and supplier:
 ```shell
 sh init-wallets.sh
 ```
+-->
 
 After starting the central infrastructure, initialize the bdrs-service. To do so, just run the script `seed-bdrs.sh`
 created during the run of script `generate-keys.sh`.
