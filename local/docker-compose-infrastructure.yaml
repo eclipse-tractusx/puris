@@ -104,7 +104,6 @@ services:
       - "127.0.0.1:8582:8582"
     networks:
       - miw-net
-    # TODO check cacerts need in deployment.yaml
 networks:
   miw-net:
     name: miw-net

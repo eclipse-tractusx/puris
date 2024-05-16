@@ -93,9 +93,9 @@ async def secure_token_service(request: Request):
             print(f"Identified matching token (decoded) {decoded_token}")
             id_token_map.pop(token_id)
 
-            # common reqeust: issued by trusted issuer
+            # common request: issued by trusted issuer
             claims = {
-                "iss": DID_TRUSTED_ISSUER,
+                "iss": decoded_token["iss"],
                 "sub": decoded_token["sub"],
                 "aud": decoded_token["aud"]
             }
