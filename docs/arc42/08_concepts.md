@@ -40,34 +40,147 @@ Within PURIS this results in the following steps:
 
 Following the standard, the following measures have been taken:
 
-Access Policies in charge:
+- Access Policies and Access Restrictions
+- Contract Policies
+- Consumer Side Validation
+- Views in Frontend (admin access, see [User Guide](../userGuide/User_Guide.md), not handled in this chapter) to
+  overview negotiations and transfers.
+
+### Access Policies and Access Restrictions
+
+Each Contract Offer has the same access policies. When creating a partner, for all potential assets a contract offer
+is created using the following constraints:
 
 - Business Partner Number Legal Entity (BPNL)
 - Membership Credential
 
-Usage Policies in charge:
+Example Access Policy creation request used:
+
+```json 
+{
+    "@context": [
+        "http://www.w3.org/ns/odrl.jsonld",
+        {
+            "edc": "https://w3id.org/edc/v0.0.1/ns/",
+            "cx-policy": "https://w3id.org/catenax/policy/"
+        }
+    ],
+    "@type": "PolicyDefinitionRequestDto",
+    "@id": "BPNL1234567890ZZ_policy",
+    "edc:policy": {
+        "@type": "Set",
+        "permission": [
+            {
+                "action": "use",
+                "constraint": {
+                    "@type": "LogicalConstraint",
+                    "and": [
+                        {
+                            "@type": "LogicalConstraint",
+                            "leftOperand": "BusinessPartnerNumber",
+                            "operator": "eq",
+                            "rightOperand": "BPNL1234567890ZZ"
+                        },
+                        {
+                            "@type": "LogicalConstraint",
+                            "leftOperand": "Membership",
+                            "operator": "eq",
+                            "rightOperand": "active"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}
+```
+
+**Digital Twin Registry Configuration**
+
+Additionally, when creating the Digital Twins in the Digital Twin Registry, the `ShellDescriptors` are restricted in
+access using
+the [classic Access Control](https://github.com/eclipse-tractusx/sldt-digital-twin-registry/tree/main/docs#classic-implementation)
+which restricts the `specificAssetIds` based on BPNLs.
+
+### Contract Policies
+
+Two different policies are used depending on the Asset Type:
+
+- Digital Twin Registry: Use Access Policy also as Contract Policy
+- Submodels: Use Contract Policy as defined below
+
+_Note: The submodel `PartTypeInformation` is also registered with the same Contract Policy as the other Submodels._
+
+The Constraints used for the Submodel Contract Policies are the following:
 
 - Framework Agreement credential (partner signed the Framework Agreement)
-- Purpose credential (partner is member of Catena-X)
+- Usage Purpose (for what can the data be used)
 
-TODO: Example policies
+Example for Submodels based on following configurations:
+
+| Property (helm)                             | Value         |
+|---------------------------------------------|---------------|
+| backend.puris.frameworkagreement.credential | Puris         |
+| backend.puris.frameworkagreement.version    | 1.0           |
+| backend.puris.purpose.name                  | cx.puris.base |
+| backend.puris.purpose.version               | 1             |
+
+```json
+{
+    "@context": [
+        "http://www.w3.org/ns/odrl.jsonld",
+        {
+            "edc": "https://w3id.org/edc/v0.0.1/ns/",
+            "cx-policy": "https://w3id.org/catenax/policy/"
+        }
+    ],
+    "@type": "PolicyDefinitionRequestDto",
+    "@id": "Contract_Policy",
+    "edc:policy": {
+        "@type": "Set",
+        "profile": "cx-policy:profile2405",
+        "permission": [
+            {
+                "action": "use",
+                "constraint": {
+                    "@type": "LogicalConstraint",
+                    "and": [
+                        {
+                            "@type": "LogicalConstraint",
+                            "leftOperand": "https://w3id.org/catenax/policy/FrameworkAgreement",
+                            "operator": "eq",
+                            "rightOperand": "Puris:1.0"
+                        },
+                        {
+                            "@type": "LogicalConstraint",
+                            "leftOperand": "https://w3id.org/catenax/policy/UsagePurpose",
+                            "operator": "eq",
+                            "rightOperand": "cx.puris.base:1"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}
+```
 
 _Note: see configuration of usage policies in [AdminGuide](../adminGuide/Admin_Guide.md)._
 
-All traffic to exchange information is routed through the EDC data plane using the proxy pull mechanism.
+### Consumer Side Validation
 
-Whenever a partner is created, a contract offer for the DTR is registered for the partner's BPNL.
-Whenever a material partner relation (partner buys material, partner suppliers material),
+Following
+the [Digital Twin KIT R24.05](https://eclipse-tractusx.github.io/docs-kits/kits/Digital%20Twin%20Kit/Software%20Development%20View/dt-kit-software-development-view#usage-policies)
+an empty contract policy shall be used for the DRR. This application does **NOT** check the contract policy of the
+Digital Twin Registry, and uses an Access Policy on its own.
 
-- the contract offers for the submodels are created for the partner
-- the submodel descriptors are added to the twin
+For Submodel assets a validation is performed: Whenever the catalog is queried for a Submodel Asset, the returned
+catalog is filtered to the same policy that has been configured for the PURIS FOSS.
 
-Additionally, the administrator may configure the application to use a framework agreement policy for data offers (see
-[Administration Guide](../adminGuide/Admin_Guide.md)). When activated,
+- if none matches, no negotiation is started
+- if at least one matching definition is found, the first is taken to start the negotiation.
 
-- the application requires the respective credential to be active for the partner.
-- the application requires the framework agreement credential as contract policy when contracting a partner's offer as a
-  consumer.
+The Contract Policy definition can be found above.
 
 ## Reusing Contracts & Caching DTR information
 

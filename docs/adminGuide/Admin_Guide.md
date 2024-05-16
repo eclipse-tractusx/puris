@@ -78,29 +78,61 @@ To host an example keycloak instance, configure the following:
 
 _Note: The application does NOT make use of the `Client Authentication` (private) feature of Keycloak Clients._
 
-## Configure Framework Agreement Credential Usage
+## Data Sovereignty related configuration
 
-To configure the usage of a framework agreement credential, that is automatically enforced by the EDC during contracting
-(see further details in [ARC42 - Chapter 8](../arc42/08_concepts.md)), the following property needs to be configured:
+With R24.05, always Framework Agreement and Usage Purpose Contract Policies need to be used. Refer to
+[ARC42 - Chapter 8](../arc42/08_concepts.md) for the influence of these configurations.
+TLDR; you define the definition of the policy you want to use and that you'll accept. PURIS FOSS only handles one policy
+that is templated. You can only configure the name and version of the Framework Agreement Credential and the Usage
+Purpose.
 
-- `backend.frameworkagreement.credential` (docker `PURIS_FRAMEWORKAGREEMENT_CREDENTIAL`) = 'puris' (NOTE: not available
-  for R24.03)
+### Framework Agreement
 
-_**ATTENTION**: If the credential is NOT listed in the Connector Standard (CX-0018) of the current release, then the
-Tractus-X EDC will NOT technically enforce the credential by checking the availability in the Managed Identity Wallet.
-Thus, it may seem that the Credential is available, but isn't. Same applies to typos._
+To configure the Framework Agreement credential, that is automatically enforced by the EDC during contracting
+(see further details in [ARC42 - Chapter 8](../arc42/08_concepts.md)), the following properties need to be configured.
+The table contains
+the puris defaults for release R24.05.
+
+| Helm                                        | Docker                              | Configuration |
+|---------------------------------------------|-------------------------------------|---------------|
+| backend.puris.frameworkagreement.credential | PURIS_FRAMEWORKAGREEMENT_CREDENTIAL | Puris         |
+| backend.puris.frameworkagreement.version    | PURIS_FRAMEWORKAGREEMENT_VERSION    | 1.0           |
+
+_**ATTENTION**: If the credential is NOT listed in
+the [odrl profile](https://github.com/catenax-eV/cx-odrl-profile/blob/main/profile.md)
+of the current release, then the Tractus-X EDC will NOT technically enforce the credential by checking the availability
+in the Credential Service. Thus, it may seem that the Credential is available, but isn't. Same applies to typos._
 
 _Note: Please refer to
 the [Portal's documentation on how to sign use case agreements](https://github.com/eclipse-tractusx/portal-assets/blob/main/docs/user/06.%20Certificates/01.%20UseCase%20Participation.md)._
 
+### Usage Purpose
+
+To configure the Usage Purpose under which the assets may be used (see further details
+in [ARC42 - Chapter 8](../arc42/08_concepts.md)),
+the following properties need to be configured. The table contains the puris defaults for release R24.05.
+
+| Helm                          | Docker                | Configuration |
+|-------------------------------|-----------------------|---------------|
+| backend.puris.purpose.name    | PURIS_PURPOSE_NAME    | cx.puris.base |
+| backend.puris.purpose.version | PURIS_PURPOSE_VERSION | 1             |
+
+_**ATTENTION**: Usage Purposes are no credentials than can be enforced technically. See a list of supported purposes
+supported within Catena-X in the [odrl profile](https://github.com/catenax-eV/cx-odrl-profile/blob/main/profile.md)
+of the current release._
+
 ## Rate Limiting using nginx
 
 Rate limiting is by default enabled in the puris frontend served by nginx and can be dynamically configured.
-In order to adjust any variables of nginx's rate limiting or disable it, one has to modify the respective variables in either the
-local docker deployment by setting the necessary environment variables, or by modifying the variables in the helm chart values.yaml.
+In order to adjust any variables of nginx's rate limiting or disable it, one has to modify the respective variables in
+either the
+local docker deployment by setting the necessary environment variables, or by modifying the variables in the helm chart
+values.yaml.
 
-These variables then get dynamically injected in the nginx.conf file, which is then copied to the docker image to be used by nginx.
-That means that the rate limiting can be disabled by modifying the nginx.conf file in the frontend folder. This is also the place
+These variables then get dynamically injected in the nginx.conf file, which is then copied to the docker image to be
+used by nginx.
+That means that the rate limiting can be disabled by modifying the nginx.conf file in the frontend folder. This is also
+the place
 to insert and override any other nginx configurations.
 
 ## Serving with HTTPS / SSL
@@ -264,10 +296,10 @@ You can use this collection as an example for the REST API calls.
 
 Please note that since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing
 via the materials-API of the backend, when you are inserting a new Material entity to the backend's database.
-If a CatenaX-Id was not assigned to your Material so far, then by having the ```puris.generatematerialcatenaxid``` set to ```true``` you can auto-generate one randomly (this is the default-setting, by the way). 
+If a CatenaX-Id was not assigned to your Material so far, then by having the ```puris.generatematerialcatenaxid``` set
+to ```true``` you can auto-generate one randomly (this is the default-setting, by the way).
 In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that
 Material entity.
-
 
 ### Onboard Stock Information
 
@@ -287,5 +319,6 @@ the chart. Optionally it may be disabled to use your own installation. Refer to 
 
 ## Encryption of confidential data at rest
 
-Encryption at rest for databases works. It has been tested by either encrypting the docker folder or encrypting the whole
+Encryption at rest for databases works. It has been tested by either encrypting the docker folder or encrypting the
+whole
 filesystem of the machine running.
