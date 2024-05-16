@@ -424,8 +424,8 @@ backend:
       # -- Asset ID for DeliverySubmodel API
       apiassetid: deliverysubmodel-api-asset
     frameworkagreement:
-      # -- The name of the framework agreement
-      credential: puris
+      # -- The name of the framework agreement. Starting with Uppercase and using CamelCase.
+      credential: Puris
       # -- The version of the framework agreement, NEEDS TO BE PUT AS "STRING"!
       version: "1.0"
     purpose:

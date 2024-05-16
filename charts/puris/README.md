@@ -75,7 +75,7 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.edc.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api |
 | backend.puris.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
 | backend.puris.existingSecret | string | `"secret-backend-puris"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
-| backend.puris.frameworkagreement.credential | string | `"puris"` | The name of the framework agreement |
+| backend.puris.frameworkagreement.credential | string | `"Puris"` | The name of the framework agreement. Starting with Uppercase and using CamelCase. |
 | backend.puris.frameworkagreement.version | string | `"1.0"` | The version of the framework agreement, NEEDS TO BE PUT AS "STRING"! |
 | backend.puris.generatematerialcatenaxid | bool | `true` | Flag that decides whether the auto-generation feature of the puris backend is enabled. Since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing CatenaX-Id via the materials-API of the backend, when you are inserting a new Material entity to the backend's database. If a CatenaX-Id was not assigned to your Material so far, then this feature can auto-generate one randomly. In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that Material entity. |
 | backend.puris.itemstocksubmodel.apiassetid | string | `"itemstocksubmodel-api-asset"` | Asset ID for ItemStockSubmodel API |
@@ -90,6 +90,8 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.own.streetnumber | string | `"Musterstraße 110A"` | Own street and number |
 | backend.puris.own.zipcodeandcity | string | `"12345 Musterhausen"` | Own zipcode and city |
 | backend.puris.productionsubmodel.apiassetid | string | `"productionsubmodel-api-asset"` | Asset ID for ProductionSubmodel API |
+| backend.puris.purpose.name | string | `"cx.puris.base"` | The name of the purpose to use for submodel contracts |
+| backend.puris.purpose.version | string | `"1"` | The version of the purpose to use for submodel contracts. NEEDS TO BE PUT AS "STRING"! |
 | backend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":120,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
 | backend.readinessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a readiness probe |
 | backend.readinessProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial readiness probe is checked |
