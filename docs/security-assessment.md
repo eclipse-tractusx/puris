@@ -4,10 +4,10 @@
 | -------------------------  | ---------------------------------------------------------------------------------------------- |
 | Contact for product        | [@tom-rm-meyer-ISST](https://github.com/tom-rm-meyer-ISST) |
 | Security responsible       | [@SSIRKC](https://github.com/SSIRKC) <br> [@szymonkowalczykzf](https://github.com/szymonkowalczykzf) |
-| Version number of product  | 23.12                                                                                          |
+| Version number of product  | 24.05                                                                                         |
 | Dates of assessment        | 2023-12-11: Assessment                                                                      |
-| Dates of last re-assessment| 2024-02-16: Re-Assessment                                                                      |
-| Status of assessment       | RE-ASSESSMENT DONE                                                                            |
+| Dates of last re-assessment| 2024-05-13: Re-Assessment                                                                      |
+| Status of assessment       | RE-ASSESSMENT DONE & APPROVED                                                                            |
 
 ## Product Description
 Application Security review provides information about application design, architecture and current security state.
@@ -46,38 +46,49 @@ flowchart TD
     A(Customer \n Human User) 
     A2(Puris Endpoint App \n Data Provider \n Out of Scope)
     A3(EDC \n Eclipse Data Space Components Connector \n C-X Member \n Out of Scope)
-    
+    A4(Digital Twin Registry)
+
     B(EDC \n ECLIPSE DataSpace Components Connector \n C-X Operator \n Out of Scope)
 
-    C(Vue User Interface)
+    C(React User Interface)
 
     D6(Master Data Controller \n Exposed for external system based on API Keys \n Out of scope)
-    D7(Product Measures Visualization \n Just visualization of the data \n Out of scope - Not yet developped)
-
+ 
     D(Stock View Controller)
     D2(EDC View Controller)
-    D3(Data Request Controller)
+    D3(Data Request Controller - Separtate \n Instance for each controller like \n Stock / Demand / Production / Delivery)
     D4(Data Response Controller)
     D5[(PostgreSQL DB \n Main Database)]
+    D8(Digital Twin Registry)
+    D9(DTR Adapter Service)
+    D10(Production Controller)
+    D11(Delivery Controller)
+    D12(Demand Controller)
 
-    A-->|Main functionality is possibility to view & manage stocks with Business Partners. \n Enter stock information manually. \n View the Supply Dashboard to check a supply situation between Partner & Customer \n for Partner and Supplier. \n HTTPS Protocol|C
+    A-->|Main functionality is possibility to view and manage stocks with Business Partners. \n Enter stock information,  production, demand  and delivery information manually. \n View the Supply Dashboard - check a supply situation between Partner & Customer or \n Partner and Supplier and manage its data. \n HTTPS|C
     A2-->|Providing Customer data on stocks & supplies \n HTTPS Protocol|A3
 
-    C-->|Read & Write access|D
-    C-->|Read access|D2
+    C-->|Read & Write access \n HTTPS|D
+    C-->|Read access \n HTTPS|D2
+    C-->|Read & Write access \n HTTPS|D10
+    C-->|Read & Write access \n HTTPS|D11
+    C-->|Read & Write access \n HTTPS|D12
 
     A3-->|View Data \n Negotiate Contracts \n Initialize & Perform Data Transfers \n HTTPS Protocol|B
+    A3-->|Read Data - Looking up for dsigital twins. \n HTTPS|A4
+    B-->|Read Data - Looking up for dsigital twins. \n HTTPS|D8
 
     D-->|Data Read & Write \n TCP9092|D5
     D3-->|Data Read & Write \n TCP9092|D5
-   
     D4-->|Data Read & Write \n TCP9092|D5
-
     D3-->|Forwarding Data Response \n HTTPS Protocol|B
-
+    D9-->|Update & Read Data \n HTTPS|D8
     B-->|Forwarding Data Requests \n HTTPS Protocol|D3
     B-->|List catalog, negotiations \n and transfers, \n Read Access \n HTTPS Protocol|D2
-    
+    D10-->|Data Read & Write \n TCP 9092|D5
+    D11-->|Data Read & Write \n TCP 9092|D5
+    D12-->|Data Read & Write \n TCP 9092|D5
+
     B<-->|Forwarding Data Response \n HTTPS Protocol|D4
     
 
@@ -88,14 +99,16 @@ flowchart TD
          
          A2
          A3
+         A4                       
 
          end
 
 end
 
 subgraph Catena - X Environment
-
+D8
 B
+
 
     subgraph PURIS Product 
                   
@@ -105,12 +118,15 @@ B
 
          subgraph PURIS Product - Java Backend
          D6
-         D7
          D2
          D3
          D
          D5
          D4
+         D10
+         D11
+         D12
+         D9   
           end
             
     
@@ -148,10 +164,24 @@ B
 | After Mitigation | Impact: Low, Likelihood: Low, Risk: Low |
 | Mitigation | Product Team currently working on SSL. Team already implemented and enforce HTTPS for the front end of the product. Additionally, the admin guide explains how to serve the backend with spring configuration. It also includes configuration of HTTPS with docker. Guide was created on how to configure HTTPS with docker. There are currently some Cores issues that were detected and are being investigated, probably needs spring reconfiguration. It was fixed. Issues happened cause of self signed certificates. The issue is already solved. SSL was also already integrated to the Product. |
 
+| V005 | Lack of rate limiting on API level, that make API vulnerable for denial of service |
+| ------------------------- | ------------------------- |
+| Element | PURIS Product |
+| Before Mitigation | Impact: Medium, Likelihood: Medium, Risk: Medium |
+| After Mitigation | Impact: Low, Likelihood: Low, Risk: Low |
+| Mitigation | Enable rate limiting that will allow to setup a maximum number of request that may be handled by the application at once which will allow to secure it from denial of service type of attacks generated by too large number of requests flooding the application. |
+
 | V006 | Lack of logging and monitoring solution in place, that can hinder the detection of security incidents, performance issues and operational anomalies. |
 | ------------------------- | ------------------------- |
 | Element | PURIS Product |
 | Before Mitigation | Impact: Low, Likelihood: Medium, Risk: Medium |
+| After Mitigation | Impact: Low, Likelihood: Low, Risk: Low |
+| Mitigation | Properly identify confidential data that requires encryption. Allow possibility for configuration of use of strong encryption algorithm, like for example AES 256 bit or others. Make sure to store and manage encryption keys in secure storage, separately from the data they encrypt. |
+
+| V007 | Encryption of confidential data at rest. |
+| ------------------------- | ------------------------- |
+| Element | PURIS Product |
+| Before Mitigation | Impact: High, Likelihood: Low, Risk: Medium |
 | After Mitigation | Impact: Low, Likelihood: Low, Risk: Low |
 | Mitigation | Application is already logging every information about : every call to the respective EDC's, actions related to the exchange of data between partners, all authentication & authorization data Logging enchantments were completed. |
 
