@@ -59,7 +59,7 @@ flowchart TD
     D3(Data Request Controller - Separtate \n Instance for each controller like \n Stock / Demand / Production / Delivery)
     D4(Data Response Controller)
     D5[(PostgreSQL DB \n Main Database)]
-    D8(Data Twin Registry)
+    D8(Digital Twin Registry)
     D9(DTR Adapter Service)
     D10(Production Controller)
     D11(Delivery Controller)
