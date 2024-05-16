@@ -345,7 +345,7 @@ public class EdcAdapterService {
      * @return The full catalog
      * @throws IOException If the connection to the partners control plane fails
      */
-    public JsonNode getCatalog(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException { // TODO: use partner to get the catalog
+    public JsonNode getCatalog(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException {
         try (var response = getCatalogResponse(dspUrl, partnerBpnl, filter)) {
             JsonNode responseNode = objectMapper.readTree(response.body().string());
             log.debug("Got Catalog response {}", responseNode.toPrettyString());
@@ -658,7 +658,7 @@ public class EdcAdapterService {
             }
             if (catalogArray.size() > 1) {
                 log.warn("Ambiguous catalog entries found! Will take the first\n" + catalogArray.toPrettyString());
-                // TODO constraint check
+                // potential constraint check in future
             }
             JsonNode targetCatalogEntry = catalogArray.get(0);
             if (targetCatalogEntry == null) {
