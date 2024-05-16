@@ -29,6 +29,7 @@ body {
 
 [role='tabpanel'] {
     width: 100%;
+    width: 100%;
 }
 
 .MuiDataGrid-root > .MuiBox-root h5 > span {
@@ -42,6 +43,7 @@ body {
 }
 
 .table-container .MuiDataGrid-root > .MuiBox-root {
+    height: 0;
     height: 0;
 }
 
@@ -59,7 +61,6 @@ input[type='time'] {
     padding: 0.875rem;
     border-radius: 4px;
     border: 1px solid #c5c7cb;
-    
 }
 
 input[type='time']:hover {
@@ -77,3 +78,4 @@ input[type='time']:active {
 input[type='time'].error {
     border-color: #f44336;
 }
+

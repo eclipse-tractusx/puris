@@ -28,6 +28,7 @@ import { deleteProduction, postProductionRange } from '@services/productions-ser
 import { Notification } from '@models/types/data/notification';
 import { Close, Delete, Save } from '@mui/icons-material';
 import { DateTime } from '@components/ui/DateTime';
+import { ModalMode } from '@models/types/data/modal-mode';
 
 const GridItem = ({ label, value }: { label: string; value: string }) => (
     <Grid item xs={6}>
@@ -42,8 +43,8 @@ const GridItem = ({ label, value }: { label: string; value: string }) => (
     </Grid>
 );
 
-const createProductionColumns = (handleDelete: (row: Production) => void) =>
-    [
+const createProductionColumns = (handleDelete?: (row: Production) => void) => {
+    const columns = [
         {
             field: 'estimatedTimeOfCompletion',
             headerName: 'Completion Time',
@@ -95,27 +96,33 @@ const createProductionColumns = (handleDelete: (row: Production) => void) =>
                 </Box>
             ),
         },
-        {
+    ] as const;
+    if (handleDelete) {
+        return [...columns, {
             field: 'delete',
             headerName: '',
             sortable: false,
-            filterable: false,
-            hideable: false,
+            disableColumnMenu: true,
             headerAlign: 'center',
+            type: 'string',
             width: 30,
-            renderCell: (data: { row: Production }) => (
-                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
-                        <Delete></Delete>
-                    </Button>
-                </Box>
-            ),
-        },
-    ] as const;
+            renderCell: (data: { row: Production }) => {
+                return (
+                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                        <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
+                            <Delete></Delete>
+                        </Button>
+                    </Box>
+                );
+            },
+        }] as const;
+    }
+    return columns;
+};
 
 type PlannedProductionModalProps = {
     open: boolean;
-    mode: 'create' | 'edit';
+    mode: ModalMode;
     onClose: () => void;
     onSave: () => void;
     production: Partial<Production> | null;
@@ -328,7 +335,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                             : ''
                                     }`}
                                     getRowId={(row) => row.uuid}
-                                    columns={createProductionColumns(handleDelete)}
+                                    columns={createProductionColumns(mode === 'view' ? undefined : handleDelete)}
                                     rows={dailyProductions}
                                     hideFooter
                                     density="standard"

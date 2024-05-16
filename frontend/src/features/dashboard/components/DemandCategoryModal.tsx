@@ -28,6 +28,7 @@ import { Notification } from '@models/types/data/notification';
 import { deleteDemand, postDemand } from '@services/demands-service';
 import { DEMAND_CATEGORY } from '@models/constants/demand-category';
 import { Close, Delete, Save } from '@mui/icons-material';
+import { ModalMode } from '@models/types/data/modal-mode';
 
 const GridItem = ({ label, value }: { label: string; value: string }) => (
     <Grid item xs={6}>
@@ -42,8 +43,8 @@ const GridItem = ({ label, value }: { label: string; value: string }) => (
     </Grid>
 );
 
-const createDemandColumns = (handleDelete: (row: Demand) => void) =>
-    [
+const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
+    const columns = [
         {
             field: 'quantity',
             headerName: 'Quantity',
@@ -108,7 +109,9 @@ const createDemandColumns = (handleDelete: (row: Demand) => void) =>
                 );
             },
         },
-        {
+    ] as const;
+    if (handleDelete) {
+        return [...columns, {
             field: 'delete',
             headerName: '',
             sortable: false,
@@ -125,14 +128,16 @@ const createDemandColumns = (handleDelete: (row: Demand) => void) =>
                     </Box>
                 );
             },
-        },
-    ] as const;
+        }] as const;
+    }
+    return columns;
+};
 
 type DemandCategoryModalProps = {
     open: boolean;
     demand: Partial<Demand> | null;
     demands: Demand[] | null;
-    mode: 'create' | 'edit';
+    mode: ModalMode;
     onClose: () => void;
     onSave: () => void;
 };
@@ -348,7 +353,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                             }`}
                             density="standard"
                             getRowId={(row) => row.uuid}
-                            columns={createDemandColumns(handleDelete)}
+                            columns={createDemandColumns(mode === 'view' ? undefined : handleDelete)}
                             rows={dailyDemands ?? []}
                             hideFooter
                         />

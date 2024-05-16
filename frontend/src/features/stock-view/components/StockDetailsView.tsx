@@ -22,7 +22,7 @@ import { useState } from 'react';
 import { PageSnackbar, PageSnackbarStack } from '@catena-x/portal-shared-components';
 
 import { Stock, StockType } from '@models/types/data/stock';
-import { postStocks, putStocks, refreshPartnerStocks } from '@services/stocks-service';
+import { postStocks, putStocks, requestReportedStocks } from '@services/stocks-service';
 
 import { useMaterials } from '../hooks/useMaterials';
 import { StockUpdateForm } from './StockUpdateForm';
@@ -41,7 +41,7 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
     const { materials } = useMaterials(type);
     const { stocks, refreshStocks } = useStocks(type);
     const [selectedMaterial, setSelectedMaterial] = useState<Stock | null>(null);
-    const { partnerStocks, refreshPartnerStocks: refresh } = usePartnerStocks(
+    const { partnerStocks } = usePartnerStocks(
         type,
         type === 'product' ? selectedMaterial?.material?.materialNumberSupplier : selectedMaterial?.material?.materialNumberCustomer
     );
@@ -52,7 +52,7 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
 
     const handleStockRefresh = () => {
         setRefreshing(true);
-        refreshPartnerStocks(
+        requestReportedStocks(
             type,
             (type == 'product' ? selectedMaterial?.material?.materialNumberSupplier : selectedMaterial?.material?.materialNumberCustomer) ??
                 null
@@ -67,14 +67,14 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
                         severity: 'success',
                     },
                 ]);
-                refresh();
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
+                const msg = error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string' ? error.message : 'Unknown Error';
                 setNotifications((ns) => [
                     ...ns,
                     {
                         title: 'Error requesting update',
-                        description: error.message,
+                        description: msg,
                         severity: 'error',
                     },
                 ]);
