@@ -214,8 +214,14 @@ const isValidDelivery = (delivery: Partial<Delivery>) =>
     delivery.destinationBpns &&
     delivery.quantity &&
     delivery.measurementUnit &&
+    delivery.incoterm &&
     delivery.dateOfDeparture &&
     delivery.dateOfArrival &&
+    delivery.departureType &&
+    delivery.arrivalType &&
+    delivery.dateOfArrival >= delivery.dateOfDeparture &&
+    (delivery.departureType !== 'actual-departure' || delivery.dateOfDeparture <= new Date()) &&
+    (delivery.arrivalType !== 'actual-arrival' || delivery.dateOfArrival <= new Date()) &&
     isValidOrderReference(delivery);
 
 type DeliveryInformationModalProps = {
@@ -347,7 +353,7 @@ export const DeliveryInformationModal = ({
                                                 {...params}
                                                 label="Arrival Type*"
                                                 placeholder="Select the type of departure"
-                                                error={formError && !temporaryDelivery?.departureType}
+                                                error={formError && !temporaryDelivery?.arrivalType}
                                             />
                                         )}
                                     ></Autocomplete>
@@ -357,7 +363,11 @@ export const DeliveryInformationModal = ({
                                         label="Departure Time"
                                         placeholder="Pick Departure Date"
                                         locale="de"
-                                        error={formError}
+                                        error={formError && (
+                                            !temporaryDelivery.dateOfDeparture ||
+                                            (temporaryDelivery.departureType === 'actual-departure' && temporaryDelivery.dateOfDeparture > new Date()) ||
+                                            (!!temporaryDelivery.dateOfArrival && temporaryDelivery.dateOfArrival < temporaryDelivery.dateOfDeparture)
+                                        )}
                                         value={temporaryDelivery?.dateOfDeparture ?? null}
                                         onValueChange={(date) =>
                                             setTemporaryDelivery({ ...temporaryDelivery, dateOfDeparture: date ?? undefined })
@@ -369,7 +379,10 @@ export const DeliveryInformationModal = ({
                                         label="Arrival Time"
                                         placeholder="Pick Arrival Date"
                                         locale="de"
-                                        error={formError}
+                                        error={formError && (
+                                            !temporaryDelivery?.dateOfArrival ||
+                                            (temporaryDelivery?.arrivalType === 'actual-arrival' && temporaryDelivery?.dateOfArrival > new Date())
+                                        )}
                                         value={temporaryDelivery?.dateOfArrival ?? null}
                                         onValueChange={(date) =>
                                             setTemporaryDelivery({ ...temporaryDelivery, dateOfArrival: date ?? undefined })
@@ -399,7 +412,7 @@ export const DeliveryInformationModal = ({
                                 </Grid>
                                 <Grid item xs={6}>
                                     <Autocomplete
-                                        id="destinationBpns"
+                                        id="partnerBpns"
                                         options={partners?.find((s) => s.bpnl === temporaryDelivery?.partnerBpnl)?.sites ?? []}
                                         getOptionLabel={(option) => option.name ?? ''}
                                         disabled={!temporaryDelivery?.partnerBpnl}
@@ -419,9 +432,12 @@ export const DeliveryInformationModal = ({
                                         renderInput={(params) => (
                                             <Input
                                                 {...params}
-                                                label="Destination*"
-                                                placeholder="Select a Destination Site"
-                                                error={formError && !temporaryDelivery?.destinationBpns}
+                                                label={`${direction === 'incoming' ? 'Origin' : 'Destination'}*`}
+                                                placeholder={`Select a ${direction === 'incoming' ? 'Origin' : 'Destination'} Site`}
+                                                error={formError && (
+                                                    direction === 'incoming' 
+                                                    ? !temporaryDelivery.originBpns
+                                                    : !temporaryDelivery.destinationBpns)}
                                             />
                                         )}
                                     />
@@ -468,7 +484,7 @@ export const DeliveryInformationModal = ({
                                 <Grid item xs={6}>
                                     <Input
                                         id="tracking-number"
-                                        label="Tracking Number*"
+                                        label="Tracking Number"
                                         type="text"
                                         value={temporaryDelivery?.trackingNumber ?? ''}
                                         onChange={(event) =>
@@ -530,7 +546,7 @@ export const DeliveryInformationModal = ({
                                         id="supplier-order-number"
                                         label="Supplier Order Number"
                                         type="text"
-                                        error={formError && !isValidOrderReference(temporaryDelivery)}
+                                        error={formError && !!temporaryDelivery.supplierOrderNumber && !temporaryDelivery.customerOrderNumber}
                                         value={temporaryDelivery?.supplierOrderNumber ?? ''}
                                         onChange={(event) =>
                                             setTemporaryDelivery({ ...temporaryDelivery, supplierOrderNumber: event.target.value })

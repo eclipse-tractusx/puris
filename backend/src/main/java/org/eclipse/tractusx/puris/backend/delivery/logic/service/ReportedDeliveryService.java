@@ -114,9 +114,8 @@ public class ReportedDeliveryService {
             delivery.getMeasurementUnit() != null &&
             delivery.getMaterial() != null &&
             delivery.getPartner() != null &&
-            delivery.getTrackingNumber() != null &&
             validateResponsibility(delivery) &&
-            this.validateTransitEvent(delivery) &&
+            validateTransitEvent(delivery) &&
             ((
                 delivery.getCustomerOrderNumber() != null && 
                 delivery.getCustomerOrderPositionNumber() != null 

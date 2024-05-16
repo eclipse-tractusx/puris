@@ -124,9 +124,8 @@ public class OwnDeliveryService {
             delivery.getMeasurementUnit() != null &&
             delivery.getMaterial() != null &&
             delivery.getPartner() != null &&
-            delivery.getTrackingNumber() != null &&
             validateResponsibility(delivery) &&
-            this.validateTransitEvent(delivery) &&
+            validateTransitEvent(delivery) &&
             !delivery.getPartner().equals(ownPartnerEntity) &&
             ((
                 delivery.getCustomerOrderNumber() != null && 

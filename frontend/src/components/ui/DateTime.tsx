@@ -80,7 +80,7 @@ export const DateTime = ({ error, value, onValueChange, ...props }: DateTimeProp
             <Box display="flex" flexGrow="1" sx={{ '& .MuiFormControl-root, & .MuiBox-root': { minWidth: '100% !important' } }}>
                 <Datepicker
                     {...props}
-                    error={error && !date}
+                    error={error}
                     value={date?.toISOString().split('T')[0]}
                     readOnly={false}
                     onChangeItem={(event) => handleDateChange(event)}
