@@ -172,7 +172,7 @@ npm/npmjs/-/path-key/3.1.1, MIT, approved, clearlydefined
 npm/npmjs/-/path-parse/1.0.7, MIT, approved, clearlydefined
 npm/npmjs/-/path-scurry/1.10.1, BlueOak-1.0.0, approved, #9370
 npm/npmjs/-/path-type/4.0.0, MIT, approved, clearlydefined
-npm/npmjs/-/picocolors/1.0.0, ISC, approved, clearlydefined
+npm/npmjs/-/picocolors/1.0.0, ISC, approved, #14718
 npm/npmjs/-/picomatch/2.3.1, MIT, approved, clearlydefined
 npm/npmjs/-/pify/2.3.0, MIT, approved, clearlydefined
 npm/npmjs/-/pirates/4.0.6, MIT, approved, #680

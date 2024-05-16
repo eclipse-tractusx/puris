@@ -199,9 +199,7 @@ public class DemandController {
 
     private DemandDto convertToDto(OwnDemand entity) {
         DemandDto dto = modelMapper.map(entity, DemandDto.class);
-        var materialPartnerRelation = mprService.find(entity.getMaterial().getOwnMaterialNumber(),
-                entity.getPartner().getUuid());
-        dto.setOwnMaterialNumber(materialPartnerRelation.getPartnerMaterialNumber());
+        dto.setOwnMaterialNumber(entity.getMaterial().getOwnMaterialNumber());
         dto.setPartnerBpnl(entity.getPartner().getBpnl());
 
         return dto;
