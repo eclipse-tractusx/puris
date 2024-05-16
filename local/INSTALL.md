@@ -68,7 +68,7 @@ After starting the central infrastructure, initialize the bdrs-service. To do so
 created during the run of script `generate-keys.sh`.
 
 ```shell
-sh seed-brds.sh
+sh seed-bdrs.sh
 ```
 
 Then start the PURIS demonstrator containers via:
