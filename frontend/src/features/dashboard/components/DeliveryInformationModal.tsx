@@ -353,7 +353,10 @@ export const DeliveryInformationModal = ({
                                                 {...params}
                                                 label="Arrival Type*"
                                                 placeholder="Select the type of departure"
-                                                error={formError && !temporaryDelivery?.arrivalType}
+                                                error={formError && (
+                                                    !temporaryDelivery?.arrivalType || 
+                                                    (temporaryDelivery?.arrivalType === 'actual-arrival' && temporaryDelivery?.departureType !== 'actual-departure')
+                                                )}
                                             />
                                         )}
                                     ></Autocomplete>
