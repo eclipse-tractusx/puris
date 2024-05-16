@@ -26,22 +26,36 @@ app_cons -> app_cons: identify DTR Offer\n(filter by dcat:type, cx:version)
 app_cons -> edc_cons: negotiate contract for DTR usage
 activate edc_cons
 edc_cons <-> edc_prov: negotiation
-edc_cons --> app_cons: contract agreement
+edc_cons --> app_cons: contract agreement (contractAgreementId)
 deactivate edc_cons
 
-note over app_cons, edc_cons: Define Transfer Callback url = \n Business Application
 app_cons -> edc_cons: initialize transfer
 activate edc_cons
 edc_cons <-> edc_prov: initialize transfer
-edc_cons --> app_cons: transfer completed, EDR sent
+edc_cons --> app_cons: transfer completed (transferProcessId)
+deactivate edc_cons
+
+app_cons -> edc_cons: get EDR for transferProcessId
+activate edc_cons
+edc_cons <-> edc_prov: get EDR for transfer
+edc_cons --> app_cons: EDR (refreshed)
 deactivate edc_cons
 
 == Lookup and Determine ShellDescriptor for Material in Question ==
 app_cons -> app_cons: prepare material identification\nas specific asset ids
 app_cons -> app_cons: prepare dtr lookup based on\nEDR endpoint and auth
 
-note over app_cons, edc_cons: Lookup request against DTR via EDC
+note over app_cons, edc_cons
+Lookup request against DTR via EDC
+using EDR for authentication
+end note
 app_cons ->  edc_prov: Lookup Material Twin at partner (via EDC)
+note right
+lookup uses base64-encoded parameters for
+- manufacturerId
+- manufacturerPartId
+- digitalTwinType = "PartType"
+end note
 activate edc_prov
 edc_prov -> dtr_prov: proxy request
 activate dtr_prov
@@ -51,7 +65,10 @@ edc_prov --> app_cons: lookup result
 deactivate edc_prov
 app_cons -> app_cons: base64 encode\nreturned shell-id
 
-note over app_cons, edc_cons: Shell Descriptors request against DTR via EDC
+note over app_cons, edc_cons
+Shell Descriptors request against DTR via EDC
+using EDR for authentication
+end note
 app_cons ->  edc_prov: Query Shell-Descriptor of \nMaterial Twin at partner (via EDC)
 activate edc_prov
 edc_prov -> dtr_prov: proxy request
@@ -60,6 +77,12 @@ dtr_prov --> edc_prov: found shellDescriptors
 deactivate dtr_prov
 edc_prov --> app_cons: found shellDescriptors
 deactivate edc_prov
+
+app_cons -> edc_cons: terminate transfer by transferProcessId
+activate edc_cons
+edc_cons <-> edc_prov: terminate transfer
+edc_cons --> app_cons: transfer terminated
+deactivate edc_cons
 
 == Determine Submodel Endpoint of Submodel Type of Interest ==
 app_cons -> app_cons: lookup submodel "DSP" endpoint\nfor semantic id of interest
@@ -79,17 +102,25 @@ app_cons -> app_cons: filter offers by\ndata sovereignty criteria\n(framework ag
 app_cons -> edc_cons: negotiate contract for submodel data
 activate edc_cons
 edc_cons <-> edc_prov: negotiation
-edc_cons --> app_cons: contract agreement
+edc_cons --> app_cons: contract agreement (contractAgreementId)
 deactivate edc_cons
 
-note over app_cons, edc_cons: Define Transfer Callback url = \n Business Application
+app_cons -> app_cons: remember Contract for future usage
+
 app_cons -> edc_cons: initialize transfer
 activate edc_cons
 edc_cons <-> edc_prov: initialize transfer
-edc_cons --> app_cons: transfer completed, EDR sent
+edc_cons --> app_cons: transfer completed (transferProcessId)
+deactivate edc_cons
+
+app_cons -> edc_cons: get EDR for transferProcessId
+activate edc_cons
+edc_cons <-> edc_prov: get EDR for transfer
+edc_cons --> app_cons: EDR (refreshed)
 deactivate edc_cons
 
 == Request Submodel via EDC ==
+note over app_cons, edc_cons: request submodel via EDC using EDR for authentication
 app_cons ->  edc_prov: Query submodel endpoint with href from\nSubmodelDescriptor.endpoint
 activate edc_prov
 edc_prov -> se_prov: proxy request
@@ -99,4 +130,9 @@ deactivate se_prov
 edc_prov --> app_cons: found submodel
 deactivate edc_prov
 
+app_cons -> edc_cons: terminate transfer by transferProcessId
+activate edc_cons
+edc_cons <-> edc_prov: terminate transfer
+edc_cons --> app_cons: transfer terminated
+deactivate edc_cons
 @enduml

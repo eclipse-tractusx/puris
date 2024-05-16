@@ -1,55 +1,69 @@
 # Runtime View
 
-The runtime view mainly focuses on two separate scenarios. One can either interact with the data or pull it.
+The runtime view mainly focuses on the following scenarios:
+
+- Update partner-related data
+- Create Digital Twins for Material or Product
+- Interact with Data in the Web-UI
 
 ## Scenario: Update partner-related data
 
-The information exchange in PURIS follows a response and request pattern. Requests are directly answered based on
-existing data as soon as they arrive. The diagram does not integrate the EDC to explain the overall flow.
+The information exchange in PURIS follows a shared asset approach of the Digital Twin KIT and the Industry Core KIT.
+This means:
 
-![Overview of request and response](img/06-api-flow.svg)
+- A Digital Twin Registry is needed to lookup the data and know how to pull data
+- Information is exchanges as Submodel in Form of Submodel JSON-only serializations
+- All traffic is routed through EDCs
 
-The request and response flow both implement a message header and a content section in the exchanged data.
+Following the PURIS standards, currently one asset per Submodel Type is wanted.
 
-- the message header contains information about the message.
-- the content contains either the request (material numbers) or the response (respective SAMM model as json payload).
+Roughly said the following steps need to be achieved to lookup a Submodel Y for a Material X of a Partner Z:
 
-The API implementations are provided and consumed via the EDC.
+1. Contract `Digital Twin Registry (DTR)` of Partner Z at `EDC`
+    1. Query Catalog of `EDC` of Partner Z (filter by `dcat:type` and `cx-common:version`)
+    2. Contract usage of `DTR` of Partner Z (no consumer-side check of policy)
+    3. Initialize Transfer to query `DTR`
+    4. Get Endpoint Data Reference (EDR, auth token for Data Plane request for `DTR` of Partner Z)
+2. Determine Twin of Partner Z for Material X via proxy call through `EDC`:
+    1. Lookup Material Twin by specificAssetIds (`manufacturerId`, `manufacturerPartId`, `digialTwinType`) which returns
+       ShellDescriptor ID
+    2. Get ShellDescriptor by ID (base 64 encoded ID)
+    3. Terminate Transfer for `DTR`
+3. From result, extract needed information to get `Submodel Y`
+    1. Determine the `SubmodelDescriptor` by Semantic ID of the Submodel Type in question.
+    2. Determine the endpoint of that `SubmodelDescriptor` of type `DSP`
+    3. Extract href, assetId (`Submodel Asset`), dspUrl
+7. Contract `Submodel Asset` same as `DTR` but with following differences
+    1. For communication, use the dspUrl extracted from `SubmodelDescriptor`
+    2. Catalog query filters by `assetId` extracted from `SubmodelDescriptor`
+    3. Prior to usage the catalog offers are filtered for an offer your application supports:
+       PURIS FOSS only allows policies with Exactly one `FrameworkAgreement` and one `UsagePurpose`. It only accepts the
+       same Policy it offers (see [Admin Guide](../adminGuide/Admin_Guide.md))
+4. Query `Submodel Y` trough `EDC`
+5. Terminate Transfer for `Submodel Y`
 
-1. A data asset is created on Startup by the `AssetCreatedCommandLineRunner`.
-1. To request new data
-    1. the partners' catalog is queried to search for the request api.
-    1. the contract is negotiated.
-    1. the transfer is initialized using
-       the [dynamic http receiver EDC extension](https://github.com/eclipse-edc/Connector/tree/main/extensions/control-plane/transfer/transfer-pull-http-dynamic-receiver).
-    1. the "consumer pull" flow is used (
-       see [sample](https://github.com/eclipse-edc/Samples/tree/main/transfer/transfer-06-consumer-pull-http))
-        1. Provider receives EDR token by `EndpointDataReferenceReceiver`.
-        1. Provider queries API for information of interest based on the standardized API description.
-        1. Consumer receives request, determines data for response and starts with step 2 for the response interface.
+The workflow with simplified EDC and DTR communication may be seen in the following sequence diagram.
+Central Services, such as the `Credential Service` and `Secure Token Service` are ommitted as these are handled by the
+`EDC`.
 
-The workflow with simplified EDC communication may be seen in the following sequence diagram.
-EDC flow is the same to use the request and response api. Central Services, such as the Managed Identity Wallet are
-ommitted.
-
-![Overview of request and response with EDC](img/06-api-flow-detailed.svg)
+![Overview of Submodel Request through the EDC including Digital Twin determination](img/06-api-flow-detailed.svg)
 
 ## Scenario: Create Digital Twins for Material or Product
 
 A Digital Twin is created for partners as soon as at least one buyer or supplier is known.
-Following the Digital Twin Shared Asset Approach, each partner needs his view on the digital twin.
-Following the Industry Core, the Supplier Twin dictates the Catena-X ID. Thus, the Customer needs to lookup and use this
-Catena-X ID as the `globalAssetId` and during data exchange scenarios.
+Following the Digital Twin Shared Asset Approach, each partner needs his view on the Digital Twin.
+Following the Industry Core, the Supplier Twin dictates the Catena-X ID (also set as globalAssetId). Thus, the Customer
+needs to lookup and use this Catena-X ID as the `globalAssetId`
 
-The following Diagram illustrates the registration (create and update) process for digital twins:
+- during data exchange scenarios and
+- to register his Digital Twin
 
-## Scenario: Interact with data in web-ui
+The following diagram illustrates the registration (create and update) process for digital twins. It is always triggered
+as soon as a MaterialPartnerRelation is changed. The Digital Twin is always recreated fully.
 
-When reloading the UI, the latest data is pulled from the backend. Whenever an update on the information is performed,
-then the frontend hands over the data to the backend to perform the action.
+## Scenario: Interact with Data in the Web-UI
 
-The web-ui allows the following interactions:
+When reloading the UI, the latest data is pulled from the backend. Whenever a partner-related update on the information
+is performed, then the frontend hands over the request to the backend to perform the action.
 
-- create or update stocks for a partner.
-- select a specific stock to see the related partner stocks.
-- Trigger an update for all partner's data for a specific material (see previous Scenario).
+Details on the Web-Ui can be found in the [User Guide](../userGuide/User_Guide.md).
