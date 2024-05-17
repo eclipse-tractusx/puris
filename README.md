@@ -8,6 +8,15 @@
 The project is made of a backend and a frontend. Look into the respective folders and their documentation to get
 information about prerequirements and getting started guides.
 
+## Dependencies
+
+Beside the dependencies provided in the Helm Chart, the following dependencies have been tested for R24.05 to run PURIS:
+
+| Application                                                                                                       | App Version | Chart Version |
+|-------------------------------------------------------------------------------------------------------------------|-------------|---------------|
+| [Tractus-X Connector](https://github.com/eclipse-tractusx/tractusx-edc/tree/main/charts/tractusx-connector)       | 0.7.2       | 0.7.2         |
+| [Digital Twin Registry](https://github.com/eclipse-tractusx/sldt-digital-twin-registry/tree/main/charts/registry) | 0.4.3       | 0.4.11        |
+
 ## Known Knows
 
 ### Data Sovereignty
