@@ -1,6 +1,6 @@
 /*
-Copyright (c) 2023,2024 Volkswagen AG
-Copyright (c) 2023,2024 Contributors to the Eclipse Foundation
+Copyright (c) 2024 Volkswagen AG
+Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -19,13 +19,13 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { config } from '@models/constants/config';
-import { Stock, StockType } from '@models/types/data/stock';
+import { Delivery } from '@models/types/data/delivery';
+import { UUID } from 'crypto';
 
-export const postStocks = async (type: StockType, stock: Stock) => {
-  const endpoint = type === 'product' ? config.app.ENDPOINT_PRODUCT_STOCKS : config.app.ENDPOINT_MATERIAL_STOCKS;
-  const res = await fetch(config.app.BACKEND_BASE_URL + endpoint, {
+export const postDelivery = async (delivery: Partial<Delivery>) => {
+  const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_DELIVERY, {
     method: 'POST',
-    body: JSON.stringify(stock),
+    body: JSON.stringify(delivery),
     headers: {
       'Content-Type': 'application/json',
       'X-API-KEY': config.app.BACKEND_API_KEY,
@@ -38,13 +38,10 @@ export const postStocks = async (type: StockType, stock: Stock) => {
   return res.json();
 }
 
-export const putStocks = async (type: StockType, stock: Stock) => {
-  const endpoint = type === 'product' ? config.app.ENDPOINT_PRODUCT_STOCKS : config.app.ENDPOINT_MATERIAL_STOCKS;
-  const res = await fetch(config.app.BACKEND_BASE_URL + endpoint, {
-    method: 'PUT',
-    body: JSON.stringify(stock),
+export const deleteDelivery = async (id: UUID) => {
+  const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_DELIVERY + `/${id}`, {
+    method: 'DELETE',
     headers: {
-      'Content-Type': 'application/json',
       'X-API-KEY': config.app.BACKEND_API_KEY,
     },
   });
@@ -52,12 +49,10 @@ export const putStocks = async (type: StockType, stock: Stock) => {
     const error = await res.json();
     throw error;
   }
-  return res.json();
 }
 
-export const requestReportedStocks = async (type: StockType, materialNumber: string | null) => {
-  const endpoint = type === 'product' ? config.app.ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS : config.app.ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS;
-  const res = await fetch(`${config.app.BACKEND_BASE_URL}${endpoint}${materialNumber}`, {
+export const requestReportedDeliveries = async (materialNumber: string | null) => {
+  const res = await fetch(`${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_DELIVERY}/reported/refresh?ownMaterialNumber=${materialNumber}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

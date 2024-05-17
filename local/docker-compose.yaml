@@ -44,6 +44,7 @@ services:
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production
       - ENDPOINT_PRODUCTION_RANGE=production/range
+      - ENDPOINT_DELIVERY=delivery
       - IDP_DISABLE=true
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
@@ -77,7 +78,7 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   dtr-customer:
-    image: tractusx/sldt-digital-twin-registry:0.3.23
+    image: tractusx/sldt-digital-twin-registry:0.4.3
     container_name: dtr-customer
     depends_on:
       postgres-customer:
@@ -195,6 +196,7 @@ services:
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production
       - ENDPOINT_PRODUCTION_RANGE=production/range
+      - ENDPOINT_DELIVERY=delivery
       - IDP_DISABLE=true
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
@@ -228,7 +230,7 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   dtr-supplier:
-    image: tractusx/sldt-digital-twin-registry:0.3.23
+    image: tractusx/sldt-digital-twin-registry:0.4.3
     container_name: dtr-supplier
     depends_on:
       postgres-supplier:

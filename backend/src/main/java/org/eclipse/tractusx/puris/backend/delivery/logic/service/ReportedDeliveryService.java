@@ -20,6 +20,7 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,16 +30,23 @@ import java.util.stream.Stream;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.EventTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.repository.ReportedDeliveryRepository;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ReportedDeliveryService {
     public final ReportedDeliveryRepository repository;
 
+    private final PartnerService partnerService;
+
     protected final Function<ReportedDelivery, Boolean> validator;
 
-    public ReportedDeliveryService(ReportedDeliveryRepository repository) {
+    private Partner ownPartnerEntity;
+
+    public ReportedDeliveryService(ReportedDeliveryRepository repository, PartnerService partnerService) {
         this.repository = repository;
+        this.partnerService = partnerService;
         this.validator = this::validate;
     }
 
@@ -55,10 +63,13 @@ public class ReportedDeliveryService {
         return repository.findById(id).orElse(null);
     }
 
-    public final List<ReportedDelivery> findAllByFilters(Optional<String> ownMaterialNumber, Optional<String> bpnl) {
+    public final List<ReportedDelivery> findAllByFilters(Optional<String> ownMaterialNumber, Optional<String> bpns, Optional<String> bpnl) {
         Stream<ReportedDelivery> stream = repository.findAll().stream();
         if (ownMaterialNumber.isPresent()) {
             stream = stream.filter(delivery -> delivery.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
+        }
+        if (bpns.isPresent()) {
+            stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()) || delivery.getOriginBpns().equals(bpns.get()));
         }
         if (bpnl.isPresent()) {
             stream = stream.filter(delivery -> delivery.getPartner().getBpnl().equals(bpnl.get()));
@@ -104,14 +115,11 @@ public class ReportedDeliveryService {
             delivery.getMeasurementUnit() != null &&
             delivery.getMaterial() != null &&
             delivery.getPartner() != null &&
-            delivery.getTrackingNumber() != null &&
-            delivery.getIncoterm() != null &&
-            this.validateTransitEvent(delivery) &&
-            !delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
+            validateResponsibility(delivery) &&
+            validateTransitEvent(delivery) &&
             ((
                 delivery.getCustomerOrderNumber() != null && 
-                delivery.getCustomerOrderPositionNumber() != null &&
-                delivery.getSupplierOrderNumber() != null
+                delivery.getCustomerOrderPositionNumber() != null 
             ) || (
                 delivery.getCustomerOrderNumber() == null && 
                 delivery.getCustomerOrderPositionNumber() == null &&
@@ -120,12 +128,42 @@ public class ReportedDeliveryService {
     }
 
     private boolean validateTransitEvent(ReportedDelivery delivery) {
+        var now = new Date().getTime();
         return
             delivery.getDepartureType() != null &&
             (delivery.getDepartureType() == EventTypeEnumeration.ESTIMATED_DEPARTURE || delivery.getDepartureType() == EventTypeEnumeration.ACTUAL_DEPARTURE) &&
             delivery.getArrivalType() != null &&
             (delivery.getArrivalType() == EventTypeEnumeration.ESTIMATED_ARRIVAL || delivery.getArrivalType() == EventTypeEnumeration.ACTUAL_ARRIVAL) &&
             !(delivery.getDepartureType() == EventTypeEnumeration.ESTIMATED_DEPARTURE && delivery.getArrivalType() == EventTypeEnumeration.ACTUAL_ARRIVAL) &&
-            delivery.getDateOfDeparture().getTime() < delivery.getDateOfArrival().getTime();
+            delivery.getDateOfDeparture().getTime() < delivery.getDateOfArrival().getTime() && 
+            (delivery.getArrivalType() != EventTypeEnumeration.ACTUAL_ARRIVAL || delivery.getDateOfArrival().getTime() < now) &&
+            (delivery.getDepartureType() != EventTypeEnumeration.ACTUAL_DEPARTURE || delivery.getDateOfDeparture().getTime() < now);
+    }
+
+    private boolean validateResponsibility(ReportedDelivery delivery) {
+        if (ownPartnerEntity == null) {
+            ownPartnerEntity = partnerService.getOwnPartnerEntity();
+        }
+        return delivery.getIncoterm() != null && switch (delivery.getIncoterm().getResponsibility()) {
+            case CUSTOMER ->
+                delivery.getMaterial().isProductFlag() &&
+                ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
+                delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()));
+            case SUPPLIER ->
+                delivery.getMaterial().isMaterialFlag() &&
+                delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
+                ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()));
+            case PARTIAL ->
+                (
+                    delivery.getMaterial().isMaterialFlag() &&
+                    ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())) &&
+                    delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns()))
+                    
+                ) || (
+                    delivery.getMaterial().isProductFlag() &&
+                    delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())) &&
+                    ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns()))
+                );
+        };
     }
 }

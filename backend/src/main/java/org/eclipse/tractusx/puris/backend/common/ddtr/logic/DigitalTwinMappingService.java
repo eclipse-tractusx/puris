@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.ddtr.domain.model.DigitalTwinMapping;
 import org.eclipse.tractusx.puris.backend.common.ddtr.domain.repository.DigitalTwinMappingRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +35,7 @@ public class DigitalTwinMappingService {
 
     @Autowired
     private DigitalTwinMappingRepository repository;
+
 
     public DigitalTwinMapping create(Material material) {
         if(repository.findById(material.getOwnMaterialNumber()).isPresent()) {
@@ -59,19 +59,6 @@ public class DigitalTwinMappingService {
         var dtm = searchResult.get();
         if (material.isProductFlag()) {
             dtm.setProductTwinId(UUID.randomUUID().toString());
-        }
-        return repository.save(dtm);
-    }
-
-    public DigitalTwinMapping update(MaterialPartnerRelation mpr) {
-        var searchResult = repository.findById(mpr.getMaterial().getOwnMaterialNumber());
-        if (searchResult.isEmpty()) {
-            log.error("DTR Mapping did not exist. Update failed for " + mpr);
-            return null;
-        }
-        var dtm = searchResult.get();
-        if (mpr.getMaterial().isMaterialFlag() && mpr.isPartnerSuppliesMaterial()) {
-            dtm.getMaterialSupplierTwinIds().put(mpr.getPartner().getBpnl(), mpr.getPartnerCXNumber());
         }
         return repository.save(dtm);
     }
