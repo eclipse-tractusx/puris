@@ -20,6 +20,7 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -114,9 +115,8 @@ public class ReportedDeliveryService {
             delivery.getMeasurementUnit() != null &&
             delivery.getMaterial() != null &&
             delivery.getPartner() != null &&
-            delivery.getTrackingNumber() != null &&
             validateResponsibility(delivery) &&
-            this.validateTransitEvent(delivery) &&
+            validateTransitEvent(delivery) &&
             ((
                 delivery.getCustomerOrderNumber() != null && 
                 delivery.getCustomerOrderPositionNumber() != null 
@@ -128,13 +128,16 @@ public class ReportedDeliveryService {
     }
 
     private boolean validateTransitEvent(ReportedDelivery delivery) {
+        var now = new Date().getTime();
         return
             delivery.getDepartureType() != null &&
             (delivery.getDepartureType() == EventTypeEnumeration.ESTIMATED_DEPARTURE || delivery.getDepartureType() == EventTypeEnumeration.ACTUAL_DEPARTURE) &&
             delivery.getArrivalType() != null &&
             (delivery.getArrivalType() == EventTypeEnumeration.ESTIMATED_ARRIVAL || delivery.getArrivalType() == EventTypeEnumeration.ACTUAL_ARRIVAL) &&
             !(delivery.getDepartureType() == EventTypeEnumeration.ESTIMATED_DEPARTURE && delivery.getArrivalType() == EventTypeEnumeration.ACTUAL_ARRIVAL) &&
-            delivery.getDateOfDeparture().getTime() < delivery.getDateOfArrival().getTime();
+            delivery.getDateOfDeparture().getTime() < delivery.getDateOfArrival().getTime() && 
+            (delivery.getArrivalType() != EventTypeEnumeration.ACTUAL_ARRIVAL || delivery.getDateOfArrival().getTime() < now) &&
+            (delivery.getDepartureType() != EventTypeEnumeration.ACTUAL_DEPARTURE || delivery.getDateOfDeparture().getTime() < now);
     }
 
     private boolean validateResponsibility(ReportedDelivery delivery) {
@@ -144,12 +147,12 @@ public class ReportedDeliveryService {
         return delivery.getIncoterm() != null && switch (delivery.getIncoterm().getResponsibility()) {
             case CUSTOMER ->
                 delivery.getMaterial().isProductFlag() &&
-                ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())) &&
-                delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns()));
+                ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
+                delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()));
             case SUPPLIER ->
                 delivery.getMaterial().isMaterialFlag() &&
-                delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())) &&
-                ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns()));
+                delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
+                ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()));
             case PARTIAL ->
                 (
                     delivery.getMaterial().isMaterialFlag() &&

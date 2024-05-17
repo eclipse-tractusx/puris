@@ -80,6 +80,39 @@ The following table shows the differences.
 | now +3 day | 500 pieces | Series (SR99)  | yes                        |
 | now +4 day | 400 pieces | Series (SR99)  | no                         |
 
+### Delivery
+
+There are 5 Deliveries created for each collection. They all share the same
+
+- originBpns (SUPPLIER_BPNS)
+- destinationBpns (CUSTOMER_BPNS)
+
+#### Supplier deliveries
+
+- ownMaterialNumber (MATERIAL_NUMBER_SUPPLIER)
+- partnerBpnl (CUSTOMER_BPNL)
+
+| Departure   | Type       | Arrival      | Type       | Quantity   | Incoterm       | Origin BPNA set | Destination BPNA set | Customer Order Number | Customer Position Number | Supplier Order Number |
+|-------------|------------|--------------|------------|------------|----------------|-----------------|----------------------|-----------------------|--------------------------|-----------------------|
+| now -1 day  | actual     | now          | actual     | 50  pieces | FAS            | yes             | yes                  | null                  | null                     | null                  |
+| now         | actual     | now + 1 days | estimated  | 100 pieces | DAP            | yes             | yes                  | null                  | null                     | null                  |
+| now +1 day  | estimated  | now + 2 days | estimated  | 200 pieces | DPU            | yes             | no                   | C-Nbr-1               | C-Position-01            | null                  |
+| now +2 days | estimated  | now + 3 days | estimated  | 300 pieces | CPT            | no              | yes                  | C-Nbr-1               | C-Position-01            | S-Nbr-1               |
+| now +3 days | estimated  | now + 4 days | estimated  | 400 pieces | CIP            | no              | no                   | null                  | null                     | null                  |
+
+#### Customer deliveries
+
+- ownMaterialNumber (MATERIAL_NUMBER_CUSTOMER)
+- partnerBpnl (SUPPLIER_BPNL)
+
+| Departure   | Type       | Arrival      | Type       | Quantity   | Incoterm       | Origin BPNA set | Destination BPNA set | Customer Order Number | Customer Position Number | Supplier Order Number |
+|-------------|------------|--------------|------------|------------|----------------|-----------------|----------------------|-----------------------|--------------------------|-----------------------|
+| now -1 day  | actual     | now          | actual     | 50  pieces | CIF            | yes             | yes                  | null                  | null                     | null                  |
+| now         | actual     | now + 1 days | estimated  | 100 pieces | EXW            | yes             | yes                  | null                  | null                     | null                  |
+| now +1 day  | estimated  | now + 2 days | estimated  | 200 pieces | FAS            | yes             | no                   | C-Nbr-1               | C-Position-01            | null                  |
+| now +2 days | estimated  | now + 3 days | estimated  | 300 pieces | FOB            | no              | yes                  | C-Nbr-1               | C-Position-01            | S-Nbr-1               |
+| now +3 days | estimated  | now + 4 days | estimated  | 400 pieces | CFR            | no              | no                   | null                  | null                     | null                  |
+
 ### Supplier
 
 Overall the supplier has the following information:

@@ -19,6 +19,8 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { Box, Button } from '@mui/material';
 
+const weekdays = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+
 export const createDateColumnHeaders = (numberOfDays: number) => {
     return Object.keys(Array.from({ length: numberOfDays })).map((_, index) => {
         const date = new Date();
@@ -29,11 +31,14 @@ export const createDateColumnHeaders = (numberOfDays: number) => {
             headerAlign: 'center' as const,
             sortable: false,
             disableColumnMenu: true,
-            width: 180,
+            width: 100,
             renderHeader: (data: { colDef: { headerName?: string } }) => {
                 return (
-                    <Box display="flex" justifyContent="center" alignItems="center">
-                        {new Date(data.colDef.headerName!).toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    <Box display="flex" justifyContent="center" alignItems="center" flexDirection="column" gap=".25rem">
+                        <Box lineHeight="1">{weekdays[date.getDay()]}</Box>
+                        <Box lineHeight="1">
+                            {new Date(data.colDef.headerName!).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                        </Box>
                     </Box>
                 );
             },

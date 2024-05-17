@@ -36,6 +36,7 @@ const app = {
     ENDPOINT_DEMAND: import.meta.env.VITE_ENDPOINT_DEMAND.trim() as string,
     ENDPOINT_PRODUCTION: import.meta.env.VITE_ENDPOINT_PRODUCTION.trim() as string,
     ENDPOINT_PRODUCTION_RANGE: import.meta.env.VITE_ENDPOINT_PRODUCTION_RANGE.trim() as string,
+    ENDPOINT_DELIVERY: import.meta.env.VITE_ENDPOINT_DELIVERY.trim() as string,
 };
 
 const auth = {

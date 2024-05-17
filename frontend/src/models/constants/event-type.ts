@@ -18,8 +18,24 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-export type Notification = {
-  title: string;
-  description: string;
-  severity: 'success' | 'error';
-};
+export const ARRIVAL_TYPES = [
+  {
+    key: 'estimated-arrival',
+    value: 'Estimated'
+  },
+  {
+    key: 'actual-arrival',
+    value: 'Actual'
+  }
+] as const;
+
+export const DEPARTURE_TYPES = [
+  {
+    key: 'estimated-departure',
+    value: 'Estimated'
+  },
+  {
+    key: 'actual-departure',
+    value: 'Actual'
+  }
+] as const;

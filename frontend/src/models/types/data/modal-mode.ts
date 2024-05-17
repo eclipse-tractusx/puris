@@ -18,8 +18,4 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-export type Notification = {
-  title: string;
-  description: string;
-  severity: 'success' | 'error';
-};
+export type ModalMode = 'create' | 'edit' | 'view';
