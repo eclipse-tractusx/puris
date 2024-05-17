@@ -44,7 +44,34 @@ _Note: The API key header is hard coded to `X-API-KEY`._
 Configuration of EDC, see e.g. [Tractus-EDC repository](https://github.com/eclipse-tractusx/tractusx-edc). Refer to the
 [local deployment with docker compose](../../local/docker-compose.yaml) for an example configuration.
 
-Configure EDC addresses in the Backend with prefix `edc.`. Refer to the respective deployments for more information.
+Configure EDC addresses in the Backend with prefix `backend.puris.edc.`. Refer to the respective deployments for more
+information.
+
+## Configure DTR in Backend
+
+Configuration of the DTR , see
+e.g. [Digital Twin Registry repository](https://github.com/eclipse-tractusx/sldt-digital-twin-registry). Refer to the
+[local deployment with docker compose](../../local/docker-compose.yaml) for an example configuration.
+
+Configure teh dtr url in the Backend via prefix `backend.puris.dtr.url`. Refer to the respective deployments for more
+information.
+
+### DTR - IDP configuration
+
+The DTR can be used with together with an IDP. The IDP can be configured in the Backend with prefix
+`backend.puris.dtr.idp`. It can be enabled via the flag `enabled`. Beside the `tokenurl` two clients need to be
+configured.
+
+In theory the PURIS FOSS application allows to have one read-only client to be used for queries through the EDC and one
+manage (all rights) client used by PURIS FOSS to create and manage digital twins.
+In practice, the DTR reference implementation allows only one user, resulting in the following configuration:
+
+| Helm                       | Value to set                                                              |
+|----------------------------|---------------------------------------------------------------------------|
+| `clients.puris.id `        | ID of the manage client                                                   |
+| `clients.puris.secret`     | Secret of the manage client                                               |
+| `clients.edc.id`           | ID of the manage client                                                   |
+| `clients.edc.secret.alias` | **Path to secret in the vault** accessed by the edc for the manage client |
 
 ## Integrate Keycloak into Frontend
 
@@ -125,15 +152,15 @@ of the current release._
 
 Rate limiting is by default enabled in the puris frontend served by nginx and can be dynamically configured.
 In order to adjust any variables of nginx's rate limiting or disable it, one has to modify the respective variables in
-either the
-local docker deployment by setting the necessary environment variables, or by modifying the variables in the helm chart
-values.yaml.
+either
+
+- the local docker deployment by setting the necessary environment variables, or
+- by modifying the variables in the helm chart values.yaml (prefix `frontend.puris.rateLimiting`).
 
 These variables then get dynamically injected in the nginx.conf file, which is then copied to the docker image to be
 used by nginx.
 That means that the rate limiting can be disabled by modifying the nginx.conf file in the frontend folder. This is also
-the place
-to insert and override any other nginx configurations.
+the place to insert and override any other nginx configurations.
 
 ## Serving with HTTPS / SSL
 
@@ -280,6 +307,14 @@ production related information.
 _Note: The routes in the following always need to be used based on your backend address configuration including the
 context path._
 
+### Identity Configuration
+
+Your main information is added via the deployment. On Startup the application creates a partner for your own company.
+
+The company data can be set via helm variables with prefix `backend.puris.own`. It will create one partner with one
+site and one address. The data should be your company's legal entity. The legal entity can then be enrichted same as
+other partners using the "Onboarding Master Data" interfaces.
+
 ### Onboard Master Data
 
 The application provides the following endpoints to update master data for your partner. This data may not be entered
@@ -301,15 +336,24 @@ to ```true``` you can auto-generate one randomly (this is the default-setting, b
 In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that
 Material entity.
 
-### Onboard Stock Information
+**ATTENTION:** please wait some time after updating master data prior to create or update operational data because the
+Twins are registered asynchronously when creating / updating material partner relationships (see
+[runtime view](../arc42/06_runtime_view.md) for more details).
 
-One may use the `StockView` related interfaces to add stocks after adding the master data to e.g. regularly update /
-overwrite the existing stocks.
+### Onboard operational data
 
-| Interface      | Route                      | Purpose                               |
-|----------------|----------------------------|---------------------------------------|
-| Product Stock  | /stockView/product-stocks  | Add stocks allocated to your customer |
-| Material Stock | /stockView/material-stocks | Add stocks allocated to your supplier |
+One may use the `StockView` related respectively the operational interfaces listed below to add operational data after
+adding the master data to e.g. regularly update / overwrite the existing data.
+
+| Interface                  | Route                      | Purpose                                                                       |
+|----------------------------|----------------------------|-------------------------------------------------------------------------------|
+| Product Stock              | /stockView/product-stocks  | Add stocks allocated to your customer                                         |
+| Material Stock             | /stockView/material-stocks | Add stocks allocated to your supplier                                         |
+| Short-Term Material Demand | /demand                    | Add allocated demands for your supplier                                       |
+| Planned Production Output  | /production                | Add allocated production outputs planned for your customer                    |
+| Delivery Information       | /delivery                  | Add delivery information for your customer or supplier (depends on inco term) |
+
+Please refer to the [Interface Documentation](../interfaceDoc) and the implementation for further information.
 
 ## Postgres
 
@@ -320,5 +364,4 @@ the chart. Optionally it may be disabled to use your own installation. Refer to 
 ## Encryption of confidential data at rest
 
 Encryption at rest for databases works. It has been tested by either encrypting the docker folder or encrypting the
-whole
-filesystem of the machine running.
+whole filesystem of the machine running.
