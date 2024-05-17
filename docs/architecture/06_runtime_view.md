@@ -38,7 +38,7 @@ Roughly said the following steps need to be achieved to lookup a Submodel Y for 
     2. Catalog query filters by `assetId` extracted from `SubmodelDescriptor`
     3. Prior to usage the catalog offers are filtered for an offer your application supports:
        PURIS FOSS only allows policies with Exactly one `FrameworkAgreement` and one `UsagePurpose`. It only accepts the
-       same Policy it offers (see [Admin Guide](../adminGuide/Admin_Guide.md))
+       same Policy it offers (see [Admin Guide](../admin/Admin_Guide.md))
 4. Query `Submodel Y` trough `EDC`
 5. Terminate Transfer for `Submodel Y`
 
@@ -68,4 +68,4 @@ as soon as a MaterialPartnerRelation is changed. The Digital Twin is always recr
 When reloading the UI, the latest data is pulled from the backend. Whenever a partner-related update on the information
 is performed, then the frontend hands over the request to the backend to perform the action.
 
-Details on the Web-Ui can be found in the [User Guide](../userGuide/User_Guide.md).
+Details on the Web-Ui can be found in the [User Guide](../user/User_Guide.md).

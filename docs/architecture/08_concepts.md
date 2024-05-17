@@ -43,7 +43,7 @@ Following the standard, the following measures have been taken:
 - Access Policies and Access Restrictions
 - Contract Policies
 - Consumer Side Validation
-- Views in Frontend (admin access, see [User Guide](../userGuide/User_Guide.md), not handled in this chapter) to
+- Views in Frontend (admin access, see [User Guide](../user/User_Guide.md), not handled in this chapter) to
   overview negotiations and transfers.
 
 ### Access Policies and Access Restrictions
@@ -165,7 +165,7 @@ Example for Submodels based on following configurations:
 }
 ```
 
-_Note: see configuration of usage policies in [AdminGuide](../adminGuide/Admin_Guide.md)._
+_Note: see configuration of usage policies in [AdminGuide](../admin/Admin_Guide.md)._
 
 ### Consumer Side Validation
 
@@ -220,7 +220,7 @@ contract offer for the partner's BPNL.
 ## Security
 
 Backend APIs are secured by an API Key. The Frontend may be configured to be accessed based on keycloak authentication.
-Refer to the [Admin Guide](../adminGuide/Admin_Guide.md) for further information.
+Refer to the [Admin Guide](../admin/Admin_Guide.md) for further information.
 
 Access to respective resources is always granted based on the actual relationships as stated in section 'Multi-Partner
 Information'. Means there are two levels of security:
@@ -232,7 +232,7 @@ To do the second, the Connector in use needs the
 extension [provision additional headers](https://github.com/eclipse-tractusx/tractusx-edc/tree/main/edc-extensions/provision-additional-headers).
 
 Beside that the Backend can be configured to use the DTR with an IDP. The PURIS application could differentiate two
-users. For configuration, please refer to the [Admin Guide](../adminGuide/Admin_Guide.md).
+users. For configuration, please refer to the [Admin Guide](../admin/Admin_Guide.md).
 
 - read access client for the EDC: added to the `dataAddress` of the DTR Asset
 - manage access client for the PURIS application: used to create and manage the ShellDescriptors

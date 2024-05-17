@@ -108,7 +108,7 @@ _Note: The application does NOT make use of the `Client Authentication` (private
 ## Data Sovereignty related configuration
 
 With R24.05, always Framework Agreement and Usage Purpose Contract Policies need to be used. Refer to
-[ARC42 - Chapter 8](../arc42/08_concepts.md) for the influence of these configurations.
+[ARC42 - Chapter 8](../architecture/08_concepts.md) for the influence of these configurations.
 TLDR; you define the definition of the policy you want to use and that you'll accept. PURIS FOSS only handles one policy
 that is templated. You can only configure the name and version of the Framework Agreement Credential and the Usage
 Purpose.
@@ -116,7 +116,8 @@ Purpose.
 ### Framework Agreement
 
 To configure the Framework Agreement credential, that is automatically enforced by the EDC during contracting
-(see further details in [ARC42 - Chapter 8](../arc42/08_concepts.md)), the following properties need to be configured.
+(see further details in [ARC42 - Chapter 8](../architecture/08_concepts.md)), the following properties need to be
+configured.
 The table contains
 the puris defaults for release R24.05.
 
@@ -136,7 +137,7 @@ the [Portal's documentation on how to sign use case agreements](https://github.c
 ### Usage Purpose
 
 To configure the Usage Purpose under which the assets may be used (see further details
-in [ARC42 - Chapter 8](../arc42/08_concepts.md)),
+in [ARC42 - Chapter 8](../architecture/08_concepts.md)),
 the following properties need to be configured. The table contains the puris defaults for release R24.05.
 
 | Helm                          | Docker                | Configuration |
@@ -338,7 +339,7 @@ Material entity.
 
 **ATTENTION:** please wait some time after updating master data prior to create or update operational data because the
 Twins are registered asynchronously when creating / updating material partner relationships (see
-[runtime view](../arc42/06_runtime_view.md) for more details).
+[runtime view](../architecture/06_runtime_view.md) for more details).
 
 ### Onboard operational data
 

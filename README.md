@@ -22,7 +22,7 @@ Beside the dependencies provided in the Helm Chart, the following dependencies h
 ### Data Sovereignty
 
 Currently, edc assets are always configured to match exactly one kind policy. These policies can be defined during
-deployment (see [Admin Guide](./docs/adminGuide/Admin_Guide.md)). Data is offered to each partner, who has been added to
+deployment (see [Admin Guide](docs/admin/Admin_Guide.md)). Data is offered to each partner, who has been added to
 the PURIS FOSS's master data pool depending on the business relationship (partner is a customer / supplier).
 
 For productive use, the following features should be implemented:

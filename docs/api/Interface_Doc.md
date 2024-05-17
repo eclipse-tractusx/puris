@@ -5,10 +5,10 @@ documentations.
 
 ## Overview of Data Exchange Interfaces
 
-The [arc42 documentation](../arc42/Index.md) provides an overview based on the following chapters:
+The [arc42 documentation](../architecture/Index.md) provides an overview based on the following chapters:
 
-- [Building Block View](../arc42/05_building_block_view.md) shows which kind of interfaces are present
-- [Runtime View](../arc42/06_runtime_view.md) shows how data with participants is exchanged (implementation of
+- [Building Block View](../architecture/05_building_block_view.md) shows which kind of interfaces are present
+- [Runtime View](../architecture/06_runtime_view.md) shows how data with participants is exchanged (implementation of
   standardization candidate)
 
 ## Swagger documentation
