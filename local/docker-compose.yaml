@@ -84,7 +84,6 @@ services:
       postgres-customer:
         condition: service_healthy
     healthcheck:
-      # as security is enabled by default and we don't provide a bearer accept auth issues
       test: ["CMD-SHELL", "wget -q --spider http://dtr-customer:4243/actuator/health/readiness"]
       interval: 4s
       timeout: 3s

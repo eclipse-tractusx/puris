@@ -44,17 +44,17 @@ public class DtrSecurityConfiguration {
      * token url of the OAuth2 identity provider
      **/
     @Value("${puris.dtr.idp.tokenurl}")
-    String tokenUrl;
+    private String tokenUrl;
     /**
      * client id of the puris client with write access for DTR
      **/
     @Value("${puris.dtr.idp.puris-client.id}")
-    String purisClientId;
+    private String purisClientId;
     /**
      * client secret of the puris client with write access for DTR
      **/
     @Value("${puris.dtr.idp.puris-client.secret}")
-    String purisClientSecret;
+    private String purisClientSecret;
     /**
      * grant_type. Currently only client_credentials is supported
      **/
@@ -64,10 +64,10 @@ public class DtrSecurityConfiguration {
      * client id of the edc client with read access for DTR
      **/
     @Value("${puris.dtr.idp.edc-client.id}")
-    String edcClientId;
+    private String edcClientId;
     /**
      * vault alias for the client secret of the edc client with read access for DTR
      **/
     @Value("${puris.dtr.idp.edc-client.secret.alias}")
-    String edcClientSecretAlias;
+    private String edcClientSecretAlias;
 }
