@@ -187,6 +187,14 @@ frontend:
     endpointUpdateReportedProductStocks: stockView/update-reported-product-stocks?ownMaterialNumber=
     # -- The endpoint for the partners BPNS
     endpointPartnerOwnSites: partners/ownSites
+    # -- The endpoint for the demand submodel
+    endpointDemand: demand
+    # -- The endpoint for the production submodel
+    endpointProduction: production
+    # -- The endpoint for the production range of the production submodel
+    endpointProductionRange: production/range
+    # -- The endpoint for the delivery submodel
+    endpointDelivery: delivery
     keycloak:
       # -- Disable the Keycloak integration.
       disabled: true

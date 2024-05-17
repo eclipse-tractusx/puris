@@ -44,6 +44,7 @@ services:
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production
       - ENDPOINT_PRODUCTION_RANGE=production/range
+      - ENDPOINT_DELIVERY=delivery
       - IDP_DISABLE=true
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
@@ -194,6 +195,7 @@ services:
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production
       - ENDPOINT_PRODUCTION_RANGE=production/range
+      - ENDPOINT_DELIVERY=delivery
       - IDP_DISABLE=true
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
