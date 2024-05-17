@@ -197,12 +197,11 @@ There are two kind of assets, the PURIS FOSS application works with:
 - Application Programming Interfaces (currently only the DTR)
 - Submodel Endpoints (value-only serialization)
 
-When contracting, the following information (`ContractMapping`) is stored:
+When contracting, the following information (`ContractMapping`) is stored per partner (bpnl):
 
 - asset id
 - contract id
 - protocol url of edc
-- href url per material (submodel only)
 
 When a new transfer is needed, the system checks if a `ContractMapping` for the resource in question exists.
 
@@ -211,6 +210,9 @@ When a new transfer is needed, the system checks if a `ContractMapping` for the 
     - if anything fails, go the whole way to get the data (contract DTR, contract submodel, save ContractMapping)
 - if no,
     - go the whole way to get the data (contract DTR, contract submodel, save ContractMapping)
+
+Sidenote: Edc information and hrefs for submodels are always taken from the `ShellDescriptor`. That means that whenever
+a submodel is requested, the DTR of a partner is queried.
 
 Whenever a partner is created, all exchanged information APIs that comply to a Catena-X standard are registered as
 contract offer for the partner's BPNL.
@@ -226,4 +228,15 @@ Information'. Means there are two levels of security:
 1. The partner is maintained and access has been granted via the EDC.
 2. The partner is routed through the EDC.
 
-To do the second, the Connector in use needs the extension [additional headers](TODO).
+To do the second, the Connector in use needs the
+extension [provision additional headers](https://github.com/eclipse-tractusx/tractusx-edc/tree/main/edc-extensions/provision-additional-headers).
+
+Beside that the Backend can be configured to use the DTR with an IDP. The PURIS application could differentiate two
+users. For configuration, please refer to the [Admin Guide](../adminGuide/Admin_Guide.md).
+
+- read access client for the EDC: added to the `dataAddress` of the DTR Asset
+- manage access client for the PURIS application: used to create and manage the ShellDescriptors
+
+_Note: The reference
+implementation [Digital Twin Registry](https://github.com/eclipse-tractusx/sldt-digital-twin-registry)
+currently only works with one client._
