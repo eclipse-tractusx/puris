@@ -13,14 +13,17 @@ The [arc42 documentation](../arc42/Index.md) provides an overview based on the f
 
 ## Swagger documentation
 
-You can refer to the INT environment application to view the swagger ui.
+Please refer to the open API specification provided in `docs/api/openAPI.yaml`.
+
+To have a running swagger ui, feel free to check out the INT environment.
 
 ```
 http://puris-customer.int.demo.catena-x.net/swagger-ui/index.html
 ```
 
-If not reachable, you can also deploy the backend application according to the [Install.md](../../backend/INSTALL.md) in
-the backend and use the following path.
+To have a running and executable swagger ui, feel free to also deploy the backend application according to the
+[Install.md](../../backend/INSTALL.md) in the backend and use the following path.
+To authorize requests copy the value of key `CUSTOMER_BACKEND_API_KEY` in `local/.env`.
 
 ```
 http://localhost:8081/catena/swagger-ui/index.html
