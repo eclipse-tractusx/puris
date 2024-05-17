@@ -83,7 +83,8 @@ services:
       postgres-customer:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3.0/shell-descriptors"]
+      # as security is enabled by default and we don't provide a bearer accept auth issues
+      test: ["CMD-SHELL", "wget -q --spider http://dtr-customer:4243/actuator/health/readiness"]
       interval: 4s
       timeout: 3s
       retries: 15
@@ -94,8 +95,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://customer-postgres:5432/dtr_database
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
-      SPRING_PROFILES_ACTIVE: local
+      REGISTRY_IDM_OWNING_TENANT_ID: ${CUSTOMER_BPNL}
+      REGISTRY_USE_GRANULAR_ACCESS_CONTROL: false
       JAVA_TOOL_OPTIONS: "-Xms512m -Xmx1024m"
+      # deactivate oauth idp by commenting out SPRING_PROFILES_ACTIVE
+      #      SPRING_PROFILES_ACTIVE: local
+      REGISTRY_IDM_PUBLIC_CLIENT_ID: ${KC_MANAGE_CLIENT_ID}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/Customer"
     networks:
       - miw-net
     extra_hosts:
@@ -227,7 +233,7 @@ services:
       postgres-supplier:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3.0/shell-descriptors"]
+      test: ["CMD-SHELL", "wget -q --spider http://dtr-supplier:4243/actuator/health/readiness"]
       interval: 4s
       timeout: 3s
       retries: 15
@@ -241,10 +247,10 @@ services:
       REGISTRY_IDM_OWNING_TENANT_ID: ${SUPPLIER_BPNL}
       REGISTRY_USE_GRANULAR_ACCESS_CONTROL: false
       JAVA_TOOL_OPTIONS: "-Xms512m -Xmx1024m"
-      # outcomment SPRING_PROFILES_ACTIVE if idp should be used
-      SPRING_PROFILES_ACTIVE: local
-      REGISTRY_IDM_PUBLIC_CLIENT_ID: ${KC_READ_CLIENT_ID}
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak-supplier:10080/realms/Catena-X"
+      # deactivate oauth idp by commenting out SPRING_PROFILES_ACTIVE
+      #      SPRING_PROFILES_ACTIVE: local
+      REGISTRY_IDM_PUBLIC_CLIENT_ID: ${KC_MANAGE_CLIENT_ID}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/Supplier"
     networks:
       - miw-net
     extra_hosts:
