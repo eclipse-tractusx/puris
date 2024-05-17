@@ -99,7 +99,8 @@ services:
       REGISTRY_USE_GRANULAR_ACCESS_CONTROL: false
       JAVA_TOOL_OPTIONS: "-Xms512m -Xmx1024m"
       # deactivate oauth idp by commenting out SPRING_PROFILES_ACTIVE
-      #      SPRING_PROFILES_ACTIVE: local
+      # SPRING_PROFILES_ACTIVE: local
+      # Note: Currently DTR only allows one client, thus manage client must be used for all.
       REGISTRY_IDM_PUBLIC_CLIENT_ID: ${KC_MANAGE_CLIENT_ID}
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/Customer"
     networks:
@@ -248,7 +249,8 @@ services:
       REGISTRY_USE_GRANULAR_ACCESS_CONTROL: false
       JAVA_TOOL_OPTIONS: "-Xms512m -Xmx1024m"
       # deactivate oauth idp by commenting out SPRING_PROFILES_ACTIVE
-      #      SPRING_PROFILES_ACTIVE: local
+      # SPRING_PROFILES_ACTIVE: local
+      # Note: Currently DTR only allows one client, thus manage client must be used for all.
       REGISTRY_IDM_PUBLIC_CLIENT_ID: ${KC_MANAGE_CLIENT_ID}
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/Supplier"
     networks:
