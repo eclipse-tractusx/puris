@@ -1,31 +1,40 @@
 components:
   schemas:
     AddressDto:
+      additionalProperties: false
       properties:
         bpna:
+          maxItems: 50
           pattern: ^BPNA[0-9a-zA-Z]{12}$
           type: string
         country:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         streetAndNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         zipCodeAndCity:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       type: object
     AllocatedPlannedProductionOutput:
+      additionalProperties: false
       properties:
         estimatedTimeOfCompletion:
           format: date-time
+          maxItems: 50
           type: string
         lastUpdatedOnDateTime:
           format: date-time
+          maxItems: 50
           type: string
         plannedProductionQuantity:
           $ref: '#/components/schemas/ItemQuantityEntity'
         productionSiteBpns:
+          maxItems: 50
           pattern: ^BPNS[0-9a-zA-Z]{12}$
           type: string
       required:
@@ -35,6 +44,7 @@ components:
       - productionSiteBpns
       type: object
     DeliveryDto:
+      additionalProperties: false
       properties:
         arrivalType:
           enum:
@@ -42,18 +52,23 @@ components:
           - actual-departure
           - estimated-arrival
           - actual-arrival
+          maxItems: 50
           type: string
         customerOrderNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         customerOrderPositionNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         dateOfArrival:
           format: date-time
+          maxItems: 50
           type: string
         dateOfDeparture:
           format: date-time
+          maxItems: 50
           type: string
         departureType:
           enum:
@@ -61,11 +76,14 @@ components:
           - actual-departure
           - estimated-arrival
           - actual-arrival
+          maxItems: 50
           type: string
         destinationBpna:
+          maxItems: 50
           pattern: ^BPNA[0-9a-zA-Z]{12}$
           type: string
         destinationBpns:
+          maxItems: 50
           pattern: ^BPNS[0-9a-zA-Z]{12}$
           type: string
         incoterm:
@@ -81,6 +99,7 @@ components:
           - CPT
           - CIP
           - DDP
+          maxItems: 50
           type: string
         measurementUnit:
           enum:
@@ -119,17 +138,22 @@ components:
           - unit:minuteUnitOfTime
           - unit:hourUnitOfTime
           - unit:day
+          maxItems: 50
           type: string
         originBpna:
+          maxItems: 50
           pattern: ^BPNA[0-9a-zA-Z]{12}$
           type: string
         originBpns:
+          maxItems: 50
           pattern: ^BPNS[0-9a-zA-Z]{12}$
           type: string
         ownMaterialNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         partnerBpnl:
+          maxItems: 50
           pattern: ^BPNL[0-9a-zA-Z]{12}$
           type: string
         quantity:
@@ -138,23 +162,29 @@ components:
         reported:
           type: boolean
         supplierOrderNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         trackingNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         uuid:
           format: uuid
+          maxItems: 50
           type: string
       type: object
     DeliveryInformation:
+      additionalProperties: false
       properties:
         materialGlobalAssetId:
+          maxItems: 50
           pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         positions:
           items:
             $ref: '#/components/schemas/Position'
+          maxItems: 50
           type: array
           uniqueItems: true
       required:
@@ -162,9 +192,11 @@ components:
       - positions
       type: object
     Demand:
+      additionalProperties: false
       properties:
         day:
           format: date-time
+          maxItems: 50
           type: string
         demand:
           $ref: '#/components/schemas/ItemQuantityEntity'
@@ -173,9 +205,11 @@ components:
       - demand
       type: object
     DemandDto:
+      additionalProperties: false
       properties:
         day:
           format: date-time
+          maxItems: 50
           type: string
         demandCategoryCode:
           enum:
@@ -187,8 +221,10 @@ components:
           - OS01
           - OI01
           - ED01
+          maxItems: 50
           type: string
         demandLocationBpns:
+          maxItems: 50
           pattern: ^BPNS[0-9a-zA-Z]{12}$
           type: string
         measurementUnit:
@@ -228,26 +264,33 @@ components:
           - unit:minuteUnitOfTime
           - unit:hourUnitOfTime
           - unit:day
+          maxItems: 50
           type: string
         ownMaterialNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         partnerBpnl:
+          maxItems: 50
           pattern: ^BPNL[0-9a-zA-Z]{12}$
           type: string
         quantity:
           format: double
           type: number
         supplierLocationBpns:
+          maxItems: 50
           pattern: ^BPNS[0-9a-zA-Z]{12}$
           type: string
         uuid:
           format: uuid
+          maxItems: 50
           type: string
       type: object
     DemandSeries:
+      additionalProperties: false
       properties:
         customerLocationBpns:
+          maxItems: 50
           pattern: ^BPNS[a-zA-Z0-9]{12}$
           type: string
         demandCategory:
@@ -264,17 +307,21 @@ components:
             Demand)
           - DemandCategoryType(demandCategoryCode=PO01, demandCategoryName=Phase-Out
             Period)
+          maxItems: 50
           type: string
         demands:
           items:
             $ref: '#/components/schemas/Demand'
+          maxItems: 50
           type: array
           uniqueItems: true
         expectedSupplierLocationBpns:
+          maxItems: 50
           pattern: ^BPNS[0-9a-zA-Z]{12}$
           type: string
         lastUpdatedOnDateTime:
           format: date-time
+          maxItems: 50
           type: string
       required:
       - customerLocationBpns
@@ -283,15 +330,19 @@ components:
       - lastUpdatedOnDateTime
       type: object
     FrontendMaterialDto:
+      additionalProperties: false
       properties:
         description:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         ownMaterialNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       type: object
     ItemQuantityEntity:
+      additionalProperties: false
       properties:
         unit:
           enum:
@@ -330,6 +381,7 @@ components:
           - unit:minuteUnitOfTime
           - unit:hourUnitOfTime
           - unit:day
+          maxItems: 50
           type: string
         value:
           format: double
@@ -339,18 +391,22 @@ components:
       - value
       type: object
     ItemStockSamm:
+      additionalProperties: false
       properties:
         direction:
           enum:
           - INBOUND
           - OUTBOUND
+          maxItems: 50
           type: string
         materialGlobalAssetId:
+          maxItems: 50
           pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         positions:
           items:
             $ref: '#/components/schemas/Position'
+          maxItems: 50
           type: array
           uniqueItems: true
       required:
@@ -360,55 +416,69 @@ components:
     JsonNode:
       type: object
     MaterialDto:
+      additionalProperties: false
       properties:
         materialFlag:
           type: boolean
         materialNumberCustomer:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         materialNumberCx:
+          maxItems: 50
           pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         materialNumberSupplier:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         name:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         productFlag:
           type: boolean
         uuid:
           format: uuid
+          maxItems: 50
           type: string
       type: object
     MaterialEntityDto:
+      additionalProperties: false
       properties:
         materialFlag:
           type: boolean
         materialNumberCx:
+          maxItems: 50
           pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         name:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         ownMaterialNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         productFlag:
           type: boolean
       type: object
     MaterialStockDto:
+      additionalProperties: false
       properties:
         customerOrderNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         customerOrderPositionNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         isBlocked:
           type: boolean
         lastUpdatedOn:
           format: date-time
+          maxItems: 50
           type: string
         material:
           $ref: '#/components/schemas/MaterialDto'
@@ -449,6 +519,7 @@ components:
           - unit:minuteUnitOfTime
           - unit:hourUnitOfTime
           - unit:day
+          maxItems: 50
           type: string
         partner:
           $ref: '#/components/schemas/PartnerDto'
@@ -456,27 +527,35 @@ components:
           format: double
           type: number
         stockLocationBpna:
+          maxItems: 50
           pattern: ^BPNA[0-9a-zA-Z]{12}$
           type: string
         stockLocationBpns:
+          maxItems: 50
           pattern: ^BPNS[0-9a-zA-Z]{12}$
           type: string
         supplierOrderNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         uuid:
           format: uuid
+          maxItems: 50
           type: string
       type: object
     OrderPositionReference:
+      additionalProperties: false
       properties:
         customerOrderId:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         customerOrderPositionId:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         supplierOrderId:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       required:
@@ -484,38 +563,48 @@ components:
       - customerOrderPositionId
       type: object
     PartnerDto:
+      additionalProperties: false
       properties:
         addresses:
           items:
             $ref: '#/components/schemas/AddressDto'
+          maxItems: 50
           type: array
           uniqueItems: true
         bpnl:
+          maxItems: 50
           pattern: ^BPNL[0-9a-zA-Z]{12}$
           type: string
         edcUrl:
+          maxItems: 50
           pattern: ^http[s]?://([a-z0-9][a-z0-9\-]+[a-z0-9])(\.[a-z0-9\-]+)*(:[0-9]{1,4})?(/[a-z0-9\-]+)*[/]?$
           type: string
         name:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         sites:
           items:
             $ref: '#/components/schemas/SiteDto'
+          maxItems: 50
           type: array
           uniqueItems: true
         uuid:
           format: uuid
+          maxItems: 50
           type: string
       type: object
     PlannedProductionOutput:
+      additionalProperties: false
       properties:
         materialGlobalAssetId:
+          maxItems: 50
           pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         positions:
           items:
             $ref: '#/components/schemas/Position'
+          maxItems: 50
           type: array
           uniqueItems: true
       required:
@@ -523,14 +612,17 @@ components:
       - positions
       type: object
     Position:
+      additionalProperties: false
       properties:
         allocatedPlannedProductionOutputs:
           items:
             $ref: '#/components/schemas/AllocatedPlannedProductionOutput'
+          maxItems: 50
           type: array
           uniqueItems: true
         lastUpdatedOnDateTime:
           format: date-time
+          maxItems: 50
           type: string
           writeOnly: true
         orderPositionReference:
@@ -539,17 +631,21 @@ components:
       - allocatedPlannedProductionOutputs
       type: object
     ProductStockDto:
+      additionalProperties: false
       properties:
         customerOrderNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         customerOrderPositionNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         isBlocked:
           type: boolean
         lastUpdatedOn:
           format: date-time
+          maxItems: 50
           type: string
         material:
           $ref: '#/components/schemas/MaterialDto'
@@ -590,6 +686,7 @@ components:
           - unit:minuteUnitOfTime
           - unit:hourUnitOfTime
           - unit:day
+          maxItems: 50
           type: string
         partner:
           $ref: '#/components/schemas/PartnerDto'
@@ -597,28 +694,36 @@ components:
           format: double
           type: number
         stockLocationBpna:
+          maxItems: 50
           pattern: ^BPNA[0-9a-zA-Z]{12}$
           type: string
         stockLocationBpns:
+          maxItems: 50
           pattern: ^BPNS[0-9a-zA-Z]{12}$
           type: string
         supplierOrderNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         uuid:
           format: uuid
+          maxItems: 50
           type: string
       type: object
     ProductionDto:
+      additionalProperties: false
       properties:
         customerOrderNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         customerOrderPositionNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         estimatedTimeOfCompletion:
           format: date-time
+          maxItems: 50
           type: string
         material:
           $ref: '#/components/schemas/MaterialDto'
@@ -659,33 +764,41 @@ components:
           - unit:minuteUnitOfTime
           - unit:hourUnitOfTime
           - unit:day
+          maxItems: 50
           type: string
         partner:
           $ref: '#/components/schemas/PartnerDto'
         productionSiteBpns:
+          maxItems: 50
           type: string
         quantity:
           format: double
           type: number
         supplierOrderNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         uuid:
           format: uuid
+          maxItems: 50
           type: string
       type: object
     ReportedMaterialStockDto:
+      additionalProperties: false
       properties:
         customerOrderNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         customerOrderPositionNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         isBlocked:
           type: boolean
         lastUpdatedOn:
           format: date-time
+          maxItems: 50
           type: string
         material:
           $ref: '#/components/schemas/MaterialDto'
@@ -726,6 +839,7 @@ components:
           - unit:minuteUnitOfTime
           - unit:hourUnitOfTime
           - unit:day
+          maxItems: 50
           type: string
         partner:
           $ref: '#/components/schemas/PartnerDto'
@@ -733,30 +847,38 @@ components:
           format: double
           type: number
         stockLocationBpna:
+          maxItems: 50
           pattern: ^BPNA[0-9a-zA-Z]{12}$
           type: string
         stockLocationBpns:
+          maxItems: 50
           pattern: ^BPNS[0-9a-zA-Z]{12}$
           type: string
         supplierOrderNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         uuid:
           format: uuid
+          maxItems: 50
           type: string
       type: object
     ReportedProductStockDto:
+      additionalProperties: false
       properties:
         customerOrderNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         customerOrderPositionNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         isBlocked:
           type: boolean
         lastUpdatedOn:
           format: date-time
+          maxItems: 50
           type: string
         material:
           $ref: '#/components/schemas/MaterialDto'
@@ -797,6 +919,7 @@ components:
           - unit:minuteUnitOfTime
           - unit:hourUnitOfTime
           - unit:day
+          maxItems: 50
           type: string
         partner:
           $ref: '#/components/schemas/PartnerDto'
@@ -804,42 +927,53 @@ components:
           format: double
           type: number
         stockLocationBpna:
+          maxItems: 50
           pattern: ^BPNA[0-9a-zA-Z]{12}$
           type: string
         stockLocationBpns:
+          maxItems: 50
           pattern: ^BPNS[0-9a-zA-Z]{12}$
           type: string
         supplierOrderNumber:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         uuid:
           format: uuid
+          maxItems: 50
           type: string
       type: object
     ShortTermMaterialDemand:
+      additionalProperties: false
       properties:
         demandSeries:
           items:
             $ref: '#/components/schemas/DemandSeries'
+          maxItems: 50
           type: array
           uniqueItems: true
         materialGlobalAssetId:
+          maxItems: 50
           pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
       required:
       - demandSeries
       type: object
     SiteDto:
+      additionalProperties: false
       properties:
         addresses:
           items:
             $ref: '#/components/schemas/AddressDto'
+          maxItems: 50
           type: array
           uniqueItems: true
         bpns:
+          maxItems: 50
           pattern: ^BPNS[0-9a-zA-Z]{12}$
           type: string
         name:
+          maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       type: object
@@ -863,24 +997,32 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: query
         name: bpns
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: query
         name: bpnl
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/DeliveryDto'
+                maxItems: 50
                 type: array
           description: OK
       summary: Get all planned deliveries for the given Material
@@ -893,6 +1035,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DeliveryDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
@@ -900,30 +1043,35 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryDto'
+                additionalProperties: false
           description: Delivery was created.
         '201':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryDto'
+                additionalProperties: false
           description: Created
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryDto'
+                additionalProperties: false
           description: Malformed or invalid request body.
         '409':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryDto'
+                additionalProperties: false
           description: Delivery already exists.
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryDto'
+                additionalProperties: false
           description: Internal Server Error.
       summary: Creates a new delivery
       tags:
@@ -935,6 +1083,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DeliveryDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
@@ -942,30 +1091,35 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryDto'
+                additionalProperties: false
           description: OK
         '204':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryDto'
+                additionalProperties: false
           description: Delivery was updated.
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryDto'
+                additionalProperties: false
           description: Malformed or invalid request body.
         '404':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryDto'
+                additionalProperties: false
           description: Delivery does not exist.
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryDto'
+                additionalProperties: false
           description: Internal Server Error.
       summary: Updates a delivery by its UUID
       tags:
@@ -978,16 +1132,22 @@ paths:
         name: edc-bpn
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: path
         name: materialNumberCx
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: path
         name: representation
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
@@ -995,24 +1155,28 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryInformation'
+                additionalProperties: false
           description: Ok
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryInformation'
+                additionalProperties: false
           description: Bad Request
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryInformation'
+                additionalProperties: false
           description: Internal Server Error
         '501':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryInformation'
+                additionalProperties: false
           description: Unsupported representation
       summary: This endpoint receives the Delivery Information Submodel 2.0.0 requests
       tags:
@@ -1026,14 +1190,18 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
                 type: array
           description: OK
       summary: Refreshes all reported deliveries
@@ -1047,7 +1215,9 @@ paths:
         name: id
         required: true
         schema:
+          additionalProperties: false
           format: uuid
+          maxItems: 50
           type: string
       responses:
         '204':
@@ -1071,19 +1241,25 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: query
         name: site
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/DemandDto'
+                maxItems: 50
                 type: array
           description: OK
       summary: Get all own demands for the given Material
@@ -1096,6 +1272,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DemandDto'
+              additionalProperties: false
         required: true
       responses:
         '201':
@@ -1103,24 +1280,28 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DemandDto'
+                additionalProperties: false
           description: Demand was created.
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DemandDto'
+                additionalProperties: false
           description: Malformed or invalid request body.
         '409':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DemandDto'
+                additionalProperties: false
           description: Demand already exists. Use PUT instead.
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DemandDto'
+                additionalProperties: false
           description: Internal Server Error.
       summary: Creates a new demand
       tags:
@@ -1132,6 +1313,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DemandDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
@@ -1139,24 +1321,28 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DemandDto'
+                additionalProperties: false
           description: Demand was updated.
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DemandDto'
+                additionalProperties: false
           description: Malformed or invalid request body.
         '404':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DemandDto'
+                additionalProperties: false
           description: Demand does not exist.
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DemandDto'
+                additionalProperties: false
           description: Internal Server Error.
       summary: Updates a demand by its UUID
       tags:
@@ -1172,24 +1358,32 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: query
         name: bpnl
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: query
         name: site
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/DemandDto'
+                maxItems: 50
                 type: array
           description: OK
       summary: Get all demands of partners for a material
@@ -1204,14 +1398,18 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
                 type: array
           description: OK
       summary: Refreshes all reported demands
@@ -1225,7 +1423,9 @@ paths:
         name: id
         required: true
         schema:
+          additionalProperties: false
           format: uuid
+          maxItems: 50
           type: string
       responses:
         '204':
@@ -1247,12 +1447,16 @@ paths:
         name: assetId
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
+                maxItems: 50
                 type: string
           description: OK
       tags:
@@ -1265,17 +1469,23 @@ paths:
         name: dspUrl
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: query
         name: partnerBpnl
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
+                maxItems: 50
                 type: string
           description: OK
       tags:
@@ -1288,6 +1498,8 @@ paths:
           content:
             '*/*':
               schema:
+                additionalProperties: false
+                maxItems: 50
                 type: string
           description: OK
       tags:
@@ -1301,6 +1513,7 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/JsonNode'
+                additionalProperties: false
           description: OK
       tags:
       - edc-controller
@@ -1336,18 +1549,23 @@ paths:
                   type: TransferProcessStarted
             schema:
               $ref: '#/components/schemas/JsonNode'
+              additionalProperties: false
         required: true
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
+                maxItems: 50
                 type: string
           description: Ok
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
+                maxItems: 50
                 type: string
           description: Invalid message body
       summary: Endpoint for receiving the authCodes from the counterparty's connector
@@ -1361,6 +1579,7 @@ paths:
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: OK
       tags:
@@ -1373,24 +1592,32 @@ paths:
         name: edc-bpn
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: path
         name: materialnumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: path
         name: direction
         required: true
         schema:
+          additionalProperties: false
           enum:
           - INBOUND
           - OUTBOUND
+          maxItems: 50
           type: string
       - in: path
         name: representation
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
@@ -1398,24 +1625,28 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ItemStockSamm'
+                additionalProperties: false
           description: Ok
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ItemStockSamm'
+                additionalProperties: false
           description: Bad Request
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ItemStockSamm'
+                additionalProperties: false
           description: Internal Server Error
         '501':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ItemStockSamm'
+                additionalProperties: false
           description: Unsupported representation
       summary: This endpoint receives the ItemStock Submodel 2.0.0 requests
       tags:
@@ -1428,16 +1659,22 @@ paths:
         name: edc-bpn
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: path
         name: materialnumbercx
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: path
         name: representation
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
@@ -1445,24 +1682,28 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ShortTermMaterialDemand'
+                additionalProperties: false
           description: Ok
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ShortTermMaterialDemand'
+                additionalProperties: false
           description: Bad Request
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ShortTermMaterialDemand'
+                additionalProperties: false
           description: Internal Server Error
         '501':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ShortTermMaterialDemand'
+                additionalProperties: false
           description: Unsupported representation
       summary: This endpoint receives the ShortTermMaterialDemand Submodel 1.0.0 requests
       tags:
@@ -1481,6 +1722,8 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - description: The unique BPNL that was assigned to that Partner.
         example: BPNL2222222222RR
@@ -1488,6 +1731,8 @@ paths:
         name: partnerBpnl
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - description: The Material Number that this Partner is using in his own company
           to identify the Material.
@@ -1496,6 +1741,8 @@ paths:
         name: partnerMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - description: The CatenaX Number that this Partner uses
         example: 860fb504-b884-4009-9313-c6fb6cdc776b
@@ -1503,6 +1750,8 @@ paths:
         name: partnerCXNumber
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - description: The informal name that this Partner uses
         example: Semiconductor
@@ -1510,6 +1759,8 @@ paths:
         name: nameAtManufacturer
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - description: This boolean flag indicates whether this Partner is a potential
           supplier of the given Material.
@@ -1518,6 +1769,7 @@ paths:
         name: partnerSupplies
         required: true
         schema:
+          additionalProperties: false
           type: boolean
       - description: This boolean flag indicates whether this Partner is a potential
           customer of this Material.
@@ -1526,30 +1778,35 @@ paths:
         name: partnerBuys
         required: true
         schema:
+          additionalProperties: false
           type: boolean
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Successfully created a new MaterialPartnerRelationEntity.
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Material and/or Partner do not exist or invalid parameters
         '409':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Relation for given Material and Partner does already exist.
         '500':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Internal Server Error.
       tags:
@@ -1567,6 +1824,8 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - description: The unique BPNL that was assigned to that Partner.
         example: BPNL2222222222RR
@@ -1574,6 +1833,8 @@ paths:
         name: partnerBpnl
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - description: The Material Number that this Partner is using in his own company
           to identify the Material.
@@ -1582,6 +1843,8 @@ paths:
         name: partnerMaterialNumber
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - description: The CatenaX Number that this Partner uses
         example: 860fb504-b884-4009-9313-c6fb6cdc776b
@@ -1589,6 +1852,8 @@ paths:
         name: partnerCXNumber
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - description: The informal name that this Partner uses
         example: Semiconductor
@@ -1596,6 +1861,8 @@ paths:
         name: nameAtManufacturer
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - description: This boolean flag indicates whether this Partner is a potential
           supplier of the given Material.
@@ -1604,6 +1871,7 @@ paths:
         name: partnerSupplies
         required: false
         schema:
+          additionalProperties: false
           type: boolean
       - description: This boolean flag indicates whether this Partner is a potential
           customer of this Material.
@@ -1612,30 +1880,35 @@ paths:
         name: partnerBuys
         required: false
         schema:
+          additionalProperties: false
           type: boolean
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Update was accepted.
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Invalid parameters
         '404':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: No existing entity was found.
         '500':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Internal Server Error.
       tags:
@@ -1652,6 +1925,8 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
@@ -1659,18 +1934,21 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/MaterialEntityDto'
+                additionalProperties: false
           description: Returns the requested Material.
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/MaterialEntityDto'
+                additionalProperties: false
           description: Invalid parameter
         '404':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/MaterialEntityDto'
+                additionalProperties: false
           description: Requested Material was not found.
       tags:
       - material-controller
@@ -1683,30 +1961,35 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/MaterialEntityDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Successfully created a new Material entity.
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Malformed request body.
         '409':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Material with the given ownMaterialNumber already exists.
         '500':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Internal Server error.
       tags:
@@ -1720,30 +2003,35 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/MaterialEntityDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Update was accepted.
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Malformed request body.
         '404':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: No existing Material Entity found, no update was performed.
         '500':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Internal Server Error.
       tags:
@@ -1757,8 +2045,10 @@ paths:
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/MaterialEntityDto'
+                maxItems: 50
                 type: array
           description: OK
       tags:
@@ -1774,6 +2064,8 @@ paths:
         name: partnerBpnl
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
@@ -1781,24 +2073,28 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/PartnerDto'
+                additionalProperties: false
           description: Found Partner, returning it in response body.
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/PartnerDto'
+                additionalProperties: false
           description: Invalid parameter.
         '404':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/PartnerDto'
+                additionalProperties: false
           description: Requested Partner not found.
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/PartnerDto'
+                additionalProperties: false
           description: Internal Server Error.
       tags:
       - partner-controller
@@ -1812,18 +2108,21 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PartnerDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Partner created successfully.
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Request body was malformed, didn't meet the minimum constraints
             or wrongfully contained a UUID.
@@ -1831,6 +2130,7 @@ paths:
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: 'The BPNL specified in the request body is already assigned. '
       tags:
@@ -1844,8 +2144,10 @@ paths:
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
                 type: array
           description: OK
       tags:
@@ -1859,8 +2161,10 @@ paths:
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/SiteDto'
+                maxItems: 50
                 type: array
           description: OK
       tags:
@@ -1878,36 +2182,43 @@ paths:
         name: partnerBpnl
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/AddressDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Update accepted.
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Invalid Address data or invalid partnerBpnl.
         '404':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Partner not found.
         '500':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Internal Server Error.
       tags:
@@ -1925,36 +2236,43 @@ paths:
         name: partnerBpnl
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/SiteDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Update accepted.
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Invalid Address data or invalid partnerBpnl.
         '404':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Partner not found.
         '500':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Internal Server Error.
       tags:
@@ -1970,6 +2288,8 @@ paths:
         name: edc-bpn
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - description: The material number that the request receiving party uses for
           the material in question
@@ -1977,42 +2297,51 @@ paths:
         name: materialnumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - description: Must be set to '$value'
         in: path
         name: representation
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: Ok
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: 'Invalid request parameters. '
         '401':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: 'Access forbidden. '
         '404':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: 'Product not found for given parameters. '
         '501':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 type: object
           description: 'Unsupported representation requested. '
       tags:
@@ -2025,16 +2354,22 @@ paths:
         name: edc-bpn
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: path
         name: materialnumbercx
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: path
         name: representation
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
@@ -2042,24 +2377,28 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/PlannedProductionOutput'
+                additionalProperties: false
           description: Ok
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/PlannedProductionOutput'
+                additionalProperties: false
           description: Bad Request
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/PlannedProductionOutput'
+                additionalProperties: false
           description: Internal Server Error
         '501':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/PlannedProductionOutput'
+                additionalProperties: false
           description: Unsupported representation
       summary: This endpoint receives the PlannedProduction Submodel 2.0.0 requests
       tags:
@@ -2074,19 +2413,25 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: query
         name: site
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/ProductionDto'
+                maxItems: 50
                 type: array
           description: OK
       summary: Get all planned productions for the given Material
@@ -2099,6 +2444,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ProductionDto'
+              additionalProperties: false
         required: true
       responses:
         '201':
@@ -2106,24 +2452,28 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductionDto'
+                additionalProperties: false
           description: Planned Production was created.
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductionDto'
+                additionalProperties: false
           description: Malformed or invalid request body.
         '409':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductionDto'
+                additionalProperties: false
           description: Planned Production already exists.
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductionDto'
+                additionalProperties: false
           description: Internal Server Error.
       summary: Creates a new planned production
       tags:
@@ -2135,6 +2485,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ProductionDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
@@ -2142,24 +2493,28 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductionDto'
+                additionalProperties: false
           description: Planned Productions was updated.
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductionDto'
+                additionalProperties: false
           description: Malformed or invalid request body.
         '404':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductionDto'
+                additionalProperties: false
           description: Planned Production does not exist.
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductionDto'
+                additionalProperties: false
           description: Internal Server Error.
       summary: Updates a planned production by its UUID
       tags:
@@ -2171,8 +2526,10 @@ paths:
         content:
           application/json:
             schema:
+              additionalProperties: false
               items:
                 $ref: '#/components/schemas/ProductionDto'
+              maxItems: 50
               type: array
         required: true
       responses:
@@ -2180,32 +2537,40 @@ paths:
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/ProductionDto'
+                maxItems: 50
                 type: array
           description: Planned Productions were created.
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/ProductionDto'
+                maxItems: 50
                 type: array
           description: Malformed or invalid request body.
         '409':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/ProductionDto'
+                maxItems: 50
                 type: array
           description: Planned Productions already exist.
         '500':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/ProductionDto'
+                maxItems: 50
                 type: array
           description: Internal Server Error.
       summary: Creates a range of planned productions
@@ -2222,24 +2587,32 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: query
         name: bpnl
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       - in: query
         name: site
         required: false
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/ProductionDto'
+                maxItems: 50
                 type: array
           description: OK
       summary: Get all productions of partners for a material
@@ -2255,14 +2628,18 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
                 type: array
           description: OK
       summary: Refreshes all reported productions
@@ -2276,7 +2653,9 @@ paths:
         name: id
         required: true
         schema:
+          additionalProperties: false
           format: uuid
+          maxItems: 50
           type: string
       responses:
         '204':
@@ -2299,22 +2678,28 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
                 type: array
           description: OK
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
                 type: array
           description: Invalid parameter
       tags:
@@ -2328,8 +2713,10 @@ paths:
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/MaterialStockDto'
+                maxItems: 50
                 type: array
           description: OK
       tags:
@@ -2342,6 +2729,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/MaterialStockDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
@@ -2349,24 +2737,28 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/MaterialStockDto'
+                additionalProperties: false
           description: Material Stock was created.
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/MaterialStockDto'
+                additionalProperties: false
           description: Malformed or invalid request body.
         '409':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/MaterialStockDto'
+                additionalProperties: false
           description: Material Stock does already exist.
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/MaterialStockDto'
+                additionalProperties: false
           description: Internal Server Error.
       tags:
       - stock-view-controller
@@ -2378,6 +2770,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/MaterialStockDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
@@ -2385,18 +2778,21 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/MaterialStockDto'
+                additionalProperties: false
           description: Material Stock was updated.
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/MaterialStockDto'
+                additionalProperties: false
           description: Malformed request body.
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/MaterialStockDto'
+                additionalProperties: false
           description: Internal Server Error.
       tags:
       - stock-view-controller
@@ -2410,6 +2806,8 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
@@ -2427,6 +2825,7 @@ paths:
             '*/*':
               schema:
                 additionalProperties:
+                  maxItems: 50
                   type: string
                 type: object
           description: Invalid parameter
@@ -2441,8 +2840,10 @@ paths:
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/FrontendMaterialDto'
+                maxItems: 50
                 type: array
           description: OK
       tags:
@@ -2456,8 +2857,10 @@ paths:
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/ProductStockDto'
+                maxItems: 50
                 type: array
           description: OK
       tags:
@@ -2470,6 +2873,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ProductStockDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
@@ -2477,24 +2881,28 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductStockDto'
+                additionalProperties: false
           description: Product Stock was created.
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductStockDto'
+                additionalProperties: false
           description: Malformed or invalid request body.
         '409':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductStockDto'
+                additionalProperties: false
           description: Product Stock does already exist.
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductStockDto'
+                additionalProperties: false
           description: Internal Server Error.
       tags:
       - stock-view-controller
@@ -2506,6 +2914,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ProductStockDto'
+              additionalProperties: false
         required: true
       responses:
         '200':
@@ -2513,18 +2922,21 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductStockDto'
+                additionalProperties: false
           description: Product Stock was updated.
         '400':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductStockDto'
+                additionalProperties: false
           description: Malformed request body.
         '500':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProductStockDto'
+                additionalProperties: false
           description: Internal Server Error.
       tags:
       - stock-view-controller
@@ -2537,8 +2949,10 @@ paths:
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/FrontendMaterialDto'
+                maxItems: 50
                 type: array
           description: OK
       tags:
@@ -2553,22 +2967,28 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/ReportedMaterialStockDto'
+                maxItems: 50
                 type: array
           description: OK
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/ReportedMaterialStockDto'
+                maxItems: 50
                 type: array
           description: Invalid parameter
       tags:
@@ -2583,22 +3003,28 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/ReportedProductStockDto'
+                maxItems: 50
                 type: array
           description: OK
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/ReportedProductStockDto'
+                maxItems: 50
                 type: array
           description: Invalid parameter
       tags:
@@ -2612,22 +3038,28 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
                 type: array
           description: OK
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
                 type: array
           description: Invalid parameter
       tags:
@@ -2647,22 +3079,28 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
                 type: array
           description: OK
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
                 type: array
           description: Invalid parameter
       tags:
@@ -2682,22 +3120,28 @@ paths:
         name: ownMaterialNumber
         required: true
         schema:
+          additionalProperties: false
+          maxItems: 50
           type: string
       responses:
         '200':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
                 type: array
           description: OK
         '400':
           content:
             '*/*':
               schema:
+                additionalProperties: false
                 items:
                   $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
                 type: array
           description: Invalid parameter
       tags:
