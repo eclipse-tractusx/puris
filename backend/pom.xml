@@ -41,6 +41,7 @@
         <springdoc.version>2.5.0</springdoc.version>
         <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
         <snakeyaml.version>2.2</snakeyaml.version>
+        <modelmapper.version>3.2.0</modelmapper.version>
     </properties>
     <dependencies>
         <dependency>
@@ -111,7 +112,7 @@
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
-            <version>3.2.0</version>
+            <version>${modelmapper.version}</version>
         </dependency>
     </dependencies>
 
