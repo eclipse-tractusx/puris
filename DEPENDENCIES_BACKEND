@@ -52,7 +52,7 @@ maven/mavencentral/org.hamcrest/hamcrest/2.2, BSD-3-Clause, approved, clearlydef
 maven/mavencentral/org.hibernate.common/hibernate-commons-annotations/6.0.6.Final, LGPL-2.1-only, approved, #6962
 maven/mavencentral/org.hibernate.orm/hibernate-core/6.4.4.Final, LGPL-2.1-or-later AND (EPL-2.0 OR BSD-3-Clause) AND MIT, approved, #12490
 maven/mavencentral/org.hibernate.validator/hibernate-validator/8.0.1.Final, Apache-2.0, approved, clearlydefined
-maven/mavencentral/org.hsqldb/hsqldb/2.7.1, BSD-3-Clause, approved, #12699
+maven/mavencentral/org.hsqldb/hsqldb/2.7.2, BSD-3-Clause, approved, #12699
 maven/mavencentral/org.jboss.logging/jboss-logging/3.5.3.Final, Apache-2.0, approved, #9471
 maven/mavencentral/org.jetbrains.kotlin/kotlin-stdlib-common/1.9.23, Apache-2.0, approved, #14186
 maven/mavencentral/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.9.23, Apache-2.0, approved, #14188
