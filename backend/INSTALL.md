@@ -55,3 +55,11 @@ helm install backend --namespace puris --create-namespace . --set ingress.enable
     - (Java & Docker) `http://YOURIP:8081/catena/swagger-ui/index.html`
     - (Kubernetes) `http://CLUSTERIP:30001/catena/swagger-ui/index.html`
 3. It is highly suggested to install and run the PURIS frontend afterward
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris

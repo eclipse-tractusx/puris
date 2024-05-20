@@ -240,3 +240,11 @@ users. For configuration, please refer to the [Admin Guide](../admin/Admin_Guide
 _Note: The reference
 implementation [Digital Twin Registry](https://github.com/eclipse-tractusx/sldt-digital-twin-registry)
 currently only works with one client._
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris

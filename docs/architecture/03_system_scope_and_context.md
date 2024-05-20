@@ -80,3 +80,11 @@ the Part Type Twin as a "catalog item" representing a material that has not yet 
 [Digital Twin KIT](https://eclipse-tractusx.github.io/docs-kits/kits/Digital%20Twin%20Kit/Adoption%20View%20Digital%20Twin%20Kit)
 describes the shared asset pattern used by puris to distribute Digital Twins between the two partners.
 For more information refer to the [concepts section](./08_concepts.md)..
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris

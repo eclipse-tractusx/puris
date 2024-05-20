@@ -11,3 +11,11 @@ PURIS FOSS follows the following constraints:
 | Interoperability between Data Applications | Data exchange MUST follow standards so that different vendors applications may exchange data. This allows to reduce the risk of vendor-lock-ins.                                                                                                                                                                                                         |
 | Semantic Aspect Meta Model (SAMM)          | Tooling used in Catena-X to semantically describe data.                                                                                                                                                                                                                                                                                                  |
 | Digital Twins in Catena-X & Industry Core  | Standards CX-0002 and CX-0126 describe how Digital Twins following with the Asset Administration Shell shall be used. PURIS standards are built on these foundations                                                                                                                                                                                     |
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris

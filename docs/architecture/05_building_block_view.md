@@ -54,3 +54,11 @@ The building block view describes only the responsibilities of the components/ p
 | MAD                | Stores the partner and material related information. They may only be added via REST interfaces.                                                       |
 | Stock              | Stores and handles stock related data. It provides interfaces to create and read stock data. Also it allows to exchange stock information via the EDC. |
 | DTR                | The DTR component provides the DTR implementations to manage ShellDescriptors, query partners' DTR and consume Submodel data.                          |
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris

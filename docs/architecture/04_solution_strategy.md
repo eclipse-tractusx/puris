@@ -29,3 +29,11 @@ PURIS FOSS
 - registers digital twins depending on the relationship of partners for a specific material
 - implements value-only submodel interfaces for information objects exchanged based on Digital Twin and Industry Core
   standards.
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris

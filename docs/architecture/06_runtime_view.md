@@ -69,3 +69,11 @@ When reloading the UI, the latest data is pulled from the backend. Whenever a pa
 is performed, then the frontend hands over the request to the backend to perform the action.
 
 Details on the Web-Ui can be found in the [User Guide](../user/User_Guide.md).
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris

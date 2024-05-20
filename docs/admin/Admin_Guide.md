@@ -366,3 +366,11 @@ the chart. Optionally it may be disabled to use your own installation. Refer to 
 
 Encryption at rest for databases works. It has been tested by either encrypting the docker folder or encrypting the
 whole filesystem of the machine running.
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris
