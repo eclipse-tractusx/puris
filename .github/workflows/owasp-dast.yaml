@@ -30,23 +30,31 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
         with:
           ref: main
           fetch-depth: 0
+
+      # if tested from branch, update to blob/branch-name
+      - name: Set permissions
+        run: chmod +x ./puris/blob/main/.github/fetch_token.sh
+
+      # if tested from branch, update to blob/branch-name
+      - name: Fetch token
+        run: ./puris/blob/main/.github/fetch_token.sh
 
       - name: MAD Test
         id: mad_test
         run: |
           # Perform API Test 1 and capture the response
-          response=$(curl -w "%{http_code}" -v GET https://puris-backend-customer.int.demo.catena-x.net/catena/materials --header "X-Api-Key: ${{ API_KEY }}")
+          response=$(curl -w "%{http_code}" -v GET https://puris-backend-customer.int.demo.catena-x.net/catena/materials --header "X-Api-Key: $API_KEY")
           echo "Response: $response"
 
       - name: Stock View Test
         id: stock_view_test
         run: |
           # Perform API Test 3 and capture the response
-          response=$(curl -X GET https://puris-backend-customer.int.demo.catena-x.net/catena/stockView/product-stocks --header "X-Api-Key: ${{ API_KEY }}")
+          response=$(curl -X GET https://puris-backend-customer.int.demo.catena-x.net/catena/stockView/product-stocks --header "X-Api-Key: $API_KEY")
           echo "Response: $response"
 
       - name: Generating report skeletons
@@ -80,7 +88,7 @@ jobs:
     name: OWASP ZAP FULL Scan
     steps:
       - name: Checkout
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
         with:
           ref: main
 
