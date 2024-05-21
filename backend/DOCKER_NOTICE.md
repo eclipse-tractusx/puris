@@ -8,7 +8,7 @@ Eclipse Tractus-X product(s) installed within the image:
 - Project license: [Apache License, Version 2.0](https://github.com/eclipse-tractusx/puris/blob/main/backend/LICENSE)
 
 **Used Base Image [Backend]**
-`eclipse-temurin:17-jre-alpine`
+`eclipse-temurin:21-jre-alpine`
 
 - DockerHub: https://hub.docker.com/_/eclipse-temurin
 - GitHub project: https://github.com/adoptium/containers
