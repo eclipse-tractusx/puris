@@ -16,7 +16,7 @@ steers the allocation of material within the production. PURIS supports the disp
 providing relevant information regarding the material flow.
 
 **Production (Process)**
-Production is the actually value-adding process of a manufacturer. It's demand is derived by outer factors such as
+Production is the actually value-adding process of a manufacturer. Its demand is derived by outer factors such as
 orders. A lack of material in supply chains leads to shortages. The production process has to be seen as a consumer of
 data provided by PURIS (Catena-X data consumer) and as a provider of data to PURIS (Catena-X data provider). In that way
 PURIS is able to fulfill the disposition's information need.

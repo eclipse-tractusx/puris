@@ -20,6 +20,6 @@ dtr -- "Register and discover twins\n& submodels" stock
 stock - "query catalog &\nget data (via edc)" edc
 mad - stock
 
-
+"OAuth2" )-  "uses for authentication of DTR" dtr
 
 @enduml
