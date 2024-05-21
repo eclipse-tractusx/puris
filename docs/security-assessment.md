@@ -191,3 +191,11 @@ B
 | Before Mitigation | Impact: High, Likelihood: Medium, Risk: High |
 | After Mitigation | Impact: Low, Likelihood: Low, Risk: Low |
 | Mitigation | PostgreSQL DB has been implemented to the product. Status of implementation is already completed. Additionally: We don't include it in compile, but in test scope so that we have easy testing but security when deploying. |
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris

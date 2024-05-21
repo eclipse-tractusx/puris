@@ -1,0 +1,138 @@
+@startuml
+autonumber
+skinparam sequenceMessageAlign center
+
+box "Data Consumer"
+participant "Business\nApplication" as app_cons
+participant "EDC\nConsumer" as edc_cons
+end box
+
+box "Data Provider"
+participant "EDC\nProvider" as edc_prov
+participant "DT\nProvider" as dtr_prov
+participant "Submodel\nEndpoint" as se_prov
+end box
+
+=== Identify Data via Digital Twin Registry of Provider ==
+== Contract DTR Usage ==
+app_cons -> edc_cons: search for DTR assets at partner
+activate edc_cons
+edc_cons <-> edc_prov: catalog communication
+edc_cons --> app_cons: catalog
+deactivate edc_cons
+
+app_cons -> app_cons: identify DTR Offer\n(filter by dcat:type, cx:version)
+
+app_cons -> edc_cons: negotiate contract for DTR usage
+activate edc_cons
+edc_cons <-> edc_prov: negotiation
+edc_cons --> app_cons: contract agreement (contractAgreementId)
+deactivate edc_cons
+
+app_cons -> edc_cons: initialize transfer
+activate edc_cons
+edc_cons <-> edc_prov: initialize transfer
+edc_cons --> app_cons: transfer completed (transferProcessId)
+deactivate edc_cons
+
+app_cons -> edc_cons: get EDR for transferProcessId
+activate edc_cons
+edc_cons <-> edc_prov: get EDR for transfer
+edc_cons --> app_cons: EDR (refreshed)
+deactivate edc_cons
+
+== Lookup and Determine ShellDescriptor for Material in Question ==
+app_cons -> app_cons: prepare material identification\nas specific asset ids
+app_cons -> app_cons: prepare dtr lookup based on\nEDR endpoint and auth
+
+note over app_cons, edc_cons
+Lookup request against DTR via EDC
+using EDR for authentication
+end note
+app_cons ->  edc_prov: Lookup Material Twin at partner (via EDC)
+note right
+lookup uses base64-encoded parameters for
+- manufacturerId
+- manufacturerPartId
+- digitalTwinType = "PartType"
+end note
+activate edc_prov
+edc_prov -> dtr_prov: proxy request
+activate dtr_prov
+dtr_prov --> edc_prov: lookup result
+deactivate dtr_prov
+edc_prov --> app_cons: lookup result
+deactivate edc_prov
+app_cons -> app_cons: base64 encode\nreturned shell-id
+
+note over app_cons, edc_cons
+Shell Descriptors request against DTR via EDC
+using EDR for authentication
+end note
+app_cons ->  edc_prov: Query Shell-Descriptor of \nMaterial Twin at partner (via EDC)
+activate edc_prov
+edc_prov -> dtr_prov: proxy request
+activate dtr_prov
+dtr_prov --> edc_prov: found shellDescriptors
+deactivate dtr_prov
+edc_prov --> app_cons: found shellDescriptors
+deactivate edc_prov
+
+app_cons -> edc_cons: terminate transfer by transferProcessId
+activate edc_cons
+edc_cons <-> edc_prov: terminate transfer
+edc_cons --> app_cons: transfer terminated
+deactivate edc_cons
+
+== Determine Submodel Endpoint of Submodel Type of Interest ==
+app_cons -> app_cons: lookup submodel "DSP" endpoint\nfor semantic id of interest
+app_cons -> app_cons: check if contract is given
+app_cons -> app_cons: extract submodel data\n(edc endpoints, asset id, href)
+
+=== Query Submodel Data at Provider EDC ==
+== Contract Submodel Usage ==
+app_cons -> edc_cons: search for submodel asset at partner\n(request with asset id)
+activate edc_cons
+edc_cons <-> edc_prov: catalog communication
+edc_cons --> app_cons: catalog
+deactivate edc_cons
+
+app_cons -> app_cons: filter offers by\ndata sovereignty criteria\n(framework agreement & purpose)
+
+app_cons -> edc_cons: negotiate contract for submodel data
+activate edc_cons
+edc_cons <-> edc_prov: negotiation
+edc_cons --> app_cons: contract agreement (contractAgreementId)
+deactivate edc_cons
+
+app_cons -> app_cons: remember Contract for future usage
+
+app_cons -> edc_cons: initialize transfer
+activate edc_cons
+edc_cons <-> edc_prov: initialize transfer
+edc_cons --> app_cons: transfer completed (transferProcessId)
+deactivate edc_cons
+
+app_cons -> edc_cons: get EDR for transferProcessId
+activate edc_cons
+edc_cons <-> edc_prov: get EDR for transfer
+edc_cons --> app_cons: EDR (refreshed)
+deactivate edc_cons
+
+== Request Submodel via EDC ==
+note over app_cons, edc_cons: request submodel via EDC using EDR for authentication
+app_cons ->  edc_prov: Query submodel endpoint with href from\nSubmodelDescriptor.endpoint
+activate edc_prov
+edc_prov -> se_prov: proxy request
+activate se_prov
+se_prov --> edc_prov: found submodel
+deactivate se_prov
+edc_prov --> app_cons: found submodel
+deactivate edc_prov
+
+app_cons -> edc_cons: terminate transfer by transferProcessId
+activate edc_cons
+edc_cons <-> edc_prov: terminate transfer
+edc_cons --> app_cons: transfer terminated
+deactivate edc_cons
+@enduml

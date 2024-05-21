@@ -1,0 +1,40 @@
+@startuml
+
+
+package "PURIS"{
+
+  [Postgres TXC] as edc_pg
+  [Tractus-X Connector] as edc
+  [Digital Twin Registry] as dtr
+  [DTR IDP] as dtr_idp
+  [Postgres DTR] as dtr_pg
+
+  [Postgresql DB] as postgres
+  [PURIS FOSS Backend] as puris_backend
+  [PURIS FOSS Frontend] as puris_frontend
+
+  puris_backend -- edc
+  edc - edc_pg
+  dtr_idp - edc
+  dtr - puris_backend
+  puris_backend -- dtr_idp
+  dtr_pg - dtr
+  dtr -- dtr_idp
+  postgres -- puris_backend
+  "Interface internal systems\n" - puris_backend
+  puris_backend - puris_frontend
+
+}
+
+package "CX" {
+
+  [Keycloak] as keycloak
+  [Managed Identity Wallet] as miw
+
+}
+
+edc -- keycloak
+edc -- miw
+puris_frontend -- keycloak
+
+@enduml

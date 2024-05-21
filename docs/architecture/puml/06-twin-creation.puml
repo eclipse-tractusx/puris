@@ -1,0 +1,55 @@
+@startuml
+autonumber
+skinparam sequenceMessageAlign center
+
+box "PURIS backend"
+participant "MaterialController" as m_c
+participant "MaterialPartner\nRelationsController" as mpr_c
+participant "MaterialServiceImpl" as m_s
+participant "MaterialPartner\nRelationServiceImpl" as mpr_s
+participant "EdcAdapterService" as edc_s
+participant "DtrAdapterService" as dtr_s
+end box
+
+
+=== Create or Update Material or Product ==
+m_c -> m_s: Create or Update Material or Product
+activate m_s
+alt create material or product
+m_s -> m_s: Generate or take\nCatena-X ID\n(save on material)
+end
+m_s --> m_c: OK
+deactivate m_s
+
+mpr_c -> mpr_s: Create or Updae MPR for partner\nand material / product
+activate mpr_s
+mpr_s -> mpr_s: Create DtrRegistrationTask
+mpr_s -> mpr_s: Determine Partners who\nbuy material and supply product
+
+group DtrRegistrationTask
+    alt at least one Partner who buys (We're the supplier)
+        mpr_s -> dtr_s: Create ShellDescriptor with access rights for buying\npartners and all submodels
+        activate dtr_s
+        return OK
+    else at least one Partner who sells (We're the customer)
+        alt MPR does not yet have the CX-ID
+            mpr_s -> edc_s: Lookup DigitalTwin at Supplier\nto extract Catena-X ID
+            activate edc_s
+            edc_s -> edc_s: Lookup and Contract DTR
+            edc_s -> edc_s: Determine ShellDescriptor and\nSubmodel "DSP" Endpoint for\nPartTypeInformation from\npartner DTR
+            edc_s -> edc_s: Query PartTypeInformation Submodel\nat partner
+            edc_s -> edc_s: Extract Catena-X ID from Submodel
+            edc_s --> mpr_s: Catena-X ID
+            deactivate edc_s
+            mpr_s -> mpr_s: Set Partner Catena-X ID
+            mpr_s -> mpr_s: Save MaterialPartnerRelationship
+        end
+        mpr_s -> dtr_s: Create or Update ShellDescriptor with access rights for selling\npartners and all submodels
+        activate dtr_s
+        return OK
+    end
+end
+mpr_s --> mpr_c: OK
+deactivate mpr_s
+
+@enduml
