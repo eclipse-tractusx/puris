@@ -1,0 +1,55 @@
+{
+    "realm": "${CUSTOMER_KC_REALM_NAME}",
+    "users": [
+        {
+            "id": "dbc2c61d-2bfd-4fa9-85bb-8b08b60c2934",
+            "createdTimestamp": 1712066409143,
+            "username": "service-account-${KC_MANAGE_CLIENT_ID}",
+            "enabled": true,
+            "totp": false,
+            "emailVerified": false,
+            "serviceAccountClientId": "${KC_MANAGE_CLIENT_ID}",
+            "credentials": [],
+            "disableableCredentialTypes": [],
+            "requiredActions": [],
+            "realmRoles": [
+                "default-roles-cl-puris"
+            ],
+            "clientRoles": {
+                "${KC_MANAGE_CLIENT_ID}": [
+                    "update_digital_twin",
+                    "write_access_rules",
+                    "submodel_access_control",
+                    "view_digital_twin",
+                    "delete_digital_twin",
+                    "read_access_rules",
+                    "add_digital_twin"
+                ]
+            },
+            "notBefore": 0,
+            "groups": []
+        },
+        {
+            "id": "04bd5491-d1c0-4ce1-8bf9-cf895700b2b7",
+            "createdTimestamp": 1711643730251,
+            "username": "service-account-${KC_READ_CLIENT_ID}",
+            "enabled": true,
+            "totp": false,
+            "emailVerified": false,
+            "serviceAccountClientId": "${KC_READ_CLIENT_ID}",
+            "credentials": [],
+            "disableableCredentialTypes": [],
+            "requiredActions": [],
+            "realmRoles": [
+                "default-roles-cl-puris"
+            ],
+            "clientRoles": {
+                "${KC_READ_CLIENT_ID}": [
+                    "view_digital_twin"
+                ]
+            },
+            "notBefore": 0,
+            "groups": []
+        }
+    ]
+}

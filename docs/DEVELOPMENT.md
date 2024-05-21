@@ -14,6 +14,7 @@ docker compose -f docker-compose-dev-postgres.yaml down
 ```
 
 _NOTE: For testing purposes HyperSql is still used but excluded for spring run._
+ll
 
 ## Keeping dependencies-files up to date
 

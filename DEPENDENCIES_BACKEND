@@ -9,6 +9,7 @@ maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/2.15.3
 maven/mavencentral/com.fasterxml.jackson.module/jackson-module-parameter-names/2.15.3, Apache-2.0, approved, #8803
 maven/mavencentral/com.fasterxml/classmate/1.6.0, Apache-2.0, approved, clearlydefined
 maven/mavencentral/com.jayway.jsonpath/json-path/2.8.0, Apache-2.0, approved, clearlydefined
+maven/mavencentral/com.squareup.okhttp3/mockwebserver/4.12.0, Apache-2.0, approved, clearlydefined
 maven/mavencentral/com.squareup.okhttp3/okhttp/4.12.0, Apache-2.0, approved, #11156
 maven/mavencentral/com.squareup.okio/okio-jvm/3.6.0, Apache-2.0, approved, #11158
 maven/mavencentral/com.squareup.okio/okio/3.6.0, Apache-2.0, approved, #11155
@@ -28,6 +29,7 @@ maven/mavencentral/jakarta.persistence/jakarta.persistence-api/3.1.0, EPL-2.0 OR
 maven/mavencentral/jakarta.transaction/jakarta.transaction-api/2.0.1, EPL-2.0 OR GPL-2.0-only with Classpath-exception-2.0, approved, ee4j.jta
 maven/mavencentral/jakarta.validation/jakarta.validation-api/3.0.2, Apache-2.0, approved, ee4j.validation
 maven/mavencentral/jakarta.xml.bind/jakarta.xml.bind-api/4.0.1, BSD-3-Clause, approved, ee4j.jaxb
+maven/mavencentral/junit/junit/4.13.2, EPL-2.0, approved, CQ23636
 maven/mavencentral/net.bytebuddy/byte-buddy-agent/1.14.11, Apache-2.0, approved, #7164
 maven/mavencentral/net.bytebuddy/byte-buddy/1.14.11, Apache-2.0 AND BSD-3-Clause, approved, #7163
 maven/mavencentral/net.minidev/accessors-smart/2.5.0, Apache-2.0, approved, clearlydefined
@@ -48,6 +50,7 @@ maven/mavencentral/org.eclipse.angus/angus-activation/2.0.1, EPL-2.0 OR GPL-2.0-
 maven/mavencentral/org.glassfish.jaxb/jaxb-core/4.0.4, BSD-3-Clause, approved, ee4j.jaxb-impl
 maven/mavencentral/org.glassfish.jaxb/jaxb-runtime/4.0.4, BSD-3-Clause, approved, ee4j.jaxb-impl
 maven/mavencentral/org.glassfish.jaxb/txw2/4.0.4, BSD-3-Clause, approved, ee4j.jaxb-impl
+maven/mavencentral/org.hamcrest/hamcrest-core/2.2, BSD-3-Clause, approved, clearlydefined
 maven/mavencentral/org.hamcrest/hamcrest/2.2, BSD-3-Clause, approved, clearlydefined
 maven/mavencentral/org.hibernate.common/hibernate-commons-annotations/6.0.6.Final, LGPL-2.1-only, approved, #6962
 maven/mavencentral/org.hibernate.orm/hibernate-core/6.4.1.Final, LGPL-2.1-or-later AND (EPL-2.0 OR BSD-3-Clause) AND MIT, approved, #12490

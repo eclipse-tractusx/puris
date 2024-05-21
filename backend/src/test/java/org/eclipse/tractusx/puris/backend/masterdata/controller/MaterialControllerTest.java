@@ -20,10 +20,10 @@
 package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
-import org.eclipse.tractusx.puris.backend.masterdata.controller.MaterialController;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialEntityDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -37,6 +37,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -46,7 +47,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @WebMvcTest(MaterialController.class)
-@Import({ SecurityConfig.class, ApiKeyAuthenticationProvider.class })
+@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class})
 public class MaterialControllerTest {
 
     @Autowired
@@ -57,13 +58,13 @@ public class MaterialControllerTest {
 
     private final ModelMapper modelMapper = new ModelMapper();
     private final String materialNumber = "MNR-7307-AU340474.001";
-    private final MaterialEntityDto materialDto = new MaterialEntityDto(false, false, materialNumber, String.valueOf(UUID.randomUUID()),"TestMaterialDto");
+    private final MaterialEntityDto materialDto = new MaterialEntityDto(false, false, materialNumber, String.valueOf(UUID.randomUUID()), "TestMaterialDto");
 
     @Test
     @WithMockApiKey
     void createMaterialTest() throws Exception {
         // when
-        Material createdMaterial =  modelMapper.map(materialDto,Material.class);
+        Material createdMaterial = modelMapper.map(materialDto, Material.class);
         when(materialService.findByOwnMaterialNumber(materialNumber)).thenReturn(null);
         when(materialService.create(createdMaterial)).thenReturn(createdMaterial);
 
@@ -80,7 +81,7 @@ public class MaterialControllerTest {
     @WithMockApiKey
     void updateMaterialTest() throws Exception {
         // when
-        Material existingMaterial = modelMapper.map(materialDto,Material.class);
+        Material existingMaterial = modelMapper.map(materialDto, Material.class);
         when(materialService.findByOwnMaterialNumber(materialNumber)).thenReturn(existingMaterial);
         when(materialService.update(existingMaterial)).thenReturn(existingMaterial);
 

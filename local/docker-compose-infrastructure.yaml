@@ -49,16 +49,21 @@ services:
       - miw-net
 
   keycloak:
-    image: quay.io/keycloak/keycloak:21.1
+    image: quay.io/keycloak/keycloak:23.0.1
     env_file:
-      - ./miw/infrastructure.properties
+      - ./miw/keycloak.properties
     environment:
       DB_SCHEMA: public
     command:
+      - --verbose
       - start-dev
       - --import-realm
     volumes:
       - ./miw/keycloak-setup.json:/opt/keycloak/data/import/miw_test_realm.json
+      - ./keycloak/supplier/Supplier-realm.json:/opt/keycloak/data/import/Supplier-realm.json
+      - ./keycloak/supplier/Supplier-users-0.json:/opt/keycloak/data/import/Supplier-users-0.json
+      - ./keycloak/customer/Customer-realm.json:/opt/keycloak/data/import/Customer-realm.json
+      - ./keycloak/customer/Customer-users-0.json:/opt/keycloak/data/import/Customer-users-0.json
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:
