@@ -22,7 +22,6 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
@@ -558,7 +557,7 @@ public class EdcAdapterService {
                 }
             }
             if (!partner.getEdcUrl().equals(partnerDspUrl)) {
-                log.warn("Divering Edc Urls for Partner: " + partner.getBpnl() + " and type " + type);
+                log.warn("Diverging Edc Urls for Partner: " + partner.getBpnl() + " and type " + type);
                 log.warn("General Partner EdcUrl: " + partner.getEdcUrl());
                 log.warn("URL from AAS: " + partnerDspUrl);
             }
@@ -885,7 +884,7 @@ public class EdcAdapterService {
             Map.of("auto_refresh", "true"))
         ) {
             if (response.isSuccessful() && response.body() != null) {
-                ObjectNode responseObject = (ObjectNode) objectMapper.readTree(response.body().string());
+                JsonNode responseObject = objectMapper.readTree(response.body().string());
 
                 String dataPlaneEndpoint = responseObject.get("endpoint").asText();
                 String authToken = responseObject.get("authorization").asText();
@@ -899,10 +898,10 @@ public class EdcAdapterService {
         } catch (Exception e) {
             log.error("EDR token for transfer process with ID {} could not be obtained", transferProcessId);
         } finally {
-            if (failed && --retries >=0) {
+            if (failed && --retries >= 0) {
                 try {
                     Thread.sleep(100);
-                } catch (Exception e1){
+                } catch (Exception e1) {
                     log.error("Sleep interrupted", e1);
                 }
             }
