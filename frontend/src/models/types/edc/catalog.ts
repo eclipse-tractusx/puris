@@ -19,13 +19,13 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 export type CatalogOperation = {
-  'odrl:constraint': {
-      'odrl:leftOperand': string;
-      'odrl:operator': {
-          '@id': string;
-      };
-      'odrl:rightOperand': string;
-  };
+    'odrl:constraint': {
+        'odrl:leftOperand': string;
+        'odrl:operator': {
+            '@id': string;
+        };
+        'odrl:rightOperand': string;
+    };
 };
 
 export type CatalogPermission = {
@@ -34,28 +34,28 @@ export type CatalogPermission = {
         'odrl:type': string;
     }
     'odrl:constraint': {
-      'odrl:leftOperand': string;
-      'odrl:operator': {
-          '@id': string;
-      };
-      'odrl:rightOperand': string;
+        'odrl:leftOperand': string;
+        'odrl:operator': {
+            '@id': string;
+        };
+        'odrl:rightOperand': string;
     } | {
         '@type': string,
         'odrl:and': {
-           '@type': string,
+            '@type': string,
             'odrl:leftOperand': string;
             'odrl:operator': {
                 '@id': string;
             };
             'odrl:rightOperand': string;
         }[]
-  };
+    };
 };
 
 export type RawCatalogData = {
     'dcat:dataset': {
         '@id': string;
-        'dct:type': {
+        'https://purl.org/dc/terms/type': {
             '@id': string;
         }
         'https://w3id.org/catenax/ontology/common#version': string;

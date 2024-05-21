@@ -59,16 +59,17 @@ public class EdcController {
     /**
      * Get the catalog from an EDC.
      *
-     * @param dspUrl url of the edc to get catalog from.
+     * @param dspUrl      url of the edc to get catalog from.
+     * @param partnerBpnl bpnl of the partner to get the catalog from.
      * @return catalog of the requested edc.
      */
     @GetMapping(CATALOG)
-    public ResponseEntity<String> getCatalog(@RequestParam String dspUrl) {
+    public ResponseEntity<String> getCatalog(@RequestParam String dspUrl, @RequestParam String partnerBpnl) {
         try {
             if (!PatternStore.URL_PATTERN.matcher(dspUrl).matches()) {
                 return ResponseEntity.badRequest().build();
             }
-            var catalogResponse = edcAdapter.getCatalogResponse(dspUrl);
+            var catalogResponse = edcAdapter.getCatalogResponse(dspUrl, partnerBpnl, null);
             if (catalogResponse != null && catalogResponse.isSuccessful()) {
                 var responseString = catalogResponse.body().string();
                 catalogResponse.body().close();
@@ -175,12 +176,12 @@ public class EdcController {
                     // in a transfer. Because we want to show the other party's
                     // BPNL in the frontend in any case, we retrieve the BPNL via
                     // the contractAgreement and insert it into the JSON data.
-                    String myRole = item.get("edc:type").asText();
+                    String myRole = item.get("type").asText();
                     if ("PROVIDER".equals(myRole)) {
-                        String contractId = item.get("edc:contractId").asText();
+                        String contractId = item.get("contractId").asText();
                         var contractObject = objectMapper.readTree(edcAdapter.getContractAgreement(contractId));
-                        String partnerBpnl = contractObject.get("edc:consumerId").asText();
-                        ((ObjectNode) item).put("edc:connectorId", partnerBpnl);
+                        String partnerBpnl = contractObject.get("consumerId").asText();
+                        ((ObjectNode) item).put("connectorId", partnerBpnl);
                     }
                 }
                 return ResponseEntity.ok(responseObject);

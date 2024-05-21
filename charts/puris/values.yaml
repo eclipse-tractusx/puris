@@ -185,8 +185,8 @@ frontend:
     endpointUpdateReportedMaterialStocks: stockView/update-reported-material-stocks?ownMaterialNumber=
     # -- The endpoint for triggering an update of your product stocks on your partners side
     endpointUpdateReportedProductStocks: stockView/update-reported-product-stocks?ownMaterialNumber=
-    # -- The endpoint for the partners BPNS
-    endpointPartnerOwnSites: partners/ownSites
+    # -- The endpoint for partner information
+    endpointPartner: partner
     # -- The endpoint for the demand submodel
     endpointDemand: demand
     # -- The endpoint for the production submodel
@@ -432,14 +432,44 @@ backend:
       # -- Asset ID for DeliverySubmodel API
       apiassetid: deliverysubmodel-api-asset
     frameworkagreement:
-      # -- The name of the framework agreement
-      credential: FrameworkAgreement.traceability
+      # -- The name of the framework agreement. Starting with Uppercase and using CamelCase.
+      credential: Puris
+      # -- The version of the framework agreement, NEEDS TO BE PUT AS "STRING"!
+      version: "1.0"
+    purpose:
+      # -- The name of the purpose to use for submodel contracts
+      name: "cx.puris.base"
+      # -- The version of the purpose to use for submodel contracts. NEEDS TO BE PUT AS "STRING"!
+      version: "1"
     edr:
       # -- Number of minutes before received authentication data of a consumer pull is removed from memory
       deletiontimer: 2
     dtr:
       # --Endpoint for DTR
       url: http://localhost:4243
+      idp:
+        # -- enables the usage of the IDP for the DTR.
+        enabled: true
+        # -- token url of the idp for your specific realm. May be different to other idp token url in this config.
+        # Mandatory if backend.puris.dtr.idp.enabled = true.
+        tokenurl: https://keycloak-service.com/realms/your-realm/openid-connect/token
+        clients:
+          edc:
+            # -- id of the client that has a service account with roles to view the DTR. Used by the application to create
+            # DTR asset in the edc with read only access. See Admin Guide. Mandatory if
+            # backend.puris.dtr.idp.enabled = true.
+            id: FOSS-EDC-CLIENT
+            secret:
+              # -- alias for the vault used by the EDC in which the secret is stored. Mandatory if
+              # backend.puris.dtr.idp.enabled = true.
+              alias: path/secret-name
+          puris:
+            # -- id of the client that has a service account with roles to manage the DTR. Used by the application to
+            # create and update digital twins. See Admin Guide. Mandatory if backend.puris.dtr.idp.enabled = true.
+            id: FOSS-PURIS-CLIENT
+            # -- secret of the client with write access (no vault alias). No default value will be created if empty.
+            # Mandatory if backend.puris.dtr.idp.enabled = true.
+            secret:
     # -- Flag that decides whether the auto-generation feature of the puris backend is enabled.
     # Since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing CatenaX-Id
     # via the materials-API of the backend, when you are inserting a new Material entity to the backend's

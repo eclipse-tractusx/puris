@@ -21,6 +21,7 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
@@ -50,7 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(StockViewController.class)
-@Import({ SecurityConfig.class, ApiKeyAuthenticationProvider.class })
+@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class})
 class StockViewControllerTest {
 
     @Autowired
@@ -85,7 +86,7 @@ class StockViewControllerTest {
 
     @Test
     @WithMockApiKey
-    void getMaterials_GivenTwoMaterials_ReturnsListOfMaterials() throws Exception{
+    void getMaterials_GivenTwoMaterials_ReturnsListOfMaterials() throws Exception {
 
         // given
         Material material1 = Material.builder()
