@@ -58,7 +58,7 @@ public class DtrSecurityConfiguration {
     /**
      * grant_type. Currently only client_credentials is supported
      **/
-    final String grant_type = "client_credentials";
+    private final String grant_type = "client_credentials";
 
     /**
      * client id of the edc client with read access for DTR
