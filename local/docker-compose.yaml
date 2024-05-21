@@ -60,7 +60,7 @@ services:
     depends_on:
       edc-customer-control-plane:
         condition: service_started #service_healthy
-      postgres-customer:
+      postgres-all:
         condition: service_healthy
       dtr-customer:
         condition: service_healthy
@@ -69,7 +69,7 @@ services:
     env_file:
       - ./tractus-x-edc/config/customer/puris-backend.properties
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://customer-postgres:5432/puris-customer
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/puris_customer
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
     networks:
@@ -81,10 +81,10 @@ services:
     image: tractusx/sldt-digital-twin-registry:0.4.3
     container_name: dtr-customer
     depends_on:
-      postgres-customer:
+      postgres-all:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors" ]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors"]
       interval: 4s
       timeout: 3s
       retries: 15
@@ -93,7 +93,7 @@ services:
     environment:
       REGISTRY_IDM_OWNING_TENANT_ID: BPNL4444444444XX
       SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
-      SPRING_DATASOURCE_URL: jdbc:postgresql://customer-postgres:5432/dtr_database
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/dtr_customer
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
       SPRING_PROFILES_ACTIVE: local
@@ -103,17 +103,17 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
-  postgres-customer:
+  postgres-all:
     image: postgres:15.4-alpine
-    container_name: customer-postgres
+    container_name: postgres-all
     environment:
-      POSTGRES_DB: puris-customer
+      POSTGRES_DB: puris_customer # create puris db for customer, rest init script
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PW}
     ports:
       - "127.0.0.1:5433:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready  -d puris-customer -U ${PG_USER}" ]
+      test: ["CMD-SHELL", "pg_isready  -d puris_customer -U ${PG_USER}"]
       interval: 4s
       timeout: 3s
       retries: 15
@@ -127,9 +127,12 @@ services:
     security_opt:
       - no-new-privileges:true
     volumes:
-      - ./postgres/init-dtr.sql:/docker-entrypoint-initdb.d/init-dtr.sql
+      - ./postgres/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
 
   edc-customer-control-plane:
+    depends_on:
+      postgres-all:
+        condition: service_healthy
     restart: on-failure
     extends:
       file: ./tractus-x-edc/docker-compose.yaml
@@ -149,6 +152,9 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   edc-customer-data-plane:
+    depends_on:
+      postgres-all:
+        condition: service_healthy
     restart: on-failure
     extends:
       file: ./tractus-x-edc/docker-compose.yaml
@@ -156,10 +162,9 @@ services:
     container_name: customer-data-plane
     ports:
       - "127.0.0.1:8280:8280"
+      - "127.0.0.1:8283:8283"
       - "127.0.0.1:8285:8285"
       - "127.0.0.1:8299:8299"
-    environment:
-      edc.vault.hashicorp.token: ${VAULT_DEV_ROOT_TOKEN_ID}
     env_file:
       - ./tractus-x-edc/config/customer/data-plane.properties
     networks:
@@ -206,7 +211,7 @@ services:
     depends_on:
       edc-supplier-control-plane:
         condition: service_started #service_healthy
-      postgres-supplier:
+      postgres-all:
         condition: service_healthy
       dtr-supplier:
         condition: service_healthy
@@ -215,7 +220,7 @@ services:
     env_file:
       - ./tractus-x-edc/config/supplier/puris-backend.properties
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://supplier-postgres:5432/puris-supplier
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/puris_supplier
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
     networks:
@@ -227,10 +232,10 @@ services:
     image: tractusx/sldt-digital-twin-registry:0.4.3
     container_name: dtr-supplier
     depends_on:
-      postgres-supplier:
+      postgres-all:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors" ]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors"]
       interval: 4s
       timeout: 3s
       retries: 15
@@ -239,7 +244,7 @@ services:
     environment:
       REGISTRY_IDM_OWNING_TENANT_ID: BPNL1234567890ZZ
       SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
-      SPRING_DATASOURCE_URL: jdbc:postgresql://supplier-postgres:5432/dtr_database
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/dtr_supplier
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
       SPRING_PROFILES_ACTIVE: local
@@ -249,33 +254,10 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
-  postgres-supplier:
-    image: postgres:15.4-alpine
-    container_name: supplier-postgres
-    environment:
-      POSTGRES_DB: puris-supplier
-      POSTGRES_USER: ${PG_USER}
-      POSTGRES_PASSWORD: ${PG_PW}
-    ports:
-      - "127.0.0.1:5435:5432"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d puris-supplier -U ${PG_USER}" ]
-      interval: 4s
-      timeout: 3s
-      retries: 15
-    networks:
-      - miw-net
-    deploy:
-      resources:
-        limits:
-          memory: 512mb
-          cpus: "0.5"
-    security_opt:
-      - no-new-privileges:true
-    volumes:
-      - ./postgres/init-dtr.sql:/docker-entrypoint-initdb.d/init-dtr.sql
-
   edc-supplier-control-plane:
+    depends_on:
+      postgres-all:
+        condition: service_healthy
     restart: on-failure
     extends:
       file: ./tractus-x-edc/docker-compose.yaml
@@ -295,8 +277,10 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
-
   edc-supplier-data-plane:
+    depends_on:
+      postgres-all:
+        condition: service_healthy
     restart: on-failure
     extends:
       file: ./tractus-x-edc/docker-compose.yaml
@@ -304,10 +288,9 @@ services:
     container_name: supplier-data-plane
     ports:
       - "127.0.0.1:9280:9280"
+      - "127.0.0.1:9283:9283"
       - "127.0.0.1:9285:9285"
       - "127.0.0.1:9299:9299"
-    environment:
-      edc.vault.hashicorp.token: ${VAULT_DEV_ROOT_TOKEN_ID}
     env_file:
       - ./tractus-x-edc/config/supplier/data-plane.properties
     networks:
