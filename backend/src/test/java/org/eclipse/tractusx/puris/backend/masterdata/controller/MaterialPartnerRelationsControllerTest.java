@@ -21,6 +21,7 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
+import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
@@ -49,7 +50,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MaterialPartnerRelationsController.class)
-@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class})
+@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class})
 public class MaterialPartnerRelationsControllerTest {
 
     @Autowired
@@ -85,7 +86,6 @@ public class MaterialPartnerRelationsControllerTest {
         String partnerMaterialNumber = "MNR-8101-ID146955.001";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
-
 
 
         // when
