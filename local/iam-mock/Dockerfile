@@ -1,7 +1,6 @@
 #
-# Copyright (c) 2023 Volkswagen AG
-# Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-# Copyright (c) 2023 Contributors to the Eclipse Foundation
+# Copyright (c) 2024 Volkswagen AG
+# Copyright (c) 2024 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -18,13 +17,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-version: '1'
-services:
-    puris-frontend:
-        image: puris-frontend:dev
-        container_name: frontend
-        ports:
-            - 3000:8080
-        environment:
-            - APP_NAME=PURIS
-            - BACKEND_BASE_URL=http://localhost:8081/catena/
+FROM python:3.10
+
+WORKDIR /code
+COPY ./requirements.txt /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+COPY ./ /code
+COPY ./keys /code/keys
+RUN useradd -u 1000 nonroot
+USER nonroot
+
+CMD ["uvicorn", "mock_util:app", "--host", "0.0.0.0", "--port", "80"]

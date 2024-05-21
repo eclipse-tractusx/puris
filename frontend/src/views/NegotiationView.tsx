@@ -21,14 +21,14 @@ SPDX-License-Identifier: Apache-2.0
 
 import Card from '@mui/material/Card';
 
-import { useNegotiations } from '@hooks/edc/useNegotiations';
-import { Negotiation } from '@models/types/edc/negotiation';
+import {useNegotiations} from '@hooks/edc/useNegotiations';
+import {Negotiation} from '@models/types/edc/negotiation';
 
 type NegotiationCardProps = {
     negotiation: Negotiation;
 };
 
-const NegotiationCard = ({negotiation }: NegotiationCardProps) => {
+const NegotiationCard = ({negotiation}: NegotiationCardProps) => {
     return (
         <Card className="p-5">
             <h2 className="text-xl font-semibold mb-3">Negotiation</h2>
@@ -40,27 +40,27 @@ const NegotiationCard = ({negotiation }: NegotiationCardProps) => {
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> Aggreement  Id: </span>
-                        <span className="break-all w-[60ch]">{negotiation['edc:contractAgreementId']}</span>
+                        <span className="break-all w-[60ch]">{negotiation['contractAgreementId']}</span>
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> Type: </span>
-                        {negotiation['edc:type']}
+                        {negotiation['type']}
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> State: </span>
-                        {negotiation['edc:state']}
+                        {negotiation['state']}
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> CounterParty: </span>
-                        {negotiation['edc:counterPartyId']}
+                        {negotiation['counterPartyId']}
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> Counterparty EDC URL: </span>
-                        {negotiation['edc:counterPartyAddress']}
+                        {negotiation['counterPartyAddress']}
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> Timestamp: </span>
-                        {new Date(negotiation['edc:createdAt']).toLocaleString()}
+                        {new Date(negotiation['createdAt']).toLocaleString()}
                     </div>
                 </div>
             </div>
@@ -69,19 +69,20 @@ const NegotiationCard = ({negotiation }: NegotiationCardProps) => {
 };
 
 export const NegotiationView = () => {
-    const { negotiations  } = useNegotiations();
+    const {negotiations} = useNegotiations();
     return (
         <div className="flex flex-col items-center w-full h-full">
             <h1 className="text-3xl font-semibold text-gray-700 mb-10">Negotiation</h1>
             <ul className="flex flex-col gap-3 w-[100ch]">
                 {negotiations && negotiations.length > 0 ? (
                     negotiations.map((negotiation) => (
-                        <li>
-                            <NegotiationCard negotiation={negotiation} />
+                        <li key={negotiation["@id"]}>
+                            <NegotiationCard negotiation={negotiation}/>
                         </li>
                     ))
                 ) : (
-                    <p className='text-center'>No negotiations found. This list will be updated when Negotiations happen.</p>
+                    <p className='text-center'>No negotiations found. This list will be updated when Negotiations
+                        happen.</p>
                 )}
             </ul>
         </div>

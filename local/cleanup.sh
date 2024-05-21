@@ -23,6 +23,9 @@
 docker compose down -v
 docker compose -f docker-compose-infrastructure.yaml down -v
 docker image rm local-vault
+docker image rm local-mock-util-service
 rm .env
+rm seed-bdrs.sh
 rm ./vault/secrets -r
+rm ./iam-mock/keys -r
 echo "Deleted .env and vault/secrets"

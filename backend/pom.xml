@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (c) 2022,2023 Volkswagen AG
-    Copyright (c) 2022,2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-    Copyright (c) 2022,2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2022,2024 Volkswagen AG
+    Copyright (c) 2022,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+    Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.2.2</version>
+    <version>3.2.5</version>
     <relativePath/>
   </parent>
   <groupId>org.eclipse.tractusx.puris</groupId>
@@ -37,10 +37,13 @@
   <name>puris-backend</name>
   <description>PURIS Backend</description>
   <properties>
-    <java.version>17</java.version>
-    <springdoc.version>2.3.0</springdoc.version>
+    <java.version>21</java.version>
+    <springdoc.version>2.5.0</springdoc.version>
     <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
     <snakeyaml.version>2.2</snakeyaml.version>
+    <okhttp.version>4.12.0</okhttp.version>
+    <modelmapper.version>3.2.0</modelmapper.version>
+    <hsqldb.version>2.7.2</hsqldb.version>
   </properties>
   <dependencies>
     <dependency>
@@ -62,7 +65,7 @@
     <dependency>
       <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
-      <version>2.7.1</version>
+      <version>${hsqldb.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -99,8 +102,14 @@
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>4.12.0</version>
+      <version>${okhttp.version}</version>
     </dependency>
+      <dependency>
+          <groupId>com.squareup.okhttp3</groupId>
+          <artifactId>mockwebserver</artifactId>
+          <version>${okhttp.version}</version>
+          <scope>test</scope>
+      </dependency>
     <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-validator -->
     <dependency>
       <groupId>org.hibernate.validator</groupId>
@@ -111,7 +120,7 @@
     <dependency>
       <groupId>org.modelmapper</groupId>
       <artifactId>modelmapper</artifactId>
-      <version>3.2.0</version>
+      <version>${modelmapper.version}</version>
     </dependency>
   </dependencies>
 

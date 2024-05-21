@@ -26,3 +26,4 @@ repositories:
 skipReleaseChecks:
   alignedBaseImage:
     - "local/vault/Dockerfile"
+    - "local/iam-mock/Dockerfile"
