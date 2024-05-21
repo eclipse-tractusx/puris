@@ -1,16 +1,18 @@
 # puris
 
-![Version: 2.0.1](https://img.shields.io/badge/Version-2.0.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 2.3.0](https://img.shields.io/badge/Version-2.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
 **Homepage:** <https://github.com/eclipse-tractusx/puris>
 
 ## Prerequisites
+
 - Kubernetes 1.19+
 - Helm 3.2.0+
 
 ## TL;DR
+
 ```shell
 $ helm install puris --namespace puris --create-namespace .
 ```
@@ -21,8 +23,8 @@ $ helm install puris --namespace puris --create-namespace .
 
 ## Requirements
 
-| Repository | Name | Version |
-|------------|------|---------|
+| Repository                         | Name       | Version |
+|------------------------------------|------------|---------|
 | https://charts.bitnami.com/bitnami | postgresql | 12.12.x |
 
 ## Values
@@ -67,6 +69,12 @@ $ helm install puris --namespace puris --create-namespace .
 | backend.puris.deliverysubmodel.apiassetid | string | `"deliverysubmodel-api-asset"` | Asset ID for DeliverySubmodel API |
 | backend.puris.demandsubmodel.apiassetid | string | `"demandsubmodel-api-asset"` | Asset ID for DemandSubmodel API |
 | backend.puris.demonstrator.role | string | `nil` | Current role of the PURIS demonstrator. Default value should be empty. Can be set to "customer" or "supplier" to enable demonstration setup |
+| backend.puris.dtr.idp.clients.edc.id | string | `"FOSS-EDC-CLIENT"` | id of the client that has a service account with roles to view the DTR. Used by the application to create DTR asset in the edc with read only access. See Admin Guide. Mandatory if backend.puris.dtr.idp.enabled = true. |
+| backend.puris.dtr.idp.clients.edc.secret.alias | string | `"path/secret-name"` | alias for the vault used by the EDC in which the secret is stored. Mandatory if backend.puris.dtr.idp.enabled = true. |
+| backend.puris.dtr.idp.clients.puris.id | string | `"FOSS-PURIS-CLIENT"` | id of the client that has a service account with roles to manage the DTR. Used by the application to create and update digital twins. See Admin Guide. Mandatory if backend.puris.dtr.idp.enabled = true. |
+| backend.puris.dtr.idp.clients.puris.secret | string | `nil` | secret of the client with write access (no vault alias). No default value will be created if empty. Mandatory if backend.puris.dtr.idp.enabled = true. |
+| backend.puris.dtr.idp.enabled | bool | `true` | enables the usage of the IDP for the DTR. |
+| backend.puris.dtr.idp.tokenurl | string | `"https://keycloak-service.com/realms/your-realm/openid-connect/token"` | token url of the idp for your specific realm. May be different to other idp token url in this config. Mandatory if backend.puris.dtr.idp.enabled = true. |
 | backend.puris.dtr.url | string | `"http://localhost:4243"` | Endpoint for DTR |
 | backend.puris.edc.controlplane.host | string | `"172.17.0.2"` |  |
 | backend.puris.edc.controlplane.key | string | `"password"` | Key for the EDC control plane |
@@ -194,3 +202,11 @@ $ helm install puris --namespace puris --create-namespace .
 | postgresql.enabled | bool | `true` | Enable postgres by default, set to false to use existing postgres. Make sure to set backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from backend). |
 | postgresql.fullnameOverride | string | `"backend-postgresql"` | Possibility to override the fullname |
 | postgresql.service.ports.postgresql | int | `5432` | Port of postgres database. |
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris

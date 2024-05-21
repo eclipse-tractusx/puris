@@ -41,6 +41,7 @@
         <springdoc.version>2.3.0</springdoc.version>
         <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
         <snakeyaml.version>2.2</snakeyaml.version>
+        <okhttp.version>4.12.0</okhttp.version>
     </properties>
     <dependencies>
         <dependency>
@@ -99,7 +100,13 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.12.0</version>
+            <version>${okhttp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>mockwebserver</artifactId>
+            <version>${okhttp.version}</version>
+            <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-validator -->
         <dependency>
@@ -113,7 +120,6 @@
             <artifactId>modelmapper</artifactId>
             <version>3.2.0</version>
         </dependency>
-
     </dependencies>
 
     <pluginRepositories>

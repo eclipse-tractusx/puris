@@ -84,20 +84,25 @@ services:
       postgres-all:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors" ]
+      test: ["CMD-SHELL", "wget -q --spider http://dtr-customer:4243/actuator/health/readiness"]
       interval: 4s
       timeout: 3s
       retries: 20
     ports:
       - "127.0.0.1:4243:4243"
     environment:
-      REGISTRY_IDM_OWNING_TENANT_ID: BPNL4444444444XX
       SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/dtr_customer
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
-      SPRING_PROFILES_ACTIVE: local
+      REGISTRY_IDM_OWNING_TENANT_ID: ${CUSTOMER_BPNL}
+      REGISTRY_USE_GRANULAR_ACCESS_CONTROL: false
       JAVA_TOOL_OPTIONS: "-Xms512m -Xmx1024m"
+      # deactivate oauth idp by commenting out SPRING_PROFILES_ACTIVE
+      # SPRING_PROFILES_ACTIVE: local
+      # Note: Currently DTR only allows one client, thus manage client must be used for all.
+      REGISTRY_IDM_PUBLIC_CLIENT_ID: ${KC_MANAGE_CLIENT_ID}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/Customer"
     networks:
       - miw-net
     extra_hosts:
@@ -235,20 +240,25 @@ services:
       postgres-all:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors" ]
+      test: ["CMD-SHELL", "wget -q --spider http://dtr-supplier:4243/actuator/health/readiness"]
       interval: 4s
       timeout: 3s
       retries: 20
     ports:
       - "127.0.0.1:4244:4243"
     environment:
-      REGISTRY_IDM_OWNING_TENANT_ID: BPNL1234567890ZZ
       SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/dtr_supplier
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
-      SPRING_PROFILES_ACTIVE: local
+      REGISTRY_IDM_OWNING_TENANT_ID: ${SUPPLIER_BPNL}
+      REGISTRY_USE_GRANULAR_ACCESS_CONTROL: false
       JAVA_TOOL_OPTIONS: "-Xms512m -Xmx1024m"
+      # deactivate oauth idp by commenting out SPRING_PROFILES_ACTIVE
+      # SPRING_PROFILES_ACTIVE: local
+      # Note: Currently DTR only allows one client, thus manage client must be used for all.
+      REGISTRY_IDM_PUBLIC_CLIENT_ID: ${KC_MANAGE_CLIENT_ID}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/Supplier"
     networks:
       - miw-net
     extra_hosts:

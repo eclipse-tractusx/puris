@@ -20,10 +20,10 @@
 package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
-import org.eclipse.tractusx.puris.backend.masterdata.controller.PartnerController;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Address;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
@@ -31,7 +31,6 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.AddressDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.SiteDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,13 +41,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.TreeSet;
+import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @WebMvcTest(PartnerController.class)
-@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class})
+@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class})
 public class PartnerControllerTest {
 
     @Autowired

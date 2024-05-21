@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,8 @@ import java.util.Map;
 @Slf4j
 public class EdcRequestBodyBuilder {
 
+    @Autowired
+    private DtrSecurityConfiguration dtrSecurityConfig;
     @Autowired
     private VariablesService variablesService;
     @Autowired
@@ -388,6 +391,12 @@ public class EdcRequestBodyBuilder {
         dataAddress.put("proxyMethod", "false");
         dataAddress.put("type", "HttpData");
         dataAddress.put("baseUrl", url);
+        // if IDP is configured, grant only read-access via idp
+        if (dtrSecurityConfig.isOauth2InterceptorEnabled()) {
+            dataAddress.put("oauth2:clientId", dtrSecurityConfig.getEdcClientId());
+            dataAddress.put("oauth2:clientSecretKey", dtrSecurityConfig.getEdcClientSecretAlias());
+            dataAddress.put("oauth2:tokenUrl", dtrSecurityConfig.getTokenUrl());
+        }
         body.set("dataAddress", dataAddress);
 
         return body;
