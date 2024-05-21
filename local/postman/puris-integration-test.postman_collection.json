@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "366237ef-086a-48bb-b723-c0da31f8e1ca",
 		"name": "puris-integration-test",
-		"description": "The collection assumes the following roles:\n\n- Customer PURIS (upper tier)\n- Supplier PURIS (lower tier)\n    \n\nIt creates the opposite partner and the respective view on the semiconductor material or product.\n\nTo run the tests correctly, take the environment and fill the respective secrets:\n\n- CUSTOMER_EDC_API_KEY\n- CUSTOMER_PURIS_BACKEND_API_KEY\n- CUSTOMER__MANAGE_CLIENT_SECRET\n- SUPPLIER_EDC_API_KEY\n- SUPPLIER_MANAGE_CLIENT_SECRET\n    \n\nWhen using the another environment, update / create a new environment.",
+		"description": "The collection assumes the following roles:\n\n- Customer PURIS (upper tier)\n- Supplier PURIS (lower tier)\n    \n\nIt creates the opposite partner and the respective view on the semiconductor material or product.\n\nTo run the tests correctly, take the environment and fill the respective secrets:\n\n- CUSTOMER_EDC_API_KEY\n- CUSTOMER_PURIS_BACKEND_API_KEY\n- CUSTOMER__MANAGE_CLIENT_SECRET\n- SUPPLIER_EDC_API_KEY\n- SUPPLIER_PURIS_BACKEND_API_KEY\n- SUPPLIER_MANAGE_CLIENT_SECRET\n    \n\nWhen using the another environment, update / create a new environment.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "26605468"
 	},
@@ -3653,7 +3653,7 @@
 					"name": "Check Customer DTR",
 					"item": [
 						{
-							"name": "CUSTOMER IDP CHECK Copy",
+							"name": "CUSTOMER IDP CHECK",
 							"event": [
 								{
 									"listen": "test",
