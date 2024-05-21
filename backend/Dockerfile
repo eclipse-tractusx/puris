@@ -18,7 +18,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM maven:3.8.7-eclipse-temurin-17 as build
+FROM maven:3.9.6-eclipse-temurin-21 as build
 RUN mkdir /app
 WORKDIR /app
 COPY pom.xml .
@@ -27,11 +27,11 @@ RUN mvn dependency:go-offline
 COPY src/ /app/src/
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 RUN mkdir /opt/app
 COPY --from=build /app/target/*.jar /opt/app/puris-backend.jar
 
-RUN adduser -u 8877 -D nonroot && chmod 755 /opt/app/puris-backend.jar
+RUN adduser -u 8877 --disabled-password --gecos "" --no-create-home nonroot && chmod 755 /opt/app/puris-backend.jar
 
 USER nonroot
 
