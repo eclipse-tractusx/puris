@@ -40,7 +40,7 @@ services:
       - ENDPOINT_REPORTED_PRODUCT_STOCKS=stockView/reported-product-stocks?ownMaterialNumber=
       - ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS=stockView/update-reported-material-stocks?ownMaterialNumber=
       - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
-      - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
+      - ENDPOINT_PARTNER=partners
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production
       - ENDPOINT_PRODUCTION_RANGE=production/range
@@ -84,10 +84,10 @@ services:
       postgres-all:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors"]
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors" ]
       interval: 4s
       timeout: 3s
-      retries: 15
+      retries: 20
     ports:
       - "127.0.0.1:4243:4243"
     environment:
@@ -191,7 +191,7 @@ services:
       - ENDPOINT_REPORTED_PRODUCT_STOCKS=stockView/reported-product-stocks?ownMaterialNumber=
       - ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS=stockView/update-reported-material-stocks?ownMaterialNumber=
       - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
-      - ENDPOINT_PARTNER_OWNSITES=partners/ownSites
+      - ENDPOINT_PARTNER=partners
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production
       - ENDPOINT_PRODUCTION_RANGE=production/range
@@ -235,10 +235,10 @@ services:
       postgres-all:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors"]
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:4243/api/v3/shell-descriptors" ]
       interval: 4s
       timeout: 3s
-      retries: 15
+      retries: 20
     ports:
       - "127.0.0.1:4244:4243"
     environment:

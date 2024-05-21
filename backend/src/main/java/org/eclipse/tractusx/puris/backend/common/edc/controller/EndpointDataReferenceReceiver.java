@@ -27,9 +27,9 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EdrDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EndpointDataReferenceService;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -57,7 +57,7 @@ public class EndpointDataReferenceReceiver {
      * This endpoint awaits incoming EDR Tokens from external
      * partners during a consumer pull transfer.
      *
-     * @param body
+     * @param body received from edc containing access information
      * @return Status code 200 if request body was found, otherwise 400
      */
     @PostMapping("/edrendpoint")

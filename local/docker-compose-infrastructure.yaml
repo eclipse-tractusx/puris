@@ -20,16 +20,17 @@
 version: "3"
 
 services:
-  miw:
-    image: tractusx/managed-identity-wallet:0.4.0
-    container_name: miw
-    env_file:
-      - ./miw/infrastructure.properties
-    ports:
-      - "127.0.0.1:8000:80"
-      - "127.0.0.1:8090:8090"
-    networks:
-      - miw-net
+  # Outcommented as not updated for R24.05 but scheduled for R24.08
+  #  miw:
+  #    image: tractusx/managed-identity-wallet:0.4.0
+  #    container_name: miw
+  #    env_file:
+  #      - ./miw/infrastructure.properties
+  #    ports:
+  #      - "127.0.0.1:8000:80"
+  #      - "127.0.0.1:8090:8090"
+  #    networks:
+  #      - miw-net
 
   postgres:
     image: postgres:15.4-alpine

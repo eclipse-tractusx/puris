@@ -79,8 +79,8 @@ spec:
               value: "{{ .Values.frontend.puris.endpointUpdateReportedMaterialStocks }}"
             - name: ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS
               value: "{{ .Values.frontend.puris.endpointUpdateReportedProductStocks }}"
-            - name: ENDPOINT_PARTNER_OWNSITES
-              value: "{{ .Values.frontend.puris.endpointPartnerOwnSites }}"    
+            - name: ENDPOINT_PARTNER
+              value: "{{ .Values.frontend.puris.endpointPartner }}"
             - name: ENDPOINT_DEMAND
               value: "{{ .Values.frontend.puris.endpointDemand }}"
             - name: ENDPOINT_PRODUCTION

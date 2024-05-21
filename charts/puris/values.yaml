@@ -185,8 +185,8 @@ frontend:
     endpointUpdateReportedMaterialStocks: stockView/update-reported-material-stocks?ownMaterialNumber=
     # -- The endpoint for triggering an update of your product stocks on your partners side
     endpointUpdateReportedProductStocks: stockView/update-reported-product-stocks?ownMaterialNumber=
-    # -- The endpoint for the partners BPNS
-    endpointPartnerOwnSites: partners/ownSites
+    # -- The endpoint for partner information
+    endpointPartner: partner
     # -- The endpoint for the demand submodel
     endpointDemand: demand
     # -- The endpoint for the production submodel
@@ -432,8 +432,15 @@ backend:
       # -- Asset ID for DeliverySubmodel API
       apiassetid: deliverysubmodel-api-asset
     frameworkagreement:
-      # -- The name of the framework agreement
-      credential: FrameworkAgreement.traceability
+      # -- The name of the framework agreement. Starting with Uppercase and using CamelCase.
+      credential: Puris
+      # -- The version of the framework agreement, NEEDS TO BE PUT AS "STRING"!
+      version: "1.0"
+    purpose:
+      # -- The name of the purpose to use for submodel contracts
+      name: "cx.puris.base"
+      # -- The version of the purpose to use for submodel contracts. NEEDS TO BE PUT AS "STRING"!
+      version: "1"
     edr:
       # -- Number of minutes before received authentication data of a consumer pull is removed from memory
       deletiontimer: 2
