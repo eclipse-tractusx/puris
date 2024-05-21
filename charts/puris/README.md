@@ -7,10 +7,12 @@ A helm chart for Kubernetes deployment of PURIS
 **Homepage:** <https://github.com/eclipse-tractusx/puris>
 
 ## Prerequisites
+
 - Kubernetes 1.19+
 - Helm 3.2.0+
 
 ## TL;DR
+
 ```shell
 $ helm install puris --namespace puris --create-namespace .
 ```
@@ -21,8 +23,8 @@ $ helm install puris --namespace puris --create-namespace .
 
 ## Requirements
 
-| Repository | Name | Version |
-|------------|------|---------|
+| Repository                         | Name       | Version |
+|------------------------------------|------------|---------|
 | https://charts.bitnami.com/bitnami | postgresql | 12.12.x |
 
 ## Values
@@ -200,3 +202,11 @@ $ helm install puris --namespace puris --create-namespace .
 | postgresql.enabled | bool | `true` | Enable postgres by default, set to false to use existing postgres. Make sure to set backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from backend). |
 | postgresql.fullnameOverride | string | `"backend-postgresql"` | Possibility to override the fullname |
 | postgresql.service.ports.postgresql | int | `5432` | Port of postgres database. |
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris
