@@ -185,8 +185,8 @@ frontend:
     endpointUpdateReportedMaterialStocks: stockView/update-reported-material-stocks?ownMaterialNumber=
     # -- The endpoint for triggering an update of your product stocks on your partners side
     endpointUpdateReportedProductStocks: stockView/update-reported-product-stocks?ownMaterialNumber=
-    # -- The endpoint for the partners BPNS
-    endpointPartnerOwnSites: partners/ownSites
+    # -- The endpoint for partner information
+    endpointPartner: partner
     # -- The endpoint for the demand submodel
     endpointDemand: demand
     # -- The endpoint for the production submodel

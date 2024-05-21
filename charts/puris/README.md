@@ -147,7 +147,7 @@ $ helm install puris --namespace puris --create-namespace .
 | frontend.puris.endpointDemand | string | `"demand"` | The endpoint for the demand submodel |
 | frontend.puris.endpointMaterialStocks | string | `"stockView/material-stocks"` | The endpoint for material stocks for the stock view |
 | frontend.puris.endpointMaterials | string | `"stockView/materials"` | The endpoint for materials for the stock view |
-| frontend.puris.endpointPartnerOwnSites | string | `"partners/ownSites"` | The endpoint for the partners BPNS |
+| frontend.puris.endpointPartner | string | `"partner"` | The endpoint for the partners BPNS |
 | frontend.puris.endpointProductStocks | string | `"stockView/product-stocks"` | The endpoint for product stocks for the stock view |
 | frontend.puris.endpointProduction | string | `"production"` | The endpoint for the production submodel |
 | frontend.puris.endpointProductionRange | string | `"production/range"` | The endpoint for the production range of the production submodel |
