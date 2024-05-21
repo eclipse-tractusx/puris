@@ -21,14 +21,14 @@ SPDX-License-Identifier: Apache-2.0
 
 import Card from '@mui/material/Card';
 
-import { useTransfers } from '@hooks/edc/useTransfers';
-import { Transfer } from '@models/types/edc/transfer';
+import {useTransfers} from '@hooks/edc/useTransfers';
+import {Transfer} from '@models/types/edc/transfer';
 
 type TransferCardProps = {
     transfer: Transfer;
 };
 
-const TransferCard = ({ transfer }: TransferCardProps) => {
+const TransferCard = ({transfer}: TransferCardProps) => {
     return (
         <Card className="p-5">
             <h2 className="text-xl font-semibold mb-3">Transfer</h2>
@@ -40,31 +40,31 @@ const TransferCard = ({ transfer }: TransferCardProps) => {
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> Correlation Id: </span>
-                        {transfer['edc:correlationId']}
+                        {transfer['correlationId']}
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> State: </span>
-                        {transfer['edc:state']}
+                        {transfer['state']}
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> State Timestamp: </span>
-                        {new Date(transfer['edc:stateTimestamp']).toLocaleString()}
+                        {new Date(transfer['stateTimestamp']).toLocaleString()}
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> Type: </span>
-                        {transfer['edc:type']}
+                        {transfer['type']}
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> Asset Id: </span>
-                        {transfer['edc:assetId']}
+                        {transfer['assetId']}
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> Contract Id: </span>
-                        <span className="break-all w-[60ch]">{transfer['edc:contractId']}</span>
+                        <span className="break-all w-[60ch]">{transfer['contractId']}</span>
                     </div>
                     <div className="flex gap-3">
                         <span className="w-[30ch] font-semibold"> Connector Id: </span>
-                        {transfer['edc:connectorId']}
+                        {transfer['connectorId']}
                     </div>
                 </div>
             </div>
@@ -73,19 +73,20 @@ const TransferCard = ({ transfer }: TransferCardProps) => {
 };
 
 export const TransferView = () => {
-    const { transfers } = useTransfers();
+    const {transfers} = useTransfers();
     return (
         <div className="flex flex-col items-center w-full h-full">
             <h1 className="text-3xl font-semibold text-gray-700 mb-10">Transfers</h1>
             <ul className="flex flex-col gap-3 w-[100ch]">
                 {transfers && transfers.length > 0 ? (
                     transfers.map((transfer) => (
-                        <li>
-                            <TransferCard transfer={transfer} />
+                        <li key={transfer["@id"]}>
+                            <TransferCard transfer={transfer}/>
                         </li>
                     ))
                 ) : (
-                    <p className='text-center'>No transfers found. This Page will be updated as soon as there are transfers.</p>
+                    <p className='text-center'>No transfers found. This Page will be updated as soon as there are
+                        transfers.</p>
                 )}
             </ul>
         </div>
