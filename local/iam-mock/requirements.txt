@@ -7,7 +7,7 @@ cryptography==42.0.5
 dnspython==2.5.0
 email-validator==2.1.0.post1
 exceptiongroup==1.2.0
-fastapi==0.109.0
+fastapi==0.109.1
 h11==0.14.0
 httpcore==1.0.2
 httptools==0.6.1
