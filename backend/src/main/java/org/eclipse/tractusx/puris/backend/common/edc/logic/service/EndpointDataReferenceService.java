@@ -21,8 +21,8 @@
 package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EdrDto;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,19 +30,20 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 
 /**
- * This class stores authCodes which are generated in the course of 
+ * This class stores authCodes which are generated in the course of
  * the contracting for the request or response api. Since authCodes
- * expire after a very short period, all stored items will be deleted 
- * after a number of minutes specified in the parameter own.authcodes.deletiontimer. 
+ * expire after a very short period, all stored items will be deleted
+ * after a number of minutes specified in the parameter own.authcodes.deletiontimer.
  */
 @Service
 @Slf4j
 public class EndpointDataReferenceService {
 
-    /** AuthCodes expire after a very short period and the data is quite voluminous, 
-     *  therefore it's not really useful to persist them in the database. 
-     *  The key is the transferId, the value is the authCode
-     */ 
+    /**
+     * AuthCodes expire after a very short period and the data is quite voluminous,
+     * therefore it's not really useful to persist them in the database.
+     * The key is the transferId, the value is the authCode
+     */
     final private HashMap<String, EdrDto> nonpersistantRepository = new HashMap<>();
     @Autowired
     private VariablesService variablesService;
@@ -50,17 +51,18 @@ public class EndpointDataReferenceService {
     private ExecutorService executorService;
 
     /**
-     * Stores transferId and authCode as a key/value-pair. 
+     * Stores transferId and authCode as a key/value-pair.
      * Please note that any data will only be stored for a period of 5
-     * minutes. 
-     * @param transferId
-     * @param edr_Dto
+     * minutes.
+     *
+     * @param transferId to store the edr associated to
+     * @param edr_Dto    to store providing the access
      */
     public void save(String transferId, EdrDto edr_Dto) {
         nonpersistantRepository.put(transferId, edr_Dto);
         final long timer = variablesService.getEdrTokenDeletionTimer() * 60 * 1000;
         // Start timer for deletion
-        executorService.submit(()-> {
+        executorService.submit(() -> {
             try {
                 Thread.sleep(timer);
             } catch (InterruptedException e) {
@@ -72,12 +74,11 @@ public class EndpointDataReferenceService {
     }
 
     /**
-     * 
      * @param transferId The key under which the Dto is supposed to be stored
      * @return the Dto or null, if there is no authCode recorded under the given parameter
      */
     public EdrDto findByTransferId(String transferId) {
         return nonpersistantRepository.get(transferId);
     }
-    
+
 }

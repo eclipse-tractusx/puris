@@ -3,3 +3,4 @@
 *.keys
 *.secret
 .env
+seed-bdrs.sh

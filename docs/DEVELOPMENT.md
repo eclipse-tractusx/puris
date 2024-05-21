@@ -47,6 +47,21 @@ cd frontend
 eclipseDashTool package-lock.json -project automotive.tractusx -summary ../DEPENDENCIES_FRONTEND
 ```
 
+### mock-util-service
+
+Temprorary also the mock-util-service needs to be kept up to date. First add the alias same as for frontend to your
+`.bashrc` and then use the following command:
+
+```shell
+cd local/iam-mock
+cat requirements.txt | grep -v \# \
+| sed -E -e 's|([^= ]+)==([^= ]+)|pypi/pypi/-/\1/\2|' -e 's| ||g' \
+| sort | uniq \
+| eclipseDashTool -summary DEPENDENCIES -
+```
+
+Note: Dash action provided by eclipse-tractusx/sig-infra does not provide to opportunity for python. 
+
 ## Frontend container building workaround to use environment variables for vue
 
 ### The mechanism for docker is the following:

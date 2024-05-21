@@ -19,11 +19,11 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 export type Negotiation = {
-  '@id': string;
-  'edc:contractAgreementId'?: string;
-  'edc:type': string;
-  'edc:state': string;
-  'edc:counterPartyId': string;
-  'edc:counterPartyAddress': string;
-  'edc:createdAt': string;
+    '@id': string;
+    'contractAgreementId'?: string;
+    'type': string;
+    'state': string;
+    'counterPartyId': string;
+    'counterPartyAddress': string;
+    'createdAt': string;
 };
