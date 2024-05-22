@@ -35,13 +35,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
       - name: Run dash
         id: run-dash
         uses: eclipse-tractusx/sig-infra/.github/actions/run-dash@8ee6e411b82105c5f553a6115dd64fb9c6d4df2a #2023-11-17
         with:
-          dash_version: "1.0.2"
+          dash_version: "1.1.1"
           dash_input: "./frontend/package-lock.json"
           dependencies_file: "DEPENDENCIES_FRONTEND"
           fail_on_out_of_date: true
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
       - name: Set up JDK 17
         uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3.13.0
@@ -66,7 +66,7 @@ jobs:
         id: run-dash
         uses: eclipse-tractusx/sig-infra/.github/actions/run-dash@8ee6e411b82105c5f553a6115dd64fb9c6d4df2a #2023-11-17
         with:
-          dash_version: "1.0.2"
+          dash_version: "1.1.1"
           dash_input: "./backend/maven.dependencies"
           dependencies_file: "DEPENDENCIES_BACKEND"
           fail_on_out_of_date: true
