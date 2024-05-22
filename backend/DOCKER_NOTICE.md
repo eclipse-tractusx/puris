@@ -1,3 +1,7 @@
+# Notice for Docker Image
+
+DockerHub: https://hub.docker.com/r/tractusx/app-puris-backend/
+
 This application provides container images for demonstration purposes.
 
 Eclipse Tractus-X product(s) installed within the image:
