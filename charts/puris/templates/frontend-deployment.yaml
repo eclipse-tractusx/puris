@@ -58,7 +58,8 @@ spec:
             - name: APP_NAME
               value: "{{ .Values.frontend.puris.appName }}"
             - name: BACKEND_BASE_URL
-              value: "https://{{ .Values.frontend.puris.baseUrl }}{{ .Values.backend.puris.api.rootDir }}/"
+                {{- $baseUrl := trimSuffix "/" .Values.frontend.puris.baseUrl}}
+              value: "https://{{ $baseUrl }}{{ .Values.backend.puris.api.rootDir }}/"
             - name: ENDPOINT_MATERIALS
               value: "{{ .Values.frontend.puris.endpointMaterials }}"
             - name: ENDPOINT_PRODUCTS
@@ -80,7 +81,7 @@ spec:
             - name: ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS
               value: "{{ .Values.frontend.puris.endpointUpdateReportedProductStocks }}"
             - name: ENDPOINT_PARTNER
-              value: "{{ .Values.frontend.puris.endpointPartner }}"
+              value: "{{ .Values.frontend.puris.endpointPartners }}"
             - name: ENDPOINT_DEMAND
               value: "{{ .Values.frontend.puris.endpointDemand }}"
             - name: ENDPOINT_PRODUCTION

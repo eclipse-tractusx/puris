@@ -126,14 +126,12 @@ spec:
             - name: PURIS_DEMONSTRATOR_ROLE
               value: "{{ .Values.backend.puris.demonstrator.role }}"
             - name: PURIS_BASEURL
-                {{- $baseUrl := .Values.backend.puris.baseurl }}
-                {{- if not (tpl "(strings.HasSuffix \"$baseUrl\" \"/\")" .) }}
-                {{- $baseUrl = printf "%s/" $baseUrl }}
-                {{- end }}
+                # remove backslash if given and later ensure (must end with trailing slash)
+                {{- $baseUrl := trimSuffix "/" .Values.backend.puris.baseurl}}
                 {{- if and .Values.backend.ingress.enabled .Values.backend.ingress.tls }}
-              value: "https://{{ $baseUrl }}"
+              value: "https://{{ $baseUrl }}/"
                 {{- else }}
-              value: "http://{{ $baseUrl }}"
+              value: "http://{{ $baseUrl }}/"
                 {{- end}}
             - name: PURIS_EDR_DELETIONTIMER
               value: "{{ .Values.backend.puris.edr.deletiontimer }}"
