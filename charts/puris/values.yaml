@@ -40,8 +40,6 @@ frontend:
   imagePullSecrets: []
   # -- Possibility to override the name
   nameOverride: ""
-  # -- Possibility to override the fullname
-  fullnameOverride: "frontend"
 
   serviceAccount:
     # -- Specifies whether a service account should be created
@@ -236,8 +234,6 @@ backend:
   imagePullSecrets: []
   # -- Possibility to override the name
   nameOverride: ""
-  # -- Possibility to override the fullname
-  fullnameOverride: backend
 
   serviceAccount:
     # -- Specifies whether a service account should be created
@@ -488,8 +484,8 @@ postgresql:
   # backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from
   # backend).
   enabled: true
-  # -- Possibility to override the fullname
-  fullnameOverride: "backend-postgresql"
+  # -- Possibility to override the name
+  #  nameOverride: ""
   service:
     ports:
       # -- Port of postgres database.

@@ -22,16 +22,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "backend.fullname" . }}
+  name: {{ include "puris.backend.fullname" . }}
   labels:
-    {{- include "backend.labels" . | nindent 4 }}
+    {{- include "puris.backend.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.backend.autoscaling.enabled }}
   replicas: {{ .Values.backend.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "backend.selectorLabels" . | nindent 6 }}
+      {{- include "puris.backend.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.backend.podAnnotations }}
@@ -39,17 +39,17 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "backend.selectorLabels" . | nindent 8 }}
+        {{- include "puris.backend.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.backend.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "backend.serviceAccountName" . }}
+      serviceAccountName: {{ include "puris.backend.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.backend.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ include "backend.fullname" . }}
+        - name: {{ include "puris.backend.fullname" . }}
           securityContext:
             {{- toYaml .Values.backend.securityContext | nindent 12 }}
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Chart.AppVersion }}"

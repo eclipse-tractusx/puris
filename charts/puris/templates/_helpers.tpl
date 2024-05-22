@@ -1,8 +1,8 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "backend.name" -}}
-{{- default .Chart.Name .Values.backend.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- define "puris.backend.name" -}}
+{{- default .Chart.Name "puris-backend" .Values.backend.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -10,11 +10,11 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "backend.fullname" -}}
+{{- define "puris.backend.fullname" -}}
 {{- if .Values.backend.fullnameOverride }}
 {{- .Values.backend.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name .Values.backend.nameOverride }}
+{{- $name := default .Chart.Name "puris-backend" .Values.backend.nameOverride }}
 {{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "backend.chart" -}}
+{{- define "puris.backend.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "backend.labels" -}}
-helm.sh/chart: {{ include "backend.chart" . }}
-{{ include "backend.selectorLabels" . }}
+{{- define "puris.backend.labels" -}}
+helm.sh/chart: {{ include "puris.backend.chart" . }}
+{{ include "puris.backend.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}-backend
 {{/*
 Selector labels
 */}}
-{{- define "backend.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "backend.name" . }}-backend
+{{- define "puris.backend.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "puris.backend.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}-backend
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "backend.serviceAccountName" -}}
+{{- define "puris.backend.serviceAccountName" -}}
 {{- if .Values.backend.serviceAccount.create }}
-{{- default (include "backend.fullname" .) .Values.backend.serviceAccount.name }}
+{{- default (include "puris.backend.fullname" .) .Values.backend.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.backend.serviceAccount.name }}
 {{- end }}
@@ -65,8 +65,8 @@ Create the name of the service account to use
 FRONTEND
 Expand the name of the chart.
 */}}
-{{- define "frontend.name" -}}
-{{- default .Chart.Name .Values.frontend.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- define "puris.frontend.name" -}}
+{{- default .Chart.Name "puris-frontend" .Values.frontend.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -74,11 +74,11 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "frontend.fullname" -}}
+{{- define "puris.frontend.fullname" -}}
 {{- if .Values.frontend.fullnameOverride }}
 {{- .Values.frontend.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name .Values.frontend.nameOverride }}
+{{- $name := default .Chart.Name "puris-frontend" .Values.frontend.nameOverride }}
 {{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -90,16 +90,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "frontend.chart" -}}
+{{- define "puris.frontend.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "frontend.labels" -}}
-helm.sh/chart: {{ include "frontend.chart" . }}
-{{ include "frontend.selectorLabels" . }}
+{{- define "puris.frontend.labels" -}}
+helm.sh/chart: {{ include "puris.frontend.chart" . }}
+{{ include "puris.frontend.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -109,17 +109,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}-frontend
 {{/*
 Selector labels
 */}}
-{{- define "frontend.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "frontend.name" . }}-frontend
+{{- define "puris.frontend.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "puris.frontend.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}-frontend
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "frontend.serviceAccountName" -}}
+{{- define "puris.frontend.serviceAccountName" -}}
 {{- if .Values.frontend.serviceAccount.create }}
-{{- default (include "frontend.fullname" .) .Values.frontend.serviceAccount.name }}
+{{- default (include "puris.frontend.fullname" .) .Values.frontend.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.frontend.serviceAccount.name }}
 {{- end }}

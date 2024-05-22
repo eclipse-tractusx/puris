@@ -1,6 +1,6 @@
 # puris
 
-![Version: 2.5.1](https://img.shields.io/badge/Version-2.5.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.0.0](https://img.shields.io/badge/AppVersion-2.0.0-informational?style=flat-square)
+![Version: 2.6.0](https://img.shields.io/badge/Version-2.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.0.0](https://img.shields.io/badge/AppVersion-2.0.0-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
@@ -52,7 +52,6 @@ dependencies:
 | backend.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey | string | `"kubernetes.io/hostname"` | Topology key of the Kubernetes cluster |
 | backend.autoscaling.enabled | bool | `false` | Enable or disable the autoscaling of pods |
 | backend.env | object | `{}` | Extra environment variables that will be passed onto the backend deployment pods |
-| backend.fullnameOverride | string | `"backend"` | Possibility to override the fullname |
 | backend.image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
 | backend.image.repository | string | `"tractusx/app-puris-backend"` | Repository of the docker image |
 | backend.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
@@ -144,7 +143,6 @@ dependencies:
 | frontend.autoscaling.minReplicas | int | `1` | Number of minimum replica pods for autoscaling |
 | frontend.autoscaling.targetCPUUtilizationPercentage | int | `80` | Value of CPU usage in percentage for autoscaling decisions |
 | frontend.env | object | `{}` | Extra environment variables that will be passed onto the frontend deployment pods |
-| frontend.fullnameOverride | string | `"frontend"` | Possibility to override the fullname |
 | frontend.image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
 | frontend.image.repository | string | `"tractusx/app-puris-frontend"` | Repository of the docker image |
 | frontend.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
@@ -216,7 +214,7 @@ dependencies:
 | postgresql.auth.passwordPostgres | string | `""` | Password for the database. Secret-key 'postgres-password'. |
 | postgresql.auth.username | string | `"puris"` | Username for the custom database user. |
 | postgresql.enabled | bool | `true` | Enable postgres by default, set to false to use existing postgres. Make sure to set backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from backend). |
-| postgresql.fullnameOverride | string | `"backend-postgresql"` | Possibility to override the fullname |
+| postgresql.service | object | `{"ports":{"postgresql":5432}}` | Possibility to override the name  nameOverride: "" |
 | postgresql.service.ports.postgresql | int | `5432` | Port of postgres database. |
 
 ----------------------------------------------
