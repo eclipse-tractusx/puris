@@ -2,7 +2,7 @@
 Expand the name of the chart.
 */}}
 {{- define "puris.backend.name" -}}
-{{- default .Chart.Name "puris-backend" .Values.backend.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- default .Chart.Name "backend" .Values.backend.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -14,7 +14,7 @@ If release name contains chart name it will be used as a full name.
 {{- if .Values.backend.fullnameOverride }}
 {{- .Values.backend.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name "puris-backend" .Values.backend.nameOverride }}
+{{- $name := default .Chart.Name "backend" .Values.backend.nameOverride }}
 {{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -66,7 +66,7 @@ FRONTEND
 Expand the name of the chart.
 */}}
 {{- define "puris.frontend.name" -}}
-{{- default .Chart.Name "puris-frontend" .Values.frontend.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- default .Chart.Name "frontend" .Values.frontend.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -78,7 +78,7 @@ If release name contains chart name it will be used as a full name.
 {{- if .Values.frontend.fullnameOverride }}
 {{- .Values.frontend.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name "puris-frontend" .Values.frontend.nameOverride }}
+{{- $name := default .Chart.Name "frontend" .Values.frontend.nameOverride }}
 {{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -122,5 +122,18 @@ Create the name of the service account to use
 {{- default (include "puris.frontend.fullname" .) .Values.frontend.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.frontend.serviceAccount.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create a default fully qualified app name for PostgreSQL.
+*/}}
+{{- define "puris.postgresql.fullname" -}}
+{{- if .Values.postgresql.fullnameOverride }}
+{{- .Values.postgresql.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else if .Values.postgresql.nameOverride }}
+{{- printf "%s-%s" .Release.Name .Values.postgresql.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-postgresql" .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}

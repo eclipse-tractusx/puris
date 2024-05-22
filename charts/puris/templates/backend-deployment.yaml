@@ -63,7 +63,7 @@ spec:
               value: "{{ .Values.backend.puris.datasource.driverClassName }}"
             {{- if .Values.postgresql.enabled }}
             - name: DATASOURCE_URL
-              value: "jdbc:postgresql://{{ .Values.postgresql.fullnameOverride }}:{{ .Values.postgresql.service.ports.postgresql }}/{{ .Values.postgresql.auth.database}}"
+              value: "jdbc:postgresql://{{ include "puris.postgresql.fullname" . }}:{{ .Values.postgresql.service.ports.postgresql }}/{{ .Values.postgresql.auth.database}}"
             - name: DATASOURCE_USERNAME
               value: "{{ .Values.postgresql.auth.username }}"
             - name: DATASOURCE_PASSWORD
