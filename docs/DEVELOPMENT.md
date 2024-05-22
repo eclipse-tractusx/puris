@@ -60,7 +60,7 @@ cat requirements.txt | grep -v \# \
 | eclipseDashTool -summary DEPENDENCIES -
 ```
 
-Note: Dash action provided by eclipse-tractusx/sig-infra does not provide to opportunity for python. 
+Note: Dash action provided by eclipse-tractusx/sig-infra does not provide to opportunity for python.
 
 ## Frontend container building workaround to use environment variables for vue
 
@@ -87,7 +87,75 @@ Note: Dash action provided by eclipse-tractusx/sig-infra does not provide to opp
 3. Does the replacement in the built files
 4. Starts nginx
 
-# Testing Helm Charts with local images
+# Local installations with Helm
+
+## Local Installation
+
+Different to installations from the official repo (see e.g. [Helm README.md](../charts/puris/README.md)), you need to
+first install dependencies.
+
+```shell
+cd ../charts/puris
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm dependency update
+```
+
+Then install the application to your needs:
+
+### Run with Ingress (recommended)
+
+Precondition: please refer to your runtime environment's official documentation on how to enable ingress.
+
+- [minikube](https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/)
+- [kind](https://kind.sigs.k8s.io/docs/user/ingress/)
+
+Run the application
+
+```shell
+helm install puris . \
+    --namespace puris \
+    --create-namespace \
+    --set frontend.ingress.enabled=true \
+    --set backend.ingress.enabled=true
+```
+
+Edit /etc/hosts:
+
+```shell
+# If you are using minikube use minikube ip to get you clusterIp, for kind this is localhost (127.0.0.1)
+sudo vim /etc/hosts
+>> add entry for frontend "<cluster ip> <frontend-url.top-level-domain>"
+>> add entry for backend "<cluster ip> <backend-url.top-level-domain>"
+>> :wq! (save changes)
+```
+
+Done! The applications should be available at:
+
+- (frontend) `http://your-frontend-host-address.com`
+- (backend) `http://your-backend-host-address.com`
+
+> **NOTE**
+>
+> Ingress must be enabled for your runtime once per cluster installation. /etc/hosts adoption once per system / url
+
+### Run without Ingress
+
+```shell
+helm install puris . \
+    --namespace puris \
+    --create-namespace 
+```
+
+Forward ports for services:
+
+```shell
+kubectl -n puris port-forward svc/frontend 8080:8080
+kubectl -n puris port-forward svc/backend 8081:8081
+```
+
+Done! The applications should be available at `http://localhost:<forwarded-port>`.
+
+## Testing Helm Charts with Local Images
 
 When changing the helm charts due to changes of e.g. environment variables, one should test locally whether the changes
 work.

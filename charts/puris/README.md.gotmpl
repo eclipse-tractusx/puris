@@ -12,11 +12,28 @@
 - Kubernetes 1.19+
 - Helm 3.2.0+
 
-## TL;DR
+## Install
+
+To install the chart with the release name `puris`:
+
 ```shell
-$ helm install puris --namespace puris --create-namespace .
+$ helm repo add tractusx-dev https://eclipse-tractusx.github.io/charts/dev
+$ helm install puris tractusx-dev/policy-hub
+```
+To install the helm chart into your cluster with your values:
+
+```shell
+$ helm install -f your-values.yaml puris tractusx-dev/policy-hub
 ```
 
+To use the helm chart as a dependency:
+
+```yaml
+dependencies:
+  - name: puris
+    repository: https://eclipse-tractusx.github.io/charts/dev
+    version: YOUR_VERSION
+```
 
 {{ template "chart.maintainersSection" . }}
 
@@ -27,3 +44,11 @@ $ helm install puris --namespace puris --create-namespace .
 {{ template "chart.valuesSection" . }}
 
 {{ template "helm-docs.versionFooter" . }}
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris
