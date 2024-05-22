@@ -87,10 +87,10 @@ frontend:
           - path: /
             pathType: ImplementationSpecific
     # -- TLS certificates for the Ingress controller
-    tls:
-      - secretName: tls-secret
-        hosts:
-          - your-frontend-host-address.com
+    tls: []
+  #      - secretName: tls-secret
+  #        hosts:
+  #          - your-frontend-host-address.com
 
   resources:
     # -- Maximum resource limits of CPU und memory
@@ -301,10 +301,10 @@ backend:
           - path: /
             pathType: ImplementationSpecific
     # -- TLS certificates for the Ingress controller
-    tls:
-      - secretName: tls-secret
-        hosts:
-          - *domain
+    tls: []
+  #      - secretName: tls-secret
+  #        hosts:
+  #          - *domain
 
   # -- Constrains for the node selector
   nodeSelector: {}

@@ -63,7 +63,7 @@ dependencies:
 | backend.ingress.annotations."nginx.ingress.kubernetes.io/ssl-passthrough" | string | `"true"` | Pass SSL traffic to the backend ports |
 | backend.ingress.enabled | bool | `false` | Enable the Ingress |
 | backend.ingress.hosts | list | `[{"host":"your-backend-host-address.com","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
-| backend.ingress.tls | list | `[{"hosts":["your-backend-host-address.com"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
+| backend.ingress.tls | list | `[]` | TLS certificates for the Ingress controller |
 | backend.livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":120,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | backend.livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
 | backend.livenessProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial liveness probe is checked |
@@ -143,7 +143,7 @@ dependencies:
 | frontend.autoscaling.minReplicas | int | `1` | Number of minimum replica pods for autoscaling |
 | frontend.autoscaling.targetCPUUtilizationPercentage | int | `80` | Value of CPU usage in percentage for autoscaling decisions |
 | frontend.env | object | `{}` | Extra environment variables that will be passed onto the frontend deployment pods |
-| frontend.image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
+| frontend.image.pullPolicy | string | `"IfNotPresent"` | THe policy for the image pull process |
 | frontend.image.repository | string | `"tractusx/app-puris-frontend"` | Repository of the docker image |
 | frontend.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | frontend.imagePullSecrets | list | `[]` | List of used secrets |
@@ -151,7 +151,7 @@ dependencies:
 | frontend.ingress.className | string | `"nginx"` | Class name for the Ingress controller |
 | frontend.ingress.enabled | bool | `false` | Enable the Ingress |
 | frontend.ingress.hosts | list | `[{"host":"your-frontend-host-address.com","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
-| frontend.ingress.tls | list | `[{"hosts":["your-frontend-host-address.com"],"secretName":"tls-secret"}]` | TLS certificates for the Ingress controller |
+| frontend.ingress.tls | list | `[]` | TLS certificates for the Ingress controller |
 | frontend.livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":10,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
 | frontend.livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
 | frontend.livenessProbe.initialDelaySeconds | int | `10` | Delay in seconds after which an initial liveness probe is checked |
