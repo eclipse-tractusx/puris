@@ -1,0 +1,33 @@
+@startuml
+skinparam linetype polyline
+skinparam nodesep 100
+skinparam ranksep 50
+[Data Provisioning\n& Transformation] as data_prov
+[Eclipse Dataspace\nComponents Connector] as edc
+[Postgresql DB] as postgres
+[Keycloak] as idp
+[Digital Twin\nRegistry] as dtr
+
+data_prov -( "Interface internal systems"
+"EDC Management\nAPI" - edc
+dtr - "Registration &\nDiscovery Interfaces"
+
+package "<<system>> PURIS"{
+
+  [PURIS FOSS Backend] as puris_backend
+  [PURIS FOSS Frontend] as puris_frontend
+
+  puris_backend "provide and pull data\naccording to standards" --( "EDC Management\nAPI"
+  "Interface internal systems" - puris_backend
+  puris_backend <-- puris_frontend
+  puris_frontend -- idp
+  puris_backend -> postgres
+
+  puris_backend --( "Registration &\nDiscovery Interfaces"
+}
+
+"Submodel value-only interfaces" -- puris_backend
+dtr --> idp
+edc --> idp
+
+@enduml

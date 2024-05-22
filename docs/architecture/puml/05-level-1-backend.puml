@@ -1,0 +1,25 @@
+@startuml
+skinparam linetype polyline
+skinparam nodesep 150
+skinparam ranksep 50
+
+package "<<system>> PURIS FOSS Backend"{
+
+  [DTR] as dtr
+  [EDC] as edc
+  [Stock, Production, Demand,\nDelivery Information] as stock
+  [MAD] as mad
+}
+
+"Registry & Discovery Interfaces" )-- dtr
+"MAD Interface" - mad
+edc -( "EDC Client Interface"
+stock --( "Submodel \n& internal interface"
+
+dtr -- "Register and discover twins\n& submodels" stock
+stock - "query catalog &\nget data (via edc)" edc
+mad - stock
+
+"OAuth2" )-  "uses for authentication of DTR" dtr
+
+@enduml

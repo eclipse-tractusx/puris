@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="us-ascii" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" contentStyleType="text/css" height="371px" preserveAspectRatio="none"
+     style="width:1011px;height:371px;background:#FFFFFF;" version="1.1" viewBox="0 0 1011 371" width="1011px"
+     zoomAndPan="magnify">
+    <defs/>
+    <g><!--cluster <<system>> PURIS-->
+        <g id="cluster_&lt;&lt;system&gt;&gt; PURIS">
+            <path
+                d="M376,66.5 L504,66.5 A3.75,3.75 0 0 1 506.5,69 L513.5,88.7969 L593,88.7969 A2.5,2.5 0 0 1 595.5,91.2969 L595.5,274 A2.5,2.5 0 0 1 593,276.5 L376,276.5 A2.5,2.5 0 0 1 373.5,274 L373.5,69 A2.5,2.5 0 0 1 376,66.5 "
+                fill="none" style="stroke:#000000;stroke-width:1.5;"/>
+            <line style="stroke:#000000;stroke-width:1.5;" x1="373.5" x2="513.5" y1="88.7969" y2="88.7969"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing"
+                  textLength="127" x="377.5" y="81.4951">&#171;system&#187; PURIS
+            </text>
+        </g><!--entity puris_backend-->
+        <g id="elem_puris_backend">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="188"
+                  x="390.5" y="101.5"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="558.5" y="106.5"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="556.5" y="108.5"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="556.5" y="112.5"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="148"
+                  x="405.5" y="134.4951">PURIS FOSS Backend
+            </text>
+        </g><!--entity puris_frontend-->
+        <g id="elem_puris_frontend">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="190"
+                  x="389.5" y="214.5"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="559.5" y="219.5"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="557.5" y="221.5"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="557.5" y="225.5"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="150"
+                  x="404.5" y="247.4951">PURIS FOSS Frontend
+            </text>
+        </g><!--entity data_prov-->
+        <g id="elem_data_prov">
+            <rect fill="#F1F1F1" height="62.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="165"
+                  x="7" y="93"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="152" y="98"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="150" y="100"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="150" y="104"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="124" x="22"
+                  y="125.9951">Data Provisioning
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="125" x="22"
+                  y="142.292">&amp; Transformation
+            </text>
+        </g><!--entity edc-->
+        <g id="elem_edc">
+            <rect fill="#F1F1F1" height="62.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="208"
+                  x="797.5" y="206"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="985.5" y="211"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="983.5" y="213"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="983.5" y="217"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="130"
+                  x="812.5" y="238.9951">Eclipse Dataspace
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="168"
+                  x="812.5" y="255.292">Components Connector
+            </text>
+        </g><!--entity postgres-->
+        <g id="elem_postgres">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="138"
+                  x="678.5" y="101.5"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="796.5" y="106.5"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="794.5" y="108.5"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="794.5" y="112.5"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="98"
+                  x="693.5" y="134.4951">Postgresql DB
+            </text>
+        </g><!--entity idp-->
+        <g id="elem_idp">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="104"
+                  x="432.5" y="319"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="516.5" y="324"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="514.5" y="326"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="514.5" y="330"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64"
+                  x="447.5" y="351.9951">Keycloak
+            </text>
+        </g><!--entity dtr-->
+        <g id="elem_dtr">
+            <rect fill="#F1F1F1" height="62.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="123"
+                  x="48" y="206"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="151" y="211"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="149" y="213"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="149" y="217"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="83" x="63"
+                  y="238.9951">Digital Twin
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="58" x="63"
+                  y="255.292">Registry
+            </text>
+        </g><!--entity Interface internal systems-->
+        <g id="elem_Interface internal systems">
+            <ellipse cx="281.5" cy="124.5" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="184"
+                  x="189.5" y="154.4951">Interface internal systems
+            </text>
+        </g><!--entity EDC Management\nAPI-->
+        <g id="elem_EDC Management\nAPI">
+            <ellipse cx="688.5" cy="237.5" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="128"
+                  x="624.5" y="267.4951">EDC Management
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="22"
+                  x="624.5" y="283.792">API
+            </text>
+        </g><!--entity Registration &\nDiscovery Interfaces-->
+        <g id="elem_Registration &amp;\nDiscovery Interfaces">
+            <ellipse cx="280.5" cy="237.5" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="101" x="208"
+                  y="267.4951">Registration &amp;
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="145" x="208"
+                  y="283.792">Discovery Interfaces
+            </text>
+        </g><!--entity Submodel value-only interfaces-->
+        <g id="elem_Submodel value-only interfaces">
+            <ellipse cx="484.5" cy="14" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="225" x="372"
+                  y="43.9951">Submodel value-only interfaces
+            </text>
+        </g><!--link data_prov to Interface internal systems-->
+        <g id="link_data_prov_Interface internal systems">
+            <path d="M172.01,124.5 C190.91,124.5 217.5,124.5 217.5,124.5 C217.5,124.5 244.63,124.5 262.33,124.5 "
+                  fill="none" id="data_prov-to-Interface internal systems" style="stroke:#181818;stroke-width:1.0;"/>
+            <path d="M269.2518,116.0428 A9,9 0 0 0 269.2518 132.9572" fill="none"
+                  style="stroke:#181818;stroke-width:1.5;"/>
+        </g><!--link EDC Management\nAPI to edc-->
+        <g id="link_EDC Management\nAPI_edc">
+            <path d="M697.78,237.5 C717.03,237.5 759.5,237.5 759.5,237.5 C759.5,237.5 778.95,237.5 797.49,237.5 "
+                  fill="none" id="EDC Management\nAPI-edc" style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link dtr to Registration &\nDiscovery Interfaces-->
+        <g id="link_dtr_Registration &amp;\nDiscovery Interfaces">
+            <path d="M171.36,237.5 C185.14,237.5 223.5,237.5 223.5,237.5 C223.5,237.5 255.23,237.5 271.34,237.5 "
+                  fill="none" id="dtr-Registration &amp;\nDiscovery Interfaces"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link puris_backend to EDC Management\nAPI-->
+        <g id="link_puris_backend_EDC Management\nAPI">
+            <path d="M525.29,147.7 C574.13,174.27 643.886,212.2207 670.536,226.7207 " fill="none"
+                  id="puris_backend-to-EDC Management\nAPI" style="stroke:#181818;stroke-width:1.0;"/>
+            <path d="M680.6581,222.6 A9,9 0 0 0 672.5742 237.4577" fill="none"
+                  style="stroke:#181818;stroke-width:1.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="138"
+                  x="375.4404" y="167.6424">provide and pull data
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="148"
+                  x="370.4404" y="182.7752">according to standards
+            </text>
+        </g><!--link Interface internal systems to puris_backend-->
+        <g id="link_Interface internal systems_puris_backend">
+            <path d="M290.63,124.5 C309.1,124.5 349.17,124.5 349.17,124.5 C349.17,124.5 371.48,124.5 390.48,124.5 "
+                  fill="none" id="Interface internal systems-puris_backend" style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--reverse link puris_backend to puris_frontend-->
+        <g id="link_puris_backend_puris_frontend">
+            <path d="M484.5,153.7 C484.5,173.06 484.5,194.99 484.5,214.34 " fill="none"
+                  id="puris_backend-backto-puris_frontend" style="stroke:#181818;stroke-width:1.0;"/>
+            <polygon fill="#181818" points="484.5,147.7,480.5,156.7,484.5,152.7,488.5,156.7,484.5,147.7"
+                     style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link puris_frontend to idp-->
+        <g id="link_puris_frontend_idp">
+            <path d="M484.5,260.74 C484.5,277.93 484.5,301.62 484.5,318.8 " fill="none" id="puris_frontend-idp"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link puris_backend to postgres-->
+        <g id="link_puris_backend_postgres">
+            <path d="M578.76,124.5 C599.14,124.5 659.83,124.5 659.83,124.5 C659.83,124.5 661.56,124.5 672.43,124.5 "
+                  fill="none" id="puris_backend-to-postgres" style="stroke:#181818;stroke-width:1.0;"/>
+            <polygon fill="#181818" points="678.43,124.5,669.43,120.5,673.43,124.5,669.43,128.5,678.43,124.5"
+                     style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link puris_backend to Registration &\nDiscovery Interfaces-->
+        <g id="link_puris_backend_Registration &amp;\nDiscovery Interfaces">
+            <path d="M443.71,147.7 C394.87,174.27 325.114,212.2207 298.464,226.7207 " fill="none"
+                  id="puris_backend-to-Registration &amp;\nDiscovery Interfaces"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+            <path d="M296.4258,237.4577 A9,9 0 0 0 288.3419 222.6" fill="none"
+                  style="stroke:#181818;stroke-width:1.5;"/>
+        </g><!--link Submodel value-only interfaces to puris_backend-->
+        <g id="link_Submodel value-only interfaces_puris_backend">
+            <path d="M484.5,23.16 C484.5,39.52 484.5,76.85 484.5,101.08 " fill="none"
+                  id="Submodel value-only interfaces-puris_backend" style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link dtr to idp-->
+        <g id="link_dtr_idp">
+            <path
+                d="M171.07,263.79 C197.1,274.48 221.5,284.5 221.5,284.5 C221.5,284.5 349.6639,312.0296 426.3639,328.5096 "
+                fill="none" id="dtr-to-idp" style="stroke:#181818;stroke-width:1.0;"/>
+            <polygon fill="#181818"
+                     points="432.23,329.77,424.2711,323.9686,427.3416,328.7197,422.5905,331.7901,432.23,329.77"
+                     style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link edc to idp-->
+        <g id="link_edc_idp">
+            <path
+                d="M799.21,269.05 C770.76,277.55 747.5,284.5 747.5,284.5 C747.5,284.5 619.3361,312.0296 542.6361,328.5096 "
+                fill="none" id="edc-to-idp" style="stroke:#181818;stroke-width:1.0;"/>
+            <polygon fill="#181818"
+                     points="536.77,329.77,546.4095,331.7901,541.6584,328.7197,544.7289,323.9686,536.77,329.77"
+                     style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--SRC=[ZLB1Yjim4BthAmOTbbuCwQ6t4EWckn1AQTXiJtPPjFR4YCWZLQEacD9_xqWEQUEMqjluwStJUthcewLWeXd0MS8q1eJWtPW_55_Fo7V86E3jOl4R6WqTC_fkeUgDIGPsqPyjMq-M-eRku5aOVF1nC4d0Bs0OEk6z1E6f-g5rDZ12NkLWMcnexOVW2Ianh3qHjid7iePTg-gTvzH7vAyEDlS53XT4rHzmR9qtnmBRBeWZszja73n_izJG4_QMKnmd4oagTNK2rHlGMqeO3s82R9v85ddaX0DhfHysQ_XeoFGuYBU6tk-s6gfYIgHaqXVvaXFk6jfORlqPumXNOH5Ial8eAg2NoqbzjOBTvwVjNdzN2g0kCpn-sk_XNgX8tHJp52s_l4x8ZFSOlTnmGpnSe2nvimewvxKTWf6FS7AkzD6GQLiVEsaDaWTEScfYnv8nFytVqelolvvCdcJk-TR8ighcPc46oEMboFbgjVfL-v-7sV3_bV53ARq_lGxoQpiu6tV2ofCRfp0J1wfvZbAtECZ6fFxh_1C0]-->
+    </g>
+</svg>

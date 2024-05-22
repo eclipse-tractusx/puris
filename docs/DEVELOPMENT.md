@@ -14,6 +14,7 @@ docker compose -f docker-compose-dev-postgres.yaml down
 ```
 
 _NOTE: For testing purposes HyperSql is still used but excluded for spring run._
+ll
 
 ## Keeping dependencies-files up to date
 
@@ -156,3 +157,11 @@ ocker ps
 docker exec -it {container-id} crictl rmi puris-backend:dev
 docker exec -it {container-id} crictl rmi puris-frontend:dev
 ```
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris
