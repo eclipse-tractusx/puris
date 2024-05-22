@@ -45,3 +45,11 @@ cd charts/puris/charts/frontend
 helm install frontend --namespace puris --create-namespace . --set ingress.enabled=true --values ../../values.yaml
 ```
 4. Done! The frontend should be available at `http://YOURIP:30000/`
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris
