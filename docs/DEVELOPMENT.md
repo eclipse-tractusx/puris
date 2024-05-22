@@ -23,14 +23,11 @@ ll
 Navigate to the `./backend` folder and run:
 
 ```
-mvn org.eclipse.dash:license-tool-plugin:license-check   
-cp DEPENDENCIES ../DEPENDENCIES_BACKEND
+mvn org.eclipse.dash:license-tool-plugin:license-check
 ```
 
-The first line runs the maven license tool with the parameters specified in the
-`./backend/pom.xml` and produces a DEPENDENCIES file in the .`/backend` folder.  
-Then this file gets copied to the PURIS-project root folder under the name `DEPENDENCIES_BACKEND`.
-Both files should be updated prior to any pull request.
+This line runs the maven license tool with the parameters specified in the
+`./backend/pom.xml` and produces a `DEPENDENCIES_BACKEND` file in the root folder of this project.
 
 ### Frontend
 
