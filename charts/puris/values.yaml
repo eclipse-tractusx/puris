@@ -32,7 +32,7 @@ frontend:
     # -- Repository of the docker image
     repository: tractusx/app-puris-frontend
     # -- THe policy for the image pull process
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     # -- Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
