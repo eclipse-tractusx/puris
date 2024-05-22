@@ -52,12 +52,21 @@ jobs:
                 uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
             # Copy legal information from root dir to backend dir for publishing
+
             -   name: Copy and paste legal information
                 run: |
                     cp ./DEPENDENCIES_BACKEND ./backend/DEPENDENCIES
                     cp ./LICENSE ./backend/LICENSE
                     cp ./NOTICE.md ./backend/NOTICE.md
                     cp ./SECURITY.md ./backend/SECURITY.md
+
+            # Needed to create multi-platfrom image
+            -   name: Set up Docker Buildx
+                uses: docker/setup-buildx-action@v2
+
+            # Needed to create multi-platfrom image
+            -   name: Set up QEMU
+                uses: docker/setup-qemu-action@v3
 
             # Create SemVer or ref tags dependent of trigger event
             -   name: Docker meta
@@ -87,6 +96,7 @@ jobs:
                 with:
                     context: ./backend
                     file: ./backend/Dockerfile
+                    platforms: linux/amd64, linux/arm64
                     push: ${{ github.event_name != 'pull_request' }}
                     tags: ${{ steps.meta.outputs.tags }}
                     labels: ${{ steps.meta.outputs.labels }}
