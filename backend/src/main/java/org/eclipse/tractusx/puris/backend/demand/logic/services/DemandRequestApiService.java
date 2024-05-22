@@ -22,9 +22,6 @@ package org.eclipse.tractusx.puris.backend.demand.logic.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Optional;
-
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.demand.logic.adapter.ShortTermMaterialDemandSammMapper;
@@ -36,6 +33,8 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -69,8 +68,14 @@ public class DemandRequestApiService {
             log.error("Unknown Material");
             return null;
         }
+
+        if (!mprService.find(material,partner).isPartnerSuppliesMaterial()) {
+            // only send an answer if partner is registered as supplier
+            return null;
+        }
+
         var currentDemands = ownDemandService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
-        return sammMapper.ownDemandToSamm(currentDemands);
+        return sammMapper.ownDemandToSamm(currentDemands, partner, material);
     }
 
     public void doReportedDemandRequest(Partner partner, Material material) {

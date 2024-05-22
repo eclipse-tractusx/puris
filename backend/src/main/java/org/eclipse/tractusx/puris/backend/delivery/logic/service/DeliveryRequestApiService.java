@@ -22,9 +22,6 @@ package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Optional;
-
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.adapter.DeliveryInformationSammMapper;
@@ -38,6 +35,8 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -77,8 +76,13 @@ public class DeliveryRequestApiService {
         if (material == null) {
             material = mpr.getMaterial();
         }
+        if (!mprService.find(material, partner).isPartnerBuysMaterial()) {
+            // only send an answer if partner is registered as customer
+            return null;
+        }
+
         var currentDeliveries = ownDeliveryService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.empty(), Optional.of(partner.getBpnl()));
-        return sammMapper.ownDeliveryToSamm(currentDeliveries);
+        return sammMapper.ownDeliveryToSamm(currentDeliveries, partner, material);
     }
 
     public void doReportedDeliveryRequest(Partner partner, Material material) {

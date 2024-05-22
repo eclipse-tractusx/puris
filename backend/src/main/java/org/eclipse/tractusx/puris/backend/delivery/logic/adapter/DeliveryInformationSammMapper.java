@@ -53,17 +53,12 @@ public class DeliveryInformationSammMapper {
     @Autowired
     private MaterialService materialService;
 
-    public DeliveryInformation ownDeliveryToSamm(List<OwnDelivery> deliveryList) {
-        if (deliveryList == null || deliveryList.isEmpty()) {
-            log.warn("Can't map empty list");
-            return null;
-        }
-        Partner partner = deliveryList.get(0).getPartner();
+    public DeliveryInformation ownDeliveryToSamm(List<OwnDelivery> deliveryList, Partner partner, Material material) {
         if (deliveryList.stream().anyMatch(deli -> !deli.getPartner().equals(partner))) {
             log.warn("Can't map delivery list with different partners");
             return null;
         }
-        Material material = deliveryList.get(0).getMaterial();
+
         if (deliveryList.stream().anyMatch(deli -> !deli.getMaterial().equals(material))) {
             log.warn("Can't map delivery list with different materials");
             return null;

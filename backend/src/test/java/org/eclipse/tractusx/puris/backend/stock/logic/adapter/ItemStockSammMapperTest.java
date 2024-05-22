@@ -145,7 +145,7 @@ public class ItemStockSammMapperTest {
         // These should result in two positions
         // - one WITHOUT orderPositionReference AND two allocatedStocks
         // - one WITH orderPosition AND one allocatedStocks
-        ItemStockSamm materialItemStockSamm = itemStockSammMapper.materialItemStocksToItemStockSamm(List.of(materialItemStock));
+        ItemStockSamm materialItemStockSamm = itemStockSammMapper.materialItemStocksToItemStockSamm(List.of(materialItemStock), supplierPartner, semiconductorMaterial);
 
         // Then
         assertNotNull(materialItemStockSamm);

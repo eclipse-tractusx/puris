@@ -73,9 +73,10 @@ public class ItemStockRequestApiService {
                 // Partner is customer, requesting our ProductItemStocks for him
                 // materialNumber is own CX id:
                 Material material = materialService.findByMaterialNumberCx(materialNumber);
-                if (material != null) {
+                if (material != null && mprService.find(material, partner).isPartnerBuysMaterial()) {
+                    // only send an answer if partner is registered as customer
                     var currentStocks = productItemStockService.findByPartnerAndMaterial(partner, material);
-                    return sammMapper.productItemStocksToItemStockSamm(currentStocks);
+                    return sammMapper.productItemStocksToItemStockSamm(currentStocks, partner, material);
                 }
                 return null;
             }
@@ -83,9 +84,10 @@ public class ItemStockRequestApiService {
                 // Partner is supplier, requesting our MaterialItemStocks from him
                 // materialNumber is partner's CX id:
                 Material material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber).getMaterial();
-                if (material != null) {
+                if (material != null && mprService.find(material, partner).isPartnerSuppliesMaterial()) {
+                    // only send an answer if partner is registered as supplier
                     var currentStocks = materialItemStockService.findByPartnerAndMaterial(partner, material);
-                    return sammMapper.materialItemStocksToItemStockSamm(currentStocks);
+                    return sammMapper.materialItemStocksToItemStockSamm(currentStocks, partner, material);
                 }
                 // Could not identify partner cx number. I.e. we do not have that partner's
                 // CX id in one of our MaterialPartnerRelation entities. Try to fix this by
