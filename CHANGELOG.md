@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v2.0.0](https://github.com/eclipse-tractusx/puris/releases/tag/v2.0.0)
+## [v2.0.0](https://github.com/eclipse-tractusx/puris/releases/tag/2.0.0)
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs
 and understanding the concept changes.
@@ -83,6 +83,11 @@ The **need for configuration updates** is **marked bold**.
 
 ### Known Knowns
 
+#### Security
+
+The Backend is currently secured via API Key while the Frontend already uses an API-KEY. See
+[Admin Guide](./docs/admin/Admin_Guide.md) for further information.
+
 #### Upgradeability
 
 As currently no active user was known migrations of data are not yet supported. The chart technically is upgradeable.
@@ -102,7 +107,7 @@ For productive use the following enhancements are encouraged
 
 To be checked
 
-## [v1.0.0](https://github.com/eclipse-tractusx/puris/releases/tag/v1.0.0)
+## [v1.0.0](https://github.com/eclipse-tractusx/puris/releases/tag/1.0.0)
 
 ### Added
 
