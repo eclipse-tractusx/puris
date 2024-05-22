@@ -21,9 +21,11 @@
 package org.eclipse.tractusx.puris.backend.common.ddtr.logic;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.util.DtrRequestBodyBuilder;
+import org.eclipse.tractusx.puris.backend.common.security.OAuth2ClientInterceptor;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
@@ -42,7 +44,7 @@ import java.util.Map;
 @Service
 @Slf4j
 public class DtrAdapterService {
-    private static final OkHttpClient CLIENT = new OkHttpClient();
+    private OkHttpClient CLIENT;
 
     @Autowired
     private VariablesService variablesService;
@@ -52,6 +54,18 @@ public class DtrAdapterService {
 
     @Autowired
     private DigitalTwinMappingService digitalTwinMappingService;
+
+    @Autowired(required = false)
+    public DtrAdapterService(@Nullable OAuth2ClientInterceptor oAuth2ClientInterceptor) {
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+
+        // add client interceptor if enabled by property
+        if (oAuth2ClientInterceptor != null) {
+            clientBuilder.addInterceptor(oAuth2ClientInterceptor);
+        }
+
+        this.CLIENT = clientBuilder.build();
+    }
 
     private Response sendDtrPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getDtrUrl()).newBuilder();

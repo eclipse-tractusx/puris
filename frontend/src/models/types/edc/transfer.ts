@@ -19,12 +19,12 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 export type Transfer = {
-  '@id': string;
-  'edc:correlationId': string;
-  'edc:state': string;
-  'edc:stateTimestamp': string;
-  'edc:type': string;
-  'edc:assetId': string;
-  'edc:contractId': string;
-  'edc:connectorId': string;
+    '@id': string;
+    'correlationId': string;
+    'state': string;
+    'stateTimestamp': string;
+    'type': string;
+    'assetId': string;
+    'contractId': string;
+    'connectorId': string;
 };

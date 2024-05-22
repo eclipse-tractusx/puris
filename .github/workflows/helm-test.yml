@@ -112,18 +112,21 @@ jobs:
                     ct install --charts charts/puris --helm-extra-set-args "--set backend.image.repository=${{ env.REGISTRY }}/${{ env.APP_BACKEND_NAME}} --set backend.image.tag=${{ env.TAG }} --set frontend.image.repository=${{ env.REGISTRY }}/${{ env.APP_FRONTEND_NAME }} --set frontend.image.tag=${{ env.TAG }}"
                 if: github.event_name != 'pull_request' || steps.list-changed.outputs.changed == 'true'
 
-            -   name: Generate random password (This password is only a placeholder for the next step and will not used). The postgresPassword/password will be set via postgres-init.yaml.
+            -   name: Generate random password (This password is only a placeholder for the next step and will not used).
                 id: generate-password
                 run: |
                     echo "PASSWORD=PLACEHOLDER_PW" >> $GITHUB_ENV
 
             # Upgrade the released chart version with the locally available chart
             # default value for event_name != workflow_dispatch
+            # Setting passwords during upgrade:
+            # - The postgresPassword/password will be set via postgres-init.yaml.
+            # - The dtr.idp.clients.edc.puris.secret is new and needs to be set during upgrade as not set in previous version
             -   name: Run helm upgrade
                 run: |
                     helm repo add bitnami https://charts.bitnami.com/bitnami
                     helm repo add tractusx-dev https://eclipse-tractusx.github.io/charts/dev
                     helm install puris tractusx-dev/puris --version ${{ github.event.inputs.upgrade_from || '1.0.0' }}
                     helm dependency update charts/puris
-                    helm upgrade puris charts/puris --set backend.puris.datasource.password=$PASSWORD
+                    helm upgrade puris charts/puris --set backend.puris.datasource.password=$PASSWORD --set backend.puris.dtr.idp.clients.puris.secret=$PASSWORD
                 if: github.event_name != 'pull_request' || steps.list-changed.outputs.changed == 'true'

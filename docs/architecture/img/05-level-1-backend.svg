@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="us-ascii" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" contentStyleType="text/css" height="402px" preserveAspectRatio="none"
+     style="width:1133px;height:402px;background:#FFFFFF;" version="1.1" viewBox="0 0 1133 402" width="1133px"
+     zoomAndPan="magnify">
+    <defs/>
+    <g><!--cluster <<system>> PURIS FOSS Backend-->
+        <g id="cluster_&lt;&lt;system&gt;&gt; PURIS FOSS Backend">
+            <path
+                d="M202,59 L449,59 A3.75,3.75 0 0 1 451.5,61.5 L458.5,81.2969 L909,81.2969 A2.5,2.5 0 0 1 911.5,83.7969 L911.5,266.5 A2.5,2.5 0 0 1 909,269 L202,269 A2.5,2.5 0 0 1 199.5,266.5 L199.5,61.5 A2.5,2.5 0 0 1 202,59 "
+                fill="none" style="stroke:#000000;stroke-width:1.5;"/>
+            <line style="stroke:#000000;stroke-width:1.5;" x1="199.5" x2="458.5" y1="81.2969" y2="81.2969"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing"
+                  textLength="246" x="203.5" y="73.9951">&#171;system&#187; PURIS FOSS Backend
+            </text>
+        </g><!--entity dtr-->
+        <g id="elem_dtr">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="70"
+                  x="614.5" y="94"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="664.5" y="99"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="662.5" y="101"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="662.5" y="105"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30"
+                  x="629.5" y="126.9951">DTR
+            </text>
+        </g><!--entity edc-->
+        <g id="elem_edc">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="70"
+                  x="825.5" y="198.5"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="875.5" y="203.5"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="873.5" y="205.5"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="873.5" y="209.5"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30"
+                  x="840.5" y="231.4951">EDC
+            </text>
+        </g><!--entity stock-->
+        <g id="elem_stock">
+            <rect fill="#F1F1F1" height="62.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="236"
+                  x="439.5" y="190"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="655.5" y="195"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="653.5" y="197"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="653.5" y="201"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="196"
+                  x="454.5" y="222.9951">Stock, Production, Demand,
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="146"
+                  x="454.5" y="239.292">Delivery Information
+            </text>
+        </g><!--entity mad-->
+        <g id="elem_mad">
+            <rect fill="#F1F1F1" height="46.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="73"
+                  x="216" y="198.5"/>
+            <rect fill="#F1F1F1" height="10" style="stroke:#181818;stroke-width:0.5;" width="15" x="269" y="203.5"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="267" y="205.5"/>
+            <rect fill="#F1F1F1" height="2" style="stroke:#181818;stroke-width:0.5;" width="4" x="267" y="209.5"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="33" x="231"
+                  y="231.4951">MAD
+            </text>
+        </g><!--entity Registry & Discovery Interfaces-->
+        <g id="elem_Registry &amp; Discovery Interfaces">
+            <ellipse cx="649.5" cy="14" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="222"
+                  x="538.5" y="43.9951">Registry &amp; Discovery Interfaces
+            </text>
+        </g><!--entity MAD Interface-->
+        <g id="elem_MAD Interface">
+            <ellipse cx="56.5" cy="221.5" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="101" x="6"
+                  y="251.4951">MAD Interface
+            </text>
+        </g><!--entity EDC Client Interface-->
+        <g id="elem_EDC Client Interface">
+            <ellipse cx="1054.5" cy="221.5" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="143" x="983"
+                  y="251.4951">EDC Client Interface
+            </text>
+        </g><!--entity Submodel \n& internal interface-->
+        <g id="elem_Submodel \n&amp; internal interface">
+            <ellipse cx="557.5" cy="348" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72"
+                  x="488.5" y="377.9951">Submodel
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138"
+                  x="488.5" y="394.292">&amp; internal interface
+            </text>
+        </g><!--entity OAuth2-->
+        <g id="elem_OAuth2">
+            <ellipse cx="936.5" cy="117" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="53" x="910"
+                  y="146.9951">OAuth2
+            </text>
+        </g><!--reverse link Registry & Discovery Interfaces to dtr-->
+        <g id="link_Registry &amp; Discovery Interfaces_dtr">
+            <path d="M649.5,33.27 C649.5,48.53 649.5,71.61 649.5,93.85 " fill="none"
+                  id="Registry &amp; Discovery Interfaces-backto-dtr" style="stroke:#181818;stroke-width:1.0;"/>
+            <path d="M641.0428,26.3482 A9,9 0 0 0 657.9572 26.3482" fill="none"
+                  style="stroke:#181818;stroke-width:1.5;"/>
+        </g><!--link MAD Interface to mad-->
+        <g id="link_MAD Interface_mad">
+            <path
+                d="M65.58,221.5 C83.54,221.5 121.83,221.5 121.83,221.5 C121.83,221.5 187.17,221.5 187.17,221.5 C187.17,221.5 200.81,221.5 215.63,221.5 "
+                fill="none" id="MAD Interface-mad" style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--link edc to EDC Client Interface-->
+        <g id="link_edc_EDC Client Interface">
+            <path
+                d="M895.86,221.5 C910.96,221.5 925.17,221.5 925.17,221.5 C925.17,221.5 989.83,221.5 989.83,221.5 C989.83,221.5 1017.35,221.5 1035.23,221.5 "
+                fill="none" id="edc-to-EDC Client Interface" style="stroke:#181818;stroke-width:1.0;"/>
+            <path d="M1042.1518,213.0428 A9,9 0 0 0 1042.1518 229.9572" fill="none"
+                  style="stroke:#181818;stroke-width:1.5;"/>
+        </g><!--link stock to Submodel \n& internal interface-->
+        <g id="link_stock_Submodel \n&amp; internal interface">
+            <path d="M557.5,253.28 C557.5,281.65 557.5,311.85 557.5,328.88 " fill="none"
+                  id="stock-to-Submodel \n&amp; internal interface" style="stroke:#181818;stroke-width:1.0;"/>
+            <path d="M565.9572,335.8018 A9,9 0 0 0 549.0428 335.8018" fill="none"
+                  style="stroke:#181818;stroke-width:1.5;"/>
+        </g><!--link dtr to stock-->
+        <g id="link_dtr_stock">
+            <path d="M629.54,140.24 C616.54,154.73 599.4,173.82 585.1,189.75 " fill="none" id="dtr-stock"
+                  style="stroke:#181818;stroke-width:1.0;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="180"
+                  x="394.375" y="163.8395">Register and discover twins
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="85"
+                  x="441.875" y="178.9723">&amp; submodels
+            </text>
+        </g><!--link stock to edc-->
+        <g id="link_stock_edc">
+            <path d="M675.63,221.5 C704.45,221.5 759.5,221.5 759.5,221.5 C759.5,221.5 796.29,221.5 825.46,221.5 "
+                  fill="none" id="stock-edc" style="stroke:#181818;stroke-width:1.0;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="103"
+                  x="708.5073" y="202.2765">query catalog &amp;
+            </text>
+            <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="115"
+                  x="702.5073" y="217.4093">get data (via edc)
+            </text>
+        </g><!--link mad to stock-->
+        <g id="link_mad_stock">
+            <path d="M289.2,221.5 C318.33,221.5 354.17,221.5 354.17,221.5 C354.17,221.5 410.76,221.5 439.5,221.5 "
+                  fill="none" id="mad-stock" style="stroke:#181818;stroke-width:1.0;"/>
+        </g><!--reverse link OAuth2 to dtr-->
+        <g id="link_OAuth2_dtr">
+            <path
+                d="M917.33,117 C893.38,117 840.83,117 840.83,117 C840.83,117 745.17,117 745.17,117 C745.17,117 711.88,117 684.58,117 "
+                fill="none" id="OAuth2-backto-dtr" style="stroke:#181818;stroke-width:1.0;"/>
+            <path d="M924.2518,108.5428 A9,9 0 0 0 924.2518 125.4572" fill="none"
+                  style="stroke:#181818;stroke-width:1.5;"/>
+            <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="198"
+                  x="692.3315" y="113.6286">uses for authentication of DTR
+            </text>
+        </g><!--SRC=[JL71IiD05BplLmnxA2qqe8AtKj16eGTfQVHaFQpPrxeasOtPJIM8_-xRRT3UClDczisR-ChOLdMgGMqiXQ4bjAuU8X3-RsQT9ayjhc-lBjXEsIgoJ8fMbPKw4kHYuGSVg5akiNtPhGiyRee2zpmcg-Mt4C1h_hnxW_BGeOlm8LybIBgCi0YkhEROTaxtPJ3Epf5JewoUxsrEjJbHDs1j3wvhL1mdhu-cw7wwonFHA2r-X90xEXeVs351RdpfHdUWxg1AyXApB4j193l_1n9PUe8p8Pj2SaQiQaCsN6X4seei2eh-lU6MQkpj12PAhAhF7sUju2KinPY8El19q6CcX2zZVVJwyI6ETZvgN0BvsSVifGggTaTCzlP80PeXfYUZOdqpcKhauAm_kuNStFNXuoOU2iZUamTN1yKaNsFAr27S0VnNP6hY5m00]-->
+    </g>
+</svg>
