@@ -62,11 +62,13 @@ jobs:
                 uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b # v1.3.1
 
             -   name: Install Dependencies
+                working-directory: ./frontend
                 run: npm install
 
             #substring about license
 
             -   name: Build for Docker
+                working-directory: ./frontend
                 run: npm run dockerbuild
 
             # Copy legal information from root dir to frontend dir for publishing
