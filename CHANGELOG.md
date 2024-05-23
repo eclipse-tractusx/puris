@@ -39,7 +39,7 @@ The **need for configuration updates** is **marked bold**.
         - Added projection of stock from latest stock.
         - Added possibility to pull data from partner for demand, planned production and deliveries.
     - Catalog now uses partners and their EDC url (no freehand check possible anymore)
-    - Updated user guide and added it to the frontend
+    - Updated user guide and added it to the frontend (help feature)
 - **Data Sovereignty**
     - Added Membership Credential to all access policies.
     - **Added Usage Purpose as mandatory for submodel.**
@@ -111,7 +111,7 @@ Overall
 - Brief description at the top of each page describing content would be nice for better user experience.
 - Please use different icon for Catalog, Negotiations, Transfers - currently all with
 - Logout button does not work
-- Logout button has trash symbol (block)
+- Logout button has trash symbol (**block**)
 - Footer Component missing
 
 Dashboard
