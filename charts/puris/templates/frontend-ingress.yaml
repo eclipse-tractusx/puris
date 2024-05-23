@@ -20,7 +20,7 @@
 */}}
 
 {{- if .Values.frontend.ingress.enabled -}}
-{{- $fullName := include "frontend.fullname" . -}}
+{{- $fullName := include "puris.frontend.fullname" . -}}
 {{- $svcPort := .Values.frontend.service.port -}}
 {{- if and .Values.frontend.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.frontend.ingress.annotations "kubernetes.io/ingress.class") }}
@@ -38,7 +38,7 @@ kind: Ingress
 metadata:
   name: {{ $fullName }}
   labels:
-    {{- include "frontend.labels" . | nindent 4 }}
+    {{- include "puris.frontend.labels" . | nindent 4 }}
   {{- with .Values.frontend.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

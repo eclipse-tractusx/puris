@@ -1,42 +1,44 @@
 {
-  "name": "react-frontend",
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite --host",
-    "dockerbuild": "vite build --mode dockerbuild",
-    "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "local": "vite build --mode minikube",
-    "develop": "vite build --mode dev",
-    "integration": "vite build --mode int",
-    "beta": "vite build --mode beta",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@catena-x/portal-shared-components": "^2.1.31",
-    "@mui/icons-material": "^5.14.12",
-    "@mui/material": "^5.14.12",
-    "keycloak-js": "^23.0.5",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.2"
-  },
-  "devDependencies": {
-    "@types/node": "^20.8.3",
-    "@types/react": "^18.2.43",
-    "@types/react-dom": "^18.2.17",
-    "@typescript-eslint/eslint-plugin": "^6.14.0",
-    "@typescript-eslint/parser": "^6.14.0",
-    "@vitejs/plugin-react": "^4.2.1",
-    "autoprefixer": "^10.4.16",
-    "buffer": "^6.0.3",
-    "eslint": "^8.55.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.5",
-    "postcss": "^8.4.33",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8"
-  }
+    "name": "puris-frontend",
+    "description": "Puris frontend",
+    "license": "Apache-2.0",
+    "version": "2.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite --host",
+        "dockerbuild": "vite build --mode dockerbuild",
+        "build": "tsc && vite build",
+        "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+        "local": "vite build --mode minikube",
+        "develop": "vite build --mode dev",
+        "integration": "vite build --mode int",
+        "beta": "vite build --mode beta",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@catena-x/portal-shared-components": "^2.1.31",
+        "@mui/icons-material": "^5.14.12",
+        "@mui/material": "^5.14.12",
+        "keycloak-js": "^23.0.5",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-router-dom": "^6.21.2"
+    },
+    "devDependencies": {
+        "@types/node": "^20.8.3",
+        "@types/react": "^18.2.43",
+        "@types/react-dom": "^18.2.17",
+        "@typescript-eslint/eslint-plugin": "^6.14.0",
+        "@typescript-eslint/parser": "^6.14.0",
+        "@vitejs/plugin-react": "^4.2.1",
+        "autoprefixer": "^10.4.16",
+        "buffer": "^6.0.3",
+        "eslint": "^8.55.0",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "eslint-plugin-react-refresh": "^0.4.5",
+        "postcss": "^8.4.33",
+        "tailwindcss": "^3.4.1",
+        "typescript": "^5.2.2",
+        "vite": "^5.0.8"
+    }
 }
