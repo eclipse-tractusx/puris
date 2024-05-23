@@ -64,12 +64,24 @@ public class DemandRequestApiService {
             return null;
         }
         Material material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx).getMaterial();
+
+        if (material == null) {
+            // Could not identify partner cx number. I.e. we do not have that partner's
+            // CX id in one of our MaterialPartnerRelation entities. Try to fix this by
+            // looking for MPR's, where that partner is a supplier and where we don't have
+            // a partnerCXId yet. Of course this can only work if there was previously an MPR
+            // created, but for some unforeseen reason, the initial PartTypeRetrieval didn't succeed.
+            log.warn("Could not find " + materialNumberCx + " from partner " + partner.getBpnl());
+            mprService.triggerPartTypeRetrievalTask(partner);
+            material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx).getMaterial();
+        }
+
         if (material == null) {
             log.error("Unknown Material");
             return null;
         }
-
-        if (!mprService.find(material,partner).isPartnerSuppliesMaterial()) {
+        var mpr = mprService.find(material,partner);
+        if (mpr == null || !mpr.isPartnerSuppliesMaterial()) {
             // only send an answer if partner is registered as supplier
             return null;
         }
@@ -81,6 +93,10 @@ public class DemandRequestApiService {
     public void doReportedDemandRequest(Partner partner, Material material) {
         try {
             var mpr = mprService.find(material, partner);
+            if (mpr.getPartnerCXNumber() == null) {
+                mprService.triggerPartTypeRetrievalTask(partner);
+                mpr = mprService.find(material, partner);
+            }
             var data = edcAdapterService.doSubmodelRequest(SubmodelType.DEMAND, mpr, DirectionCharacteristic.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ShortTermMaterialDemand.class);
             var demands = sammMapper.sammToReportedDemand(samm, partner);

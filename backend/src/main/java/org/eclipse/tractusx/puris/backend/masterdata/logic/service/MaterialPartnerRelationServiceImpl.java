@@ -23,7 +23,6 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingService;
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DtrAdapterService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
@@ -53,9 +52,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     @Autowired
     private VariablesService variablesService;
-
-    @Autowired
-    private DigitalTwinMappingService dtmService;
 
     @Autowired
     private DtrAdapterService dtrAdapterService;
@@ -98,10 +94,25 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         return null;
     }
 
+    /**
+     * Call this method when a partnerCXId for a Material was needed but not found.
+     * This method will trigger a new PartTypeInformation Task for any material that
+     * the given partner supplies, but still misses a partnerCXId.
+     *
+     * This method will block until all tasks have finished, if any.
+     *
+     * @param supplierPartner The supplier partner
+     */
     @Override
-    public void triggerPartTypeRetrievalTask(MaterialPartnerRelation mpr) {
-        if (!currentPartTypeFetches.contains(mpr)) {
-            executorService.submit(new PartTypeInformationRetrievalTask(mpr, 1));
+    public void triggerPartTypeRetrievalTask(Partner supplierPartner) {
+        List<Future<Boolean>> futures = findAllMaterialsThatPartnerSupplies(supplierPartner).stream()
+            .map(mat -> find(mat, supplierPartner))
+            .filter(mpr -> mpr.isPartnerSuppliesMaterial() && mpr.getPartnerCXNumber() == null)
+            .map(mpr -> executorService.submit(new PartTypeInformationRetrievalTask(mpr, 1))).toList();
+        boolean allDone = futures.isEmpty();
+        while (!allDone) {
+            Thread.yield();
+            allDone = futures.stream().allMatch(Future::isDone);
         }
     }
 
@@ -144,7 +155,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         /**
          * This method contains all the duties which the PartTypeInformationRetrievalTask is trying to fulfill.
          *
-         * @return  true, if the task finished successfully
+         * @return true, if the task finished successfully
          */
         @Override
         public Boolean call() {
@@ -242,7 +253,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         /**
          * This method contains all the duties which the DtrRegistrationTask is trying to fulfill.
          *
-         * @return  true, if the task finished successfully
+         * @return true, if the task finished successfully
          */
         @Override
         public Boolean call() throws Exception {
