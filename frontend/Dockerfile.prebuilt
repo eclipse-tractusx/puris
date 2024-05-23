@@ -40,7 +40,7 @@ USER 101
 HEALTHCHECK --interval=30s --timeout=3s  CMD wget -O /dev/null http://localhost:8080 || exit 1
 
 WORKDIR /usr/share/nginx/html
-COPY /app/dist .
+COPY ./app/dist .
 ENTRYPOINT [ "start-nginx.sh" ]
 # nginx exposes at port 80
 # nginx-unpriviledged exposes at port 8080
