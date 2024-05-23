@@ -134,8 +134,8 @@ public class DtrAdapterService {
     }
 
     /**
-     * Call this method when a new Material with a product flag was created in your MaterialService - or if a product
-     * flag was later added to an existing Material.
+     * Call this method when you need to register a product at the DTR for which there was no product AAS registered
+     * previously. 
      * <p>
      * A new AAS will be registered for this Material at your dDTR.
      *
