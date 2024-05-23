@@ -268,9 +268,12 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                             completedProductRegistration = true;
                         } else {
                             if (result == 404) {
-                                Integer registrationResult = dtrAdapterService.registerProductAtDtr(materialPartnerRelation.getMaterial());
+                                Integer registrationResult = dtrAdapterService.registerProductAtDtr(materialPartnerRelation.getMaterial(), allCustomers);
                                 log.info("Tried to create product AAS for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber()
                                     + ", result: " + registrationResult);
+                                if (registrationResult < 400) {
+                                    completedMaterialRegistration = true;
+                                }
                             }
                         }
                     } else {

@@ -140,11 +140,12 @@ public class DtrAdapterService {
      * A new AAS will be registered for this Material at your dDTR.
      *
      * @param material The Material
+     * @param mprs     The list of all MaterialProductRelations that exist with customers of the given Material
      * @return The HTTP response code from the DTR, or null if none was received
      */
-    public Integer registerProductAtDtr(Material material) {
+    public Integer registerProductAtDtr(Material material, List<MaterialPartnerRelation> mprs) {
         String twinId = digitalTwinMappingService.get(material).getProductTwinId();
-        var body = dtrRequestBodyBuilder.createProductRegistrationRequestBody(material, twinId, List.of());
+        var body = dtrRequestBodyBuilder.createProductRegistrationRequestBody(material, twinId, mprs);
         try (var response = sendDtrPostRequest(body, List.of("api", "v3", "shell-descriptors"))) {
             return response.code();
         } catch (Exception e) {
