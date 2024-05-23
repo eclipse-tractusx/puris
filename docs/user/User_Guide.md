@@ -26,9 +26,9 @@ It is visually divided in 4 horizontal parts:
 
 Using the tabs the user can choose the role they want to assume. This choice determines what information is shown to them.
 
-For the customer role the user will see the demand and incoming deliveries of the user's site as well as the production output and outgoing deliveries of the user's suppliers' sites.
+As a customer, the user will be shown the user's own site's demand and incoming deliveries as well as the user's customers' production output and outgoing shipments.
 
-As a supplier the user will be shown the user's own site's production output and outgoing shipments as well as the user's customers' demands and incoming deliveries.
+As a supplier, the user will be shown the user's own site's production output and outgoing shipments as well as the user's customers' demands and incoming deliveries.
 
 In either case the user will always see the current and projected item stocks of both the user's own and the user's partners' sites.
 
@@ -38,7 +38,7 @@ In either case the user will always see the current and projected item stocks of
 
 To show information in the dashboard the user have to first pick the material number the user are interested in followed by the user's own site. This will immediately display the available information for that material and site. the user can further select one or more partner sites to display the corresponding data.
 
-_**Note:** Each filter requires the previous ones. the user can not filter by material number and partner sites alone._
+_**Note:** Each filter requires the previous ones. The user can not filter by material number and partner sites alone._
 
 ### Own site data
 
@@ -46,7 +46,7 @@ _**Note:** Each filter requires the previous ones. the user can not filter by ma
 
 Once the user has selected a material number and site they are presented with an overview of the site's data. Depending on the user's role they will see the demand and incoming deliveries or production output and outgoing shipments for customer and supplier respectively. In addition the user will see the current and projected item stock.
 
-The data is displayed for the next 4 weeks.
+The data is displayed for up to the next 4 weeks depending on available data.
 
 By clicking on an individual demand, production or delivery data cell the user can display detailed information for the given day.
 
@@ -74,7 +74,7 @@ To add a new demand the user:
 6. (Optional) Selects the expected supplier site
 7. Clicks the "save" button
 
-A notification in the top right of the user's screen will inform them if saving was successful. Afterwards the user will see the newly added demand reflected in the their site data overview.
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added demand reflected in the their site data overview.
 
 #### Adding production
 
@@ -82,16 +82,16 @@ A notification in the top right of the user's screen will inform them if saving 
 
 Upon clicking the "create production" button, a popup will prompt the user to enter the details for the new production output. The material number and site for the production output will be pre-filled for the user based on the filters they have currently selected.
 
-To add a new production output the user:
+To add a new production output, the user:
 
 1. Enters the estimated time of completion
 2. Selects the customer to allocate the production to
 3. Enters the quantity produced
 4. Selects the unit of measurement
-5. (Optional) Fills the Order Position Reference
+5. (Optional) Fills the order position reference
 6. Clicks the "save" button
 
-A notification in the top right of the user's screen will inform them if saving was successful. Afterwards the user will see the newly added production output reflected in their site data overview.
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added production output reflected in their site data overview.
 
 #### Adding deliveries
 
@@ -105,16 +105,16 @@ To add a new delivery the user:
 2. Selects the date of departure
 3. Selects the arrival type
 4. Selects the date of arrival
-5. Selects the Partner for the delivery
-6. Chooses the Origin or Destination site (depending on the user's role)
+5. Selects the partner for the delivery
+6. Chooses the origin or destination site (depending on the user's role)
 7. Enters the quantity
 8. Selects the unit of measurement
 9. (Optional) Enters the tracking number
-10. Selects the Incoterm for the delivery
-11. (Optional) Fills the Order Position Reference
+10. Selects the incoterms for the delivery
+11. (Optional) Fills the order position reference
 12. Clicks the "save" button
 
-A notification in the top right of the user's screen will inform them if saving was successful. Afterwards the user will see the newly added delivery reflected in their site data overview.
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added delivery reflected in their site data overview.
 
 _**Note:** When entering a new delivery the user should make sure that:_
 
@@ -128,7 +128,7 @@ _**Note:** When entering a new delivery the user should make sure that:_
 
 By selecting one or more partner sites from the filters the user is presented with their data. Depending on the user's chosen role these tables will show the demand and incoming shipments or planned production output and outgoing shipments respectively. In both cases they will also show the current and projected item stock at each partner site.
 
-All data is shown for the next 4 weeks.
+The data is displayed for up to the next 4 weeks depending on available data.
 
 The user can click individual production output, demand or delivery data cells to display detailed information.
 

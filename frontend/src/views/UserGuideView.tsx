@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import Markdown from 'react-markdown';
 
-import markdownFile from '@assets/userGuide/User_Guide.md';
+import markdownFile from '@assets/User_Guide.md';
 import { useEffect, useState } from 'react';
 import { Box } from '@mui/material';
 

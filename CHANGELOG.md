@@ -39,6 +39,7 @@ The **need for configuration updates** is **marked bold**.
         - Added projection of stock from latest stock.
         - Added possibility to pull data from partner for demand, planned production and deliveries.
     - Catalog now uses partners and their EDC url (no freehand check possible anymore)
+    - Updated user guide and added it to the frontend
 - **Data Sovereignty**
     - Added Membership Credential to all access policies.
     - **Added Usage Purpose as mandatory for submodel.**
