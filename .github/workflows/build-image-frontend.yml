@@ -70,6 +70,12 @@ jobs:
                 working-directory: ./frontend
                 run: bash ./scripts/legal-notice.sh
 
+            # Copy user guide to frontend dir for building
+            -   name: Copy user guide
+                run: |
+                    cp -r ./docs/user/img ./frontend/public
+                    cp ./docs/user/User_Guide.md ./frontend/src/assets/User_Guide.md
+
             -   name: Build for Docker
                 working-directory: ./frontend
                 run: npm run dockerbuild

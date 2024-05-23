@@ -83,7 +83,7 @@ export const PartnerStockTable = <T extends StockType>({ type, materialName, par
     return (
         <div className="relative">
             <Table
-                title={`Your ${type === 'material' ? 'Customers' : 'Suppliers'}' Stocks ${materialName ? `for ${materialName}` : ''}`}
+                title={`Your ${type === 'product' ? 'Customers' : 'Suppliers'}' Stocks ${materialName ? `for ${materialName}` : ''}`}
                 noRowsMsg={
                     type === 'material'
                         ? 'Select a Material to show your suppliers stocks'

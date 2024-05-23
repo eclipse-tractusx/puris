@@ -31,6 +31,7 @@ import { AboutLicenseView } from '@views/AboutLicenseView';
 import { UnauthorizedView } from '@views/errors/UnauthorizedView';
 import { ErrorView } from '@views/errors/ErrorView';
 import { RouteGuard } from '@components/RouteGuard';
+import { UserGuideView } from '@views/UserGuideView';
 
 export const router = createBrowserRouter([
     {
@@ -72,6 +73,10 @@ export const router = createBrowserRouter([
             {
                 path: '/',
                 loader: () => redirect('/dashboard'),
+            },
+            {
+                path: 'user-guide',
+                element: <UserGuideView />,
             },
             {
                 path: 'aboutLicense',
