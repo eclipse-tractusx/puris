@@ -21,7 +21,7 @@
 FROM node:lts-alpine as build
 
 ARG NPM_BUILD_MODE=dockerbuild
-ENV JQ_VERSION=1.6
+ENV JQ_VERSION=1.7.1
 
 # Determine architecture and download the appropriate version of jq
 RUN ARCH="$(uname -m)" && \
