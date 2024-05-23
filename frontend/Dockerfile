@@ -23,9 +23,16 @@ FROM node:lts-alpine as build
 ARG NPM_BUILD_MODE=dockerbuild
 ENV JQ_VERSION=1.6
 
-RUN wget --no-check-certificate https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/jq-linux64 -O /tmp/jq-linux64
-RUN cp /tmp/jq-linux64 /usr/bin/jq
-RUN chmod +x /usr/bin/jq
+# Determine architecture and download the appropriate version of jq
+RUN ARCH="$(uname -m)" && \
+    case "${ARCH}" in \
+        x86_64) JQ_BINARY="jq-linux64";; \
+        aarch64) JQ_BINARY="jq-linux64";; \
+        armhf) JQ_BINARY="jq-linux32";; \
+        *) echo "Unsupported architecture: ${ARCH}" && exit 1 ;; \
+    esac && \
+    wget --no-check-certificate -O /usr/bin/jq "https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/${JQ_BINARY}" && \
+    chmod +x /usr/bin/jq
 
 WORKDIR /app
 COPY . .
