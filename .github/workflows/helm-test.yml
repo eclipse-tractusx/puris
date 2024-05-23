@@ -124,5 +124,5 @@ jobs:
                     helm repo add tractusx-dev https://eclipse-tractusx.github.io/charts/dev
                     helm install puris tractusx-dev/puris --version ${{ github.event.inputs.upgrade_from || '1.0.0' }} --set postgresql.auth.existingSecret="secret-puris-postgres-init"
                     helm dependency update charts/puris
-                    helm upgrade puris charts/puris --set global.postgresql.auth.postgres=$(kubectl get secret -n default secret-puris-postgres-init -o jsonpath="{.data.password}" | base64 --decode)
+                    helm upgrade puris charts/puris
                 if: github.event_name != 'pull_request' || steps.list-changed.outputs.changed == 'true'
