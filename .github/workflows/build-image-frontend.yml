@@ -73,7 +73,7 @@ jobs:
             # Copy user guide to frontend dir for building
             -   name: Copy user guide
                 run: |
-                    cp ./docs/user/img ./frontend/public
+                    cp -r ./docs/user/img ./frontend/public
                     cp ./docs/user/User_Guide.md ./frontend/src/assets/User_Guide.md
 
             -   name: Build for Docker
