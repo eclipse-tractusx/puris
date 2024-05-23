@@ -66,6 +66,9 @@ jobs:
                 run: npm install
 
             #substring about license
+            -   name: Update legal notice
+                working-directory: ./frontend
+                run: bash ./scripts/legal-notice.sh
 
             -   name: Build for Docker
                 working-directory: ./frontend

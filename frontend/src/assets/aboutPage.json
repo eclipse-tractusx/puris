@@ -2,29 +2,29 @@
     {
         "header": "Product Name",
         "body": "PURIS",
-        "link": "https://github.com/eclipse-tractusx/puris"
+        "link": "SERVER_URL_PLACEHOLDER/REPOSITORY_PLACEHOLDER"
     },
     {
         "header": "License",
-        "body": "Apache-2.0"
+        "body": "LICENSE_PLACEHOLDER"
     },
     {
         "header": "License Path",
         "body": "License URL",
-        "link": "https://github.com/eclipse-tractusx/puris/blob/main/LICENSE"
+        "link": "SERVER_URL_PLACEHOLDER/REPOSITORY_PLACEHOLDER/blob/REF_PLACEHOLDER/LICENSE"
     },
     {
         "header": "NOTICE",
         "body": "Notice.md URL",
-        "link": "https://github.com/eclipse-tractusx/puris/blob/main/NOTICE.md"
+        "link": "SERVER_URL_PLACEHOLDER/REPOSITORY_PLACEHOLDER/blob/REF_PLACEHOLDER/NOTICE.md"
     },
     {
         "header": "Source URL",
         "body": "Eclipse-Tractus-X",
-        "link": "https://github.com/eclipse-tractusx/puris"
+        "link": "SERVER_URL_PLACEHOLDER/REPOSITORY_PLACEHOLDER/blob/REF_PLACEHOLDER/"
     },
     {
         "header": "Commit ID",
-        "body": "233974ce923b4a8523a029b4d6a6fc6281af3cb2"
+        "body": "COMMIT_ID_PLACEHOLDER"
     }
 ]
