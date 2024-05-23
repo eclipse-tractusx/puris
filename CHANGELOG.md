@@ -39,7 +39,7 @@ The **need for configuration updates** is **marked bold**.
         - Added projection of stock from latest stock.
         - Added possibility to pull data from partner for demand, planned production and deliveries.
     - Catalog now uses partners and their EDC url (no freehand check possible anymore)
-    - Updated user guide and added it to the frontend
+    - Updated user guide and added it to the frontend (help feature)
 - **Data Sovereignty**
     - Added Membership Credential to all access policies.
     - **Added Usage Purpose as mandatory for submodel.**
@@ -106,7 +106,42 @@ For productive use the following enhancements are encouraged
 
 #### Styleguide
 
-To be checked
+Overall
+
+- Brief description at the top of each page describing content would be nice for better user experience.
+- Please use different icon for Catalog, Negotiations, Transfers - currently all with
+- Logout button does not work
+- Logout button has trash symbol (**block**)
+- Footer Component missing
+
+Dashboard
+
+- DropDown Headers / Field Headers not correctly placed. Other views / data entry / filter screens to be checked.
+- Dashboard currently has larger fond than all other Page Headers -> please unify
+- Create Demand - Day is mandatory and should require an asterix
+- Create Demand - Upon entering data and closing, SOME (not all) entries are preserved (and so are warnings for 
+  mandatory fields) --> upon closing and re-opening information should be reset to default. (**block**)
+- Similar for Create Delivery (here SOME entries are reset but warnings stay) (**block**)
+
+Stocks
+
+- Switch between Material Stocks and Product Stocks -> same layout adaption as for Dashboard suggested (see above)
+- Like the functionality that by clicking on a stock, data gets entered for add/update -> user needs better guidance to 
+  do this (else error prone to enter one slightly different attribute and Add instead of update)
+- Refresh -- update request has been sent successfully. -> more information regarding data transfer needed for user
+
+Catalog
+
+- Usage Policies are called "Asset Action"
+- Header Name should be "View Connector Catalog" or "View Partner Catalog"
+- No action possible -> unclear to user when and how user will consume an offer
+- List shows a couple of items and item view takes up quite some space --> maybe use a table instead to show more items
+  in overview
+- Delay in loading results and first "No Catalog available..." shown and then load items
+
+Negotiations
+- Similar as Catalog
+- Add filters for transparency (bpnl, state)
 
 ## [v1.0.0](https://github.com/eclipse-tractusx/puris/releases/tag/1.0.0)
 
