@@ -271,7 +271,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                                 Integer registrationResult = dtrAdapterService.registerProductAtDtr(materialPartnerRelation.getMaterial(), allCustomers);
                                 log.info("Tried to create product AAS for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber()
                                     + ", result: " + registrationResult);
-                                if (registrationResult < 400) {
+                                if (registrationResult != null && registrationResult < 400) {
                                     completedMaterialRegistration = true;
                                 }
                             }
