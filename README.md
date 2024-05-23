@@ -1,6 +1,6 @@
 <div align="center">
   <h2 align="center">PURIS</h2>
-  The Catena-X Predictive Unit Real-Time Information Service (PURIS) for Short Term Demand and Capacity Management
+  The Predictive Unit Real-Time Information Service (PURIS) for Short Term Demand and Capacity Management
 </div>
 
 ## Overview
