@@ -120,7 +120,10 @@ export const SideBar = () => {
                     ))}
                 </ul>
             </nav>
-            <footer className="flex justify-center mt-auto">
+            <footer className="flex flex-col items-center justify-center mt-auto">
+                <Link to="/user-guide" className="hover:text-gray-500">
+                    User Guide
+                </Link>
                 <Link to="/aboutLicense" className="hover:text-gray-500">
                     About License
                 </Link>
