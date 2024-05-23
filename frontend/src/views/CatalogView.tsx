@@ -62,7 +62,7 @@ export const CatalogView = () => {
     return (
         <div className="flex flex-col items-center gap-4 w-full h-full">
             <h1 className="text-3xl font-semibold text-gray-700">View EDC Catalog</h1>
-            <div className="flex w-1/4 items-end gap-5">
+            <div className="flex w-[40rem] items-end gap-5">
                 <Autocomplete
                     id="partner"
                     value={partner}
@@ -76,7 +76,7 @@ export const CatalogView = () => {
                             // error={formError && !newStock?.partner}
                         />
                     )}
-                    onChange={(event, newValue) => (partnerRef.current = newValue)}
+                    onChange={(_, newValue) => (partnerRef.current = newValue)}
                     isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
                     className="flex-grow"
                 />
@@ -91,7 +91,7 @@ export const CatalogView = () => {
             </div>
             {catalog && catalog.length > 0 ? (
                 <ul className="flex flex-col gap-5 w-[64rem]">
-                    {catalog.map((item, index) => (
+                    {catalog.map((item) => (
                         <Card className="p-5">
                             <li key={item.assetId}>
                                 <h2 className="text-xl font-semibold">Catalog Item</h2>
