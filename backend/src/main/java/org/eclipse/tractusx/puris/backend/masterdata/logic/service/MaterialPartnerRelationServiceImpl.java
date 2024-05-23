@@ -82,12 +82,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         var searchResult = find(materialPartnerRelation.getMaterial(), materialPartnerRelation.getPartner());
         if (searchResult == null) {
             executorService.submit(new DtrRegistrationTask(materialPartnerRelation, 3));
-            if (materialPartnerRelation.getMaterial().isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial()
-                && materialPartnerRelation.getPartnerCXNumber() == null) {
-                log.info("Attempting CX-Id fetch for Material " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                    " from Supplier-Partner " + materialPartnerRelation.getPartner().getBpnl());
-                executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 1));
-            }
             return mprRepository.save(materialPartnerRelation);
         }
         log.error("Could not create MaterialPartnerRelation, " + materialPartnerRelation.getKey() + " already exists");
@@ -105,15 +99,28 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
      */
     @Override
     public void triggerPartTypeRetrievalTask(Partner supplierPartner) {
-        List<Future<Boolean>> futures = findAllMaterialsThatPartnerSupplies(supplierPartner).stream()
-            .map(mat -> find(mat, supplierPartner))
-            .filter(mpr -> mpr.isPartnerSuppliesMaterial() && mpr.getPartnerCXNumber() == null)
-            .map(mpr -> executorService.submit(new PartTypeInformationRetrievalTask(mpr, 1))).toList();
-        boolean allDone = futures.isEmpty();
-        while (!allDone) {
-            Thread.yield();
-            allDone = futures.stream().allMatch(Future::isDone);
+        List<Future<Boolean>> futures = mprRepository
+            .findAllByPartner_UuidAndPartnerSuppliesMaterialIsTrue(supplierPartner.getUuid())
+            .stream()
+            .filter(mpr -> mpr.getPartnerCXNumber() == null)
+            .filter(mpr -> !currentPartTypeFetches.contains(mpr))
+            .map(mpr -> executorService.submit(new PartTypeInformationRetrievalTask(mpr, 1)))
+            .toList();
+        if (futures.isEmpty()) {
+            return;
         }
+
+        do {
+            Thread.yield();
+            // wait until all triggered tasks have returned
+        } while (!futures.stream().allMatch(Future::isDone));
+
+        // give the database a little bit of time to handle the updates
+        try {
+                Thread.sleep(400);
+        } catch (InterruptedException ignored) {
+        }
+
     }
 
 
@@ -283,7 +290,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                                 log.info("Tried to create product AAS for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber()
                                     + ", result: " + registrationResult);
                                 if (registrationResult != null && registrationResult < 400) {
-                                    completedMaterialRegistration = true;
+                                    completedProductRegistration = true;
                                 }
                             }
                         }
@@ -365,12 +372,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         flagConsistencyTest(materialPartnerRelation);
         var foundEntity = mprRepository.findById(materialPartnerRelation.getKey());
         if (foundEntity.isPresent()) {
-            if (materialPartnerRelation.getMaterial().isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial()
-                && materialPartnerRelation.getPartnerCXNumber() == null) {
-                log.info("Attempting CX-Id fetch for Material " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                    " from Supplier-Partner " + materialPartnerRelation.getPartner().getBpnl());
-                executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 3));
-            }
             executorService.submit(new DtrRegistrationTask(materialPartnerRelation, 3));
             return mprRepository.save(materialPartnerRelation);
         }
