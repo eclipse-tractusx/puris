@@ -25,12 +25,13 @@ ENV JQ_VERSION=1.6
 
 # Determine architecture and download the appropriate version of jq
 RUN ARCH="$(uname -m)" && \
-    case "${ARCH}" in \
-        x86_64) JQ_BINARY="jq-linux64";; \
-        aarch64) JQ_BINARY="jq-linux64";; \
-        armhf) JQ_BINARY="jq-linux32";; \
-        *) echo "Unsupported architecture: ${ARCH}" && exit 1 ;; \
-    esac && \
+    if [ "${ARCH}" = "x86_64" ]; then \
+        JQ_BINARY="jq-linux-amd64"; \
+    elif [ "${ARCH}" = "aarch64" ]; then \
+        JQ_BINARY="jq-linux-arm64"; \
+    else \
+        echo "Unsupported architecture: ${ARCH}" && exit 1; \
+    fi && \
     wget --no-check-certificate -O /usr/bin/jq "https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/${JQ_BINARY}" && \
     chmod +x /usr/bin/jq
 
