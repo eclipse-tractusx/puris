@@ -22,7 +22,7 @@
 # uses 101 restricted user
 FROM nginxinc/nginx-unprivileged:alpine
 # Copy Legal information for distributions, the star ones are copied by workflow
-COPY DOCKER_NOTICE.md README.md NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* /app/dist/
+COPY DOCKER_NOTICE.md README.md NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* /dist/
 
 # commly it would be .../html/js/.*js, but due to the project structure the JS files are in .../html/assets
 ENV JSFOLDER=/usr/share/nginx/html/assets/*.js
@@ -40,7 +40,7 @@ USER 101
 HEALTHCHECK --interval=30s --timeout=3s  CMD wget -O /dev/null http://localhost:8080 || exit 1
 
 WORKDIR /usr/share/nginx/html
-COPY ./app/dist .
+COPY ./dist .
 ENTRYPOINT [ "start-nginx.sh" ]
 # nginx exposes at port 80
 # nginx-unpriviledged exposes at port 8080
