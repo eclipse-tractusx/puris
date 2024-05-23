@@ -65,7 +65,7 @@ jobs:
                 working-directory: ./frontend
                 run: npm install
 
-            #substring about license
+            # Replace "about license" information
             -   name: Update legal notice
                 working-directory: ./frontend
                 run: bash ./scripts/legal-notice.sh
