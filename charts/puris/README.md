@@ -78,7 +78,7 @@ dependencies:
 | backend.puris.api.rootDir | string | `"/catena"` | The root directory of the API |
 | backend.puris.baseurl | string | `"your-backend-host-address.com"` | Base url of the PURIS backend |
 | backend.puris.datasource.driverClassName | string | `"org.postgresql.Driver"` | Driver class name of the database |
-| backend.puris.datasource.password | string | `nil` | Password for the database user. Ignored if postgres.enabled is true. |
+| backend.puris.datasource.password | string | `""` | Password for the database user. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.url | string | `"jdbc:postgresql://postgresql-name:5432/puris-database"` | URL of the database. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.username | string | `"db-user"` | Username of the database. Ignored if postgres.enabled is true. |
 | backend.puris.deliverysubmodel.apiassetid | string | `"deliverysubmodel-api-asset"` | Asset ID for DeliverySubmodel API |
@@ -87,7 +87,7 @@ dependencies:
 | backend.puris.dtr.idp.clients.edc.id | string | `"FOSS-EDC-CLIENT"` | id of the client that has a service account with roles to view the DTR. Used by the application to create DTR asset in the edc with read only access. See Admin Guide. Mandatory if backend.puris.dtr.idp.enabled = true. |
 | backend.puris.dtr.idp.clients.edc.secret.alias | string | `"path/secret-name"` | alias for the vault used by the EDC in which the secret is stored. Mandatory if backend.puris.dtr.idp.enabled = true. |
 | backend.puris.dtr.idp.clients.puris.id | string | `"FOSS-PURIS-CLIENT"` | id of the client that has a service account with roles to manage the DTR. Used by the application to create and update digital twins. See Admin Guide. Mandatory if backend.puris.dtr.idp.enabled = true. |
-| backend.puris.dtr.idp.clients.puris.secret | string | `nil` | secret of the client with write access (no vault alias). No default value will be created if empty. Mandatory if backend.puris.dtr.idp.enabled = true. |
+| backend.puris.dtr.idp.clients.puris.secret | string | `""` | secret of the client with write access (no vault alias). No default value will be created if empty. Mandatory if backend.puris.dtr.idp.enabled = true. |
 | backend.puris.dtr.idp.enabled | bool | `true` | enables the usage of the IDP for the DTR. |
 | backend.puris.dtr.idp.tokenurl | string | `"https://keycloak-service.com/realms/your-realm/openid-connect/token"` | token url of the idp for your specific realm. May be different to other idp token url in this config. Mandatory if backend.puris.dtr.idp.enabled = true. |
 | backend.puris.dtr.url | string | `"http://localhost:4243"` | Endpoint for DTR |
@@ -97,7 +97,7 @@ dependencies:
 | backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc |
 | backend.puris.edc.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api |
 | backend.puris.edr.deletiontimer | int | `2` | Number of minutes before received authentication data of a consumer pull is removed from memory |
-| backend.puris.existingSecret | string | `"secret-backend-puris"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
+| backend.puris.existingSecret | string | `"secret-puris-backend"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
 | backend.puris.frameworkagreement.credential | string | `"Puris"` | The name of the framework agreement. Starting with Uppercase and using CamelCase. |
 | backend.puris.frameworkagreement.version | string | `"1.0"` | The version of the framework agreement, NEEDS TO BE PUT AS "STRING"! |
 | backend.puris.generatematerialcatenaxid | bool | `true` | Flag that decides whether the auto-generation feature of the puris backend is enabled. Since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing CatenaX-Id via the materials-API of the backend, when you are inserting a new Material entity to the backend's database. If a CatenaX-Id was not assigned to your Material so far, then this feature can auto-generate one randomly. In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that Material entity. |
@@ -209,7 +209,7 @@ dependencies:
 | frontend.tolerations | list | `[]` | Constrains for tolerations |
 | global.domain.backend.ingress | string | `"your-backend-host-address.com"` |  |
 | postgresql.auth.database | string | `"postgres"` | Name of the database. |
-| postgresql.auth.existingSecret | string | `"secret-postgres-init"` | Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file. |
+| postgresql.auth.existingSecret | string | `"secret-puris-postgres-init"` | Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file. |
 | postgresql.auth.password | string | `""` | Password for the custom database user. Secret-key 'password' |
 | postgresql.auth.passwordPostgres | string | `""` | Password for the database. Secret-key 'postgres-password'. |
 | postgresql.auth.username | string | `"puris"` | Username for the custom database user. |

@@ -355,7 +355,7 @@ backend:
     # -- Base url of the PURIS backend
     baseurl: *domain
     # -- Secret for backend passwords. For more information look into 'backend-secrets.yaml' file.
-    existingSecret: "secret-backend-puris"
+    existingSecret: "secret-puris-backend"
     api:
       # -- The API key of the PURIS application
       key: "test"
@@ -369,7 +369,7 @@ backend:
       # -- Username of the database. Ignored if postgres.enabled is true.
       username: db-user
       # -- Password for the database user. Ignored if postgres.enabled is true.
-      password:
+      password: ""
     edc:
       controlplane:
         host: "172.17.0.2"
@@ -465,7 +465,7 @@ backend:
             id: FOSS-PURIS-CLIENT
             # -- secret of the client with write access (no vault alias). No default value will be created if empty.
             # Mandatory if backend.puris.dtr.idp.enabled = true.
-            secret:
+            secret: ""
     # -- Flag that decides whether the auto-generation feature of the puris backend is enabled.
     # Since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing CatenaX-Id
     # via the materials-API of the backend, when you are inserting a new Material entity to the backend's
@@ -494,7 +494,7 @@ postgresql:
     # -- Name of the database.
     database: "postgres"
     # -- Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file.
-    existingSecret: "secret-postgres-init"
+    existingSecret: "secret-puris-postgres-init"
     # -- Username for the custom database user.
     username: "puris"
     # -- Password for the custom database user. Secret-key 'password'
