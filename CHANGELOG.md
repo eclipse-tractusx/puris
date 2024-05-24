@@ -7,13 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v2.0.1](https://github.com/eclipse-tractusx/puris/releases/tag/2.0.1)
 
-The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
+The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs
+and understanding the concept changes.
 
 The **need for configuration updates** is **marked bold**.
 
 ### Added
-
-Frontend updates
 
 * Added Footer
 
@@ -26,23 +25,28 @@ Frontend updates
 * Font update for Role switching elements in stocks and dashboard view
 * Handled modal dialog behavior to always let failed validations prevent closing
 * Modal Dialog Demand
-  * Day is marked as mandatory
-  * Reset data when reopening
+    * Day is marked as mandatory
+    * Reset data when reopening
 * Catalog View
-  * Updated header itle + usage policy naming (previously Asset Action)
-  * Added table view
-  * increased responsiveness by loading animation
+    * Updated header itle + usage policy naming (previously Asset Action)
+    * Added table view
+    * increased responsiveness by loading animation
 * Negotiation view
-  * Added table view + Subheader
+    * Added table view + Subheader
 * Logout button now logs out again
 
+Fixed constraints to exactly match on leftOperands during consumer side offer evaluation
+
 ### Removed
+
+- EDR Endpoint as removed for edr api usage in appVersion 2.0.0
 
 ### Known Knowns
 
 #### Security
 
-The Backend is currently secured via API Key while the Frontend already uses an API-KEY. See [Admin Guide](./docs/admin/Admin_Guide.md) for further information.
+The Backend is currently secured via API Key while the Frontend already uses an API-KEY.
+See [Admin Guide](./docs/admin/Admin_Guide.md) for further information.
 
 #### Upgradeability
 
@@ -211,14 +215,14 @@ Dashboard
 - DropDown Headers / Field Headers not correctly placed. Other views / data entry / filter screens to be checked.
 - Dashboard currently has larger fond than all other Page Headers -> please unify
 - Create Demand - Day is mandatory and should require an asterix
-- Create Demand - Upon entering data and closing, SOME (not all) entries are preserved (and so are warnings for 
+- Create Demand - Upon entering data and closing, SOME (not all) entries are preserved (and so are warnings for
   mandatory fields) --> upon closing and re-opening information should be reset to default. (**block**)
 - Similar for Create Delivery (here SOME entries are reset but warnings stay) (**block**)
 
 Stocks
 
 - Switch between Material Stocks and Product Stocks -> same layout adaption as for Dashboard suggested (see above)
-- Like the functionality that by clicking on a stock, data gets entered for add/update -> user needs better guidance to 
+- Like the functionality that by clicking on a stock, data gets entered for add/update -> user needs better guidance to
   do this (else error prone to enter one slightly different attribute and Add instead of update)
 - Refresh -- update request has been sent successfully. -> more information regarding data transfer needed for user
 
@@ -232,6 +236,7 @@ Catalog
 - Delay in loading results and first "No Catalog available..." shown and then load items
 
 Negotiations
+
 - Similar as Catalog
 - Add filters for transparency (bpnl, state)
 
