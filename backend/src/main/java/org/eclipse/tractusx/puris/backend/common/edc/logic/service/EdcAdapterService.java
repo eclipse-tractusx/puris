@@ -981,11 +981,21 @@ public class EdcAdapterService {
             }
             JsonNode targetCatalogEntry = null;
             if (!catalogArray.isEmpty()) {
-                log.debug("Ambiguous catalog entries found! Will take the first with supported policy \n" + catalogArray.toPrettyString());
+                if (catalogArray.size() > 1) {
+                    log.debug("Ambiguous catalog entries found! Will take the first with supported policy \n" + catalogArray.toPrettyString());
+                }
+
                 for (JsonNode entry : catalogArray) {
                     if (testContractPolicyConstraints(entry)) {
                         targetCatalogEntry = entry;
                         break;
+                    } else {
+                        log.info(
+                            "Contract offer did not match Framework Policy {} and Contract Policy {}:\n{}",
+                            variablesService.getPurisFrameworkAgreementWithVersion(),
+                            variablesService.getPurisPurposeWithVersion(),
+                            entry.toPrettyString()
+                        );
                     }
                 }
             }
@@ -1071,27 +1081,30 @@ public class EdcAdapterService {
                 }
             }
 
-            if (frameworkAgreementConstraint.isPresent()) {
-                result = result && testSingleConstraint(
-                    frameworkAgreementConstraint,
-                    EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "FrameworkAgreement",
-                    "odrl:eq",
-                    variablesService.getPurisFrameworkAgreementWithVersion()
+            if (frameworkAgreementConstraint.isEmpty() || purposeConstraint.isEmpty()) {
+                log.debug(
+                    "Not all constraints have been found: FrameworkAgreement constraint found: {}, " +
+                        "UsagePurpose constraint found: {}",
+                    frameworkAgreementConstraint.isPresent(),
+                    purposeConstraint.isPresent()
                 );
-            } else {
-                log.debug("FrameworkAgreement Policy not found.");
+                return false;
             }
 
-            if (purposeConstraint.isPresent()) {
-                result = result && testSingleConstraint(
-                    purposeConstraint,
-                    EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "UsagePurpose",
-                    "odrl:eq",
-                    variablesService.getPurisPuposeWithVersion()
-                );
-            } else {
-                log.debug("Usage Purpose Policy not found.");
-            }
+            result = result && testSingleConstraint(
+                frameworkAgreementConstraint,
+                EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "FrameworkAgreement",
+                "odrl:eq",
+                variablesService.getPurisFrameworkAgreementWithVersion()
+            );
+
+            result = result && testSingleConstraint(
+                purposeConstraint,
+                EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "UsagePurpose",
+                "odrl:eq",
+                variablesService.getPurisPurposeWithVersion()
+            );
+
         } else {
             log.info(
                 "2 Constraints (Framework Agreement, Purpose) are expected but got {} constraints.",
