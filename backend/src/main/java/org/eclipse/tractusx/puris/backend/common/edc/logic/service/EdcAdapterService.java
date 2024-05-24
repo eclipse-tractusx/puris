@@ -1055,7 +1055,7 @@ public class EdcAdapterService {
      * @param catalogEntry the catalog item containing the desired api asset
      * @return true, if the policy matches yours, otherwise false
      */
-    private boolean testContractPolicyConstraints(JsonNode catalogEntry) {
+    public boolean testContractPolicyConstraints(JsonNode catalogEntry) {
         log.debug("Testing constraints in the following catalogEntry: {}", catalogEntry.toPrettyString());
         var constraint = Optional.ofNullable(catalogEntry.get("odrl:hasPolicy"))
             .map(policy -> policy.get("odrl:permission"))
@@ -1106,6 +1106,7 @@ public class EdcAdapterService {
             );
 
         } else {
+            System.out.println("Only one constraint ");
             log.info(
                 "2 Constraints (Framework Agreement, Purpose) are expected but got {} constraints.",
                 constraint.get().size()
