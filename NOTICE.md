@@ -29,7 +29,6 @@ in the GitHub organization https://github.com/eclipse-tractusx:
 
 * https://github.com/eclipse-tractusx/puris
 
-
 ## Third-party Content
 
 This project leverages the following third party content.
@@ -37,13 +36,20 @@ This project leverages the following third party content.
 See `DEPENDENCIES_FRONTEND` and `DEPENDENCIES_BACKEND` file. Further, the following third-party content is used that
 isn't listed in any DEPENDENCIES file:
 
-Keycloak initial realm setup
+[Keycloak initial realm setup](./local/miw/keycloak-setup.json)
+
 * SPDX-License-Identifier: Apache-2.0
 * SPDX-FileCopyrightText: https://github.com/eclipse-tractusx/managed-identity-wallet/blob/main/LICENSE
 * Source URL: https://github.com/eclipse-tractusx/managed-identity-wallet
 
+[Frontend license information substitution script](./frontend/scripts/legal-notice.sh)
+
+* SPDX-License-Identifier: Apache-2.0
+* SPDX-FileCopyrightText: https://github.com/eclipse-tractusx/portal-frontend/blob/v2.0.0-RC8/scripts/legal-notice.sh
+* Source URL: https://github.com/eclipse-tractusx/portal-frontend/
 
 feather (4.29)
+
 * License: MIT License
 * Licence Path: https://github.com/feathericons/feather/blob/master/LICENSE
 * Project URL:  https://feathericons.com/

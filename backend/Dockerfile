@@ -19,7 +19,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 FROM maven:3.9.6-eclipse-temurin-21 as build
-RUN mkdir /app
+RUN mkdir -p /app/legal
 WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
@@ -27,12 +27,18 @@ RUN mvn dependency:go-offline
 COPY src/ /app/src/
 RUN mvn clean package -DskipTests
 
+# Copy Legal information for distributions, the star ones are copied by workflow
+COPY DOCKER_NOTICE.md README.md NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* /app/legal/
+
 FROM eclipse-temurin:21-jre-alpine
 RUN mkdir /opt/app
+WORKDIR /opt/app
 COPY --from=build /app/target/*.jar /opt/app/puris-backend.jar
+# Copy legal information for distributions
+COPY --from=build /app/legal/* /opt/app/
 
-RUN adduser -u 8877 --disabled-password --gecos "" --no-create-home nonroot && chmod 755 /opt/app/puris-backend.jar
+RUN adduser -u 8877 --disabled-password --gecos "" --no-create-home nonroot && chmod 755 ./puris-backend.jar
 
 USER nonroot
 
-ENTRYPOINT ["sh", "-c", " java ${JAVA_OPTS} -jar /opt/app/puris-backend.jar ${0} ${@}"]
+ENTRYPOINT ["sh", "-c", " java ${JAVA_OPTS} -jar ./puris-backend.jar ${0} ${@}"]

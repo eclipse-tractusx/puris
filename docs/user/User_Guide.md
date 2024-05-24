@@ -2,12 +2,145 @@
 
 This guide explains the overall masks that may be used by different roles.
 
-- A `PURIS_USER` may see use views "View and Manage Stocks" and "Supplier Dashboard".
+- A `PURIS_USER` may see use the views "Dashboard" and "Stocks".
 - A `PURIS_ADMIN` may _additionally_ use the views "Catalog", "Negotiations" and "Transfers".
 
 In the following the views are explained.
 
-Note: A user may additionally log out or see license information of the application.
+_**Note:** A user may additionally log out or see license information of the application._
+
+## Dashboard
+
+![Dashboard overview](img/dashboard_view.png)
+
+The Dashboard gives an overview over the user's own production output and demands and the corresponding information from the user's partners as well as incoming and outgoing deliveries.
+
+It is visually divided in 4 horizontal parts:
+
+1. Tabs for selecting the assumed role (customer or supplier)
+2. Filters for selecting material, site and partner sites
+3. Production/Demand information for selected site
+4. Corresponding data for selected partner sites
+
+### Selecting the user's role
+
+Using the tabs the user can choose the role they want to assume. This choice determines what information is shown to them.
+
+As a customer, the user will be shown the user's own site's demand and incoming deliveries as well as the user's customers' production output and outgoing shipments.
+
+As a supplier, the user will be shown the user's own site's production output and outgoing shipments as well as the user's customers' demands and incoming deliveries.
+
+In either case the user will always see the current and projected item stocks of both the user's own and the user's partners' sites.
+
+### Using the filters
+
+![Dashboard filters](img/dashboard_filters.png)
+
+To show information in the dashboard the user have to first pick the material number the user are interested in followed by the user's own site. This will immediately display the available information for that material and site. the user can further select one or more partner sites to display the corresponding data.
+
+_**Note:** Each filter requires the previous ones. The user can not filter by material number and partner sites alone._
+
+### Own site data
+
+![Own site view](img/dashboard_own_site.png)
+
+Once the user has selected a material number and site they are presented with an overview of the site's data. Depending on the user's role they will see the demand and incoming deliveries or production output and outgoing shipments for customer and supplier respectively. In addition the user will see the current and projected item stock.
+
+The data is displayed for up to the next 4 weeks depending on available data.
+
+By clicking on an individual demand, production or delivery data cell the user can display detailed information for the given day.
+
+### Adding data
+
+![Add data buttons](img/dashboard_add_buttons.png)
+
+In addition to viewing the user's own data, the user can also add new data for the selected material and site. The buttons for adding new data are located to the top right of the data view.
+
+The user can add demands for the customer role as well as production output for the supplier. Deliveries can be added for either role, but they are always from the supplier to the customer.
+
+#### Adding demand
+
+![Demand creation modal](img/dashboard_add_demand.png)
+
+Upon clicking the "create demand" button, a popup will prompt the user to enter the details for the new demand. The material number and site for the demand will be pre-filled for the user based on the filters the user have currently selected.
+
+To add a new demand the user:
+
+1. Enters the day of the demand
+2. Selects the demand category
+3. Enters the quantity required
+4. Selects the unit of measurement
+5. Selects the supplying partner
+6. (Optional) Selects the expected supplier site
+7. Clicks the "save" button
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added demand reflected in the their site data overview.
+
+#### Adding production
+
+![Production creation modal](img/dashboard_add_production.png)
+
+Upon clicking the "create production" button, a popup will prompt the user to enter the details for the new production output. The material number and site for the production output will be pre-filled for the user based on the filters they have currently selected.
+
+To add a new production output, the user:
+
+1. Enters the estimated time of completion
+2. Selects the customer to allocate the production to
+3. Enters the quantity produced
+4. Selects the unit of measurement
+5. (Optional) Fills the order position reference
+6. Clicks the "save" button
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added production output reflected in their site data overview.
+
+#### Adding deliveries
+
+![Delivery creation modal](img/dashboard_add_delivery.png)
+
+Unlike demand and production output, deliveries can be added regardless of the user's role. Upon clicking "add delivery" the user will be presented with a popup for adding a new delivery. The material number will be pre-filled based on the user's selected material. Furthermore the origin or destination site will be filled for the supplier and customer roles respectively.
+
+To add a new delivery the user:
+
+1. Selects the departure type
+2. Selects the date of departure
+3. Selects the arrival type
+4. Selects the date of arrival
+5. Selects the partner for the delivery
+6. Chooses the origin or destination site (depending on the user's role)
+7. Enters the quantity
+8. Selects the unit of measurement
+9. (Optional) Enters the tracking number
+10. Selects the incoterms for the delivery
+11. (Optional) Fills the order position reference
+12. Clicks the "save" button
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added delivery reflected in their site data overview.
+
+_**Note:** When entering a new delivery the user should make sure that:_
+
+- _a date can only be of type actual if it is in the past_
+- _arrival can only be of type actual if departure is as well_
+- _departure must be before arrival_
+
+### Partner site data
+
+![Partner site view](img/dashboard_partner_site.png)
+
+By selecting one or more partner sites from the filters the user is presented with their data. Depending on the user's chosen role these tables will show the demand and incoming shipments or planned production output and outgoing shipments respectively. In both cases they will also show the current and projected item stock at each partner site.
+
+The data is displayed for up to the next 4 weeks depending on available data.
+
+The user can click individual production output, demand or delivery data cells to display detailed information.
+
+#### Updating partner data
+
+The displayed data in this section is mostly reported data from the partner. Therefore it can become outdated.
+
+In order to request an update of the data, the user can click the "Refresh" button at the top right of the section. This will start a request for updated data in the background.
+
+Afterwards, when the user refreshes the page, they will be presented with the updated data.
+
+_**Note:** The update process can take a few seconds._
 
 ## View and Manage Stocks
 
@@ -19,72 +152,48 @@ to be allocated to a partner due to potential multi-sourcing scenarios.
 The view is divided horizontally into three parts:
 
 1. Create or Update Material / Product Stocks
-2. Material Stocks
-3. Product Stocks
+2. Own Stocks
+3. Reported Stocks from partners
 
 ### Create or update Material / Product Stocks
 
-The view allows a user to either add a material (user selected radio button 'Material') or a product
-(user selected radio button 'Product'). The user then
+This view allows the user to add a material or product by choosing the corresponding tab.
 
-1. Either selects a Material or Product.
+To add a new item, the user:
+
+1. Selects the Material/Product from the dropdown
 2. Sets the partner who will receive (Product) or from whom one received (Material) the stock.
 3. Sets a quantity that is on stock with a selected unit of measurement (UOM).
 4. Whether the stock is blocked or not (e.g. quality assurance ongoing).
 5. The stocks location based on a Site (BPNS) and a corresponding Address (BPNA).
 6. Optionally adds a reference to order positions.
+7. Clicks the "Add or Update" Button
 
-The updated or created stocks can be seen in the related section after triggering button "Add or Update".
+Upon successful creation a toast notification is displayed and the new stock is added to the "Your Stock" table.
 
 ![Stock View after adding a Material Stock](img/stock_view_added_material_stock.png)
 
-### Material Stocks
+### The User's Stocks
 
-The table shows the relevant information regarding all material stocks that are at your sites. The user may select one
-stock to see which of the selected material are already allocated to him on supplier side. All Stocks related to the
-material of the selected line are shown.
+The table shows the relevant information regarding all material / product stocks that are at the user's sites. The user may select one
+stock to see the corresponding stock at the partner's site.
+
+### The User's Customers' / Suppliers' Stocks
+
+Upon selecting a material / product this table shows detailed information about the corresponding stocks at this partner's site. Using the button
+"Refresh Stocks", the user may request an update of this data for all partners who supply the
+material / product.
+
+_**Note:** Stock information is updated asynchronously. The user may reload the page later to see the updated data._
 
 ![Stock View after selecting a Material Stock](img/stock_view_selected_material_stock.png)
-
-Using the button "Update Partner Stocks", the user may request an update of this data for all partners who supply the
-material.
-Note: Stock information is updated asynchronously. The user may reload the page later to see the updated data.
-
-### Product Stocks
-
-The table shows the relevant information regarding all product stocks that are at your sites. The user may select one
-stock to see which of the selected products have already arrived at customer side but not be used for production. All
-Stocks related to the material of the selected line are shown. Using the button "Update Partner Stocks", the user may
-request an update of this data for all partners who buy the material.
-Note: Stock information is updated asynchronously. The user may reload the page later to see the updated data.
-Note 2: No images have been added, as the Product Stocks mechanics are the same as for material stocks.
-
-## Supplier Dashboard
-
-![Dashboard View after opening](img/dashboard_view.png)
-
-The Supplier Dashboard is a preview. It allows a partner to select a customer, material and location information to
-get insights regarding the current status of a customers' supply situation. If address "All Addresses" is selected, then
-all information of the different address is summed up.
-
-![Dashboard View after selection](img/dashboard_view_list.png)
-
-A very easy overview is given by highlighting cells red in which the production is less than the total demand of that
-day. Stocks, transit times and deliveries are ignored.
-
-After selecting a product the "Update Customer Data" button is enabled. When using the button, the respective
-information for the partner get updated.
-Note: information is updated asynchronously. The user may reload the page later to see the updated data. Currently only
-Stock information of the partner is updated.
 
 ## Catalog
 
 An admin may use the page to query offers available at a partner to check if the partner set up the information exchange
 for this partner.
 
-![Catalog View after opening](img/catalog_view.png)
-
-After entering a valid data space protocol (DSP) address of a partner and triggering the "Get Catalog" button, the user
+After choosing a partner from the dropdown and triggering the "Get Catalog" button, the admin
 may see a list of available assets.
 
 ![Catalog View after requesting an EDC's catalog](img/catalog_view_list.png)
@@ -93,43 +202,40 @@ Per Catalog Item the following information is listed:
 
 - Asset ID
 - Asset Prop Type defining the asset type (close to CX Taxonomy)
-- Permissions (Contracts)
+- Asset actions
+- Asset conditions
 - Prohibitions (Contracts)
 - Obligations (Contracts)
 
-Note: Only catalog items / offers that can be accessed by you are listed.
+Note: Only catalog items / offers that can be accessed by the user are listed.
 
 ## Negotiations
 
 An admin may use the page to see all recent negotiations and their state.
 
-![Negotiation View without any recent negotiations](img/negotiations_view.png)
-
-If no negotiation has been performed in the EDC yet, then this view is empty as in the picture above.
+If no negotiation has been performed in the EDC yet, a message will be displayed informing the user of this fact.
 
 ![Negotiation View with a recent item stock negotiation](img/negotiations_view_list.png)
 
 Per Negotiation the following information is listed:
 
 - Negotiation ID
-- Type (have I been acting as a Data `PROVIDER` or Data `CONSUMER`?)
+- Type (is the user Data `PROVIDER` or Data `CONSUMER`)
 - State of the negotiation
 - Partner BPNL who either
-    - initiated the negotiation (Type = `PROVIDER`) or
-    - who I asked to negotiate with (Type = `CONSUMER`)
+  - initiated the negotiation (Type = `PROVIDER`) or
+  - who the user asked to negotiate with (Type = `CONSUMER`)
 - Partner's EDC DSP endpoint
 - TimeStamp when the state of the negotiation has been set
 
 _**Note**: Per data request per partner, there are two Negotiations as one contracts the partner's request asset and the
-partner contracts your response asset._
+partner contracts the user's response asset._
 
 ## Transfers
 
 An admin may use the page to see all recent transfers and their state.
 
-![Transfer View without any recent transfers](img/transfers_view.png)
-
-If no transfer has been performed in the EDC yet, then this view is empty as in the picture above.
+If no transfer has been performed in the EDC yet, a message will be displayed informing the user of this fact.
 
 ![Transfer View with a recent item stock transfer](img/transfers_view_list.png)
 
@@ -139,20 +245,12 @@ Per Transfer the following information is listed:
 - Correlation ID indicating the `Transfer ID` on partner site
 - State of the negotiation
 - TimeStamp when the state of the negotiation has been set
-- Type (have I been acting as a Data `PROVIDER` or Data `CONSUMER`?)
+- Type (is the user Data `PROVIDER` or Data `CONSUMER`?)
 - Asset ID that has been contracted
 - Contract ID that has been the basis of the Transfer
 - Partner BPNL who either
-    - initiated the negotiation (Type = `PROVIDER`) or
-    - who I asked to negotiate with (Type = `CONSUMER`)
+  - initiated the negotiation (Type = `PROVIDER`) or
+  - who the user asked to negotiate with (Type = `CONSUMER`)
 
 _**Note**: Per data request per partner, there are two Transfers as one contracts the partner's request asset and the
-partner contracts your response asset._
-
-## NOTICE
-
-This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
-
-- SPDX-License-Identifier: Apache-2.0
-- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
-- Source URL: https://github.com/eclipse-tractusx/puris
+partner contracts the user's response asset._
