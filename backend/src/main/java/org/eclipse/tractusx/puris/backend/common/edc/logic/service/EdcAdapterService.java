@@ -22,7 +22,6 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
@@ -177,7 +176,7 @@ public class EdcAdapterService {
      * Utility method to register policy- and contract-definitions for both the
      * REQUEST and the RESPONSE-Api specifically for the given partner.
      *
-     * @param partner the partner
+     * @param partner The partner
      * @return true, if all registrations ran successfully
      */
     public boolean createPolicyAndContractDefForPartner(Partner partner) {
@@ -226,7 +225,7 @@ public class EdcAdapterService {
      * 1. The BPNL of the requesting connector is equal to the BPNL of the partner
      * 2. There's a CX membership credential present
      *
-     * @param partner the partner to create the policy for
+     * @param partner The partner to create the policy for
      * @return true, if registration ran successfully
      */
     private boolean createBpnlAndMembershipPolicyDefinitionForPartner(Partner partner) {
@@ -474,8 +473,8 @@ public class EdcAdapterService {
      * Sends a request to the own control plane in order to receive
      * the contract agreement with the given contractAgreementId
      *
-     * @param contractAgreementId the contractAgreement's Id
-     * @return the contractAgreement
+     * @param contractAgreementId The contractAgreement's Id
+     * @return The contractAgreement
      * @throws IOException If the connection to your control plane fails
      */
     public String getContractAgreement(String contractAgreementId) throws IOException {
@@ -557,7 +556,7 @@ public class EdcAdapterService {
                 }
             }
             if (!partner.getEdcUrl().equals(partnerDspUrl)) {
-                log.warn("Divering Edc Urls for Partner: " + partner.getBpnl() + " and type " + type);
+                log.warn("Diverging Edc Urls for Partner: " + partner.getBpnl() + " and type " + type);
                 log.warn("General Partner EdcUrl: " + partner.getEdcUrl());
                 log.warn("URL from AAS: " + partnerDspUrl);
             }
@@ -567,13 +566,6 @@ public class EdcAdapterService {
             String transferId = transferResp.get("@id").asText();
             // try proxy pull and terminate request
             try {
-                for (int i = 0; i < 100; i++) {
-                    Thread.sleep(100);
-                    transferResp = getTransferState(transferId);
-                    if ("STARTED".equals(transferResp.get("state").asText())) {
-                        break;
-                    }
-                }
                 EdrDto edrDto = getAndAwaitEdrDto(transferId);
                 log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
                 if (edrDto == null) {
@@ -609,17 +601,24 @@ public class EdcAdapterService {
     }
 
     /**
-     * get the EDR via edr api and retry multiple times in case the EDR has not yet been available
+     * Get the EDR via edr api and retry multiple times in case the EDR has not yet been available
      *
      * @param transferProcessId to get the EDR for, not null
      * @return edr received, or null if not yet available
      * @throws InterruptedException if thread was not able to sleep
      */
-    private @Nullable EdrDto getAndAwaitEdrDto(String transferProcessId) throws InterruptedException {
+    private @Nullable EdrDto getAndAwaitEdrDto(String transferProcessId) throws InterruptedException, IOException {
+        for (int i = 0; i < 100; i++) {
+            Thread.sleep(100);
+            JsonNode transferResp = getTransferState(transferProcessId);
+            if ("STARTED".equals(transferResp.get("state").asText())) {
+                break;
+            }
+        }
         EdrDto edrDto = null;
         // retry, if Data Space Protocol / Data Plane Provisioning communication needs time to prepare
         for (int i = 0; i < 100; i++) {
-            edrDto = getEdrForTransferProcessId(transferProcessId);
+            edrDto = getEdrForTransferProcessId(transferProcessId, 2);
             if (edrDto != null) {
                 break;
             }
@@ -749,7 +748,7 @@ public class EdcAdapterService {
     }
 
     /**
-     * quries the dtr of a pratner for the given mpr / material and returns submodel descriptors
+     * Queries the dtr of a partner for the given mpr / material and returns submodel descriptors
      * <p>
      * Method assumes that the query at dtr only finds one shell (else take first entry)
      *
@@ -764,7 +763,11 @@ public class EdcAdapterService {
             log.error("AasSubmodelDescriptors Request failed for " + manufacturerPartId + " and " + manufacturerId);
             return null;
         }
-        boolean failed = true;
+
+        // A criticalFailure indicates that the connection to the partner's DTR could not be established at all
+        // or delivers a completely unexpected response. This is assumed to be true at first, and will be set to false
+        // if a response was received that contains the expected answer or at least an empty result.
+        boolean criticalFailure = true;
         Partner partner = mpr.getPartner();
         try {
             var dtrContractData = edcContractMappingService.getDtrAssetAndContractId(partner);
@@ -781,13 +784,6 @@ public class EdcAdapterService {
             var transferResp = initiateProxyPullTransfer(partner, contractId, assetId);
             String transferId = transferResp.get("@id").asText();
             try {
-                for (int i = 0; i < 100; i++) {
-                    Thread.sleep(100);
-                    transferResp = getTransferState(transferId);
-                    if ("STARTED".equals(transferResp.get("state").asText())) {
-                        break;
-                    }
-                }
                 EdrDto edrDto = getAndAwaitEdrDto(transferId);
                 if (edrDto == null) {
                     log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
@@ -836,7 +832,7 @@ public class EdcAdapterService {
                             var aasJson = objectMapper.readTree(body2String);
                             var submodelDescriptors = aasJson.get("submodelDescriptors");
                             if (submodelDescriptors != null) {
-                                failed = false;
+                                criticalFailure = false;
                                 return submodelDescriptors;
                             } else {
                                 log.warn("No SubmodelDescriptors found in DTR shell-descriptors response:\n" + aasJson.toPrettyString());
@@ -846,6 +842,7 @@ public class EdcAdapterService {
                         if (resultArray != null) {
                             if (resultArray.isArray() && resultArray.isEmpty()) {
                                 log.warn("Empty Result array received");
+                                criticalFailure = false;
                             } else {
                                 log.warn("Unexpected Response for DTR lookup with query " + query + "\n" + resultArray.toPrettyString());
                             }
@@ -864,7 +861,7 @@ public class EdcAdapterService {
             log.error("Error in AasSubmodelDescriptor Request for " + mpr + " and manufacturerPartId " + manufacturerPartId, e);
             return getAasSubmodelDescriptors(manufacturerPartId, manufacturerId, mpr, --retries);
         } finally {
-            if (failed) {
+            if (criticalFailure) {
                 log.warn("Invalidating DTR contract data");
                 edcContractMappingService.putDtrContractData(partner, null, null);
             }
@@ -881,27 +878,38 @@ public class EdcAdapterService {
      * @param transferProcessId to get the EDR for
      * @return unpersisted EdrDto.
      */
-    private EdrDto getEdrForTransferProcessId(String transferProcessId) {
-
+    private EdrDto getEdrForTransferProcessId(String transferProcessId, int retries) {
+        if (retries < 0) return null;
+        boolean failed = true;
         try (Response response = sendGetRequest(
             List.of("v2", "edrs", transferProcessId, "dataaddress"),
             Map.of("auto_refresh", "true"))
         ) {
-            ObjectNode responseObject = (ObjectNode) objectMapper.readTree(response.body().string());
+            if (response.isSuccessful() && response.body() != null) {
+                JsonNode responseObject = objectMapper.readTree(response.body().string());
 
-            String dataPlaneEndpoint = responseObject.get("endpoint").asText();
-            String authToken = responseObject.get("authorization").asText();
-
-            EdrDto edr = new EdrDto("Authorization", authToken, dataPlaneEndpoint);
-            log.debug("Requested EDR successfully: {}", edr);
-
-            return edr;
-
-        } catch (IOException e) {
+                String dataPlaneEndpoint = responseObject.get("endpoint").asText();
+                String authToken = responseObject.get("authorization").asText();
+                if (dataPlaneEndpoint != null && authToken != null) {
+                    EdrDto edr = new EdrDto("Authorization", authToken, dataPlaneEndpoint);
+                    log.debug("Requested EDR successfully: {}", edr);
+                    failed = false;
+                    return edr;
+                }
+            }
+        } catch (Exception e) {
             log.error("EDR token for transfer process with ID {} could not be obtained", transferProcessId);
+        } finally {
+            if (failed && --retries >= 0) {
+                try {
+                    Thread.sleep(100);
+                } catch (Exception e1) {
+                    log.error("Sleep interrupted", e1);
+                }
+            }
         }
+        return getEdrForTransferProcessId(transferProcessId, retries);
 
-        return null;
     }
 
     /**

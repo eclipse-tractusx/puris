@@ -7,6 +7,7 @@ A helm chart for Kubernetes deployment of PURIS
 **Homepage:** <https://github.com/eclipse-tractusx/puris>
 
 ## Prerequisites
+
 - Kubernetes 1.19+
 - Helm 3.2.0+
 

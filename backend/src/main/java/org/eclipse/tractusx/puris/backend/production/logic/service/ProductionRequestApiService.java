@@ -22,9 +22,6 @@ package org.eclipse.tractusx.puris.backend.production.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Optional;
-
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
@@ -37,6 +34,8 @@ import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproduction
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -70,8 +69,12 @@ public class ProductionRequestApiService {
         if (material == null) {
             return null;
         }
+        if (!mprService.find(material, partner).isPartnerBuysMaterial()) {
+            // only send an answer if partner is registered as customer
+            return null;
+        }
         var currentProduction = ownProductionService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
-        return sammMapper.ownProductionToSamm(currentProduction);
+        return sammMapper.ownProductionToSamm(currentProduction, partner, material);
     }
 
     public void doReportedProductionRequest(Partner partner, Material material) {

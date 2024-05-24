@@ -73,9 +73,10 @@ public class ItemStockRequestApiService {
                 // Partner is customer, requesting our ProductItemStocks for him
                 // materialNumber is own CX id:
                 Material material = materialService.findByMaterialNumberCx(materialNumber);
-                if (material != null) {
+                if (material != null && mprService.find(material, partner).isPartnerBuysMaterial()) {
+                    // only send an answer if partner is registered as customer
                     var currentStocks = productItemStockService.findByPartnerAndMaterial(partner, material);
-                    return sammMapper.productItemStocksToItemStockSamm(currentStocks);
+                    return sammMapper.productItemStocksToItemStockSamm(currentStocks, partner, material);
                 }
                 return null;
             }
@@ -83,21 +84,31 @@ public class ItemStockRequestApiService {
                 // Partner is supplier, requesting our MaterialItemStocks from him
                 // materialNumber is partner's CX id:
                 Material material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber).getMaterial();
-                if (material != null) {
-                    var currentStocks = materialItemStockService.findByPartnerAndMaterial(partner, material);
-                    return sammMapper.materialItemStocksToItemStockSamm(currentStocks);
+                if (material == null) {
+                    // Could not identify partner cx number. I.e. we do not have that partner's
+                    // CX id in one of our MaterialPartnerRelation entities. Try to fix this by
+                    // looking for MPR's, where that partner is a supplier and where we don't have
+                    // a partnerCXId yet. Of course this can only work if there was previously an MPR
+                    // created, but for some unforeseen reason, the initial PartTypeRetrieval didn't succeed.
+                    log.warn("Could not find " + materialNumber + " from partner " + partner.getBpnl());
+                    mprService.triggerPartTypeRetrievalTask(partner);
+                    material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber).getMaterial();
                 }
-                // Could not identify partner cx number. I.e. we do not have that partner's
-                // CX id in one of our MaterialPartnerRelation entities. Try to fix this by
-                // looking for MPR's, where that partner is a supplier and where we don't have
-                // a partnerCXId yet. Of course this can only work if there was previously an MPR
-                // created, but for some unforeseen reason, the initial PartTypeRetrieval didn't succeed.
-                log.warn("Could not find " + materialNumber + " from partner " + partner.getBpnl());
-                mprService.findAllMaterialsThatPartnerSupplies(partner).stream()
-                    .map(mat -> mprService.find(mat, partner))
-                    .filter(mpr -> mpr.isPartnerSuppliesMaterial() && mpr.getPartnerCXNumber() == null)
-                    .forEach(mpr -> mprService.triggerPartTypeRetrievalTask(mpr));
-                return null;
+
+                if (material == null) {
+                    log.error("Unknown Material");
+                    return null;
+                }
+                var mpr = mprService.find(material, partner);
+                if (mpr == null || !mpr.isPartnerSuppliesMaterial()) {
+                    // only send an answer if partner is registered as supplier
+                    return null;
+                }
+
+                // only send an answer if partner is registered as supplier
+                var currentStocks = materialItemStockService.findByPartnerAndMaterial(partner, material);
+                return sammMapper.materialItemStocksToItemStockSamm(currentStocks, partner, material);
+
             }
             default -> {
                 return null;
@@ -136,6 +147,10 @@ public class ItemStockRequestApiService {
     public void doItemStockSubmodelReportedProductItemStockRequest(Partner partner, Material material) {
         try {
             var mpr = mprService.find(material, partner);
+            if (mpr.getPartnerCXNumber() == null) {
+                mprService.triggerPartTypeRetrievalTask(partner);
+                mpr = mprService.find(material, partner);
+            }
             var data = edcAdapterService.doSubmodelRequest(SubmodelType.ITEM_STOCK ,mpr, DirectionCharacteristic.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedProductItemStock(samm, partner);

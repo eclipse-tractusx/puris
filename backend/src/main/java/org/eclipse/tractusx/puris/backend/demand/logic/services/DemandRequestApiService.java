@@ -22,9 +22,6 @@ package org.eclipse.tractusx.puris.backend.demand.logic.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Optional;
-
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.demand.logic.adapter.ShortTermMaterialDemandSammMapper;
@@ -36,6 +33,8 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -65,17 +64,39 @@ public class DemandRequestApiService {
             return null;
         }
         Material material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx).getMaterial();
+
+        if (material == null) {
+            // Could not identify partner cx number. I.e. we do not have that partner's
+            // CX id in one of our MaterialPartnerRelation entities. Try to fix this by
+            // looking for MPR's, where that partner is a supplier and where we don't have
+            // a partnerCXId yet. Of course this can only work if there was previously an MPR
+            // created, but for some unforeseen reason, the initial PartTypeRetrieval didn't succeed.
+            log.warn("Could not find " + materialNumberCx + " from partner " + partner.getBpnl());
+            mprService.triggerPartTypeRetrievalTask(partner);
+            material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx).getMaterial();
+        }
+
         if (material == null) {
             log.error("Unknown Material");
             return null;
         }
+        var mpr = mprService.find(material,partner);
+        if (mpr == null || !mpr.isPartnerSuppliesMaterial()) {
+            // only send an answer if partner is registered as supplier
+            return null;
+        }
+
         var currentDemands = ownDemandService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
-        return sammMapper.ownDemandToSamm(currentDemands);
+        return sammMapper.ownDemandToSamm(currentDemands, partner, material);
     }
 
     public void doReportedDemandRequest(Partner partner, Material material) {
         try {
             var mpr = mprService.find(material, partner);
+            if (mpr.getPartnerCXNumber() == null) {
+                mprService.triggerPartTypeRetrievalTask(partner);
+                mpr = mprService.find(material, partner);
+            }
             var data = edcAdapterService.doSubmodelRequest(SubmodelType.DEMAND, mpr, DirectionCharacteristic.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ShortTermMaterialDemand.class);
             var demands = sammMapper.sammToReportedDemand(samm, partner);

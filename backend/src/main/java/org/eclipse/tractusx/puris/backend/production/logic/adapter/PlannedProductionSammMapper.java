@@ -42,13 +42,7 @@ public class PlannedProductionSammMapper {
     @Autowired
     private MaterialPartnerRelationService mprService;
 
-    public PlannedProductionOutput ownProductionToSamm(List<OwnProduction> production) {
-        if (production == null || production.isEmpty()) {
-            log.warn("Can't map empty list");
-            return null;
-        }
-        Partner partner = production.get(0).getPartner();
-        Material material = production.get(0).getMaterial();
+    public PlannedProductionOutput ownProductionToSamm(List<OwnProduction> production, Partner partner, Material material) {
         if (production.stream().anyMatch(prod -> !prod.getPartner().equals(partner))) {
             log.warn("Can't map production list with different partners");
             return null;
