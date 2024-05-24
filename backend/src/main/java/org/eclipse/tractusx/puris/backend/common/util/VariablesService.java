@@ -56,13 +56,6 @@ public class VariablesService {
      */
     private String edrEndpoint;
 
-    @Value("${puris.edr.deletiontimer}")
-    /**
-     * The number of minutes before received authentication data
-     * in the context of a consumer pull is removed from memory
-     */
-    private long edrTokenDeletionTimer;
-
     @Value("${puris.baseurl}" + "catena/item-stock/request")
     /**
      * The url under which this application's request endpoint can

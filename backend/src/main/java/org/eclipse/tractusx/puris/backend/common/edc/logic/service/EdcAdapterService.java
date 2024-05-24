@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EdrDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
@@ -716,6 +715,9 @@ public class EdcAdapterService {
     private record SubmodelData(String assetId, String dspUrl, String href) {
     }
 
+    private record EdrDto(String authKey, String authCode, String endpoint){
+    }
+
     private SubmodelData fetchSubmodelData(MaterialPartnerRelation mpr, String semanticId, String manufacturerPartId, String manufacturerId) {
         JsonNode submodelDescriptors = getAasSubmodelDescriptors(manufacturerPartId, manufacturerId, mpr, 1);
         for (var submodelDescriptor : submodelDescriptors) {
@@ -903,10 +905,7 @@ public class EdcAdapterService {
     }
 
     /**
-     * terminate the transfer with reason "Transfer done."
-     * <p>
-     * Edr in {@link EndpointDataReferenceService} is not removed because it is removed automatically by a job after
-     * time period x.
+     * Terminate the transfer with reason "Transfer done.
      *
      * @param transferProcessId to terminate
      */
