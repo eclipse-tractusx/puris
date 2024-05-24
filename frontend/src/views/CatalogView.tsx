@@ -19,68 +19,102 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import {Input, LoadingButton} from '@catena-x/portal-shared-components';
-import {useCatalog} from '@hooks/edc/useCatalog';
-import {useRef, useState} from 'react';
-import {CatalogOperation} from '@models/types/edc/catalog';
-import {Autocomplete, Card} from '@mui/material';
-import {getCatalogOperator} from '@util/helpers';
-import {Partner} from '@models/types/edc/partner';
-import {usePartners} from "@features/edc/hooks/usePartners.ts";
+import { LoadingButton, Table } from '@catena-x/portal-shared-components';
+import { useCatalog } from '@hooks/edc/useCatalog';
+import { useRef, useState } from 'react';
+import { CatalogOperation, CatalogPermission } from '@models/types/edc/catalog';
+import { Box, Stack } from '@mui/material';
+import { Partner } from '@models/types/edc/partner';
+import { usePartners } from '@features/edc/hooks/usePartners.ts';
+import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
+import { getCatalogOperator } from '@util/helpers';
 
-type OperationListProps = {
-    title: string;
-    operations: CatalogOperation[];
+const PermissionList = ({ permission }: { permission: CatalogPermission }) => {
+    return (
+        <Stack>
+            {permission['odrl:constraint'] &&
+                'odrl:and' in permission['odrl:constraint'] &&
+                permission['odrl:constraint']['odrl:and'].map((constraint) => {
+                    const permissionString = `${constraint['odrl:leftOperand']} ${getCatalogOperator(constraint['odrl:operator']['@id'])} ${
+                        constraint['odrl:rightOperand']
+                    }`;
+                    return <div title={permissionString}>{permissionString}</div>;
+                })}
+        </Stack>
+    );
 };
 
-const OperationList = ({title, operations}: OperationListProps) => {
+type CatalogItem = {
+    assetId: string;
+    assetType: string;
+    assetVersion: string;
+    permission: CatalogPermission;
+    prohibitions: CatalogOperation[];
+    obligations: CatalogOperation[];
+};
+
+type CatalogListProps = {
+    title: string;
+    catalog: CatalogItem[];
+};
+
+const CatalogList = ({ catalog, title }: CatalogListProps) => {
     return (
-        <>
-            <span className="font-semibold">{title}</span>
-            {operations && operations.length > 0 ? (
-                <ul>
-                    {operations.map((operation, index) => (
-                        <li key={index}>
-                            {`${operation['odrl:constraint']['odrl:leftOperand']} ${getCatalogOperator(
-                                operation['odrl:constraint']['odrl:operator']['@id']
-                            )} ${operation['odrl:constraint']['odrl:rightOperand']}`}
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p>None</p>
-            )}
-        </>
+        <Table
+            title={title}
+            columns={[
+                { headerName: 'Asset ID', field: 'assetId', width: 400 },
+                {
+                    headerName: 'Asset Type',
+                    field: 'assetType',
+                    width: 150,
+                    renderCell: (row) => <div title={row.row.assetType}>{row.row.assetType.split('#')[1]}</div>,
+                },
+                { headerName: 'Version', field: 'assetVersion', width: 70 },
+                {
+                    headerName: 'Action',
+                    field: 'permission.action',
+                    width: 70,
+                    renderCell: (row) => {
+                        const actionString = row.row.permission['odrl:action']['odrl:type'];
+                        const action = actionString.split('/')[actionString.split('/').length - 1];
+                        return <div title={actionString}> {action} </div>;
+                    },
+                },
+                {
+                    headerName: 'Usage Policies',
+                    field: 'permission',
+                    width: 500,
+                    renderCell: (row) => <PermissionList permission={row.row.permission} />,
+                },
+            ]}
+            rows={catalog}
+            getRowId={(row) => row.assetId}
+        ></Table>
     );
 };
 
 export const CatalogView = () => {
-    const {partners} = usePartners();
+    const { partners } = usePartners();
     const [partner, setPartner] = useState<Partner | null>(null);
-    const {catalog, catalogError, isLoadingCatalog} = useCatalog(partner);
+    const { catalog, catalogError, isLoadingCatalog } = useCatalog(partner);
     const partnerRef = useRef<Partner | null>(null);
     return (
         <div className="flex flex-col items-center gap-4 w-full h-full">
-            <h1 className="text-3xl font-semibold text-gray-700">View EDC Catalog</h1>
+            <h1 className="text-3xl font-semibold text-gray-700">View Partner Catalog</h1>
             <div className="flex w-[40rem] items-end gap-5">
-                <Autocomplete
+                <LabelledAutoComplete
                     id="partner"
                     value={partner}
                     options={partners ?? []}
                     getOptionLabel={(option) => option?.name ?? ''}
-                    renderInput={(params) => (
-                        <Input
-                            {...params}
-                            label="Partner*"
-                            placeholder="Select a Partner"
-                            // error={formError && !newStock?.partner}
-                        />
-                    )}
+                    label="Partner*"
+                    placeholder="Select a Partner"
                     onChange={(_, newValue) => (partnerRef.current = newValue)}
                     isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
                     className="flex-grow"
                 />
-                <div className="mb-3">
+                <div className="mb-3 flex-shrink-0">
                     <LoadingButton
                         label="Get Catalog"
                         loadIndicator="Loading..."
@@ -89,70 +123,15 @@ export const CatalogView = () => {
                     />
                 </div>
             </div>
-            {catalog && catalog.length > 0 ? (
-                <ul className="flex flex-col gap-5 w-[64rem]">
-                    {catalog.map((item) => (
-                        <Card className="p-5">
-                            <li key={item.assetId}>
-                                <h2 className="text-xl font-semibold">Catalog Item</h2>
-                                <div className="flex w-full justify-start gap-4">
-                                    <div className="flex flex-col gap-1 w-[70ch]">
-                                        <div className="flex">
-                                            <h3 className="font-semibold w-[20ch]">Asset ID: </h3>"{item.assetId}"
-                                        </div>
-                                        <div className="flex">
-                                            <h4 className="font-semibold w-[20ch]">Asset type: </h4>"{item.assetType}"
-                                        </div>
-                                        <div className="flex">
-                                            <h4 className="font-semibold w-[20ch]">Asset action: </h4>
-                                            {item.permission['odrl:action']['odrl:type']} {item.permission['odrl:target']}
-                                        </div>
-                                        <div className="flex">
-                                            <h4 className="font-semibold w-[20ch]">Asset condition(s): </h4>
-                                            <div className="flex flex-col gap-1 w-[30ch]">
-                                                {'odrl:and' in item.permission['odrl:constraint'] ? (
-                                                    Array.isArray(item.permission['odrl:constraint']['odrl:and']) ? (
-                                                        item.permission['odrl:constraint']['odrl:and'].map(constraint => (
-                                                            <div className="flex">
-                                                                {constraint['odrl:leftOperand'] + ' '}
-                                                                {getCatalogOperator(constraint['odrl:operator']['@id']) + ' '}
-                                                                {constraint['odrl:rightOperand']}
-                                                            </div>
-                                                        ))
-                                                    ) : (
-                                                        <div className="flex">
-                                                            {item.permission['odrl:constraint']['odrl:and']['odrl:leftOperand'] + ' '}
-                                                            {getCatalogOperator(item.permission['odrl:constraint']['odrl:and']['odrl:operator']['@id']) + ' '}
-                                                            {item.permission['odrl:constraint']['odrl:and']['odrl:rightOperand']}
-                                                        </div>
-                                                    )
-                                                ) : (
-                                                    <div className="flex">
-                                                        {item.permission['odrl:constraint']['odrl:leftOperand'] + ' '}
-                                                        {getCatalogOperator(item.permission['odrl:constraint']['odrl:operator']['@id']) + ' '}
-                                                        {item.permission['odrl:constraint']['odrl:rightOperand']}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col w-1/3 flex-shrink-0">
-                                        <OperationList title="The following prohibitions are defined:"
-                                                       operations={item.prohibitions}/>
-                                        <OperationList title="The following obligations are defined:"
-                                                       operations={item.obligations}/>
-                                    </div>
-                                </div>
-                            </li>
-                        </Card>
-                    ))}
-                </ul>
+            {!isLoadingCatalog ? (catalog && catalog.length > 0 ? (
+                <Box width="100%">
+                    <CatalogList title={`Catalog for ${partner?.name}`} catalog={catalog} />
+                </Box>
             ) : catalogError != null ? (
-                <div className="text-red-500 py-5">There was an error retrieving the Catalog
-                    from {partner?.edcUrl}</div>
+                <div className="text-red-500 py-5">There was an error retrieving the Catalog from {partner?.name}</div>
             ) : (
-                <div className="py-5"> {`No Catalog available for ${partner?.edcUrl}`} </div>
-            )}
+                partner != null && <div className="py-5"> {`No Catalog available for ${partner?.name}`} </div>
+            )) : <div>Loading Catalog... </div>}
         </div>
     );
 };

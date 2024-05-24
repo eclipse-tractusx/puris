@@ -24,8 +24,9 @@ import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
 import { Site } from '@models/types/edc/site';
-import { Autocomplete, Grid, capitalize } from '@mui/material';
+import { Autocomplete, Grid, InputLabel, capitalize } from '@mui/material';
 import { getPartnerType } from '../util/helpers';
+import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 
 type DashboardFiltersProps = {
     type: 'customer' | 'supplier';
@@ -52,27 +53,30 @@ export const DashboardFilters = ({
     return (
         <Grid container spacing={2} maxWidth={1024}>
             <Grid item md={6} paddingTop='0 !important'>
-                <Autocomplete
+                <LabelledAutoComplete
                     id="material"
                     value={material}
                     options={materials ?? []}
                     getOptionLabel={(option) => `${option.description} (${option.ownMaterialNumber})`}
-                    renderInput={(params) => <Input {...params} label="Material*" placeholder="Select a Material" />}
+                    label="Material*" 
+                    placeholder="Select a Material"
                     onChange={(_, newValue) => onMaterialChange(newValue || null)}
                 />
             </Grid>
             <Grid item md={6} paddingTop='0 !important'>
-                <Autocomplete
+                <LabelledAutoComplete
                     id="site"
                     value={site}
                     options={sites ?? []}
                     getOptionLabel={(option) => `${option.name} (${option.bpns})`}
                     disabled={!material}
-                    renderInput={(params) => <Input {...params} label="Site*" placeholder="Select a Site" />}
+                    label="Site*"
+                    placeholder="Select a Site"
                     onChange={(_, newValue) => onSiteChange(newValue || null)}
                 />
             </Grid>
             <Grid item md={12} paddingTop='0 !important'>
+                <InputLabel>{capitalize(getPartnerType(type))} Sites*</InputLabel>
                 <Autocomplete
                     id="partner-site"
                     value={partnerSites ?? []}
@@ -83,7 +87,7 @@ export const DashboardFilters = ({
                     renderInput={(params) => (
                         <Input
                             {...params}
-                            label={`${capitalize(getPartnerType(type))} Sites*`}
+                            hiddenLabel
                             placeholder={`Select a ${capitalize(getPartnerType(type))} site`}
                         />
                     )}

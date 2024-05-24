@@ -37,6 +37,7 @@ export const useFetch = <T = unknown>(url?: string, options?: RequestInit) => {
             return;
         }
         let shouldCancel = false;
+        setIsLoading(true);
         setError(null);
         fetch(url, {
             method: options?.method ?? 'GET',
