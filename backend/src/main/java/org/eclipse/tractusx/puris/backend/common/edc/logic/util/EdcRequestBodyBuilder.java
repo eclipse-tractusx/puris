@@ -202,7 +202,7 @@ public class EdcRequestBodyBuilder {
         constraints.add(new PolicyConstraint(
             CX_POLICY_NAMESPACE + "UsagePurpose",
             "eq",
-            variablesService.getPurisPuposeWithVersion()
+            variablesService.getPurisPurposeWithVersion()
         ));
 
         JsonNode body = buildPolicy(

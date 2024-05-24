@@ -30,7 +30,7 @@ export const StockView = () => {
         <>
             <ConfidentialBanner />
             <div className="flex flex-col items-center w-full h-full p-5">
-                <h1 className="text-3xl font-semibold mb-5">View and manage stocks</h1>
+                <h1 className="text-3xl font-semibold text-gray-700 mb-10">View and manage stocks</h1>
                 <Tabs value={selectedTab} onChange={(_, value: number) => setSelectedTab(value)}>
                     <Tab label="Material Stocks"></Tab>
                     <Tab label="Product Stocks"></Tab>

@@ -257,7 +257,7 @@ public class VariablesService {
         return getPurisFrameworkAgreement() + ":" + getPurisFrameworkAgreementVersion();
     }
 
-    public String getPurisPuposeWithVersion() {
+    public String getPurisPurposeWithVersion() {
         return getPurisPurposeName() + ":" + getPurisPurposeVersion();
     }
 }

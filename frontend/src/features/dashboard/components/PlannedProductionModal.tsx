@@ -21,7 +21,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Input, PageSnackbar, PageSnackbarStack, Table } from '@catena-x/portal-shared-components';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Production } from '@models/types/data/production';
-import { Autocomplete, Box, Button, Dialog, DialogTitle, Grid, Stack, Typography, capitalize } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, Typography, capitalize } from '@mui/material';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { deleteProduction, postProductionRange } from '@services/productions-service';
@@ -29,6 +29,7 @@ import { Notification } from '@models/types/data/notification';
 import { Close, Delete, Save } from '@mui/icons-material';
 import { DateTime } from '@components/ui/DateTime';
 import { ModalMode } from '@models/types/data/modal-mode';
+import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 
 const GridItem = ({ label, value }: { label: string; value: string }) => (
     <Grid item xs={6}>
@@ -87,7 +88,7 @@ const createProductionColumns = (handleDelete?: (row: Production) => void) => {
                 <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
                     {data.row.customerOrderNumber ? (
                         <Stack>
-                            <Box>{`${data.row.customerOrderNumber } / ${data.row.customerOrderPositionNumber}  `}</Box>
+                            <Box>{`${data.row.customerOrderNumber} / ${data.row.customerOrderPositionNumber}  `}</Box>
                             <Box>{data.row.supplierOrderNumber || '-'}</Box>
                         </Stack>
                     ) : (
@@ -98,24 +99,27 @@ const createProductionColumns = (handleDelete?: (row: Production) => void) => {
         },
     ] as const;
     if (handleDelete) {
-        return [...columns, {
-            field: 'delete',
-            headerName: '',
-            sortable: false,
-            disableColumnMenu: true,
-            headerAlign: 'center',
-            type: 'string',
-            width: 30,
-            renderCell: (data: { row: Production }) => {
-                return (
-                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                        <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
-                            <Delete></Delete>
-                        </Button>
-                    </Box>
-                );
+        return [
+            ...columns,
+            {
+                field: 'delete',
+                headerName: '',
+                sortable: false,
+                disableColumnMenu: true,
+                headerAlign: 'center',
+                type: 'string',
+                width: 30,
+                renderCell: (data: { row: Production }) => {
+                    return (
+                        <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
+                                <Delete></Delete>
+                            </Button>
+                        </Box>
+                    );
+                },
             },
-        }] as const;
+        ] as const;
     }
     return columns;
 };
@@ -215,19 +219,14 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Autocomplete
+                                    <LabelledAutoComplete
                                         sx={{ margin: '0' }}
                                         id="partner"
                                         options={partners ?? []}
                                         getOptionLabel={(option) => option?.name ?? ''}
-                                        renderInput={(params) => (
-                                            <Input
-                                                {...params}
-                                                label="Partner*"
-                                                placeholder="Select a Partner"
-                                                error={formError && !temporaryProduction?.partner}
-                                            />
-                                        )}
+                                        label="Partner*"
+                                        placeholder="Select a Partner"
+                                        error={formError && !temporaryProduction?.partner}
                                         onChange={(_, value) =>
                                             setTemporaryProduction({ ...temporaryProduction, partner: value ?? undefined })
                                         }
@@ -236,9 +235,9 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
+                                    <FormLabel>Quantity*</FormLabel>
                                     <Input
                                         id="quantity"
-                                        label="Quantity*"
                                         type="number"
                                         placeholder="Enter quantity"
                                         value={temporaryProduction.quantity ?? ''}
@@ -252,7 +251,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Autocomplete
+                                    <LabelledAutoComplete
                                         id="uom"
                                         value={
                                             temporaryProduction.measurementUnit
@@ -264,14 +263,9 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                         }
                                         options={UNITS_OF_MEASUREMENT}
                                         getOptionLabel={(option) => option?.value ?? ''}
-                                        renderInput={(params) => (
-                                            <Input
-                                                {...params}
-                                                label="UOM*"
-                                                placeholder="Select unit"
-                                                error={formError && !temporaryProduction?.measurementUnit}
-                                            />
-                                        )}
+                                        label="UOM*"
+                                        placeholder="Select unit"
+                                        error={formError && !temporaryProduction?.measurementUnit}
                                         onChange={(_, value) =>
                                             setTemporaryProduction((curr) => ({ ...curr, measurementUnit: value?.key }))
                                         }
@@ -279,9 +273,9 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
+                                    <FormLabel>Customer Order Number</FormLabel>
                                     <Input
                                         id="customer-order-number"
-                                        label="Customer Order Number"
                                         type="text"
                                         error={formError && !isValidOrderReference(temporaryProduction)}
                                         value={temporaryProduction?.customerOrderNumber ?? ''}
@@ -291,9 +285,9 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
+                                    <FormLabel>Customer Order Position</FormLabel>
                                     <Input
                                         id="customer-order-position-number"
-                                        label="Customer Order Position"
                                         type="text"
                                         error={formError && !isValidOrderReference(temporaryProduction)}
                                         value={temporaryProduction?.customerOrderPositionNumber ?? ''}
@@ -306,9 +300,9 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
+                                    <FormLabel>Supplier Order Number</FormLabel>
                                     <Input
                                         id="supplier-order-number"
-                                        label="Supplier Order Number"
                                         type="text"
                                         value={temporaryProduction?.supplierOrderNumber ?? ''}
                                         onChange={(event) =>

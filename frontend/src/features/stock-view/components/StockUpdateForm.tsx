@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { useEffect, useReducer, useState } from 'react';
-import { Autocomplete, Checkbox, capitalize } from '@mui/material';
+import { Checkbox, Grid, InputLabel, capitalize } from '@mui/material';
 import { Input, LoadingButton } from '@catena-x/portal-shared-components';
 
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
@@ -30,6 +30,7 @@ import { getUnitOfMeasurement } from '@util/helpers';
 import { useSites } from '../hooks/useSites';
 import { usePartners } from '../hooks/usePartners';
 import { validateStock } from '@util/stock-helpers';
+import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 
 type StockUpdateFormProps<T extends StockType> = {
     items: MaterialDescriptor[] | null;
@@ -81,8 +82,8 @@ export const StockUpdateForm = <T extends StockType>({ items, type, selectedItem
     return (
         <form className="p-5">
             <div className="flex gap-5 justify-center">
-                <div className="w-[32rem]">
-                    <Autocomplete
+                <div className="flex flex-col gap-1 w-[32rem]">
+                    <LabelledAutoComplete
                         id="material"
                         value={
                             newStock?.material
@@ -97,14 +98,9 @@ export const StockUpdateForm = <T extends StockType>({ items, type, selectedItem
                         }
                         options={items ?? []}
                         getOptionLabel={(option) => option.ownMaterialNumber ?? ''}
-                        renderInput={(params) => (
-                            <Input
-                                {...params}
-                                label={`${capitalize(type)}*`}
-                                placeholder={`Select a ${type}`}
-                                error={formError && !newStock?.material}
-                            />
-                        )}
+                        label={`${capitalize(type)}*`}
+                        placeholder={`Select a ${type}`}
+                        error={formError && !newStock?.material}
                         isOptionEqualToValue={(option, value) => option?.ownMaterialNumber === value?.ownMaterialNumber}
                         onChange={(_, newValue) =>
                             dispatch({
@@ -124,55 +120,47 @@ export const StockUpdateForm = <T extends StockType>({ items, type, selectedItem
                             })
                         }
                     />
-                    <Autocomplete
+                    <LabelledAutoComplete
                         id="partner"
                         value={newStock?.material ? newStock?.partner : null}
                         options={partners ?? []}
                         getOptionLabel={(option) => option?.name ?? ''}
-                        renderInput={(params) => (
-                            <Input
-                                {...params}
-                                label="Partner*"
-                                placeholder="Select a Partner"
-                                error={formError && !newStock?.partner}
-                            />
-                        )}
+                        label="Partner*"
+                        placeholder="Select a Partner"
+                        error={formError && !newStock?.partner}
                         onChange={(_, value) => dispatch({ type: 'partner', payload: value ?? null })}
                         isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
                     />
-                    <div className="grid grid-cols-3 gap-2">
-                        <div className="col-span-2">
+                    <Grid container spacing={1}>
+                        <Grid item xs={6}>
+                            <InputLabel>Quantity*</InputLabel>
                             <Input
                                 id="quantity"
-                                label="Quantity*"
                                 type="number"
                                 placeholder="Enter quantity"
                                 value={newStock?.quantity ?? ''}
                                 error={formError && !newStock?.quantity}
                                 onChange={(event) => dispatch({ type: 'quantity', payload: event.target.value })}
                             />
-                        </div>
-                        <Autocomplete
-                            id="uom"
-                            value={
-                                newStock && newStock.measurementUnit
-                                    ? { key: newStock.measurementUnit, value: getUnitOfMeasurement(newStock.measurementUnit) }
-                                    : null
-                            }
-                            options={UNITS_OF_MEASUREMENT}
-                            getOptionLabel={(option) => option?.value ?? ''}
-                            renderInput={(params) => (
-                                <Input
-                                    {...params}
-                                    label="UOM*"
-                                    placeholder="Select unit"
-                                    error={formError && !newStock?.measurementUnit}
-                                />
-                            )}
-                            onChange={(_, value) => dispatch({ type: 'measurementUnit', payload: value?.key ?? null })}
-                            isOptionEqualToValue={(option, value) => option?.key === value?.key}
-                        />
-                    </div>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <LabelledAutoComplete
+                                id="uom"
+                                value={
+                                    newStock && newStock.measurementUnit
+                                        ? { key: newStock.measurementUnit, value: getUnitOfMeasurement(newStock.measurementUnit) }
+                                        : null
+                                }
+                                options={UNITS_OF_MEASUREMENT}
+                                getOptionLabel={(option) => option?.value ?? ''}
+                                label="UOM*"
+                                placeholder="Select unit"
+                                error={formError && !newStock?.measurementUnit}
+                                onChange={(_, value) => dispatch({ type: 'measurementUnit', payload: value?.key ?? null })}
+                                isOptionEqualToValue={(option, value) => option?.key === value?.key}
+                            />
+                        </Grid>
+                    </Grid>
                     <div className="flex items-center justify-end pt-7">
                         <Checkbox
                             id="isBlocked"
@@ -182,73 +170,72 @@ export const StockUpdateForm = <T extends StockType>({ items, type, selectedItem
                         <label htmlFor="isBlocked"> is Blocked </label>
                     </div>
                 </div>
-                <div className="w-[32rem]">
-                    <Autocomplete
+                <div className="flex flex-col gap-1 w-[32rem]">
+                    <LabelledAutoComplete
                         id="site"
                         value={newStock?.stockLocationBpns ?? null}
                         options={sites?.map((site) => site.bpns) ?? []}
-                        renderInput={(params) => (
-                            <Input
-                                {...params}
-                                label="Stock Location BPNS*"
-                                placeholder="Select a Site"
-                                error={formError && !newStock?.stockLocationBpns}
-                            />
-                        )}
+                        label="Stock Location BPNS*"
+                        placeholder="Select a Site"
+                        error={formError && !newStock?.stockLocationBpns}
                         onChange={(_, value) => dispatch({ type: 'stockLocationBpns', payload: value ?? null })}
                     />
-                    <Autocomplete
+                    <LabelledAutoComplete
                         id="site"
                         value={newStock?.stockLocationBpna ?? null}
                         options={sites?.find((site) => site.bpns === newStock?.stockLocationBpns)?.addresses.map((addr) => addr.bpna) ?? []}
-                        renderInput={(params) => (
-                            <Input
-                                {...params}
-                                label="Stock Location BPNA*"
-                                placeholder="Select an Address"
-                                error={formError && !newStock?.stockLocationBpna}
-                            />
-                        )}
+                        label="Stock Location BPNA*"
+                        placeholder="Select an Address"
+                        error={formError && !newStock?.stockLocationBpna}
                         onChange={(_, value) => dispatch({ type: 'stockLocationBpna', payload: value ?? null })}
                     />
                     <div className="grid grid-cols-2 gap-2">
-                        <Input
-                            id="customer-order-number"
-                            label="Customer Order Number"
-                            type="text"
-                            value={newStock?.customerOrderNumber ?? ''}
-                            onChange={(event) => {
-                                dispatch({ type: 'customerOrderNumber', payload: event.target.value });
-                                if (event.target.value === '' || event.target.value === null) {
-                                    dispatch({ type: 'customerOrderPositionNumber', payload: '' });
-                                    dispatch({ type: 'supplierOrderNumber', payload: '' });
+                        <div className="flex flex-col gap-0">
+                            <InputLabel>Customer Order Number*</InputLabel>
+                            <Input
+                                hiddenLabel
+                                id="customer-order-number"
+                                type="text"
+                                value={newStock?.customerOrderNumber ?? ''}
+                                onChange={(event) => {
+                                    dispatch({ type: 'customerOrderNumber', payload: event.target.value });
+                                    if (event.target.value === '' || event.target.value === null) {
+                                        dispatch({ type: 'customerOrderPositionNumber', payload: '' });
+                                        dispatch({ type: 'supplierOrderNumber', payload: '' });
+                                    }
+                                }}
+                            />
+                        </div>
+                        <div className="flex flex-col gap-0">
+                            <InputLabel>Customer Order Position Number</InputLabel>
+                            <Input
+                                hiddenLabel
+                                id="customer-order-position"
+                                type="text"
+                                value={newStock?.customerOrderPositionNumber ?? ''}
+                                disabled={!newStock?.customerOrderNumber}
+                                error={formError && !!newStock?.customerOrderNumber && !newStock?.customerOrderPositionNumber}
+                                onChange={(event) =>
+                                    dispatch({
+                                        type: 'customerOrderPositionNumber',
+                                        payload: event.target.value,
+                                    })
                                 }
-                            }}
-                        />
+                            />
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-0">
+                        <InputLabel>Supplier Order Number</InputLabel>
                         <Input
-                            id="customer-order-position"
-                            label="Customer Order Position Number"
+                            hiddenLabel
+                            id="supplier-order-number"
                             type="text"
-                            value={newStock?.customerOrderPositionNumber ?? ''}
+                            value={newStock?.supplierOrderNumber ?? ''}
                             disabled={!newStock?.customerOrderNumber}
-                            error={formError && !!newStock?.customerOrderNumber && !newStock?.customerOrderPositionNumber}
-                            onChange={(event) =>
-                                dispatch({
-                                    type: 'customerOrderPositionNumber',
-                                    payload: event.target.value,
-                                })
-                            }
+                            error={formError && !!newStock?.customerOrderNumber && !newStock?.supplierOrderNumber}
+                            onChange={(event) => dispatch({ type: 'supplierOrderNumber', payload: event.target.value })}
                         />
                     </div>
-                    <Input
-                        id="supplier-order-number"
-                        label="Supplier Order Number"
-                        type="text"
-                        value={newStock?.supplierOrderNumber ?? ''}
-                        disabled={!newStock?.customerOrderNumber}
-                        error={formError && !!newStock?.customerOrderNumber && !newStock?.supplierOrderNumber}
-                        onChange={(event) => dispatch({ type: 'supplierOrderNumber', payload: event.target.value })}
-                    />
                 </div>
             </div>
             <div className="mt-7 mx-auto w-48">

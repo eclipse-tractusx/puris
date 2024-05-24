@@ -53,6 +53,24 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
                 logout: AuthenticationService.logout,
             });
         };
+        AuthenticationService.onAuthSuccess(() => {
+            setAuth({
+                isInitialized: true,
+                isAuthenticated: true,
+                userName: AuthenticationService.getUsername(),
+                hasRole: AuthenticationService.userHasRole,
+                logout: AuthenticationService.logout,
+            });
+        });
+        AuthenticationService.onLogout(() => {
+            setAuth({
+                isInitialized: true,
+                isAuthenticated: false,
+                userName: '',
+                hasRole: () => false,
+                logout: AuthenticationService.logout,
+            });
+        });
         initializeAuth();
     }, []);
     return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;

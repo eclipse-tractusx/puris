@@ -24,10 +24,13 @@ import { Link, NavLink } from 'react-router-dom';
 import HomeIcon from '@/assets/icons/home.svg';
 import CatalogIcon from '@/assets/icons/catalog.svg';
 import StockIcon from '@/assets/icons/stock.svg';
-import TrashIcon from '@/assets/icons/trash.svg';
 import { Typography } from '@catena-x/portal-shared-components';
 import { Role } from '@models/types/auth/role';
 import { useAuth } from '@hooks/useAuth';
+import { Handshake, Logout, SyncAlt } from '@mui/icons-material';
+import { OverridableComponent } from '@mui/material/OverridableComponent';
+import { SvgIconTypeMap } from '@mui/material';
+import AuthenticationService from '@services/authentication-service';
 
 type SideBarItemProps = (
     | {
@@ -40,7 +43,7 @@ type SideBarItemProps = (
       }
 ) & {
     name: string;
-    icon: string;
+    icon: string | OverridableComponent<SvgIconTypeMap<object, "svg">>;
     requiredRoles?: Role[];
 };
 
@@ -63,19 +66,20 @@ const sideBarItems: SideBarItemProps[] = [
     },
     {
         name: 'Negotiations',
-        icon: CatalogIcon,
+        icon: Handshake,
         path: '/negotiations',
         requiredRoles: ['PURIS_ADMIN'],
     },
     {
         name: 'Transfers',
-        icon: CatalogIcon,
+        icon: SyncAlt,
         path: '/transfers',
         requiredRoles: ['PURIS_ADMIN'],
     },
     {
         name: 'Logout',
-        icon: TrashIcon,
+        icon: Logout,
+        action: AuthenticationService.logout,
         variant: 'button',
     },
 ];
@@ -94,11 +98,11 @@ const SideBarItem = (props: SideBarItemProps) => {
         <li key={props.name}>
             {props.variant === 'button' ? (
                 <button className={calculateClassName({})} onClick={props.action}>
-                    <img className="mr-2" src={props.icon} alt="Icon" /> <span className="min-w-0 break-words">{props.name}</span>
+                    {typeof props.icon === 'string' ? <img className="mr-2" src={props.icon} alt="Icon" />  : <props.icon sx={{'marginRight': '.25rem'}} />} <span className="min-w-0 break-words">{props.name}</span>
                 </button>
             ) : (
                 <NavLink to={props.path} className={calculateClassName}>
-                    <img className="mr-2" src={props.icon} alt="Icon" /> <span className="min-w-0 break-words">{props.name}</span>
+                    {typeof props.icon === 'string' ? <img className="mr-2" src={props.icon} alt="Icon" />  : <props.icon sx={{'marginRight': '.25rem'}} />} <span className="min-w-0 break-words">{props.name}</span>
                 </NavLink>
             )}
         </li>

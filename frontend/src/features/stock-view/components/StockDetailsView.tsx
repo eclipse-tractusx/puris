@@ -32,6 +32,7 @@ import { useStocks } from '../hooks/useStocks';
 import { usePartnerStocks } from '../hooks/usePartnerStocks';
 import { compareStocks } from '@util/stock-helpers';
 import { Notification } from '@models/types/data/notification';
+import { Partner } from '@models/types/edc/partner';
 
 type StockDetailsViewProps<T extends StockType> = {
     type: T;
@@ -57,13 +58,13 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
             (type == 'product' ? selectedMaterial?.material?.materialNumberSupplier : selectedMaterial?.material?.materialNumberCustomer) ??
                 null
         )
-            .then(() => {
+            .then((partners: Partner[]) => {
                 setLastUpdated(new Date());
                 setNotifications((ns) => [
                     ...ns,
                     {
                         title: 'Update requested',
-                        description: 'Partner Stock update request has been sent successfully',
+                        description: `Stock update has been requested for ${partners.length < 3 ? partners.map((p) => p.name).join(', ') : `${partners.length} partners`}`,
                         severity: 'success',
                     },
                 ]);

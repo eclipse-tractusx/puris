@@ -18,21 +18,12 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Outlet } from 'react-router-dom';
-import { SideBar } from './SideBar';
-import { Footer } from './Footer';
-import { Box, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 
-export const Layout = () => {
+export const Footer = () => {
     return (
-        <div className="flex h-[100vh] w-full">
-            <SideBar></SideBar>
-            <Stack paddingBlock="1.25rem" paddingInline="1rem" overflow="auto" flexGrow="1" spacing={5}>
-                <Box flexGrow="1">
-                    <Outlet />
-                </Box>
-                <Footer />
-            </Stack>
-        </div>
+      <Stack component="footer" width="100%" justifyContent="center" textAlign="center" gap=".5rem">
+        Copyright © Catena-X Automotive Network
+      </Stack>
     );
-};
+}
