@@ -32,6 +32,7 @@ export const NegotiationView = () => {
                     title="Negotiation history"
                     columns={[
                         { headerName: 'Negotiation Id', field: '@id', width: 120 },
+                        { headerName: 'Agreement Id', field: 'contractAgreementId', width: 120 },
                         { headerName: 'Type', field: 'type', width: 150 },
                         { headerName: 'State', field: 'state', width: 150 },
                         { headerName: 'CounterParty', field: 'counterPartyId', width: 200 },
