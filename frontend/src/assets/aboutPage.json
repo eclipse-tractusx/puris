@@ -21,7 +21,7 @@
     {
         "header": "Source URL",
         "body": "Eclipse-Tractus-X",
-        "link": "SERVER_URL_PLACEHOLDER/REPOSITORY_PLACEHOLDER/blob/REF_PLACEHOLDER/"
+        "link": "SERVER_URL_PLACEHOLDER/REPOSITORY_PLACEHOLDER/tree/REF_PLACEHOLDER/"
     },
     {
         "header": "Commit ID",
