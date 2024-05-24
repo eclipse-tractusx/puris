@@ -23,7 +23,6 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingService;
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DtrAdapterService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
@@ -55,9 +54,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     private VariablesService variablesService;
 
     @Autowired
-    private DigitalTwinMappingService dtmService;
-
-    @Autowired
     private DtrAdapterService dtrAdapterService;
 
     @Autowired
@@ -86,23 +82,45 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         var searchResult = find(materialPartnerRelation.getMaterial(), materialPartnerRelation.getPartner());
         if (searchResult == null) {
             executorService.submit(new DtrRegistrationTask(materialPartnerRelation, 3));
-            if (materialPartnerRelation.getMaterial().isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial()
-                && materialPartnerRelation.getPartnerCXNumber() == null) {
-                log.info("Attempting CX-Id fetch for Material " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                    " from Supplier-Partner " + materialPartnerRelation.getPartner().getBpnl());
-                executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 1));
-            }
             return mprRepository.save(materialPartnerRelation);
         }
         log.error("Could not create MaterialPartnerRelation, " + materialPartnerRelation.getKey() + " already exists");
         return null;
     }
 
+    /**
+     * Call this method when a partnerCXId for a Material was needed but not found.
+     * This method will trigger a new PartTypeInformation Task for any material that
+     * the given partner supplies, but still misses a partnerCXId.
+     *
+     * This method will block until all tasks have finished, if any.
+     *
+     * @param supplierPartner The supplier partner
+     */
     @Override
-    public void triggerPartTypeRetrievalTask(MaterialPartnerRelation mpr) {
-        if (!currentPartTypeFetches.contains(mpr)) {
-            executorService.submit(new PartTypeInformationRetrievalTask(mpr, 1));
+    public void triggerPartTypeRetrievalTask(Partner supplierPartner) {
+        List<Future<Boolean>> futures = mprRepository
+            .findAllByPartner_UuidAndPartnerSuppliesMaterialIsTrue(supplierPartner.getUuid())
+            .stream()
+            .filter(mpr -> mpr.getPartnerCXNumber() == null)
+            .filter(mpr -> !currentPartTypeFetches.contains(mpr))
+            .map(mpr -> executorService.submit(new PartTypeInformationRetrievalTask(mpr, 1)))
+            .toList();
+        if (futures.isEmpty()) {
+            return;
         }
+
+        do {
+            Thread.yield();
+            // wait until all triggered tasks have returned
+        } while (!futures.stream().allMatch(Future::isDone));
+
+        // give the database a little bit of time to handle the updates
+        try {
+                Thread.sleep(400);
+        } catch (InterruptedException ignored) {
+        }
+
     }
 
 
@@ -144,7 +162,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         /**
          * This method contains all the duties which the PartTypeInformationRetrievalTask is trying to fulfill.
          *
-         * @return  true, if the task finished successfully
+         * @return true, if the task finished successfully
          */
         @Override
         public Boolean call() {
@@ -242,7 +260,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         /**
          * This method contains all the duties which the DtrRegistrationTask is trying to fulfill.
          *
-         * @return  true, if the task finished successfully
+         * @return true, if the task finished successfully
          */
         @Override
         public Boolean call() throws Exception {
@@ -268,9 +286,12 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                             completedProductRegistration = true;
                         } else {
                             if (result == 404) {
-                                Integer registrationResult = dtrAdapterService.registerProductAtDtr(materialPartnerRelation.getMaterial());
+                                Integer registrationResult = dtrAdapterService.registerProductAtDtr(materialPartnerRelation.getMaterial(), allCustomers);
                                 log.info("Tried to create product AAS for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber()
                                     + ", result: " + registrationResult);
+                                if (registrationResult != null && registrationResult < 400) {
+                                    completedProductRegistration = true;
+                                }
                             }
                         }
                     } else {
@@ -351,12 +372,6 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         flagConsistencyTest(materialPartnerRelation);
         var foundEntity = mprRepository.findById(materialPartnerRelation.getKey());
         if (foundEntity.isPresent()) {
-            if (materialPartnerRelation.getMaterial().isMaterialFlag() && materialPartnerRelation.isPartnerSuppliesMaterial()
-                && materialPartnerRelation.getPartnerCXNumber() == null) {
-                log.info("Attempting CX-Id fetch for Material " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
-                    " from Supplier-Partner " + materialPartnerRelation.getPartner().getBpnl());
-                executorService.submit(new PartTypeInformationRetrievalTask(materialPartnerRelation, 3));
-            }
             executorService.submit(new DtrRegistrationTask(materialPartnerRelation, 3));
             return mprRepository.save(materialPartnerRelation);
         }

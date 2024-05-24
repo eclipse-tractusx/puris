@@ -1,12 +1,13 @@
 # puris
 
-![Version: 2.6.0](https://img.shields.io/badge/Version-2.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.0.0](https://img.shields.io/badge/AppVersion-2.0.0-informational?style=flat-square)
+![Version: 2.6.1](https://img.shields.io/badge/Version-2.6.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.0.1](https://img.shields.io/badge/AppVersion-2.0.1-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
 **Homepage:** <https://github.com/eclipse-tractusx/puris>
 
 ## Prerequisites
+
 - Kubernetes 1.19+
 - Helm 3.2.0+
 

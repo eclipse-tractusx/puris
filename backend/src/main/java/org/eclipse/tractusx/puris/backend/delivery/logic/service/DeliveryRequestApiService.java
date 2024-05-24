@@ -22,15 +22,11 @@ package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Optional;
-
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.adapter.DeliveryInformationSammMapper;
 import org.eclipse.tractusx.puris.backend.delivery.logic.dto.deliverysamm.DeliveryInformation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -38,6 +34,8 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -68,22 +66,41 @@ public class DeliveryRequestApiService {
             log.error("Unknown Partner BPNL " + bpnl);
             return null;
         }
-        MaterialPartnerRelation mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx);
+
         Material material = materialService.findByMaterialNumberCx(materialNumberCx);
-        if (material == null && mpr == null) {
+        if (material == null) {
+            // Could not identify partner cx number. I.e. we do not have that partner's
+            // CX id in one of our MaterialPartnerRelation entities. Try to fix this by
+            // looking for MPR's, where that partner is a supplier and where we don't have
+            // a partnerCXId yet. Of course this can only work if there was previously an MPR
+            // created, but for some unforeseen reason, the initial PartTypeRetrieval didn't succeed.
+            log.warn("Could not find " + materialNumberCx + " from partner " + partner.getBpnl());
+            mprService.triggerPartTypeRetrievalTask(partner);
+            material = materialService.findByMaterialNumberCx(materialNumberCx);
+        }
+
+        if (material == null) {
             log.error("Unknown Material " + materialNumberCx);
             return null;
         }
-        if (material == null) {
-            material = mpr.getMaterial();
+
+        var mpr = mprService.find(material,partner);
+        if (mpr == null || !mpr.isPartnerSuppliesMaterial()) {
+            // only send an answer if partner is registered as supplier
+            return null;
         }
+
         var currentDeliveries = ownDeliveryService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.empty(), Optional.of(partner.getBpnl()));
-        return sammMapper.ownDeliveryToSamm(currentDeliveries);
+        return sammMapper.ownDeliveryToSamm(currentDeliveries, partner, material);
     }
 
     public void doReportedDeliveryRequest(Partner partner, Material material) {
         try {
             var mpr = mprService.find(material, partner);
+            if (mpr.getPartnerCXNumber() == null) {
+                mprService.triggerPartTypeRetrievalTask(partner);
+                mpr = mprService.find(material, partner);
+            }
             var direction = material.isMaterialFlag() ? DirectionCharacteristic.OUTBOUND : DirectionCharacteristic.INBOUND;
             var data = edcAdapterService.doSubmodelRequest(SubmodelType.DELIVERY, mpr, direction, 1);
             var samm = objectMapper.treeToValue(data, DeliveryInformation.class);

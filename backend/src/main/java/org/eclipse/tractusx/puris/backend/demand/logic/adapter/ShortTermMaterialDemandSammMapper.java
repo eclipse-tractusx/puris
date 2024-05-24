@@ -50,13 +50,7 @@ public class ShortTermMaterialDemandSammMapper {
     @Autowired
     private MaterialService materialService;
 
-    public ShortTermMaterialDemand ownDemandToSamm(List<OwnDemand> demandList) {
-        if (demandList == null || demandList.isEmpty()) {
-            log.warn("Can't map empty list");
-            return null;
-        }
-        Partner partner = demandList.get(0).getPartner();
-        Material material = demandList.get(0).getMaterial();
+    public ShortTermMaterialDemand ownDemandToSamm(List<OwnDemand> demandList,Partner partner, Material material) {
         if (demandList.stream().anyMatch(dem -> !dem.getPartner().equals(partner))) {
             log.warn("Can't map demand list with different partners");
             return null;
