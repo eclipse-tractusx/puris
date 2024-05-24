@@ -981,7 +981,7 @@ public class EdcAdapterService {
             JsonNode targetCatalogEntry = null;
             if (!catalogArray.isEmpty()) {
                 if (catalogArray.size() > 1) {
-                    log.debug("Ambiguous catalog entries found! Will take the first with supported policy \n" + catalogArray.toPrettyString());
+                    log.debug("Muliple contract offers found! Will take the first with supported policy \n" + catalogArray.toPrettyString());
                 }
 
                 for (JsonNode entry : catalogArray) {
