@@ -56,9 +56,13 @@ public class EdcRequestBodyBuilder {
     public static final String CX_TAXO_NAMESPACE = "https://w3id.org/catenax/taxonomy#";
     public static final String CX_COMMON_NAMESPACE = "https://w3id.org/catenax/ontology/common#";
     public static final String CX_POLICY_NAMESPACE = "https://w3id.org/catenax/policy/";
-    public static final String DCT_NAMESPACE = "https://purl.org/dc/terms/";
+    public static final String DCT_NAMESPACE = "http://purl.org/dc/terms/";
     public static final String AAS_SEMANTICS_NAMESPACE = "https://admin-shell.io/aas/3/0/HasSemantics/";
     public static final String CONTRACT_POLICY_ID = "Contract_Policy";
+    public static final String TX_NAMESPACE = "https://w3id.org/tractusx/v0.0.1/ns/";
+    public static final String TX_AUTH_NAMESPACE = "https://w3id.org/tractusx/auth/";
+    public static final String DCAT_NAMESPACE = "http://www.w3.org/ns/dcat#";
+    public static final String DSPACE_NAMESPACE = "https://w3id.org/dspace/v0.8/";
 
     /**
      * helper class to encapsulate PolicyConstraint

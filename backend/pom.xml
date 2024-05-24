@@ -122,6 +122,29 @@
             <artifactId>modelmapper</artifactId>
             <version>${modelmapper.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.eclipse.edc/json-ld-lib -->
+        <dependency>
+            <groupId>org.eclipse.edc</groupId>
+            <artifactId>json-ld-lib</artifactId>
+            <version>0.7.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.eclipse.edc/json-ld-spi -->
+        <dependency>
+            <groupId>org.eclipse.edc</groupId>
+            <artifactId>json-ld-spi</artifactId>
+            <version>0.7.0</version>
+        </dependency>
+
+
+
+
+
+
+
+
+
+
+
     </dependencies>
 
     <pluginRepositories>

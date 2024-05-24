@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.eclipse.edc.jsonld.TitaniumJsonLd;
+import org.eclipse.edc.spi.monitor.ConsoleMonitor;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EdrDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
@@ -40,7 +42,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
-
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
  * The EDC connection is configured using the application.properties file.
@@ -48,6 +49,14 @@ import java.util.regex.Pattern;
 @Service
 @Slf4j
 public class EdcAdapterService {
+
+
+    private static TitaniumJsonLd titaniumJsonLd = new TitaniumJsonLd(new ConsoleMonitor());
+
+    static {
+
+    }
+
     private static final OkHttpClient CLIENT = new OkHttpClient();
     @Autowired
     private VariablesService variablesService;
@@ -63,6 +72,9 @@ public class EdcAdapterService {
     public EdcAdapterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
+
+
+
 
     /**
      * Util method for issuing a GET request to the management api of your control plane.
