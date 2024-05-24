@@ -18,6 +18,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 import { DateType, Datepicker } from '@catena-x/portal-shared-components';
+import { FormLabel, Stack } from '@mui/material';
 import Box from '@mui/material/Box';
 import { useEffect, useRef, useState } from 'react';
 
@@ -76,24 +77,27 @@ export const DateTime = ({ error, value, onValueChange, ...props }: DateTimeProp
         }
     }, [value]);
     return (
-        <Box display="flex" gap=".25rem" width="100%" marginTop="auto">
-            <Box display="flex" flexGrow="1" sx={{ '& .MuiFormControl-root, & .MuiBox-root': { minWidth: '100% !important' } }}>
-                <Datepicker
-                    {...props}
-                    error={error}
-                    value={date?.toISOString().split('T')[0]}
-                    readOnly={false}
-                    onChangeItem={(event) => handleDateChange(event)}
+        <Stack width="100%">
+            <FormLabel>{props.label}</FormLabel>
+            <Box display="flex" gap=".25rem" width="100%" marginTop="auto">
+                <Box display="flex" flexGrow="1" sx={{ '& .MuiFormControl-root, & .MuiBox-root': { minWidth: '100% !important' } }}>
+                    <Datepicker
+                        {...props}
+                        error={error}
+                        value={date?.toISOString().split('T')[0]}
+                        readOnly={false}
+                        onChangeItem={(event) => handleDateChange(event)}
+                    />
+                </Box>
+                <input
+                    ref={timeRef}
+                    className={`${error && !isValidTime(timeRef.current?.value) ? 'error' : ''}`}
+                    type="time"
+                    id={'time' + props.label.toLowerCase()}
+                    name={'etoc' + props.label.toLowerCase()}
+                    onChange={handleTimeChange}
                 />
             </Box>
-            <input
-                ref={timeRef}
-                className={`${error && !isValidTime(timeRef.current?.value) ? 'error' : ''}`}
-                type="time"
-                id={"time"+props.label.toLowerCase()}
-                name={"etoc"+props.label.toLowerCase()}
-                onChange={handleTimeChange}
-            />
-        </Box>
+        </Stack>
     );
 };

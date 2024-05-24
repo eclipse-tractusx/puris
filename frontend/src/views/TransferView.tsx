@@ -31,7 +31,7 @@ type TransferCardProps = {
 const TransferCard = ({transfer}: TransferCardProps) => {
     return (
         <Card className="p-5">
-            <h2 className="text-xl font-semibold mb-3">Transfer</h2>
+            <h1 className="text-3xl font-semibold text-gray-700 mb-10">Transfer</h1>
             <div className="flex w-full flex-col gap-4">
                 <div className="flex flex-col gap-2">
                     <div className="flex gap-3">
