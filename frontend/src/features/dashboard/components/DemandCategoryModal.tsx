@@ -21,7 +21,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Datepicker, Input, PageSnackbar, PageSnackbarStack, Table } from '@catena-x/portal-shared-components';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Demand } from '@models/types/data/demand';
-import { Autocomplete, Box, Button, Dialog, DialogTitle, Grid, Stack, Typography } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, Typography } from '@mui/material';
 import { getUnitOfMeasurement } from '@util/helpers';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { Notification } from '@models/types/data/notification';
@@ -29,6 +29,7 @@ import { deleteDemand, postDemand } from '@services/demands-service';
 import { DEMAND_CATEGORY } from '@models/constants/demand-category';
 import { Close, Delete, Save } from '@mui/icons-material';
 import { ModalMode } from '@models/types/data/modal-mode';
+import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 
 const GridItem = ({ label, value }: { label: string; value: string }) => (
     <Grid item xs={6}>
@@ -111,24 +112,27 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
         },
     ] as const;
     if (handleDelete) {
-        return [...columns, {
-            field: 'delete',
-            headerName: '',
-            sortable: false,
-            disableColumnMenu: true,
-            headerAlign: 'center',
-            type: 'string',
-            width: 30,
-            renderCell: (data: { row: Demand }) => {
-                return (
-                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                        <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
-                            <Delete></Delete>
-                        </Button>
-                    </Box>
-                );
+        return [
+            ...columns,
+            {
+                field: 'delete',
+                headerName: '',
+                sortable: false,
+                disableColumnMenu: true,
+                headerAlign: 'center',
+                type: 'string',
+                width: 30,
+                renderCell: (data: { row: Demand }) => {
+                    return (
+                        <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
+                                <Delete></Delete>
+                            </Button>
+                        </Box>
+                    );
+                },
             },
-        }] as const;
+        ] as const;
     }
     return columns;
 };
@@ -143,11 +147,7 @@ type DemandCategoryModalProps = {
 };
 
 const isValidDemand = (demand: Partial<Demand>) =>
-    demand?.day &&
-    demand?.quantity &&
-    demand.demandCategoryCode &&
-    demand?.measurementUnit &&
-    demand?.partnerBpnl;
+    demand?.day && demand?.quantity && demand.demandCategoryCode && demand?.measurementUnit && demand?.partnerBpnl;
 
 export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, demands }: DemandCategoryModalProps) => {
     const [temporaryDemand, setTemporaryDemand] = useState<Partial<Demand>>(demand ?? {});
@@ -195,6 +195,13 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
         },
         [onClose, onSave]
     );
+
+    const handleClose = () => {
+        setTemporaryDemand({});
+        setFormError(false);
+        onClose();
+    };
+
     const handleDelete = (row: Demand) => {
         if (row.uuid) deleteDemand(row.uuid).then(onSave);
     };
@@ -205,7 +212,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
     }, [demand]);
     return (
         <>
-            <Dialog open={open && demand !== null} onClose={onClose}>
+            <Dialog open={open && demand !== null} onClose={handleClose}>
                 <DialogTitle fontWeight={600} textAlign="center">
                     Demand Information
                 </DialogTitle>
@@ -214,9 +221,12 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                         <Grid container spacing={2} width="32rem" padding=".25rem">
                             <GridItem label="Material Number" value={temporaryDemand.ownMaterialNumber ?? ''} />
                             <GridItem label="Site" value={temporaryDemand.demandLocationBpns ?? ''} />
-                            <Grid item marginTop="1.5rem" xs={6}>
+                            <Grid item xs={6}>
+                                <FormLabel>Day*</FormLabel>
                                 <Datepicker
-                                    label="Day"
+                                    id="day"
+                                    label=""
+                                    hiddenLabel
                                     placeholder="Pick a Day"
                                     locale="de"
                                     error={formError && !temporaryDemand?.day}
@@ -226,7 +236,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                 />
                             </Grid>
                             <Grid item xs={6}>
-                                <Autocomplete
+                                <LabelledAutoComplete
                                     id="category"
                                     clearIcon={false}
                                     options={DEMAND_CATEGORY}
@@ -241,19 +251,14 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                               }
                                             : DEMAND_CATEGORY[0]
                                     }
-                                    renderInput={(params) => (
-                                        <Input
-                                            {...params}
-                                            label="Category*"
-                                            placeholder="Select category"
-                                            error={formError && !temporaryDemand?.demandCategoryCode}
-                                        />
-                                    )}
+                                    label="Category*"
+                                    placeholder="Select category"
+                                    error={formError && !temporaryDemand?.demandCategoryCode}
                                 />
                             </Grid>
                             <Grid item xs={6}>
+                                <FormLabel>Quantity*</FormLabel>
                                 <Input
-                                    label="Quantity*"
                                     type="number"
                                     placeholder="Enter quantity"
                                     value={temporaryDemand.quantity ?? ''}
@@ -268,7 +273,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                 />
                             </Grid>
                             <Grid item xs={6}>
-                                <Autocomplete
+                                <LabelledAutoComplete
                                     id="uom"
                                     clearIcon={false}
                                     options={UNITS_OF_MEASUREMENT}
@@ -283,18 +288,13 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                               }
                                             : null
                                     }
-                                    renderInput={(params) => (
-                                        <Input
-                                            {...params}
-                                            label="UOM*"
-                                            placeholder="Select unit"
-                                            error={formError && !temporaryDemand?.measurementUnit}
-                                        />
-                                    )}
+                                    label="UOM*"
+                                    placeholder="Select unit"
+                                    error={formError && !temporaryDemand?.measurementUnit}
                                 />
                             </Grid>
                             <Grid item xs={6}>
-                                <Autocomplete
+                                <LabelledAutoComplete
                                     id="partner"
                                     options={partners ?? []}
                                     getOptionLabel={(option) => option?.name ?? ''}
@@ -303,18 +303,13 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                     onChange={(_, value) =>
                                         setTemporaryDemand({ ...temporaryDemand, partnerBpnl: value?.bpnl ?? undefined })
                                     }
-                                    renderInput={(params) => (
-                                        <Input
-                                            {...params}
-                                            label="Partner*"
-                                            placeholder="Select a Partner"
-                                            error={formError && !temporaryDemand?.partnerBpnl}
-                                        />
-                                    )}
+                                    label="Partner*"
+                                    placeholder="Select a Partner"
+                                    error={formError && !temporaryDemand?.partnerBpnl}
                                 />
                             </Grid>
                             <Grid item xs={6}>
-                                <Autocomplete
+                                <LabelledAutoComplete
                                     id="supplierLocationBpns"
                                     options={partners?.find((s) => s.bpnl === temporaryDemand.partnerBpnl)?.sites ?? []}
                                     getOptionLabel={(option) => option.name ?? ''}
@@ -328,13 +323,8 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                             ?.find((s) => s.bpnl === temporaryDemand.partnerBpnl)
                                             ?.sites.find((s) => s.bpns === temporaryDemand.supplierLocationBpns) ?? null
                                     }
-                                    renderInput={(params) => (
-                                        <Input
-                                            {...params}
-                                            label="Supplier Site"
-                                            placeholder="Select a Site"
-                                        />
-                                    )}
+                                    label="Supplier Site"
+                                    placeholder="Select a Site"
                                 />
                             </Grid>
                         </Grid>
@@ -359,7 +349,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                         />
                     )}
                     <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="2rem">
-                        <Button variant="outlined" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={onClose}>
+                        <Button variant="outlined" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleClose}>
                             <Close></Close> Close
                         </Button>
                         {mode === 'create' && (

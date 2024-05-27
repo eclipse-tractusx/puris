@@ -23,7 +23,7 @@ import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Delivery } from '@models/types/data/delivery';
 import { Close, Delete, Save } from '@mui/icons-material';
-import { Autocomplete, Box, Button, Dialog, DialogTitle, Grid, Stack, Typography, capitalize } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, Typography, capitalize } from '@mui/material';
 import { deleteDelivery, postDelivery } from '@services/delivery-service';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { useEffect, useMemo, useState } from 'react';
@@ -32,6 +32,7 @@ import { INCOTERMS } from '@models/constants/incoterms';
 import { ARRIVAL_TYPES, DEPARTURE_TYPES } from '@models/constants/event-type';
 import { ModalMode } from '@models/types/data/modal-mode';
 import { Site } from '@models/types/edc/site';
+import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 
 const GridItem = ({ label, value }: { label: string; value: string }) => (
     <Grid item xs={6}>
@@ -71,7 +72,7 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void) => {
                             hour: '2-digit',
                             minute: '2-digit',
                         })}
-                        <Box fontSize='.9em'>({data.row.departureType.split('-')[0]})</Box>
+                        <Box fontSize=".9em">({data.row.departureType.split('-')[0]})</Box>
                     </Box>
                 );
             },
@@ -83,7 +84,15 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void) => {
             width: 150,
             renderCell: (data: { row: Delivery }) => {
                 return (
-                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%" flexDirection="column">
+                    <Box
+                        display="flex"
+                        textAlign="center"
+                        alignItems="center"
+                        justifyContent="center"
+                        width="100%"
+                        height="100%"
+                        flexDirection="column"
+                    >
                         {new Date(data.row.dateOfArrival!).toLocaleString('de-DE', {
                             day: '2-digit',
                             month: '2-digit',
@@ -91,7 +100,7 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void) => {
                             hour: '2-digit',
                             minute: '2-digit',
                         })}
-                        <Box fontSize='.9em'>({data.row.departureType.split('-')[0]})</Box>
+                        <Box fontSize=".9em">({data.row.departureType.split('-')[0]})</Box>
                     </Box>
                 );
             },
@@ -197,9 +206,11 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void) => {
             renderCell: (data: { row: Delivery }) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                        {!data.row.reported && <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
-                            <Delete></Delete>
-                        </Button>}
+                        {!data.row.reported && (
+                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
+                                <Delete></Delete>
+                            </Button>
+                        )}
                     </Box>
                 );
             },
@@ -253,8 +264,12 @@ export const DeliveryInformationModal = ({
         () =>
             deliveries?.filter(
                 (d) =>
-                    (direction === 'incoming' && d.destinationBpns === site?.bpns && new Date (d.dateOfArrival).toLocaleDateString() === new Date (delivery!.dateOfArrival).toLocaleDateString()) ||
-                    (direction === 'outgoing' && d.originBpns === site?.bpns && new Date (d.dateOfDeparture).toLocaleDateString() === new Date (delivery!.dateOfDeparture).toLocaleDateString())
+                    (direction === 'incoming' &&
+                        d.destinationBpns === site?.bpns &&
+                        new Date(d.dateOfArrival).toLocaleDateString() === new Date(delivery!.dateOfArrival).toLocaleDateString()) ||
+                    (direction === 'outgoing' &&
+                        d.originBpns === site?.bpns &&
+                        new Date(d.dateOfDeparture).toLocaleDateString() === new Date(delivery!.dateOfDeparture).toLocaleDateString())
             ) ?? [],
         [deliveries, delivery, direction, site?.bpns]
     );
@@ -294,6 +309,12 @@ export const DeliveryInformationModal = ({
             .finally(() => onClose());
     };
 
+    const handleClose = () => {
+        setFormError(false);
+        setTemporaryDelivery({});
+        onClose();
+    };
+
     const handleDelete = (row: Delivery) => {
         if (row.uuid) deleteDelivery(row.uuid).then(onSave);
     };
@@ -305,7 +326,7 @@ export const DeliveryInformationModal = ({
     }, [delivery]);
     return (
         <>
-            <Dialog open={open && delivery !== null} onClose={onClose}>
+            <Dialog open={open && delivery !== null} onClose={handleClose}>
                 <DialogTitle fontWeight={600} textAlign="center">
                     {capitalize(mode)} Delivery Information
                 </DialogTitle>
@@ -314,12 +335,14 @@ export const DeliveryInformationModal = ({
                         {mode === 'create' ? (
                             <>
                                 <GridItem label="Material Number" value={temporaryDelivery.ownMaterialNumber ?? ''} />
-                                <GridItem 
-                                    label={direction === 'incoming' ? 'Destination Site' : 'Origin Site'} 
-                                    value={(direction === 'incoming' ? temporaryDelivery.destinationBpns : temporaryDelivery.originBpns) ?? ''} 
+                                <GridItem
+                                    label={direction === 'incoming' ? 'Destination Site' : 'Origin Site'}
+                                    value={
+                                        (direction === 'incoming' ? temporaryDelivery.destinationBpns : temporaryDelivery.originBpns) ?? ''
+                                    }
                                 />
                                 <Grid item xs={6}>
-                                    <Autocomplete
+                                    <LabelledAutoComplete
                                         id="departure-type"
                                         options={DEPARTURE_TYPES}
                                         getOptionLabel={(option) => option.value ?? ''}
@@ -328,18 +351,13 @@ export const DeliveryInformationModal = ({
                                             setTemporaryDelivery({ ...temporaryDelivery, departureType: value?.key ?? undefined })
                                         }
                                         value={DEPARTURE_TYPES.find((dt) => dt.key === temporaryDelivery.departureType) ?? null}
-                                        renderInput={(params) => (
-                                            <Input
-                                                {...params}
-                                                label="Departure Type*"
-                                                placeholder="Select the type of departure"
-                                                error={formError && !temporaryDelivery?.departureType}
-                                            />
-                                        )}
-                                    ></Autocomplete>
+                                        label="Departure Type*"
+                                        placeholder="Select the type of departure"
+                                        error={formError && !temporaryDelivery?.departureType}
+                                    />
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Autocomplete
+                                    <LabelledAutoComplete
                                         id="arrival-type"
                                         options={ARRIVAL_TYPES}
                                         getOptionLabel={(option) => option.value ?? ''}
@@ -348,29 +366,29 @@ export const DeliveryInformationModal = ({
                                             setTemporaryDelivery({ ...temporaryDelivery, arrivalType: value?.key ?? undefined })
                                         }
                                         value={ARRIVAL_TYPES.find((dt) => dt.key === temporaryDelivery.arrivalType) ?? null}
-                                        renderInput={(params) => (
-                                            <Input
-                                                {...params}
-                                                label="Arrival Type*"
-                                                placeholder="Select the type of departure"
-                                                error={formError && (
-                                                    !temporaryDelivery?.arrivalType || 
-                                                    (temporaryDelivery?.arrivalType === 'actual-arrival' && temporaryDelivery?.departureType !== 'actual-departure')
-                                                )}
-                                            />
-                                        )}
-                                    ></Autocomplete>
+                                        label="Arrival Type*"
+                                        placeholder="Select the type of departure"
+                                        error={
+                                            formError &&
+                                            (!temporaryDelivery?.arrivalType ||
+                                                (temporaryDelivery?.arrivalType === 'actual-arrival' &&
+                                                    temporaryDelivery?.departureType !== 'actual-departure'))
+                                        }
+                                    ></LabelledAutoComplete>
                                 </Grid>
                                 <Grid item xs={6} display="flex" alignItems="end">
                                     <DateTime
-                                        label="Departure Time"
+                                        label="Departure Time*"
                                         placeholder="Pick Departure Date"
                                         locale="de"
-                                        error={formError && (
-                                            !temporaryDelivery.dateOfDeparture ||
-                                            (temporaryDelivery.departureType === 'actual-departure' && temporaryDelivery.dateOfDeparture > new Date()) ||
-                                            (!!temporaryDelivery.dateOfArrival && temporaryDelivery.dateOfArrival < temporaryDelivery.dateOfDeparture)
-                                        )}
+                                        error={
+                                            formError &&
+                                            (!temporaryDelivery.dateOfDeparture ||
+                                                (temporaryDelivery.departureType === 'actual-departure' &&
+                                                    temporaryDelivery.dateOfDeparture > new Date()) ||
+                                                (!!temporaryDelivery.dateOfArrival &&
+                                                    temporaryDelivery.dateOfArrival < temporaryDelivery.dateOfDeparture))
+                                        }
                                         value={temporaryDelivery?.dateOfDeparture ?? null}
                                         onValueChange={(date) =>
                                             setTemporaryDelivery({ ...temporaryDelivery, dateOfDeparture: date ?? undefined })
@@ -379,13 +397,15 @@ export const DeliveryInformationModal = ({
                                 </Grid>
                                 <Grid item xs={6} display="flex" alignItems="end">
                                     <DateTime
-                                        label="Arrival Time"
+                                        label="Arrival Time*"
                                         placeholder="Pick Arrival Date"
                                         locale="de"
-                                        error={formError && (
-                                            !temporaryDelivery?.dateOfArrival ||
-                                            (temporaryDelivery?.arrivalType === 'actual-arrival' && temporaryDelivery?.dateOfArrival > new Date())
-                                        )}
+                                        error={
+                                            formError &&
+                                            (!temporaryDelivery?.dateOfArrival ||
+                                                (temporaryDelivery?.arrivalType === 'actual-arrival' &&
+                                                    temporaryDelivery?.dateOfArrival > new Date()))
+                                        }
                                         value={temporaryDelivery?.dateOfArrival ?? null}
                                         onValueChange={(date) =>
                                             setTemporaryDelivery({ ...temporaryDelivery, dateOfArrival: date ?? undefined })
@@ -393,19 +413,14 @@ export const DeliveryInformationModal = ({
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Autocomplete
+                                    <LabelledAutoComplete
                                         sx={{ margin: '0' }}
                                         id="partner"
                                         options={partners ?? []}
                                         getOptionLabel={(option) => option?.name ?? ''}
-                                        renderInput={(params) => (
-                                            <Input
-                                                {...params}
-                                                label="Partner*"
-                                                placeholder="Select a Partner"
-                                                error={formError && !temporaryDelivery?.partnerBpnl}
-                                            />
-                                        )}
+                                        label="Partner*"
+                                        placeholder="Select a Partner"
+                                        error={formError && !temporaryDelivery?.partnerBpnl}
                                         onChange={(_, value) =>
                                             setTemporaryDelivery({ ...temporaryDelivery, partnerBpnl: value?.bpnl ?? undefined })
                                         }
@@ -414,40 +429,42 @@ export const DeliveryInformationModal = ({
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Autocomplete
+                                    <LabelledAutoComplete
                                         id="partnerBpns"
                                         options={partners?.find((s) => s.bpnl === temporaryDelivery?.partnerBpnl)?.sites ?? []}
                                         getOptionLabel={(option) => option.name ?? ''}
                                         disabled={!temporaryDelivery?.partnerBpnl}
                                         isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
                                         onChange={(_, value) =>
-                                            setTemporaryDelivery({ ...temporaryDelivery, ...(direction === 'incoming' ? { originBpns: value?.bpns ?? undefined } : { destinationBpns: value?.bpns ?? undefined }) })
+                                            setTemporaryDelivery({
+                                                ...temporaryDelivery,
+                                                ...(direction === 'incoming'
+                                                    ? { originBpns: value?.bpns ?? undefined }
+                                                    : { destinationBpns: value?.bpns ?? undefined }),
+                                            })
                                         }
                                         value={
                                             partners
                                                 ?.find((s) => s.bpnl === temporaryDelivery?.partnerBpnl)
-                                                ?.sites.find((s) => (
-                                                    direction === 'incoming' 
-                                                    ? s.bpns === temporaryDelivery.originBpns
-                                                    : s.bpns === temporaryDelivery.destinationBpns) ?? ''
+                                                ?.sites.find(
+                                                    (s) =>
+                                                        (direction === 'incoming'
+                                                            ? s.bpns === temporaryDelivery.originBpns
+                                                            : s.bpns === temporaryDelivery.destinationBpns) ?? ''
                                                 ) ?? null
                                         }
-                                        renderInput={(params) => (
-                                            <Input
-                                                {...params}
-                                                label={`${direction === 'incoming' ? 'Origin' : 'Destination'}*`}
-                                                placeholder={`Select a ${direction === 'incoming' ? 'Origin' : 'Destination'} Site`}
-                                                error={formError && (
-                                                    direction === 'incoming' 
-                                                    ? !temporaryDelivery.originBpns
-                                                    : !temporaryDelivery.destinationBpns)}
-                                            />
-                                        )}
+                                        label={`${direction === 'incoming' ? 'Origin' : 'Destination'}*`}
+                                        placeholder={`Select a ${direction === 'incoming' ? 'Origin' : 'Destination'} Site`}
+                                        error={
+                                            formError &&
+                                            (direction === 'incoming' ? !temporaryDelivery.originBpns : !temporaryDelivery.destinationBpns)
+                                        }
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
+                                    <FormLabel>Quantity*</FormLabel>
                                     <Input
-                                        label="Quantity*"
+                                        hiddenLabel
                                         type="number"
                                         value={temporaryDelivery.quantity ?? ''}
                                         error={formError && !temporaryDelivery?.quantity}
@@ -460,7 +477,7 @@ export const DeliveryInformationModal = ({
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Autocomplete
+                                    <LabelledAutoComplete
                                         id="uom"
                                         value={
                                             temporaryDelivery.measurementUnit
@@ -472,22 +489,18 @@ export const DeliveryInformationModal = ({
                                         }
                                         options={UNITS_OF_MEASUREMENT}
                                         getOptionLabel={(option) => option?.value ?? ''}
-                                        renderInput={(params) => (
-                                            <Input
-                                                {...params}
-                                                label="UOM*"
-                                                placeholder="Select unit"
-                                                error={formError && !temporaryDelivery?.measurementUnit}
-                                            />
-                                        )}
+                                        label="UOM*"
+                                        placeholder="Select unit"
+                                        error={formError && !temporaryDelivery?.measurementUnit}
                                         onChange={(_, value) => setTemporaryDelivery((curr) => ({ ...curr, measurementUnit: value?.key }))}
                                         isOptionEqualToValue={(option, value) => option?.key === value?.key}
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
+                                    <FormLabel>Tracking Number</FormLabel>
                                     <Input
                                         id="tracking-number"
-                                        label="Tracking Number"
+                                        hiddenLabel
                                         type="text"
                                         value={temporaryDelivery?.trackingNumber ?? ''}
                                         onChange={(event) =>
@@ -496,31 +509,28 @@ export const DeliveryInformationModal = ({
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Autocomplete
+                                    <LabelledAutoComplete
                                         id="incoterm"
                                         value={
                                             temporaryDelivery.incoterm
                                                 ? INCOTERMS.find((i) => i.key === temporaryDelivery.incoterm) ?? null
                                                 : null
                                         }
-                                        options={INCOTERMS.filter((i) => direction === 'incoming' ? i.responsibility !== 'supplier' : i.responsibility !== 'customer')}
-                                        getOptionLabel={(option) => option?.value ?? ''}
-                                        renderInput={(params) => (
-                                            <Input
-                                                {...params}
-                                                label="Incoterm*"
-                                                placeholder="Select Incoterm"
-                                                error={formError && !temporaryDelivery?.incoterm}
-                                            />
+                                        options={INCOTERMS.filter((i) =>
+                                            direction === 'incoming' ? i.responsibility !== 'supplier' : i.responsibility !== 'customer'
                                         )}
+                                        getOptionLabel={(option) => option?.value ?? ''}
+                                        label="Incoterm*"
+                                        placeholder="Select Incoterm"
+                                        error={formError && !temporaryDelivery?.incoterm}
                                         onChange={(_, value) => setTemporaryDelivery((curr) => ({ ...curr, incoterm: value?.key }))}
                                         isOptionEqualToValue={(option, value) => option?.key === value?.key}
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
+                                    <FormLabel>Customer Order Number</FormLabel>
                                     <Input
                                         id="customer-order-number"
-                                        label="Customer Order Number"
                                         type="text"
                                         error={formError && !isValidOrderReference(temporaryDelivery)}
                                         value={temporaryDelivery?.customerOrderNumber ?? ''}
@@ -530,9 +540,9 @@ export const DeliveryInformationModal = ({
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
+                                    <FormLabel>Customer Order Position</FormLabel>
                                     <Input
                                         id="customer-order-position-number"
-                                        label="Customer Order Position"
                                         type="text"
                                         error={formError && !isValidOrderReference(temporaryDelivery)}
                                         value={temporaryDelivery?.customerOrderPositionNumber ?? ''}
@@ -545,11 +555,13 @@ export const DeliveryInformationModal = ({
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
+                                    <FormLabel>Supplier Order Number</FormLabel>
                                     <Input
                                         id="supplier-order-number"
-                                        label="Supplier Order Number"
                                         type="text"
-                                        error={formError && !!temporaryDelivery.supplierOrderNumber && !temporaryDelivery.customerOrderNumber}
+                                        error={
+                                            formError && !!temporaryDelivery.supplierOrderNumber && !temporaryDelivery.customerOrderNumber
+                                        }
                                         value={temporaryDelivery?.supplierOrderNumber ?? ''}
                                         onChange={(event) =>
                                             setTemporaryDelivery({ ...temporaryDelivery, supplierOrderNumber: event.target.value })
@@ -583,7 +595,7 @@ export const DeliveryInformationModal = ({
                         )}
                     </Grid>
                     <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="2rem">
-                        <Button variant="outlined" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={onClose}>
+                        <Button variant="outlined" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleClose}>
                             <Close></Close> Close
                         </Button>
                         {mode === 'create' && (

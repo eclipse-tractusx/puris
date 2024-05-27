@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EdrDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
@@ -41,8 +40,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils.expand;
-
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
  * The EDC connection is configured using the application.properties file.
@@ -50,7 +47,6 @@ import static org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUti
 @Service
 @Slf4j
 public class EdcAdapterService {
-
     private static final OkHttpClient CLIENT = new OkHttpClient();
     @Autowired
     private VariablesService variablesService;
@@ -66,9 +62,6 @@ public class EdcAdapterService {
     public EdcAdapterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
-
-
-
 
     /**
      * Util method for issuing a GET request to the management api of your control plane.
@@ -721,6 +714,9 @@ public class EdcAdapterService {
     private record SubmodelData(String assetId, String dspUrl, String href) {
     }
 
+    private record EdrDto(String authKey, String authCode, String endpoint){
+    }
+
     private SubmodelData fetchSubmodelData(MaterialPartnerRelation mpr, String semanticId, String manufacturerPartId, String manufacturerId) {
         JsonNode submodelDescriptors = getAasSubmodelDescriptors(manufacturerPartId, manufacturerId, mpr, 1);
         for (var submodelDescriptor : submodelDescriptors) {
@@ -917,10 +913,7 @@ public class EdcAdapterService {
     }
 
     /**
-     * terminate the transfer with reason "Transfer done."
-     * <p>
-     * Edr in {@link EndpointDataReferenceService} is not removed because it is removed automatically by a job after
-     * time period x.
+     * Terminate the transfer with reason "Transfer done.
      *
      * @param transferProcessId to terminate
      */
@@ -987,11 +980,21 @@ public class EdcAdapterService {
             }
             JsonNode targetCatalogEntry = null;
             if (!catalogArray.isEmpty()) {
-                log.debug("Ambiguous catalog entries found! Will take the first with supported policy \n" + catalogArray.toPrettyString());
+                if (catalogArray.size() > 1) {
+                    log.debug("Muliple contract offers found! Will take the first with supported policy \n" + catalogArray.toPrettyString());
+                }
+
                 for (JsonNode entry : catalogArray) {
                     if (testContractPolicyConstraints(entry)) {
                         targetCatalogEntry = entry;
                         break;
+                    } else {
+                        log.info(
+                            "Contract offer did not match Framework Policy {} and Contract Policy {}:\n{}",
+                            variablesService.getPurisFrameworkAgreementWithVersion(),
+                            variablesService.getPurisPurposeWithVersion(),
+                            entry.toPrettyString()
+                        );
                     }
                 }
             }
@@ -1051,14 +1054,12 @@ public class EdcAdapterService {
      * @param catalogEntry the catalog item containing the desired api asset
      * @return true, if the policy matches yours, otherwise false
      */
-    private boolean testContractPolicyConstraints(JsonNode catalogEntry) {
-        catalogEntry = expand(catalogEntry);
-        log.info("Expanded catalog entry for policy constraint test " + catalogEntry.toPrettyString());
+    public boolean testContractPolicyConstraints(JsonNode catalogEntry) {
         log.debug("Testing constraints in the following catalogEntry: {}", catalogEntry.toPrettyString());
         var constraint = Optional.ofNullable(catalogEntry.get("odrl:hasPolicy"))
-            .map(policy -> policy.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "permission"))
-            .map(permission -> permission.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "constraint"))
-            .map(con -> con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "and"));
+            .map(policy -> policy.get("odrl:permission"))
+            .map(permission -> permission.get("odrl:constraint"))
+            .map(con -> con.get("odrl:and"));
         if (constraint.isEmpty()) {
             log.debug("Constraint mismatch: we expect to have a constraint in permission node.");
             return false;
@@ -1070,7 +1071,7 @@ public class EdcAdapterService {
             Optional<JsonNode> purposeConstraint = Optional.empty();
 
             for (JsonNode con : constraint.get()) { // Iterate over array elements and find the nodes
-                JsonNode leftOperandNode = con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "leftOperand");
+                JsonNode leftOperandNode = con.get("odrl:leftOperand");
                 if (leftOperandNode != null && (EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "FrameworkAgreement").equals(leftOperandNode.asText())) {
                     frameworkAgreementConstraint = Optional.of(con);
                 }
@@ -1079,28 +1080,32 @@ public class EdcAdapterService {
                 }
             }
 
-            if (frameworkAgreementConstraint.isPresent()) {
-                result = result && testSingleConstraint(
-                    frameworkAgreementConstraint,
-                    EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "FrameworkAgreement",
-                    EdcRequestBodyBuilder.ODRL_NAMESPACE + "eq",
-                    variablesService.getPurisFrameworkAgreementWithVersion()
+            if (frameworkAgreementConstraint.isEmpty() || purposeConstraint.isEmpty()) {
+                log.debug(
+                    "Not all constraints have been found: FrameworkAgreement constraint found: {}, " +
+                        "UsagePurpose constraint found: {}",
+                    frameworkAgreementConstraint.isPresent(),
+                    purposeConstraint.isPresent()
                 );
-            } else {
-                log.debug("FrameworkAgreement Policy not found.");
+                return false;
             }
 
-            if (purposeConstraint.isPresent()) {
-                result = result && testSingleConstraint(
-                    purposeConstraint,
-                    EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "UsagePurpose",
-                    EdcRequestBodyBuilder.ODRL_NAMESPACE + "eq",
-                    variablesService.getPurisPuposeWithVersion()
-                );
-            } else {
-                log.debug("Usage Purpose Policy not found.");
-            }
+            result = result && testSingleConstraint(
+                frameworkAgreementConstraint,
+                EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "FrameworkAgreement",
+                "odrl:eq",
+                variablesService.getPurisFrameworkAgreementWithVersion()
+            );
+
+            result = result && testSingleConstraint(
+                purposeConstraint,
+                EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "UsagePurpose",
+                "odrl:eq",
+                variablesService.getPurisPurposeWithVersion()
+            );
+
         } else {
+            System.out.println("Only one constraint ");
             log.info(
                 "2 Constraints (Framework Agreement, Purpose) are expected but got {} constraints.",
                 constraint.get().size()
@@ -1117,14 +1122,14 @@ public class EdcAdapterService {
 
         JsonNode con = constraintToTest.get();
 
-        JsonNode leftOperandNode = con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "leftOperand");
+        JsonNode leftOperandNode = con.get("odrl:leftOperand");
         if (leftOperandNode == null || !targetLeftOperand.equals(leftOperandNode.asText())) {
             String leftOperand = leftOperandNode == null ? "null" : leftOperandNode.asText();
             log.debug("Left operand '{}' does not equal expected value '{}'.", leftOperand, targetLeftOperand);
             return false;
         }
 
-        JsonNode operatorNode = con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "operator");
+        JsonNode operatorNode = con.get("odrl:operator");
         operatorNode = operatorNode == null ? null : operatorNode.get("@id");
         if (operatorNode == null || !targetOperator.equals(operatorNode.asText())) {
             String operator = operatorNode == null ? "null" : operatorNode.asText();
@@ -1132,7 +1137,7 @@ public class EdcAdapterService {
             return false;
         }
 
-        JsonNode rightOperandNode = con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "rightOperand");
+        JsonNode rightOperandNode = con.get("odrl:rightOperand");
         if (rightOperandNode == null || !targetRightOperand.equals(rightOperandNode.asText())) {
             String rightOperand = rightOperandNode == null ? "null" : rightOperandNode.asText();
             log.debug("Right operand '{}' odes not equal expected value '{}'.", rightOperand, targetRightOperand);

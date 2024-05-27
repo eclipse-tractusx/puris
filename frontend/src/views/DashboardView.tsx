@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
 import { Tab, TabPanel, Tabs } from '@catena-x/portal-shared-components';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import { Dashboard } from '@features/dashboard/components/Dashboard';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { useState } from 'react';
 
 export const DashboardView = () => {
@@ -30,7 +30,7 @@ export const DashboardView = () => {
     return (
         <Stack spacing={2} alignItems='center' width='100%' height='100%'>
             <ConfidentialBanner />
-            <Typography variant='h4' component='h1' fontWeight={600}>Dashboard</Typography>
+            <h1 className="text-3xl font-semibold text-gray-700 mb-10">Dashboard</h1>
             <Tabs value={selectedTab} onChange={(_, value: number) => setSelectedTab(value)}>
                 <Tab label="Customer"></Tab>
                 <Tab label="Supplier"></Tab>

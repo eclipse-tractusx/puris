@@ -19,76 +19,32 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import Card from '@mui/material/Card';
-
-import {useTransfers} from '@hooks/edc/useTransfers';
-import {Transfer} from '@models/types/edc/transfer';
-
-type TransferCardProps = {
-    transfer: Transfer;
-};
-
-const TransferCard = ({transfer}: TransferCardProps) => {
-    return (
-        <Card className="p-5">
-            <h2 className="text-xl font-semibold mb-3">Transfer</h2>
-            <div className="flex w-full flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                    <div className="flex gap-3">
-                        <span className="w-[30ch] font-semibold"> Transfer Id: </span>
-                        {transfer['@id']}
-                    </div>
-                    <div className="flex gap-3">
-                        <span className="w-[30ch] font-semibold"> Correlation Id: </span>
-                        {transfer['correlationId']}
-                    </div>
-                    <div className="flex gap-3">
-                        <span className="w-[30ch] font-semibold"> State: </span>
-                        {transfer['state']}
-                    </div>
-                    <div className="flex gap-3">
-                        <span className="w-[30ch] font-semibold"> State Timestamp: </span>
-                        {new Date(transfer['stateTimestamp']).toLocaleString()}
-                    </div>
-                    <div className="flex gap-3">
-                        <span className="w-[30ch] font-semibold"> Type: </span>
-                        {transfer['type']}
-                    </div>
-                    <div className="flex gap-3">
-                        <span className="w-[30ch] font-semibold"> Asset Id: </span>
-                        {transfer['assetId']}
-                    </div>
-                    <div className="flex gap-3">
-                        <span className="w-[30ch] font-semibold"> Contract Id: </span>
-                        <span className="break-all w-[60ch]">{transfer['contractId']}</span>
-                    </div>
-                    <div className="flex gap-3">
-                        <span className="w-[30ch] font-semibold"> Connector Id: </span>
-                        {transfer['connectorId']}
-                    </div>
-                </div>
-            </div>
-        </Card>
-    );
-};
+import { useTransfers } from '@hooks/edc/useTransfers';
+import { Table } from '@catena-x/portal-shared-components';
+import { Box } from '@mui/material';
 
 export const TransferView = () => {
-    const {transfers} = useTransfers();
+    const { transfers } = useTransfers();
     return (
         <div className="flex flex-col items-center w-full h-full">
             <h1 className="text-3xl font-semibold text-gray-700 mb-10">Transfers</h1>
-            <ul className="flex flex-col gap-3 w-[100ch]">
-                {transfers && transfers.length > 0 ? (
-                    transfers.map((transfer) => (
-                        <li key={transfer["@id"]}>
-                            <TransferCard transfer={transfer}/>
-                        </li>
-                    ))
-                ) : (
-                    <p className='text-center'>No transfers found. This Page will be updated as soon as there are
-                        transfers.</p>
-                )}
-            </ul>
+            <Box width="100%">
+                <Table
+                    title="Transfer history"
+                    columns={[
+                        { headerName: 'Transfer Id', field: '@id', width: 200 },
+                        { headerName: 'Correlation Id', field: 'correlationId', width: 200 },
+                        { headerName: 'State', field: 'state', width: 120 },
+                        { headerName: 'Type', field: 'type', width: 120 },
+                        { headerName: 'Asset Id', field: 'assetId', width: 200 },
+                        { headerName: 'Contract Id', field: 'contractId', width: 200 },
+                        { headerName: 'Connector Id', field: 'connectorId', width: 200 },
+                    ]}
+                    rows={transfers ?? []}
+                    getRowId={(row) => row['@id']}
+                    noRowsMsg='No transfers found'
+                />
+            </Box>
         </div>
     );
 };

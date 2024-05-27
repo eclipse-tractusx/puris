@@ -133,8 +133,6 @@ spec:
                 {{- else }}
               value: "http://{{ $baseUrl }}/"
                 {{- end}}
-            - name: PURIS_EDR_DELETIONTIMER
-              value: "{{ .Values.backend.puris.edr.deletiontimer }}"
             - name: PURIS_ITEMSTOCKSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.itemstocksubmodel.apiassetid }}"
             - name: PURIS_PRODUCTIONSUBMODEL_APIASSETID

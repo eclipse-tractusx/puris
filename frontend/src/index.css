@@ -56,6 +56,10 @@ body {
     max-width: unset !important;
 }
 
+.MuiFormControl-root > .MuiBox-root {
+    display: none;
+}
+
 input[type='time'] {
     box-sizing: border-box;
     padding: 0.875rem;

@@ -76,6 +76,14 @@ keycloak.onTokenExpired = () => {
         });
 };
 
+const onAuthSuccess = (onAuth: () => void) => {
+    keycloak.onAuthSuccess = onAuth;
+}
+
+const onLogout = (onLogout: () => void) => {
+    keycloak.onAuthLogout = onLogout;
+}
+
 const isAuthenticated = () => {
     if (!isEnabled) {
         return true;
@@ -90,6 +98,7 @@ const userHasRole = (requiredRoles: Role[]) => {
     // client roles
     const rolesPerClient = keycloak.tokenParsed?.resource_access ?? {};
     const userRoles = rolesPerClient[config.auth.IDP_CLIENT_ID]?.roles ?? [];
+    console.log('User roles:', userRoles);
 
     return requiredRoles.some((role) => userRoles.includes(role));
 };
@@ -118,6 +127,8 @@ const AuthenticationService = {
     logout,
     isAuthenticated,
     userHasRole,
+    onAuthSuccess,
+    onLogout,
 };
 
 export default AuthenticationService;

@@ -228,8 +228,7 @@ Per Negotiation the following information is listed:
 - Partner's EDC DSP endpoint
 - TimeStamp when the state of the negotiation has been set
 
-_**Note**: Per data request per partner, there are two Negotiations as one contracts the partner's request asset and the
-partner contracts the user's response asset._
+_**Note**: Per data request per partner, the application looks up the data of interest in the Digital Twin Registry of a partner and then pulls the data._
 
 ## Transfers
 

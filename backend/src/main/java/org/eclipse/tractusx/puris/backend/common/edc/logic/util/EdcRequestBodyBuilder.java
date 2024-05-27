@@ -207,7 +207,7 @@ public class EdcRequestBodyBuilder {
         constraints.add(new PolicyConstraint(
             CX_POLICY_NAMESPACE + "UsagePurpose",
             "eq",
-            variablesService.getPurisPuposeWithVersion()
+            variablesService.getPurisPurposeWithVersion()
         ));
 
         JsonNode body = buildPolicy(
@@ -372,8 +372,12 @@ public class EdcRequestBodyBuilder {
     public JsonNode buildTransfersRequestBody() {
         var body = getEdcContextObject();
         body.put("@type", "QuerySpec");
+        /* 
+        to be readded with edc version 0.7.2
+        
         body.put("sortOrder", "DESC");
-        body.put("sortField", "stateTimestamp");
+        body.put("sortField", "stateTimestamp"); 
+        */
         return body;
     }
 

@@ -437,9 +437,6 @@ backend:
       name: "cx.puris.base"
       # -- The version of the purpose to use for submodel contracts. NEEDS TO BE PUT AS "STRING"!
       version: "1"
-    edr:
-      # -- Number of minutes before received authentication data of a consumer pull is removed from memory
-      deletiontimer: 2
     dtr:
       # --Endpoint for DTR
       url: http://localhost:4243
