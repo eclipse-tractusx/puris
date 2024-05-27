@@ -24,8 +24,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.eclipse.edc.jsonld.TitaniumJsonLd;
-import org.eclipse.edc.spi.monitor.ConsoleMonitor;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.dto.EdrDto;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
@@ -42,6 +40,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
+
+import static org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils.expand;
+
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
  * The EDC connection is configured using the application.properties file.
@@ -49,13 +50,6 @@ import java.util.regex.Pattern;
 @Service
 @Slf4j
 public class EdcAdapterService {
-
-
-    private static TitaniumJsonLd titaniumJsonLd = new TitaniumJsonLd(new ConsoleMonitor());
-
-    static {
-
-    }
 
     private static final OkHttpClient CLIENT = new OkHttpClient();
     @Autowired
@@ -1058,11 +1052,13 @@ public class EdcAdapterService {
      * @return true, if the policy matches yours, otherwise false
      */
     private boolean testContractPolicyConstraints(JsonNode catalogEntry) {
+        catalogEntry = expand(catalogEntry);
+        log.info("Expanded catalog entry for policy constraint test " + catalogEntry.toPrettyString());
         log.debug("Testing constraints in the following catalogEntry: {}", catalogEntry.toPrettyString());
         var constraint = Optional.ofNullable(catalogEntry.get("odrl:hasPolicy"))
-            .map(policy -> policy.get("odrl:permission"))
-            .map(permission -> permission.get("odrl:constraint"))
-            .map(con -> con.get("odrl:and"));
+            .map(policy -> policy.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "permission"))
+            .map(permission -> permission.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "constraint"))
+            .map(con -> con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "and"));
         if (constraint.isEmpty()) {
             log.debug("Constraint mismatch: we expect to have a constraint in permission node.");
             return false;
@@ -1074,7 +1070,7 @@ public class EdcAdapterService {
             Optional<JsonNode> purposeConstraint = Optional.empty();
 
             for (JsonNode con : constraint.get()) { // Iterate over array elements and find the nodes
-                JsonNode leftOperandNode = con.get("odrl:leftOperand");
+                JsonNode leftOperandNode = con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "leftOperand");
                 if (leftOperandNode != null && (EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "FrameworkAgreement").equals(leftOperandNode.asText())) {
                     frameworkAgreementConstraint = Optional.of(con);
                 }
@@ -1087,7 +1083,7 @@ public class EdcAdapterService {
                 result = result && testSingleConstraint(
                     frameworkAgreementConstraint,
                     EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "FrameworkAgreement",
-                    "odrl:eq",
+                    EdcRequestBodyBuilder.ODRL_NAMESPACE + "eq",
                     variablesService.getPurisFrameworkAgreementWithVersion()
                 );
             } else {
@@ -1098,7 +1094,7 @@ public class EdcAdapterService {
                 result = result && testSingleConstraint(
                     purposeConstraint,
                     EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "UsagePurpose",
-                    "odrl:eq",
+                    EdcRequestBodyBuilder.ODRL_NAMESPACE + "eq",
                     variablesService.getPurisPuposeWithVersion()
                 );
             } else {
@@ -1121,14 +1117,14 @@ public class EdcAdapterService {
 
         JsonNode con = constraintToTest.get();
 
-        JsonNode leftOperandNode = con.get("odrl:leftOperand");
+        JsonNode leftOperandNode = con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "leftOperand");
         if (leftOperandNode == null || !targetLeftOperand.equals(leftOperandNode.asText())) {
             String leftOperand = leftOperandNode == null ? "null" : leftOperandNode.asText();
             log.debug("Left operand '{}' does not equal expected value '{}'.", leftOperand, targetLeftOperand);
             return false;
         }
 
-        JsonNode operatorNode = con.get("odrl:operator");
+        JsonNode operatorNode = con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "operator");
         operatorNode = operatorNode == null ? null : operatorNode.get("@id");
         if (operatorNode == null || !targetOperator.equals(operatorNode.asText())) {
             String operator = operatorNode == null ? "null" : operatorNode.asText();
@@ -1136,7 +1132,7 @@ public class EdcAdapterService {
             return false;
         }
 
-        JsonNode rightOperandNode = con.get("odrl:rightOperand");
+        JsonNode rightOperandNode = con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "rightOperand");
         if (rightOperandNode == null || !targetRightOperand.equals(rightOperandNode.asText())) {
             String rightOperand = rightOperandNode == null ? "null" : rightOperandNode.asText();
             log.debug("Right operand '{}' odes not equal expected value '{}'.", rightOperand, targetRightOperand);

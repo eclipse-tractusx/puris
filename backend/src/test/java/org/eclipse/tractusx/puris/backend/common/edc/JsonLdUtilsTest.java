@@ -1,233 +1,67 @@
+/*
+ * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.eclipse.tractusx.puris.backend.common.edc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
-import org.eclipse.edc.jsonld.TitaniumJsonLd;
-import org.eclipse.edc.jsonld.spi.JsonLdKeywords;
-import org.eclipse.edc.spi.monitor.ConsoleMonitor;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcContractMappingService;
-import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
-import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
-import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
-import org.junit.jupiter.api.Test;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mock;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockitoAnnotations;
 
-import java.io.File;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class EdcAdapterServiceTest {
+@Slf4j
+public class JsonLdUtilsTest {
 
-    @Mock
-    private VariablesService variablesService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
-    @Mock
-    private EdcRequestBodyBuilder edcRequestBodyBuilder;
-    @Mock
-    private EdcContractMappingService edcContractMappingService;
-    private final Pattern urlPattern = PatternStore.URL_PATTERN;
-    private static TitaniumJsonLd titaniumJsonLd = new TitaniumJsonLd(new ConsoleMonitor());
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
-    private void allContexts() {
-        titaniumJsonLd = new TitaniumJsonLd(new ConsoleMonitor());
-        titaniumJsonLd.registerContext(EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT);
-        titaniumJsonLd.registerContext("https://w3id.org/tractusx/policy/v1.0.0");
-        titaniumJsonLd.registerContext("https://w3id.org/tractusx/edc/v0.0.1");
-
-        titaniumJsonLd.registerNamespace(JsonLdKeywords.VOCAB, EdcRequestBodyBuilder.EDC_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("aas-semantics", EdcRequestBodyBuilder.AAS_SEMANTICS_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("cx-common", EdcRequestBodyBuilder.CX_COMMON_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("cx-policy", EdcRequestBodyBuilder.CX_POLICY_NAMESPACE);
-
-//        titaniumJsonLd.registerNamespace("odrl", EdcRequestBodyBuilder.ODRL_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("cx-taxo", EdcRequestBodyBuilder.CX_TAXO_NAMESPACE);
-
-//        titaniumJsonLd.registerNamespace("tx-auth", EdcRequestBodyBuilder.TX_AUTH_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("tx", EdcRequestBodyBuilder.TX_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("dcat", EdcRequestBodyBuilder.DCAT_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("dspace", EdcRequestBodyBuilder.DSPACE_NAMESPACE);
-
-        String PREFIX = "json-ld" + File.separator;
-        Map<String, String> FILES = Map.of(
-            "https://w3id.org/tractusx/edc/v0.0.1", PREFIX + "tx-v1.jsonld",
-            "https://w3id.org/tractusx/policy/v1.0.0", PREFIX + "cx-policy-v1.jsonld",
-//            EdcRequestBodyBuilder.TX_AUTH_NAMESPACE, PREFIX + "tx-auth-v1.jsonld",
-            "https://w3id.org/edc/v0.0.1", PREFIX + "edc-v1.jsonld",
-            EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT, PREFIX + "odrl.jsonld"
-
-//            EdcRequestBodyBuilder.DSPACE_NAMESPACE, PREFIX + "dspace.jsonld"
-        );
-
-        for (var e : FILES.entrySet()) {
-            var file = mapToFile(e);
-            titaniumJsonLd.registerCachedDocument(e.getKey(), file.getValue().toURI());
-        }
-    }
-
-    private void smallContexts() {
-            titaniumJsonLd = new TitaniumJsonLd(new ConsoleMonitor());
-
-            titaniumJsonLd.registerContext(EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT);
-            titaniumJsonLd.registerContext("https://w3id.org/tractusx/policy/v1.0.0");
-            titaniumJsonLd.registerNamespace(JsonLdKeywords.VOCAB, EdcRequestBodyBuilder.EDC_NAMESPACE);
-            String PREFIX = "json-ld" + File.separator;
-            Map<String, String> FILES = Map.of(
-                "https://w3id.org/tractusx/policy/v1.0.0", PREFIX + "cx-policy-v1.jsonld",
-                EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT, PREFIX + "odrl.jsonld"
-            );
-
-            for (var e : FILES.entrySet()) {
-                var file = mapToFile(e);
-                titaniumJsonLd.registerCachedDocument(e.getKey(), file.getValue().toURI());
-        }
-    }
-
-    private void allContextsBackup() {
-        titaniumJsonLd = new TitaniumJsonLd(new ConsoleMonitor());
-        titaniumJsonLd.registerContext(EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT);
-        titaniumJsonLd.registerContext("https://w3id.org/tractusx/policy/v1.0.0");
-
-        titaniumJsonLd.registerNamespace(JsonLdKeywords.VOCAB, EdcRequestBodyBuilder.EDC_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("aas-semantics", EdcRequestBodyBuilder.AAS_SEMANTICS_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("cx-common", EdcRequestBodyBuilder.CX_COMMON_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("cx-policy", EdcRequestBodyBuilder.CX_POLICY_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("odrl", EdcRequestBodyBuilder.ODRL_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("cx-taxo", EdcRequestBodyBuilder.CX_TAXO_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("tx-auth", EdcRequestBodyBuilder.TX_AUTH_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("tx", EdcRequestBodyBuilder.TX_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("dcat", EdcRequestBodyBuilder.DCAT_NAMESPACE);
-
-        titaniumJsonLd.registerNamespace("dspace", EdcRequestBodyBuilder.DSPACE_NAMESPACE);
-
-        String PREFIX = "json-ld" + File.separator;
-        Map<String, String> FILES = Map.of(
-            EdcRequestBodyBuilder.TX_NAMESPACE, PREFIX + "tx-v1.jsonld",
-            "https://w3id.org/tractusx/policy/v1.0.0", PREFIX + "cx-policy-v1.jsonld",
-            EdcRequestBodyBuilder.TX_AUTH_NAMESPACE, PREFIX + "tx-auth-v1.jsonld",
-            EdcRequestBodyBuilder.EDC_NAMESPACE, PREFIX + "edc-v1.jsonld",
-            EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT, PREFIX + "odrl.jsonld",
-
-            EdcRequestBodyBuilder.DSPACE_NAMESPACE, PREFIX + "dspace.jsonld"
-        );
-
-        for (var e : FILES.entrySet()) {
-            var file = mapToFile(e);
-            titaniumJsonLd.registerCachedDocument(e.getKey(), file.getValue().toURI());
-        }
-    }
-
-    private Map.Entry<String, File> mapToFile(Map.Entry<String, String> fileEntry) {
-        return Map.entry(fileEntry.getKey(), getResourceFile(fileEntry.getValue()));
-    }
-
-    private File getResourceFile(String name) {
-        try (var stream = getClass().getClassLoader().getResourceAsStream(name)) {
-            if (stream == null) {
-                return null;
-            }
-            var filename = Path.of(name).getFileName().toString();
-            var parts = filename.split("\\.");
-            var tempFile = Files.createTempFile(parts[0], "." + parts[1]);
-            Files.copy(stream, tempFile, REPLACE_EXISTING);
-            return tempFile.toFile();
-        } catch (Exception e) {
-            System.out.println("Failure" + e);
-            return null;
-        }
-    }
-
-    public static JsonObject convertObjectNodeToJsonObject(ObjectNode objectNode) {
-        try {
-            // Convert ObjectNode to JSON String
-            ObjectMapper mapper = new ObjectMapper();
-            String jsonString = mapper.writeValueAsString(objectNode);
-
-            // Create JsonReader from JSON String
-            JsonReader jsonReader = Json.createReader(new StringReader(jsonString));
-
-            // Get JsonObject from JsonReader
-            JsonObject jsonObject = jsonReader.readObject();
-
-            // Close the JsonReader
-            jsonReader.close();
-
-            return jsonObject;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-
-
-    @Test
-    public void expandCatalog() throws Exception{
+    @ParameterizedTest
+    @ValueSource(strings = {test1, test2})
+    public void testUtilClass(String input) throws Exception {
         // GIVEN
-        var catalogJson = objectMapper.readTree(test2);
+        var catalogJson = objectMapper.readTree(input);
+        log.info("Input:\n" + catalogJson.toPrettyString());
 
-        System.out.println("Input data \n" + catalogJson.toPrettyString());
-
-        var jakartaJson = convertObjectNodeToJsonObject((ObjectNode) catalogJson);
-
-        smallContexts();
-
-        System.out.println("Expanded: ");
-        var x= titaniumJsonLd.expand(jakartaJson).getContent();
-
-        System.out.println(objectMapper.readTree(x.toString()).toPrettyString());
-
-        var y  = titaniumJsonLd.compact(x).getContent();
-
-        System.out.println("###\n".repeat(2));
-
-        System.out.println("Compacted: ");
-        System.out.println(objectMapper.readTree(y.toString()).toPrettyString());
-
-        var z = titaniumJsonLd.expand(y).getContent();
-
-
-        System.out.println("Expanded again: \n" + objectMapper.readTree(z.toString()).toPrettyString());
-
-        System.out.println(x.toString().equals(z.toString()));
-        assertEquals(x, z);
-
-        // WHEN
+        //WHEN
+        var expanded = JsonLdUtils.expand(catalogJson);
+        log.info("Expanded first time:\n"+ expanded.toPrettyString());
+        var compacted = JsonLdUtils.compact(expanded);
+        log.info("Compacted:\n" + compacted.toPrettyString());
+        var expandedAgain = JsonLdUtils.expand(compacted);
+        log.info("Expanded again:\n" + expandedAgain.toPrettyString());
 
         // THEN
+        assertEquals(expandedAgain, expanded);
     }
 
-    static String test1 = "{\n" +
+
+    final static String test1 = "{\n" +
         "  \"@id\" : \"473e5307-c0c5-491f-96b4-68b9e25d4699\",\n" +
         "  \"@type\" : \"dcat:Catalog\",\n" +
         "  \"dspace:participantId\" : \"BPNL1234567890ZZ\",\n" +
@@ -322,7 +156,7 @@ public class EdcAdapterServiceTest {
         "  }\n" +
         "}";
 
-    static String test2 = "\n" +
+    final static String test2 = "\n" +
         "{\n" +
         "\n" +
         "  \"@id\" : \"f26d8d04-5ee5-4478-8de7-2e347b1f6685\",\n" +
