@@ -12,7 +12,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcContractMa
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EdcAdapterServiceTest {
 
@@ -91,19 +92,7 @@ public class EdcAdapterServiceTest {
 
             titaniumJsonLd.registerContext(EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT);
             titaniumJsonLd.registerContext("https://w3id.org/tractusx/policy/v1.0.0");
-
             titaniumJsonLd.registerNamespace(JsonLdKeywords.VOCAB, EdcRequestBodyBuilder.EDC_NAMESPACE);
-
-//            titaniumJsonLd.registerNamespace("aas-semantics", EdcRequestBodyBuilder.AAS_SEMANTICS_NAMESPACE);
-//
-//            titaniumJsonLd.registerNamespace("cx-common", EdcRequestBodyBuilder.CX_COMMON_NAMESPACE);
-//
-//            titaniumJsonLd.registerNamespace("cx-taxo", EdcRequestBodyBuilder.CX_TAXO_NAMESPACE);
-//
-//            titaniumJsonLd.registerNamespace("dcat", EdcRequestBodyBuilder.DCAT_NAMESPACE);
-//
-//            titaniumJsonLd.registerNamespace("dspace", EdcRequestBodyBuilder.DSPACE_NAMESPACE);
-
             String PREFIX = "json-ld" + File.separator;
             Map<String, String> FILES = Map.of(
                 "https://w3id.org/tractusx/policy/v1.0.0", PREFIX + "cx-policy-v1.jsonld",
@@ -205,21 +194,33 @@ public class EdcAdapterServiceTest {
     @Test
     public void expandCatalog() throws Exception{
         // GIVEN
-        var catalogJson = objectMapper.readTree(test1);
+        var catalogJson = objectMapper.readTree(test2);
+
+        System.out.println("Input data \n" + catalogJson.toPrettyString());
 
         var jakartaJson = convertObjectNodeToJsonObject((ObjectNode) catalogJson);
 
         smallContexts();
 
+        System.out.println("Expanded: ");
         var x= titaniumJsonLd.expand(jakartaJson).getContent();
 
-        System.out.println(x);
+        System.out.println(objectMapper.readTree(x.toString()).toPrettyString());
 
         var y  = titaniumJsonLd.compact(x).getContent();
 
         System.out.println("###\n".repeat(2));
 
-        System.out.println(y);
+        System.out.println("Compacted: ");
+        System.out.println(objectMapper.readTree(y.toString()).toPrettyString());
+
+        var z = titaniumJsonLd.expand(y).getContent();
+
+
+        System.out.println("Expanded again: \n" + objectMapper.readTree(z.toString()).toPrettyString());
+
+        System.out.println(x.toString().equals(z.toString()));
+        assertEquals(x, z);
 
         // WHEN
 
