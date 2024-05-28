@@ -56,6 +56,14 @@ public class VariablesService {
      */
     private String edrEndpoint;
 
+
+    /**
+     * The endpoint of your ERP adapter
+     * (currently just mock!)
+     */
+//    @Value("${puris.erpadapterurl")
+    private String erpAdapterUrl ="http:foo.com/my_erp_endpoint";
+
     @Value("${puris.baseurl}" + "catena/item-stock/request")
     /**
      * The url under which this application's request endpoint can

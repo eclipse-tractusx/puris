@@ -83,7 +83,20 @@ public class SecurityConfig {
             .authorizeHttpRequests(
                 // any request in spring context
                 (authorizeHttpRequests) -> authorizeHttpRequests
-                    .requestMatchers("/stockView/**", "/partners/**", "/materials/**", "/materialpartnerrelations/**", "/item-stock/**", "/production/**", "/delivery/**", "/demand/**", "/planned-production/**", "/material-demand/**", "/delivery-information/**", "/edc/**", "/parttypeinformation/**")
+                    .requestMatchers("/stockView/**",
+                        "/partners/**",
+                        "/materials/**",
+                        "/materialpartnerrelations/**", 
+                        "/item-stock/**",
+                        "/production/**",
+                        "/delivery/**",
+                        "/demand/**",
+                        "/planned-production/**",
+                        "/material-demand/**",
+                        "/delivery-information/**",
+                        "/edc/**",
+                        "/erp_adapter/**",
+                        "/parttypeinformation/**")
                     .authenticated()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/health/**").permitAll()
                     .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
