@@ -134,19 +134,7 @@
             <artifactId>json-ld-spi</artifactId>
             <version>0.7.0</version>
         </dependency>
-
-
-
-
-
-
-
-
-
-
-
     </dependencies>
-
     <pluginRepositories>
         <pluginRepository>
             <id>dash-licenses</id>
@@ -217,6 +205,8 @@
                 <directory>${project.basedir}/src/main/resources</directory>
                 <includes>
                     <include>application.properties</include>
+                    <!-- add json-ld data-->
+                    <include>json-ld/*</include>
                 </includes>
                 <targetPath>BOOT-INF/classes/</targetPath>
             </resource>

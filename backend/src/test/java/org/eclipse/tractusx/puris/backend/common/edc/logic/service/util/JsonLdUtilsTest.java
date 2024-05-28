@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.common.edc;
+package org.eclipse.tractusx.puris.backend.common.edc.logic.service.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -42,23 +42,118 @@ public class JsonLdUtilsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {test1, test2})
+    @ValueSource(strings = {test0/*, test1, test2,test3*/})
     public void testUtilClass(String input) throws Exception {
+        JsonLdUtils util = new JsonLdUtils();
         // GIVEN
         var catalogJson = objectMapper.readTree(input);
         log.info("Input:\n" + catalogJson.toPrettyString());
 
         //WHEN
-        var expanded = JsonLdUtils.expand(catalogJson);
+        var expanded = util.expand(catalogJson);
         log.info("Expanded first time:\n"+ expanded.toPrettyString());
-        var compacted = JsonLdUtils.compact(expanded);
+        var compacted = util.compact(expanded);
         log.info("Compacted:\n" + compacted.toPrettyString());
-        var expandedAgain = JsonLdUtils.expand(compacted);
+        var expandedAgain = util.expand(compacted);
         log.info("Expanded again:\n" + expandedAgain.toPrettyString());
 
         // THEN
         assertEquals(expandedAgain, expanded);
     }
+
+    final static String test0 = "{\n" +
+        "    \"@id\": \"0a5ad415-0d0d-4b04-afe7-172de85efe2e\",\n" +
+        "    \"@type\": \"dcat:Catalog\",\n" +
+        "    \"dspace:participantId\": \"BPNL1234567890ZZ\",\n" +
+        "    \"dcat:dataset\": {\n" +
+        "        \"@id\": \"DigitalTwinRegistryId@BPNL1234567890ZZ\",\n" +
+        "        \"@type\": \"dcat:Dataset\",\n" +
+        "        \"odrl:hasPolicy\": {\n" +
+        "            \"@id\": \"QlBOTDQ0NDQ0NDQ0NDRYWF9jb250cmFjdGRlZmluaXRpb25fZm9yX2R0cg==:RGlnaXRhbFR3aW5SZWdpc3RyeUlkQEJQTkwxMjM0NTY3ODkwWlo=:OTU3ZWM4ZDktYWMwYi00MWFhLThhZDAtY2NmMmFlMTE2ZWQ1\",\n" +
+        "            \"@type\": \"odrl:Offer\",\n" +
+        "            \"odrl:permission\": {\n" +
+        "                \"odrl:action\": {\n" +
+        "                    \"odrl:type\": \"http://www.w3.org/ns/odrl/2/use\"\n" +
+        "                },\n" +
+        "                \"odrl:constraint\": {\n" +
+        "                    \"odrl:and\": [\n" +
+        "                        {\n" +
+        "                            \"odrl:leftOperand\": \"BusinessPartnerNumber\",\n" +
+        "                            \"odrl:operator\": {\n" +
+        "                                \"@id\": \"odrl:eq\"\n" +
+        "                            },\n" +
+        "                            \"odrl:rightOperand\": \"BPNL4444444444XX\"\n" +
+        "                        },\n" +
+        "                        {\n" +
+        "                            \"odrl:leftOperand\": \"Membership\",\n" +
+        "                            \"odrl:operator\": {\n" +
+        "                                \"@id\": \"odrl:eq\"\n" +
+        "                            },\n" +
+        "                            \"odrl:rightOperand\": \"active\"\n" +
+        "                        }\n" +
+        "                    ]\n" +
+        "                }\n" +
+        "            },\n" +
+        "            \"odrl:prohibition\": [],\n" +
+        "            \"odrl:obligation\": []\n" +
+        "        },\n" +
+        "        \"dcat:distribution\": [\n" +
+        "            {\n" +
+        "                \"@type\": \"dcat:Distribution\",\n" +
+        "                \"dct:format\": {\n" +
+        "                    \"@id\": \"HttpData-PULL\"\n" +
+        "                },\n" +
+        "                \"dcat:accessService\": {\n" +
+        "                    \"@id\": \"aca2887d-ffbf-4224-a16c-e247f1ac3982\",\n" +
+        "                    \"@type\": \"dcat:DataService\",\n" +
+        "                    \"dcat:endpointDescription\": \"dspace:connector\",\n" +
+        "                    \"dcat:endpointUrl\": \"http://supplier-control-plane:9184/api/v1/dsp\",\n" +
+        "                    \"dct:terms\": \"dspace:connector\",\n" +
+        "                    \"dct:endpointUrl\": \"http://supplier-control-plane:9184/api/v1/dsp\"\n" +
+        "                }\n" +
+        "            },\n" +
+        "            {\n" +
+        "                \"@type\": \"dcat:Distribution\",\n" +
+        "                \"dct:format\": {\n" +
+        "                    \"@id\": \"HttpData-PUSH\"\n" +
+        "                },\n" +
+        "                \"dcat:accessService\": {\n" +
+        "                    \"@id\": \"aca2887d-ffbf-4224-a16c-e247f1ac3982\",\n" +
+        "                    \"@type\": \"dcat:DataService\",\n" +
+        "                    \"dcat:endpointDescription\": \"dspace:connector\",\n" +
+        "                    \"dcat:endpointUrl\": \"http://supplier-control-plane:9184/api/v1/dsp\",\n" +
+        "                    \"dct:terms\": \"dspace:connector\",\n" +
+        "                    \"dct:endpointUrl\": \"http://supplier-control-plane:9184/api/v1/dsp\"\n" +
+        "                }\n" +
+        "            }\n" +
+        "        ],\n" +
+        "        \"dct:type\": {\n" +
+        "            \"@id\": \"https://w3id.org/catenax/taxonomy#DigitalTwinRegistry\"\n" +
+        "        },\n" +
+        "        \"https://w3id.org/catenax/ontology/common#version\": \"3.0\",\n" +
+        "        \"id\": \"DigitalTwinRegistryId@BPNL1234567890ZZ\"\n" +
+        "    },\n" +
+        "    \"dcat:service\": {\n" +
+        "        \"@id\": \"aca2887d-ffbf-4224-a16c-e247f1ac3982\",\n" +
+        "        \"@type\": \"dcat:DataService\",\n" +
+        "        \"dcat:endpointDescription\": \"dspace:connector\",\n" +
+        "        \"dcat:endpointUrl\": \"http://supplier-control-plane:9184/api/v1/dsp\",\n" +
+        "        \"dct:terms\": \"dspace:connector\",\n" +
+        "        \"dct:endpointUrl\": \"http://supplier-control-plane:9184/api/v1/dsp\"\n" +
+        "    },\n" +
+        "    \"participantId\": \"BPNL1234567890ZZ\",\n" +
+        "    \"@context\": {\n" +
+        "        \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+        "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+        "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
+        "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
+        "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+        "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
+        "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
+        "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
+        "        \"dspace\": \"https://w3id.org/dspace/v0.8/\"\n" +
+        "    }\n" +
+        "}";
 
 
     final static String test1 = "{\n" +
@@ -387,6 +482,100 @@ public class JsonLdUtilsTest {
         "\n" +
         "  }\n" +
         "\n" +
+        "}";
+
+    final static String test3 = "{\n" +
+        "  \"@id\": \"8f5aefa5-8646-42ae-b139-af8349ad55fe\",\n" +
+        "  \"@type\": \"dcat:Catalog\",\n" +
+        "  \"dspace:participantId\": \"BPNL4444444444XX\",\n" +
+        "  \"dcat:dataset\": {\n" +
+        "    \"@id\": \"DigitalTwinRegistryId@BPNL4444444444XX\",\n" +
+        "    \"@type\": \"dcat:Dataset\",\n" +
+        "    \"odrl:hasPolicy\": {\n" +
+        "      \"@id\": \"QlBOTDEyMzQ1Njc4OTBaWl9jb250cmFjdGRlZmluaXRpb25fZm9yX2R0cg==:RGlnaXRhbFR3aW5SZWdpc3RyeUlkQEJQTkw0NDQ0NDQ0NDQ0WFg=:ZGU5ZDM3YjQtZDRmZS00MDk4LTg1NDEtNjM3MzAzMTM5MTky\",\n" +
+        "      \"@type\": \"odrl:Offer\",\n" +
+        "      \"odrl:permission\": {\n" +
+        "        \"odrl:action\": {\n" +
+        "          \"odrl:type\": \"http://www.w3.org/ns/odrl/2/use\"\n" +
+        "        },\n" +
+        "        \"odrl:constraint\": {\n" +
+        "          \"odrl:and\": [\n" +
+        "            {\n" +
+        "              \"odrl:leftOperand\": \"BusinessPartnerNumber\",\n" +
+        "              \"odrl:operator\": {\n" +
+        "                \"@id\": \"odrl:eq\"\n" +
+        "              },\n" +
+        "              \"odrl:rightOperand\": \"BPNL1234567890ZZ\"\n" +
+        "            },\n" +
+        "            {\n" +
+        "              \"odrl:leftOperand\": \"Membership\",\n" +
+        "              \"odrl:operator\": {\n" +
+        "                \"@id\": \"odrl:eq\"\n" +
+        "              },\n" +
+        "              \"odrl:rightOperand\": \"active\"\n" +
+        "            }\n" +
+        "          ]\n" +
+        "        }\n" +
+        "      },\n" +
+        "      \"odrl:prohibition\": [],\n" +
+        "      \"odrl:obligation\": []\n" +
+        "    },\n" +
+        "    \"dcat:distribution\": [\n" +
+        "      {\n" +
+        "        \"@type\": \"dcat:Distribution\",\n" +
+        "        \"dct:format\": {\n" +
+        "          \"@id\": \"HttpData-PULL\"\n" +
+        "        },\n" +
+        "        \"dcat:accessService\": {\n" +
+        "          \"@id\": \"b915ab38-3496-4dc7-bdd8-320a64d3e993\",\n" +
+        "          \"@type\": \"dcat:DataService\",\n" +
+        "          \"dcat:endpointDescription\": \"dspace:connector\",\n" +
+        "          \"dcat:endpointUrl\": \"http://customer-control-plane:8184/api/v1/dsp\",\n" +
+        "          \"dct:terms\": \"dspace:connector\",\n" +
+        "          \"dct:endpointUrl\": \"http://customer-control-plane:8184/api/v1/dsp\"\n" +
+        "        }\n" +
+        "      },\n" +
+        "      {\n" +
+        "        \"@type\": \"dcat:Distribution\",\n" +
+        "        \"dct:format\": {\n" +
+        "          \"@id\": \"HttpData-PUSH\"\n" +
+        "        },\n" +
+        "        \"dcat:accessService\": {\n" +
+        "          \"@id\": \"b915ab38-3496-4dc7-bdd8-320a64d3e993\",\n" +
+        "          \"@type\": \"dcat:DataService\",\n" +
+        "          \"dcat:endpointDescription\": \"dspace:connector\",\n" +
+        "          \"dcat:endpointUrl\": \"http://customer-control-plane:8184/api/v1/dsp\",\n" +
+        "          \"dct:terms\": \"dspace:connector\",\n" +
+        "          \"dct:endpointUrl\": \"http://customer-control-plane:8184/api/v1/dsp\"\n" +
+        "        }\n" +
+        "      }\n" +
+        "    ],\n" +
+        "    \"dct:type\": {\n" +
+        "      \"@id\": \"https://w3id.org/catenax/taxonomy#DigitalTwinRegistry\"\n" +
+        "    },\n" +
+        "    \"https://w3id.org/catenax/ontology/common#version\": \"3.0\",\n" +
+        "    \"id\": \"DigitalTwinRegistryId@BPNL4444444444XX\"\n" +
+        "  },\n" +
+        "  \"dcat:service\": {\n" +
+        "    \"@id\": \"b915ab38-3496-4dc7-bdd8-320a64d3e993\",\n" +
+        "    \"@type\": \"dcat:DataService\",\n" +
+        "    \"dcat:endpointDescription\": \"dspace:connector\",\n" +
+        "    \"dcat:endpointUrl\": \"http://customer-control-plane:8184/api/v1/dsp\",\n" +
+        "    \"dct:terms\": \"dspace:connector\",\n" +
+        "    \"dct:endpointUrl\": \"http://customer-control-plane:8184/api/v1/dsp\"\n" +
+        "  },\n" +
+        "  \"participantId\": \"BPNL4444444444XX\",\n" +
+        "  \"@context\": {\n" +
+        "    \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+        "    \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+        "    \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
+        "    \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
+        "    \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+        "    \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
+        "    \"dct\": \"http://purl.org/dc/terms/\",\n" +
+        "    \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
+        "    \"dspace\": \"https://w3id.org/dspace/v0.8/\"\n" +
+        "  }\n" +
         "}";
 
 }

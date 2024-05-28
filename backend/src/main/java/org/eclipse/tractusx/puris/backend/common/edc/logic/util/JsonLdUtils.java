@@ -27,13 +27,12 @@ import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.edc.jsonld.TitaniumJsonLd;
-import org.eclipse.edc.jsonld.spi.JsonLdKeywords;
 import org.eclipse.edc.spi.monitor.Monitor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.Map;
@@ -41,27 +40,39 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
+@Service
 public class JsonLdUtils {
 
-    private final static ObjectMapper MAPPER = new ObjectMapper();
+    private final ObjectMapper MAPPER = new ObjectMapper();
 
-    private final static TitaniumJsonLd TITANIUM_JSON_LD = new TitaniumJsonLd(new MonitorAdapter());
+    private final TitaniumJsonLd TITANIUM_JSON_LD = new TitaniumJsonLd(new MonitorAdapter() {
+    });
 
-    static {
-        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT);
+   {
         TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.TX_POLICY_CONTEXT);
-        TITANIUM_JSON_LD.registerNamespace(JsonLdKeywords.VOCAB, EdcRequestBodyBuilder.EDC_NAMESPACE);
+        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT);
+        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.DCAT_NAMESPACE);
+        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.DSPACE_NAMESPACE);
+        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.EDC_NAMESPACE);
+        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.TX_AUTH_NAMESPACE);
+        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.TX_NAMESPACE);
+
         final String prefix = "json-ld" + File.separator;
         Map<String, String> filesMap = Map.of(
             EdcRequestBodyBuilder.TX_POLICY_CONTEXT, prefix + "cx-policy-v1.jsonld",
-            EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT, prefix + "odrl.jsonld"
+            EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT, prefix + "odrl.jsonld",
+            EdcRequestBodyBuilder.DCAT_NAMESPACE, prefix + "dcat.jsonld",
+            EdcRequestBodyBuilder.DSPACE_NAMESPACE, prefix + "dspace.jsonld",
+            EdcRequestBodyBuilder.EDC_NAMESPACE, prefix + "edc-v1.jsonld",
+            EdcRequestBodyBuilder.TX_AUTH_NAMESPACE, prefix + "tx-auth-v1.jsonld",
+            EdcRequestBodyBuilder.TX_NAMESPACE, prefix + "tx-v1.jsonld"
         );
 
         Function<String, URI> uriFunction = fileName -> {
             Resource resource = new ClassPathResource(fileName);
             try {
                 return resource.getURI();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         };
@@ -71,7 +82,7 @@ public class JsonLdUtils {
         }
     }
 
-    public static ObjectNode expand(JsonNode node) {
+    public ObjectNode expand(JsonNode node) {
         JsonReader jsonReader = Json.createReader(new StringReader(node.toString()));
         var jakartaJson = jsonReader.readObject();
         var expandedJakartaJson = TITANIUM_JSON_LD.expand(jakartaJson).getContent();
@@ -83,7 +94,7 @@ public class JsonLdUtils {
         }
     }
 
-    public static ObjectNode compact(JsonNode node) {
+    public ObjectNode compact(JsonNode node) {
         JsonReader jsonReader = Json.createReader(new StringReader(node.toString()));
         var jakartaJson = jsonReader.readObject();
         var expandedJakartaJson = TITANIUM_JSON_LD.compact(jakartaJson).getContent();

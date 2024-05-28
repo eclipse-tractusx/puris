@@ -296,12 +296,15 @@ public class EdcRequestBodyBuilder {
         // extract policy and information from offer
         // framework agreement and co has been checked during catalog request
         String assetId = dcatCatalogItem.get("@id").asText();
-        JsonNode policyNode = dcatCatalogItem.get("odrl:hasPolicy");
+        JsonNode policyNode = dcatCatalogItem.get(ODRL_NAMESPACE + "hasPolicy");
+        if (policyNode.isArray()) {
+            policyNode = policyNode.get(0);
+        }
 
         ObjectNode targetIdObject = MAPPER.createObjectNode();
         targetIdObject.put("@id", assetId);
         ((ObjectNode) policyNode).put("@context", "http://www.w3.org/ns/odrl.jsonld");
-        ((ObjectNode) policyNode).set("odrl:target", targetIdObject);
+        ((ObjectNode) policyNode).set("target", targetIdObject);
         ((ObjectNode) policyNode).put("assigner", partner.getBpnl());
 
         ObjectNode offerNode = MAPPER.createObjectNode();
