@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,10 +105,24 @@ public class EdcAdapterServiceTest {
             "      },\n" +
             "      \"odrl:prohibition\" : [ ],\n" +
             "      \"odrl:obligation\" : [ ]\n" +
+            "    }," +
+            "    \"@context\": {\n" +
+            "        \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
+            "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
+            "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
+            "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
+            "        \"dspace\": \"https://w3id.org/dspace/v0.8/\"\n" +
             "    }" +
             "}";
 
         JsonNode validJsonNode = objectMapper.readTree(validJson);
+        JsonLdUtils jsonLdUtils = new JsonLdUtils();
+        validJsonNode = jsonLdUtils.expand(validJsonNode);
+        System.out.println(validJsonNode.toPrettyString());
 
 
         // when
@@ -160,10 +175,23 @@ public class EdcAdapterServiceTest {
             "      },\n" +
             "      \"odrl:prohibition\" : [ ],\n" +
             "      \"odrl:obligation\" : [ ]\n" +
+            "    }," +
+            "    \"@context\": {\n" +
+            "        \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
+            "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
+            "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
+            "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
+            "        \"dspace\": \"https://w3id.org/dspace/v0.8/\"\n" +
             "    }" +
             "}";
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
+        JsonLdUtils jsonLdUtils = new JsonLdUtils();
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
@@ -206,10 +234,23 @@ public class EdcAdapterServiceTest {
             "      },\n" +
             "      \"odrl:prohibition\" : [ ],\n" +
             "      \"odrl:obligation\" : [ ]\n" +
+            "    }," +
+            "    \"@context\": {\n" +
+            "        \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
+            "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
+            "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
+            "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
+            "        \"dspace\": \"https://w3id.org/dspace/v0.8/\"\n" +
             "    }" +
             "}";
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
+        JsonLdUtils jsonLdUtils = new JsonLdUtils();
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");

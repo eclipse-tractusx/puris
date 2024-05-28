@@ -42,7 +42,7 @@ public class JsonLdUtilsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {test0/*, test1, test2,test3*/})
+    @ValueSource(strings = {test0, test1, test2,test3})
     public void testUtilClass(String input) throws Exception {
         JsonLdUtils util = new JsonLdUtils();
         // GIVEN
