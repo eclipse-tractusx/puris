@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.erp_adapter.logic.service;
+package org.eclipse.tractusx.puris.backend.erpadapter.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.erp_adapter.controller.ErpAdapterController;
-import org.eclipse.tractusx.puris.backend.erp_adapter.domain.model.ErpAdapterRequest;
+import org.eclipse.tractusx.puris.backend.erpadapter.controller.ErpAdapterController;
+import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
@@ -38,7 +38,6 @@ import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockSe
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -67,12 +66,46 @@ public class ItemStockErpAdapterService {
     @Autowired
     private ProductItemStockService productItemStockService;
 
+    private final static String SUPPORTEDSAMMVERSION = "2.0";
 
-    public void receiveItemStockUpdate(ErpAdapterController.Dto dto) {
+
+    /**
+     * This method handles a response for an ItemStock Request from the ERP Adapter.
+     * It's return value is the status code that is being sent back to the ERP Adapter.
+     *
+     * @param   dto contains the parameters and the body of the response message
+     * @return  the appropriate HTTP response code
+     */
+    public int receiveItemStockUpdate(ErpAdapterController.Dto dto) {
         try {
-            ItemStockSamm samm = mapper.treeToValue(dto.responseBody(), ItemStockSamm.class);
-            Partner partner = partnerService.findByBpnl(dto.partnerBpnl());
+            ItemStockSamm samm = mapper.treeToValue(dto.body(), ItemStockSamm.class);
             ErpAdapterRequest request = erpAdapterRequestService.get(dto.requestId());
+            if (request == null) {
+                log.error("Unknown request-id {}", dto.requestId());
+                return 404;
+            }
+            // TODO: uncomment the following block when removing mock request, also edit swagger description in ErpAdapterController
+//            if (request.getResponseReceivedDate() != null) {
+//                log.error("Received duplicate response for messageId {}", request.getId());
+//                return 409;
+//            }
+            if (!request.getPartnerBpnl().equals(dto.partnerBpnl())) {
+                log.error("BPNL mismatch! request BPNL: {}, message BPNL: {}",
+                    request.getPartnerBpnl(), dto.partnerBpnl());
+                return 400;
+            }
+            if (!request.getDirectionCharacteristic().equals(samm.getDirection())) {
+                log.error("Direction mismatch! request direction: {}, message direction: {}",
+                    request.getDirectionCharacteristic(), samm.getDirection());
+                return 400;
+            }
+            if (!SUPPORTEDSAMMVERSION.equals(dto.sammVersion()) || !SUPPORTEDSAMMVERSION.equals(request.getSammVersion())) {
+                log.error("Unsupported Samm Version! Supported: " + SUPPORTEDSAMMVERSION + ", request: {}, message: {}",
+                    request.getSammVersion(), dto.sammVersion());
+                return 400;
+            }
+
+            Partner partner = partnerService.findByBpnl(request.getPartnerBpnl());
             Material material = materialService.findByOwnMaterialNumber(request.getOwnMaterialNumber());
 
             switch (samm.getDirection()) {
@@ -80,33 +113,36 @@ public class ItemStockErpAdapterService {
                     var mpr = mprService.find(material, partner);
                     if (mpr == null || !mpr.isPartnerSuppliesMaterial()) {
                         log.error("Partner {} is not registered as supplier for {}", partner.getBpnl(), material.getOwnMaterialNumber());
-                        return;
+                        return 400;
                     }
                     List<MaterialItemStock> materialItemStockList = sammMapper.erpSammToMaterialItemStock(samm, partner, material);
                     materialItemStockService.findByPartnerAndMaterial(partner, material).forEach(stock -> materialItemStockService.delete(stock.getUuid()));
                     materialItemStockList.forEach(stock -> materialItemStockService.create(stock));
                     log.info("Inserted {} MaterialItemStocks for {} and {}", materialItemStockList.size(), material.getOwnMaterialNumber(), partner.getBpnl());
-                    request.setResponseReceivedDate(new Date());
+                    request.setResponseReceivedDate(dto.responseTimeStamp());
                     erpAdapterRequestService.update(request);
+                    return 201;
                 }
                 case OUTBOUND -> {
                     var mpr = mprService.find(material, partner);
                     if (mpr == null || !mpr.isPartnerBuysMaterial()) {
                         log.error("Partner {} is not registered as customer for {}", partner.getBpnl(), material.getOwnMaterialNumber());
-                        return;
+                        return 400;
                     }
                     List<ProductItemStock> productItemStockList = sammMapper.erpSammToProductItemStock(samm, partner, material);
                     productItemStockService.findByPartnerAndMaterial(partner, material).forEach(stock -> productItemStockService.delete(stock.getUuid()));
                     productItemStockList.forEach(stock -> productItemStockService.create(stock));
                     log.info("Inserted {} ProductItemStocks for {} and {}", productItemStockList.size(), material.getOwnMaterialNumber(), partner.getBpnl());
-                    request.setResponseReceivedDate(new Date());
+                    request.setResponseReceivedDate(dto.responseTimeStamp());
                     erpAdapterRequestService.update(request);
+                    return 201;
                 }
                 default -> throw new IllegalArgumentException("Invalid direction: " + samm.getDirection());
             }
 
         } catch (Exception e) {
             log.error("Error while receiving erp itemstock update", e);
+            return 500;
         }
     }
 }

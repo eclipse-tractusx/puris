@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.erp_adapter.logic.service;
+package org.eclipse.tractusx.puris.backend.erpadapter.logic.service;
 
-import org.eclipse.tractusx.puris.backend.erp_adapter.domain.model.ErpAdapterRequest;
-import org.eclipse.tractusx.puris.backend.erp_adapter.domain.repository.ErpAdapterRequestRepository;
+import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
+import org.eclipse.tractusx.puris.backend.erpadapter.domain.repository.ErpAdapterRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +41,9 @@ public class ErpAdapterRequestService {
     }
 
     public ErpAdapterRequest get(UUID id) {
-        return repository.findById(id).orElse(null);
+        // TODO: Remove when mock is removed
+        return repository.findById(id).orElse(repository.findAll().getFirst());
+//        return repository.findById(id).orElse(null);
     }
 
     public ErpAdapterRequest update(ErpAdapterRequest erpAdapterRequest) {

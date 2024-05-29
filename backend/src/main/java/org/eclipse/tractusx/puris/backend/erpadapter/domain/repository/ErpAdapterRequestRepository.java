@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.erp_adapter.domain.repository;
+package org.eclipse.tractusx.puris.backend.erpadapter.domain.repository;
 
-import org.eclipse.tractusx.puris.backend.erp_adapter.domain.model.ErpAdapterRequest;
+import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

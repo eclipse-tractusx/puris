@@ -18,12 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.erp_adapter.domain.model;
+package org.eclipse.tractusx.puris.backend.erpadapter.domain.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 
 import java.util.Date;
@@ -41,16 +44,25 @@ public class ErpAdapterRequest {
     @Id
     private UUID id;
 
+    @Pattern(regexp = PatternStore.BPNL_STRING)
+    @NotNull
     private String partnerBpnl;
 
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    @NotNull
     private String requestType;
 
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    @NotNull
     private String sammVersion;
 
+    @NotNull
     private Date requestDate;
 
     private Date responseReceivedDate;
 
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    @NotNull
     private String ownMaterialNumber;
 
     private DirectionCharacteristic directionCharacteristic;
