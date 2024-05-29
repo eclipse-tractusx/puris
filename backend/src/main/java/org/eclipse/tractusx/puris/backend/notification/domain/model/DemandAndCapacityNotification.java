@@ -24,12 +24,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,12 +47,14 @@ import lombok.experimental.SuperBuilder;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
 @ToString
-public abstract class Notification {
+public abstract class DemandAndCapacityNotification {
     @Id
     @GeneratedValue
     protected UUID uuid;
 
     protected UUID relatedNotificationId;
+
+    protected UUID sourceNotificationId;
 
     @ManyToOne()
     @JoinColumn(name = "partner_uuid")
@@ -66,6 +70,7 @@ public abstract class Notification {
     @ToString.Exclude
     protected List<Material> materials;
 
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     protected String text;
 
     @NotNull

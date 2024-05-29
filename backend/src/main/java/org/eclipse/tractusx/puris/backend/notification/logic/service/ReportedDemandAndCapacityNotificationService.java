@@ -24,22 +24,25 @@ import java.util.List;
 
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.notification.domain.model.OwnNotification;
-import org.eclipse.tractusx.puris.backend.notification.domain.repository.OwnNotificationRepository;
+import org.eclipse.tractusx.puris.backend.notification.domain.model.ReportedDemandAndCapacityNotification;
+import org.eclipse.tractusx.puris.backend.notification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class OwnNotificationService extends NotificationService<OwnNotification, OwnNotificationRepository>{
+public class ReportedDemandAndCapacityNotificationService extends DemandAndCapacityNotificationService<ReportedDemandAndCapacityNotification, ReportedDemandAndCapacityNotificationRepository> {
 
-    public OwnNotificationService(OwnNotificationRepository ownNotificationRepository, PartnerService partnerService, MaterialPartnerRelationService mpr) {
-        super(ownNotificationRepository, partnerService, mpr);
+    public ReportedDemandAndCapacityNotificationService(ReportedDemandAndCapacityNotificationRepository reportedNotificationRepository,
+            PartnerService partnerService, MaterialPartnerRelationService mpr) {
+        super(reportedNotificationRepository, partnerService, mpr);
     }
 
-    public List<OwnNotification>  findAllByPartnerBpnl(String bpnl) {
-        return repository.findAll().stream().filter(notification -> notification.getPartner().getBpnl().equals(bpnl)).toList();
+    public List<ReportedDemandAndCapacityNotification> findAllByPartnerBpnl(String bpnl) {
+        return repository.findAll().stream().filter(notification -> notification.getPartner().getBpnl().equals(bpnl))
+                .toList();
     }
 
-    public boolean validate(OwnNotification notification) {
+    @Override
+    public boolean validate(ReportedDemandAndCapacityNotification notification) {
         return notification.getPartner() != null &&
                 notification.getText() != null &&
                 notification.getLeadingRootCause() != null &&
@@ -51,7 +54,7 @@ public class OwnNotificationService extends NotificationService<OwnNotification,
                 validateSites(notification);
     }
 
-    public boolean validateMaterials(OwnNotification notification) {
+    public boolean validateMaterials(ReportedDemandAndCapacityNotification notification) {
         if (notification.getMaterials() == null || notification.getMaterials().isEmpty()) {
             return true;
         }
@@ -60,15 +63,15 @@ public class OwnNotificationService extends NotificationService<OwnNotification,
             notification.getMaterials().contains(mpr.getMaterial())).count() == notification.getMaterials().size();
     }
 
-    public boolean validateSites(OwnNotification notification) {
+    public boolean validateSites(ReportedDemandAndCapacityNotification notification) {
         return (
-            notification.getAffectedSitesRecipient() == null ||
-            notification.getAffectedSitesRecipient().isEmpty() ||
-            notification.getAffectedSitesRecipient().stream().allMatch(site -> notification.getPartner().getSites().contains(site))
-        ) && (
             notification.getAffectedSitesSender() == null ||
             notification.getAffectedSitesSender().isEmpty() ||
-            notification.getAffectedSitesSender().stream().allMatch(site -> partnerService.getOwnPartnerEntity().getSites().contains(site))
+            notification.getAffectedSitesSender().stream().allMatch(site -> notification.getPartner().getSites().contains(site))
+        ) && (
+            notification.getAffectedSitesRecipient() == null ||
+            notification.getAffectedSitesRecipient().isEmpty() ||
+            notification.getAffectedSitesRecipient().stream().allMatch(site -> partnerService.getOwnPartnerEntity().getSites().contains(site))
         );
     }
 }

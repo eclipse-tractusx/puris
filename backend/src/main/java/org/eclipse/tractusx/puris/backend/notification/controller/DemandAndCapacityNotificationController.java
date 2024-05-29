@@ -28,16 +28,17 @@ import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.notification.domain.model.OwnNotification;
-import org.eclipse.tractusx.puris.backend.notification.domain.model.ReportedNotification;
+import org.eclipse.tractusx.puris.backend.notification.domain.model.OwnDemandAndCapacityNotification;
+import org.eclipse.tractusx.puris.backend.notification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.notification.logic.dto.NotificationDto;
-import org.eclipse.tractusx.puris.backend.notification.logic.service.OwnNotificationService;
-import org.eclipse.tractusx.puris.backend.notification.logic.service.ReportedNotificationService;
+import org.eclipse.tractusx.puris.backend.notification.logic.service.OwnDemandAndCapacityNotificationService;
+import org.eclipse.tractusx.puris.backend.notification.logic.service.ReportedDemandAndCapacityNotificationService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,15 +49,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Validator;
+import jakarta.validation.constraints.Pattern;
 
 @RestController
 @RequestMapping("notification")
-public class NotificationController {
+public class DemandAndCapacityNotificationController {
     @Autowired
-    private OwnNotificationService ownNotificationService;
+    private OwnDemandAndCapacityNotificationService ownNotificationService;
 
     @Autowired
-    private ReportedNotificationService reportedNotificationService;
+    private ReportedDemandAndCapacityNotificationService reportedNotificationService;
 
     @Autowired
     private MaterialService materialService;
@@ -73,7 +75,7 @@ public class NotificationController {
     @GetMapping()
     @ResponseBody
     @Operation(summary = "Get all own notifications", description = "Get all own notifications. Optionally the partner can be filtered by its bpnl.")
-    public List<NotificationDto> getAllNotifications(Optional<String> partnerBpnl) {
+    public List<NotificationDto> getAllNotifications(Optional<@Pattern(regexp = PatternStore.BPNL_STRING) String> partnerBpnl) {
         if (partnerBpnl.isEmpty()) {
             return ownNotificationService.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
         } else {
@@ -122,7 +124,7 @@ public class NotificationController {
     })
     @ResponseStatus(HttpStatus.OK)
     public NotificationDto updateNotification(@RequestBody NotificationDto dto) {
-        OwnNotification updatedNotification = ownNotificationService.update(convertToEntity(dto));
+        OwnDemandAndCapacityNotification updatedNotification = ownNotificationService.update(convertToEntity(dto));
         if (updatedNotification == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification does not exist.");
         }
@@ -139,7 +141,7 @@ public class NotificationController {
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteNotification(@PathVariable UUID id) {
-        OwnNotification demand = ownNotificationService.findById(id);
+        OwnDemandAndCapacityNotification demand = ownNotificationService.findById(id);
         if (demand == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification does not exist.");
         }
@@ -149,7 +151,7 @@ public class NotificationController {
     @GetMapping("reported")
     @ResponseBody
     @Operation(summary = "Get all reported notifications", description = "Get all reported notifications. Optionally the partner can be filtered by its bpnl.")
-    public List<NotificationDto> getAllReportedNotifications(Optional<String> partnerBpnl) {
+    public List<NotificationDto> getAllReportedNotifications(Optional<@Pattern(regexp = PatternStore.BPNL_STRING) String> partnerBpnl) {
         if (partnerBpnl.isEmpty()) {
             return reportedNotificationService.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
         } else {
@@ -157,7 +159,7 @@ public class NotificationController {
         }
     }
 
-    private NotificationDto convertToDto(OwnNotification entity) {
+    private NotificationDto convertToDto(OwnDemandAndCapacityNotification entity) {
         NotificationDto dto = modelMapper.map(entity, NotificationDto.class);
         if (entity.getMaterials() != null) {
             dto.setAffectedMaterialNumbers(entity.getMaterials().stream().map(Material::getOwnMaterialNumber).toList());
@@ -174,7 +176,7 @@ public class NotificationController {
         return dto;
     }
 
-    private NotificationDto convertToDto(ReportedNotification entity) {
+    private NotificationDto convertToDto(ReportedDemandAndCapacityNotification entity) {
         NotificationDto dto = modelMapper.map(entity, NotificationDto.class);
         if (entity.getMaterials() != null) {
             dto.setAffectedMaterialNumbers(entity.getMaterials().stream().map(Material::getOwnMaterialNumber).toList());
@@ -189,8 +191,8 @@ public class NotificationController {
         return dto;
     }
 
-    private OwnNotification convertToEntity(NotificationDto dto) {
-        OwnNotification entity = modelMapper.map(dto, OwnNotification.class);
+    private OwnDemandAndCapacityNotification convertToEntity(NotificationDto dto) {
+        OwnDemandAndCapacityNotification entity = modelMapper.map(dto, OwnDemandAndCapacityNotification.class);
 
         Partner existingPartner = partnerService.findByBpnl(dto.getPartnerBpnl());
         if (existingPartner == null) {
@@ -239,7 +241,7 @@ public class NotificationController {
         entity.setAffectedSitesSender(affectedSitesSender);
 
         if (dto.getRelatedNotificationId() != null) {
-            OwnNotification relatedNotification = ownNotificationService.findById(dto.getRelatedNotificationId());
+            OwnDemandAndCapacityNotification relatedNotification = ownNotificationService.findById(dto.getRelatedNotificationId());
             if (relatedNotification == null) {
                 throw new IllegalStateException(String.format(
                         "Related notification for UUID %s could not be found",

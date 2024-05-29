@@ -45,11 +45,14 @@ public class NotificationDto implements Serializable {
 
     private UUID relatedNotificationId;
 
+    private UUID sourceNotificationId;
+
     @Pattern(regexp = PatternStore.BPNL_STRING)
     private String partnerBpnl;
 
     private List<@Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING) String> affectedMaterialNumbers;
 
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String text;
 
     private LeadingRootCauseEnumeration leadingRootCause;

@@ -29,17 +29,17 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.notification.domain.model.Notification;
+import org.eclipse.tractusx.puris.backend.notification.domain.model.DemandAndCapacityNotification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public abstract class NotificationService<TEntity extends Notification, TRepository extends JpaRepository<TEntity, UUID>> {
+public abstract class DemandAndCapacityNotificationService<TEntity extends DemandAndCapacityNotification, TRepository extends JpaRepository<TEntity, UUID>> {
     protected final TRepository repository;
     protected final PartnerService partnerService;
     protected final MaterialPartnerRelationService mprService;
 
     protected final Function<TEntity, Boolean> validator;
 
-    public NotificationService(TRepository repository, PartnerService partnerService, MaterialPartnerRelationService mprService) {
+    public DemandAndCapacityNotificationService(TRepository repository, PartnerService partnerService, MaterialPartnerRelationService mprService) {
         this.repository = repository;
         this.partnerService = partnerService;
         this.mprService = mprService;
@@ -74,6 +74,7 @@ public abstract class NotificationService<TEntity extends Notification, TReposit
         if (notification.getUuid() == null || repository.findById(notification.getUuid()).isEmpty()) {
             return null;
         }
+        notification.setContentChangedAt(new Date());
         return repository.save(notification);
     }
 

@@ -18,17 +18,15 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package org.eclipse.tractusx.puris.backend.notification.domain.model;
+package org.eclipse.tractusx.puris.backend.notification.domain.repository;
 
-import jakarta.persistence.Entity;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-import lombok.experimental.SuperBuilder;
+import java.util.UUID;
 
-@Entity
-@SuperBuilder
-@NoArgsConstructor
-@ToString(callSuper = true)
-public class ReportedNotification extends Notification {
+import org.eclipse.tractusx.puris.backend.notification.domain.model.OwnDemandAndCapacityNotification;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface OwnDemandAndCapacityNotificationRepository extends JpaRepository<OwnDemandAndCapacityNotification, UUID>{
 
 }
