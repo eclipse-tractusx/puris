@@ -23,6 +23,8 @@ package org.eclipse.tractusx.puris.backend.erpadapter.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +75,9 @@ public class ErpAdapterController {
         @RequestParam(value = "response-timestamp")
         @Parameter(example = "2024-05-28T15:00:00")
         @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") Date responseTimestamp,
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {@Content(examples = {
+            @ExampleObject(itemStock20Sample)
+        })})
         @RequestBody JsonNode requestBody
         ) {
         boolean valid = BPNL_PATTERN.matcher(partnerBpnl).matches();
@@ -94,4 +99,68 @@ public class ErpAdapterController {
 
     public record Dto(UUID requestId, String partnerBpnl, String responseType, String sammVersion,
                       Date responseTimeStamp, JsonNode body){}
+
+    private final static String itemStock20Sample = "{\n" +
+        "    \"materialGlobalAssetId\": null,\n" +
+        "    \"positions\": [\n" +
+        "        {\n" +
+        "            \"orderPositionReference\": {\n" +
+        "                \"supplierOrderId\": \"M-Nbr-4711\",\n" +
+        "                \"customerOrderId\": \"C-Nbr-4711\",\n" +
+        "                \"customerOrderPositionId\": \"PositionId-01\"\n" +
+        "            },\n" +
+        "            \"allocatedStocks\": [\n" +
+        "                {\n" +
+        "                    \"isBlocked\": false,\n" +
+        "                    \"stockLocationBPNA\": \"BPNA4444444444AA\",\n" +
+        "                    \"lastUpdatedOnDateTime\": \"2023-04-28T14:23:00.123456+14:00\",\n" +
+        "                    \"quantityOnAllocatedStock\": {\n" +
+        "                        \"value\": 22.0,\n" +
+        "                        \"unit\": \"unit:piece\"\n" +
+        "                    },\n" +
+        "                    \"stockLocationBPNS\": \"BPNS4444444444XX\"\n" +
+        "                }\n" +
+        "            ]\n" +
+        "        },\n" +
+        "        {\n" +
+        "            \"orderPositionReference\": {\n" +
+        "                \"supplierOrderId\": \"M-Nbr-4711\",\n" +
+        "                \"customerOrderId\": \"C-Nbr-4711\",\n" +
+        "                \"customerOrderPositionId\": \"PositionId-03\"\n" +
+        "            },\n" +
+        "            \"allocatedStocks\": [\n" +
+        "                {\n" +
+        "                    \"isBlocked\": false,\n" +
+        "                    \"stockLocationBPNA\": \"BPNA4444444444AA\",\n" +
+        "                    \"lastUpdatedOnDateTime\": \"2023-04-28T14:23:00.123456+14:00\",\n" +
+        "                    \"quantityOnAllocatedStock\": {\n" +
+        "                        \"value\": 66.0,\n" +
+        "                        \"unit\": \"unit:piece\"\n" +
+        "                    },\n" +
+        "                    \"stockLocationBPNS\": \"BPNS4444444444XX\"\n" +
+        "                }\n" +
+        "            ]\n" +
+        "        },\n" +
+        "                {\n" +
+        "            \"orderPositionReference\": {\n" +
+        "                \"supplierOrderId\": \"M-Nbr-4711\",\n" +
+        "                \"customerOrderId\": \"C-Nbr-4711\",\n" +
+        "                \"customerOrderPositionId\": \"PositionId-02\"\n" +
+        "            },\n" +
+        "            \"allocatedStocks\": [\n" +
+        "                {\n" +
+        "                    \"isBlocked\": true,\n" +
+        "                    \"stockLocationBPNA\": \"BPNA4444444444AA\",\n" +
+        "                    \"lastUpdatedOnDateTime\": \"2023-04-28T14:23:00.123456+14:00\",\n" +
+        "                    \"quantityOnAllocatedStock\": {\n" +
+        "                        \"value\": 44.0,\n" +
+        "                        \"unit\": \"unit:piece\"\n" +
+        "                    },\n" +
+        "                    \"stockLocationBPNS\": \"BPNS4444444444XX\"\n" +
+        "                }\n" +
+        "            ]\n" +
+        "        }\n" +
+        "    ],\n" +
+        "    \"direction\": \"INBOUND\"\n" +
+        "}";
 }

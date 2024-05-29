@@ -20,6 +20,7 @@
 
 package org.eclipse.tractusx.puris.backend.erpadapter.logic.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.erpadapter.controller.ErpAdapterController;
@@ -116,6 +117,12 @@ public class ItemStockErpAdapterService {
                         return 400;
                     }
                     List<MaterialItemStock> materialItemStockList = sammMapper.erpSammToMaterialItemStock(samm, partner, material);
+                    int initialSize = materialItemStockList.size();
+                    materialItemStockList.removeIf(stock -> !materialItemStockService.validate(stock));
+                    int removed = initialSize - materialItemStockList.size();
+                    if (removed > 0) {
+                        log.warn("Removed {} out of {} MaterialItemStocks because of failing validation.", removed, initialSize);
+                    }
                     materialItemStockService.findByPartnerAndMaterial(partner, material).forEach(stock -> materialItemStockService.delete(stock.getUuid()));
                     materialItemStockList.forEach(stock -> materialItemStockService.create(stock));
                     log.info("Inserted {} MaterialItemStocks for {} and {}", materialItemStockList.size(), material.getOwnMaterialNumber(), partner.getBpnl());
@@ -130,6 +137,12 @@ public class ItemStockErpAdapterService {
                         return 400;
                     }
                     List<ProductItemStock> productItemStockList = sammMapper.erpSammToProductItemStock(samm, partner, material);
+                    int initialSize = productItemStockList.size();
+                    productItemStockList.removeIf(stock -> !productItemStockService.validate(stock));
+                    int removed = initialSize - productItemStockList.size();
+                    if (removed > 0) {
+                        log.warn("Removed {} out of {} ProductItemStocks because of failing validation.", removed, initialSize);
+                    }
                     productItemStockService.findByPartnerAndMaterial(partner, material).forEach(stock -> productItemStockService.delete(stock.getUuid()));
                     productItemStockList.forEach(stock -> productItemStockService.create(stock));
                     log.info("Inserted {} ProductItemStocks for {} and {}", productItemStockList.size(), material.getOwnMaterialNumber(), partner.getBpnl());
@@ -137,12 +150,19 @@ public class ItemStockErpAdapterService {
                     erpAdapterRequestService.update(request);
                     return 201;
                 }
-                default -> throw new IllegalArgumentException("Invalid direction: " + samm.getDirection());
             }
 
         } catch (Exception e) {
-            log.error("Error while receiving erp itemstock update", e);
-            return 500;
+            if (e instanceof IllegalArgumentException || e instanceof JsonProcessingException) {
+                // treeToValue method has thrown this exception
+                log.error("Error parsing request body: \n{}", dto.body().toPrettyString(), e);
+                return 400;
+            } else {
+                log.error("Error while receiving erp itemstock update", e);
+                return 500;
+            }
         }
+        log.error("Unexpected error while receiving erp itemstock update");
+        return 500;
     }
 }
