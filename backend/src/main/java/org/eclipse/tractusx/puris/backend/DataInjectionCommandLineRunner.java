@@ -25,6 +25,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
+import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ErpAdapterRequestService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -37,6 +39,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedMaterialItemStockService;
@@ -75,6 +78,9 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private VariablesService variablesService;
+
+    @Autowired
+    private ErpAdapterRequestService erpAdapterRequestService;
 
     private ObjectMapper objectMapper;
 
@@ -241,6 +247,19 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .locationBpna(supplierPartner.getSites().first().getAddresses().first().getBpna())
             .build();
         reportedProductItemStockService.create(reportedProductItemStock);
+
+        // TODO: remove mock
+        ErpAdapterRequest mockRequest = ErpAdapterRequest
+            .builder()
+            .partnerBpnl(supplierPartner.getBpnl())
+            .requestDate(new Date(System.currentTimeMillis()-3*60*60*1000))
+            .ownMaterialNumber(semiconductorMaterial.getOwnMaterialNumber())
+            .directionCharacteristic(DirectionCharacteristic.INBOUND)
+            .requestType("ItemStock")
+            .sammVersion("2.0")
+            .build();
+        mockRequest = erpAdapterRequestService.create(mockRequest);
+        log.info("Created mocked ErpAdapterRequest: \n{}", mockRequest);
     }
 
     /**
