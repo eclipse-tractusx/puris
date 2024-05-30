@@ -105,6 +105,66 @@ public class ItemStockSammMapper {
     private record PositionsMappingHelper(String customerOrderId, String supplierOrderId, String customerOrderPositionId) {
     }
 
+    public List<MaterialItemStock> erpSammToMaterialItemStock(ItemStockSamm samm, Partner partner, Material material) {
+        ArrayList<MaterialItemStock> materialItemStocks = new ArrayList<>();
+        for (var position : samm.getPositions()) {
+            String supplierOrderId = null, customerOrderPositionId = null, customerOrderId = null;
+            if (position.getOrderPositionReference() != null) {
+                supplierOrderId = position.getOrderPositionReference().getSupplierOrderId();
+                customerOrderId = position.getOrderPositionReference().getCustomerOrderId();
+                customerOrderPositionId = position.getOrderPositionReference().getCustomerOrderPositionId();
+            }
+            for (var allocatedStock : position.getAllocatedStocks()) {
+                var builder = MaterialItemStock.builder();
+                var itemStock = builder
+                    .partner(partner)
+                    .material(material)
+                    .isBlocked(allocatedStock.getIsBlocked())
+                    .locationBpna(allocatedStock.getStockLocationBPNA())
+                    .locationBpns(allocatedStock.getStockLocationBPNS())
+                    .lastUpdatedOnDateTime(allocatedStock.getLastUpdatedOnDateTime())
+                    .customerOrderId(customerOrderId)
+                    .supplierOrderId(supplierOrderId)
+                    .customerOrderPositionId(customerOrderPositionId)
+                    .measurementUnit(allocatedStock.getQuantityOnAllocatedStock().getUnit())
+                    .quantity(allocatedStock.getQuantityOnAllocatedStock().getValue())
+                    .build();
+                materialItemStocks.add(itemStock);
+            }
+        }
+        return materialItemStocks;
+    }
+
+    public List<ProductItemStock> erpSammToProductItemStock(ItemStockSamm samm, Partner partner, Material material) {
+        ArrayList<ProductItemStock> productItemStocks = new ArrayList<>();
+        for (var position : samm.getPositions()) {
+            String supplierOrderId = null, customerOrderPositionId = null, customerOrderId = null;
+            if (position.getOrderPositionReference() != null) {
+                supplierOrderId = position.getOrderPositionReference().getSupplierOrderId();
+                customerOrderId = position.getOrderPositionReference().getCustomerOrderId();
+                customerOrderPositionId = position.getOrderPositionReference().getCustomerOrderPositionId();
+            }
+            for (var allocatedStock : position.getAllocatedStocks()) {
+                var builder = ProductItemStock.builder();
+                var itemStock = builder
+                    .partner(partner)
+                    .material(material)
+                    .isBlocked(allocatedStock.getIsBlocked())
+                    .locationBpna(allocatedStock.getStockLocationBPNA())
+                    .locationBpns(allocatedStock.getStockLocationBPNS())
+                    .lastUpdatedOnDateTime(allocatedStock.getLastUpdatedOnDateTime())
+                    .customerOrderId(customerOrderId)
+                    .supplierOrderId(supplierOrderId)
+                    .customerOrderPositionId(customerOrderPositionId)
+                    .measurementUnit(allocatedStock.getQuantityOnAllocatedStock().getUnit())
+                    .quantity(allocatedStock.getQuantityOnAllocatedStock().getValue())
+                    .build();
+                productItemStocks.add(itemStock);
+            }
+        }
+        return productItemStocks;
+    }
+
 
 
     public List<ReportedProductItemStock> itemStockSammToReportedProductItemStock(ItemStockSamm samm, Partner partner) {
