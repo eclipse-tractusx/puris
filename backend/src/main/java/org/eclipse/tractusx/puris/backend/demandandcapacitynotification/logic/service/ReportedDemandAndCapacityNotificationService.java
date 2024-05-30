@@ -18,29 +18,31 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package org.eclipse.tractusx.puris.backend.notification.logic.service;
+package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service;
 
 import java.util.List;
 
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.notification.domain.model.OwnDemandAndCapacityNotification;
-import org.eclipse.tractusx.puris.backend.notification.domain.repository.OwnDemandAndCapacityNotificationRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNotificationService<OwnDemandAndCapacityNotification, OwnDemandAndCapacityNotificationRepository>{
+public class ReportedDemandAndCapacityNotificationService extends DemandAndCapacityNotificationService<ReportedDemandAndCapacityNotification, ReportedDemandAndCapacityNotificationRepository> {
 
-    public OwnDemandAndCapacityNotificationService(OwnDemandAndCapacityNotificationRepository ownNotificationRepository, PartnerService partnerService, MaterialPartnerRelationService mpr) {
-        super(ownNotificationRepository, partnerService, mpr);
+    public ReportedDemandAndCapacityNotificationService(ReportedDemandAndCapacityNotificationRepository reportedNotificationRepository,
+            PartnerService partnerService, MaterialPartnerRelationService mpr) {
+        super(reportedNotificationRepository, partnerService, mpr);
     }
 
-    public List<OwnDemandAndCapacityNotification>  findAllByPartnerBpnl(String bpnl) {
-        return repository.findAll().stream().filter(notification -> notification.getPartner().getBpnl().equals(bpnl)).toList();
+    public List<ReportedDemandAndCapacityNotification> findAllByPartnerBpnl(String bpnl) {
+        return repository.findAll().stream().filter(notification -> notification.getPartner().getBpnl().equals(bpnl))
+                .toList();
     }
 
     @Override
-    public boolean validate(OwnDemandAndCapacityNotification notification) {
+    public boolean validate(ReportedDemandAndCapacityNotification notification) {
         return notification.getPartner() != null &&
                 notification.getText() != null &&
                 notification.getLeadingRootCause() != null &&
@@ -52,7 +54,7 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
                 validateSites(notification);
     }
 
-    public boolean validateMaterials(OwnDemandAndCapacityNotification notification) {
+    public boolean validateMaterials(ReportedDemandAndCapacityNotification notification) {
         if (notification.getMaterials() == null || notification.getMaterials().isEmpty()) {
             return true;
         }
@@ -61,15 +63,15 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
             notification.getMaterials().contains(mpr.getMaterial())).count() == notification.getMaterials().size();
     }
 
-    public boolean validateSites(OwnDemandAndCapacityNotification notification) {
+    public boolean validateSites(ReportedDemandAndCapacityNotification notification) {
         return (
-            notification.getAffectedSitesRecipient() == null ||
-            notification.getAffectedSitesRecipient().isEmpty() ||
-            notification.getAffectedSitesRecipient().stream().allMatch(site -> notification.getPartner().getSites().contains(site))
-        ) && (
             notification.getAffectedSitesSender() == null ||
             notification.getAffectedSitesSender().isEmpty() ||
-            notification.getAffectedSitesSender().stream().allMatch(site -> partnerService.getOwnPartnerEntity().getSites().contains(site))
+            notification.getAffectedSitesSender().stream().allMatch(site -> notification.getPartner().getSites().contains(site))
+        ) && (
+            notification.getAffectedSitesRecipient() == null ||
+            notification.getAffectedSitesRecipient().isEmpty() ||
+            notification.getAffectedSitesRecipient().stream().allMatch(site -> partnerService.getOwnPartnerEntity().getSites().contains(site))
         );
     }
 }

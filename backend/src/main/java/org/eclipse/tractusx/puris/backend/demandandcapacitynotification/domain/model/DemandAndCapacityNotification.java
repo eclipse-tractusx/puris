@@ -18,7 +18,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package org.eclipse.tractusx.puris.backend.notification.domain.model;
+package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model;
 
 import java.util.Date;
 import java.util.List;

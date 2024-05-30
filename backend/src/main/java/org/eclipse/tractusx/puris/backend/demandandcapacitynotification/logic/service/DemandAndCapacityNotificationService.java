@@ -18,7 +18,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package org.eclipse.tractusx.puris.backend.notification.logic.service;
+package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service;
 
 import java.util.Date;
 import java.util.List;
@@ -27,9 +27,9 @@ import java.util.function.Function;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.DemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.notification.domain.model.DemandAndCapacityNotification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public abstract class DemandAndCapacityNotificationService<TEntity extends DemandAndCapacityNotification, TRepository extends JpaRepository<TEntity, UUID>> {

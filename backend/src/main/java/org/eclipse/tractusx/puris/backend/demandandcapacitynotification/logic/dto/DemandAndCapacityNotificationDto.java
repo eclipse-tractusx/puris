@@ -18,7 +18,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package org.eclipse.tractusx.puris.backend.notification.logic.dto;
+package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
-import org.eclipse.tractusx.puris.backend.notification.domain.model.EffectEnumeration;
-import org.eclipse.tractusx.puris.backend.notification.domain.model.LeadingRootCauseEnumeration;
-import org.eclipse.tractusx.puris.backend.notification.domain.model.StatusEnumeration;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.EffectEnumeration;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.LeadingRootCauseEnumeration;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -40,7 +40,7 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString
-public class NotificationDto implements Serializable {
+public class DemandAndCapacityNotificationDto implements Serializable {
     private UUID uuid;
 
     private UUID relatedNotificationId;

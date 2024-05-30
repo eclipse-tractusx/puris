@@ -18,11 +18,11 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package org.eclipse.tractusx.puris.backend.notification.domain.repository;
+package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository;
 
 import java.util.UUID;
 
-import org.eclipse.tractusx.puris.backend.notification.domain.model.OwnDemandAndCapacityNotification;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

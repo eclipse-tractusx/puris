@@ -18,24 +18,21 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package org.eclipse.tractusx.puris.backend.notification.domain.model;
+package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-public enum LeadingRootCauseEnumeration {
-    STRIKE("strike"),
-    NATURAL_DISASTER("natural-disaster"),
-    PRODUCTION_INCIDENT("production-incident"),
-    PANDEMIC_OR_EPIDEMIC("pandemic-or-epidemic"),
-    LOGISTICS_DISRUPTION("logistics-disruption"),
-    WAR("war"),
-    OTHER("other");
+public enum EffectEnumeration {
+    DEMAND_REDUCTION("demand-reduction"),
+    DEMAND_INCREASE("demand-increase"),
+    CAPACITY_REDUCTION("capacity-reduction"),
+    CAPACITY_INCREASE("capacity-increase");
 
     private String value;
 
-    LeadingRootCauseEnumeration(String value) {
+    EffectEnumeration(String value) {
         this.value = value;
     }
 
