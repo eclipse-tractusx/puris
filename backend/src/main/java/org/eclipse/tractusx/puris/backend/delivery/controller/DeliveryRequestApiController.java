@@ -66,7 +66,7 @@ public class DeliveryRequestApiController {
             log.warn("Rejecting request at Delivery Information Submodel request 2.0.0 endpoint");
             return ResponseEntity.badRequest().build();
         }
-        
+
         if (!"$value".equals(representation)) {
             log.warn("Rejecting request at Delivery Information Submodel request 2.0.0 endpoint, missing '$value' in request");
             if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
@@ -75,8 +75,11 @@ public class DeliveryRequestApiController {
             log.warn("Received " + representation + " from " + bpnl);
             return ResponseEntity.status(501).build();
         }
+
+        log.info("Received request for " + materialNumberCx + " from " + bpnl);
         var samm = deliveryRequestApiSrvice.handleDeliverySubmodelRequest(bpnl, materialNumberCx);
         if (samm == null) {
+            log.error("SAMM for delivery is null, return 500.");
             return ResponseEntity.status(500).build();
         }
         return ResponseEntity.ok(samm);

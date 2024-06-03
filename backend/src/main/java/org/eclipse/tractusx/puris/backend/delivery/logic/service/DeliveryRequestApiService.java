@@ -24,9 +24,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.delivery.domain.model.DeliveryResponsibilityEnumeration;
+import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.logic.adapter.DeliveryInformationSammMapper;
 import org.eclipse.tractusx.puris.backend.delivery.logic.dto.deliverysamm.DeliveryInformation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -35,7 +38,9 @@ import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.Directio
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Service
 @Slf4j
@@ -84,13 +89,42 @@ public class DeliveryRequestApiService {
             return null;
         }
 
-        var mpr = mprService.find(material,partner);
-        if (mpr == null || !mpr.isPartnerSuppliesMaterial()) {
+        // if the material number cx has been defined by us, we're returning information as an supplier
+        // that means our partner is acting as customer
+        boolean partnerIsCustomer = material.getMaterialNumberCx().equals(materialNumberCx);
+        var mpr = mprService.find(material, partner);
+        if (mpr == null ||
+            (partnerIsCustomer && !mpr.isPartnerBuysMaterial()) ||
+            (!partnerIsCustomer && !mpr.isPartnerSuppliesMaterial())
+        ) {
             // only send an answer if partner is registered as supplier
+            log.warn(
+                "Partner acts as role '{}' but tried to access data for material number cx '{}' for the " +
+                    "opposite role '{}'. Returning no data at all.",
+                partnerIsCustomer ? "Customer" : "Supplier",
+                materialNumberCx,
+                partnerIsCustomer ? "Supplier" : " Customer"
+            );
             return null;
         }
 
-        var currentDeliveries = ownDeliveryService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.empty(), Optional.of(partner.getBpnl()));
+        List<OwnDelivery> currentDeliveries = ownDeliveryService.findAllByFilters(
+            Optional.of(material.getOwnMaterialNumber()),
+            Optional.empty(),
+            Optional.of(partner.getBpnl())
+        );
+
+        Predicate<OwnDelivery> parnterRoleDirectionPredicate = partnerRoleDirectionPredicate(partnerIsCustomer, mpr);
+        currentDeliveries = currentDeliveries.stream().filter(
+            parnterRoleDirectionPredicate
+        ).toList();
+        log.debug(
+            "Found '{}' deliveries for material number cx '{}' for partner with bpnl '{}' asking in role '{}'.",
+            currentDeliveries.size(),
+            materialNumberCx,
+            bpnl,
+            partnerIsCustomer ? "Customer" : "Supplier"
+        );
         return sammMapper.ownDeliveryToSamm(currentDeliveries, partner, material);
     }
 
@@ -125,5 +159,39 @@ public class DeliveryRequestApiService {
         } catch (Exception e) {
             log.error("Error in Reported Deliveries Request for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
         }
+    }
+
+    /**
+     * filters OwnDelivery entities to be returned to a partner based on his role
+     * <p>
+     * Based on accuracy the following rules apply:
+     * <li>use role derived from cx id and incoterm responsibility</li>
+     * <li>use mpr role, if only one is present and no incoterms are given</li>
+     *
+     * @param partnerIsCustomer to use as role in combination with incoterms (derived from material number cx)
+     * @param mpr               to check the supplies / orders relation in case of missing incoterms
+     * @return Predicate<OwnDelivery> returning true if incoterms and role match or no incoterm but only one role on mpr is given, else false
+     */
+    public static Predicate<OwnDelivery> partnerRoleDirectionPredicate(boolean partnerIsCustomer, MaterialPartnerRelation mpr) {
+        return delivery -> {
+            // return all, if no incoterm is set but partner only acts in one role
+            if (delivery.getIncoterm() == null) {
+                // unlikely that we have a mpr without any role set but then we also don't return something
+                if (mpr.isPartnerBuysMaterial() && mpr.isPartnerSuppliesMaterial()) {
+                    return false;
+                } else return mpr.isPartnerBuysMaterial() || mpr.isPartnerSuppliesMaterial();
+            }
+
+            // if we have incoterms set, filter more sophisticatedly based on responsbility of incoterms and role
+            // derived from material number cx
+            DeliveryResponsibilityEnumeration responsibility = delivery.getIncoterm().getResponsibility();
+            if (partnerIsCustomer) {
+                return responsibility == DeliveryResponsibilityEnumeration.CUSTOMER ||
+                    responsibility == DeliveryResponsibilityEnumeration.PARTIAL;
+            } else {
+                return responsibility == DeliveryResponsibilityEnumeration.SUPPLIER ||
+                    responsibility == DeliveryResponsibilityEnumeration.PARTIAL;
+            }
+        };
     }
 }
