@@ -73,15 +73,33 @@ public class DeliveryRequestApiService {
         }
 
         Material material = materialService.findByMaterialNumberCx(materialNumberCx);
+        MaterialPartnerRelation mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx);
+
         if (material == null) {
             // Could not identify partner cx number. I.e. we do not have that partner's
             // CX id in one of our MaterialPartnerRelation entities. Try to fix this by
             // looking for MPR's, where that partner is a supplier and where we don't have
             // a partnerCXId yet. Of course this can only work if there was previously an MPR
             // created, but for some unforeseen reason, the initial PartTypeRetrieval didn't succeed.
-            log.warn("Could not find " + materialNumberCx + " from partner " + partner.getBpnl());
-            mprService.triggerPartTypeRetrievalTask(partner);
-            material = materialService.findByMaterialNumberCx(materialNumberCx);
+            // Sidenote: This still means that the ShellDescriptor has not been created and someone tries to access our
+            // api without using the href from DTR
+            if (mpr == null) {
+                log.warn("Could not find " + materialNumberCx + " from partner " + partner.getBpnl());
+                log.warn("ATTENTION: PARTNER WITH BPNL {} ACCESSED THE SERVICE FOR A MATERIAL WITHOUT SHELL DESCRIPTOR " +
+                    "IN DTR. THIS MIGHT BE A SECURITY ISSUE!", partner.getBpnl());
+                mprService.triggerPartTypeRetrievalTask(partner);
+                // check if cx id is now given
+                mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx);
+                if (mpr == null) {
+                    log.error("No material partner relation for BPNL '{}' and material global asset id '{}'." +
+                            "Abort answering delivery request.",
+                        partner.getBpnl(),
+                        materialNumberCx
+                    );
+                    return null;
+                }
+            }
+            material = mpr.getMaterial();
         }
 
         if (material == null) {
@@ -91,8 +109,9 @@ public class DeliveryRequestApiService {
 
         // if the material number cx has been defined by us, we're returning information as an supplier
         // that means our partner is acting as customer
+        // search mpr again by partner and material to have one mpr at hand independent of partner role
         boolean partnerIsCustomer = material.getMaterialNumberCx().equals(materialNumberCx);
-        var mpr = mprService.find(material, partner);
+        mpr = mprService.find(material, partner);
         if (mpr == null ||
             (partnerIsCustomer && !mpr.isPartnerBuysMaterial()) ||
             (!partnerIsCustomer && !mpr.isPartnerSuppliesMaterial())
@@ -103,7 +122,7 @@ public class DeliveryRequestApiService {
                     "opposite role '{}'. Returning no data at all.",
                 partnerIsCustomer ? "Customer" : "Supplier",
                 materialNumberCx,
-                partnerIsCustomer ? "Supplier" : " Customer"
+                partnerIsCustomer ? "Supplier" : "Customer"
             );
             return null;
         }
@@ -186,10 +205,10 @@ public class DeliveryRequestApiService {
             // derived from material number cx
             DeliveryResponsibilityEnumeration responsibility = delivery.getIncoterm().getResponsibility();
             if (partnerIsCustomer) {
-                return responsibility == DeliveryResponsibilityEnumeration.CUSTOMER ||
+                return responsibility == DeliveryResponsibilityEnumeration.SUPPLIER ||
                     responsibility == DeliveryResponsibilityEnumeration.PARTIAL;
             } else {
-                return responsibility == DeliveryResponsibilityEnumeration.SUPPLIER ||
+                return responsibility == DeliveryResponsibilityEnumeration.CUSTOMER ||
                     responsibility == DeliveryResponsibilityEnumeration.PARTIAL;
             }
         };
