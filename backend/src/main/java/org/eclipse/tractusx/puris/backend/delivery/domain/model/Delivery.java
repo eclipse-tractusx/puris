@@ -25,7 +25,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
@@ -108,23 +107,23 @@ public abstract class Delivery {
 
         final Delivery that = (Delivery) o;
         return this.getMaterial().getOwnMaterialNumber().equals(that.getMaterial().getOwnMaterialNumber()) &&
-                this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
-                this.getTrackingNumber().equals(that.getTrackingNumber()) &&
-                this.getIncoterm().equals(that.getIncoterm()) &&
-                this.getDestinationBpns().equals(that.getDestinationBpns()) &&
-                this.getDestinationBpna().equals(that.getDestinationBpna()) &&
-                this.getOriginBpns().equals(that.getOriginBpns()) &&
-                this.getOriginBpna().equals(that.getOriginBpna()) &&
-                this.getDateOfDeparture().equals(that.getDateOfDeparture()) &&
-                this.getDateOfArrival().equals(that.getDateOfArrival()) &&
-                this.getDepartureType().equals(that.getDepartureType()) &&
-                this.getArrivalType().equals(that.getArrivalType()) &&
-                this.getIncoterm().equals(that.getIncoterm()) &&
-                (
-                    Objects.equals(this.getCustomerOrderNumber(), that.getCustomerOrderNumber()) && 
+            this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
+            Objects.equals(this.getTrackingNumber(), that.getTrackingNumber()) &&
+            this.getIncoterm().equals(that.getIncoterm()) &&
+            this.getDestinationBpns().equals(that.getDestinationBpns()) &&
+            this.getDestinationBpna().equals(that.getDestinationBpna()) &&
+            this.getOriginBpns().equals(that.getOriginBpns()) &&
+            this.getOriginBpna().equals(that.getOriginBpna()) &&
+            this.getDateOfDeparture().equals(that.getDateOfDeparture()) &&
+            this.getDateOfArrival().equals(that.getDateOfArrival()) &&
+            this.getDepartureType().equals(that.getDepartureType()) &&
+            this.getArrivalType().equals(that.getArrivalType()) &&
+            this.getIncoterm().equals(that.getIncoterm()) &&
+            (
+                Objects.equals(this.getCustomerOrderNumber(), that.getCustomerOrderNumber()) &&
                     Objects.equals(this.getCustomerOrderPositionNumber(), that.getCustomerOrderPositionNumber()) &&
                     Objects.equals(this.getSupplierOrderNumber(), that.getSupplierOrderNumber())
-                );
+            );
     }
 
     @Override
