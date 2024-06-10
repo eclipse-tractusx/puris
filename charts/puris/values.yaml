@@ -471,6 +471,10 @@ backend:
     # In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that
     # Material entity.
     generatematerialcatenaxid: true
+    erpadapter:
+      url: http://my-erpadapter:8080
+      authkey: x-api-key
+      authsecret: erp-password
 
   # -- Extra environment variables that will be passed onto the backend deployment pods
   env: {}

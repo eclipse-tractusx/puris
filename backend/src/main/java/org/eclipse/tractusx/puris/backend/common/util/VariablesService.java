@@ -50,11 +50,32 @@ public class VariablesService {
      */
     private String demoRole;
 
-    @Value("${puris.baseurl}" + "catena/edrendpoint")
+    @Value("${puris.erpadapter.url}")
     /**
-     * The edrEndpoint to be used during consumer pull asset transfers.
+     * The URL of the ERP adapter
      */
-    private String edrEndpoint;
+    private String erpAdapterUrl;
+
+    /**
+     * The URL under which we expect responses from
+     * the ERP adapter
+     */
+    @Value("${puris.baseurl}" + "catena/erp-adapter")
+    private String erpResponseUrl;
+
+    /**
+     * The auth-key used when accessing the ERP adapter's
+     * request interface
+     */
+    @Value("${puris.erpadapter.authkey}")
+    private String erpAdapterAuthKey;
+
+    /**
+     * The auth-secret used when accessing the ERP adapter's
+     * request interface
+     */
+    @Value("${puris.erpadapter.authsecret}")
+    private String erpAdapterAuthSecret;
 
     @Value("${puris.baseurl}" + "catena/item-stock/request")
     /**

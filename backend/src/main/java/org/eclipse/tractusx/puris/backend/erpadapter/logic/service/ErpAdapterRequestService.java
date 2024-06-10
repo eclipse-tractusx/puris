@@ -20,6 +20,7 @@
 
 package org.eclipse.tractusx.puris.backend.erpadapter.logic.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
 import org.eclipse.tractusx.puris.backend.erpadapter.domain.repository.ErpAdapterRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,16 +29,39 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class ErpAdapterRequestService {
 
     @Autowired
     private ErpAdapterRequestRepository repository;
 
+    @Autowired
+    private ErpAdapterRequestClient erpAdapterRequestClient;
+
     public ErpAdapterRequest create(ErpAdapterRequest erpAdapterRequest) {
         if (erpAdapterRequest.getId() != null && repository.existsById(erpAdapterRequest.getId())) {
+            log.error("ErpAdapterRequest with id {} already exists", erpAdapterRequest.getId());
             return null;
         }
         return repository.save(erpAdapterRequest);
+    }
+
+    public void createAndSend(ErpAdapterRequest erpAdapterRequest) {
+        erpAdapterRequest = create(erpAdapterRequest);
+        if (erpAdapterRequest != null) {
+            Integer responseCode = erpAdapterRequestClient.sendRequest(erpAdapterRequest);
+            if (responseCode != null) {
+                if (responseCode >= 200 && responseCode < 400) {
+                    log.info("Successfully sent request to ERP Adapter");
+                } else {
+                    log.warn("Received status code {} from ERP Adapter ", responseCode);
+                }
+                erpAdapterRequest.setResponseCode(responseCode);
+                update(erpAdapterRequest);
+            } else {
+                log.error("Failed to send request to ERP Adapter");
+            }
+        }
     }
 
     public ErpAdapterRequest get(UUID id) {
@@ -50,6 +74,7 @@ public class ErpAdapterRequestService {
         if (repository.existsById(erpAdapterRequest.getId())) {
             return repository.save(erpAdapterRequest);
         }
+        log.error("ErpAdapterRequest with id {} did not exist, could not update entity", erpAdapterRequest.getId());
         return null;
     }
 
