@@ -136,7 +136,7 @@ public class CustomerSupplyService {
             daysOfSupply.getStockLocationBPNS() != null &&
             daysOfSupply.getPartner() != partnerService.getOwnPartnerEntity() &&
             daysOfSupply.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(daysOfSupply.getStockLocationBPNS())) &&
-            (daysOfSupply.getStockLocationBPNA() == null || daysOfSupply.getStockLocationBPNA() == daysOfSupply.getStockLocationBPNS());
+            (daysOfSupply.getStockLocationBPNA().equals(null) || daysOfSupply.getStockLocationBPNA().equals(daysOfSupply.getStockLocationBPNS()));
     }
 
     private final double getDaysOfSupply(double stockQuantity, List<Double> demands) {
