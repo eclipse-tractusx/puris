@@ -96,6 +96,7 @@ public class SecurityConfig {
                         "/planned-production/**",
                         "/material-demand/**",
                         "/delivery-information/**",
+                        "/supply/**",
                         "/edc/**",
                         "/erp-adapter/**",
                         "/parttypeinformation/**"

@@ -18,13 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.delivery.domain.repository;
+package org.eclipse.tractusx.puris.backend.supply.domain.model;
 
-import java.util.UUID;
+import jakarta.persistence.Entity;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
-import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
-import org.springframework.data.jpa.repository.JpaRepository;
+@Entity
+@SuperBuilder
+@NoArgsConstructor
+@ToString(callSuper = true)
+public class OwnSupplierSupply extends Supply {
 
-public interface DeliveryRepository extends JpaRepository<OwnDelivery, UUID> {
-    
 }

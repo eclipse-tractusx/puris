@@ -20,6 +20,11 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -32,11 +37,12 @@ import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedDelivery
 import org.eclipse.tractusx.puris.backend.delivery.domain.repository.ReportedDeliveryRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ReportedDeliveryService {
-    public final ReportedDeliveryRepository repository;
+    private final ReportedDeliveryRepository repository;
 
     private final PartnerService partnerService;
 
@@ -63,7 +69,12 @@ public class ReportedDeliveryService {
         return repository.findById(id).orElse(null);
     }
 
-    public final List<ReportedDelivery> findAllByFilters(Optional<String> ownMaterialNumber, Optional<String> bpns, Optional<String> bpnl) {
+    public final List<ReportedDelivery> findAllByFilters(
+        Optional<String> ownMaterialNumber,
+        Optional<String> bpns,
+        Optional<String> bpnl,
+        Optional<Date> day,
+        Optional<DirectionCharacteristic> direction) {
         Stream<ReportedDelivery> stream = repository.findAll().stream();
         if (ownMaterialNumber.isPresent()) {
             stream = stream.filter(delivery -> delivery.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
@@ -74,7 +85,51 @@ public class ReportedDeliveryService {
         if (bpnl.isPresent()) {
             stream = stream.filter(delivery -> delivery.getPartner().getBpnl().equals(bpnl.get()));
         }
+        if (day.isPresent()) {
+            LocalDate localDayDate = Instant.ofEpochMilli(day.get().getTime())
+                .atOffset(ZoneOffset.UTC)
+                .toLocalDate();
+            stream = stream.filter(delivery -> {
+                long time = direction.get() == DirectionCharacteristic.INBOUND
+                    ? delivery.getDateOfArrival().getTime()
+                    : delivery.getDateOfDeparture().getTime();
+                LocalDate deliveryDayDate = Instant.ofEpochMilli(time)
+                    .atOffset(ZoneOffset.UTC)
+                    .toLocalDate();
+                return deliveryDayDate.getDayOfMonth() == localDayDate.getDayOfMonth();
+            });
+        }
+        if (direction.isPresent()) {
+            if (direction.get() == DirectionCharacteristic.INBOUND) {
+                stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()));
+            } else {
+                stream = stream.filter(delivery -> delivery.getOriginBpns().equals(bpns.get()));
+            }
+        }
         return stream.toList();
+    }
+
+    public final double getSumOfQuantities(List<ReportedDelivery> deliveries) {
+        double sum = 0;
+        for (ReportedDelivery delivery : deliveries) {
+            sum += delivery.getQuantity();
+        }
+        return sum;
+    }
+
+    public final List<Double> getQuantityForDays(String material, String partnerBpnl, String siteBpns, DirectionCharacteristic direction, int numberOfDays) {
+        List<Double> deliveryQtys = new ArrayList<>();
+        LocalDate localDate = LocalDate.now();
+
+        for (int i = 0; i < numberOfDays; i++) {
+            Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            List<ReportedDelivery> deliveries = findAllByFilters(Optional.of(material), Optional.of(siteBpns), Optional.of(partnerBpnl), Optional.of(date), Optional.of(direction));
+            double deliveryQuantity = getSumOfQuantities(deliveries);
+            deliveryQtys.add(deliveryQuantity);
+
+            localDate = localDate.plusDays(1);
+        }
+        return deliveryQtys;
     }
 
     public final ReportedDelivery create(ReportedDelivery delivery) {

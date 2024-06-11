@@ -73,7 +73,7 @@ public class ProductionRequestApiService {
             // only send an answer if partner is registered as customer
             return null;
         }
-        var currentProduction = ownProductionService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
+        var currentProduction = ownProductionService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty(), Optional.empty());
         return sammMapper.ownProductionToSamm(currentProduction, partner, material);
     }
 

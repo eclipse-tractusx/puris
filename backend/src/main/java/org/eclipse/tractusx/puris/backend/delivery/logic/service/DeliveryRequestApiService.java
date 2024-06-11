@@ -90,7 +90,7 @@ public class DeliveryRequestApiService {
             return null;
         }
 
-        var currentDeliveries = ownDeliveryService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.empty(), Optional.of(partner.getBpnl()));
+        var currentDeliveries = ownDeliveryService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.empty(), Optional.of(partner.getBpnl()), Optional.empty(), Optional.empty());
         return sammMapper.ownDeliveryToSamm(currentDeliveries, partner, material);
     }
 
@@ -114,7 +114,7 @@ public class DeliveryRequestApiService {
                 }
             }
             // delete older data:
-            var oldDeliveries = reportedDeliveryService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.empty(), Optional.of(partner.getBpnl()));
+            var oldDeliveries = reportedDeliveryService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.empty(), Optional.of(partner.getBpnl()), Optional.empty(), Optional.empty());
             for (var oldDelivery : oldDeliveries) {
                 reportedDeliveryService.delete(oldDelivery.getUuid());
             }
