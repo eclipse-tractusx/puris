@@ -20,17 +20,8 @@ SPDX-License-Identifier: Apache-2.0
 
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
@@ -41,7 +32,7 @@ import org.eclipse.tractusx.puris.backend.production.domain.repository.OwnProduc
 import org.springframework.stereotype.Service;
 
 @Service
-public class OwnProductionService {
+public class OwnProductionService extends ProductionService<OwnProduction> {
     private final OwnProductionRepository repository;
 
     private final PartnerService partnerService;
@@ -52,68 +43,6 @@ public class OwnProductionService {
         this.repository = repository;
         this.partnerService = partnerService;
         this.validator = this::validate;
-    }
-
-    public final List<OwnProduction> findAll() {
-        return repository.findAll();
-    }
-
-    public final List<OwnProduction> findAllByBpnl(String bpnl) {
-        return repository.findAll().stream().filter(production -> production.getPartner().getBpnl().equals(bpnl))
-                .toList();
-    }
-
-    public final List<OwnProduction> findAllByOwnMaterialNumber(String ownMaterialNumber) {
-        return repository.findAll().stream().filter(production -> production.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
-                .toList();
-    }
-
-    public final List<OwnProduction> findAllByFilters(
-        Optional<String> ownMaterialNumber,
-        Optional<String> bpnl,
-        Optional<String> bpns,
-        Optional<Date> dayOfCompletion) {
-        Stream<OwnProduction> stream = repository.findAll().stream();
-        if (ownMaterialNumber.isPresent()) {
-            stream = stream.filter(production -> production.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
-        }
-        if (bpnl.isPresent()) {
-            stream = stream.filter(production -> production.getPartner().getBpnl().equals(bpnl.get()));
-        }
-        if (bpns.isPresent()) {
-            stream = stream.filter(production -> production.getProductionSiteBpns().equals(bpns.get()));
-        }
-        if (dayOfCompletion.isPresent()) {
-            LocalDate localEstimatedTimeOfCompletion = Instant.ofEpochMilli(dayOfCompletion.get().getTime())
-                .atOffset(ZoneOffset.UTC)
-                .toLocalDate();
-            stream = stream.filter(production -> {
-                LocalDate productionEstimatedTimeOfCompletion = Instant.ofEpochMilli(production.getEstimatedTimeOfCompletion().getTime())
-                    .atOffset(ZoneOffset.UTC)
-                    .toLocalDate();
-                return productionEstimatedTimeOfCompletion.getDayOfMonth() == localEstimatedTimeOfCompletion.getDayOfMonth();
-            });
-        }
-        return stream.toList();
-    }
-
-    public final OwnProduction findById(UUID uuid) {
-        return repository.findById(uuid).orElse(null);
-    }
-
-    public final List<Double> getQuantityForDays(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
-        List<Double> quantities = new ArrayList<>();
-        LocalDate localDate = LocalDate.now();
-
-        for (int i = 0; i < numberOfDays; i++) {
-            Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            List<OwnProduction> productions = findAllByFilters(Optional.of(material), Optional.of(partnerBpnl), Optional.of(siteBpns), Optional.of(date));
-            double productionQuantity = getSumOfQuantities(productions);
-            quantities.add(productionQuantity);
-
-            localDate = localDate.plusDays(1);
-        }
-        return quantities;
     }
 
     public final OwnProduction create(OwnProduction production) {
@@ -138,17 +67,6 @@ public class OwnProductionService {
         return repository.saveAll(productions);
     }
 
-    public final OwnProduction update(OwnProduction production) {
-        if (production.getUuid() == null || repository.findById(production.getUuid()).isEmpty()) {
-            return null;
-        }
-        return repository.save(production);
-    }
-
-    public final void delete(UUID uuid) {
-        repository.deleteById(uuid);
-    }
-
     public boolean validate(OwnProduction production) {
         Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
         return 
@@ -168,13 +86,5 @@ public class OwnProductionService {
                 production.getCustomerOrderPositionNumber() == null && 
                 production.getSupplierOrderNumber() == null
             ));
-    }
-
-    private final double getSumOfQuantities(List<OwnProduction> productions) {
-        double sum = 0;
-        for (OwnProduction production : productions) {
-            sum += production.getQuantity();
-        }
-        return sum;
     }
 }

@@ -20,17 +20,9 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
@@ -39,11 +31,10 @@ import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.repository.OwnDeliveryRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.stereotype.Service;
 
 @Service
-public class OwnDeliveryService {
+public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
     private final OwnDeliveryRepository repository;
 
     private final PartnerService partnerService;
@@ -58,10 +49,6 @@ public class OwnDeliveryService {
         this.validator = this::validate;
     }
 
-    public final List<OwnDelivery> findAll() {
-        return repository.findAll();
-    }
-
     public final List<OwnDelivery> findAllByBpnl(String bpnl) {
         return repository.findAll().stream().filter(delivery -> delivery.getPartner().getBpnl().equals(bpnl))
                 .toList();
@@ -70,73 +57,6 @@ public class OwnDeliveryService {
     public final List<OwnDelivery> findAllByOwnMaterialNumber(String ownMaterialNumber) {
         return repository.findAll().stream().filter(delivery -> delivery.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
                 .toList();
-    }
-
-    public final List<OwnDelivery> findAllByFilters(
-        Optional<String> ownMaterialNumber,
-        Optional<String> bpns,
-        Optional<String> bpnl,
-        Optional<Date> day,
-        Optional<DirectionCharacteristic> direction) {
-        Stream<OwnDelivery> stream = repository.findAll().stream();
-        if (ownMaterialNumber.isPresent()) {
-            stream = stream.filter(delivery -> delivery.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
-        }
-        if (bpns.isPresent()) {
-            stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()) || delivery.getOriginBpns().equals(bpns.get()));
-        }
-        if (bpnl.isPresent()) {
-            stream = stream.filter(delivery -> delivery.getPartner().getBpnl().equals(bpnl.get()));
-        }
-        if (day.isPresent()) {
-            LocalDate localDayDate = Instant.ofEpochMilli(day.get().getTime())
-                .atOffset(ZoneOffset.UTC)
-                .toLocalDate();
-            stream = stream.filter(delivery -> {
-                long time = direction.get() == DirectionCharacteristic.INBOUND
-                    ? delivery.getDateOfArrival().getTime()
-                    : delivery.getDateOfDeparture().getTime();
-                LocalDate deliveryDayDate = Instant.ofEpochMilli(time)
-                    .atOffset(ZoneOffset.UTC)
-                    .toLocalDate();
-                return deliveryDayDate.getDayOfMonth() == localDayDate.getDayOfMonth();
-            });
-        }
-        if (direction.isPresent()) {
-            if (direction.get() == DirectionCharacteristic.INBOUND) {
-                stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()));
-            } else {
-                stream = stream.filter(delivery -> delivery.getOriginBpns().equals(bpns.get()));
-            }
-        }
-        return stream.toList();
-    }
-
-    public final OwnDelivery findById(UUID id) {
-        return repository.findById(id).orElse(null);
-    }
-
-    public final double getSumOfQuantities(List<OwnDelivery> deliveries) {
-        double sum = 0;
-        for (OwnDelivery delivery : deliveries) {
-            sum += delivery.getQuantity();
-        }
-        return sum;
-    }
-
-    public final List<Double> getQuantityForDays(String material, String partnerBpnl, String siteBpns, DirectionCharacteristic direction, int numberOfDays) {
-        List<Double> deliveryQtys = new ArrayList<>();
-        LocalDate localDate = LocalDate.now();
-
-        for (int i = 0; i < numberOfDays; i++) {
-            Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            List<OwnDelivery> deliveries = findAllByFilters(Optional.of(material), Optional.of(siteBpns), Optional.of(partnerBpnl), Optional.of(date), Optional.of(direction));
-            double deliveryQuantity = getSumOfQuantities(deliveries);
-            deliveryQtys.add(deliveryQuantity);
-            
-            localDate = localDate.plusDays(1);
-        }
-        return deliveryQtys;
     }
 
     public final OwnDelivery create(OwnDelivery delivery) {
@@ -158,17 +78,6 @@ public class OwnDeliveryService {
             throw new KeyAlreadyExistsException("delivery already exists");
         }
         return repository.saveAll(deliveries);
-    }
-
-    public final OwnDelivery update(OwnDelivery delivery) {
-        if (delivery.getUuid() == null || repository.findById(delivery.getUuid()).isEmpty()) {
-            return null;
-        }
-        return repository.save(delivery);
-    }
-
-    public final void delete(UUID id) {
-        repository.deleteById(id);
     }
 
     public boolean validate(OwnDelivery delivery) {

@@ -21,7 +21,6 @@
 package org.eclipse.tractusx.puris.backend.supply.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.eclipse.tractusx.puris.backend.supply.domain.model.Supply;
 import org.eclipse.tractusx.puris.backend.supply.logic.dto.SupplyDto;
@@ -36,10 +35,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-
-
 @RestController
-@RequestMapping("supply")
+@RequestMapping("days-of-supply")
 public class SupplyController {
     @Autowired
     private CustomerSupplyService customerSupplyService;
@@ -60,9 +57,9 @@ public class SupplyController {
 
     @GetMapping("customer/reported")
     @Operation(summary = "Get days of supply for customer.", 
-        description = "Get days of supply for customer for given material number. Optionally it can be filtered by partner bpnl.")
-    public List<SupplyDto> getCustomerDaysOfSupply(String materialNumber, Optional<String> bpnl) {
-        return customerSupplyService.findAllByFilters(Optional.of(materialNumber), bpnl)
+        description = "Get days of supply for customer for given material number and partner bpnl.")
+    public List<SupplyDto> getCustomerDaysOfSupply(String materialNumber, String bpnl) {
+        return customerSupplyService.findByPartnerBpnlAndOwnMaterialNumber(materialNumber, bpnl)
             .stream().map(this::convertToDto).toList();
     }
 
@@ -76,9 +73,9 @@ public class SupplyController {
 
     @GetMapping("supplier/reported")
     @Operation(summary = "Get days of supply for supplier.", 
-        description = "Get days of supply for supplier for given material number. Optionally it can be filtered by partner bpnl.")
-    public List<SupplyDto> getSupplierDaysOfSupply(String materialNumber, Optional<String> bpnl) {
-        return supplierSupplyService.findAllByFilters(Optional.of(materialNumber), bpnl)
+        description = "Get days of supply for supplier for given material number and partner bpnl.")
+    public List<SupplyDto> getSupplierDaysOfSupply(String materialNumber, String bpnl) {
+        return supplierSupplyService.findByPartnerBpnlAndOwnMaterialNumber(materialNumber, bpnl)
             .stream().map(this::convertToDto).toList();
     }
     

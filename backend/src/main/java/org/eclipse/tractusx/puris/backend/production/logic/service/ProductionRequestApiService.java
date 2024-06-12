@@ -92,7 +92,7 @@ public class ProductionRequestApiService {
                 }
             }
             // delete older data:
-            var oldProductions = reportedProductionService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
+            var oldProductions = reportedProductionService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty(), Optional.empty());
             for (var oldProduction : oldProductions) {
                 reportedProductionService.delete(oldProduction.getUuid());
             }

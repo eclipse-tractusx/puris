@@ -207,7 +207,7 @@ public class ProductionController {
     )
     public List<ProductionDto> getAllProductionsForPartner(String ownMaterialNumber, Optional<String> bpnl,
             Optional<String> site) {
-        return reportedProductionService.findAllByFilters(Optional.of(ownMaterialNumber), bpnl, site)
+        return reportedProductionService.findAllByFilters(Optional.of(ownMaterialNumber), bpnl, site, Optional.empty())
                 .stream().map(this::convertToDto).collect(Collectors.toList());
     }
 

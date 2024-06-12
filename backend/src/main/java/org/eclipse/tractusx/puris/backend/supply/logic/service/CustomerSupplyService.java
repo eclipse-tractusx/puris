@@ -33,45 +33,49 @@ import java.util.stream.Stream;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.OwnDeliveryService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.ReportedDeliveryService;
 import org.eclipse.tractusx.puris.backend.demand.logic.services.OwnDemandService;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialServiceImpl;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.OwnCustomerSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.ReportedCustomerSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.repository.ReportedCustomerSupplyRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CustomerSupplyService {
-    private final ReportedCustomerSupplyRepository repository;
-    private final PartnerService partnerService;
-    private final OwnDeliveryService ownDeliveryService;
-    private final ReportedDeliveryService reportedDeliveryService;
-    private final OwnDemandService demandService;
-    private final MaterialItemStockService stockService;
-    private final MaterialServiceImpl materialService;
+    @Autowired
+    private ReportedCustomerSupplyRepository repository;
+    @Autowired
+    private PartnerService partnerService;
+    @Autowired
+    private OwnDeliveryService ownDeliveryService;
+    @Autowired
+    private ReportedDeliveryService reportedDeliveryService;
+    @Autowired
+    private OwnDemandService demandService;
+    @Autowired
+    private MaterialItemStockService stockService;
+    @Autowired
+    private MaterialService materialService;
 
     protected final Function<ReportedCustomerSupply, Boolean> validator;
 
-    public CustomerSupplyService(
-        ReportedCustomerSupplyRepository customerRepository,
-        PartnerService partnerService,
-        OwnDeliveryService ownDeliveryService,
-        ReportedDeliveryService reportedDeliveryService,
-        OwnDemandService demandService,
-        MaterialItemStockService stockService,
-        MaterialServiceImpl materialService) {
-        this.repository = customerRepository;
-        this.partnerService = partnerService;
-        this.ownDeliveryService = ownDeliveryService;
-        this.reportedDeliveryService = reportedDeliveryService;
-        this.demandService = demandService;
-        this.stockService = stockService;
-        this.materialService = materialService;
+    public CustomerSupplyService() {
         this.validator = this::validate;
     }
 
+    /**
+     * Calculates the customer's days of supply for a given material, partner, and site over a specified number of days.
+     * It combines own and reported deliveries, and demand quantities to forecast the number of days the stock will last.
+     *
+     * @param material the material identifier for which the days of supply are being calculated.
+     * @param partnerBpnl The bpnl of the customer's partner.
+     * @param siteBpns the bpns of the site where the deliveries and demands are recorded.
+     * @param numberOfDays the number of days over which the forecast should be calculated.
+     * @return a list of {@link OwnCustomerSupply} objects, each containing the calculated days of supply for a specific date.
+     */
     public final List<OwnCustomerSupply> calculateCustomerDaysOfSupply(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
         List<OwnCustomerSupply> customerSupply = new ArrayList<>();
         LocalDate localDate = LocalDate.now();
@@ -128,6 +132,10 @@ public class CustomerSupplyService {
         return stream.toList();
     }
 
+    public final List<ReportedCustomerSupply> findByPartnerBpnlAndOwnMaterialNumber(String partnerBpnl, String ownMaterialNumber) {
+        return repository.findByPartner_BpnlAndMaterial_OwnMaterialNumber(partnerBpnl, ownMaterialNumber);
+    }
+
     public boolean validate(ReportedCustomerSupply daysOfSupply) {
         return 
             daysOfSupply.getPartner() != null &&
@@ -139,12 +147,16 @@ public class CustomerSupplyService {
             (daysOfSupply.getStockLocationBPNA().equals(null) || daysOfSupply.getStockLocationBPNA().equals(daysOfSupply.getStockLocationBPNS()));
     }
 
+    /**
+     * Calculates the number of days of supply based on the current stock quantity and a list of demands.
+     * @param stockQuantity Current stock amount
+     * @param demands Sublist of demands for current iteration
+     * @return The number of days of supply that the stock can cover.
+     */
     private final double getDaysOfSupply(double stockQuantity, List<Double> demands) {
         double daysOfSupply = 0;
 
-        for (int i = 0; i < demands.size(); i++) {
-            double demand = demands.get(i);
-
+        for (double demand : demands) {
             if (stockQuantity >= demand) {
                 daysOfSupply += 1;
                 stockQuantity = stockQuantity - demand;
@@ -159,6 +171,12 @@ public class CustomerSupplyService {
         return daysOfSupply;
     }
 
+    /**
+     * Merges own and reported deliveries into a single list.
+     * @param list1 Own deliveries
+     * @param list2 Reported deliveries
+     * @return a new list containing the summed delivery quantities from the input lists.
+     */
     private static List<Double> mergeDeliveries(List<Double> list1, List<Double> list2) {
         if (list1.size() != list2.size()) {
             throw new IllegalArgumentException("Lists must be of the same length");

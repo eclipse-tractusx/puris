@@ -47,8 +47,6 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @ToString
 public abstract class Supply {
-    // customer controller, supplier controller
-    // in dto flatten material and partner
     @Id
     @GeneratedValue
     protected UUID uuid;
