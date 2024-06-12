@@ -20,10 +20,7 @@
 
 package org.eclipse.tractusx.puris.backend.supply.logic.service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,10 +30,8 @@ import java.util.stream.Stream;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.OwnDeliveryService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.ReportedDeliveryService;
 import org.eclipse.tractusx.puris.backend.demand.logic.services.OwnDemandService;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.OwnCustomerSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.ReportedCustomerSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.repository.ReportedCustomerSupplyRepository;
@@ -44,7 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CustomerSupplyService {
+public class CustomerSupplyService extends SupplyService<OwnCustomerSupply> {
     @Autowired
     private ReportedCustomerSupplyRepository repository;
     @Autowired
@@ -55,15 +50,30 @@ public class CustomerSupplyService {
     private ReportedDeliveryService reportedDeliveryService;
     @Autowired
     private OwnDemandService demandService;
-    @Autowired
-    private MaterialItemStockService stockService;
-    @Autowired
-    private MaterialService materialService;
 
     protected final Function<ReportedCustomerSupply, Boolean> validator;
 
     public CustomerSupplyService() {
         this.validator = this::validate;
+    }
+
+    @Override
+    protected OwnCustomerSupply createSupplyInstance() {
+        return new OwnCustomerSupply();
+    }
+
+    @Override
+    protected List<Double> getAddedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+        List<Double> ownDeliveries = ownDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionCharacteristic.INBOUND, numberOfDays);
+        List<Double> reportedDeliveries = reportedDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionCharacteristic.INBOUND, numberOfDays);
+        List<Double> deliveries = mergeDeliveries(ownDeliveries, reportedDeliveries);
+        return deliveries;
+    }
+
+    @Override
+    protected List<Double> getConsumedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+        List<Double> demands = demandService.getQuantityForDays(material, partnerBpnl, siteBpns, numberOfDays);
+        return demands;
     }
 
     /**
@@ -77,40 +87,7 @@ public class CustomerSupplyService {
      * @return a list of {@link OwnCustomerSupply} objects, each containing the calculated days of supply for a specific date.
      */
     public final List<OwnCustomerSupply> calculateCustomerDaysOfSupply(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
-        List<OwnCustomerSupply> customerSupply = new ArrayList<>();
-        LocalDate localDate = LocalDate.now();
-
-        List<Double> demands = demandService.getQuantityForDays(material, partnerBpnl, siteBpns, numberOfDays);
-
-        List<Double> ownDeliveries = ownDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionCharacteristic.INBOUND, numberOfDays);
-        List<Double> reportedDeliveries = reportedDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionCharacteristic.INBOUND, numberOfDays);
-        List<Double> deliveries = mergeDeliveries(ownDeliveries, reportedDeliveries);
-
-        double stockQuantity = stockService.getInitialStockQuantity(material, partnerBpnl);
-
-        for (int i = 0; i < numberOfDays; i++) {
-            Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-            if (i == numberOfDays - 1) {
-                stockQuantity += deliveries.get(i);
-            }
-
-            double daysOfSupply = getDaysOfSupply(
-                stockQuantity,
-                demands.subList(i, demands.size()));
-
-            OwnCustomerSupply supply = new OwnCustomerSupply();
-            supply.setMaterial(materialService.findByOwnMaterialNumber(material));
-            supply.setDate(date);
-            supply.setDaysOfSupply(daysOfSupply);
-            customerSupply.add(supply);
-
-            stockQuantity = stockQuantity - demands.get(i) + deliveries.get(i);
-
-            localDate = localDate.plusDays(1);
-        }
-
-        return customerSupply;
+        return calculateDaysOfSupply(material, partnerBpnl, siteBpns, numberOfDays);
     }
     
     public final List<ReportedCustomerSupply> findAll() {
@@ -145,30 +122,6 @@ public class CustomerSupplyService {
             daysOfSupply.getPartner() != partnerService.getOwnPartnerEntity() &&
             daysOfSupply.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(daysOfSupply.getStockLocationBPNS())) &&
             (daysOfSupply.getStockLocationBPNA().equals(null) || daysOfSupply.getStockLocationBPNA().equals(daysOfSupply.getStockLocationBPNS()));
-    }
-
-    /**
-     * Calculates the number of days of supply based on the current stock quantity and a list of demands.
-     * @param stockQuantity Current stock amount
-     * @param demands Sublist of demands for current iteration
-     * @return The number of days of supply that the stock can cover.
-     */
-    private final double getDaysOfSupply(double stockQuantity, List<Double> demands) {
-        double daysOfSupply = 0;
-
-        for (double demand : demands) {
-            if (stockQuantity >= demand) {
-                daysOfSupply += 1;
-                stockQuantity = stockQuantity - demand;
-            } else if (stockQuantity < demand && stockQuantity > 0) {
-                double fractional = stockQuantity / demand;
-                daysOfSupply = daysOfSupply + fractional;
-                break;
-            } else {
-                break;
-            }
-        }
-        return daysOfSupply;
     }
 
     /**
