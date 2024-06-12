@@ -26,6 +26,7 @@
         "react-router-dom": "^6.21.2"
     },
     "devDependencies": {
+        "@mui/utils": "^6.0.0-alpha.9",
         "@types/node": "^20.8.3",
         "@types/react": "^18.2.43",
         "@types/react-dom": "^18.2.17",
@@ -41,5 +42,8 @@
         "tailwindcss": "^3.4.1",
         "typescript": "^5.2.2",
         "vite": "^5.0.8"
+    },
+    "overrides": {
+        "@mui/utils": "^6.0.0-alpha.9"
     }
-}
+} 
