@@ -2,25 +2,25 @@ package org.eclipse.tractusx.puris.backend.erpadapter.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ErpAdapterRequestClient {
 
     private final OkHttpClient client = new OkHttpClient();
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    @Autowired
-    private VariablesService variablesService;
+    private final VariablesService variablesService;
 
     public Integer sendRequest(ErpAdapterRequest erpAdapterRequest){
         HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getErpAdapterUrl()).newBuilder();

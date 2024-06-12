@@ -20,23 +20,22 @@
 
 package org.eclipse.tractusx.puris.backend.erpadapter.logic.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
 import org.eclipse.tractusx.puris.backend.erpadapter.domain.repository.ErpAdapterRequestRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ErpAdapterRequestService {
 
-    @Autowired
-    private ErpAdapterRequestRepository repository;
+    private final ErpAdapterRequestRepository repository;
 
-    @Autowired
-    private ErpAdapterRequestClient erpAdapterRequestClient;
+    private final ErpAdapterRequestClient erpAdapterRequestClient;
 
     public ErpAdapterRequest create(ErpAdapterRequest erpAdapterRequest) {
         if (erpAdapterRequest.getId() != null && repository.existsById(erpAdapterRequest.getId())) {
