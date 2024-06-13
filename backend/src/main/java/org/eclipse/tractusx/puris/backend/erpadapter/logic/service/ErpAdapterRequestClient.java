@@ -48,13 +48,13 @@ public class ErpAdapterRequestClient {
         urlBuilder.addQueryParameter("request-type", erpAdapterRequest.getRequestType());
         urlBuilder.addQueryParameter("request-id", erpAdapterRequest.getId().toString());
         urlBuilder.addQueryParameter("samm-version", erpAdapterRequest.getSammVersion());
-        urlBuilder.addQueryParameter("request-timestamp", erpAdapterRequest.getRequestDate().toString());
+        urlBuilder.addQueryParameter("request-timestamp", String.valueOf(erpAdapterRequest.getRequestDate().getTime()));
 
         ObjectNode requestBody = mapper.createObjectNode();
 
         requestBody.put("material", erpAdapterRequest.getOwnMaterialNumber());
         requestBody.put("direction", erpAdapterRequest.getDirectionCharacteristic().toString());
-        requestBody.put("response-url", variablesService.getErpResponseUrl());
+        requestBody.put("responseUrl", variablesService.getErpResponseUrl());
 
         RequestBody body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json"));
 
@@ -64,8 +64,7 @@ public class ErpAdapterRequestClient {
             .header(variablesService.getErpAdapterAuthKey(), variablesService.getErpAdapterAuthSecret())
             .header("Content-Type", "application/json")
             .build();
-        try {
-            var response = client.newCall(request).execute();
+        try (var response = client.newCall(request).execute()) {
             return response.code();
         } catch (IOException e) {
             log.error("Error while sending ErpAdapterRequest", e);

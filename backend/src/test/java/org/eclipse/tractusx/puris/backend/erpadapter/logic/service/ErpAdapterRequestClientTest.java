@@ -39,7 +39,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.InputStream;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @ExtendWith(MockitoExtension.class)
 public class ErpAdapterRequestClientTest {
@@ -81,12 +85,6 @@ public class ErpAdapterRequestClientTest {
         mockWebServer.shutdown();
     }
 
-    private void prepareVariablesService() {
-        Mockito.when(variablesService.getErpAdapterUrl()).thenReturn(mockWebServer.url("/").toString());
-        Mockito.when(variablesService.getErpAdapterAuthKey()).thenReturn(apiKey);
-        Mockito.when(variablesService.getErpAdapterAuthSecret()).thenReturn(apiSecret);
-        Mockito.when(variablesService.getErpResponseUrl()).thenReturn(erpResponseUrl);
-    }
 
     @Test
     public void test_should_success() throws Exception {
@@ -103,9 +101,12 @@ public class ErpAdapterRequestClientTest {
             .build();
 
         // when
-        prepareVariablesService();
+        Mockito.when(variablesService.getErpAdapterUrl()).thenReturn(mockWebServer.url("/").toString());
+        Mockito.when(variablesService.getErpAdapterAuthKey()).thenReturn(apiKey);
+        Mockito.when(variablesService.getErpAdapterAuthSecret()).thenReturn(apiSecret);
+        Mockito.when(variablesService.getErpResponseUrl()).thenReturn(erpResponseUrl);
         erpAdapterRequestClient.sendRequest(erpAdapterRequest);
-        RecordedRequest request = mockWebServer.takeRequest();
+        RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
 
         // then
         Assertions.assertThat(request.getMethod()).isEqualTo("POST");
@@ -113,18 +114,54 @@ public class ErpAdapterRequestClientTest {
         Assertions.assertThat(request.getHeader(apiKey)).isEqualTo(apiSecret);
         Assertions.assertThat(request.getHeader("Content-type")).contains("application/json");
 
-        Assertions.assertThat(request.getPath()).contains(supplierPartnerBpnl);
-        Assertions.assertThat(request.getPath()).contains(requestType);
-        Assertions.assertThat(request.getPath()).contains(sammVersion);
-        Assertions.assertThat(request.getPath()).contains(uuid.toString());
+        var pairs = request.getPath().substring(2).split("&");
+        Map<String, String> parameters = Stream.of(pairs)
+            .map(string -> {
+                var keyValue = string.split("=");
+                return Map.entry(keyValue[0], keyValue[1]);
+            }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        Assertions.assertThat(parameters.size()).isEqualTo(5);
+        Assertions.assertThat(parameters.get("bpnl")).isEqualTo(supplierPartnerBpnl);
+        Assertions.assertThat(parameters.get("request-type")).isEqualTo(requestType);
+        Assertions.assertThat(parameters.get("samm-version")).isEqualTo(sammVersion);
+        Assertions.assertThat(parameters.get("request-timestamp")).isEqualTo(String.valueOf(erpAdapterRequest.getRequestDate().getTime()));
+        Assertions.assertThat(parameters.get("request-id")).isEqualTo(uuid.toString());
+
 
         try (InputStream stream = request.getBody().inputStream()) {
             JsonNode requestBodyNode = objectMapper.readTree(new String(stream.readAllBytes()));
             Assertions.assertThat(requestBodyNode.get("material").asText()).isEqualTo(matNbrCustomer);
             Assertions.assertThat(requestBodyNode.get("direction").asText()).isEqualTo(DirectionCharacteristic.INBOUND.toString());
-            Assertions.assertThat(requestBodyNode.get("response-url").asText()).isEqualTo(erpResponseUrl);
+            Assertions.assertThat(requestBodyNode.get("responseUrl").asText()).isEqualTo(erpResponseUrl);
         }
+    }
 
+    @Test
+    public void test_with_faulty_credentials_should_fail() throws Exception {
+        // given
+        UUID uuid = UUID.randomUUID();
+        ErpAdapterRequest erpAdapterRequest = ErpAdapterRequest.builder()
+            .requestDate(new Date())
+            .partnerBpnl(supplierPartnerBpnl)
+            .id(uuid)
+            .directionCharacteristic(DirectionCharacteristic.INBOUND)
+            .ownMaterialNumber(matNbrCustomer)
+            .requestType(requestType)
+            .sammVersion(sammVersion)
+            .build();
 
+        // when
+        Mockito.when(variablesService.getErpAdapterUrl()).thenReturn(mockWebServer.url("/").toString());
+        Mockito.when(variablesService.getErpAdapterAuthKey()).thenReturn("wrong-key");
+        Mockito.when(variablesService.getErpAdapterAuthSecret()).thenReturn(apiSecret);
+        Mockito.when(variablesService.getErpResponseUrl()).thenReturn(erpResponseUrl);
+        erpAdapterRequestClient.sendRequest(erpAdapterRequest);
+        RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
+
+        // then
+        Assertions.assertThat(request.getMethod()).isEqualTo("POST");
+        Assertions.assertThat(request.getHeader("Content-type")).contains("application/json");
+        Assertions.assertThat(request.getHeader(apiKey)).isNotEqualTo(apiSecret);
     }
 }

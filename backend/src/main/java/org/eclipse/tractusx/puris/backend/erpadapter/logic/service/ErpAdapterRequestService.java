@@ -51,14 +51,14 @@ public class ErpAdapterRequestService {
             Integer responseCode = erpAdapterRequestClient.sendRequest(erpAdapterRequest);
             if (responseCode != null) {
                 if (responseCode >= 200 && responseCode < 400) {
-                    log.info("Successfully sent request to ERP Adapter");
+                    log.info("Successfully sent request to ERP Adapter, got status code {} for request:\n{}", responseCode, erpAdapterRequest);
                 } else {
-                    log.warn("Received status code {} from ERP Adapter ", responseCode);
+                    log.warn("Received status code {} from ERP Adapter for request:\n{}", responseCode, erpAdapterRequest);
                 }
                 erpAdapterRequest.setResponseCode(responseCode);
                 update(erpAdapterRequest);
             } else {
-                log.error("Failed to send request to ERP Adapter");
+                log.error("Failed to send request to ERP Adapter:\n{}", erpAdapterRequest);
             }
         }
     }

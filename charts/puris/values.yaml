@@ -472,8 +472,11 @@ backend:
     # Material entity.
     generatematerialcatenaxid: true
     erpadapter:
+      # The url of your ERP adapter's request api
       url: http://my-erpadapter:8080
+      # The auth key to be used on your ERP adapter's request api
       authkey: x-api-key
+      # The auth secret to be used on your ERP adapter's request api
       authsecret: erp-password
 
   # -- Extra environment variables that will be passed onto the backend deployment pods
