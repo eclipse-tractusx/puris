@@ -98,6 +98,7 @@ public class DtrRequestBodyBuilder {
         submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID, href + DirectionCharacteristic.INBOUND + "/", variablesService.getItemStockSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.DEMAND.URN_SEMANTIC_ID, href, variablesService.getDemandSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.DELIVERY.URN_SEMANTIC_ID, href, variablesService.getDeliverySubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.NOTIFICATION.URN_SEMANTIC_ID, href, variablesService.getNotificationSubmodelApiAssetId()));
         
         log.debug("Created body for material " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
         return body;
@@ -145,6 +146,7 @@ public class DtrRequestBodyBuilder {
         submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.ITEM_STOCK.URN_SEMANTIC_ID, href + DirectionCharacteristic.OUTBOUND + "/", variablesService.getItemStockSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.PRODUCTION.URN_SEMANTIC_ID, href, variablesService.getProductionSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.DELIVERY.URN_SEMANTIC_ID, href, variablesService.getDeliverySubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(SubmodelType.NOTIFICATION.URN_SEMANTIC_ID, href, variablesService.getNotificationSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createPartTypeSubmodelObject(material.getOwnMaterialNumber()));
 
         log.debug("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());

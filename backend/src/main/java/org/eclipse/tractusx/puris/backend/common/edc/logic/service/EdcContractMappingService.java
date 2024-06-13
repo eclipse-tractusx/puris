@@ -25,6 +25,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.domain.model.ContractMappin
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DtrContractMapping;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DeliveryContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandAndCapacityNotificationContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DtrContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.GeneralContractMappingRepository;
@@ -55,6 +56,9 @@ public class EdcContractMappingService {
 
     @Autowired
     private DeliveryContractMappingRepository deliveryContractMappingRepository;
+
+    @Autowired
+    private DemandAndCapacityNotificationContractMappingRepository demandAndCapacityNotificationContractMappingRepository;
 
     @Autowired
     private PartTypeContractMappingRepository partTypeContractMappingRepository;
@@ -119,6 +123,7 @@ public class EdcContractMappingService {
             case PRODUCTION -> productionContractMappingRepository;
             case DEMAND -> demandContractMappingRepository;
             case DELIVERY -> deliveryContractMappingRepository;
+            case NOTIFICATION -> demandAndCapacityNotificationContractMappingRepository;
             case PART_TYPE_INFORMATION -> partTypeContractMappingRepository;
         };
         return repository;

@@ -112,6 +112,20 @@ public class VariablesService {
      */
     private String deliverySubmodelAssetId;
 
+    @Value("${puris.baseurl}" + "catena/demand-and-capacity-notification/request")
+    /**
+     * The url under which this application's request endpoint can
+     * be reached by external machines.
+     */
+    private String notificationSubmodelEndpoint;
+
+    @Value("${puris.notificationsubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the request API
+     * during asset creation.
+     */
+    private String notificationSubmodelAssetId;
+
     @Value("${puris.frameworkagreement.credential}")
     /**
      * The name of the framework agreement to be used.
@@ -247,6 +261,10 @@ public class VariablesService {
 
     public String getDeliverySubmodelApiAssetId() {
         return deliverySubmodelAssetId + "@" + ownBpnl;
+    }
+
+    public String getNotificationSubmodelApiAssetId() {
+        return notificationSubmodelAssetId + "@" + ownBpnl;
     }
 
     public String getPartTypeSubmodelApiAssetId() {

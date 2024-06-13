@@ -23,25 +23,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.demand.logic.services.DemandRequestApiService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.DemandAndCapacityNotificationDto;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.DemandAndCapacityNotifcationRequestApiService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.OwnDemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -61,6 +66,9 @@ public class DemandAndCapacityNotificationController {
     private ReportedDemandAndCapacityNotificationService reportedNotificationService;
 
     @Autowired
+    private DemandAndCapacityNotifcationRequestApiService demandAndCapacityNotifcationRequestApiService;
+
+    @Autowired
     private MaterialService materialService;
 
     @Autowired
@@ -71,6 +79,9 @@ public class DemandAndCapacityNotificationController {
 
     @Autowired
     private Validator validator;
+
+    @Autowired
+    private ExecutorService executorService;
 
     @GetMapping()
     @ResponseBody
@@ -100,11 +111,13 @@ public class DemandAndCapacityNotificationController {
 
         if (notificationDto.getPartnerBpnl() == null || notificationDto.getPartnerBpnl().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Demand Information misses partner identification.");
+                    "Notification Information misses partner identification.");
         }
 
         try {
-            return convertToDto(ownNotificationService.create(convertToEntity(notificationDto)));
+            var entity = ownNotificationService.create(convertToEntity(notificationDto));
+            executorService.submit(() -> demandAndCapacityNotifcationRequestApiService.sendDemandAndCapacityNotification(entity));
+            return convertToDto(entity);
         } catch (KeyAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Notification already exists. Use PUT instead.");
         } catch (IllegalArgumentException e) {
@@ -128,6 +141,7 @@ public class DemandAndCapacityNotificationController {
         if (updatedNotification == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification does not exist.");
         }
+        executorService.submit(() -> demandAndCapacityNotifcationRequestApiService.sendDemandAndCapacityNotification(updatedNotification));
         return convertToDto(updatedNotification);
     }
 

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
 import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -407,6 +408,10 @@ public class EdcRequestBodyBuilder {
     }
 
     public JsonNode buildSubmodelRegistrationBody(String assetId, String endpoint, String semanticId) {
+        return buildSubmodelRegistrationBody(assetId, endpoint, semanticId, false);
+    }
+
+    public JsonNode buildSubmodelRegistrationBody(String assetId, String endpoint, String semanticId, boolean isPostRequest) {
         var body = getAssetRegistrationContext();
         body.put("@id", assetId);
         var propertiesObject = MAPPER.createObjectNode();
@@ -424,7 +429,8 @@ public class EdcRequestBodyBuilder {
         dataAddress.put("@type", "DataAddress");
         dataAddress.put("proxyPath", "true");
         dataAddress.put("proxyQueryParams", "false");
-        dataAddress.put("proxyMethod", "false");
+        dataAddress.put("proxyMethod", Boolean.toString(isPostRequest));
+        dataAddress.put("proxyBody", Boolean.toString(isPostRequest));
         dataAddress.put("type", "HttpData");
         dataAddress.put("baseUrl", endpoint);
         dataAddress.put("authKey", "x-api-key");

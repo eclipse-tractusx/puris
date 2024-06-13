@@ -33,6 +33,8 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.RequestEntity.BodyBuilder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -166,6 +168,12 @@ public class EdcAdapterService {
             SubmodelType.DELIVERY.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
+        log.info("Registration of Demand and Capacity Notification 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getNotificationSubmodelApiAssetId(),
+            variablesService.getNotificationSubmodelEndpoint(),
+            SubmodelType.NOTIFICATION.URN_SEMANTIC_ID,
+            true
+        )));
         log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
         result &= assetRegistration;
         return result;
@@ -185,6 +193,7 @@ public class EdcAdapterService {
         result &= createSubmodelContractDefinitionForPartner(SubmodelType.PRODUCTION.URN_SEMANTIC_ID, variablesService.getProductionSubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(SubmodelType.DEMAND.URN_SEMANTIC_ID, variablesService.getDemandSubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(SubmodelType.DELIVERY.URN_SEMANTIC_ID, variablesService.getDeliverySubmodelApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner(SubmodelType.NOTIFICATION.URN_SEMANTIC_ID, variablesService.getNotificationSubmodelApiAssetId(), partner);
         result &= createDtrContractDefinitionForPartner(partner);
         return createSubmodelContractDefinitionForPartner(SubmodelType.PART_TYPE_INFORMATION.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
     }
@@ -304,7 +313,11 @@ public class EdcAdapterService {
     }
 
     private boolean registerSubmodelAsset(String assetId, String endpoint, String semanticId) {
-        var body = edcRequestBodyBuilder.buildSubmodelRegistrationBody(assetId, endpoint, semanticId);
+        return registerSubmodelAsset(assetId, endpoint, semanticId, false);
+    }
+
+    private boolean registerSubmodelAsset(String assetId, String endpoint, String semanticId, boolean isPostRequest) {
+        var body = edcRequestBodyBuilder.buildSubmodelRegistrationBody(assetId, endpoint, semanticId, isPostRequest);
         try (var response = sendPostRequest(body, List.of("v3", "assets"))) {
             if (!response.isSuccessful()) {
                 log.warn("{} Submodel Asset registration failed", semanticId);
@@ -497,7 +510,7 @@ public class EdcAdapterService {
      */
     public Response postProxyPullRequest(String url, String authKey, String authCode, String requestBodyString) {
         try {
-            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), requestBodyString);
+            RequestBody requestBody = RequestBody.create(requestBodyString, MediaType.parse("application/json"));
             Request request = new Request.Builder()
                 .url(url)
                 .header(authKey, authCode)
@@ -528,6 +541,72 @@ public class EdcAdapterService {
         }
     }
 
+    private JsonNode postSubmodelToPartner(MaterialPartnerRelation mpr, SubmodelType type, JsonNode payload, int retries) {
+        if (retries < 0) {
+            return null;
+        }
+        Partner partner = mpr.getPartner();
+        SubmodelData submodelData = fetchSubmodelDataByDirection(mpr, SubmodelType.NOTIFICATION.URN_SEMANTIC_ID, DirectionCharacteristic.OUTBOUND);
+        boolean failed = true;
+        try {
+            String assetId = submodelData.assetId();
+            String partnerDspUrl = submodelData.dspUrl();
+            String submodelContractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
+            if (submodelContractId == null) {
+                log.info("Need Contract for " + type + " with " + partner.getBpnl());
+                if (negotiateForSubmodel(mpr, type, DirectionCharacteristic.INBOUND)) {
+                    submodelContractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
+                } else {
+                    log.error("Failed to contract for " + type + " with " + partner.getBpnl());
+                    return postSubmodelToPartner(mpr, type, payload, --retries);
+                }
+            }
+            if (!partner.getEdcUrl().equals(partnerDspUrl)) {
+                log.warn("Diverging Edc Urls for Partner: " + partner.getBpnl() + " and type " + type);
+                log.warn("General Partner EdcUrl: " + partner.getEdcUrl());
+                log.warn("URL from AAS: " + partnerDspUrl);
+            }
+            // Request EdrToken
+            var transferResp = initiateProxyPullTransfer(partner, submodelContractId, assetId, partnerDspUrl);
+            log.debug("Transfer Request {}", transferResp.toPrettyString());
+            String transferId = transferResp.get("@id").asText();
+            // try proxy pull and terminate request
+            try {
+                EdrDto edrDto = getAndAwaitEdrDto(transferId);
+                log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
+                if (edrDto == null) {
+                    log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
+                    return doSubmodelPostRequest(type, mpr, payload, --retries);
+                }
+                if (!submodelData.href().startsWith(edrDto.endpoint())) {
+                    log.warn("Diverging URLs in Submodel request");
+                    log.warn("href: " + submodelData.href());
+                    log.warn("Data plane base URL from EDR: " + edrDto.endpoint());
+                }
+                try (var response = postProxyPullRequest(submodelData.href, edrDto.authKey(), edrDto.authCode(), new ObjectMapper().writeValueAsString(payload))) {
+                    if (response.isSuccessful()) {
+                        String responseString = response.body().string();
+                        failed = false;
+                        return objectMapper.readTree(responseString);
+                    }
+                    log.info("Failed to post Submodel to Partner. Response: " + response.body().string());
+                }
+            } finally {
+                if (transferId != null) {
+                    terminateTransfer(transferId);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error in Submodel Transfer Request for " + type + " at " + partner.getBpnl(), e);
+        } finally {
+            if (failed) {
+                log.warn("Invalidating Contract data for " + type + " with " + partner.getBpnl());
+                edcContractMappingService.putContractId(partner, type, submodelData.assetId(), submodelData.dspUrl(), null);
+            }
+        }
+        return postSubmodelToPartner(mpr, type, payload, --retries);
+    }
+
     private JsonNode getSubmodelFromPartner(MaterialPartnerRelation mpr, SubmodelType type, DirectionCharacteristic direction, int retries) {
         if (retries < 0) {
             return null;
@@ -539,6 +618,7 @@ public class EdcAdapterService {
             case PRODUCTION -> fetchSubmodelDataByDirection(mpr, SubmodelType.PRODUCTION.URN_SEMANTIC_ID, direction);
             case DEMAND -> fetchSubmodelDataByDirection(mpr, SubmodelType.DEMAND.URN_SEMANTIC_ID, direction);
             case DELIVERY -> fetchSubmodelDataByDirection(mpr, SubmodelType.DELIVERY.URN_SEMANTIC_ID, direction);
+            case NOTIFICATION -> fetchSubmodelDataByDirection(mpr, SubmodelType.NOTIFICATION.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION -> fetchPartTypeSubmodelData(mpr);
         };
         boolean failed = true;
@@ -634,6 +714,17 @@ public class EdcAdapterService {
         var data = getSubmodelFromPartner(mpr, type, direction, 1);
         if (data == null) {
             return doSubmodelRequest(type, mpr, direction, --retries);
+        }
+        return data;
+    }
+
+    public JsonNode doSubmodelPostRequest(SubmodelType type, MaterialPartnerRelation mpr, JsonNode body, int retries) {
+        if (retries < 0) {
+            return null;
+        }
+        var data = postSubmodelToPartner(mpr, type, body, 1);
+        if (data == null) {
+            return doSubmodelPostRequest(type, mpr, body, --retries);
         }
         return data;
     }
@@ -960,6 +1051,7 @@ public class EdcAdapterService {
             case PRODUCTION -> fetchSubmodelDataByDirection(mpr, SubmodelType.PRODUCTION.URN_SEMANTIC_ID, direction);
             case DEMAND -> fetchSubmodelDataByDirection(mpr, SubmodelType.DEMAND.URN_SEMANTIC_ID, direction);
             case DELIVERY -> fetchSubmodelDataByDirection(mpr, SubmodelType.DELIVERY.URN_SEMANTIC_ID, direction);
+            case NOTIFICATION -> fetchSubmodelDataByDirection(mpr, SubmodelType.NOTIFICATION.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION -> fetchPartTypeSubmodelData(mpr);
         };
         try {
@@ -1022,6 +1114,7 @@ public class EdcAdapterService {
                     + negotiationState.toPrettyString());
                 return false;
             }
+            log.info("Putting new ContractId" + contractId + "for " + type + " Submodel api with partner " + partner.getBpnl());
             edcContractMappingService.putContractId(partner, type, submodelData.assetId(), submodelData.dspUrl(), contractId);
             log.info("Got contract for " + type + " Submodel api with partner " + partner.getBpnl());
             return true;
