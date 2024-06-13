@@ -57,11 +57,10 @@ public class DemandAndCapacityNotificationRequestApiController {
     @PostMapping("request/{materialnumbercx}/")
     public ResponseEntity<DemandAndCapacityNotificationSamm> postDemandAndCapacityNotification(
         @RequestHeader("edc-bpn") String bpnl,
-        @PathVariable String materialnumbercx,
-        @RequestBody String body) 
+        @RequestBody String body)
     {
         if (!bpnlPattern.matcher(bpnl).matches()) {
-            log.warn("Rejecting request at DemandAndCapacityNotification Submodel request 2.0.0 endpoint");
+            log.warn("Rejecting request at DemandAndCapacityNotification Submodel request 2.0.0 endpoint. Invalid BPNL");
             return ResponseEntity.badRequest().build();
         }
         try {
