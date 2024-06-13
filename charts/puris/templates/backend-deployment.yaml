@@ -171,7 +171,6 @@ spec:
             - name: PURIS_ERPADAPTER_URL
               value: "{{ .Values.backend.puris.erpadapter.url}}"
             - name: PURIS_ERPADAPTER_AUTHKEY
-{{/*              value: "{{ .Values.backend.puris.erpadapter.authkey}}"*/}}
               valueFrom:
                 secretKeyRef:
                   name: "{{ .Values.backend.puris.existingSecret }}"
