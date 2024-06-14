@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
       - name: Run Trivy vulnerability scanner in repo mode
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@595be6a0f6560a0a8fc419ddf630567fc623531d # v0.22.0
         with:
           image-ref: "tractusx/app-puris-frontend:latest"
           format: "sarif"
