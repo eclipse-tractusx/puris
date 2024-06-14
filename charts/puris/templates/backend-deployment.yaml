@@ -168,13 +168,12 @@ spec:
                   key: "puris-dtr-idp-puris-client-secret"
             - name: PURIS_GENERATEMATERIALCATENAXID
               value: "{{ .Values.backend.puris.generatematerialcatenaxid  | default true}}"
+            - name: PURIS_ERPADAPTER_ENABLED
+              value: "{{ .Values.backend.puris.erpadapter.enabled}}"
             - name: PURIS_ERPADAPTER_URL
               value: "{{ .Values.backend.puris.erpadapter.url}}"
             - name: PURIS_ERPADAPTER_AUTHKEY
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.backend.puris.existingSecret }}"
-                  key: "puris-erpadapter-authkey"
+              value: {{ .Values.backend.puris.erpadapter.authkey }}
             - name: PURIS_ERPADAPTER_AUTHSECRET
               valueFrom:
                 secretKeyRef:

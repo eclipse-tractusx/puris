@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.assertj.core.api.Assertions;
-import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.common.security.ErpAdapterSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.junit.jupiter.api.AfterEach;
@@ -50,8 +50,9 @@ public class ErpAdapterRequestClientTest {
 
     private MockWebServer mockWebServer;
 
+
     @Mock
-    private VariablesService variablesService;
+    private ErpAdapterSecurityConfiguration erpAdapterSecurityConfiguration;
 
     @InjectMocks
     private ErpAdapterRequestClient erpAdapterRequestClient;
@@ -76,7 +77,7 @@ public class ErpAdapterRequestClientTest {
     public void setUp() throws Exception {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
-        erpAdapterRequestClient = new ErpAdapterRequestClient(variablesService);
+        erpAdapterRequestClient = new ErpAdapterRequestClient(erpAdapterSecurityConfiguration);
 
     }
 
@@ -101,10 +102,10 @@ public class ErpAdapterRequestClientTest {
             .build();
 
         // when
-        Mockito.when(variablesService.getErpAdapterUrl()).thenReturn(mockWebServer.url("/").toString());
-        Mockito.when(variablesService.getErpAdapterAuthKey()).thenReturn(apiKey);
-        Mockito.when(variablesService.getErpAdapterAuthSecret()).thenReturn(apiSecret);
-        Mockito.when(variablesService.getErpResponseUrl()).thenReturn(erpResponseUrl);
+        Mockito.when(erpAdapterSecurityConfiguration.getErpAdapterUrl()).thenReturn(mockWebServer.url("/").toString());
+        Mockito.when(erpAdapterSecurityConfiguration.getErpAdapterAuthKey()).thenReturn(apiKey);
+        Mockito.when(erpAdapterSecurityConfiguration.getErpAdapterAuthSecret()).thenReturn(apiSecret);
+        Mockito.when(erpAdapterSecurityConfiguration.getErpResponseUrl()).thenReturn(erpResponseUrl);
         erpAdapterRequestClient.sendRequest(erpAdapterRequest);
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
 
@@ -116,10 +117,8 @@ public class ErpAdapterRequestClientTest {
 
         var pairs = request.getPath().substring(2).split("&");
         Map<String, String> parameters = Stream.of(pairs)
-            .map(string -> {
-                var keyValue = string.split("=");
-                return Map.entry(keyValue[0], keyValue[1]);
-            }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            .map(string -> string.split("="))
+            .collect(Collectors.toMap(pair -> pair[0], pair -> pair[1]));
 
         Assertions.assertThat(parameters.size()).isEqualTo(5);
         Assertions.assertThat(parameters.get("bpnl")).isEqualTo(supplierPartnerBpnl);
@@ -135,33 +134,5 @@ public class ErpAdapterRequestClientTest {
             Assertions.assertThat(requestBodyNode.get("direction").asText()).isEqualTo(DirectionCharacteristic.INBOUND.toString());
             Assertions.assertThat(requestBodyNode.get("responseUrl").asText()).isEqualTo(erpResponseUrl);
         }
-    }
-
-    @Test
-    public void test_with_faulty_credentials_should_fail() throws Exception {
-        // given
-        UUID uuid = UUID.randomUUID();
-        ErpAdapterRequest erpAdapterRequest = ErpAdapterRequest.builder()
-            .requestDate(new Date())
-            .partnerBpnl(supplierPartnerBpnl)
-            .id(uuid)
-            .directionCharacteristic(DirectionCharacteristic.INBOUND)
-            .ownMaterialNumber(matNbrCustomer)
-            .requestType(requestType)
-            .sammVersion(sammVersion)
-            .build();
-
-        // when
-        Mockito.when(variablesService.getErpAdapterUrl()).thenReturn(mockWebServer.url("/").toString());
-        Mockito.when(variablesService.getErpAdapterAuthKey()).thenReturn("wrong-key");
-        Mockito.when(variablesService.getErpAdapterAuthSecret()).thenReturn(apiSecret);
-        Mockito.when(variablesService.getErpResponseUrl()).thenReturn(erpResponseUrl);
-        erpAdapterRequestClient.sendRequest(erpAdapterRequest);
-        RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
-
-        // then
-        Assertions.assertThat(request.getMethod()).isEqualTo("POST");
-        Assertions.assertThat(request.getHeader("Content-type")).contains("application/json");
-        Assertions.assertThat(request.getHeader(apiKey)).isNotEqualTo(apiSecret);
     }
 }

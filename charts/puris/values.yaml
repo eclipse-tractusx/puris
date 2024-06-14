@@ -472,6 +472,8 @@ backend:
     # Material entity.
     generatematerialcatenaxid: true
     erpadapter:
+      # Toggles usage of the ERP adapter
+      enabled: false
       # The url of your ERP adapter's request api
       url: http://my-erpadapter:8080
       # The auth key to be used on your ERP adapter's request api

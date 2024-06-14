@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.common.security.ErpAdapterSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
 import org.springframework.stereotype.Service;
 
@@ -40,10 +40,10 @@ public class ErpAdapterRequestClient {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private final VariablesService variablesService;
+    private final ErpAdapterSecurityConfiguration erpAdapterSecurityConfiguration;
 
     public Integer sendRequest(ErpAdapterRequest erpAdapterRequest){
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getErpAdapterUrl()).newBuilder();
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(erpAdapterSecurityConfiguration.getErpAdapterUrl()).newBuilder();
         urlBuilder.addQueryParameter("bpnl", erpAdapterRequest.getPartnerBpnl());
         urlBuilder.addQueryParameter("request-type", erpAdapterRequest.getRequestType());
         urlBuilder.addQueryParameter("request-id", erpAdapterRequest.getId().toString());
@@ -54,14 +54,14 @@ public class ErpAdapterRequestClient {
 
         requestBody.put("material", erpAdapterRequest.getOwnMaterialNumber());
         requestBody.put("direction", erpAdapterRequest.getDirectionCharacteristic().toString());
-        requestBody.put("responseUrl", variablesService.getErpResponseUrl());
+        requestBody.put("responseUrl", erpAdapterSecurityConfiguration.getErpResponseUrl());
 
         RequestBody body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json"));
 
         Request request = new Request.Builder()
             .post(body)
             .url(urlBuilder.build())
-            .header(variablesService.getErpAdapterAuthKey(), variablesService.getErpAdapterAuthSecret())
+            .header(erpAdapterSecurityConfiguration.getErpAdapterAuthKey(), erpAdapterSecurityConfiguration.getErpAdapterAuthSecret())
             .header("Content-Type", "application/json")
             .build();
         try (var response = client.newCall(request).execute()) {

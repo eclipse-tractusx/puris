@@ -98,6 +98,7 @@ dependencies:
 | backend.puris.edc.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api |
 | backend.puris.erpadapter.authkey | string | `"x-api-key"` |  |
 | backend.puris.erpadapter.authsecret | string | `"erp-password"` |  |
+| backend.puris.erpadapter.enabled | bool | `false` |  |
 | backend.puris.erpadapter.url | string | `"http://my-erpadapter:8080"` |  |
 | backend.puris.existingSecret | string | `"secret-puris-backend"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
 | backend.puris.frameworkagreement.credential | string | `"Puris"` | The name of the framework agreement. Starting with Uppercase and using CamelCase. |
