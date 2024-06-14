@@ -18,8 +18,17 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-export type MaterialDescriptor = {
-    ownMaterialNumber: string;
-    description: string;
-    name: string;
-};
+import { useFetch } from '@hooks/useFetch';
+import { config } from '@models/constants/config';
+import { MaterialDescriptor } from '@models/types/data/material-descriptor';
+
+export const useAllMaterials = () => {
+    const endpoint = config.app.ENDPOINT_MATERIALS + "/all";
+    const { data: materials, isLoading: isLoadingMaterials } = useFetch<MaterialDescriptor[]>(
+        `${config.app.BACKEND_BASE_URL}${endpoint}`
+    );
+    return {
+        materials,
+        isLoadingMaterials,
+    };
+}

@@ -29,11 +29,13 @@ import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Address;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.AddressDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.SiteDto;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
@@ -59,6 +61,9 @@ public class PartnerController {
     @Autowired
     private Validator validator;
     private final ModelMapper modelMapper = new ModelMapper();
+
+    @Autowired
+    private MaterialPartnerRelationService mpr;
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
@@ -234,6 +239,22 @@ public class PartnerController {
             getSites().
             stream().map(site -> modelMapper.map(site, SiteDto.class)).collect(Collectors.toList()),
             HttpStatus.OK);
+    }
+
+    @GetMapping("{partnerBpnl}/materials")
+    @Operation(description = "Returns all materials the specified partner is associated with.")
+    public ResponseEntity<List<Material>> getMaterials(@PathVariable String partnerBpnl) {
+    if (!bpnlPattern.matcher(partnerBpnl).matches()) {
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    Partner partner = partnerService.findByBpnl(partnerBpnl);
+    if (partner == null) {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity<>(mpr.findAll().stream()
+                                .filter(rel -> rel.getPartner().equals(partner))
+                                .map(rel -> rel.getMaterial()).collect(Collectors.toList()), HttpStatus.OK);
     }
 
 }
