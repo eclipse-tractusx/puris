@@ -62,11 +62,9 @@ public abstract class SupplyService<T extends Supply> {
         for (int i = 0; i < numberOfDays; i++) {
             Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-            if (i == numberOfDays - 1) {
-                stockQuantity += addedValues.get(i);
-            }
-
-            double daysOfSupply = getDaysOfSupply(stockQuantity, consumedValues.subList(i, consumedValues.size()));
+            var remainingAddedValues = addedValues.subList(i, addedValues.size());
+            var remainingConsumedValues = consumedValues.subList(i, consumedValues.size());
+            double daysOfSupply = getDaysOfSupply(stockQuantity, remainingAddedValues, remainingConsumedValues);
 
             T supply = createSupplyInstance();
             supply.setMaterial(materialService.findByOwnMaterialNumber(material));
@@ -83,21 +81,46 @@ public abstract class SupplyService<T extends Supply> {
     }
 
     /**
+     * Merges own and reported deliveries into a single list.
+     * @param list1 Own deliveries
+     * @param list2 Reported deliveries
+     * @return a new list containing the summed delivery quantities from the input lists.
+     */
+    public static List<Double> mergeDeliveries(List<Double> list1, List<Double> list2) {
+        if (list1.size() != list2.size()) {
+            throw new IllegalArgumentException("Lists must be of the same length");
+        }
+
+        List<Double> mergedList = new ArrayList<>(list1.size());
+
+        for (int i = 0; i < list1.size(); i++) {
+            mergedList.add(list1.get(i) + list2.get(i));
+        }
+
+        return mergedList;
+    }
+
+    /**
      * Calculates the number of days of supply based on the current stock quantity and a list of consumed values.
      * @param stockQuantity Current stock amount
-     * @param demands Sublist of consumed values for current iteration
+     * @param addedValues Remaining list of added values for current iteration
+     * @param consumedValues Remaining list of consumed values for current iteration
      * @return The number of days of supply that the stock can cover.
      */
-    private final double getDaysOfSupply(double stockQuantity, List<Double> demands) {
+    private final double getDaysOfSupply(double stockQuantity, List<Double> addedValues, List<Double> consumedValues) {
         double daysOfSupply = 0;
 
-        for (double demand : demands) {
-            if (stockQuantity >= demand) {
+        for (int i = 0; i < addedValues.size(); i++) {
+            Double addedValue = addedValues.get(i);
+            Double consumedValue = consumedValues.get(i);
+
+            if ((stockQuantity + addedValue - consumedValue) >= 0) {
                 daysOfSupply += 1;
-                stockQuantity = stockQuantity - demand;
-            } else if (stockQuantity < demand && stockQuantity > 0) {
-                double fractional = stockQuantity / demand;
-                daysOfSupply = daysOfSupply + fractional;
+                stockQuantity = stockQuantity + addedValue - consumedValue;
+            } else if ((stockQuantity + addedValue - consumedValue) < 0 && stockQuantity > 0) {
+                double fractional = (stockQuantity + addedValue) / consumedValue;
+                daysOfSupply += fractional;
+                stockQuantity = stockQuantity + addedValue - consumedValue;
                 break;
             } else {
                 break;

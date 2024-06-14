@@ -20,7 +20,6 @@
 
 package org.eclipse.tractusx.puris.backend.supply.logic.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -122,25 +121,5 @@ public class SupplierSupplyService extends SupplyService<OwnSupplierSupply> {
             daysOfSupply.getPartner() != partnerService.getOwnPartnerEntity() &&
             daysOfSupply.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(daysOfSupply.getStockLocationBPNS())) &&
             (daysOfSupply.getStockLocationBPNA().equals(null) || daysOfSupply.getStockLocationBPNA().equals(daysOfSupply.getStockLocationBPNS()));
-    }
-
-    /**
-     * Merges own and reported deliveries into a single list.
-     * @param list1 Own deliveries
-     * @param list2 Reported deliveries
-     * @return a new list containing the summed delivery quantities from the input lists.
-     */
-    private static List<Double> mergeDeliveries(List<Double> list1, List<Double> list2) {
-        if (list1.size() != list2.size()) {
-            throw new IllegalArgumentException("Lists must be of the same length");
-        }
-
-        List<Double> mergedList = new ArrayList<>(list1.size());
-
-        for (int i = 0; i < list1.size(); i++) {
-            mergedList.add(list1.get(i) + list2.get(i));
-        }
-
-        return mergedList;
     }
 }
