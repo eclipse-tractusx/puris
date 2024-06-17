@@ -23,7 +23,7 @@ import { Tab, TabPanel, Tabs, Table } from '@catena-x/portal-shared-components';
 import { Box, Button, Stack } from '@mui/material';
 import { getDemandAndCapacityNotification } from '@services/demand-capacity-notification';
 import { useCallback, useEffect, useState } from 'react';
-import { Add, Send } from '@mui/icons-material';
+import { Send } from '@mui/icons-material';
 import { DemandCapacityNotificationInformationModal } from '@features/notifications/components/NotificationInformationModal';
 import { DemandCapacityNotification } from '@models/types/data/demand-capacity-notification';
 import { EFFECTS } from '@models/constants/effects';
