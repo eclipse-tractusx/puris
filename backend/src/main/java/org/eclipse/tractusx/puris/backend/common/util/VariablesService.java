@@ -117,14 +117,14 @@ public class VariablesService {
      * The url under which this application's request endpoint can
      * be reached by external machines.
      */
-    private String notificationSubmodelEndpoint;
+    private String notificationEndpoint;
 
-    @Value("${puris.notificationsubmodel.apiassetid}")
+    @Value("${puris.notification.apiassetid}")
     /**
      * The assetId that shall be assigned to the request API
      * during asset creation.
      */
-    private String notificationSubmodelAssetId;
+    private String notificationAssetId;
 
     @Value("${puris.frameworkagreement.credential}")
     /**
@@ -264,7 +264,7 @@ public class VariablesService {
     }
 
     public String getNotificationApiAssetId() {
-        return notificationSubmodelAssetId + "@" + ownBpnl;
+        return notificationAssetId + "@" + ownBpnl;
     }
 
     public String getPartTypeSubmodelApiAssetId() {

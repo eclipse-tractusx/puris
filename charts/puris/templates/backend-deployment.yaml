@@ -141,8 +141,8 @@ spec:
               value: "{{ .Values.backend.puris.demandsubmodel.apiassetid }}"
             - name: PURIS_DELIVERYSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.deliverysubmodel.apiassetid }}"
-            - name: PURIS_NOTIFICATIONSUBMODEL_APIASSETID
-              value: "{{ .Values.backend.puris.notificationsubmodel.apiassetid }}"
+            - name: PURIS_NOTIFICATION_APIASSETID
+              value: "{{ .Values.backend.puris.notification.apiassetid }}"
             - name: PURIS_FRAMEWORKAGREEMENT_CREDENTIAL
               value: "{{ .Values.backend.puris.frameworkagreement.credential }}"
             - name: PURIS_FRAMEWORKAGREEMENT_VERSION

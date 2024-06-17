@@ -170,7 +170,7 @@ public class EdcAdapterService {
         result &= assetRegistration;
         log.info("Registration of Demand and Capacity Notification 2.0.0 asset successful {}", (assetRegistration = registerNotificationAsset(
             variablesService.getNotificationApiAssetId(),
-            variablesService.getNotificationSubmodelEndpoint(),
+            variablesService.getNotificationEndpoint(),
             AssetType.NOTIFICATION.URN_SEMANTIC_ID
         )));
         log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
