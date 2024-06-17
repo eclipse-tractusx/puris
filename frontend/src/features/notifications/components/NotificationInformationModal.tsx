@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { Input, PageSnackbar, PageSnackbarStack, Textarea } from '@catena-x/portal-shared-components';
 import { DateTime } from '@components/ui/DateTime';
-import { Close, Save } from '@mui/icons-material';
+import { Close, Send } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Dialog, DialogTitle, FormLabel, Grid, InputLabel, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
@@ -37,11 +37,10 @@ import { Partner } from '@models/types/edc/partner';
 
 const isValidDemandCapacityNotification = (notification: Partial<DemandCapacityNotification>) =>
     notification.partnerBpnl &&
-    notification.text &&
     notification.effect &&
     notification.status &&
     notification.startDateOfEffect &&
-    notification.expectedEndDateOfEffect
+    (!notification.expectedEndDateOfEffect || notification.startDateOfEffect < notification.expectedEndDateOfEffect);
 
 type DemandCapacityNotificationInformationModalProps = {
     open: boolean;
@@ -56,7 +55,7 @@ type DemandCapacityNotificationViewProps = {
 };
 
 const DemandCapacityNotificationView = ({ demandCapacityNotification, partners }: DemandCapacityNotificationViewProps) => {
-    return <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
+    return (
         <Grid container spacing={3} padding=".25rem">
             <Grid display="grid" item xs={12}>
                 <FormLabel>Text</FormLabel>
@@ -83,26 +82,37 @@ const DemandCapacityNotificationView = ({ demandCapacityNotification, partners }
                 {new Date(demandCapacityNotification.startDateOfEffect).toLocaleString()}
             </Grid>
             <Grid display="grid" item xs={6}>
-                <FormLabel>Expexted End Date of Effect</FormLabel>
+                <FormLabel>Expected End Date of Effect</FormLabel>
                 {new Date(demandCapacityNotification.expectedEndDateOfEffect).toLocaleString()}
             </Grid>
             <Grid display="grid" item xs={12}>
                 <FormLabel>Affected Sites Sender</FormLabel>
-                {demandCapacityNotification.affectedSitesBpnsSender && demandCapacityNotification.affectedSitesBpnsSender.length > 0 ? demandCapacityNotification.affectedSitesBpnsSender.join(", ") : 'None'}
+                {demandCapacityNotification.affectedSitesBpnsSender && demandCapacityNotification.affectedSitesBpnsSender.length > 0
+                    ? demandCapacityNotification.affectedSitesBpnsSender.join(', ')
+                    : 'None'}
             </Grid>
             <Grid display="grid" item xs={12}>
                 <FormLabel>Affected Sites Recipient</FormLabel>
-                {demandCapacityNotification.affectedSitesBpnsRecipient && demandCapacityNotification.affectedSitesBpnsRecipient.length > 0 ? demandCapacityNotification.affectedSitesBpnsRecipient.join(", ") : 'None'}
+                {demandCapacityNotification.affectedSitesBpnsRecipient && demandCapacityNotification.affectedSitesBpnsRecipient.length > 0
+                    ? demandCapacityNotification.affectedSitesBpnsRecipient.join(', ')
+                    : 'None'}
             </Grid>
             <Grid display="grid" item xs={12}>
                 <FormLabel>Affected Material Numbers</FormLabel>
-                {demandCapacityNotification.affectedMaterialNumbers && demandCapacityNotification.affectedMaterialNumbers.length > 0 ? demandCapacityNotification.affectedMaterialNumbers.join(", ") : 'None'}
+                {demandCapacityNotification.affectedMaterialNumbers && demandCapacityNotification.affectedMaterialNumbers.length > 0
+                    ? demandCapacityNotification.affectedMaterialNumbers.join(', ')
+                    : 'None'}
             </Grid>
         </Grid>
-    </Stack>
-}
+    );
+};
 
-export const DemandCapacityNotificationInformationModal = ({ open, demandCapacityNotification, onClose, onSave }: DemandCapacityNotificationInformationModalProps) => {
+export const DemandCapacityNotificationInformationModal = ({
+    open,
+    demandCapacityNotification,
+    onClose,
+    onSave,
+}: DemandCapacityNotificationInformationModalProps) => {
     const [temporaryDemandCapacityNotification, setTemporaryDemandCapacityNotification] = useState<Partial<DemandCapacityNotification>>({});
     const { partners } = useAllPartners();
     const { partnerMaterials } = usePartnerMaterials(temporaryDemandCapacityNotification.partnerBpnl ?? `BPNL`);
@@ -113,10 +123,10 @@ export const DemandCapacityNotificationInformationModal = ({ open, demandCapacit
     const { sites } = useSites();
 
     useEffect(() => {
-        setTemporaryDemandCapacityNotification(prevState => ({
+        setTemporaryDemandCapacityNotification((prevState) => ({
             ...prevState,
             affectedMaterialNumbers: [],
-            affectedSitesBpnsRecipient: []
+            affectedSitesBpnsRecipient: [],
         }));
     }, [temporaryDemandCapacityNotification.partnerBpnl]);
 
@@ -148,7 +158,7 @@ export const DemandCapacityNotificationInformationModal = ({ open, demandCapacit
                     },
                 ]);
             })
-            .finally(() => onClose());
+            .finally(handleClose);
     };
 
     const handleClose = () => {
@@ -162,18 +172,21 @@ export const DemandCapacityNotificationInformationModal = ({ open, demandCapacit
                 <DialogTitle fontWeight={600} textAlign="center">
                     Demand Capacity Notification Information
                 </DialogTitle>
-                {!demandCapacityNotification ?
-                    <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
+                <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
+                    {!demandCapacityNotification ? (
                         <Grid container spacing={1} padding=".25rem">
                             <>
                                 <Grid item xs={12}>
-                                    <FormLabel>Text*</FormLabel>
+                                    <FormLabel>Text</FormLabel>
                                     <Textarea
                                         minRows="5"
                                         id="text"
                                         value={temporaryDemandCapacityNotification?.text ?? ''}
                                         onChange={(event) =>
-                                            setTemporaryDemandCapacityNotification({ ...temporaryDemandCapacityNotification, text: event.target.value })
+                                            setTemporaryDemandCapacityNotification({
+                                                ...temporaryDemandCapacityNotification,
+                                                text: event.target.value,
+                                            })
                                         }
                                         error={formError && !temporaryDemandCapacityNotification?.text}
                                     />
@@ -188,7 +201,10 @@ export const DemandCapacityNotificationInformationModal = ({ open, demandCapacit
                                         placeholder="Select a Partner"
                                         error={formError && !temporaryDemandCapacityNotification?.partnerBpnl}
                                         onChange={(_, value) =>
-                                            setTemporaryDemandCapacityNotification({ ...temporaryDemandCapacityNotification, partnerBpnl: value?.bpnl ?? undefined })
+                                            setTemporaryDemandCapacityNotification({
+                                                ...temporaryDemandCapacityNotification,
+                                                partnerBpnl: value?.bpnl ?? undefined,
+                                            })
                                         }
                                         value={partners?.find((p) => p.bpnl === temporaryDemandCapacityNotification.partnerBpnl) ?? null}
                                         isOptionEqualToValue={(option, value) => option?.bpnl === value?.bpnl}
@@ -201,9 +217,16 @@ export const DemandCapacityNotificationInformationModal = ({ open, demandCapacit
                                         getOptionLabel={(option) => option.value ?? ''}
                                         isOptionEqualToValue={(option, value) => option?.key === value.key}
                                         onChange={(_, value) =>
-                                            setTemporaryDemandCapacityNotification({ ...temporaryDemandCapacityNotification, leadingRootCause: value?.key ?? undefined })
+                                            setTemporaryDemandCapacityNotification({
+                                                ...temporaryDemandCapacityNotification,
+                                                leadingRootCause: value?.key ?? undefined,
+                                            })
                                         }
-                                        value={LEADING_ROOT_CAUSE.find((dt) => dt.key === temporaryDemandCapacityNotification.leadingRootCause) ?? null}
+                                        value={
+                                            LEADING_ROOT_CAUSE.find(
+                                                (dt) => dt.key === temporaryDemandCapacityNotification.leadingRootCause
+                                            ) ?? null
+                                        }
                                         label="Leading cause*"
                                         placeholder="Select the leading cause"
                                         error={formError && !temporaryDemandCapacityNotification?.leadingRootCause}
@@ -216,13 +239,15 @@ export const DemandCapacityNotificationInformationModal = ({ open, demandCapacit
                                         getOptionLabel={(option) => option.value ?? ''}
                                         isOptionEqualToValue={(option, value) => option?.key === value.key}
                                         onChange={(_, value) =>
-                                            setTemporaryDemandCapacityNotification({ ...temporaryDemandCapacityNotification, status: value?.key ?? undefined })
+                                            setTemporaryDemandCapacityNotification({
+                                                ...temporaryDemandCapacityNotification,
+                                                status: value?.key ?? undefined,
+                                            })
                                         }
                                         value={STATUS.find((dt) => dt.key === temporaryDemandCapacityNotification.status) ?? null}
                                         label="Status*"
                                         placeholder="Select the status"
                                         error={formError && !temporaryDemandCapacityNotification?.status}
-
                                     ></LabelledAutoComplete>
                                 </Grid>
                                 <Grid item xs={6}>
@@ -232,7 +257,10 @@ export const DemandCapacityNotificationInformationModal = ({ open, demandCapacit
                                         getOptionLabel={(option) => option.value ?? ''}
                                         isOptionEqualToValue={(option, value) => option?.key === value.key}
                                         onChange={(_, value) =>
-                                            setTemporaryDemandCapacityNotification({ ...temporaryDemandCapacityNotification, effect: value?.key ?? undefined })
+                                            setTemporaryDemandCapacityNotification({
+                                                ...temporaryDemandCapacityNotification,
+                                                effect: value?.key ?? undefined,
+                                            })
                                         }
                                         value={EFFECTS.find((dt) => dt.key === temporaryDemandCapacityNotification.effect) ?? null}
                                         label="Effect*"
@@ -250,17 +278,21 @@ export const DemandCapacityNotificationInformationModal = ({ open, demandCapacit
                                             (!temporaryDemandCapacityNotification.startDateOfEffect ||
                                                 temporaryDemandCapacityNotification.startDateOfEffect > new Date() ||
                                                 (!!temporaryDemandCapacityNotification.expectedEndDateOfEffect &&
-                                                    temporaryDemandCapacityNotification.startDateOfEffect > temporaryDemandCapacityNotification.expectedEndDateOfEffect))
+                                                    temporaryDemandCapacityNotification.startDateOfEffect >
+                                                        temporaryDemandCapacityNotification.expectedEndDateOfEffect))
                                         }
                                         value={temporaryDemandCapacityNotification?.startDateOfEffect ?? null}
                                         onValueChange={(date) =>
-                                            setTemporaryDemandCapacityNotification({ ...temporaryDemandCapacityNotification, startDateOfEffect: date ?? undefined })
+                                            setTemporaryDemandCapacityNotification({
+                                                ...temporaryDemandCapacityNotification,
+                                                startDateOfEffect: date ?? undefined,
+                                            })
                                         }
                                     />
                                 </Grid>
                                 <Grid item xs={6} display="flex" alignItems="end">
                                     <DateTime
-                                        label="Expected End Date Of Effect*"
+                                        label="Expected End Date Of Effect"
                                         placeholder="Pick Expected End Date Of Effect"
                                         locale="de"
                                         error={
@@ -268,11 +300,15 @@ export const DemandCapacityNotificationInformationModal = ({ open, demandCapacit
                                             (!temporaryDemandCapacityNotification?.expectedEndDateOfEffect ||
                                                 temporaryDemandCapacityNotification?.expectedEndDateOfEffect < new Date() ||
                                                 (!!temporaryDemandCapacityNotification.startDateOfEffect &&
-                                                    temporaryDemandCapacityNotification?.expectedEndDateOfEffect < temporaryDemandCapacityNotification.startDateOfEffect))
+                                                    temporaryDemandCapacityNotification?.expectedEndDateOfEffect <
+                                                        temporaryDemandCapacityNotification.startDateOfEffect))
                                         }
                                         value={temporaryDemandCapacityNotification?.expectedEndDateOfEffect ?? null}
                                         onValueChange={(date) =>
-                                            setTemporaryDemandCapacityNotification({ ...temporaryDemandCapacityNotification, expectedEndDateOfEffect: date ?? undefined })
+                                            setTemporaryDemandCapacityNotification({
+                                                ...temporaryDemandCapacityNotification,
+                                                expectedEndDateOfEffect: date ?? undefined,
+                                            })
                                         }
                                     />
                                 </Grid>
@@ -280,90 +316,105 @@ export const DemandCapacityNotificationInformationModal = ({ open, demandCapacit
                                     <InputLabel>Affected Sites Sender</InputLabel>
                                     <Autocomplete
                                         id="own-sites"
-                                        value={temporaryDemandCapacityNotification.affectedSitesBpnsSender ?? []
-                                        }
-                                        options={sites?.map(site => site.bpns) ?? []}
-                                        getOptionLabel={(option) => `${sites?.find(site => site.bpns === option)?.name} (${option})`}
+                                        value={temporaryDemandCapacityNotification.affectedSitesBpnsSender ?? []}
+                                        options={sites?.map((site) => site.bpns) ?? []}
+                                        getOptionLabel={(option) => `${sites?.find((site) => site.bpns === option)?.name} (${option})`}
                                         isOptionEqualToValue={(option, value) => option === value}
                                         renderInput={(params) => (
-                                            <Input
-                                                {...params}
-                                                hiddenLabel
-                                                placeholder={`Select Sender Affected Sites`}
-                                            />
+                                            <Input {...params} hiddenLabel placeholder={`Select Sender Affected Sites`} />
                                         )}
-                                        onChange={(_, value) => setTemporaryDemandCapacityNotification({
-                                            ...temporaryDemandCapacityNotification,
-                                            affectedSitesBpnsSender: value ?? []
-                                        })}
-                                        multiple={true} />
+                                        onChange={(_, value) =>
+                                            setTemporaryDemandCapacityNotification({
+                                                ...temporaryDemandCapacityNotification,
+                                                affectedSitesBpnsSender: value ?? [],
+                                            })
+                                        }
+                                        multiple={true}
+                                    />
                                 </Grid>
                                 <Grid item xs={12}>
                                     <InputLabel>Affected Material Numbers</InputLabel>
                                     <Autocomplete
                                         id="affected-material-numbers"
-                                        value={temporaryDemandCapacityNotification.affectedMaterialNumbers ?? []
+                                        value={temporaryDemandCapacityNotification.affectedMaterialNumbers ?? []}
+                                        options={partnerMaterials?.map((partnerMaterial) => partnerMaterial.ownMaterialNumber) ?? []}
+                                        getOptionLabel={(option) =>
+                                            `${
+                                                partnerMaterials?.find((material) => material.ownMaterialNumber === option)?.name
+                                            } (${option})`
                                         }
-                                        options={partnerMaterials?.map(partnerMaterial => partnerMaterial.ownMaterialNumber) ?? []}
-                                        getOptionLabel={(option) => `${partnerMaterials?.find(material => material.ownMaterialNumber === option)?.name} (${option})`}
                                         isOptionEqualToValue={(option, value) => option === value}
                                         renderInput={(params) => (
-                                            <Input
-                                                {...params}
-                                                hiddenLabel
-                                                placeholder={`Select Affected Material Numbers`}
-                                            />
+                                            <Input {...params} hiddenLabel placeholder={`Select Affected Material Numbers`} />
                                         )}
-                                        onChange={(_, value) => setTemporaryDemandCapacityNotification({
-                                            ...temporaryDemandCapacityNotification,
-                                            affectedMaterialNumbers: value ?? []
-                                        })}
+                                        onChange={(_, value) =>
+                                            setTemporaryDemandCapacityNotification({
+                                                ...temporaryDemandCapacityNotification,
+                                                affectedMaterialNumbers: value ?? [],
+                                            })
+                                        }
                                         disabled={!temporaryDemandCapacityNotification?.partnerBpnl}
-                                        multiple={true} />
+                                        multiple={true}
+                                    />
                                 </Grid>
                                 <Grid item xs={12}>
                                     <InputLabel>Affected Sites Recipient</InputLabel>
                                     <Autocomplete
                                         id="partner-site"
                                         value={temporaryDemandCapacityNotification.affectedSitesBpnsRecipient ?? []}
-                                        options={partners?.find(partner => partner.bpnl === temporaryDemandCapacityNotification?.partnerBpnl)?.sites.map(site => site.bpns) ?? []}
+                                        options={
+                                            partners
+                                                ?.find((partner) => partner.bpnl === temporaryDemandCapacityNotification?.partnerBpnl)
+                                                ?.sites.map((site) => site.bpns) ?? []
+                                        }
                                         disabled={!temporaryDemandCapacityNotification?.partnerBpnl}
-                                        getOptionLabel={(option) => `${partners?.reduce((acc: Site[], p) => [...acc, ...p.sites], []).find(site => site.bpns === option)?.name} (${option})`}
+                                        getOptionLabel={(option) =>
+                                            `${
+                                                partners
+                                                    ?.reduce((acc: Site[], p) => [...acc, ...p.sites], [])
+                                                    .find((site) => site.bpns === option)?.name
+                                            } (${option})`
+                                        }
                                         isOptionEqualToValue={(option, value) => option === value}
                                         renderInput={(params) => (
-                                            <Input
-                                                {...params}
-                                                hiddenLabel
-                                                placeholder={`Select Affected Sites of Partner`}
-                                            />
+                                            <Input {...params} hiddenLabel placeholder={`Select Affected Sites of Partner`} />
                                         )}
-                                        onChange={(_, value) => setTemporaryDemandCapacityNotification({
-                                            ...temporaryDemandCapacityNotification,
-                                            affectedSitesBpnsRecipient: value ?? []
-                                        })}
-                                        multiple={true} />
+                                        onChange={(_, value) =>
+                                            setTemporaryDemandCapacityNotification({
+                                                ...temporaryDemandCapacityNotification,
+                                                affectedSitesBpnsRecipient: value ?? [],
+                                            })
+                                        }
+                                        multiple={true}
+                                    />
                                 </Grid>
                             </>
-
                         </Grid>
-                        <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="2rem">
-                            <Button variant="outlined" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleClose}>
-                                <Close></Close> Close
-                            </Button>
+                    ) : (
+                        <DemandCapacityNotificationView
+                            demandCapacityNotification={demandCapacityNotification}
+                            partners={partners}
+                        ></DemandCapacityNotificationView>
+                    )}
+                    <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="1rem">
+                        <Button variant="outlined" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleClose}>
+                            <Close></Close> Close
+                        </Button>
+                        {!demandCapacityNotification ? (
                             <Button
                                 variant="contained"
                                 color="primary"
                                 sx={{ display: 'flex', gap: '.25rem' }}
                                 onClick={() => handleSaveClick()}
                             >
-                                <Save></Save> Save
+                                <Send></Send> Send
                             </Button>
-                        </Box>
-                    </Stack> :
-                    <DemandCapacityNotificationView demandCapacityNotification={demandCapacityNotification} partners={partners}></DemandCapacityNotificationView>
-                }
+                        ) : null}
+                    </Box>
+                </Stack>
             </Dialog>
-            <PageSnackbarStack>?
+            <PageSnackbarStack>
+                ?
                 {notifications.map((notification, index) => (
                     <PageSnackbar
                         key={index}

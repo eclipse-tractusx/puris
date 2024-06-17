@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
 import { Tab, TabPanel, Tabs, Table } from '@catena-x/portal-shared-components';
 import { Box, Button, Stack } from '@mui/material';
 import { getDemandAndCapacityNotification } from '@services/demand-capacity-notification';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Add } from '@mui/icons-material';
 import { DemandCapacityNotificationInformationModal } from '@features/notifications/components/NotificationInformationModal';
 import { DemandCapacityNotification } from '@models/types/data/demand-capacity-notification';
@@ -40,18 +40,18 @@ export const DemandCapacityNotificationView = () => {
 
     const tabs = ['Incoming', 'Outgoing'];
 
-    const fetchAndLogNotification = async () => {
+    const fetchAndLogNotification = useCallback(async () => {
         try {
             const result = await getDemandAndCapacityNotification(selectedTab === 0);
             setDemandCapacityNotification(result);
         } catch (error) {
             console.error(error);
         }
-    }
+    }, [selectedTab]);
 
     useEffect(() => {
         fetchAndLogNotification();
-    }, [selectedTab]);
+    }, [selectedTab, fetchAndLogNotification]);
 
     const TabPanelContent = ({ notifications }: { notifications: DemandCapacityNotification[] }) => {
         return (
@@ -115,9 +115,9 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                 title="Demand and Capacity Notifications"
                 columns={[
                     { headerName: 'Text', field: 'text', width: 200 },
-                    { headerName: 'Partners Bpnl', field: 'partnerBpnl', width: 200 },
-                    { headerName: 'Leading Root Cause', field: 'leadingRootCause', width: 120, valueFormatter: (params) => LEADING_ROOT_CAUSE.find((cause) => cause.key === params.value)?.value },
-                    { headerName: 'Effect', field: 'effect', width: 120, valueFormatter: (params) => EFFECTS.find((effect) => effect.key === params.value)?.value, },
+                    { headerName: 'Partner Bpnl', field: 'partnerBpnl', width: 200 },
+                    { headerName: 'Leading Root Cause', field: 'leadingRootCause', width: 180, valueFormatter: (params) => LEADING_ROOT_CAUSE.find((cause) => cause.key === params.value)?.value },
+                    { headerName: 'Effect', field: 'effect', width: 180, valueFormatter: (params) => EFFECTS.find((effect) => effect.key === params.value)?.value, },
                     { headerName: ' Affected Material Numbers', field: 'affectedMaterialNumbers', width: 200 },
                     { headerName: ' Affected Sites Sender', field: 'affectedSitesBpnsSender', width: 200 },
                     { headerName: ' Affected Sites Recipient', field: 'affectedSitesBpnsRecipient', width: 200 },
