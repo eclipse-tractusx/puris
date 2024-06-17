@@ -23,7 +23,7 @@ import { Tab, TabPanel, Tabs, Table } from '@catena-x/portal-shared-components';
 import { Box, Button, Stack } from '@mui/material';
 import { getDemandAndCapacityNotification } from '@services/demand-capacity-notification';
 import { useCallback, useEffect, useState } from 'react';
-import { Add } from '@mui/icons-material';
+import { Add, Send } from '@mui/icons-material';
 import { DemandCapacityNotificationInformationModal } from '@features/notifications/components/NotificationInformationModal';
 import { DemandCapacityNotification } from '@models/types/data/demand-capacity-notification';
 import { EFFECTS } from '@models/constants/effects';
@@ -70,11 +70,11 @@ export const DemandCapacityNotificationView = () => {
                     <Tabs value={selectedTab} onChange={(_, value: number) => setSelectedTab(value)}>
                         {tabs.map((tab, index) => <Tab key={index} label={tab} />)}
                     </Tabs>
-                    <Button variant="contained" onClick={() => {
+                    <Button variant="contained" sx={{display: 'flex', gap: '.5rem'}} onClick={() => {
                         setSelectedNotification(null);
                         setModalOpen(true)
                     }}>
-                        <Add></Add> Send Notification
+                        <Send></Send> Send Notification
                     </Button>
                 </Stack>
                 <Box width='100%' display='flex' marginTop='0 !important' paddingBottom='2rem'>
