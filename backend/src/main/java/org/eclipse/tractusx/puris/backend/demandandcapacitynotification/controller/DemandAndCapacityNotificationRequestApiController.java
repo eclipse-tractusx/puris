@@ -54,7 +54,7 @@ public class DemandAndCapacityNotificationRequestApiController {
         @ApiResponse(responseCode = "400", description = "Bad Request"),
         @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @PostMapping("request/{materialnumbercx}/")
+    @PostMapping("request")
     public ResponseEntity<DemandAndCapacityNotificationSamm> postDemandAndCapacityNotification(
         @RequestHeader("edc-bpn") String bpnl,
         @RequestBody String body)
@@ -69,7 +69,7 @@ public class DemandAndCapacityNotificationRequestApiController {
             var notification = objectMapper.readValue(
                 data.get("content").get("demandAndCapacityNotification").toString(),
                 DemandAndCapacityNotificationSamm.class);
-            demandAndCapacityNotificationRequestApiService.handleNotificationSubmodelRequest(bpnl, notification);
+            demandAndCapacityNotificationRequestApiService.handleIncomingNotification(bpnl, notification);
         } catch (Exception e) {
             log.warn("Rejecting invalid request body at DemandAndCapacityNotification Submodel request 2.0.0 endpoint");
             return ResponseEntity.badRequest().build();

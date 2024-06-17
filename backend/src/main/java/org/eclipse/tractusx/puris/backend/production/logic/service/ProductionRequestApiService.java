@@ -22,7 +22,7 @@ package org.eclipse.tractusx.puris.backend.production.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -80,7 +80,7 @@ public class ProductionRequestApiService {
     public void doReportedProductionRequest(Partner partner, Material material) {
         try {
             var mpr = mprService.find(material, partner);
-            var data = edcAdapterService.doSubmodelRequest(SubmodelType.PRODUCTION, mpr, DirectionCharacteristic.OUTBOUND, 1);
+            var data = edcAdapterService.doSubmodelRequest(AssetType.PRODUCTION_SUBMODEL, mpr, DirectionCharacteristic.OUTBOUND, 1);
             var samm = objectMapper.treeToValue(data, PlannedProductionOutput.class);
             var productions = sammMapper.sammToReportedProduction(samm, partner);
             for (var production : productions) {

@@ -263,7 +263,7 @@ public class VariablesService {
         return deliverySubmodelAssetId + "@" + ownBpnl;
     }
 
-    public String getNotificationSubmodelApiAssetId() {
+    public String getNotificationApiAssetId() {
         return notificationSubmodelAssetId + "@" + ownBpnl;
     }
 

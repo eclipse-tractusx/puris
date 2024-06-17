@@ -22,7 +22,7 @@ package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.SubmodelType;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.DeliveryResponsibilityEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
@@ -155,7 +155,7 @@ public class DeliveryRequestApiService {
                 mpr = mprService.find(material, partner);
             }
             var direction = material.isMaterialFlag() ? DirectionCharacteristic.OUTBOUND : DirectionCharacteristic.INBOUND;
-            var data = edcAdapterService.doSubmodelRequest(SubmodelType.DELIVERY, mpr, direction, 1);
+            var data = edcAdapterService.doSubmodelRequest(AssetType.DELIVERY_SUBMODEL, mpr, direction, 1);
             var samm = objectMapper.treeToValue(data, DeliveryInformation.class);
             var deliveries = sammMapper.sammToReportedDeliveries(samm, partner);
             for (var delivery : deliveries) {
