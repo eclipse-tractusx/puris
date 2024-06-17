@@ -18,8 +18,32 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-export type MaterialDescriptor = {
-    ownMaterialNumber: string;
-    description: string;
-    name: string;
+import { LeadingRootCauseType } from "../types/data/demand-capacity-notification";
+
+export type LeadingRootCause = {
+    key: LeadingRootCauseType;
+    value: string;
 };
+
+export const LEADING_ROOT_CAUSE: LeadingRootCause[] = [
+    {
+        key: 'strike',
+        value: 'Strike'
+    },
+    {
+        key: 'natural-disaster',
+        value: 'Natural Disaster'
+    },
+    {
+        key: 'logistics-disruption',
+        value: 'Logistics Disruption'
+    },
+    {
+        key: 'war',
+        value: 'War'
+    },
+    {
+        key: 'other',
+        value: 'Other'
+    }
+] as const;

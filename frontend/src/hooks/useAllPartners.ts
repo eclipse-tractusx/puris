@@ -18,13 +18,13 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import {useFetch} from '@hooks/useFetch';
-import {config} from '@models/constants/config';
-import {Partner} from '@models/types/edc/partner';
+import { useFetch } from '@hooks/useFetch';
+import { config } from '@models/constants/config';
+import { Partner } from '@models/types/edc/partner';
 
-export const usePartners = () => {
+export const useAllPartners = () => {
     const endpoint = config.app.ENDPOINT_PARTNER + "/all";
-    const {data: partners, isLoading: isLoadingPartners} = useFetch<Partner[]>(
+    const { data: partners, isLoading: isLoadingPartners } = useFetch<Partner[]>(
         `${config.app.BACKEND_BASE_URL}${endpoint}`
     );
     return {
