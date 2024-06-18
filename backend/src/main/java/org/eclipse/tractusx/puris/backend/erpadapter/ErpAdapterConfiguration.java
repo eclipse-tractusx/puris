@@ -1,4 +1,4 @@
-package org.eclipse.tractusx.puris.backend.common.security;
+package org.eclipse.tractusx.puris.backend.erpadapter;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -6,8 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @Getter
-public class ErpAdapterSecurityConfiguration {
-
+public class ErpAdapterConfiguration {
 
     /**
      * Toggles usage of the ERP adapter
@@ -25,7 +24,7 @@ public class ErpAdapterSecurityConfiguration {
      * The URL under which we expect responses from
      * the ERP adapter
      */
-    @Value("${puris.baseurl}" + "catena/erp-adapter")
+    @Value("${puris.baseurl}" + "${server.servlet.context-path}" + "/erp-adapter")
     private String erpResponseUrl;
 
     /**

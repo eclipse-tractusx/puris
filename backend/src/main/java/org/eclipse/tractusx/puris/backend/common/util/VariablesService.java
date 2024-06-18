@@ -22,10 +22,11 @@
 package org.eclipse.tractusx.puris.backend.common.util;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-
+@Slf4j
 @Getter
 @Service
 /**
@@ -42,6 +43,14 @@ public class VariablesService {
     @Value("${puris.baseurl}")
     private String purisBaseUrl;
 
+    /**
+     * The puris base url as defined in the property puris.baseurl,
+     * ending with a slash ('/').
+     */
+    public String getPurisBaseUrl() {
+        return purisBaseUrl.endsWith("/") ? purisBaseUrl : purisBaseUrl + "/";
+    }
+
     @Value("${puris.demonstrator.role}")
     /**
      * Must be set to "CUSTOMER" or "SUPPLIER" if
@@ -50,12 +59,24 @@ public class VariablesService {
      */
     private String demoRole;
 
-    @Value("${puris.baseurl}" + "catena/item-stock/request")
+    @Value("${server.servlet.context-path}")
+    private String contextPath;
+
     /**
-     * The url under which this application's request endpoint can
+     * The context path as defined in the property server.servlet.context-path,
+     * ending with a slash ('/').
+     */
+    public String getContextPath() {
+        return contextPath.replace("/", "") + "/";
+    }
+
+    /**
+     * The url under which this application's item stock request endpoint can
      * be reached by external machines.
      */
-    private String itemStockSubmodelEndpoint;
+    public String getItemStockSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "item-stock/request";
+    }
 
     @Value("${puris.itemstocksubmodel.apiassetid}")
     /**
@@ -64,12 +85,13 @@ public class VariablesService {
      */
     private String itemStockSubmodelAssetId;
 
-    @Value("${puris.baseurl}" + "catena/planned-production/request")
     /**
-     * The url under which this application's request endpoint can
+     * The url under which this application's planned production request endpoint can
      * be reached by external machines.
      */
-    private String productionSubmodelEndpoint;
+    public String getProductionSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "planned-production/request";
+    }
 
     @Value("${puris.productionsubmodel.apiassetid}")
     /**
@@ -78,12 +100,14 @@ public class VariablesService {
      */
     private String productionSubmodelAssetId;
 
-    @Value("${puris.baseurl}" + "catena/material-demand/request")
     /**
-     * The url under which this application's request endpoint can
+     * The url under which this application's material demand request endpoint can
      * be reached by external machines.
      */
-    private String demandSubmodelEndpoint;
+    public String getDemandSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "material-demand/request";
+    }
+
 
     @Value("${puris.demandsubmodel.apiassetid}")
     /**
@@ -92,12 +116,13 @@ public class VariablesService {
      */
     private String demandSubmodelAssetId;
 
-    @Value("${puris.baseurl}" + "catena/delivery-information/request")
     /**
-     * The url under which this application's request endpoint can
+     * The url under which this application's delivery information request endpoint can
      * be reached by external machines.
      */
-    private String deliverySubmodelEndpoint;
+    public String getDeliverySubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "delivery-information/request";
+    }
 
     @Value("${puris.deliverysubmodel.apiassetid}")
     /**
@@ -142,8 +167,13 @@ public class VariablesService {
      */
     private String dtrUrl;
 
-    @Value("${puris.baseurl}" + "catena/parttypeinformation")
-    private String parttypeInformationServerendpoint;
+    /**
+     * The url under which this application's part type request endpoint can
+     * be reached by external machines.
+     */
+    public String getParttypeInformationServerendpoint() {
+        return getPurisBaseUrl() + getContextPath() + "parttypeinformation";
+    }
 
     @Value("${puris.generatematerialcatenaxid}")
     /**
