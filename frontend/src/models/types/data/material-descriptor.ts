@@ -21,4 +21,5 @@ SPDX-License-Identifier: Apache-2.0
 export type MaterialDescriptor = {
     ownMaterialNumber: string;
     description: string;
+    name: string;
 };

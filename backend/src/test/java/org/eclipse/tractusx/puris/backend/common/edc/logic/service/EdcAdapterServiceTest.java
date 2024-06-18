@@ -70,7 +70,7 @@ public class EdcAdapterServiceTest {
     }
 
     /**
-     * Tests two constraints constraints as expected
+     * Tests two constraints as expected
      *
      * @throws JsonProcessingException if json is invalid
      */
@@ -85,17 +85,17 @@ public class EdcAdapterServiceTest {
             "      \"@type\" : \"odrl:Offer\",\n" +
             "      \"odrl:permission\" : {\n" +
             "        \"odrl:action\" : {\n" +
-            "          \"odrl:type\" : \"http://www.w3.org/ns/odrl/2/use\"\n" +
+            "          \"@id\" : \"odrl:use\"\n" +
             "        },\n" +
             "        \"odrl:constraint\" : {\n" +
             "          \"odrl:and\" : [ {\n" +
-            "            \"odrl:leftOperand\" : \"https://w3id.org/catenax/policy/FrameworkAgreement\",\n" +
+            "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:FrameworkAgreement\"},\n" +
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
             "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
             "          }, {\n" +
-            "            \"odrl:leftOperand\" : \"https://w3id.org/catenax/policy/UsagePurpose\",\n" +
+            "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:UsagePurpose\"},\n" +
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
@@ -161,7 +161,7 @@ public class EdcAdapterServiceTest {
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
-            "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
+            "            \"odrl:rightOperand\" : \"Puris:0.1\"\n" +
             "          }, {\n" +
             "            \"odrl:leftOperand\" : {\n" +
             "              \"@id\" : \"cx-policy:UsagePurpose\"\n" +

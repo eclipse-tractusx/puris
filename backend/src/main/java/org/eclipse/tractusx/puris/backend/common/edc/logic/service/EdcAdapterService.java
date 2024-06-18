@@ -1059,7 +1059,7 @@ public class EdcAdapterService {
      * Helper method to check whether you and the contract offer from the other party have the
      * same framework agreement policy. The given catalogEntry must be expanded!
      *
-     * @param catalogEntry the catalog item containing the desired api asset
+     * @param catalogEntry the catalog item containing the desired api asset in expanded form
      * @return true, if the policy matches yours, otherwise false
      */
     public boolean testContractPolicyConstraints(JsonNode catalogEntry) {
@@ -1087,7 +1087,7 @@ public class EdcAdapterService {
             for (JsonNode con : constraint.get()) { // Iterate over array elements and find the nodes
                 JsonNode leftOperandNode = con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "leftOperand");
                 leftOperandNode = leftOperandNode.get(0);
-                leftOperandNode = leftOperandNode.get("@value");
+                leftOperandNode = leftOperandNode.get("@id");
                 if (leftOperandNode != null && (EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "FrameworkAgreement").equals(leftOperandNode.asText())) {
                     frameworkAgreementConstraint = Optional.of(con);
                 }
@@ -1120,6 +1120,12 @@ public class EdcAdapterService {
                 variablesService.getPurisPurposeWithVersion()
             );
 
+            JsonNode policy = catalogEntry.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "hasPolicy");
+            JsonNode prohibition = policy.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "prohibition");
+            JsonNode obligation = policy.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "obligation");
+            result = result && (prohibition == null || (prohibition.isArray() && prohibition.isEmpty()));
+            result = result && (obligation == null || (obligation.isArray() && obligation.isEmpty()));
+
         } else {
             log.info(
                 "2 Constraints (Framework Agreement, Purpose) are expected but got {} constraints.",
@@ -1139,7 +1145,7 @@ public class EdcAdapterService {
 
         JsonNode leftOperandNode = con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "leftOperand");
         leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get(0);
-        leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get("@value");
+        leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get("@id");
         if (leftOperandNode == null || !targetLeftOperand.equals(leftOperandNode.asText())) {
             String leftOperand = leftOperandNode == null ? "null" : leftOperandNode.asText();
             log.info("Left operand '{}' does not equal expected value '{}'.", leftOperand, targetLeftOperand);
@@ -1160,7 +1166,7 @@ public class EdcAdapterService {
         rightOperandNode = rightOperandNode == null ? null : rightOperandNode.get("@value");
         if (rightOperandNode == null || !targetRightOperand.equals(rightOperandNode.asText())) {
             String rightOperand = rightOperandNode == null ? "null" : rightOperandNode.asText();
-            log.info("Right operand '{}' odes not equal expected value '{}'.", rightOperand, targetRightOperand);
+            log.info("Right operand '{}' does not equal expected value '{}'.", rightOperand, targetRightOperand);
             return false;
         }
 

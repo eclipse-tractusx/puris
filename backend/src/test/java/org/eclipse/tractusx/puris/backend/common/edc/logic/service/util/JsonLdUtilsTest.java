@@ -42,7 +42,7 @@ public class JsonLdUtilsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {test0, test1, test2,test3})
+    @ValueSource(strings = {test0, test1, test2, test3})
     public void testUtilClass(String input) throws Exception {
         JsonLdUtils util = new JsonLdUtils();
         // GIVEN
@@ -155,8 +155,7 @@ public class JsonLdUtilsTest {
         "    }\n" +
         "}";
 
-
-    final static String test1 = "{\n" +
+    final static String test1 = "{" +
         "  \"@id\" : \"473e5307-c0c5-491f-96b4-68b9e25d4699\",\n" +
         "  \"@type\" : \"dcat:Catalog\",\n" +
         "  \"dspace:participantId\" : \"BPNL1234567890ZZ\",\n" +
@@ -251,237 +250,122 @@ public class JsonLdUtilsTest {
         "  }\n" +
         "}";
 
-    final static String test2 = "\n" +
+    final static String test2 =
         "{\n" +
-        "\n" +
         "  \"@id\" : \"f26d8d04-5ee5-4478-8de7-2e347b1f6685\",\n" +
-        "\n" +
         "  \"@type\" : \"dcat:Catalog\",\n" +
-        "\n" +
         "  \"dspace:participantId\" : \"BPNL00000007RXRX\",\n" +
-        "\n" +
         "  \"dcat:dataset\" : {\n" +
-        "\n" +
         "    \"@id\" : \"PartTypeInformationSubmodelApi@BPNL00000007RXRX\",\n" +
-        "\n" +
         "    \"@type\" : \"dcat:Dataset\",\n" +
-        "\n" +
         "    \"odrl:hasPolicy\" : {\n" +
-        "\n" +
         "      \"@id\" : \"QlBOTDAwMDAwMDA3UlRVUF9jb250cmFjdGRlZmluaXRpb25fZm9yX1BhcnRUeXBlSW5mb3JtYXRpb25TdWJtb2RlbEFwaUBCUE5MMDAwMDAwMDdSWFJY:UGFydFR5cGVJbmZvcm1hdGlvblN1Ym1vZGVsQXBpQEJQTkwwMDAwMDAwN1JYUlg=:NzE3MGJmZDMtYTg5NS00YmU2LWI5Y2EtMDVhYTUwY2VjMDk2\",\n" +
-        "\n" +
         "      \"@type\" : \"odrl:Offer\",\n" +
-        "\n" +
         "      \"odrl:permission\" : {\n" +
-        "\n" +
         "        \"odrl:action\" : {\n" +
-        "\n" +
         "          \"odrl:type\" : \"http://www.w3.org/ns/odrl/2/use\"\n" +
-        "\n" +
         "        },\n" +
-        "\n" +
         "        \"odrl:constraint\" : {\n" +
-        "\n" +
         "          \"odrl:and\" : [ {\n" +
-        "\n" +
         "            \"odrl:leftOperand\" : \"https://w3id.org/catenax/policy/FrameworkAgreement\",\n" +
-        "\n" +
         "            \"odrl:operator\" : {\n" +
-        "\n" +
         "              \"@id\" : \"odrl:eq\"\n" +
-        "\n" +
         "            },\n" +
-        "\n" +
         "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
-        "\n" +
         "          }, {\n" +
-        "\n" +
         "            \"odrl:leftOperand\" : \"https://w3id.org/catenax/policy/UsagePurpose\",\n" +
-        "\n" +
         "            \"odrl:operator\" : {\n" +
-        "\n" +
         "              \"@id\" : \"odrl:eq\"\n" +
-        "\n" +
         "            },\n" +
-        "\n" +
         "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
-        "\n" +
         "          } ]\n" +
-        "\n" +
         "        }\n" +
-        "\n" +
         "      },\n" +
-        "\n" +
         "      \"odrl:prohibition\" : [ ],\n" +
-        "\n" +
         "      \"odrl:obligation\" : [ ]\n" +
-        "\n" +
         "    },\n" +
-        "\n" +
         "    \"dcat:distribution\" : [ {\n" +
-        "\n" +
         "      \"@type\" : \"dcat:Distribution\",\n" +
-        "\n" +
         "      \"dct:format\" : {\n" +
-        "\n" +
         "        \"@id\" : \"AzureStorage-PUSH\"\n" +
-        "\n" +
         "      },\n" +
-        "\n" +
         "      \"dcat:accessService\" : {\n" +
-        "\n" +
         "        \"@id\" : \"80ab93d7-847a-42d2-81d0-1f74b89b81b8\",\n" +
-        "\n" +
         "        \"@type\" : \"dcat:DataService\",\n" +
-        "\n" +
         "        \"dcat:endpointDescription\" : \"dspace:connector\",\n" +
-        "\n" +
         "        \"dcat:endpointUrl\" : \"https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp\",\n" +
-        "\n" +
         "        \"dct:terms\" : \"dspace:connector\",\n" +
-        "\n" +
         "        \"dct:endpointUrl\" : \"https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp\"\n" +
-        "\n" +
         "      }\n" +
-        "\n" +
         "    }, {\n" +
-        "\n" +
         "      \"@type\" : \"dcat:Distribution\",\n" +
-        "\n" +
         "      \"dct:format\" : {\n" +
-        "\n" +
         "        \"@id\" : \"HttpData-PULL\"\n" +
-        "\n" +
         "      },\n" +
-        "\n" +
         "      \"dcat:accessService\" : {\n" +
-        "\n" +
         "        \"@id\" : \"80ab93d7-847a-42d2-81d0-1f74b89b81b8\",\n" +
-        "\n" +
         "        \"@type\" : \"dcat:DataService\",\n" +
-        "\n" +
         "        \"dcat:endpointDescription\" : \"dspace:connector\",\n" +
-        "\n" +
         "        \"dcat:endpointUrl\" : \"https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp\",\n" +
-        "\n" +
         "        \"dct:terms\" : \"dspace:connector\",\n" +
-        "\n" +
         "        \"dct:endpointUrl\" : \"https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp\"\n" +
-        "\n" +
         "      }\n" +
-        "\n" +
         "    }, {\n" +
-        "\n" +
         "      \"@type\" : \"dcat:Distribution\",\n" +
-        "\n" +
         "      \"dct:format\" : {\n" +
-        "\n" +
         "        \"@id\" : \"HttpData-PUSH\"\n" +
-        "\n" +
         "      },\n" +
-        "\n" +
         "      \"dcat:accessService\" : {\n" +
-        "\n" +
         "        \"@id\" : \"80ab93d7-847a-42d2-81d0-1f74b89b81b8\",\n" +
-        "\n" +
         "        \"@type\" : \"dcat:DataService\",\n" +
-        "\n" +
         "        \"dcat:endpointDescription\" : \"dspace:connector\",\n" +
-        "\n" +
         "        \"dcat:endpointUrl\" : \"https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp\",\n" +
-        "\n" +
         "        \"dct:terms\" : \"dspace:connector\",\n" +
-        "\n" +
         "        \"dct:endpointUrl\" : \"https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp\"\n" +
-        "\n" +
         "      }\n" +
-        "\n" +
         "    }, {\n" +
-        "\n" +
         "      \"@type\" : \"dcat:Distribution\",\n" +
-        "\n" +
         "      \"dct:format\" : {\n" +
-        "\n" +
         "        \"@id\" : \"AmazonS3-PUSH\"\n" +
-        "\n" +
         "      },\n" +
-        "\n" +
         "      \"dcat:accessService\" : {\n" +
-        "\n" +
         "        \"@id\" : \"80ab93d7-847a-42d2-81d0-1f74b89b81b8\",\n" +
-        "\n" +
         "        \"@type\" : \"dcat:DataService\",\n" +
-        "\n" +
         "        \"dcat:endpointDescription\" : \"dspace:connector\",\n" +
-        "\n" +
         "        \"dcat:endpointUrl\" : \"https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp\",\n" +
-        "\n" +
         "        \"dct:terms\" : \"dspace:connector\",\n" +
-        "\n" +
         "        \"dct:endpointUrl\" : \"https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp\"\n" +
-        "\n" +
         "      }\n" +
-        "\n" +
         "    } ],\n" +
-        "\n" +
         "    \"https://admin-shell.io/aas/3/0/HasSemantics/semanticId\" : {\n" +
-        "\n" +
         "      \"@id\" : \"urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation\"\n" +
-        "\n" +
         "    },\n" +
-        "\n" +
         "    \"https://w3id.org/catenax/ontology/common#version\" : \"3.0\",\n" +
-        "\n" +
         "    \"id\" : \"PartTypeInformationSubmodelApi@BPNL00000007RXRX\",\n" +
-        "\n" +
         "    \"https://purl.org/dc/terms/type\" : {\n" +
-        "\n" +
         "      \"@id\" : \"https://w3id.org/catenax/taxonomy#Submodel\"\n" +
-        "\n" +
         "    }\n" +
-        "\n" +
         "  },\n" +
-        "\n" +
         "  \"dcat:service\" : {\n" +
-        "\n" +
         "    \"@id\" : \"80ab93d7-847a-42d2-81d0-1f74b89b81b8\",\n" +
-        "\n" +
         "    \"@type\" : \"dcat:DataService\",\n" +
-        "\n" +
         "    \"dcat:endpointDescription\" : \"dspace:connector\",\n" +
-        "\n" +
         "    \"dcat:endpointUrl\" : \"https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp\",\n" +
-        "\n" +
         "    \"dct:terms\" : \"dspace:connector\",\n" +
-        "\n" +
         "    \"dct:endpointUrl\" : \"https://isst-edc-supplier.int.demo.catena-x.net/api/v1/dsp\"\n" +
-        "\n" +
         "  },\n" +
-        "\n" +
         "  \"participantId\" : \"BPNL00000007RXRX\",\n" +
-        "\n" +
         "  \"@context\" : {\n" +
-        "\n" +
         "    \"@vocab\" : \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
-        "\n" +
         "    \"edc\" : \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
-        "\n" +
         "    \"tx\" : \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
-        "\n" +
         "    \"tx-auth\" : \"https://w3id.org/tractusx/auth/\",\n" +
-        "\n" +
         "    \"cx-policy\" : \"https://w3id.org/catenax/policy/\",\n" +
-        "\n" +
         "    \"dcat\" : \"http://www.w3.org/ns/dcat#\",\n" +
-        "\n" +
         "    \"dct\" : \"http://purl.org/dc/terms/\",\n" +
-        "\n" +
         "    \"odrl\" : \"http://www.w3.org/ns/odrl/2/\",\n" +
-        "\n" +
         "    \"dspace\" : \"https://w3id.org/dspace/v0.8/\"\n" +
-        "\n" +
         "  }\n" +
-        "\n" +
         "}";
 
     final static String test3 = "{\n" +

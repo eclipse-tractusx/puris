@@ -18,17 +18,15 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import {useFetch} from '@hooks/useFetch';
-import {config} from '@models/constants/config';
-import {Partner} from '@models/types/edc/partner';
+package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository;
 
-export const usePartners = () => {
-    const endpoint = config.app.ENDPOINT_PARTNER + "/all";
-    const {data: partners, isLoading: isLoadingPartners} = useFetch<Partner[]>(
-        `${config.app.BACKEND_BASE_URL}${endpoint}`
-    );
-    return {
-        partners,
-        isLoadingPartners,
-    };
+import java.util.UUID;
+
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ReportedDemandAndCapacityNotificationRepository extends JpaRepository<ReportedDemandAndCapacityNotification, UUID>{
+
 }
