@@ -30,6 +30,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.AddressDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.SiteDto;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -58,6 +59,9 @@ public class PartnerControllerTest {
 
     @MockBean
     private PartnerService partnerService;
+
+    @MockBean
+    private MaterialPartnerRelationService mprService;
 
     private final ModelMapper modelMapper = new ModelMapper();
     private final String bpnl = "BPNL2222222222RR";
