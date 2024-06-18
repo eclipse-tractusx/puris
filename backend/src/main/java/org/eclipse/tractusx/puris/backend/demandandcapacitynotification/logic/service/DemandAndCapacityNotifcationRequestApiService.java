@@ -104,7 +104,7 @@ public class DemandAndCapacityNotifcationRequestApiService {
         header.put("context", DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT);
         header.put("messageId", UUID.randomUUID().toString());
         header.put("sentDateTime", new Date().toString());
-        header.put("version", DEMAND_AND_CAPACITY_NOTIFICATION_VERSION);
+        header.put("version", MESSAGE_HEADER_VERSION);
         var content = objectMapper.createObjectNode();
         body.set("content", content);
         var samm = sammMapper.ownNotificationToSamm(notification);
