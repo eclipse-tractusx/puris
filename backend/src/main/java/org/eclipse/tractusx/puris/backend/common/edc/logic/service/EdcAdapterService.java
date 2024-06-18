@@ -531,8 +531,6 @@ public class EdcAdapterService {
             default -> throw new IllegalArgumentException("Unsupported type " + type);
         };
         try {
-            
-            
             String contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
             if (contractId == null) {
                 log.info("Need Contract for " + type + " with " + partner.getBpnl());

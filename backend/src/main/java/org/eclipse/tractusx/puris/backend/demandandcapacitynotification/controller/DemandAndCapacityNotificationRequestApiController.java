@@ -48,7 +48,7 @@ public class DemandAndCapacityNotificationRequestApiController {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Operation(summary = "This endpoint receives the DemandAndCapacityNotification Submodel 2.0.0 requests")
+    @Operation(summary = "This endpoint receives the DemandAndCapacityNotification 2.0.0 requests")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),
         @ApiResponse(responseCode = "400", description = "Bad Request"),
@@ -60,18 +60,18 @@ public class DemandAndCapacityNotificationRequestApiController {
         @RequestBody String body)
     {
         if (!bpnlPattern.matcher(bpnl).matches()) {
-            log.warn("Rejecting request at DemandAndCapacityNotification Submodel request 2.0.0 endpoint. Invalid BPNL");
+            log.warn("Rejecting request at DemandAndCapacityNotification request 2.0.0 endpoint. Invalid BPNL");
             return ResponseEntity.badRequest().build();
         }
         try {
             var data = objectMapper.readTree(body);
-            log.info("Received POST request for DemandAndCapacityNotification Submodel 2.0.0 with BPNL: " + bpnl);
+            log.info("Received POST request for DemandAndCapacityNotification 2.0.0 with BPNL: " + bpnl);
             var notification = objectMapper.readValue(
                 data.get("content").get("demandAndCapacityNotification").toString(),
                 DemandAndCapacityNotificationSamm.class);
             demandAndCapacityNotificationRequestApiService.handleIncomingNotification(bpnl, notification);
         } catch (Exception e) {
-            log.warn("Rejecting invalid request body at DemandAndCapacityNotification Submodel request 2.0.0 endpoint");
+            log.warn("Rejecting invalid request body at DemandAndCapacityNotification request 2.0.0 endpoint");
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(null);

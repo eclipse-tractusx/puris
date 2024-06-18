@@ -23,12 +23,9 @@ package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.s
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-
 import java.util.Date;
 import java.util.UUID;
-
 import javax.management.openmbean.KeyAlreadyExistsException;
-
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
@@ -55,7 +52,7 @@ public class DemandAndCapacityNotifcationRequestApiService {
     private ObjectMapper objectMapper;
 
     public static final String DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT = "CX-DemandAndCapacityNotification:2.0";
-    public static final String DEMAND_AND_CAPACITY_NOTIFICATION_VERSION = "3.0.0";
+    public static final String MESSAGE_HEADER_VERSION = "3.0.0";
 
     public ReportedDemandAndCapacityNotification handleIncomingNotification(String bpnl, DemandAndCapacityNotificationSamm samm) {
         Partner partner = partnerService.findByBpnl(bpnl);

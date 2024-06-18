@@ -441,13 +441,13 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
-    public JsonNode createDataAddressObject(String endpoint, String proxyMethod) {
+    public JsonNode createDataAddressObject(String endpoint, String proxyMethodAndBody) {
         var dataAddress = MAPPER.createObjectNode();
         dataAddress.put("@type", "DataAddress");
         dataAddress.put("proxyPath", "true");
         dataAddress.put("proxyQueryParams", "false");
-        dataAddress.put("proxyMethod", proxyMethod);
-        dataAddress.put("proxyBody", proxyMethod);
+        dataAddress.put("proxyMethod", proxyMethodAndBody);
+        dataAddress.put("proxyBody", proxyMethodAndBody);
         dataAddress.put("type", "HttpData");
         dataAddress.put("baseUrl", endpoint);
         dataAddress.put("authKey", "x-api-key");
