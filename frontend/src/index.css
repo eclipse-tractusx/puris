@@ -83,6 +83,16 @@ input[type='time'].error {
     border-color: #f44336;
 }
 
+textarea {
+    box-sizing: border-box;
+    padding: 0.875rem;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.06);
+}
+textarea:focus {
+    outline: 2px solid #2563eb;
+    border-color: #2563eb;
+}
 /* Markdown styles */
 .markdown h1 {
     @apply text-2xl font-bold my-3;
@@ -155,5 +165,3 @@ input[type='time'].error {
 .markdown img {
     @apply mx-auto;
 }
-
-

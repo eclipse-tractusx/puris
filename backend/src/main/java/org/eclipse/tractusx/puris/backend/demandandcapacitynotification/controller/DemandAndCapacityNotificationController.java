@@ -204,7 +204,6 @@ public class DemandAndCapacityNotificationController {
         dto.setPartnerBpnl(entity.getPartner().getBpnl());
         return dto;
     }
-
     private OwnDemandAndCapacityNotification convertToEntity(DemandAndCapacityNotificationDto dto) {
         OwnDemandAndCapacityNotification entity = modelMapper.map(dto, OwnDemandAndCapacityNotification.class);
 
@@ -216,6 +215,9 @@ public class DemandAndCapacityNotificationController {
         }
         entity.setPartner(existingPartner);
 
+        if (dto.getAffectedMaterialNumbers() == null) {
+            dto.setAffectedMaterialNumbers(new ArrayList<>());
+        }
         List<Material> materials = new ArrayList<>();
         for (String ownMaterialNumber : dto.getAffectedMaterialNumbers()) {
             Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
@@ -228,6 +230,9 @@ public class DemandAndCapacityNotificationController {
         }
         entity.setMaterials(materials);
 
+        if (dto.getAffectedSitesBpnsRecipient() == null) {
+            dto.setAffectedSitesBpnsRecipient(new ArrayList<>());
+        }
         List<Site> affectedSitesRecipient = new ArrayList<>();
         for (String bpns : dto.getAffectedSitesBpnsRecipient()) {
             Site site = existingPartner.getSites().stream().filter(p -> p.getBpns().equals(bpns)).findFirst()
@@ -242,6 +247,9 @@ public class DemandAndCapacityNotificationController {
         entity.setAffectedSitesRecipient(affectedSitesRecipient);
 
         Partner ownPartner = partnerService.getOwnPartnerEntity();
+        if (dto.getAffectedSitesBpnsSender() == null) {
+            dto.setAffectedSitesBpnsSender(new ArrayList<>());
+        }
         List<Site> affectedSitesSender = new ArrayList<>();
         for (String bpns : dto.getAffectedSitesBpnsSender()) {
             Site site = ownPartner.getSites().stream().filter(p -> p.getBpns().equals(bpns)).findFirst().orElse(null);
