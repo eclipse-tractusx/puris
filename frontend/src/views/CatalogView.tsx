@@ -25,7 +25,7 @@ import { useRef, useState } from 'react';
 import { CatalogOperation, CatalogPermission } from '@models/types/edc/catalog';
 import { Box, Stack } from '@mui/material';
 import { Partner } from '@models/types/edc/partner';
-import { usePartners } from '@features/edc/hooks/usePartners.ts';
+import { useAllPartners } from '@hooks/useAllPartners'; 
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { getCatalogOperator } from '@util/helpers';
 
@@ -95,7 +95,7 @@ const CatalogList = ({ catalog, title }: CatalogListProps) => {
 };
 
 export const CatalogView = () => {
-    const { partners } = usePartners();
+    const { partners } = useAllPartners();
     const [partner, setPartner] = useState<Partner | null>(null);
     const { catalog, catalogError, isLoadingCatalog } = useCatalog(partner);
     const partnerRef = useRef<Partner | null>(null);

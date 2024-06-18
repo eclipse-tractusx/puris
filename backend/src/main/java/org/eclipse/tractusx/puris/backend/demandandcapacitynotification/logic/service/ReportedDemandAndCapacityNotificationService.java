@@ -44,12 +44,10 @@ public class ReportedDemandAndCapacityNotificationService extends DemandAndCapac
     @Override
     public boolean validate(ReportedDemandAndCapacityNotification notification) {
         return notification.getPartner() != null &&
-                notification.getText() != null &&
                 notification.getLeadingRootCause() != null &&
                 notification.getEffect() != null &&
                 notification.getStatus() != null &&
                 notification.getStartDateOfEffect() != null &&
-                notification.getExpectedEndDateOfEffect() != null &&
                 validateMaterials(notification) &&
                 validateSites(notification);
     }

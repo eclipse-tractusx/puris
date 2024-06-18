@@ -22,6 +22,7 @@ const app = {
     APP_NAME: import.meta.env.VITE_APP_NAME.trim() as string,
     BACKEND_BASE_URL: import.meta.env.VITE_BACKEND_BASE_URL.trim() as string,
     BACKEND_API_KEY: import.meta.env.VITE_BACKEND_API_KEY.trim() as string,
+    ENDPOINT_STOCK_VIEW_MATERIALS: import.meta.env.VITE_ENDPOINT_STOCK_VIEW_MATERIALS.trim() as string,
     ENDPOINT_MATERIALS: import.meta.env.VITE_ENDPOINT_MATERIALS.trim() as string,
     ENDPOINT_PRODUCTS: import.meta.env.VITE_ENDPOINT_PRODUCTS.trim() as string,
     ENDPOINT_MATERIAL_STOCKS: import.meta.env.VITE_ENDPOINT_MATERIAL_STOCKS.trim() as string,
@@ -37,6 +38,7 @@ const app = {
     ENDPOINT_PRODUCTION: import.meta.env.VITE_ENDPOINT_PRODUCTION.trim() as string,
     ENDPOINT_PRODUCTION_RANGE: import.meta.env.VITE_ENDPOINT_PRODUCTION_RANGE.trim() as string,
     ENDPOINT_DELIVERY: import.meta.env.VITE_ENDPOINT_DELIVERY.trim() as string,
+    ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION: import.meta.env.VITE_ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION.trim() as string,
 };
 
 const auth = {

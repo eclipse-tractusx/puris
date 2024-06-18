@@ -42,12 +42,10 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
     @Override
     public boolean validate(OwnDemandAndCapacityNotification notification) {
         return notification.getPartner() != null &&
-                notification.getText() != null &&
                 notification.getLeadingRootCause() != null &&
                 notification.getEffect() != null &&
                 notification.getStatus() != null &&
                 notification.getStartDateOfEffect() != null &&
-                notification.getExpectedEndDateOfEffect() != null &&
                 validateMaterials(notification) &&
                 validateSites(notification);
     }

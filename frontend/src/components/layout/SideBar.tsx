@@ -28,6 +28,7 @@ import { Typography } from '@catena-x/portal-shared-components';
 import { Role } from '@models/types/auth/role';
 import { useAuth } from '@hooks/useAuth';
 import { Handshake, Logout, SyncAlt } from '@mui/icons-material';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { SvgIconTypeMap } from '@mui/material';
 import AuthenticationService from '@services/authentication-service';
@@ -75,6 +76,11 @@ const sideBarItems: SideBarItemProps[] = [
         icon: SyncAlt,
         path: '/transfers',
         requiredRoles: ['PURIS_ADMIN'],
+    },
+    {
+        name: 'Notifications',
+        icon: NotificationsIcon,
+        path: '/notifications',
     },
     {
         name: 'Logout',

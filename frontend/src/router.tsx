@@ -32,6 +32,7 @@ import { UnauthorizedView } from '@views/errors/UnauthorizedView';
 import { ErrorView } from '@views/errors/ErrorView';
 import { RouteGuard } from '@components/RouteGuard';
 import { UserGuideView } from '@views/UserGuideView';
+import { DemandCapacityNotificationView } from '@views/DemandCapacityNotificationView';
 
 export const router = createBrowserRouter([
     {
@@ -50,6 +51,10 @@ export const router = createBrowserRouter([
                         path: 'dashboard',
                         element: <DashboardView />,
                     },
+                    {
+                        path: 'notifications',
+                        element: <DemandCapacityNotificationView />,
+                    }
                 ],
             },
             {
