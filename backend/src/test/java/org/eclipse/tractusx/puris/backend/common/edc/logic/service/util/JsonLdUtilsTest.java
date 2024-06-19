@@ -33,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Slf4j
 public class JsonLdUtilsTest {
 
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach

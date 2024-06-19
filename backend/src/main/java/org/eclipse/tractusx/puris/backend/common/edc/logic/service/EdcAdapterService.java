@@ -35,12 +35,10 @@ import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.Directio
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
-
 
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.

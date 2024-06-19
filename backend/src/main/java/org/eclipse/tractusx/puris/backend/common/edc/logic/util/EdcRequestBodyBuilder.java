@@ -63,7 +63,7 @@ public class EdcRequestBodyBuilder {
     public static final String TX_AUTH_NAMESPACE = "https://w3id.org/tractusx/auth/";
     public static final String DCAT_NAMESPACE = "http://www.w3.org/ns/dcat#";
     public static final String DSPACE_NAMESPACE = "https://w3id.org/dspace/v0.8/";
-    public static final String TX_POLICY_CONTEXT = "https://w3id.org/tractusx/policy/v1.0.0";
+    public static final String CX_POLICY_CONTEXT = "https://w3id.org/tractusx/policy/v1.0.0";
 
     /**
      * helper class to encapsulate PolicyConstraint

@@ -31,7 +31,6 @@ import org.eclipse.edc.spi.monitor.Monitor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-
 import java.io.File;
 import java.io.StringReader;
 import java.net.URI;
@@ -49,7 +48,7 @@ public class JsonLdUtils {
     });
 
    {
-        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.TX_POLICY_CONTEXT);
+        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.CX_POLICY_CONTEXT);
         TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT);
         TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.DCAT_NAMESPACE);
         TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.DSPACE_NAMESPACE);
@@ -59,7 +58,7 @@ public class JsonLdUtils {
 
         final String prefix = "json-ld" + File.separator;
         Map<String, String> filesMap = Map.of(
-            EdcRequestBodyBuilder.TX_POLICY_CONTEXT, prefix + "cx-policy-v1.jsonld",
+            EdcRequestBodyBuilder.CX_POLICY_CONTEXT, prefix + "cx-policy-v1.jsonld",
             EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT, prefix + "odrl.jsonld",
             EdcRequestBodyBuilder.DCAT_NAMESPACE, prefix + "dcat.jsonld",
             EdcRequestBodyBuilder.DSPACE_NAMESPACE, prefix + "dspace.jsonld",
@@ -106,8 +105,6 @@ public class JsonLdUtils {
         }
     }
 
-
-
     private static class MonitorAdapter implements Monitor {
 
         @Override
@@ -146,7 +143,5 @@ public class JsonLdUtils {
         public void debug(Supplier<String> supplier, Throwable... errors) {
             log.debug(supplier.get(), (Object[]) errors);
         }
-
-
     }
 }
