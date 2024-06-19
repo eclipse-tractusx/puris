@@ -87,7 +87,7 @@ public class SecurityConfig {
                         "/stockView/**",
                         "/partners/**",
                         "/materials/**",
-                        "/materialpartnerrelations/**", 
+                        "/materialpartnerrelations/**",
                         "/item-stock/**",
                         "/production/**",
                         "/delivery/**",
@@ -101,7 +101,7 @@ public class SecurityConfig {
                         "/parttypeinformation/**"
                     )
                     .authenticated()
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/health/**").permitAll()
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/health/**").permitAll()
                     .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
             )
             .httpBasic(
