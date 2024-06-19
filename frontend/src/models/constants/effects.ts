@@ -18,8 +18,28 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-export type MaterialDescriptor = {
-    ownMaterialNumber: string;
-    description: string;
-    name: string;
+import { EffectType } from "@models/types/data/demand-capacity-notification";
+
+export type Effect = {
+    key: EffectType;
+    value: string;
 };
+
+export const EFFECTS: Effect[] = [
+    {
+        key: 'demand-reduction',
+        value: 'Demand Reduction'
+    },
+    {
+        key: 'demand-increase',
+        value: 'Demand Increase'
+    },
+    {
+        key: 'capacity-reduction',
+        value: 'Capacity Reduction'
+    },
+    {
+        key: 'capacity-increase',
+        value: 'Capacity increase'
+    }
+] as const;

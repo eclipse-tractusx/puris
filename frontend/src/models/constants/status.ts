@@ -18,8 +18,20 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-export type MaterialDescriptor = {
-    ownMaterialNumber: string;
-    description: string;
-    name: string;
+import { StatusType } from "@models/types/data/demand-capacity-notification"; 
+
+export type Status = {
+    key: StatusType;
+    value: string;
 };
+
+export const STATUS: Status[] = [
+    {
+        key: 'open',
+        value: 'Open'
+    },
+    {
+        key: 'resolved',
+        value: 'Resolved'
+    }
+] as const;
