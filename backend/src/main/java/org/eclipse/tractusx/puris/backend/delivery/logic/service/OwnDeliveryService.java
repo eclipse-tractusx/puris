@@ -22,23 +22,20 @@ package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.EventTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
-import org.eclipse.tractusx.puris.backend.delivery.domain.repository.DeliveryRepository;
+import org.eclipse.tractusx.puris.backend.delivery.domain.repository.OwnDeliveryRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class OwnDeliveryService {
-    public final DeliveryRepository repository;
+public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
+    private final OwnDeliveryRepository repository;
 
     private final PartnerService partnerService;
 
@@ -46,14 +43,10 @@ public class OwnDeliveryService {
 
     private Partner ownPartnerEntity;
 
-    public OwnDeliveryService(DeliveryRepository repository, PartnerService partnerService) {
+    public OwnDeliveryService(OwnDeliveryRepository repository, PartnerService partnerService) {
         this.repository = repository;
         this.partnerService = partnerService;
         this.validator = this::validate;
-    }
-
-    public final List<OwnDelivery> findAll() {
-        return repository.findAll();
     }
 
     public final List<OwnDelivery> findAllByBpnl(String bpnl) {
@@ -64,24 +57,6 @@ public class OwnDeliveryService {
     public final List<OwnDelivery> findAllByOwnMaterialNumber(String ownMaterialNumber) {
         return repository.findAll().stream().filter(delivery -> delivery.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
                 .toList();
-    }
-
-    public final List<OwnDelivery> findAllByFilters(Optional<String> ownMaterialNumber, Optional<String> bpns, Optional<String> bpnl) {
-        Stream<OwnDelivery> stream = repository.findAll().stream();
-        if (ownMaterialNumber.isPresent()) {
-            stream = stream.filter(delivery -> delivery.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
-        }
-        if (bpns.isPresent()) {
-            stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()) || delivery.getOriginBpns().equals(bpns.get()));
-        }
-        if (bpnl.isPresent()) {
-            stream = stream.filter(delivery -> delivery.getPartner().getBpnl().equals(bpnl.get()));
-        }
-        return stream.toList();
-    }
-
-    public final OwnDelivery findById(UUID id) {
-        return repository.findById(id).orElse(null);
     }
 
     public final OwnDelivery create(OwnDelivery delivery) {
@@ -105,23 +80,12 @@ public class OwnDeliveryService {
         return repository.saveAll(deliveries);
     }
 
-    public final OwnDelivery update(OwnDelivery delivery) {
-        if (delivery.getUuid() == null || repository.findById(delivery.getUuid()).isEmpty()) {
-            return null;
-        }
-        return repository.save(delivery);
-    }
-
-    public final void delete(UUID id) {
-        repository.deleteById(id);
-    }
-
     public boolean validate(OwnDelivery delivery) {
         if (ownPartnerEntity == null) {
             ownPartnerEntity = partnerService.getOwnPartnerEntity();
         }
         return 
-            delivery.getQuantity() > 0 && 
+            delivery.getQuantity() >= 0 && 
             delivery.getMeasurementUnit() != null &&
             delivery.getMaterial() != null &&
             delivery.getPartner() != null &&
