@@ -424,7 +424,7 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
-    public JsonNode buildNotificationRegistrationBody(String assetId, String endpoint, String semanticId) {
+    public JsonNode buildNotificationRegistrationBody(String assetId, String endpoint) {
         var body = getAssetRegistrationContext();
         body.put("@id", assetId);
         var propertiesObject = MAPPER.createObjectNode();
@@ -433,10 +433,6 @@ public class EdcRequestBodyBuilder {
         propertiesObject.set("dct:type", dctTypeObject);
         dctTypeObject.put("@id", "cx-taxo:DemandAndCapacityNotificationApi");
         propertiesObject.put("cx-common:version", "1.0");
-        var semanticIdObject = MAPPER.createObjectNode();
-        propertiesObject.set("aas-semantics:semanticId", semanticIdObject);
-        semanticIdObject.put("@id", semanticId);
-        body.set("privateProperties", MAPPER.createObjectNode());
         body.set("dataAddress", createDataAddressObject(endpoint, "true"));
         return body;
     }

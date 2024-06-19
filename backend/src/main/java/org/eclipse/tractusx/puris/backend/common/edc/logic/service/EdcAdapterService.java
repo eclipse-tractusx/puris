@@ -170,8 +170,7 @@ public class EdcAdapterService {
         result &= assetRegistration;
         log.info("Registration of Demand and Capacity Notification 2.0.0 asset successful {}", (assetRegistration = registerNotificationAsset(
             variablesService.getNotificationApiAssetId(),
-            variablesService.getNotificationEndpoint(),
-            AssetType.NOTIFICATION.URN_SEMANTIC_ID
+            variablesService.getNotificationEndpoint()
         )));
         log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
         result &= assetRegistration;
@@ -291,8 +290,8 @@ public class EdcAdapterService {
         return sendAssetRegistrationRequest(body, assetId);
     }
 
-    private boolean registerNotificationAsset(String assetId, String endpoint, String semanticId) {
-        var body = edcRequestBodyBuilder.buildNotificationRegistrationBody(assetId, endpoint, semanticId);
+    private boolean registerNotificationAsset(String assetId, String endpoint) {
+        var body = edcRequestBodyBuilder.buildNotificationRegistrationBody(assetId, endpoint);
         return sendAssetRegistrationRequest(body, assetId);
     }
 
