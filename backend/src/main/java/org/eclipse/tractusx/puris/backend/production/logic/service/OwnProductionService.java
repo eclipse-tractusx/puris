@@ -21,10 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
@@ -35,7 +32,7 @@ import org.eclipse.tractusx.puris.backend.production.domain.repository.OwnProduc
 import org.springframework.stereotype.Service;
 
 @Service
-public class OwnProductionService {
+public class OwnProductionService extends ProductionService<OwnProduction> {
     private final OwnProductionRepository repository;
 
     private final PartnerService partnerService;
@@ -46,38 +43,6 @@ public class OwnProductionService {
         this.repository = repository;
         this.partnerService = partnerService;
         this.validator = this::validate;
-    }
-
-    public final List<OwnProduction> findAll() {
-        return repository.findAll();
-    }
-
-    public final List<OwnProduction> findAllByBpnl(String bpnl) {
-        return repository.findAll().stream().filter(production -> production.getPartner().getBpnl().equals(bpnl))
-                .toList();
-    }
-
-    public final List<OwnProduction> findAllByOwnMaterialNumber(String ownMaterialNumber) {
-        return repository.findAll().stream().filter(production -> production.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
-                .toList();
-    }
-
-    public final List<OwnProduction> findAllByFilters(Optional<String> ownMaterialNumber, Optional<String> bpnl, Optional<String> bpns) {
-        Stream<OwnProduction> stream = repository.findAll().stream();
-        if (ownMaterialNumber.isPresent()) {
-            stream = stream.filter(production -> production.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
-        }
-        if (bpnl.isPresent()) {
-            stream = stream.filter(production -> production.getPartner().getBpnl().equals(bpnl.get()));
-        }
-        if (bpns.isPresent()) {
-            stream = stream.filter(production -> production.getProductionSiteBpns().equals(bpns.get()));
-        }
-        return stream.toList();
-    }
-
-    public final OwnProduction findById(UUID uuid) {
-        return repository.findById(uuid).orElse(null);
     }
 
     public final OwnProduction create(OwnProduction production) {
@@ -100,17 +65,6 @@ public class OwnProductionService {
             throw new KeyAlreadyExistsException("Production already exists");
         }
         return repository.saveAll(productions);
-    }
-
-    public final OwnProduction update(OwnProduction production) {
-        if (production.getUuid() == null || repository.findById(production.getUuid()).isEmpty()) {
-            return null;
-        }
-        return repository.save(production);
-    }
-
-    public final void delete(UUID uuid) {
-        repository.deleteById(uuid);
     }
 
     public boolean validate(OwnProduction production) {

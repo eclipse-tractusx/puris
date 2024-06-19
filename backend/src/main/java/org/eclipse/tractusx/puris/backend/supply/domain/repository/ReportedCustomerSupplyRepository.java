@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.delivery.domain.repository;
+package org.eclipse.tractusx.puris.backend.supply.domain.repository;
 
+import java.util.List;
 import java.util.UUID;
 
-import org.eclipse.tractusx.puris.backend.delivery.domain.model.Delivery;
+import org.eclipse.tractusx.puris.backend.supply.domain.model.ReportedCustomerSupply;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface DeliveryRepository<T extends Delivery> extends JpaRepository<T, UUID> {
-    
+public interface ReportedCustomerSupplyRepository extends JpaRepository<ReportedCustomerSupply, UUID> {
+    List<ReportedCustomerSupply> findByPartner_BpnlAndMaterial_OwnMaterialNumber(String partnerBpnl, String ownMaterialNumber);
 }

@@ -44,6 +44,4 @@ public class MaterialItemStockService extends ItemStockService<MaterialItemStock
         return basicValidation(materialItemStock) && validateLocalStock(materialItemStock)
             && validateMaterialItemStock(materialItemStock);
     }
-
-
 }
