@@ -22,6 +22,9 @@ jobs:
   ScanSecrets:
     name: Scan secrets
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
