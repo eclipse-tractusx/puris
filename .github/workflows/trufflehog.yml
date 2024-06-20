@@ -36,15 +36,28 @@ jobs:
         with:
           path: ./  # Scan the entire repository
           base: "${{ github.event.repository.default_branch }}"  # Set base branch for comparison (pull requests)
-          extra_args: --filter-entropy=4 --results=verified,unknown --json-output=results.json
-      
-      - name: Save TruffleHog results
-        run: cat results.json
-        continue-on-error: true  # Allow workflow to continue even if secrets are found
-        id: trufflehog_output
+          extra_args: --filter-entropy=4 --results=verified,unknown --json ./ > output.txt
 
-      - name: Upload TruffleHog results
-        uses: actions/upload-artifact@v3
+      - name: Format TruffleHog results
+        id: format_trufflehog
+        run: |
+          cat output.txt | grep -oE "\"stringsFound\"\:.[.\"]}" | sed -e "s/,\"]//" -e "s/}//" | sed "s/\"stringsFound\"://" | grep -o "\".\"" | awk -F "," '{ for(i=1;i<=NF;i++) print $i}' > formatted_results.txt
+          cat formatted_results.txt
+
+      - name: Save TruffleHog results
+        id: save_results
+        run: cat formatted_results.txt
+        continue-on-error: true
+      
+      - name: Post TruffleHog results in summary
+        uses: actions/github-script@v6
         with:
-          name: trufflehog-results
-          path: results.json
+          script: |
+            const fs = require('fs');
+            const results = fs.readFileSync('formatted_results.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### TruffleHog Scan Results\n\`\`\`\n${results}\n\`\`\``
+            });
