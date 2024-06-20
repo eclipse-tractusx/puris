@@ -256,6 +256,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             .directionCharacteristic(DirectionCharacteristic.INBOUND)
             .requestType("ItemStock")
             .sammVersion("2.0")
+            .responseCode(201)
             .build();
         mockRequest = erpAdapterRequestService.create(mockRequest);
         log.info("Created mocked ErpAdapterRequest: \n{}", mockRequest);

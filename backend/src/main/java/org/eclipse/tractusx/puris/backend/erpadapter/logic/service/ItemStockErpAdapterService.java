@@ -90,6 +90,10 @@ public class ItemStockErpAdapterService {
 //                log.error("Received duplicate response for messageId {}", request.getId());
 //                return 409;
 //            }
+            if (request.getResponseCode() == null || request.getResponseCode() < 200 || request.getResponseCode() >= 400) {
+                log.error("Unexpected response, erp adapter had not confirmed request");
+                return 404;
+            }
             if (!request.getPartnerBpnl().equals(dto.partnerBpnl())) {
                 log.error("BPNL mismatch! request BPNL: {}, message BPNL: {}",
                     request.getPartnerBpnl(), dto.partnerBpnl());

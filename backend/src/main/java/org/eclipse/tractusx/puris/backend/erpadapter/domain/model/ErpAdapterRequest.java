@@ -59,6 +59,8 @@ public class ErpAdapterRequest {
     @NotNull
     private Date requestDate;
 
+    private Integer responseCode;
+
     private Date responseReceivedDate;
 
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
