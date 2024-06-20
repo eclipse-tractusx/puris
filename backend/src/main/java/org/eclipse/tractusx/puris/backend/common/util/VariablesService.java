@@ -22,11 +22,9 @@
 package org.eclipse.tractusx.puris.backend.common.util;
 
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Getter
 @Service
 /**
@@ -107,7 +105,6 @@ public class VariablesService {
     public String getDemandSubmodelEndpoint() {
         return getPurisBaseUrl() + getContextPath() + "material-demand/request";
     }
-
 
     @Value("${puris.demandsubmodel.apiassetid}")
     /**

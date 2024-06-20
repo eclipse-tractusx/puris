@@ -36,7 +36,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.io.InputStream;
 import java.util.Date;
 import java.util.Map;
@@ -83,7 +82,6 @@ public class ErpAdapterRequestClientTest {
     public void tearDown() throws Exception {
         mockWebServer.shutdown();
     }
-
 
     @Test
     public void test_should_success() throws Exception {
