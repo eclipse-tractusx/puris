@@ -223,6 +223,26 @@ docker exec -it {container-id} crictl rmi puris-backend:dev
 docker exec -it {container-id} crictl rmi puris-frontend:dev
 ```
 
+## Testing Workflows locally
+
+[act](https://github.com/nektos/act) is a tool to run jobs within `./workflows` locally. Configuration of events can
+be stored in `./act`
+
+Install by downloading the released binaries and add them to your path.
+
+```shell
+cd <root dir of repo>
+
+act --list
+>> Stage  Job ID                       Job name                     Workflow name                                   Workflow file              Events                                      
+>> 0      check-dependencies-backend   check-dependencies-backend   3rd Party Dependency Check (Eclipse Dash Tool)  dash-dependency-check.yml  workflow_dispatch,pull_request              
+>> 0      check-dependencies-frontend  check-dependencies-frontend  3rd Party Dependency Check (Eclipse Dash Tool)  dash-dependency-check.yml  workflow_dispatch,pull_request              
+>> 0      lint-test                    lint-test                    Lint and Test Charts                            helm-test.yml              pull_request,workflow_dispatch     
+
+# run action with job-id lint-test for event as defined in pr-event.json
+act --job lint-test -e .act/pr-event.json
+```
+
 ## NOTICE
 
 This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
