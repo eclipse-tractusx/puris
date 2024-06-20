@@ -193,7 +193,7 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: {{ .Values.backend.puris.api.rootDir }}/health/
+              path: {{ .Values.backend.puris.api.rootDir }}/actuator/health/liveness
               port: http
             initialDelaySeconds: {{ .Values.backend.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
@@ -202,7 +202,7 @@ spec:
             failureThreshold: {{ .Values.backend.livenessProbe.failureThreshold }}
           readinessProbe:
             httpGet:
-              path: {{ .Values.backend.puris.api.rootDir }}/health/
+              path: {{ .Values.backend.puris.api.rootDir }}/actuator/health/readiness
               port: http
             initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.backend.readinessProbe.periodSeconds }}

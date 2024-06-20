@@ -2,6 +2,7 @@
 
 #
 # Copyright (c) 2022,2024 Volkswagen AG
+# Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 # Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
@@ -32,8 +33,12 @@ CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9
 SUPPLIER_KC_DTR_EDC_CLIENT_SECRET=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
 SUPPLIER_KC_DTR_PURIS_CLIENT_SECRET=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
 
-CUSTOMER_KC_MIW_CLIENT_SECRET=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
-SUPPLIER_KC_MIW_CLIENT_SECRET=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
+CUSTOMER_BACKEND_API_KEY=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
+SUPPLIER_BACKEND_API_KEY=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
+
+# for some reaseon we generated keys for MIW that leaded to failure for some time, as they are not inserted to MIW
+CUSTOMER_KC_MIW_CLIENT_SECRET=miw_private_client
+SUPPLIER_KC_MIW_CLIENT_SECRET=miw_private_client
 
 # generate .env
 echo "Creating .env"
@@ -47,21 +52,23 @@ KC_MIW_ENC=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
 
 CUSTOMER_BPNL=BPNL4444444444XX
 CUSTOMER_OAUTH_SECRET_ALIAS=customer.miw.secret
-CUSTOMER_OAUTH_CLIENT_ID=customer_private_client
+# use hard coded client for now to only have some bearer token for the mock-util-service
+CUSTOMER_OAUTH_CLIENT_ID=miw_private_client
 CUSTOMER_PRIVATE_KEY_ALIAS=customer-key
 CUSTOMER_PUBLIC_KEY_ALIAS=customer-cert
 CUSTOMER_ENCRYPTION_KEYS_ALIAS=customer-encryption-keys
-CUSTOMER_BACKEND_API_KEY=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
+CUSTOMER_BACKEND_API_KEY=$CUSTOMER_BACKEND_API_KEY
 CUSTOMER_KC_DTR_EDC_CLIENT_ALIAS=customer.dtr.edc-client.secret
 CUSTOMER_KC_DTR_PURIS_CLIENT_ALIAS=customer.dtr.puris-client.secret
 
 SUPPLIER_BPNL=BPNL1234567890ZZ
 SUPPLIER_OAUTH_SECRET_ALIAS=supplier.miw.secret
-SUPPLIER_OAUTH_CLIENT_ID=supplier_private_client
+# use hard coded client for now to only have some bearer token for the mock-util-service
+SUPPLIER_OAUTH_CLIENT_ID=miw_private_client
 SUPPLIER_PRIVATE_KEY_ALIAS=supplier-key
 SUPPLIER_PUBLIC_KEY_ALIAS=supplier-cert
 SUPPLIER_ENCRYPTION_KEYS_ALIAS=supplier-encryption-keys
-SUPPLIER_BACKEND_API_KEY=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
+SUPPLIER_BACKEND_API_KEY=$SUPPLIER_BACKEND_API_KEY
 KEYCLOAK_MIW_PUBLIC_CLIENT=miw_public
 SUPPLIER_KC_DTR_EDC_CLIENT_ALIAS=supplier.dtr.edc-client.secret
 SUPPLIER_KC_DTR_PURIS_CLIENT_ALIAS=supplier.dtr.puris-client.secret
@@ -89,7 +96,7 @@ CUSTOMER_MIW_CLIENT_SECRET="./vault/secrets/customer.miw.secret"
 CUSTOMER_KC_DTR_EDC_CLIENT_SECRET_FILE_PATH="./vault/secrets/customer.dtr.edc-client.secret"
 echo -n $CUSTOMER_KC_DTR_EDC_CLIENT_SECRET >> $CUSTOMER_KC_DTR_EDC_CLIENT_SECRET_FILE_PATH
 CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET_FILE_PATH="./vault/secrets/customer.dtr.puris-client.secret"
-echo -n $CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET>> $CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET_FILE_PATH
+echo -n $CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET >> $CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET_FILE_PATH
 
 openssl req -newkey rsa:2048 -new -batch -nodes -x509 -days 3650 -text -keyout $CUSTOMER_KEY -out $CUSTOMER_CERT
 # EDC token encryption keys for edc-extensions/data-encryption
@@ -150,6 +157,27 @@ echo ""
 curl -X POST -H "x-api-key: \$KEY" -H "Content-Type: application/json" -d '{ "bpn": "BPNL000000000000", "did": "did:web:mock-util-service/trusted-issuer" }' http://localhost:8581/api/management/bpn-directory | jq
 echo ""
 EOF
+
+echo "Generate environment file for newman"
+#cp "./postman/Local Dev.postman_environment.json" ./postman/local.postman_environment.json
+jq --arg CUSTOMER_BACKEND_API_KEY $CUSTOMER_BACKEND_API_KEY \
+   --arg SUPPLIER_BACKEND_API_KEY $SUPPLIER_BACKEND_API_KEY \
+   --arg CUSTOMER_MANAGE_CLIENT_SECRET $CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET \
+   --arg SUPPLIER_MANAGE_CLIENT_SECRET $SUPPLIER_KC_DTR_PURIS_CLIENT_SECRET \
+   --arg EDC_API_PW $EDC_API_PW \
+   '(.values[] | select(.key == "CUSTOMER_PURIS_BACKEND_API_KEY") | .value) |= $CUSTOMER_BACKEND_API_KEY |
+   (.values[] | select(.key == "SUPPLIER_PURIS_BACKEND_API_KEY") | .value) |= $SUPPLIER_BACKEND_API_KEY |
+   (.values[] | select(.key == "CUSTOMER_EDC_API_KEY") | .value) |= $EDC_API_PW |
+   (.values[] | select(.key == "SUPPLIER_EDC_API_KEY") | .value) |= $EDC_API_PW |
+   (.values[] | select(.key == "CUSTOMER_MANAGE_CLIENT_SECRET") | .value) |= $CUSTOMER_MANAGE_CLIENT_SECRET |
+   (.values[] | select(.key == "SUPPLIER_MANAGE_CLIENT_SECRET") | .value) |= $SUPPLIER_MANAGE_CLIENT_SECRET |
+   (.values[] | select(.key == "CUSTOMER_EDC") | .value) |= "http://customer-control-plane:8181" |
+   (.values[] | select(.key == "SUPPLIER_EDC") | .value) |= "http://supplier-control-plane:9181" |
+   (.values[] | select(.key == "CUSTOMER_DTR") | .value) |= "http://dtr-customer:4243" |
+   (.values[] | select(.key == "SUPPLIER_DTR") | .value) |= "http://dtr-supplier:4243" |
+   (.values[] | select(.key == "CUSTOMER_PURIS_BACKEND") | .value) |= "http://customer-backend:8081" |
+   (.values[] | select(.key == "SUPPLIER_PURIS_BACKEND") | .value) |= "http://supplier-backend:8082" ' \
+"./postman/Local Dev.postman_environment.json" > ./postman/tmp.json && mv ./postman/tmp.json ./postman/local.postman_environment.json
 
 # let everyone access the files so that the non-root user in vault container can put them
 chmod -R 755 ./vault/secrets
