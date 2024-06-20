@@ -1,0 +1,50 @@
+name: "Trufflehog"
+
+on:
+  push:
+    branches:
+      - main
+      - test  # Add your test branch here
+  pull_request:
+    branches:
+      - main
+      - test  # Add your test branch here
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+  id-token: write
+  issues: write
+
+jobs:
+  ScanSecrets:
+    name: Scan secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Ensure full clone for pull request workflows
+          ref: ${{ github.head_ref }}  # Fetch specific branch/commit for pull requests
+
+      - name: TruffleHog OSS
+        id: trufflehog
+        uses: trufflesecurity/trufflehog@main
+        #continue-on-error: true  # Allow workflow to continue even if secrets are found
+        with:
+          path: ./  # Scan the entire repository
+          base: "${{ github.event.repository.default_branch }}"  # Set base branch for comparison (pull requests)
+          extra_args: --filter-entropy=4 --results=verified,unknown
+      
+      - name: Save TruffleHog results
+        run: cat results.json
+        continue-on-error: true  # Allow workflow to continue even if secrets are found
+        id: trufflehog_output
+
+      - name: Upload TruffleHog results
+        uses: actions/upload-artifact@v3
+        with:
+          name: trufflehog-results
+          path: results.json
