@@ -29,14 +29,10 @@ jobs:
           fetch-depth: 0  # Ensure full clone for pull request workflows
           ref: ${{ github.head_ref }}  # Fetch specific branch/commit for pull requests
 
-      - name: TruffleHog OSS
+      - name: Run TruffleHog OSS
         id: trufflehog
-        uses: trufflesecurity/trufflehog@main
+        run: trufflehog --entropy=NO --regex --json . > output.txt
         continue-on-error: true  # Allow workflow to continue even if secrets are found
-        with:
-          path: ./  # Scan the entire repository
-          base: "${{ github.event.repository.default_branch }}"  # Set base branch for comparison (pull requests)
-          extra_args: --filter-entropy=4 --results=verified,unknown --json ./ > output.txt
 
       - name: Format TruffleHog results
         id: format_trufflehog
@@ -44,20 +40,19 @@ jobs:
           cat output.txt | grep -oE "\"stringsFound\"\:.[.\"]}" | sed -e "s/,\"]//" -e "s/}//" | sed "s/\"stringsFound\"://" | grep -o "\".\"" | awk -F "," '{ for(i=1;i<=NF;i++) print $i}' > formatted_results.txt
           cat formatted_results.txt
 
-      - name: Save TruffleHog results
-        id: save_results
-        run: cat formatted_results.txt
-        continue-on-error: true
-      
+      - name: Upload TruffleHog results
+        uses: actions/upload-artifact@v3
+        with:
+          name: trufflehog-results
+          path: formatted_results.txt
+
       - name: Post TruffleHog results in summary
         uses: actions/github-script@v6
         with:
           script: |
             const fs = require('fs');
             const results = fs.readFileSync('formatted_results.txt', 'utf8');
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `### TruffleHog Scan Results\n\`\`\`\n${results}\n\`\`\``
-            });
+            core.summary
+              .addHeading('TruffleHog Scan Results')
+              .addCodeBlock(results, 'json')
+              .write();
