@@ -63,7 +63,7 @@ services:
     container_name: customer-backend
     depends_on:
       edc-customer-control-plane:
-        condition: service_started #service_healthy
+        condition: service_healthy
       postgres-all:
         condition: service_healthy
       dtr-customer:
@@ -234,7 +234,7 @@ services:
     container_name: supplier-backend
     depends_on:
       edc-supplier-control-plane:
-        condition: service_started #service_healthy
+        condition: service_healthy
       postgres-all:
         condition: service_healthy
       dtr-supplier:

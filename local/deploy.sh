@@ -127,9 +127,7 @@ if [ $edc_only -eq 1 ]; then
   done
 else
   echo "Removing the PURIS + EDCs with their DTR and Database..."
-  docker compose down -v puris-backend-customer puris-backend-supplier puris-frontend-customer \
-                         puris-frontend-supplier postgres-all dtr-customer dtr-supplier edc-customer-control-plane \
-                         edc-customer-data-plane edc-supplier-control-plane edc-supplier-data-plane
+  docker compose down -v
 
   # Start the PURIS demonstrator containers
   echo "Starting PURIS demonstrator containers..."
@@ -150,6 +148,8 @@ echo "All services started successfully."
 
 if [ $int_seed -eq 1 ]; then
   echo "Seeding Int Data: Not yet implemented."
+  docker compose -f docker-compose-newman.yaml up
+  echo "Seeded data. PLEASE CHECK RESULTS ON YOUR OWN."
 fi
 
 if [ $logs -eq 1 ]; then

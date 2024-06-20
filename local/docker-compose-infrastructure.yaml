@@ -107,11 +107,6 @@ services:
   mock-util-service:
     build: ./iam-mock
     container_name: mock-util-service
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://mock-util-service:8888/customer/random"]
-      interval: 4s
-      timeout: 3s
-      retries: 20
     ports:
       - "127.0.0.1:8888:80"
     networks:

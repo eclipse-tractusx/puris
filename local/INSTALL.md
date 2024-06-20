@@ -3,6 +3,11 @@
 This guide helps you to run PURIS for local demonstration and testing purposes. You can either choose to use
 the "Extended Run Instructions" or to use the "Run with simplified Deployment Script".
 
+**Prerequisites**
+
+- [jq](https://jqlang.github.io/jq/download/) -> used to auto generate environment files
+- [docker engine](https://docs.docker.com/engine/install/) (docker & docker compose) -> used for the setup
+
 ## Additional information for Windows users
 
 If you want to use the local setup on a Windows machine, it seems advisable to use the Windows subsystem for Linux (
@@ -45,6 +50,9 @@ sh deploy.sh
 
 # redeploy puris but keep infrastructure and show logs of EDC, DTR, PURIS
 sh deploy.sh -l
+
+# remove role definition in puris-backend.properties and seed INT test data from scratch with a cleanup upfront
+sh deploy.sh -ci
 ```
 
 The script also checks if the respective services are healthy (sometimes simplified).
