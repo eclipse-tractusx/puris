@@ -25,7 +25,6 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-
 @Getter
 @Service
 /**
@@ -69,18 +68,13 @@ public class VariablesService {
         return contextPath.replace("/", "") + "/";
     }
 
-    @Value("${puris.baseurl}" + "catena/edrendpoint")
     /**
-     * The edrEndpoint to be used during consumer pull asset transfers.
-     */
-    private String edrEndpoint;
-
-    @Value("${puris.baseurl}" + "catena/item-stock/request")
-    /**
-     * The url under which this application's request endpoint can
+     * The url under which this application's item stock request endpoint can
      * be reached by external machines.
      */
-    private String itemStockSubmodelEndpoint;
+    public String getItemStockSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "item-stock/request";
+    }
 
     @Value("${puris.itemstocksubmodel.apiassetid}")
     /**
@@ -89,12 +83,13 @@ public class VariablesService {
      */
     private String itemStockSubmodelAssetId;
 
-    @Value("${puris.baseurl}" + "catena/planned-production/request")
     /**
-     * The url under which this application's request endpoint can
+     * The url under which this application's planned production request endpoint can
      * be reached by external machines.
      */
-    private String productionSubmodelEndpoint;
+    public String getProductionSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "planned-production/request";
+    }
 
     @Value("${puris.productionsubmodel.apiassetid}")
     /**
@@ -103,12 +98,13 @@ public class VariablesService {
      */
     private String productionSubmodelAssetId;
 
-    @Value("${puris.baseurl}" + "catena/material-demand/request")
     /**
-     * The url under which this application's request endpoint can
+     * The url under which this application's material demand request endpoint can
      * be reached by external machines.
      */
-    private String demandSubmodelEndpoint;
+    public String getDemandSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "material-demand/request";
+    }
 
     @Value("${puris.demandsubmodel.apiassetid}")
     /**
@@ -117,12 +113,13 @@ public class VariablesService {
      */
     private String demandSubmodelAssetId;
 
-    @Value("${puris.baseurl}" + "catena/delivery-information/request")
     /**
-     * The url under which this application's request endpoint can
+     * The url under which this application's delivery information request endpoint can
      * be reached by external machines.
      */
-    private String deliverySubmodelEndpoint;
+    public String getDeliverySubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "delivery-information/request";
+    }
 
     @Value("${puris.deliverysubmodel.apiassetid}")
     /**
@@ -182,8 +179,13 @@ public class VariablesService {
      */
     private String dtrUrl;
 
-    @Value("${puris.baseurl}" + "catena/parttypeinformation")
-    private String parttypeInformationServerendpoint;
+    /**
+     * The url under which this application's part type request endpoint can
+     * be reached by external machines.
+     */
+    public String getParttypeInformationServerendpoint() {
+        return getPurisBaseUrl() + getContextPath() + "parttypeinformation";
+    }
 
     @Value("${puris.generatematerialcatenaxid}")
     /**

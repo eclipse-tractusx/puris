@@ -335,12 +335,6 @@ public class EdcRequestBodyBuilder {
         dataDestination.put("type", "HttpProxy");
         body.set("dataDestination", dataDestination);
 
-        // This private property is not evaluated in EDC 0.7.0 anymore due to data plane signalling
-        // EDRs are taken manually
-        var privateProperties = MAPPER.createObjectNode();
-        privateProperties.put("receiverHttpEndpoint", variablesService.getEdrEndpoint());
-        body.set("privateProperties", privateProperties);
-
         log.debug("Built Proxy Pull Request:\n{}", body.toPrettyString());
         return body;
     }
