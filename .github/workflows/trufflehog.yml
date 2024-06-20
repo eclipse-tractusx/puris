@@ -36,29 +36,3 @@ jobs:
           path: ./  # Scan the entire repository
           base: "${{ github.event.repository.default_branch }}"  # Set base branch for comparison (pull requests)
           extra_args: --filter-entropy=4 --results=verified,unknown --json 
-
-      - name: Post TruffleHog results in summary
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const fs = require('fs');
-
-            try {
-              // Read the TruffleHog JSON output
-              const results = fs.readFileSync('trufflehog.json', 'utf8');
-              const parsedResults = JSON.parse(results);
-
-              // Check for findings
-              if (parsedResults.stringsFound.length > 0) {
-                core.info('### TruffleHog Scan Results - Found Potential Secrets!');
-                core.info('```json');
-                core.info(results);
-                core.info('```');
-              } else {
-                core.info('### TruffleHog Scan Results - No Secrets Found!');
-                core.info('No potential secrets were found in your code.');
-              }
-            } catch (error) {
-              core.error(`Error reading or parsing TruffleHog output: ${error.message}`);
-              core.setFailed('Failed to process TruffleHog output');
-            }
