@@ -35,29 +35,33 @@ jobs:
         with:
           path: ./  # Scan the entire repository
           base: "${{ github.event.repository.default_branch }}"  # Set base branch for comparison (pull requests)
-          extra_args: --filter-entropy=4 --results=verified,unknown --json  # Removed redirection (> output.txt)
+          extra_args: --filter-entropy=4 --results=verified,unknown --json 
 
-      - name: Format TruffleHog results (Optional)
-        id: format_trufflehog
-        run: |
-          # This step is optional and can be removed if raw JSON output is preferred
-          cat trufflehog.json | jq -r '.stringsFound | .[]' | awk -F "," '{ for(i=1;i<=NF;i++) print $i}' > formatted_results.txt
-          cat formatted_results.txt  # Display formatted results for debugging (optional)
+  - name: Post TruffleHog results in summary
+  uses: actions/github-script@v6
+  with:
+    script: |
+      const fs = require('fs');
 
-      - name: Upload TruffleHog results
-        uses: actions/upload-artifact@v3
-        with:
-          name: trufflehog-results
-          path: formatted_results.txt  # Upload formatted results (optional)
+      // Read the TruffleHog output file (raw JSON or formatted)
+      const results = fs.readFileSync('formatted_results.txt' || 'trufflehog.json', 'utf8');
 
-      - name: Post TruffleHog results in summary
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const fs = require('fs');
-            # Read the TruffleHog output file (raw JSON or formatted)
-            const results = fs.readFileSync('formatted_results.txt' || 'trufflehog.json', 'utf8');  # Adjust file path based on your preference
-            core.summary
-              .addHeading('TruffleHog Scan Results')
-              .addCodeBlock(results, 'json')
-              .write();
+      // Parse the JSON results
+      const parsedResults = JSON.parse(results);
+
+      // Check for any findings
+      if (parsedResults.stringsFound.length > 0) {
+        // Found potential secrets! Take action.
+        core.summary
+          .addHeading('TruffleHog Scan Results - Found Potential Secrets!')
+          .addAlert('Potential secrets were found in your code!')
+          .write();
+
+      } else {
+        // No findings! Good news.
+        core.summary
+          .addHeading('TruffleHog Scan Results - No Secrets Found!')
+          .addSuccess('Your code appears to be free of secrets!')
+          .write();
+      }
+
