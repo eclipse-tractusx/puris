@@ -181,7 +181,7 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: {{ .Values.backend.puris.api.rootDir }}/actuator/health/
+              path: {{ .Values.backend.puris.api.rootDir }}/actuator/health
               port: http
             initialDelaySeconds: {{ .Values.backend.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
