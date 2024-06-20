@@ -78,7 +78,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
     @Autowired
     private VariablesService variablesService;
-
     @Autowired
     private ErpAdapterRequestService erpAdapterRequestService;
 
@@ -491,5 +490,4 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         material.setName("Central Control Unit");
         return material;
     }
-
 }
