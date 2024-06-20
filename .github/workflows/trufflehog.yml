@@ -36,7 +36,7 @@ jobs:
         with:
           path: ./  # Scan the entire repository
           base: "${{ github.event.repository.default_branch }}"  # Set base branch for comparison (pull requests)
-          extra_args: --filter-entropy=4 --results=verified,unknown --json . > output.txt
+          extra_args: --filter-entropy=4 --results=verified,unknown --json > output.txt
 
       - name: Format TruffleHog results
         id: format_trufflehog
