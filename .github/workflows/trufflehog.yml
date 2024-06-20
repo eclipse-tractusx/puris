@@ -1,5 +1,4 @@
-name: "Trufflehog"
-
+name: "TruffleHog"
 on:
   push:
     branches:
@@ -36,26 +35,28 @@ jobs:
         with:
           path: ./  # Scan the entire repository
           base: "${{ github.event.repository.default_branch }}"  # Set base branch for comparison (pull requests)
-          extra_args: --filter-entropy=4 --results=verified,unknown --json > output.txt
+          extra_args: --filter-entropy=4 --results=verified,unknown --json  # Removed redirection (> output.txt)
 
-      - name: Format TruffleHog results
+      - name: Format TruffleHog results (Optional)
         id: format_trufflehog
         run: |
-          cat output.txt | grep -oE "\"stringsFound\"\:.[.\"]}" | sed -e "s/,\"]//" -e "s/}//" | sed "s/\"stringsFound\"://" | grep -o "\".\"" | awk -F "," '{ for(i=1;i<=NF;i++) print $i}' > formatted_results.txt
-          cat formatted_results.txt
+          # This step is optional and can be removed if raw JSON output is preferred
+          cat trufflehog.json | jq -r '.stringsFound | .[]' | awk -F "," '{ for(i=1;i<=NF;i++) print $i}' > formatted_results.txt
+          cat formatted_results.txt  # Display formatted results for debugging (optional)
 
       - name: Upload TruffleHog results
         uses: actions/upload-artifact@v3
         with:
           name: trufflehog-results
-          path: formatted_results.txt
+          path: formatted_results.txt  # Upload formatted results (optional)
 
       - name: Post TruffleHog results in summary
         uses: actions/github-script@v6
         with:
           script: |
             const fs = require('fs');
-            const results = fs.readFileSync('formatted_results.txt', 'utf8');
+            # Read the TruffleHog output file (raw JSON or formatted)
+            const results = fs.readFileSync('formatted_results.txt' || 'trufflehog.json', 'utf8');  # Adjust file path based on your preference
             core.summary
               .addHeading('TruffleHog Scan Results')
               .addCodeBlock(results, 'json')
