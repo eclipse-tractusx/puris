@@ -43,24 +43,22 @@ jobs:
           script: |
             const fs = require('fs');
 
-            // Read the TruffleHog output file (raw JSON or formatted)
-            const results = fs.readFileSync('formatted_results.txt' || 'trufflehog.json', 'utf8');
+            try {
+              // Read the TruffleHog JSON output
+              const results = fs.readFileSync('trufflehog.json', 'utf8');
+              const parsedResults = JSON.parse(results);
 
-            // Parse the JSON results
-            const parsedResults = JSON.parse(results);
-
-            // Check for any findings
-            if (parsedResults.stringsFound.length > 0) {
-              // Found potential secrets! Take action.
-              core.summary
-                .addHeading('TruffleHog Scan Results - Found Potential Secrets!')
-                .addAlert('Potential secrets were found in your code!')
-                .write();
-
-            } else {
-              // No findings! Good news.
-              core.summary
-                .addHeading('TruffleHog Scan Results - No Secrets Found!')
-                .addSuccess('Your code appears to be free of secrets!')
-                .write();
+              // Check for findings
+              if (parsedResults.stringsFound.length > 0) {
+                core.info('### TruffleHog Scan Results - Found Potential Secrets!');
+                core.info('```json');
+                core.info(results);
+                core.info('```');
+              } else {
+                core.info('### TruffleHog Scan Results - No Secrets Found!');
+                core.info('No potential secrets were found in your code.');
+              }
+            } catch (error) {
+              core.error(`Error reading or parsing TruffleHog output: ${error.message}`);
+              core.setFailed('Failed to process TruffleHog output');
             }
