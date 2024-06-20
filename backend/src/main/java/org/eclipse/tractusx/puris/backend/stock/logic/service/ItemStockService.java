@@ -20,6 +20,7 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -32,7 +33,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
-
+import java.util.stream.Stream;
 
 @Slf4j
 public abstract class ItemStockService<T extends ItemStock> {
@@ -45,7 +46,8 @@ public abstract class ItemStockService<T extends ItemStock> {
 
     protected final Function<T, Boolean> validator;
 
-    public ItemStockService(PartnerService partnerService, MaterialPartnerRelationService mprService, ItemStockRepository<T> repository) {
+    public ItemStockService(PartnerService partnerService, MaterialPartnerRelationService mprService,
+            ItemStockRepository<T> repository) {
         this.partnerService = partnerService;
         this.mprService = mprService;
         this.repository = repository;
@@ -103,6 +105,29 @@ public abstract class ItemStockService<T extends ItemStock> {
 
     public final List<T> findByPartnerBpnlAndOwnMaterialNumber(String partnerBpnl, String ownMaterialNumber) {
         return repository.getForPartnerBpnlAndOwnMatNbr(partnerBpnl, ownMaterialNumber);
+    }
+
+    public final List<T> findAllByMaterialAndPartner(String ownMaterialNumber, String partnerBpnl) {
+        Stream<T> stream = repository.findAll().stream();
+
+        stream = stream.filter(stock -> stock.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber));
+        stream = stream.filter(stock -> stock.getPartner().getBpnl().equals(partnerBpnl));
+        return stream.toList();
+    }
+
+    public final double getSumOfQuantities(List<T> stocks) {
+        double sum = 0;
+        for (T stock : stocks) {
+            sum = stock.getQuantity();
+        }
+        return sum;
+    }
+
+    public final double getInitialStockQuantity(String material, String partnerBpnl) {
+        List<T> stocks = findAllByMaterialAndPartner(material, partnerBpnl);
+        double initialStockQuantity = getSumOfQuantities(stocks);
+
+        return initialStockQuantity;
     }
 
     public abstract boolean validate(T itemStock);
@@ -171,12 +196,12 @@ public abstract class ItemStockService<T extends ItemStock> {
     protected boolean validateLocation(ItemStock itemStock, Partner partner) {
         try {
             var stockSite = partner.getSites().stream()
-                .filter(site -> site.getBpns().equals(itemStock.getLocationBpns()))
-                .findFirst().orElse(null);
+                    .filter(site -> site.getBpns().equals(itemStock.getLocationBpns()))
+                    .findFirst().orElse(null);
             Objects.requireNonNull(stockSite, "Site not found");
             var stockAddress = stockSite.getAddresses().stream()
-                .filter(addr -> addr.getBpna().equals(itemStock.getLocationBpna()))
-                .findFirst().orElse(null);
+                    .filter(addr -> addr.getBpna().equals(itemStock.getLocationBpna()))
+                    .findFirst().orElse(null);
             Objects.requireNonNull(stockAddress, "Address not found");
         } catch (Exception e) {
             log.error("Location Validation failed: " + itemStock + "\n" + e.getMessage());

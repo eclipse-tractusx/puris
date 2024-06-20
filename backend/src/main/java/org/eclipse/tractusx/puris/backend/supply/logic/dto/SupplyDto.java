@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.delivery.domain.repository;
+package org.eclipse.tractusx.puris.backend.supply.logic.dto;
 
-import java.util.UUID;
+import java.io.Serializable;
+import java.util.Date;
 
-import org.eclipse.tractusx.puris.backend.delivery.domain.model.Delivery;
-import org.springframework.data.jpa.repository.JpaRepository;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-public interface DeliveryRepository<T extends Delivery> extends JpaRepository<T, UUID> {
-    
+@Getter
+@Setter
+@NoArgsConstructor
+@ToString
+public class SupplyDto implements Serializable {
+    private Date date;
+    private double daysOfSupply;
 }

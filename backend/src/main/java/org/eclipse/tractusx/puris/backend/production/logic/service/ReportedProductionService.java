@@ -21,17 +21,14 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedProduction;
 import org.eclipse.tractusx.puris.backend.production.domain.repository.ReportedProductionRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ReportedProductionService {
+public class ReportedProductionService extends ProductionService<ReportedProduction> {
     private final ReportedProductionRepository repository;
 
     protected final Function<ReportedProduction, Boolean> validator;
@@ -39,38 +36,6 @@ public class ReportedProductionService {
     public ReportedProductionService(ReportedProductionRepository repository) {
         this.repository = repository;
         this.validator = this::validate;
-    }
-
-    public final List<ReportedProduction> findAll() {
-        return repository.findAll();
-    }
-
-    public final List<ReportedProduction> findAllByBpnl(String bpnl) {
-        return repository.findAll().stream().filter(production -> production.getPartner().getBpnl().equals(bpnl))
-                .toList();
-    }
-
-    public final List<ReportedProduction> findAllByOwnMaterialNumber(String ownMaterialNumber) {
-        return repository.findAll().stream().filter(production -> production.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
-                .toList();
-    }
-
-    public final List<ReportedProduction> findAllByFilters(Optional<String> ownMaterialNumber, Optional<String> bpnl, Optional<String> bpns) {
-        Stream<ReportedProduction> stream = repository.findAll().stream();
-        if (ownMaterialNumber.isPresent()) {
-            stream = stream.filter(production -> production.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
-        }
-        if (bpnl.isPresent()) {
-            stream = stream.filter(production -> production.getPartner().getBpnl().equals(bpnl.get()));
-        }
-        if (bpns.isPresent()) {
-            stream = stream.filter(production -> production.getProductionSiteBpns().equals(bpns.get()));
-        }
-        return stream.toList();
-    }
-
-    public final ReportedProduction findById(UUID uuid) {
-        return repository.findById(uuid).orElse(null);
     }
 
     public final ReportedProduction create(ReportedProduction production) {
@@ -92,17 +57,6 @@ public class ReportedProductionService {
             return null;
         }
         return repository.saveAll(productions);
-    }
-
-    public final ReportedProduction update(ReportedProduction production) {
-        if (production.getUuid() == null || repository.findById(production.getUuid()).isEmpty()) {
-            return null;
-        }
-        return repository.save(production);
-    }
-
-    public final void delete(UUID uuid) {
-        repository.deleteById(uuid);
     }
 
     public boolean validate(ReportedProduction production) {

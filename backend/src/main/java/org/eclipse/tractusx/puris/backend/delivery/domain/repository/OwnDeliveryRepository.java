@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,11 +20,8 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.domain.repository;
 
-import java.util.UUID;
+import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 
-import org.eclipse.tractusx.puris.backend.delivery.domain.model.Delivery;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface DeliveryRepository<T extends Delivery> extends JpaRepository<T, UUID> {
+public interface OwnDeliveryRepository extends DeliveryRepository<OwnDelivery> {
     
 }

@@ -108,9 +108,9 @@ public class DeliveryController {
         if (material == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material does not exist.");
         }
-        var reportedDeliveries = reportedDeliveryService.findAllByFilters(Optional.of(ownMaterialNumber), bpns, bpnl)
+        var reportedDeliveries = reportedDeliveryService.findAllByFilters(Optional.of(ownMaterialNumber), bpns, bpnl, Optional.empty(), Optional.empty())
             .stream().map(this::convertToDto).collect(Collectors.toList());
-        var ownDeliveries = ownDeliveryService.findAllByFilters(Optional.of(ownMaterialNumber), bpns, bpnl)
+        var ownDeliveries = ownDeliveryService.findAllByFilters(Optional.of(ownMaterialNumber), bpns, bpnl, Optional.empty(), Optional.empty())
             .stream().map(this::convertToDto).collect(Collectors.toList());
         return List.of(reportedDeliveries, ownDeliveries).stream().flatMap(List::stream).toList();
     }

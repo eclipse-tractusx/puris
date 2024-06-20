@@ -182,7 +182,9 @@ public class DeliveryRequestApiServiceTest {
         when(ownDeliveryService.findAllByFilters(
             Optional.of(mpr.getMaterial().getOwnMaterialNumber()),
             Optional.empty(),
-            Optional.of(BPNL_SUPPLIER)
+            Optional.of(BPNL_SUPPLIER),
+            Optional.empty(),
+            Optional.empty()
         )).thenReturn(deliveries);
 
         // return mpr after update

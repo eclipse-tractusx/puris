@@ -20,13 +20,10 @@ SPDX-License-Identifier: Apache-2.0
 
 package org.eclipse.tractusx.puris.backend.production.domain.repository;
 
-import java.util.UUID;
-
 import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedProduction;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ReportedProductionRepository extends JpaRepository<ReportedProduction, UUID> {
+public interface ReportedProductionRepository extends ProductionRepository<ReportedProduction> {
 
 }
