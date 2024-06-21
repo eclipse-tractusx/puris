@@ -39,7 +39,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze
+    name: Analyze KICS
     runs-on: ubuntu-latest
     permissions:
       actions: read
