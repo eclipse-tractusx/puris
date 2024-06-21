@@ -20,18 +20,19 @@
 
 package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
-public enum SubmodelType {
+public enum AssetType {
     DTR("none", "none"),
-    ITEM_STOCK("urn:samm:io.catenax.item_stock:2.0.0#ItemStock", "$value"),
-    PRODUCTION("urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput", "$value"),
-    DEMAND("urn:samm:io.catenax.short_term_material_demand:1.0.0#ShortTermMaterialDemand", "$value"),
-    DELIVERY("urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation", "$value"),
-    PART_TYPE_INFORMATION("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value");
+    ITEM_STOCK_SUBMODEL("urn:samm:io.catenax.item_stock:2.0.0#ItemStock", "$value"),
+    PRODUCTION_SUBMODEL("urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput", "$value"),
+    DEMAND_SUBMODEL("urn:samm:io.catenax.short_term_material_demand:1.0.0#ShortTermMaterialDemand", "$value"),
+    DELIVERY_SUBMODEL("urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation", "$value"),
+    NOTIFICATION("urn:samm:io.catenax.demand_and_capacity_notification:2.0.0#DemandAndCapacityNotification", "none"),
+    PART_TYPE_INFORMATION_SUBMODEL("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value");
 
     public final String URN_SEMANTIC_ID;
     public final String REPRESENTATION;
 
-    SubmodelType(String URN_SEMANTIC_ID, String REPRESENTATION) {
+    AssetType(String URN_SEMANTIC_ID, String REPRESENTATION) {
         this.URN_SEMANTIC_ID = URN_SEMANTIC_ID;
         this.REPRESENTATION = REPRESENTATION;
     }

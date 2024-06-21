@@ -427,6 +427,9 @@ backend:
     deliverysubmodel:
       # -- Asset ID for DeliverySubmodel API
       apiassetid: deliverysubmodel-api-asset
+    notification:
+      # -- Asset ID for Notification API
+      apiassetid: notification-api-asset
     frameworkagreement:
       # -- The name of the framework agreement. Starting with Uppercase and using CamelCase.
       credential: Puris
