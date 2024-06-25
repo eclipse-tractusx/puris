@@ -483,6 +483,11 @@ backend:
       authkey: x-api-key
       # The auth secret to be used on your ERP adapter's request api
       authsecret: erp-password
+      # Interval between two requests to the erp adapter for the same issue (minutes)
+      refreshinterval: 720
+      # Period since last received partner request after which no more new update requests to the
+      # erp adapter will be sent (days)
+      timelimit: 7
 
   # -- Extra environment variables that will be passed onto the backend deployment pods
   env: {}

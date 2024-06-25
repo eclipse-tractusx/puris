@@ -181,6 +181,10 @@ spec:
                 secretKeyRef:
                   name: "{{ .Values.backend.puris.existingSecret }}"
                   key: "puris-erpadapter-authsecret"
+            - name: PURIS_ERPADAPTER_TIMELIMIT
+              value: {{ .Values.backend.puris.erpadapter.timelimit }}
+            - name: PURIS_ERPADAPTER_REFRESHINTERVAL
+              value: {{ .Values.backend.puris.erpadapter.refreshinterval }}
 
             ######################################
             ## Additional environment variables ##
