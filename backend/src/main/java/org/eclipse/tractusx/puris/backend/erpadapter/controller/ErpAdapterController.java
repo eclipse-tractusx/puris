@@ -28,12 +28,13 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ItemStockErpAdapterService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -73,24 +74,25 @@ public class ErpAdapterController {
         @RequestParam("response-type") String responseType,
         @RequestParam("samm-version") String sammVersion,
         @RequestParam(value = "response-timestamp")
-        @Parameter(example = "2024-05-28T15:00:00")
-        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") Date responseTimestamp,
+        @Parameter(example = "1719295545654", description = "Represented as the number of milliseconds since January 1, 1970, 00:00:00 GMT")
+        long responseTimestamp,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {@Content(examples = {
             @ExampleObject(itemStock20Sample)
         })})
         @RequestBody JsonNode requestBody
         ) {
-        boolean valid = BPNL_PATTERN.matcher(partnerBpnl).matches();
-        valid = valid && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(responseType).matches();
-        valid = valid && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(sammVersion).matches();
+        boolean valid = BPNL_PATTERN.matcher(partnerBpnl).matches()
+                     && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(responseType).matches()
+                     && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(sammVersion).matches();
         if (!valid) {
             return ResponseEntity.badRequest().build();
         }
-        Dto dto = new Dto(requestId, partnerBpnl, responseType, sammVersion, responseTimestamp, requestBody);
+        Dto dto = new Dto(requestId, partnerBpnl, responseType, sammVersion, new Date(responseTimestamp), requestBody);
+        AssetType assetType = Arrays.stream(AssetType.values()).filter(type -> type.ERP_KEYWORD.equals(responseType)).findFirst().orElse(null);
         int responseCode = 501;
-        switch (responseType) {
-            case "ItemStock" -> responseCode = itemStockErpAdapterService.receiveItemStockUpdate(dto);
-            default -> {
+        switch (assetType) {
+            case ITEM_STOCK_SUBMODEL -> responseCode = itemStockErpAdapterService.receiveItemStockUpdate(dto);
+            case null, default -> {
                 return ResponseEntity.status(responseCode).body("Unsupported response type: " + responseType);
             }
         }

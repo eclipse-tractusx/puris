@@ -1,5 +1,6 @@
 package org.eclipse.tractusx.puris.backend.erpadapter;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -40,4 +41,28 @@ public class ErpAdapterConfiguration {
      */
     @Value("${puris.erpadapter.authsecret}")
     private String erpAdapterAuthSecret;
+
+    @Value("${puris.erpadapter.refreshinterval}")
+    @Getter(AccessLevel.NONE)
+    private long refreshInterval;
+
+    @Value("${puris.erpadapter.timelimit}")
+    @Getter(AccessLevel.NONE)
+    private long refreshTimeLimit;
+
+    /**
+     * @return The refresh time limit in milliseconds
+     */
+    public long getRefreshTimeLimit() {
+        // translate days to milliseconds
+        return refreshTimeLimit * 24 * 60 * 60 * 1000;
+    }
+
+    /**
+     * @return The refresh interval in milliseconds
+     */
+    public long getRefreshInterval() {
+        // translate minutes to milliseconds
+        return refreshInterval * 60 * 1000;
+    }
 }
