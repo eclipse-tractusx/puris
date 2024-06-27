@@ -97,7 +97,6 @@ dependencies:
 | backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc |
 | backend.puris.edc.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api |
 | backend.puris.erpadapter.authkey | string | `"x-api-key"` |  |
-| backend.puris.erpadapter.authsecret | string | `"erp-password"` |  |
 | backend.puris.erpadapter.enabled | bool | `false` |  |
 | backend.puris.erpadapter.refreshinterval | int | `720` |  |
 | backend.puris.erpadapter.timelimit | int | `7` |  |
