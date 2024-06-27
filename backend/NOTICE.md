@@ -39,16 +39,9 @@ in the GitHub organization https://github.com/eclipse-tractusx:
 
 ## Third-party Content
 
-This project leverages the following third party content.
+This project leverages the following third party content: 
 
-See `DEPENDENCIES_FRONTEND` and `DEPENDENCIES_BACKEND` file. Further, the following third-party content is used that
-isn't listed in any DEPENDENCIES file:
-
-feather (4.29)
-* License: MIT License
-* Licence Path: https://github.com/feathericons/feather/blob/master/LICENSE
-* Project URL:  https://feathericons.com/
-* Source URL:   https://github.com/feathericons/feather
+See `DEPENDENCIES_BACKEND` file. 
 
 ## Cryptography
 
