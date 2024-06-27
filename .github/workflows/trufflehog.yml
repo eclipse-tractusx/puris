@@ -4,11 +4,7 @@ on:
   push:
     branches:
       - main
-      - test  # Add your test branch here
   pull_request:
-    branches:
-      - main
-      - test  # Add your test branch here
   workflow_dispatch:
 
 permissions:
@@ -32,7 +28,7 @@ jobs:
       - name: TruffleHog OSS
         id: trufflehog
         uses: trufflesecurity/trufflehog@main
-        continue-on-error: true  # Allow workflow to continue even if secrets are found
+        continue-on-error: true
         with:
           path: ./  # Scan the entire repository
           base: "${{ github.event.repository.default_branch }}"  # Set base branch for comparison (pull requests)
