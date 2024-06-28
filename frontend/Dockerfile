@@ -30,7 +30,7 @@ RUN npm install && npm run ${NPM_BUILD_MODE}
 RUN chmod -R 777 /app/dist
 
 # Copy Legal information for distributions, the star ones are copied by workflow
-COPY DOCKER_NOTICE.md README.md NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* /app/dist/
+COPY DOCKER_NOTICE.md README.md NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* LICENSE_non_code* /app/dist/
 
 # uses 101 restricted user
 FROM nginxinc/nginx-unprivileged:alpine
