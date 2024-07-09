@@ -21,13 +21,13 @@
 version: "3"
 services:
   control-plane:
-    image: tractusx/edc-controlplane-postgresql-hashicorp-vault:0.7.1
+    image: tractusx/edc-controlplane-postgresql-hashicorp-vault:0.7.2
     volumes:
       - ./config/default/opentelemetry.properties:/app/opentelemetry.properties
       - ./config/default/logging.properties:/app/logging.properties
 
   data-plane:
-    image: tractusx/edc-dataplane-hashicorp-vault:0.7.1
+    image: tractusx/edc-dataplane-hashicorp-vault:0.7.2
     volumes:
       - ./config/default/opentelemetry.properties:/app/opentelemetry.properties
       - ./config/default/logging.properties:/app/logging.properties

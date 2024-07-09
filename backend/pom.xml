@@ -47,6 +47,7 @@
         <postgresql.version>42.7.3</postgresql.version>
         <snakeyaml.version>2.2</snakeyaml.version>
         <springdoc.version>2.5.0</springdoc.version>
+        <edc-connector-version>0.7.0</edc-connector-version>
     </properties>
     <dependencies>
         <dependency>
@@ -125,8 +126,19 @@
             <artifactId>modelmapper</artifactId>
             <version>${modelmapper.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.eclipse.edc/json-ld-lib -->
+        <dependency>
+            <groupId>org.eclipse.edc</groupId>
+            <artifactId>json-ld-lib</artifactId>
+            <version>${edc-connector-version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.eclipse.edc/json-ld-spi -->
+        <dependency>
+            <groupId>org.eclipse.edc</groupId>
+            <artifactId>json-ld-spi</artifactId>
+            <version>${edc-connector-version}</version>
+        </dependency>
     </dependencies>
-
     <pluginRepositories>
         <pluginRepository>
             <id>dash-licenses</id>
@@ -197,6 +209,8 @@
                 <directory>${project.basedir}/src/main/resources</directory>
                 <includes>
                     <include>application.properties</include>
+                    <!-- add json-ld data-->
+                    <include>json-ld/*</include>
                 </includes>
                 <targetPath>BOOT-INF/classes/</targetPath>
             </resource>
