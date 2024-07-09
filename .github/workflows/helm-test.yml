@@ -103,7 +103,7 @@ jobs:
                     fi
 
             -   name: Run chart-testing (lint)
-                run: ct lint --validate-maintainers=false --target-branch ${{ github.event.repository.default_branch }}
+                run: ct lint --validate-maintainers=false --check-version-increment=false --target-branch ${{ github.event.repository.default_branch }}
 
             -   name: Run chart-testing (install)
                 run: |
@@ -126,3 +126,11 @@ jobs:
                     helm dependency update charts/puris
                     helm upgrade puris charts/puris
                 if: github.event_name != 'pull_request' || steps.list-changed.outputs.changed == 'true'
+
+            # check version increment should fail separately
+            # we don't directly release a chart and thus maybe don't need to increase the version.
+            # to enable this behaviour otterdog has been reconfigured
+            -   name: Run chart-testing (version update)
+                id: version-check
+                run: |
+                    ct lint --validate-maintainers=false --check-version-increment=true --target-branch ${{ github.event.repository.default_branch }}

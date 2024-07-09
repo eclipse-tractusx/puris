@@ -45,7 +45,7 @@ env:
     REPOSITORY: "${{ github.repository }}"
 
 jobs:
-    docker:
+    docker-frontend:
         if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
         runs-on: ubuntu-latest
         permissions:
@@ -91,6 +91,7 @@ jobs:
                     cp ./LICENSE ./frontend/LICENSE
                     cp ./NOTICE.md ./frontend/NOTICE.md
                     cp ./SECURITY.md ./frontend/SECURITY.md
+                    cp ./LICENSE_non_code ././frontend/LICENSE_non_code
 
             # Needed to create multi-platfrom image
             -   name: Set up Docker Buildx

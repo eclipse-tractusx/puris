@@ -28,7 +28,7 @@ COPY src/ /app/src/
 RUN mvn clean package -DskipTests
 
 # Copy Legal information for distributions, the star ones are copied by workflow
-COPY DOCKER_NOTICE.md README.md NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* /app/legal/
+COPY DOCKER_NOTICE.md README.md NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* LICENSE_non_code* /app/legal/
 
 FROM eclipse-temurin:21-jre-alpine
 RUN mkdir /opt/app

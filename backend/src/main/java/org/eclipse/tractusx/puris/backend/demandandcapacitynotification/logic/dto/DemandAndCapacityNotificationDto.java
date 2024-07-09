@@ -42,6 +42,7 @@ import lombok.ToString;
 @ToString
 public class DemandAndCapacityNotificationDto implements Serializable {
     private UUID uuid;
+    private UUID notificationId;
 
     private UUID relatedNotificationId;
 

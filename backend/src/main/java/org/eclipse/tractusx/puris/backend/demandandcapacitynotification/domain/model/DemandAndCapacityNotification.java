@@ -51,6 +51,7 @@ public abstract class DemandAndCapacityNotification {
     @Id
     @GeneratedValue
     protected UUID uuid;
+    protected UUID notificationId;
 
     protected UUID relatedNotificationId;
 

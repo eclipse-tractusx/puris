@@ -50,6 +50,11 @@ public abstract class DemandAndCapacityNotificationService<TEntity extends Deman
         return repository.findById(uuid).orElse(null);
     }
 
+    public final TEntity findByNotificationId(UUID notificationId) {
+        return repository.findAll().stream().filter(notification -> notification.getNotificationId().equals(notificationId))
+                .findFirst().orElse(null);
+    }
+
     public final List<TEntity> findAll() {
         return repository.findAll();
     }
@@ -65,6 +70,12 @@ public abstract class DemandAndCapacityNotificationService<TEntity extends Deman
         }
         if (repository.findAll().stream().anyMatch(d -> d.equals(notification))) {
             throw new KeyAlreadyExistsException("Notification already exists");
+        }
+        if (notification.getNotificationId() == null) {
+            notification.setNotificationId(UUID.randomUUID());
+        }
+        if (notification.getSourceNotificationId() == null) {
+            notification.setSourceNotificationId(notification.getNotificationId());
         }
         notification.setContentChangedAt(new Date());
         return repository.save(notification);

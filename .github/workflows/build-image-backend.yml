@@ -41,7 +41,7 @@ env:
     IMAGE_NAME: "app-puris-backend"
 
 jobs:
-    docker:
+    docker-backend:
         if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
         runs-on: ubuntu-latest
         permissions:
@@ -59,6 +59,7 @@ jobs:
                     cp ./LICENSE ./backend/LICENSE
                     cp ./NOTICE.md ./backend/NOTICE.md
                     cp ./SECURITY.md ./backend/SECURITY.md
+                    cp ./LICENSE_non_code ././frontend/LICENSE_non_code
 
             # Needed to create multi-platfrom image
             -   name: Set up Docker Buildx

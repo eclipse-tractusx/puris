@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -342,12 +343,6 @@ public class EdcRequestBodyBuilder {
         dataDestination.put("type", "HttpProxy");
         body.set("dataDestination", dataDestination);
 
-        // This private property is not evaluated in EDC 0.7.0 anymore due to data plane signalling
-        // EDRs are taken manually
-        var privateProperties = MAPPER.createObjectNode();
-        privateProperties.put("receiverHttpEndpoint", variablesService.getEdrEndpoint());
-        body.set("privateProperties", privateProperties);
-
         log.debug("Built Proxy Pull Request:\n{}", body.toPrettyString());
         return body;
     }
@@ -427,19 +422,35 @@ public class EdcRequestBodyBuilder {
         propertiesObject.set("aas-semantics:semanticId", semanticIdObject);
         semanticIdObject.put("@id", semanticId);
         body.set("privateProperties", MAPPER.createObjectNode());
+        body.set("dataAddress", createDataAddressObject(endpoint, "false"));
+        return body;
+    }
 
+    public JsonNode buildNotificationRegistrationBody(String assetId, String endpoint) {
+        var body = getAssetRegistrationContext();
+        body.put("@id", assetId);
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", "cx-taxo:DemandAndCapacityNotificationApi");
+        propertiesObject.put("cx-common:version", "1.0");
+        body.set("dataAddress", createDataAddressObject(endpoint, "true"));
+        return body;
+    }
+
+    public JsonNode createDataAddressObject(String endpoint, String proxyMethodAndBody) {
         var dataAddress = MAPPER.createObjectNode();
         dataAddress.put("@type", "DataAddress");
         dataAddress.put("proxyPath", "true");
         dataAddress.put("proxyQueryParams", "false");
-        dataAddress.put("proxyMethod", "false");
+        dataAddress.put("proxyMethod", proxyMethodAndBody);
+        dataAddress.put("proxyBody", proxyMethodAndBody);
         dataAddress.put("type", "HttpData");
         dataAddress.put("baseUrl", endpoint);
         dataAddress.put("authKey", "x-api-key");
         dataAddress.put("authCode", variablesService.getApiKey());
-        body.set("dataAddress", dataAddress);
-
-        return body;
+        return dataAddress;
     }
 
     public JsonNode buildPartTypeInfoSubmodelRegistrationBody() {
