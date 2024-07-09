@@ -4,7 +4,7 @@ pypi/pypi/-/PyJWT/2.8.0, MIT, approved, clearlydefined
 pypi/pypi/-/PyYAML/6.0.1, MIT, approved, clearlydefined
 pypi/pypi/-/annotated-types/0.6.0, MIT, approved, clearlydefined
 pypi/pypi/-/anyio/4.2.0, MIT, approved, clearlydefined
-pypi/pypi/-/certifi/2023.11.17, MPL-2.0, approved, clearlydefined
+pypi/pypi/-/certifi/2024.7.4, MPL-2.0, approved, clearlydefined
 pypi/pypi/-/cffi/1.16.0, MIT, approved, #13062
 pypi/pypi/-/click/8.1.7, BSD-2-Clause AND BSD-3-Clause, approved, clearlydefined
 pypi/pypi/-/cryptography/42.0.5, Apache-2.0 AND BSD-3-Clause AND Apache-2.0 AND BSD-3-Clause, approved, #13076
