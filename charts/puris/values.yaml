@@ -475,15 +475,15 @@ backend:
     # Material entity.
     generatematerialcatenaxid: true
     erpadapter:
-      # Toggles usage of the ERP adapter
+      # -- Toggles usage of the ERP adapter
       enabled: false
-      # The url of your ERP adapter's request api
+      # -- The url of your ERP adapter's request api
       url: http://my-erpadapter:8080
-      # The auth key to be used on your ERP adapter's request api
+      # -- The auth key to be used on your ERP adapter's request api
       authkey: x-api-key
-      # Interval between two requests to the erp adapter for the same issue (minutes)
+      # -- Interval between two requests to the erp adapter for the same issue (minutes)
       refreshinterval: 720
-      # Period since last received partner request after which no more new update requests to the
+      # -- Period since last received partner request after which no more new update requests to the
       # erp adapter will be sent (days)
       timelimit: 7
 

@@ -18,7 +18,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM maven:3.9.6-eclipse-temurin-21 as build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 RUN mkdir -p /app/legal
 WORKDIR /app
 COPY pom.xml .

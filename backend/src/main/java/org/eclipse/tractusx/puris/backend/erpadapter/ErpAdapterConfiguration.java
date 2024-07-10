@@ -51,7 +51,26 @@ public class ErpAdapterConfiguration {
     private long refreshTimeLimit;
 
     /**
-     * @return The refresh time limit in milliseconds
+     * Period since last received partner request after which no more new update requests to the
+     * erp adapter will be sent (milliseconds).
+     * That means: Adding this period to the date and time of the last received request results in that
+     * point in time, when the ErpAdapterTriggerService assumes, that this specific kind of request
+     * is no longer relevant and will stop issuing scheduled update requests to the ErpAdapter.
+     *
+     * <p>
+     * Example: Let's assume we have set this variable to the equivalent of seven days (in milliseconds).
+     * Let's also assume that we have received a request from a specific partner for a specific material
+     * and a specific submodel (and possibly also a specific direction characteristic) on May 15 10:39:21 GMT 2024.
+     *
+     * <p>
+     * Then the ErpAdapterTriggerService will issue scheduled requests for new updates from the ErpAdapter, for at least seven days.
+     *
+     * After seven days (i.e. at or a few seconds after May 22 10:39:21 GMT 2024), and, of course
+     * assuming that we didn't receive any requests with the exact same specifics from the same partner in the meantime,
+     * then no more scheduled requests with these specifics will be sent out to the ErpAdapter.
+     *
+     *
+     * @return the time period
      */
     public long getRefreshTimeLimit() {
         // translate days to milliseconds
@@ -59,7 +78,18 @@ public class ErpAdapterConfiguration {
     }
 
     /**
-     * @return The refresh interval in milliseconds
+     * Interval between two scheduled requests to the erp adapter for the same issue (milliseconds)
+     * <p>
+     * Example: Let's assume, that this variable is set to the equivalent of 3 hours (in milliseconds)
+     * Let's also assume that we have received a request from a specific partner for a specific material
+     * and a specific submodel (and possibly also a specific direction characteristic) on May 15 10:39:21 GMT 2024.
+     * <p>
+     * Then ErpAdapterTriggerService will schedule the next request to the ErpAdapter with the specifics of that aforementioned
+     * request at or a few seconds after May 15 13:39:21 GMT 2024.
+     *
+     * These update requests will perpetuate with the given interval, for as long as the refreshTimeLimit has not expired.
+     *
+     * @return the interval
      */
     public long getRefreshInterval() {
         // translate minutes to milliseconds

@@ -1,6 +1,6 @@
 # puris
 
-![Version: 2.6.5](https://img.shields.io/badge/Version-2.6.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.0.2](https://img.shields.io/badge/AppVersion-2.0.2-informational?style=flat-square)
+![Version: 2.7.0](https://img.shields.io/badge/Version-2.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.0.2](https://img.shields.io/badge/AppVersion-2.0.2-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
@@ -96,11 +96,11 @@ dependencies:
 | backend.puris.edc.controlplane.management.url | string | `"https:/your-edc-address:8181/management"` | Url to the EDC controlplane management of the edc |
 | backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc |
 | backend.puris.edc.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api |
-| backend.puris.erpadapter.authkey | string | `"x-api-key"` |  |
-| backend.puris.erpadapter.enabled | bool | `false` |  |
-| backend.puris.erpadapter.refreshinterval | int | `720` |  |
-| backend.puris.erpadapter.timelimit | int | `7` |  |
-| backend.puris.erpadapter.url | string | `"http://my-erpadapter:8080"` |  |
+| backend.puris.erpadapter.authkey | string | `"x-api-key"` | The auth key to be used on your ERP adapter's request api |
+| backend.puris.erpadapter.enabled | bool | `false` | Toggles usage of the ERP adapter |
+| backend.puris.erpadapter.refreshinterval | int | `720` | Interval between two requests to the erp adapter for the same issue (minutes) |
+| backend.puris.erpadapter.timelimit | int | `7` | Period since last received partner request after which no more new update requests to the erp adapter will be sent (days) |
+| backend.puris.erpadapter.url | string | `"http://my-erpadapter:8080"` | The url of your ERP adapter's request api |
 | backend.puris.existingSecret | string | `"secret-puris-backend"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
 | backend.puris.frameworkagreement.credential | string | `"Puris"` | The name of the framework agreement. Starting with Uppercase and using CamelCase. |
 | backend.puris.frameworkagreement.version | string | `"1.0"` | The version of the framework agreement, NEEDS TO BE PUT AS "STRING"! |
