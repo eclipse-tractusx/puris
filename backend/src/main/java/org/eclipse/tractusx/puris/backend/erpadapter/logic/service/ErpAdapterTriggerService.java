@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -31,9 +32,13 @@ import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.Directio
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 @RequiredArgsConstructor
@@ -49,23 +54,28 @@ public class ErpAdapterTriggerService {
     @Autowired
     private ExecutorService executorService;
 
-    private final long daemonActivityInterval = 1 * 60 * 1000; // daemon wakes up every five minutes
+    private final long daemonActivityInterval = 1 * 60 * 1000; // daemon wakes up every minute
 
     private Future<?> daemonObject;
+
+    private final List<ErpAdapterTriggerDataset> datasets = new ArrayList<>();
+
+    /**
+     * protect accesses to the datasets list
+     */
+    private final Lock lock = new ReentrantLock();
 
     private final Runnable daemon = () -> {
         log.info("Daemon thread started");
         while (true) {
+            lock.lock();
             try {
-                // sleep for the defined period minutes
-                Thread.sleep(daemonActivityInterval);
-            } catch (InterruptedException ignore) {
+                repository.saveAll(datasets);
+                datasets.clear();
+            } finally {
+                lock.unlock();
             }
-            if (!erpAdapterConfiguration.isErpAdapterEnabled()) {
-                log.info("Erp Trigger Daemon signing off because it's not enabled");
-                // leave loop if erp adapter requests are not configured
-                break;
-            }
+
             long timeLimit = erpAdapterConfiguration.getRefreshTimeLimit();
             var allDatasets = repository.findAll();
             long now = new Date().getTime();
@@ -75,7 +85,7 @@ public class ErpAdapterTriggerService {
                     // too much time has passed since last request of this kind, so
                     // we will stop triggering further updates from the erp adapter
                     repository.delete(dataset);
-                    log.info("Removed from Erp Trigger: " + dataset);
+                    log.info("Stopped scheduling further requests for : {}", dataset);
                 } else {
                     if (dataset.getNextErpRequestScheduled() <= now) {
                         // the time has come for a new erp adapter request
@@ -88,14 +98,19 @@ public class ErpAdapterTriggerService {
                         request.setDirectionCharacteristic(directionCharacteristic);
                         request.setRequestType(dataset.getAssetType().ERP_KEYWORD);
                         request.setSammVersion(dataset.getAssetType().ERP_SAMMVERSION);
-                        erpAdapterRequestService.createAndSend(request);
+                        executorService.submit(() -> erpAdapterRequestService.createAndSend(request));
 
                         // schedule next request
                         dataset.setNextErpRequestScheduled(now + erpAdapterConfiguration.getRefreshInterval());
                         dataset = repository.save(dataset);
-                        log.info("Scheduled next erp adapter request: " + dataset);
+                        log.info("Scheduled next erp adapter request: {}", dataset);
                     }
                 }
+            }
+            try {
+                // sleep for the defined interval
+                Thread.sleep(daemonActivityInterval);
+            } catch (InterruptedException ignore) {
             }
         }
     };
@@ -113,12 +128,12 @@ public class ErpAdapterTriggerService {
         if (!erpAdapterConfiguration.isErpAdapterEnabled()) {
             return;
         }
-        if (daemonObject == null) {
-            daemonObject = executorService.submit(daemon);
-        }
         String directionString = direction != null ? direction.name() : "";
-        ErpAdapterTriggerDataset dataset = repository.findById
-            (new ErpAdapterTriggerDataset.Key(partnerBpnl, ownMaterialNumber, type, directionString)).orElse(null);
+
+        ErpAdapterTriggerDataset dataset = repository.findById(new ErpAdapterTriggerDataset.Key(partnerBpnl,
+                ownMaterialNumber, type, directionString))
+            .orElse(null);
+
         long now = new Date().getTime();
         if (dataset == null) {
             // unknown request specifics, so we trigger a new request right now
@@ -134,12 +149,26 @@ public class ErpAdapterTriggerService {
             // create dataset for the daemon thread to schedule future erp adapter requests
             dataset = new ErpAdapterTriggerDataset(partnerBpnl, ownMaterialNumber, type, directionString, now,
                 now + erpAdapterConfiguration.getRefreshInterval());
-            dataset = repository.save(dataset);
-            log.info("Created erp trigger dataset {}", dataset);
+            // it seems safer when only the Daemon thread writes to the repository
+            lock.lock();
+            try {
+                datasets.add(dataset);
+            } finally {
+                lock.unlock();
+            }
+            log.info("Created {}", dataset);
         } else {
             // we had previous requests of that kind, so we just store the timestamp of this latest request
             dataset.setLastPartnerRequest(now);
-            repository.save(dataset);
+            lock.lock();
+            try {
+                datasets.add(dataset);
+            } finally {
+                lock.unlock();
+            }
+        }
+        if (daemonObject == null) {
+            daemonObject = executorService.submit(daemon);
         }
     }
 
