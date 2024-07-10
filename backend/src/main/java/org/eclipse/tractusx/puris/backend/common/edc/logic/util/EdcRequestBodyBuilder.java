@@ -57,9 +57,14 @@ public class EdcRequestBodyBuilder {
     public static final String CX_TAXO_NAMESPACE = "https://w3id.org/catenax/taxonomy#";
     public static final String CX_COMMON_NAMESPACE = "https://w3id.org/catenax/ontology/common#";
     public static final String CX_POLICY_NAMESPACE = "https://w3id.org/catenax/policy/";
-    public static final String DCT_NAMESPACE = "https://purl.org/dc/terms/";
+    public static final String DCT_NAMESPACE = "http://purl.org/dc/terms/";
     public static final String AAS_SEMANTICS_NAMESPACE = "https://admin-shell.io/aas/3/0/HasSemantics/";
     public static final String CONTRACT_POLICY_ID = "Contract_Policy";
+    public static final String TX_NAMESPACE = "https://w3id.org/tractusx/v0.0.1/ns/";
+    public static final String TX_AUTH_NAMESPACE = "https://w3id.org/tractusx/auth/";
+    public static final String DCAT_NAMESPACE = "http://www.w3.org/ns/dcat#";
+    public static final String DSPACE_NAMESPACE = "https://w3id.org/dspace/v0.8/";
+    public static final String CX_POLICY_CONTEXT = "https://w3id.org/tractusx/policy/v1.0.0";
 
     /**
      * helper class to encapsulate PolicyConstraint
@@ -292,12 +297,15 @@ public class EdcRequestBodyBuilder {
         // extract policy and information from offer
         // framework agreement and co has been checked during catalog request
         String assetId = dcatCatalogItem.get("@id").asText();
-        JsonNode policyNode = dcatCatalogItem.get("odrl:hasPolicy");
+        JsonNode policyNode = dcatCatalogItem.get(ODRL_NAMESPACE + "hasPolicy");
+        if (policyNode.isArray()) {
+            policyNode = policyNode.get(0);
+        }
 
         ObjectNode targetIdObject = MAPPER.createObjectNode();
         targetIdObject.put("@id", assetId);
         ((ObjectNode) policyNode).put("@context", "http://www.w3.org/ns/odrl.jsonld");
-        ((ObjectNode) policyNode).set("odrl:target", targetIdObject);
+        ((ObjectNode) policyNode).set("target", targetIdObject);
         ((ObjectNode) policyNode).put("assigner", partner.getBpnl());
 
         ObjectNode offerNode = MAPPER.createObjectNode();

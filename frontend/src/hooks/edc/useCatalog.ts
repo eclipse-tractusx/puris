@@ -32,11 +32,12 @@ export const useCatalog = (partner: Partner | null) => {
     } = useFetch<RawCatalogData>(partner ? config.app.BACKEND_BASE_URL +
         'edc/catalog?dspUrl=' + encodeURIComponent(partner.edcUrl) +
         '&partnerBpnl=' + encodeURIComponent(partner.bpnl) : undefined);
+    console.log(data);
     const catalog = data && !isErrorResponse(data)
         ? (data['dcat:dataset']?.map((item) => {
             return {
                 assetId: item['@id'],
-                assetType: item['https://purl.org/dc/terms/type']['@id'],
+                assetType: item['dct:type']['@id'],
                 assetVersion: item['https://w3id.org/catenax/ontology/common#version'],
                 permission: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:permission'],
                 prohibitions: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:prohibition'],

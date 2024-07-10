@@ -19,15 +19,15 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { LoadingButton, Table } from '@catena-x/portal-shared-components';
-import { useCatalog } from '@hooks/edc/useCatalog';
-import { useRef, useState } from 'react';
-import { CatalogOperation, CatalogPermission } from '@models/types/edc/catalog';
-import { Box, Stack } from '@mui/material';
-import { Partner } from '@models/types/edc/partner';
-import { useAllPartners } from '@hooks/useAllPartners'; 
-import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
-import { getCatalogOperator } from '@util/helpers';
+import {LoadingButton, Table} from '@catena-x/portal-shared-components';
+import {useCatalog} from '@hooks/edc/useCatalog';
+import {useRef, useState} from 'react';
+import {CatalogOperation, CatalogPermission} from '@models/types/edc/catalog';
+import {Box, Stack} from '@mui/material';
+import {Partner} from '@models/types/edc/partner';
+import {useAllPartners} from '@hooks/useAllPartners';
+import {LabelledAutoComplete} from '@components/ui/LabelledAutoComplete';
+import {getCatalogOperator} from '@util/helpers';
 
 const PermissionList = ({ permission }: { permission: CatalogPermission }) => {
     return (
@@ -35,7 +35,7 @@ const PermissionList = ({ permission }: { permission: CatalogPermission }) => {
             {permission['odrl:constraint'] &&
                 'odrl:and' in permission['odrl:constraint'] &&
                 permission['odrl:constraint']['odrl:and'].map((constraint) => {
-                    const permissionString = `${constraint['odrl:leftOperand']} ${getCatalogOperator(constraint['odrl:operator']['@id'])} ${
+                    const permissionString = `${constraint['odrl:leftOperand']['@id']} ${getCatalogOperator(constraint['odrl:operator']['@id'])} ${
                         constraint['odrl:rightOperand']
                     }`;
                     return <div title={permissionString}>{permissionString}</div>;
@@ -76,7 +76,7 @@ const CatalogList = ({ catalog, title }: CatalogListProps) => {
                     field: 'permission.action',
                     width: 70,
                     renderCell: (row) => {
-                        const actionString = row.row.permission['odrl:action']['odrl:type'];
+                        const actionString = row.row.permission['odrl:action']['@id'];
                         const action = actionString.split('/')[actionString.split('/').length - 1];
                         return <div title={actionString}> {action} </div>;
                     },

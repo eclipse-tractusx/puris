@@ -90,10 +90,18 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     /**
      * Call this method when a partnerCXId for a Material was needed but not found.
-     * This method will trigger a new PartTypeInformation Task for any material that
-     * the given partner supplies, but still misses a partnerCXId.
+     * This method will trigger a new Task for any material that
+     * the given partner supplies, but still misses a partnerCXId. This task will
+     * try to fetch the partner's CX Id for all materials that this partner supplies
+     * and where this partner's CX Id is still unknown.
      *
      * This method will block until all tasks have finished, if any.
+     * <p>
+     * Please consider that calling this method can only bring any meaningful results, when
+     * the corresponding material entity is properly registered and there exists a
+     * MaterialPartnerRelation for the given material and the given partner, where the
+     * partner is designated as supplier. I.e. please make sure to always keep your masterdata
+     * entities up-to-date.
      *
      * @param supplierPartner The supplier partner
      */
@@ -104,7 +112,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
             .stream()
             .filter(mpr -> mpr.getPartnerCXNumber() == null)
             .filter(mpr -> !currentPartTypeFetches.contains(mpr))
-            .map(mpr -> executorService.submit(new PartTypeInformationRetrievalTask(mpr, 1)))
+            .map(mpr -> executorService.submit(new DtrRegistrationTask(mpr, 1)))
             .toList();
         if (futures.isEmpty()) {
             return;

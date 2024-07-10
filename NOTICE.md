@@ -16,11 +16,20 @@ source code repository logs.
 
 ## Declared Project Licenses
 
-This program and the accompanying materials are made available under the terms
-of the Apache License, Version 2.0 which is available at
-https://www.apache.org/licenses/LICENSE-2.0.
+The Tractus-X project uses the following licenses:
 
+- Apache-2.0 for code
+- CC-BY-4.0 for non-code
+
+Apache-2.0:
+This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0 which is available at https://www.apache.org/licenses/LICENSE-2.0.  
 SPDX-License-Identifier: Apache-2.0
+
+CC-BY-4.0:
+The materials in this repository are made available under the terms of the Creative Commons Attribution 4.0 International License, which is available at https://spdx.org/licenses/CC-BY-4.0.html.  
+SPDX-License-Identifier: CC-BY-4.0
+
+
 
 ## Source Code
 
@@ -54,6 +63,44 @@ feather (4.29)
 * Licence Path: https://github.com/feathericons/feather/blob/master/LICENSE
 * Project URL:  https://feathericons.com/
 * Source URL:   https://github.com/feathericons/feather
+
+### Remote Contexts
+
+#### cx-policy-v1 ([main](./backend/src/main/resources/json-ld/cx-policy-v1.jsonld), [test](./backend/src/test/resources/json-ld/cx-policy-v1.jsonld))
+
+* SPDX-License-Identifier: Apache-2.0
+* SPDX-FileCopyrightText: https://github.com/eclipse-tractusx/tractusx-profiles/blob/main/LICENSE
+* Source URL: https://github.com/eclipse-tractusx/tractusx-profiles/blob/main/cx/credentials/schema/context/policy.context.json
+
+#### dspace ([main](./backend/src/main/resources/json-ld/dspace.jsonld), [test](./backend/src/test/resources/json-ld/dspace.jsonld))
+
+* SPDX-License-Identifier: Apache-2.0
+* SPDX-FileCopyrightText: https://github.com/International-Data-Spaces-Association/ids-specification/blob/main/LICENSE
+* Source URL: https://international-data-spaces-association.github.io/ids-specification/2024-1/common/schema/context.json
+
+#### edc-v1 ([main](./backend/src/main/resources/json-ld/edc-v1.jsonld), [test](./backend/src/test/resources/json-ld/edc-v1.jsonld))
+
+* SPDX-License-Identifier: Apache-2.0
+* SPDX-FileCopyrightText: https://github.com/eclipse-tractusx/tractusx-edc/blob/d728d8311196572b0d34cef7be788c7ef06f46e5/LICENSE
+* Source URL: https://github.com/eclipse-tractusx/tractusx-edc/blob/d728d8311196572b0d34cef7be788c7ef06f46e5/core/json-ld-core/src/main/resources/document/edc-v1.jsonld
+
+#### odrl ([main](./backend/src/main/resources/json-ld/odrl.jsonld), [test](./backend/src/test/resources/json-ld/odrl.jsonld))
+
+* SPDX-License-Identifier: Apache-2.0
+* SPDX-FileCopyrightText: https://www.w3.org/copyright/software-license-2015/
+* Source URL: https://www.w3.org/ns/odrl.jsonld
+
+#### tx-auth-v1 ([main](./backend/src/main/resources/json-ld/tx-auth-v1.jsonld), [test](./backend/src/test/resources/json-ld/tx-auth-v1.jsonld))
+
+* SPDX-License-Identifier: Apache-2.0
+* SPDX-FileCopyrightText: https://github.com/eclipse-tractusx/tractusx-edc/blob/d728d8311196572b0d34cef7be788c7ef06f46e5/LICENSE
+* Source URL: https://github.com/eclipse-tractusx/tractusx-edc/blob/d728d8311196572b0d34cef7be788c7ef06f46e5/core/json-ld-core/src/main/resources/document/tx-auth-v1.jsonld
+
+#### tx-v1 ([main](./backend/src/main/resources/json-ld/tx-v1.jsonld), [test](./backend/src/test/resources/json-ld/tx-v1.jsonld))
+
+* SPDX-License-Identifier: Apache-2.0
+* SPDX-FileCopyrightText: https://github.com/eclipse-tractusx/tractusx-edc/blob/d728d8311196572b0d34cef7be788c7ef06f46e5/LICENSE
+* Source URL: https://github.com/eclipse-tractusx/tractusx-edc/blob/d728d8311196572b0d34cef7be788c7ef06f46e5/core/json-ld-core/src/main/resources/document/tx-v1.jsonld
 
 ## Cryptography
 

@@ -31,10 +31,12 @@ export type CatalogOperation = {
 export type CatalogPermission = {
     'odrl:target': string;
     'odrl:action': {
-        'odrl:type': string;
+        '@id': string;
     }
     'odrl:constraint': {
-        'odrl:leftOperand': string;
+        'odrl:leftOperand': {
+            "@id": string;
+        };
         'odrl:operator': {
             '@id': string;
         };
@@ -43,7 +45,9 @@ export type CatalogPermission = {
         '@type': string,
         'odrl:and': {
             '@type': string,
-            'odrl:leftOperand': string;
+            'odrl:leftOperand': {
+                "@id": string;
+            };
             'odrl:operator': {
                 '@id': string;
             };
@@ -55,7 +59,7 @@ export type CatalogPermission = {
 export type RawCatalogData = {
     'dcat:dataset': {
         '@id': string;
-        'https://purl.org/dc/terms/type': {
+        'dct:type': {
             '@id': string;
         }
         'https://w3id.org/catenax/ontology/common#version': string;

@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,7 +70,7 @@ public class EdcAdapterServiceTest {
     }
 
     /**
-     * Tests two constraints constraints as expected
+     * Tests two constraints as expected
      *
      * @throws JsonProcessingException if json is invalid
      */
@@ -84,17 +85,17 @@ public class EdcAdapterServiceTest {
             "      \"@type\" : \"odrl:Offer\",\n" +
             "      \"odrl:permission\" : {\n" +
             "        \"odrl:action\" : {\n" +
-            "          \"odrl:type\" : \"http://www.w3.org/ns/odrl/2/use\"\n" +
+            "          \"@id\" : \"odrl:use\"\n" +
             "        },\n" +
             "        \"odrl:constraint\" : {\n" +
             "          \"odrl:and\" : [ {\n" +
-            "            \"odrl:leftOperand\" : \"https://w3id.org/catenax/policy/FrameworkAgreement\",\n" +
+            "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:FrameworkAgreement\"},\n" +
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
             "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
             "          }, {\n" +
-            "            \"odrl:leftOperand\" : \"https://w3id.org/catenax/policy/UsagePurpose\",\n" +
+            "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:UsagePurpose\"},\n" +
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
@@ -104,10 +105,24 @@ public class EdcAdapterServiceTest {
             "      },\n" +
             "      \"odrl:prohibition\" : [ ],\n" +
             "      \"odrl:obligation\" : [ ]\n" +
+            "    }," +
+            "    \"@context\": {\n" +
+            "        \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
+            "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
+            "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
+            "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
+            "        \"dspace\": \"https://w3id.org/dspace/v0.8/\"\n" +
             "    }" +
             "}";
 
         JsonNode validJsonNode = objectMapper.readTree(validJson);
+        JsonLdUtils jsonLdUtils = new JsonLdUtils();
+        validJsonNode = jsonLdUtils.expand(validJsonNode);
+        System.out.println(validJsonNode.toPrettyString());
 
 
         // when
@@ -146,7 +161,7 @@ public class EdcAdapterServiceTest {
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
-            "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
+            "            \"odrl:rightOperand\" : \"Puris:0.1\"\n" +
             "          }, {\n" +
             "            \"odrl:leftOperand\" : {\n" +
             "              \"@id\" : \"cx-policy:UsagePurpose\"\n" +
@@ -160,10 +175,23 @@ public class EdcAdapterServiceTest {
             "      },\n" +
             "      \"odrl:prohibition\" : [ ],\n" +
             "      \"odrl:obligation\" : [ ]\n" +
+            "    }," +
+            "    \"@context\": {\n" +
+            "        \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
+            "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
+            "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
+            "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
+            "        \"dspace\": \"https://w3id.org/dspace/v0.8/\"\n" +
             "    }" +
             "}";
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
+        JsonLdUtils jsonLdUtils = new JsonLdUtils();
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
@@ -206,10 +234,23 @@ public class EdcAdapterServiceTest {
             "      },\n" +
             "      \"odrl:prohibition\" : [ ],\n" +
             "      \"odrl:obligation\" : [ ]\n" +
+            "    }," +
+            "    \"@context\": {\n" +
+            "        \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
+            "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
+            "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
+            "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
+            "        \"dspace\": \"https://w3id.org/dspace/v0.8/\"\n" +
             "    }" +
             "}";
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
+        JsonLdUtils jsonLdUtils = new JsonLdUtils();
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
