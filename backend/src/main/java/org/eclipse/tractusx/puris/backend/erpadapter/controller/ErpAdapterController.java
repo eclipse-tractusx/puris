@@ -29,7 +29,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
+import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ErpAdapterTriggerService;
 import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ItemStockErpAdapterService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,11 +52,40 @@ public class ErpAdapterController {
     @Autowired
     private ItemStockErpAdapterService itemStockErpAdapterService;
 
+    @Autowired
+    private ErpAdapterTriggerService erpAdapterTriggerService;
+
+    @Autowired
+    private MaterialPartnerRelationService mprService;
+
+    @Operation(description = "This endpoint is used to trigger scheduled updates from the ErpAdapter. This is useful " +
+        "if you are expecting a specific request from a partner in the near future and want to make a best-effort attempt to ensure " +
+        "that your PURIS backend has already obtained current data to respond to that expected request, when it arrives.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "accepted"),
+        @ApiResponse(responseCode = "404", description = "bad request")
+    })
+    @PostMapping("/trigger")
+    public ResponseEntity<?> frontEndtriggerRecevier(
+        @RequestParam("partner-bpnl") String bpnl,
+        @RequestParam("own-materialnumber") String materialNumber,
+        @RequestParam("asset-type") AssetType assetType,
+        @RequestParam(required = false, value = "direction") DirectionCharacteristic directionCharacteristic
+    ) {
+        boolean valid = BPNL_PATTERN.matcher(bpnl).matches()
+            && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(materialNumber).matches();
+        if (valid && mprService.find(bpnl, materialNumber) != null) {
+            erpAdapterTriggerService.notifyPartnerRequest(bpnl, materialNumber, assetType, directionCharacteristic);
+            return ResponseEntity.status(201).build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+
+
     @Operation(description = "This endpoint accepts responses from the ERP adapter. Incoming messages are expected to " +
-        "carry a SAMM of the previously requested type. \n\nPlease note that this version currently accepts multiple responses " +
-        "addressing the same request-id for testing purposes. However, in the near future, this will be enforced strictly. " +
-        "I.e. only the first response for a given request-id will be accepted. All later responses addressing the same request-id" +
-        " will be rejected (status code 409)\n\n" +
+        "carry a SAMM of the previously requested type. \n\n" +
         "Currently supported: \n\n" +
         "| response-type | samm-version |\n" +
         "|---------------|--------------|\n" +

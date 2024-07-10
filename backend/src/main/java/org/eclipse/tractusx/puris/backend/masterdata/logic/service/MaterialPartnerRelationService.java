@@ -70,4 +70,6 @@ public interface MaterialPartnerRelationService {
     List<MaterialPartnerRelation> findAllByCustomerPartnerAndPartnerMaterialNumber(Partner partner, String partnerMaterialNumber);
 
     MaterialPartnerRelation findByPartnerAndPartnerCXNumber(Partner partner, String partnerCXNumber);
+
+    MaterialPartnerRelation find(String bpnl, String ownMaterialNumber);
 }
