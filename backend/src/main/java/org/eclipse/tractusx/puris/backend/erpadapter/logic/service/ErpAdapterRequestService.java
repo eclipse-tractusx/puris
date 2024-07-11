@@ -50,13 +50,13 @@ public class ErpAdapterRequestService {
         if (erpAdapterRequest != null) {
             Integer responseCode = erpAdapterRequestClient.sendRequest(erpAdapterRequest);
             if (responseCode != null) {
+                erpAdapterRequest.setResponseCode(responseCode);
+                update(erpAdapterRequest);
                 if (responseCode >= 200 && responseCode < 400) {
                     log.info("Successfully sent request to ERP Adapter, got status code {} for request:\n{}", responseCode, erpAdapterRequest);
                 } else {
                     log.warn("Received status code {} from ERP Adapter for request:\n{}", responseCode, erpAdapterRequest);
                 }
-                erpAdapterRequest.setResponseCode(responseCode);
-                update(erpAdapterRequest);
             } else {
                 log.error("Failed to send request to ERP Adapter:\n{}", erpAdapterRequest);
             }
@@ -64,9 +64,7 @@ public class ErpAdapterRequestService {
     }
 
     public ErpAdapterRequest get(UUID id) {
-        // TODO: Remove when mock is removed
-        return repository.findById(id).orElse(repository.findAll().getFirst());
-//        return repository.findById(id).orElse(null);
+        return repository.findById(id).orElse(null);
     }
 
     public ErpAdapterRequest update(ErpAdapterRequest erpAdapterRequest) {

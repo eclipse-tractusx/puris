@@ -28,12 +28,16 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
+import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ErpAdapterTriggerService;
 import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ItemStockErpAdapterService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -48,11 +52,43 @@ public class ErpAdapterController {
     @Autowired
     private ItemStockErpAdapterService itemStockErpAdapterService;
 
+    @Autowired
+    private ErpAdapterTriggerService erpAdapterTriggerService;
+
+    @Autowired
+    private MaterialPartnerRelationService mprService;
+
+    @Operation(description = "This endpoint is used to trigger scheduled updates from the ErpAdapter. This is useful " +
+        "if you are expecting a specific request from a partner in the near future and want to make a best-effort attempt to ensure " +
+        "that your PURIS backend has already obtained current data to respond to that expected request, when it arrives. " +
+        "Please note, that calling this endpoint has no significant effect, if a request with the exact same specifics is already " +
+        "currently in place. In that case, a call to this endpoint will only extend the period, after which the scheduled request will " +
+        "be assumed to be irrelevant (see the puris.erpadapter.timelimit property and its documentation for details in this regard). ")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "accepted"),
+        @ApiResponse(responseCode = "400", description = "bad request")
+    })
+    @PostMapping("/trigger")
+    public ResponseEntity<?> scheduleErpUpdate(
+        @RequestParam("partner-bpnl") String bpnl,
+        @RequestParam("own-materialnumber") String materialNumber,
+        @RequestParam("asset-type") AssetType assetType,
+        @RequestParam(required = false, value = "direction") DirectionCharacteristic directionCharacteristic
+    ) {
+        boolean valid = BPNL_PATTERN.matcher(bpnl).matches()
+            && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(materialNumber).matches();
+        if (valid && mprService.find(bpnl, materialNumber) != null) {
+            erpAdapterTriggerService.notifyPartnerRequest(bpnl, materialNumber, assetType, directionCharacteristic);
+            return ResponseEntity.status(201).build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+
+
     @Operation(description = "This endpoint accepts responses from the ERP adapter. Incoming messages are expected to " +
-        "carry a SAMM of the previously requested type. \n\nPlease note that this version currently accepts multiple responses " +
-        "addressing the same request-id for testing purposes. However, in the near future, this will be enforced strictly. " +
-        "I.e. only the first response for a given request-id will be accepted. All later responses addressing the same request-id" +
-        " will be rejected (status code 409)\n\n" +
+        "carry a SAMM of the previously requested type. \n\n" +
         "Currently supported: \n\n" +
         "| response-type | samm-version |\n" +
         "|---------------|--------------|\n" +
@@ -73,24 +109,25 @@ public class ErpAdapterController {
         @RequestParam("response-type") String responseType,
         @RequestParam("samm-version") String sammVersion,
         @RequestParam(value = "response-timestamp")
-        @Parameter(example = "2024-05-28T15:00:00")
-        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") Date responseTimestamp,
+        @Parameter(example = "1719295545654", description = "Represented as the number of milliseconds since January 1, 1970, 00:00:00 GMT")
+        long responseTimestamp,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {@Content(examples = {
             @ExampleObject(itemStock20Sample)
         })})
         @RequestBody JsonNode requestBody
         ) {
-        boolean valid = BPNL_PATTERN.matcher(partnerBpnl).matches();
-        valid = valid && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(responseType).matches();
-        valid = valid && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(sammVersion).matches();
+        boolean valid = BPNL_PATTERN.matcher(partnerBpnl).matches()
+                     && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(responseType).matches()
+                     && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(sammVersion).matches();
         if (!valid) {
             return ResponseEntity.badRequest().build();
         }
-        Dto dto = new Dto(requestId, partnerBpnl, responseType, sammVersion, responseTimestamp, requestBody);
+        Dto dto = new Dto(requestId, partnerBpnl, responseType, sammVersion, new Date(responseTimestamp), requestBody);
+        AssetType assetType = Arrays.stream(AssetType.values()).filter(type -> type.ERP_KEYWORD.equals(responseType)).findFirst().orElse(null);
         int responseCode = 501;
-        switch (responseType) {
-            case "ItemStock" -> responseCode = itemStockErpAdapterService.receiveItemStockUpdate(dto);
-            default -> {
+        switch (assetType) {
+            case ITEM_STOCK_SUBMODEL -> responseCode = itemStockErpAdapterService.receiveItemStockUpdate(dto);
+            case null, default -> {
                 return ResponseEntity.status(responseCode).body("Unsupported response type: " + responseType);
             }
         }

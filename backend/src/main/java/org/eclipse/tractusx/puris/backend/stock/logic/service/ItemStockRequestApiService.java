@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ErpAdapterTriggerService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
@@ -56,6 +57,8 @@ public class ItemStockRequestApiService {
     @Autowired
     private ReportedMaterialItemStockService reportedMaterialItemStockService;
     @Autowired
+    private ErpAdapterTriggerService erpAdapterTriggerService;
+    @Autowired
     private EdcAdapterService edcAdapterService;
     @Autowired
     private ItemStockSammMapper sammMapper;
@@ -76,6 +79,9 @@ public class ItemStockRequestApiService {
                 if (material != null && mprService.find(material, partner).isPartnerBuysMaterial()) {
                     // only send an answer if partner is registered as customer
                     var currentStocks = productItemStockService.findByPartnerAndMaterial(partner, material);
+
+                    erpAdapterTriggerService.notifyPartnerRequest(bpnl, material.getOwnMaterialNumber(), AssetType.ITEM_STOCK_SUBMODEL, direction);
+
                     return sammMapper.productItemStocksToItemStockSamm(currentStocks, partner, material);
                 }
                 return null;
@@ -105,8 +111,10 @@ public class ItemStockRequestApiService {
                     return null;
                 }
 
-                // only send an answer if partner is registered as supplier
+                // request looks valid
+                erpAdapterTriggerService.notifyPartnerRequest(bpnl, material.getOwnMaterialNumber(), AssetType.ITEM_STOCK_SUBMODEL, direction);
                 var currentStocks = materialItemStockService.findByPartnerAndMaterial(partner, material);
+
                 return sammMapper.materialItemStocksToItemStockSamm(currentStocks, partner, material);
 
             }

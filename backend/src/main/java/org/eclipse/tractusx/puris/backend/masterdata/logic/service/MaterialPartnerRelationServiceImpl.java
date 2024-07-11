@@ -619,4 +619,16 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
             return null;
         }
     }
+
+    @Override
+    public MaterialPartnerRelation find(String bpnl, String ownMaterialNumber) {
+        var results = mprRepository.findAllByPartner_BpnlAndMaterial_OwnMaterialNumber(bpnl, ownMaterialNumber);
+        if (results.isEmpty()) {
+            return null;
+        }
+        if (results.size() > 1) {
+            log.warn("Found more than one MPR for {} and ownMaterialNumber {}", bpnl, ownMaterialNumber);
+        }
+        return results.getFirst();
+    }
 }

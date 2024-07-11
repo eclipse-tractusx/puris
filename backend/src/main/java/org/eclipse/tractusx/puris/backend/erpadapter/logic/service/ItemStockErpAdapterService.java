@@ -85,11 +85,10 @@ public class ItemStockErpAdapterService {
                 log.error("Unknown request-id {}", dto.requestId());
                 return 404;
             }
-            // TODO: uncomment the following block when removing mock request, also edit swagger description in ErpAdapterController
-//            if (request.getResponseReceivedDate() != null) {
-//                log.error("Received duplicate response for messageId {}", request.getId());
-//                return 409;
-//            }
+            if (request.getResponseReceivedDate() != null) {
+                log.error("Received duplicate response for messageId {}", request.getId());
+                return 409;
+            }
             if (request.getResponseCode() == null || request.getResponseCode() < 200 || request.getResponseCode() >= 400) {
                 log.error("Unexpected response, erp adapter had not confirmed request");
                 return 404;

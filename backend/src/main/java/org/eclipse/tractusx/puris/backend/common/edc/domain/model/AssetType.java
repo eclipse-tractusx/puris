@@ -21,19 +21,23 @@
 package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
 public enum AssetType {
-    DTR("none", "none"),
-    ITEM_STOCK_SUBMODEL("urn:samm:io.catenax.item_stock:2.0.0#ItemStock", "$value"),
-    PRODUCTION_SUBMODEL("urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput", "$value"),
-    DEMAND_SUBMODEL("urn:samm:io.catenax.short_term_material_demand:1.0.0#ShortTermMaterialDemand", "$value"),
-    DELIVERY_SUBMODEL("urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation", "$value"),
-    NOTIFICATION("urn:samm:io.catenax.demand_and_capacity_notification:2.0.0#DemandAndCapacityNotification", "none"),
-    PART_TYPE_INFORMATION_SUBMODEL("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value");
+    DTR("none", "none", "none", "none"),
+    ITEM_STOCK_SUBMODEL("urn:samm:io.catenax.item_stock:2.0.0#ItemStock", "$value", "ItemStock", "2.0"),
+    PRODUCTION_SUBMODEL("urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput", "$value", "PlannedProductionOutput", "2.0"),
+    DEMAND_SUBMODEL("urn:samm:io.catenax.short_term_material_demand:1.0.0#ShortTermMaterialDemand", "$value", "ShortTermMaterialDemand", "1.0"),
+    DELIVERY_SUBMODEL("urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation", "$value", "DeliveryInformation", "2.0"),
+    NOTIFICATION("urn:samm:io.catenax.demand_and_capacity_notification:2.0.0#DemandAndCapacityNotification", "none", "none", "2.0"),
+    PART_TYPE_INFORMATION_SUBMODEL("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value", "none", "1.0");
 
     public final String URN_SEMANTIC_ID;
     public final String REPRESENTATION;
+    public final String ERP_KEYWORD;
+    public final String ERP_SAMMVERSION;
 
-    AssetType(String URN_SEMANTIC_ID, String REPRESENTATION) {
+    AssetType(String URN_SEMANTIC_ID, String REPRESENTATION, String ERP_KEYWORD, String ERP_SAMMVERSION) {
         this.URN_SEMANTIC_ID = URN_SEMANTIC_ID;
         this.REPRESENTATION = REPRESENTATION;
+        this.ERP_KEYWORD = ERP_KEYWORD;
+        this.ERP_SAMMVERSION = ERP_SAMMVERSION;
     }
 }
