@@ -60,13 +60,16 @@ public class ErpAdapterController {
 
     @Operation(description = "This endpoint is used to trigger scheduled updates from the ErpAdapter. This is useful " +
         "if you are expecting a specific request from a partner in the near future and want to make a best-effort attempt to ensure " +
-        "that your PURIS backend has already obtained current data to respond to that expected request, when it arrives.")
+        "that your PURIS backend has already obtained current data to respond to that expected request, when it arrives. \n" +
+        "Please note, that calling this endpoint has no significant effect, if a request with the exact same specifics is already " +
+        "currently in place. In that case, a call to this endpoint will only extend the period, after which the scheduled request will " +
+        "be assumed to be irrelevant (see the puris.erpadapter.timelimit property and its documentation for details in this regard). ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "accepted"),
-        @ApiResponse(responseCode = "404", description = "bad request")
+        @ApiResponse(responseCode = "400", description = "bad request")
     })
     @PostMapping("/trigger")
-    public ResponseEntity<?> frontEndtriggerRecevier(
+    public ResponseEntity<?> scheduleErpUpdate(
         @RequestParam("partner-bpnl") String bpnl,
         @RequestParam("own-materialnumber") String materialNumber,
         @RequestParam("asset-type") AssetType assetType,
