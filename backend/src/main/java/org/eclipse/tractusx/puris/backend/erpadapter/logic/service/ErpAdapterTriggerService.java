@@ -67,9 +67,22 @@ public class ErpAdapterTriggerService {
 
     private final Runnable daemon = () -> {
         log.info("Daemon thread started");
+        ArrayList<ErpAdapterTriggerDataset> updatedData = new ArrayList<>();
         while (true) {
             lock.lock();
             try {
+                // keep the most recent information in case of conflict
+                for (ErpAdapterTriggerDataset dataset : datasets) {
+                    for (ErpAdapterTriggerDataset updatedDataset : updatedData) {
+                        if (dataset.equals(updatedDataset)) {
+                            dataset.setLastPartnerRequest(
+                                Math.max(dataset.getLastPartnerRequest(), updatedDataset.getLastPartnerRequest()));
+                            dataset.setNextErpRequestScheduled(
+                                Math.max(dataset.getNextErpRequestScheduled(), updatedDataset.getNextErpRequestScheduled()));
+                        }
+                    }
+                }
+                updatedData.clear();
                 repository.saveAll(datasets);
                 datasets.clear();
             } finally {
@@ -103,6 +116,7 @@ public class ErpAdapterTriggerService {
                         // schedule next request
                         dataset.setNextErpRequestScheduled(now + erpAdapterConfiguration.getRefreshInterval());
                         dataset = repository.save(dataset);
+                        updatedData.add(dataset);
                         log.info("Scheduled next erp adapter request: {}", dataset);
                     }
                 }

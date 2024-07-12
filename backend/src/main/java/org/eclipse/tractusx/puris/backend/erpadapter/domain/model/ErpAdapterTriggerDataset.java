@@ -29,6 +29,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 @Entity
 @IdClass(ErpAdapterTriggerDataset.Key.class)
@@ -36,7 +37,6 @@ import java.util.Date;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode
 public class ErpAdapterTriggerDataset {
 
     @Id
@@ -65,6 +65,20 @@ public class ErpAdapterTriggerDataset {
             ", lastPartnerRequest=" + new Date(lastPartnerRequest) +
             ", nextErpRequestScheduled=" + new Date(nextErpRequestScheduled) +
             '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ErpAdapterTriggerDataset dataset)) return false;
+        return Objects.equals(partnerBpnl, dataset.partnerBpnl) && Objects.equals(ownMaterialNumber,
+            dataset.ownMaterialNumber) && assetType == dataset.assetType &&
+            Objects.equals(directionCharacteristic, dataset.directionCharacteristic);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(partnerBpnl, ownMaterialNumber, assetType, directionCharacteristic);
     }
 
     @Getter
