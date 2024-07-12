@@ -78,7 +78,7 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   dtr-customer:
-    image: tractusx/sldt-digital-twin-registry:0.4.3
+    image: tractusx/sldt-digital-twin-registry:0.5.0
     container_name: dtr-customer
     depends_on:
       postgres-all:
@@ -235,7 +235,7 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   dtr-supplier:
-    image: tractusx/sldt-digital-twin-registry:0.4.3
+    image: tractusx/sldt-digital-twin-registry:0.5.0
     container_name: dtr-supplier
     depends_on:
       postgres-all:
