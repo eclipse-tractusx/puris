@@ -451,15 +451,19 @@ npm/npmjs/@types/react-dom/18.2.18, MIT, approved, #8256
 npm/npmjs/@types/react-transition-group/4.4.10, MIT, approved, #8416
 npm/npmjs/@types/react/18.2.48, MIT, approved, #8234
 npm/npmjs/@types/scheduler/0.16.8, MIT, approved, #7582
-npm/npmjs/@types/semver/7.5.6, MIT, approved, #10842
+npm/npmjs/@types/semver/7.5.8, MIT, approved, #10842
 npm/npmjs/@types/unist/2.0.10, MIT, approved, clearlydefined
-npm/npmjs/@typescript-eslint/eslint-plugin/6.19.0, BSD-2-Clause AND (BSD-2-Clause AND ISC AND MIT) AND MIT, approved, #12778
+npm/npmjs/@typescript-eslint/eslint-plugin/7.0.0, BSD-2-Clause AND (BSD-2-Clause AND ISC AND MIT) AND MIT, approved, #13203
 npm/npmjs/@typescript-eslint/parser/6.19.0, BSD-2-Clause, approved, clearlydefined
 npm/npmjs/@typescript-eslint/scope-manager/6.19.0, MIT, approved, clearlydefined
-npm/npmjs/@typescript-eslint/type-utils/6.19.0, MIT, approved, clearlydefined
+npm/npmjs/@typescript-eslint/scope-manager/7.0.0, BSD-2-Clause AND (BSD-2-Clause AND ISC AND MIT) AND MIT, approved, #13319
+npm/npmjs/@typescript-eslint/type-utils/7.0.0, MIT, approved, clearlydefined
 npm/npmjs/@typescript-eslint/types/6.19.0, MIT, approved, clearlydefined
+npm/npmjs/@typescript-eslint/types/7.0.0, BSD-2-Clause AND (BSD-2-Clause AND ISC AND MIT) AND MIT, approved, #13339
 npm/npmjs/@typescript-eslint/typescript-estree/6.19.0, BSD-2-Clause AND (BSD-2-Clause AND ISC AND MIT) AND MIT, approved, #12779
-npm/npmjs/@typescript-eslint/utils/6.19.0, MIT, approved, clearlydefined
+npm/npmjs/@typescript-eslint/typescript-estree/7.0.0, BSD-2-Clause AND (BSD-2-Clause AND ISC AND MIT) AND MIT, approved, #13217
+npm/npmjs/@typescript-eslint/utils/7.0.0, MIT, approved, clearlydefined
 npm/npmjs/@typescript-eslint/visitor-keys/6.19.0, MIT, approved, clearlydefined
+npm/npmjs/@typescript-eslint/visitor-keys/7.0.0, BSD-2-Clause AND (BSD-2-Clause AND ISC AND MIT) AND MIT, approved, #13310
 npm/npmjs/@ungap/structured-clone/1.2.0, ISC, approved, clearlydefined
 npm/npmjs/@vitejs/plugin-react/4.2.1, MIT, approved, clearlydefined
