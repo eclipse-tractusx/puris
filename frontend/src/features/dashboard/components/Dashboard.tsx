@@ -22,7 +22,7 @@ import { usePartnerStocks } from '@features/stock-view/hooks/usePartnerStocks';
 import { useStocks } from '@features/stock-view/hooks/useStocks';
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
 import { Site } from '@models/types/edc/site';
-import { useCallback, useReducer } from 'react';
+import { useCallback, useReducer, useState } from 'react';
 import { DashboardFilters } from './DashboardFilters';
 import { DemandTable } from './DemandTable';
 import { ProductionTable } from './ProductionTable';
@@ -30,7 +30,7 @@ import { Box, Button, capitalize, Stack, Typography } from '@mui/material';
 import { Delivery } from '@models/types/data/delivery';
 import { DeliveryInformationModal } from './DeliveryInformationModal';
 import { getPartnerType } from '../util/helpers';
-import { LoadingButton } from '@catena-x/portal-shared-components';
+import { LoadingButton, PageSnackbar, PageSnackbarStack } from '@catena-x/portal-shared-components';
 import { Refresh } from '@mui/icons-material';
 import { Demand } from '@models/types/data/demand';
 import { DemandCategoryModal } from './DemandCategoryModal';
@@ -48,6 +48,7 @@ import { requestReportedDeliveries } from '@services/delivery-service';
 import { requestReportedProductions } from '@services/productions-service';
 import { requestReportedDemands } from '@services/demands-service';
 import { ModalMode } from '@models/types/data/modal-mode';
+import { Notification } from "@models/types/data/notification.ts";
 
 const NUMBER_OF_DAYS = 28;
 
@@ -107,16 +108,38 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
         state.selectedSite?.bpns ?? null
     );
 
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+
     const handleRefresh = () => {
-        dispatch({ type: 'isRefreshing', payload: true });
+        dispatch({type: 'isRefreshing', payload: true});
         Promise.all([
             requestReportedStocks(type === 'customer' ? 'material' : 'product', state.selectedMaterial?.ownMaterialNumber ?? null),
             requestReportedDeliveries(state.selectedMaterial?.ownMaterialNumber ?? null),
             type === 'customer'
                 ? requestReportedProductions(state.selectedMaterial?.ownMaterialNumber ?? null)
                 : requestReportedDemands(state.selectedMaterial?.ownMaterialNumber ?? null)
-        ]).finally(() => dispatch({ type: 'isRefreshing', payload: false }));
+        ]).then(() => {
+            setNotifications(ns => [
+                ...ns,
+                {
+                    title: 'Update requested',
+                    description: `Requested update from partners for ${state.selectedMaterial?.ownMaterialNumber}. Please reload dialog later.`,
+                    severity: 'success',
+                },
+            ]);
+        }).catch((error: unknown) => {
+            const msg = error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string' ? error.message : 'Unknown Error';
+            setNotifications(ns => [
+                ...ns,
+                {
+                    title: 'Error requesting update',
+                    description: msg,
+                    severity: 'error',
+                },
+            ]);
+        }).finally(() => dispatch({type: 'isRefreshing', payload: false}))
     };
+        // };
     const handleScheduleErpUpdate = () => {
         dispatch({ type: 'isErpRefreshing', payload: true });
         if (state.selectedPartnerSites){
@@ -124,9 +147,30 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                 return scheduleErpUpdateStocks(type === 'customer' ? 'material' : 'product', ps.belongsToPartnerBpnl, state.selectedMaterial?.ownMaterialNumber ?? null);
             });
             Promise.all(promises)
+                .then(() => {
+                    setNotifications(ns => [
+                        ...ns,
+                        {
+                            title: 'Update requested',
+                            description: `Scheduled ERP data update of stocks for ${state.selectedMaterial?.ownMaterialNumber} in your role as ${type}. Please reload dialog later.`,
+                            severity: 'success',
+                        },
+                    ]);
+                })
+                .catch((error: unknown) => {
+                    const msg = error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string' ? error.message : 'Unknown Error';
+                    setNotifications(ns => [
+                        ...ns,
+                        {
+                            title: 'Error scheduling ERP update',
+                            description: msg,
+                            severity: 'error',
+                        },
+                    ]);
+                })
                 .finally(() => dispatch({type: 'isErpRefreshing', payload:false }));
         }
-    }
+    };
     const openDeliveryDialog = useCallback(
         (d: Partial<Delivery>, mode: ModalMode, direction: 'incoming' | 'outgoing' = 'outgoing', site: Site | null) => {
             d.ownMaterialNumber = state.selectedMaterial?.ownMaterialNumber ?? '';
@@ -322,6 +366,19 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                 delivery={state.delivery}
                 deliveries={deliveries ?? []}
             />
+            <PageSnackbarStack>
+                {notifications.map((notification, index) => (
+                    <PageSnackbar
+                        key={index}
+                        open={!!notification}
+                        severity={notification?.severity}
+                        title={notification?.title}
+                        description={notification?.description}
+                        autoClose={true}
+                        onCloseNotification={() => setNotifications((ns) => ns.filter((_, i) => i !== index) ?? [])}
+                    />
+                ))}
+            </PageSnackbarStack>
         </>
     );
 }
