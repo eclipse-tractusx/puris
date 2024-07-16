@@ -80,6 +80,8 @@ spec:
               value: "{{ .Values.frontend.puris.endpointUpdateReportedMaterialStocks }}"
             - name: ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS
               value: "{{ .Values.frontend.puris.endpointUpdateReportedProductStocks }}"
+            - name: ENDPOINT_ERP_SCHEDULE_UPDATE
+              value: "{{ .Values.frontend.puris.endpointErpScheduleUpdate }}"
             - name: ENDPOINT_PARTNER
               value: "{{ .Values.frontend.puris.endpointPartners }}"
             - name: ENDPOINT_DEMAND

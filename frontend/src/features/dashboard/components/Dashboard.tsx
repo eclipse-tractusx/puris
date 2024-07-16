@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2024 Volkswagen AG
+Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -25,7 +26,7 @@ import { useCallback, useReducer } from 'react';
 import { DashboardFilters } from './DashboardFilters';
 import { DemandTable } from './DemandTable';
 import { ProductionTable } from './ProductionTable';
-import { Box, Button, Stack, Typography, capitalize } from '@mui/material';
+import { Box, Button, capitalize, Stack, Typography } from '@mui/material';
 import { Delivery } from '@models/types/data/delivery';
 import { DeliveryInformationModal } from './DeliveryInformationModal';
 import { getPartnerType } from '../util/helpers';
@@ -41,7 +42,7 @@ import { PlannedProductionModal } from './PlannedProductionModal';
 import { useProduction } from '../hooks/useProduction';
 import { useReportedProduction } from '../hooks/useReportedProduction';
 
-import { requestReportedStocks } from '@services/stocks-service';
+import { requestReportedStocks, scheduleErpUpdateStocks } from '@services/stocks-service';
 import { useDelivery } from '../hooks/useDelivery';
 import { requestReportedDeliveries } from '@services/delivery-service';
 import { requestReportedProductions } from '@services/productions-service';
@@ -61,6 +62,7 @@ type DashboardState = {
     demand: Partial<Demand> | null;
     production: Partial<Production> | null;
     isRefreshing: boolean;
+    isErpRefreshing: false;
 };
 
 type DashboardAction = {
@@ -83,6 +85,7 @@ const initialState: DashboardState = {
     demand: null,
     production: null,
     isRefreshing: false,
+    isErpRefreshing: false,
 };
 
 export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
@@ -114,6 +117,16 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                 : requestReportedDemands(state.selectedMaterial?.ownMaterialNumber ?? null)
         ]).finally(() => dispatch({ type: 'isRefreshing', payload: false }));
     };
+    const handleScheduleErpUpdate = () => {
+        dispatch({ type: 'isErpRefreshing', payload: true });
+        if (state.selectedPartnerSites){
+            const promises: Promise<void>[] = state.selectedPartnerSites.map((ps: Site) => {
+                return scheduleErpUpdateStocks(type === 'customer' ? 'material' : 'product', ps.belongsToPartnerBpnl, state.selectedMaterial?.ownMaterialNumber ?? null);
+            });
+            Promise.all(promises)
+                .finally(() => dispatch({type: 'isErpRefreshing', payload:false }));
+        }
+    }
     const openDeliveryDialog = useCallback(
         (d: Partial<Delivery>, mode: ModalMode, direction: 'incoming' | 'outgoing' = 'outgoing', site: Site | null) => {
             d.ownMaterialNumber = state.selectedMaterial?.ownMaterialNumber ?? '';
@@ -193,12 +206,40 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                 </Box>
                 {state.selectedSite && (
                     <Stack width="100%">
-                        <Box display="flex" justifyContent="space-between">
+                        <Box
+                            display="flex"
+                            justifyContent="start"
+                            alignItems="center"
+                            width="100%"
+                            gap="0.5rem"
+                            marginBlock="0.5rem"
+                            paddingLeft=".5rem"
+                        >
                             <Typography variant="h5" component="h2">
                                 {`${capitalize(getPartnerType(type))} Information ${
                                     state.selectedMaterial ? `for ${state.selectedMaterial.description} (${state.selectedMaterial.ownMaterialNumber})` : ''
                                 }`}
                             </Typography>
+                            <Box marginLeft="auto" display="flex" gap="1rem">
+                            {state.selectedPartnerSites?.length &&
+                                (state.isErpRefreshing ? (
+                                    <LoadingButton
+                                        label="Schedule ERP Update"
+                                        loadIndicator="scheduling..."
+                                        loading={state.isErpRefreshing}
+                                        variant="contained"
+                                        onButtonClick={handleScheduleErpUpdate}
+                                        sx={{ width: '15rem' }}
+                                    />
+                                ) : (
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleScheduleErpUpdate}
+                                        sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '15rem' }}
+                                    >
+                                        <Refresh></Refresh> Schedule ERP Update
+                                    </Button>
+                                ))}
                             {state.selectedPartnerSites?.length &&
                                 (state.isRefreshing ? (
                                     <LoadingButton
@@ -218,6 +259,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                         <Refresh></Refresh> Refresh
                                     </Button>
                                 ))}
+                            </Box>
                         </Box>
                         <Stack spacing={4}>
                             {state.selectedPartnerSites ? (

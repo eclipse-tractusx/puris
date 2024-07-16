@@ -40,6 +40,7 @@ services:
       - ENDPOINT_REPORTED_PRODUCT_STOCKS=stockView/reported-product-stocks?ownMaterialNumber=
       - ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS=stockView/update-reported-material-stocks?ownMaterialNumber=
       - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
+      - ENDPOINT_ERP_SCHEDULE_UPDATE=erp-adapter/trigger
       - ENDPOINT_PARTNER=partners
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production
@@ -197,6 +198,7 @@ services:
       - ENDPOINT_REPORTED_PRODUCT_STOCKS=stockView/reported-product-stocks?ownMaterialNumber=
       - ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS=stockView/update-reported-material-stocks?ownMaterialNumber=
       - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
+      - ENDPOINT_ERP_SCHEDULE_UPDATE=erp-adapter/trigger
       - ENDPOINT_PARTNER=partners
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production

@@ -18,7 +18,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM node:lts-alpine as build
+FROM node:lts-alpine AS build
 
 ARG NPM_BUILD_MODE=dockerbuild
 

@@ -32,7 +32,7 @@ frontend:
     # -- Repository of the docker image
     repository: tractusx/app-puris-frontend
     # -- THe policy for the image pull process
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # -- Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -183,6 +183,8 @@ frontend:
     endpointUpdateReportedMaterialStocks: stockView/update-reported-material-stocks?ownMaterialNumber=
     # -- The endpoint for triggering an update of your product stocks on your partners side
     endpointUpdateReportedProductStocks: stockView/update-reported-product-stocks?ownMaterialNumber=
+    # -- The endpoint for scheduling an update of erp data (currently only stock supported)
+    endpointErpScheduleUpdate: erp-adapter/trigger
     # -- The endpoint for partner information
     endpointPartners: partners
     # -- The endpoint for the demand submodel
