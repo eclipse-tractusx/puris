@@ -262,4 +262,136 @@ public class EdcAdapterServiceTest {
         assertFalse(result);
     }
 
+    /**
+     * Tests with unexpected (non-empty) prohibition, which must be rejected
+     *
+     * @throws JsonProcessingException if json is invalid
+     */
+    @Test
+    public void wrongProhibition_testContractPolicyConstraints_fails() throws JsonProcessingException {
+        // given
+        String validJson = "{\n" +
+            "    \"@id\" : \"PartTypeInformationSubmodelApi@BPNL00000007RXRX\",\n" +
+            "    \"@type\" : \"dcat:Dataset\",\n" +
+            "    \"odrl:hasPolicy\" : {\n" +
+            "      \"@id\" : \"QlBOTDAwMDAwMDA3UlRVUF9jb250cmFjdGRlZmluaXRpb25fZm9yX1BhcnRUeXBlSW5mb3JtYXRpb25TdWJtb2RlbEFwaUBCUE5MMDAwMDAwMDdSWFJY:UGFydFR5cGVJbmZvcm1hdGlvblN1Ym1vZGVsQXBpQEJQTkwwMDAwMDAwN1JYUlg=:NzE3MGJmZDMtYTg5NS00YmU2LWI5Y2EtMDVhYTUwY2VjMDk2\",\n" +
+            "      \"@type\" : \"odrl:Offer\",\n" +
+            "      \"odrl:permission\" : {\n" +
+            "        \"odrl:action\" : {\n" +
+            "          \"@id\" : \"odrl:use\"\n" +
+            "        },\n" +
+            "        \"odrl:constraint\" : {\n" +
+            "          \"odrl:and\" : [ {\n" +
+            "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:FrameworkAgreement\"},\n" +
+            "            \"odrl:operator\" : {\n" +
+            "              \"@id\" : \"odrl:eq\"\n" +
+            "            },\n" +
+            "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
+            "          }, {\n" +
+            "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:UsagePurpose\"},\n" +
+            "            \"odrl:operator\" : {\n" +
+            "              \"@id\" : \"odrl:eq\"\n" +
+            "            },\n" +
+            "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
+            "          } ]\n" +
+            "        }\n" +
+            "      },\n" +
+            "      \"odrl:prohibition\" : [ {\"foo\": \"bar\"} ],\n" +
+            "      \"odrl:obligation\" : [ ]\n" +
+            "    }," +
+            "    \"@context\": {\n" +
+            "        \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
+            "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
+            "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
+            "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
+            "        \"dspace\": \"https://w3id.org/dspace/v0.8/\"\n" +
+            "    }" +
+            "}";
+
+        JsonNode validJsonNode = objectMapper.readTree(validJson);
+        JsonLdUtils jsonLdUtils = new JsonLdUtils();
+        validJsonNode = jsonLdUtils.expand(validJsonNode);
+        System.out.println(validJsonNode.toPrettyString());
+
+
+        // when
+        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
+        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+
+        // then
+        boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode);
+
+        assertFalse(result);
+    }
+
+    /**
+     * Tests policy with unexpected (non-empty) obligation, which must be rejected
+     *
+     * @throws JsonProcessingException if json is invalid
+     */
+    @Test
+    public void wrongObligation_testContractPolicyConstraints_fails() throws JsonProcessingException {
+        // given
+        String validJson = "{\n" +
+            "    \"@id\" : \"PartTypeInformationSubmodelApi@BPNL00000007RXRX\",\n" +
+            "    \"@type\" : \"dcat:Dataset\",\n" +
+            "    \"odrl:hasPolicy\" : {\n" +
+            "      \"@id\" : \"QlBOTDAwMDAwMDA3UlRVUF9jb250cmFjdGRlZmluaXRpb25fZm9yX1BhcnRUeXBlSW5mb3JtYXRpb25TdWJtb2RlbEFwaUBCUE5MMDAwMDAwMDdSWFJY:UGFydFR5cGVJbmZvcm1hdGlvblN1Ym1vZGVsQXBpQEJQTkwwMDAwMDAwN1JYUlg=:NzE3MGJmZDMtYTg5NS00YmU2LWI5Y2EtMDVhYTUwY2VjMDk2\",\n" +
+            "      \"@type\" : \"odrl:Offer\",\n" +
+            "      \"odrl:permission\" : {\n" +
+            "        \"odrl:action\" : {\n" +
+            "          \"@id\" : \"odrl:use\"\n" +
+            "        },\n" +
+            "        \"odrl:constraint\" : {\n" +
+            "          \"odrl:and\" : [ {\n" +
+            "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:FrameworkAgreement\"},\n" +
+            "            \"odrl:operator\" : {\n" +
+            "              \"@id\" : \"odrl:eq\"\n" +
+            "            },\n" +
+            "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
+            "          }, {\n" +
+            "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:UsagePurpose\"},\n" +
+            "            \"odrl:operator\" : {\n" +
+            "              \"@id\" : \"odrl:eq\"\n" +
+            "            },\n" +
+            "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
+            "          } ]\n" +
+            "        }\n" +
+            "      },\n" +
+            "      \"odrl:prohibition\" : [ ],\n" +
+            "      \"odrl:obligation\" : [ {\"foo\": \"bar\"} ]\n" +
+            "    }," +
+            "    \"@context\": {\n" +
+            "        \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
+            "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
+            "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
+            "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
+            "        \"dspace\": \"https://w3id.org/dspace/v0.8/\"\n" +
+            "    }" +
+            "}";
+
+        JsonNode validJsonNode = objectMapper.readTree(validJson);
+        JsonLdUtils jsonLdUtils = new JsonLdUtils();
+        validJsonNode = jsonLdUtils.expand(validJsonNode);
+        System.out.println(validJsonNode.toPrettyString());
+
+
+        // when
+        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
+        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+
+        // then
+        boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode);
+
+        assertFalse(result);
+    }
+
 }

@@ -34,8 +34,6 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.RequestEntity.BodyBuilder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -1153,6 +1151,17 @@ public class EdcAdapterService {
             log.debug("Constraint mismatch: we expect to have a constraint in permission node.");
             return false;
         }
+
+        for (String rule : new String[] {"obligation", "prohibition"}) {
+            var policy = catalogEntry.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "hasPolicy").get(0);
+            var ruleNode = policy.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + rule);
+            boolean test = ruleNode == null || (ruleNode.isArray() && ruleNode.isEmpty());
+            if (!test) {
+                log.warn("Unexpected {} found, rejecting: {}", rule, catalogEntry.toPrettyString());
+                return false;
+            }
+        }
+
         boolean result = true;
 
         if (constraint.get().isArray() && constraint.get().size() == 2) {
