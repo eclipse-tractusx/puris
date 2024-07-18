@@ -148,7 +148,7 @@ dependencies:
 | frontend.autoscaling.minReplicas | int | `1` | Number of minimum replica pods for autoscaling |
 | frontend.autoscaling.targetCPUUtilizationPercentage | int | `80` | Value of CPU usage in percentage for autoscaling decisions |
 | frontend.env | object | `{}` | Extra environment variables that will be passed onto the frontend deployment pods |
-| frontend.image.pullPolicy | string | `"IfNotPresent"` | THe policy for the image pull process |
+| frontend.image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
 | frontend.image.repository | string | `"tractusx/app-puris-frontend"` | Repository of the docker image |
 | frontend.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | frontend.imagePullSecrets | list | `[]` | List of used secrets |
@@ -172,6 +172,7 @@ dependencies:
 | frontend.puris.endpointCustomer | string | `"stockView/customer?ownMaterialNumber="` | The endpoint for the customers who buy a material identified via the own material number for the stock view |
 | frontend.puris.endpointDelivery | string | `"delivery"` | The endpoint for the delivery submodel |
 | frontend.puris.endpointDemand | string | `"demand"` | The endpoint for the demand submodel |
+| frontend.puris.endpointErpScheduleUpdate | string | `"erp-adapter/trigger"` | The endpoint for scheduling an update of erp data (currently only stock supported) |
 | frontend.puris.endpointMaterialStocks | string | `"stockView/material-stocks"` | The endpoint for material stocks for the stock view |
 | frontend.puris.endpointMaterials | string | `"stockView/materials"` | The endpoint for materials for the stock view |
 | frontend.puris.endpointPartners | string | `"partners"` | The endpoint for partner information |

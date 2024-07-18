@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2023,2024 Volkswagen AG
+Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2023,2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,6 +21,9 @@ SPDX-License-Identifier: Apache-2.0
 
 import { config } from '@models/constants/config';
 import { Stock, StockType } from '@models/types/data/stock';
+import { scheduleErpUpdate } from '@services/erp-service'
+import { AssetType } from "@models/types/erp/assetType.ts";
+import { DirectionType } from "@models/types/erp/directionType.ts";
 
 export const postStocks = async (type: StockType, stock: Stock) => {
   const endpoint = type === 'product' ? config.app.ENDPOINT_PRODUCT_STOCKS : config.app.ENDPOINT_MATERIAL_STOCKS;
@@ -32,8 +36,7 @@ export const postStocks = async (type: StockType, stock: Stock) => {
     },
   });
   if(res.status >= 400) {
-    const error = await res.json();
-    throw error;
+      throw await res.json();
   }
   return res.json();
 }
@@ -49,8 +52,7 @@ export const putStocks = async (type: StockType, stock: Stock) => {
     },
   });
   if(res.status >= 400) {
-    const error = await res.json();
-    throw error;
+      throw await res.json();
   }
   return res.json();
 }
@@ -65,8 +67,16 @@ export const requestReportedStocks = async (type: StockType, materialNumber: str
     },
   });
   if(res.status >= 400) {
-    const error = await res.json();
-    throw error;
+      throw await res.json();
   }
   return res.json();
+}
+
+export const scheduleErpUpdateStocks = async (type: StockType, partnerBpnl: string | null, materialNumber: string | null): Promise<void> => {
+    // assetType always ItemStock
+    const assetType = AssetType.ItemStock;
+    // infer product = OUTBOUND, material = INBOUND
+    const direction = type === 'product' ? DirectionType.Outbound : DirectionType.Inbound;
+
+    return scheduleErpUpdate(partnerBpnl, materialNumber, assetType, direction);
 }

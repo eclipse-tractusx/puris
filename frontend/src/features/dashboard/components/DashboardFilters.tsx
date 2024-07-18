@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2024 Volkswagen AG
+Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -24,7 +25,7 @@ import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
 import { Site } from '@models/types/edc/site';
-import { Autocomplete, Grid, InputLabel, capitalize } from '@mui/material';
+import { Autocomplete, capitalize, Grid, InputLabel } from '@mui/material';
 import { getPartnerType } from '../util/helpers';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 
@@ -80,7 +81,13 @@ export const DashboardFilters = ({
                 <Autocomplete
                     id="partner-site"
                     value={partnerSites ?? []}
-                    options={partners?.reduce((acc: Site[], p) => [...acc, ...p.sites], []) ?? []}
+                    options={partners?.reduce((acc: Site[], p) => {
+                        const sitesWithBpnl = p.sites.map(site => ({
+                            ...site,
+                            belongsToPartnerBpnl: p.bpnl
+                        }));
+                        return [...acc, ...sitesWithBpnl];
+                    }, []) ?? [] }
                     disabled={!site}
                     getOptionLabel={(option) => `${option.name} (${option.bpns})`}
                     isOptionEqualToValue={(option, value) => option.bpns === value.bpns}
