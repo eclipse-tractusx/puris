@@ -19,15 +19,11 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.demand.controller;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.management.openmbean.KeyAlreadyExistsException;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.OwnDemand;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.ReportedDemand;
@@ -41,7 +37,6 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,10 +45,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Validator;
+import javax.management.openmbean.KeyAlreadyExistsException;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("demand")
@@ -90,7 +89,8 @@ public class DemandController {
     @GetMapping()
     @ResponseBody
     @Operation(summary = "Get all own demands for the given Material", description = "Get all own demands for the given material number. Optionally the demanding site can be filtered by its bpns.")
-    public List<DemandDto> getAllDemands(String ownMaterialNumber, Optional<String> site) {
+    public List<DemandDto> getAllDemands(@Parameter(description = "encoded in base64") String ownMaterialNumber, Optional<String> site) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         return ownDemandService.findAllByFilters(Optional.of(ownMaterialNumber), Optional.empty(), site, Optional.empty())
                 .stream().map(this::convertToDto).collect(Collectors.toList());
     }
@@ -169,8 +169,11 @@ public class DemandController {
         summary = "Get all demands of partners for a material", 
         description = "Get all demands of partners for a material number. Optionally the partners can be filtered by their bpnl and the demanding site can be filtered by its bpns."
     )
-    public List<DemandDto> getAllDemandsForPartner(String ownMaterialNumber, Optional<String> bpnl,
+    public List<DemandDto> getAllDemandsForPartner(@Parameter(description = "encoded in base64") String ownMaterialNumber, Optional<String> bpnl,
             Optional<String> site) {
+        if (ownMaterialNumber != null) {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        }
         return reportedDemandService.findAllByFilters(Optional.of(ownMaterialNumber), bpnl, site, Optional.empty())
                 .stream().map(this::convertToDto).collect(Collectors.toList());
     }
@@ -181,7 +184,9 @@ public class DemandController {
         summary = "Refreshes all reported demands", 
         description = "Refreshes all reported demands from the demand request API."
     )
-    public ResponseEntity<List<PartnerDto>> refreshReportedProductions(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<PartnerDto>> refreshReportedProductions(
+        @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }

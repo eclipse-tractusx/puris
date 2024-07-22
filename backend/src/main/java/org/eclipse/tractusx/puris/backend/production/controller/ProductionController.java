@@ -20,15 +20,11 @@
 
 package org.eclipse.tractusx.puris.backend.production.controller;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.management.openmbean.KeyAlreadyExistsException;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -39,9 +35,9 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedProduction;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.ProductionDto;
-import org.eclipse.tractusx.puris.backend.production.logic.service.ReportedProductionService;
 import org.eclipse.tractusx.puris.backend.production.logic.service.OwnProductionService;
 import org.eclipse.tractusx.puris.backend.production.logic.service.ProductionRequestApiService;
+import org.eclipse.tractusx.puris.backend.production.logic.service.ReportedProductionService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,10 +46,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Validator;
+import javax.management.openmbean.KeyAlreadyExistsException;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("production")
@@ -90,7 +90,10 @@ public class ProductionController {
     @GetMapping()
     @ResponseBody
     @Operation(summary = "Get all planned productions for the given Material", description = "Get all planned productions for the given material number. Optionally the production site can be filtered by its bpns.")
-    public List<ProductionDto> getAllProductions(String ownMaterialNumber, Optional<String> site) {
+    public List<ProductionDto> getAllProductions(@Parameter(description = "encoded in base64") String ownMaterialNumber, Optional<String> site) {
+        if (ownMaterialNumber != null) {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        }
         return ownProductionService.findAllByFilters(Optional.of(ownMaterialNumber), Optional.empty(), site, Optional.empty())
                 .stream().map(this::convertToDto).collect(Collectors.toList());
     }
@@ -205,8 +208,11 @@ public class ProductionController {
         summary = "Get all productions of partners for a material", 
         description = "Get all productions of partners for a material number. Optionally the partners can be filtered by their bpnl and the production site can be filtered by its bpns."
     )
-    public List<ProductionDto> getAllProductionsForPartner(String ownMaterialNumber, Optional<String> bpnl,
+    public List<ProductionDto> getAllProductionsForPartner(@Parameter(description = "encoded in base64") String ownMaterialNumber, Optional<String> bpnl,
             Optional<String> site) {
+        if (ownMaterialNumber != null) {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        }
         return reportedProductionService.findAllByFilters(Optional.of(ownMaterialNumber), bpnl, site, Optional.empty())
                 .stream().map(this::convertToDto).collect(Collectors.toList());
     }
@@ -217,7 +223,8 @@ public class ProductionController {
         summary = "Refreshes all reported productions", 
         description = "Refreshes all reported productions from the production request API."
     )
-    public ResponseEntity<List<PartnerDto>> refreshReportedProductions(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<PartnerDto>> refreshReportedProductions(
+        @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }

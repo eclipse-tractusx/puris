@@ -20,15 +20,12 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.controller;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.management.openmbean.KeyAlreadyExistsException;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedDelivery;
@@ -47,24 +44,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Validator;
-import lombok.extern.slf4j.Slf4j;
+import javax.management.openmbean.KeyAlreadyExistsException;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("delivery")
@@ -103,7 +93,8 @@ public class DeliveryController {
     @ResponseBody
     @Operation(summary = "Get all planned deliveries for the given Material",
         description = "Get all planned deliveries for the given material number. Optionally a bpns and partner bpnl can be provided to filter the deliveries further.")
-    public List<DeliveryDto> getAllDeliveries(String ownMaterialNumber, Optional<String> bpns, Optional<String> bpnl) {
+    public List<DeliveryDto> getAllDeliveries(@Parameter(description = "encoded in base64") String ownMaterialNumber, Optional<String> bpns, Optional<String> bpnl) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (material == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material does not exist.");
@@ -190,7 +181,9 @@ public class DeliveryController {
         summary = "Refreshes all reported deliveries", 
         description = "Refreshes all reported deliveries from the delivery request API."
     )
-    public ResponseEntity<List<PartnerDto>> refreshReportedDeliveries(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<PartnerDto>> refreshReportedDeliveries(
+        @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }

@@ -38,6 +38,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Base64;
 import java.util.regex.Pattern;
 
 @RestController
@@ -74,8 +75,8 @@ public class MaterialPartnerRelationsController {
             example = "MNR-7307-AU340474.002") @RequestParam String ownMaterialNumber,
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
-        @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material.",
-            example = "MNR-8101-ID146955.001") @RequestParam String partnerMaterialNumber,
+        @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material, "
+            + "encoded in base64") @RequestParam String partnerMaterialNumber,
         @Parameter(description = "The CatenaX Number that this Partner uses",
             example = "860fb504-b884-4009-9313-c6fb6cdc776b") @RequestParam(required = false) String partnerCXNumber,
         @Parameter(description = "The informal name that this Partner uses",
@@ -84,7 +85,7 @@ public class MaterialPartnerRelationsController {
             example = "true") @RequestParam boolean partnerSupplies,
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
             example = "true") @RequestParam boolean partnerBuys) {
-
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         if (!materialPattern.matcher(ownMaterialNumber).matches() || !materialPattern.matcher(partnerMaterialNumber).matches()
             || !bpnlPattern.matcher(partnerBpnl).matches()) {
             log.warn("Rejected message parameters. ");
@@ -133,8 +134,8 @@ public class MaterialPartnerRelationsController {
             example = "MNR-7307-AU340474.002") @RequestParam String ownMaterialNumber,
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
-        @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material.",
-            example = "MNR-8101-ID146955.001") @RequestParam(required = false) String partnerMaterialNumber,
+        @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material"
+            + "encoded in base64") @RequestParam(required = false) String partnerMaterialNumber,
         @Parameter(description = "The CatenaX Number that this Partner uses",
             example = "860fb504-b884-4009-9313-c6fb6cdc776b") @RequestParam(required = false) String partnerCXNumber,
         @Parameter(description = "The informal name that this Partner uses",
@@ -143,6 +144,7 @@ public class MaterialPartnerRelationsController {
             example = "true") @RequestParam(required = false) Boolean partnerSupplies,
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
             example = "true") @RequestParam(required = false) Boolean partnerBuys) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         MaterialPartnerRelation existingRelation = null;
 
         if (!bpnlPattern.matcher(partnerBpnl).matches() || !materialPattern.matcher(ownMaterialNumber).matches() ||

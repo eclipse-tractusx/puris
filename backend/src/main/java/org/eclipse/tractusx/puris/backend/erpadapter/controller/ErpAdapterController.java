@@ -38,6 +38,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
@@ -71,10 +72,12 @@ public class ErpAdapterController {
     @PostMapping("/trigger")
     public ResponseEntity<?> scheduleErpUpdate(
         @RequestParam("partner-bpnl") String bpnl,
-        @RequestParam("own-materialnumber") String materialNumber,
+        @RequestParam("own-materialnumber")
+        @Parameter(description = "encoded in base64") String materialNumber,
         @RequestParam("asset-type") AssetType assetType,
         @RequestParam(required = false, value = "direction") DirectionCharacteristic directionCharacteristic
     ) {
+        materialNumber = new String(Base64.getDecoder().decode(materialNumber));
         boolean valid = BPNL_PATTERN.matcher(bpnl).matches()
             && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(materialNumber).matches();
         if (valid && mprService.find(bpnl, materialNumber) != null) {

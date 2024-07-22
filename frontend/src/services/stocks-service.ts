@@ -59,6 +59,9 @@ export const putStocks = async (type: StockType, stock: Stock) => {
 
 export const requestReportedStocks = async (type: StockType, materialNumber: string | null) => {
   const endpoint = type === 'product' ? config.app.ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS : config.app.ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS;
+  if (materialNumber != null) {
+    materialNumber = btoa(materialNumber);
+  }
   const res = await fetch(`${config.app.BACKEND_BASE_URL}${endpoint}${materialNumber}`, {
     method: 'GET',
     headers: {

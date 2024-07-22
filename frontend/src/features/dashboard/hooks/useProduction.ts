@@ -23,6 +23,9 @@ import { Production } from '@models/types/data/production';
 import { BPNS } from '@models/types/edc/bpn';
 
 export const useProduction = (materialNumber: string | null, site: BPNS | null) => {
+  if (materialNumber != null) {
+    materialNumber = btoa(materialNumber);
+  }
   const {data: productions, error: productionsError, isLoading: isLoadingProductions, refresh: refreshProduction } = useFetch<Production[]>(materialNumber && site ? `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_PRODUCTION}?ownMaterialNumber=${materialNumber}&site=${site}` : undefined);
   return {
     productions,

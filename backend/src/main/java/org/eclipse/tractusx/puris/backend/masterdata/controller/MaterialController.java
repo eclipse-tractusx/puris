@@ -37,6 +37,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -134,8 +135,9 @@ public class MaterialController {
         @ApiResponse(responseCode = "404", description = "Requested Material was not found.")
     })
     public ResponseEntity<MaterialEntityDto> getMaterial(@Parameter(name = "ownMaterialNumber",
-        description = "The Material Number that is used in your own company to identify the Material.",
-        example = "MNR-7307-AU340474.002") @RequestParam String ownMaterialNumber) {
+        description = "The Material Number that is used in your own company to identify the Material, encoded in base64"
+        ) @RequestParam String ownMaterialNumber) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         if(!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
