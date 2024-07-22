@@ -17,6 +17,19 @@ Beside the dependencies provided in the Helm Chart, the following dependencies h
 | [Tractus-X Connector](https://github.com/eclipse-tractusx/tractusx-edc/tree/main/charts/tractusx-connector)       | 0.7.3       | 0.7.3         |
 | [Digital Twin Registry](https://github.com/eclipse-tractusx/sldt-digital-twin-registry/tree/main/charts/registry) | 0.5.0       | 0.5.0         |
 
+## Overview of Implemented Standards
+
+The application follows the following Catena-X standards (business-wise) to the following degree:
+
+| Standard                                                                                                                                           | Level of implementation                   |
+|----------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|
+| [CX-0118 Delivery Information Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0118-ActualDeliveryInformationExchange)          | Compliant.                                |
+| [CX-0120 Short-Term Material Demand Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0120-ShortTermMaterialDemandExchange)      | Compliant.                                | 
+| [CX-0121 Planned Production Output Exchange 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0121-PlannedProductionOutputExchange)       | Compliant.                                |
+| [CX-0122 Item Stock Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0122-ItemStockExchange)                                    | Compliant.                                |                                                                                         
+| [CX-0145 Days of Supply Exchange 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0145-DaysofsupplyExchange)                             | Missing EDC and Frontend integration.     |                                                                           
+| [CX-0146 Supply Chain Disruption Notifications 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0146-SupplyChainDisruptionNotifications) | Missing functionality to react and close. |                                                             
+
 ## Known Knows
 
 ### Data Sovereignty

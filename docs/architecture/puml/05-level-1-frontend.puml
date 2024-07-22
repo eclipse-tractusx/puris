@@ -3,22 +3,49 @@ skinparam linetype polyline
 skinparam nodesep 20
 skinparam ranksep 50
 
+() erp_frontend_interface as "Frontend Trigger Interface"
+() edc_interface as "EDC Interface"
+() mad_interface as "MAD Interface"
+() edc_interface as "EDC Interface"
+() notifications_interface as "Notification Interface"
+
 package "<<system>> PURIS FOSS Frontend"{
 
-  [Stock View] as stock_view
-  [Dashboard] as dashboard
-  [Authentication Service] as auth_service
-
+  [ERP Service] as erp_service
+  together {
+    [Stock View] as stock_view
+    [Notification View] as notifications_view
+    [Dashboard] as dashboard
+    [Authentication Service] as auth_service
+  }
+  together {
+    [Catalog View] as catalog_view
+    [Negotiations View] as negotiations_view
+    [Transfer View] as transfer_view
+  }
 }
 "Interfaces for\n- Planned Production Output\n- Short-Term Material Demand\n- Delivery Information" -- dashboard
 [Keycloak] as idp
 
 idp - auth_service
 
-stock_view --( "Stock Interface"
-stock_view --( "MAD interface"
+stock_view ---( "Stock Interface"
+stock_view ---( mad_interface
 
-dashboard --( "Stock Interface"
-dashboard --( "MAD interface"
+dashboard ---( "Stock Interface"
+dashboard ---( mad_interface
+notifications_view ---( mad_interface
+notifications_interface )-- notifications_view
+
+catalog_view ---( edc_interface
+catalog_view ---( mad_interface
+negotiations_view ---( edc_interface
+transfer_view ---( edc_interface
+
+erp_service - dashboard
+erp_frontend_interface -up- erp_service
+dashboard -[hidden]right- stock_view
+
+auth_service -[hidden]down- erp_service
 
 @enduml

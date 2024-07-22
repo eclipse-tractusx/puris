@@ -30,7 +30,11 @@ The Frontend only handles visualization logic. The remaining logic is handled in
 | Stock View             | Allows to manually add or update stock information that is allocated to partners. Also latest stock information for partners may be requested (via backend). |
 | Dashboard              | The dashboard allows to compare material-related demands, production outputs and stocks in a mocked way. Only Stock information is currently implements.     |
 | Authentication Service | Encapsulates keycloak authentication and session management to be used by the main app.                                                                      |
-| Access Service         | Use to give control the access to views.                                                                                                                     |
+| ERP Service            | Encapsulates Logic to schedule an erp update for data.                                                                                                       |
+| Notification View      | Allows to send and read notifications.                                                                                                                       |
+| Catalog View           | Allows an ADMIN to lookup a catalog of a registered partner.                                                                                                 |
+| Negotiation View       | Allows an ADMIN to check past negotiations.                                                                                                                  |
+| Transfer View          | Allows an ADMIN to check past transfers.                                                                                                                     |
 
 **PURIS FOSS Backend**
 
@@ -40,6 +44,7 @@ information objects is the same:
 - planed production output
 - short-term material demand (demand)
 - delivery information
+- days of supply
 
 The building block view describes only the responsibilities of the components/ packages.
 
@@ -51,6 +56,8 @@ The building block view describes only the responsibilities of the components/ p
 | MAD                | Stores the partner and material related information. They may only be added via REST interfaces.                                                                 |
 | Stock              | Stores and handles stock related data. It provides interfaces to create and read stock data. Also it allows to exchange stock information via the EDC.           |
 | DTR                | The DTR component provides the DTR implementations to manage ShellDescriptors. May first need to get a OAuth 2 token for authentication.                         |
+| ERP Adapter        | Allows to ask the SAMM Adapter to get stock information from your ERP / internal system.                                                                         |
+| Notifications      | Allows to send and receive demand and capacity notifications.                                                                                                    |
 
 ## NOTICE
 
