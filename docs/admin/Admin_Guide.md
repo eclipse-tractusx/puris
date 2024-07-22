@@ -149,6 +149,26 @@ _**ATTENTION**: Usage Purposes are no credentials than can be enforced technical
 supported within Catena-X in the [odrl profile](https://github.com/catenax-eV/cx-odrl-profile/blob/main/profile.md)
 of the current release._
 
+## Configure ERP Update
+
+To use an ERP Adapter, you need to configure the information below `backend.puris.erpadapter`:
+
+| Helm                                     | Docker                           |
+|------------------------------------------|----------------------------------|
+| backend.puris.erpadapter.enabled         | PURIS_ERPADAPTER_ENABLED         |
+| backend.puris.erpadapter.url             | PURIS_ERPADAPTER_URL             |
+| backend.puris.erpadapter.authkey         | PURIS_ERPADAPTER_AUTHKEY         |
+| backend.puris.erpadapter.refreshinterval | PURIS_ERPADAPTER_REFRESHINTERVAL |
+| backend.puris.erpadapter.timelimit       | PURIS_ERPADAPTER_TIMELIMIT       |
+
+The configuration of the refreshinterval and the timelimit are considered as follows:
+
+- timelimit: whenever an erp update has been scheduled, then it is scheduled for n days. It gets rescheduled for n days 
+whenever triggered. Thus, no further update will be done after n days of no trigger.
+- refreshinterval: defines in minutes after which time an update is performed for the scheduled updates.
+
+Refer to the [helm chart's README](../../charts/puris/README.md) for further information.
+
 ## Rate Limiting using nginx
 
 Rate limiting is by default enabled in the puris frontend served by nginx and can be dynamically configured.
