@@ -63,6 +63,23 @@ as soon as a MaterialPartnerRelation is changed. The Digital Twin is always recr
 
 ![Overview of Digital Twin Creation](img/06-twin-creation.svg)
 
+## Scenario: Exchange Notifications
+
+The notification feature allows users to inform partners about demand and capacity disruptions. The termsData Provider 
+and Data Consumer are in this scenario somewhat misleading because:
+
+- The Data Consumer is the message sending party
+- The Data Provider is the message receiving party (providing the endpoint consuming the data)
+
+The endpoint will decide the common scenarios to handle a message containing the notification:
+
+- Create a new notification
+- Update an existing notification previously received including closing it
+
+The following diagram illustrates the exchange (create and update) process for notifications sent to a partner.
+
+![Overview of Notification Exchange](img/06-notification-api-flow-detailed.svg)
+
 ## Scenario: Interact with Data in the Web-UI
 
 When reloading the UI, the latest data is pulled from the backend. Whenever a partner-related update on the information

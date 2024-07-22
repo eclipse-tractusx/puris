@@ -1,0 +1,65 @@
+@startuml
+autonumber
+skinparam sequenceMessageAlign center
+
+box "Data Consumer"
+participant "Business\nApplication" as app_cons
+participant "EDC\nConsumer" as edc_cons
+end box
+
+box "Data Provider"
+participant "EDC\nProvider" as edc_prov
+participant "Notification Endpoint\nProvider" as not_prov
+end box
+
+=== Send Message to Partner ==
+== Contract Message Endpoint Usage ==
+app_cons -> edc_cons: search for Notification assets at partner
+activate edc_cons
+edc_cons <-> edc_prov: catalog communication
+edc_cons --> app_cons: catalog
+deactivate edc_cons
+
+app_cons -> app_cons: identify Notification Endpoint offer\n(filter by dcat:type, cx:version)
+
+app_cons -> edc_cons: negotiate contract for Notification Endpoint usage
+activate edc_cons
+edc_cons <-> edc_prov: negotiation
+edc_cons --> app_cons: contract agreement (contractAgreementId)
+deactivate edc_cons
+
+app_cons -> edc_cons: initialize transfer
+activate edc_cons
+edc_cons <-> edc_prov: initialize transfer
+edc_cons --> app_cons: transfer completed (transferProcessId)
+deactivate edc_cons
+
+app_cons -> edc_cons: get EDR for transferProcessId
+activate edc_cons
+edc_cons <-> edc_prov: get EDR for transfer
+edc_cons --> app_cons: EDR (refreshed)
+deactivate edc_cons
+
+== Send Demand and Capacity Notification ==
+app_cons -> app_cons: prepare demand and capacity notification message
+
+note over app_cons, edc_cons
+Send notification via EDC
+using EDR for authentication
+end note
+app_cons -> edc_prov: send message in body against endpoint
+note right
+Accept or refuse message / notification.
+Notification may be one of the following:
+- new
+- update of a previously received message or 
+- a closure of a previously received message
+end note
+activate edc_prov
+edc_prov -> not_prov: proxy message
+activate not_prov
+not_prov --> edc_prov: result
+deactivate not_prov
+edc_prov --> app_cons:  result
+deactivate edc_prov
+@enduml

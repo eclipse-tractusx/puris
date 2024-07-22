@@ -4,7 +4,7 @@
 
 PURIS FOSS
 
-- follows the related standardization candidates or even published standards (CX-0112).
+- follows the related standardization candidates or even published standards (see below).
 - is developed parallel to the consortial SAFe project.
 
 **Up-to-dateness / real-time**
