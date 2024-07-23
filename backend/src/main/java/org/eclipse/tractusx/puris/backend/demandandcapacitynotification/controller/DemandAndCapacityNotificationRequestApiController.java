@@ -54,8 +54,8 @@ public class DemandAndCapacityNotificationRequestApiController {
     @Operation(summary = "This endpoint receives the DemandAndCapacityNotification 2.0.0 requests")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),
-        @ApiResponse(responseCode = "400", description = "Bad Request"),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error")
+        @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
     @PostMapping("request")
     public ResponseEntity<DemandAndCapacityNotificationSamm> postDemandAndCapacityNotification(
