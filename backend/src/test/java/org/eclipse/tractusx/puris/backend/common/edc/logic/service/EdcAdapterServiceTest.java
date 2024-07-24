@@ -272,16 +272,16 @@ public class EdcAdapterServiceTest {
     @ValueSource(strings = {unexpectedObligation, unexpectedProhibition})
     public void unexpectedRule_testContractPolicyConstraints_fails(String input) throws JsonProcessingException {
         // given
-        JsonNode validJsonNode = objectMapper.readTree(input);
-        validJsonNode = jsonLdUtils.expand(validJsonNode);
-        System.out.println(validJsonNode.toPrettyString());
+        JsonNode invalidJsonNode = objectMapper.readTree(input);
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
+        System.out.println(invalidJsonNode.toPrettyString());
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
         when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode);
         assertFalse(result);
     }
 
