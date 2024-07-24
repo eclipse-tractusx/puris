@@ -204,6 +204,188 @@ components:
       - day
       - demand
       type: object
+    DemandAndCapacityNotificationDto:
+      additionalProperties: false
+      properties:
+        affectedMaterialNumbers:
+          items:
+            maxItems: 50
+            pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+            type: string
+          maxItems: 50
+          type: array
+        affectedSitesBpnsRecipient:
+          items:
+            maxItems: 50
+            pattern: ^BPNS[0-9a-zA-Z]{12}$
+            type: string
+          maxItems: 50
+          type: array
+        affectedSitesBpnsSender:
+          items:
+            maxItems: 50
+            pattern: ^BPNS[0-9a-zA-Z]{12}$
+            type: string
+          maxItems: 50
+          type: array
+        effect:
+          enum:
+          - demand-reduction
+          - demand-increase
+          - capacity-reduction
+          - capacity-increase
+          maxItems: 50
+          type: string
+        expectedEndDateOfEffect:
+          format: date-time
+          maxItems: 50
+          type: string
+        leadingRootCause:
+          enum:
+          - strike
+          - natural-disaster
+          - production-incident
+          - pandemic-or-epidemic
+          - logistics-disruption
+          - war
+          - other
+          maxItems: 50
+          type: string
+        notificationId:
+          format: uuid
+          maxItems: 50
+          type: string
+        partnerBpnl:
+          maxItems: 50
+          pattern: ^BPNL[0-9a-zA-Z]{12}$
+          type: string
+        relatedNotificationId:
+          format: uuid
+          maxItems: 50
+          type: string
+        reported:
+          type: boolean
+        sourceNotificationId:
+          format: uuid
+          maxItems: 50
+          type: string
+        startDateOfEffect:
+          format: date-time
+          maxItems: 50
+          type: string
+        status:
+          enum:
+          - resolved
+          - open
+          maxItems: 50
+          type: string
+        text:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+      type: object
+    DemandAndCapacityNotificationSamm:
+      additionalProperties: false
+      properties:
+        affectedSitesRecipient:
+          items:
+            maxItems: 50
+            pattern: ^BPNS[0-9a-zA-Z]{12}$
+            type: string
+          maxItems: 50
+          type: array
+        affectedSitesSender:
+          items:
+            maxItems: 50
+            pattern: ^BPNS[0-9a-zA-Z]{12}$
+            type: string
+          maxItems: 50
+          type: array
+        contentChangedAt:
+          format: date-time
+          maxItems: 50
+          type: string
+        effect:
+          enum:
+          - demand-reduction
+          - demand-increase
+          - capacity-reduction
+          - capacity-increase
+          maxItems: 50
+          type: string
+        expectedEndDateOfEffect:
+          format: date-time
+          maxItems: 50
+          type: string
+        leadingRootCause:
+          enum:
+          - strike
+          - natural-disaster
+          - production-incident
+          - pandemic-or-epidemic
+          - logistics-disruption
+          - war
+          - other
+          maxItems: 50
+          type: string
+        materialGlobalAssetId:
+          items:
+            maxItems: 50
+            pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+            type: string
+          maxItems: 50
+          type: array
+        materialNumberCustomer:
+          items:
+            maxItems: 50
+            pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+            type: string
+          maxItems: 50
+          type: array
+        materialNumberSupplier:
+          items:
+            maxItems: 50
+            pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+            type: string
+          maxItems: 50
+          type: array
+        notificationId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        relatedNotificationId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        sourceNotificationId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        startDateOfEffect:
+          format: date-time
+          maxItems: 50
+          type: string
+        status:
+          enum:
+          - resolved
+          - open
+          maxItems: 50
+          type: string
+        text:
+          maxItems: 50
+          type: string
+      required:
+      - contentChangedAt
+      - effect
+      - leadingRootCause
+      - notificationId
+      - startDateOfEffect
+      - status
+      type: object
     DemandDto:
       additionalProperties: false
       properties:
@@ -414,6 +596,26 @@ components:
       - positions
       type: object
     JsonNode:
+      type: object
+    Material:
+      additionalProperties: false
+      properties:
+        materialFlag:
+          type: boolean
+        materialNumberCx:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        name:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        ownMaterialNumber:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        productFlag:
+          type: boolean
       type: object
     MaterialDto:
       additionalProperties: false
@@ -977,6 +1179,17 @@ components:
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       type: object
+    SupplyDto:
+      additionalProperties: false
+      properties:
+        date:
+          format: date-time
+          maxItems: 50
+          type: string
+        daysOfSupply:
+          format: double
+          type: number
+      type: object
   securitySchemes:
     X-API-KEY:
       in: header
@@ -984,9 +1197,173 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 1.0.0
+  version: 2.1.0
 openapi: 3.0.1
 paths:
+  /days-of-supply/customer:
+    get:
+      description: Calculate days of supply for customer for given number of days.
+        Filtered by given material number, partner bpnl and site bpns.
+      operationId: calculateCustomerDaysOfSupply
+      parameters:
+      - in: query
+        name: materialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: bpnl
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: siteBpns
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: numberOfDays
+        required: true
+        schema:
+          additionalProperties: false
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/SupplyDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Calculate days of supply for customer for given number of days.
+      tags:
+      - supply-controller
+  /days-of-supply/customer/reported:
+    get:
+      description: Get days of supply for customer for given material number and partner
+        bpnl.
+      operationId: getCustomerDaysOfSupply
+      parameters:
+      - in: query
+        name: materialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: bpnl
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/SupplyDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get days of supply for customer.
+      tags:
+      - supply-controller
+  /days-of-supply/supplier:
+    get:
+      description: Calculate days of supply for supplier for given number of days.
+        Filtered by given material number, partner bpnl and site bpns.
+      operationId: calculateSupplierDaysOfSupply
+      parameters:
+      - in: query
+        name: materialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: bpnl
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: siteBpns
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: numberOfDays
+        required: true
+        schema:
+          additionalProperties: false
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/SupplyDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Calculate days of supply for supplier for given number of days.
+      tags:
+      - supply-controller
+  /days-of-supply/supplier/reported:
+    get:
+      description: Get days of supply for supplier for given material number and partner
+        bpnl.
+      operationId: getSupplierDaysOfSupply
+      parameters:
+      - in: query
+        name: materialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: bpnl
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/SupplyDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get days of supply for supplier.
+      tags:
+      - supply-controller
   /delivery:
     get:
       description: Get all planned deliveries for the given material number. Optionally
@@ -1347,6 +1724,210 @@ paths:
       summary: Updates a demand by its UUID
       tags:
       - demand-controller
+  /demand-and-capacity-notification:
+    get:
+      description: Get all own notifications. Optionally the partner can be filtered
+        by its bpnl.
+      operationId: getAllNotifications
+      parameters:
+      - in: query
+        name: partnerBpnl
+        required: false
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all own notifications
+      tags:
+      - demand-and-capacity-notification-controller
+    post:
+      operationId: createNotification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
+              additionalProperties: false
+        required: true
+      responses:
+        '201':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
+                additionalProperties: false
+          description: Notification was created.
+        '400':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
+                additionalProperties: false
+          description: Malformed or invalid request body.
+        '409':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
+                additionalProperties: false
+          description: Notification already exists. Use PUT instead.
+        '500':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
+                additionalProperties: false
+          description: Internal Server Error.
+      summary: Creates a new notification
+      tags:
+      - demand-and-capacity-notification-controller
+    put:
+      operationId: updateNotification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
+              additionalProperties: false
+        required: true
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
+                additionalProperties: false
+          description: Notification was updated.
+        '400':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
+                additionalProperties: false
+          description: Malformed or invalid request body.
+        '404':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
+                additionalProperties: false
+          description: Notification does not exist.
+        '500':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
+                additionalProperties: false
+          description: Internal Server Error.
+      summary: Updates a notification by its UUID
+      tags:
+      - demand-and-capacity-notification-controller
+  /demand-and-capacity-notification/reported:
+    get:
+      description: Get all reported notifications. Optionally the partner can be filtered
+        by its bpnl.
+      operationId: getAllReportedNotifications
+      parameters:
+      - in: query
+        name: partnerBpnl
+        required: false
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all reported notifications
+      tags:
+      - demand-and-capacity-notification-controller
+  /demand-and-capacity-notification/request:
+    post:
+      operationId: postDemandAndCapacityNotification
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              maxItems: 50
+              type: string
+        required: true
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DemandAndCapacityNotificationSamm'
+                additionalProperties: false
+          description: Ok
+        '400':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DemandAndCapacityNotificationSamm'
+                additionalProperties: false
+          description: Bad Request
+        '500':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DemandAndCapacityNotificationSamm'
+                additionalProperties: false
+          description: Internal Server Error
+      summary: This endpoint receives the DemandAndCapacityNotification 2.0.0 requests
+      tags:
+      - demand-and-capacity-notification-request-api-controller
+  /demand-and-capacity-notification/{id}:
+    delete:
+      operationId: deleteNotification
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      responses:
+        '204':
+          description: Notification was deleted.
+        '400':
+          description: Malformed or invalid request body.
+        '404':
+          description: Notification does not exist.
+        '500':
+          description: Internal Server Error.
+      summary: Deletes a notification by its UUID
+      tags:
+      - demand-and-capacity-notification-controller
   /demand/reported:
     get:
       description: Get all demands of partners for a material number. Optionally the
@@ -1516,7 +2097,216 @@ paths:
                 additionalProperties: false
           description: OK
       tags:
-        - edc-controller
+      - edc-controller
+  /erp-adapter:
+    put:
+      description: "This endpoint accepts responses from the ERP adapter. Incoming\
+        \ messages are expected to carry a SAMM of the previously requested type.\
+        \ \n\nCurrently supported: \n\n| response-type | samm-version |\n|---------------|--------------|\n\
+        | ItemStock     | 2.0          |"
+      operationId: putMethod
+      parameters:
+      - in: query
+        name: request-id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      - in: query
+        name: bpnl
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: response-type
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: samm-version
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - description: Represented as the number of milliseconds since January 1, 1970,
+          00:00:00 GMT
+        example: 1719295545654
+        in: query
+        name: response-timestamp
+        required: true
+        schema:
+          additionalProperties: false
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            example:
+              direction: INBOUND
+              materialGlobalAssetId: null
+              positions:
+              - allocatedStocks:
+                - isBlocked: false
+                  lastUpdatedOnDateTime: '2023-04-28T14:23:00.123456+14:00'
+                  quantityOnAllocatedStock:
+                    unit: unit:piece
+                    value: 22.0
+                  stockLocationBPNA: BPNA4444444444AA
+                  stockLocationBPNS: BPNS4444444444XX
+                orderPositionReference:
+                  customerOrderId: C-Nbr-4711
+                  customerOrderPositionId: PositionId-01
+                  supplierOrderId: M-Nbr-4711
+              - allocatedStocks:
+                - isBlocked: false
+                  lastUpdatedOnDateTime: '2023-04-28T14:23:00.123456+14:00'
+                  quantityOnAllocatedStock:
+                    unit: unit:piece
+                    value: 66.0
+                  stockLocationBPNA: BPNA4444444444AA
+                  stockLocationBPNS: BPNS4444444444XX
+                orderPositionReference:
+                  customerOrderId: C-Nbr-4711
+                  customerOrderPositionId: PositionId-03
+                  supplierOrderId: M-Nbr-4711
+              - allocatedStocks:
+                - isBlocked: true
+                  lastUpdatedOnDateTime: '2023-04-28T14:23:00.123456+14:00'
+                  quantityOnAllocatedStock:
+                    unit: unit:piece
+                    value: 44.0
+                  stockLocationBPNA: BPNA4444444444AA
+                  stockLocationBPNS: BPNS4444444444XX
+                orderPositionReference:
+                  customerOrderId: C-Nbr-4711
+                  customerOrderPositionId: PositionId-02
+                  supplierOrderId: M-Nbr-4711
+            schema:
+              $ref: '#/components/schemas/JsonNode'
+              additionalProperties: false
+        required: true
+      responses:
+        '201':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: accepted
+        '400':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: bad request
+        '404':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: unknown request-id
+        '409':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: repeated answer for request-id
+        '500':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: internal server error
+        '501':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: unsupported response-type
+      tags:
+      - erp-adapter-controller
+  /erp-adapter/trigger:
+    post:
+      description: 'This endpoint is used to trigger scheduled updates from the ErpAdapter.
+        This is useful if you are expecting a specific request from a partner in the
+        near future and want to make a best-effort attempt to ensure that your PURIS
+        backend has already obtained current data to respond to that expected request,
+        when it arrives. Please note, that calling this endpoint has no significant
+        effect, if a request with the exact same specifics is already currently in
+        place. In that case, a call to this endpoint will only extend the period,
+        after which the scheduled request will be assumed to be irrelevant (see the
+        puris.erpadapter.timelimit property and its documentation for details in this
+        regard). '
+      operationId: scheduleErpUpdate
+      parameters:
+      - in: query
+        name: partner-bpnl
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: own-materialnumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: asset-type
+        required: true
+        schema:
+          additionalProperties: false
+          enum:
+          - DTR
+          - ITEM_STOCK_SUBMODEL
+          - PRODUCTION_SUBMODEL
+          - DEMAND_SUBMODEL
+          - DELIVERY_SUBMODEL
+          - NOTIFICATION
+          - PART_TYPE_INFORMATION_SUBMODEL
+          maxItems: 50
+          type: string
+      - in: query
+        name: direction
+        required: false
+        schema:
+          additionalProperties: false
+          enum:
+          - INBOUND
+          - OUTBOUND
+          maxItems: 50
+          type: string
+      responses:
+        '201':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: accepted
+        '400':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: bad request
+      tags:
+      - erp-adapter-controller
   /health/:
     get:
       operationId: getHealth
@@ -2221,6 +3011,31 @@ paths:
                 additionalProperties: false
                 type: object
           description: Internal Server Error.
+      tags:
+      - partner-controller
+  /partners/{partnerBpnl}/materials:
+    get:
+      description: Returns all materials the specified partner is associated with.
+      operationId: getMaterials_1
+      parameters:
+      - in: path
+        name: partnerBpnl
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/Material'
+                maxItems: 50
+                type: array
+          description: OK
       tags:
       - partner-controller
   /parttypeinformation/{materialnumber}/{representation}:
