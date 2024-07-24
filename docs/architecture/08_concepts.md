@@ -107,7 +107,7 @@ which restricts the `specificAssetIds` based on BPNLs.
 Two different policies are used depending on the Asset Type:
 
 - Digital Twin Registry: Use Access Policy also as Contract Policy
-- Submodels & Notification Endoint: Use Contract Policy as defined below
+- Submodels & Notification Endpoint: Use Contract Policy as defined below
 
 _Note: The submodel `PartTypeInformation` is also registered with the same Contract Policy as the other Submodels._
 

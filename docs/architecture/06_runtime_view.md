@@ -65,8 +65,8 @@ as soon as a MaterialPartnerRelation is changed. The Digital Twin is always recr
 
 ## Scenario: Exchange Notifications
 
-The notification feature allows users to inform partners about demand and capacity disruptions. The termsData Provider 
-and Data Consumer are in this scenario somewhat misleading because:
+The notification feature allows users to inform partners about demand and capacity disruptions. The terms 
+`Data Provider` and `Data Consumer` are in this scenario somewhat misleading because:
 
 - The Data Consumer is the message sending party
 - The Data Provider is the message receiving party (providing the endpoint consuming the data)
