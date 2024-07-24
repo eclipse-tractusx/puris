@@ -19,17 +19,13 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
-
-import javax.management.openmbean.KeyAlreadyExistsException;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Pattern;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
-import org.eclipse.tractusx.puris.backend.demand.logic.services.DemandRequestApiService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.DemandAndCapacityNotificationDto;
@@ -39,22 +35,21 @@ import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.se
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.Pattern;
+import javax.management.openmbean.KeyAlreadyExistsException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("demand-and-capacity-notification")
@@ -99,9 +94,9 @@ public class DemandAndCapacityNotificationController {
     @Operation(summary = "Creates a new notification")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Notification was created."),
-            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-            @ApiResponse(responseCode = "409", description = "Notification already exists. Use PUT instead."),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Notification already exists. Use PUT instead.", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     @ResponseStatus(HttpStatus.CREATED)
     public DemandAndCapacityNotificationDto createNotification(@RequestBody DemandAndCapacityNotificationDto notificationDto) {
@@ -131,9 +126,9 @@ public class DemandAndCapacityNotificationController {
     @Operation(summary = "Updates a notification by its UUID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Notification was updated."),
-            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-            @ApiResponse(responseCode = "404", description = "Notification does not exist."),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Notification does not exist.", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     @ResponseStatus(HttpStatus.OK)
     public DemandAndCapacityNotificationDto updateNotification(@RequestBody DemandAndCapacityNotificationDto dto) {

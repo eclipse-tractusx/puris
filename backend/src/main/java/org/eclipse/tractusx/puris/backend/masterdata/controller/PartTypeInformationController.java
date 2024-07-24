@@ -22,6 +22,7 @@ package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.adapter.PartTypeInformationSammMapper;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.PartTypeInformationSAMM;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -57,20 +59,21 @@ public class PartTypeInformationController {
     private PartTypeInformationSammMapper sammMapper;
 
     @Operation(description = "Endpoint that delivers PartTypeInformation of own products to customer partners. " +
-        "'materialnumber' must be set to the ownMaterialNumber of " +
-        "the party, that receives the request")
+        "'materialnumber' must be set to the ownMaterialNumber of the party, that receives the request. Please note that the " +
+        "SAMMs delivered by this endpoint don't provide partClassification and partSitesInformationAsPlanned data. " +
+        "This endpoint is meant to be accessed by partners via EDC only. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),
-        @ApiResponse(responseCode = "400", description = "Invalid request parameters. "),
-        @ApiResponse(responseCode = "401", description = "Access forbidden. "),
-        @ApiResponse(responseCode = "404", description = "Product not found for given parameters. "),
-        @ApiResponse(responseCode = "501", description = "Unsupported representation requested. ")
+        @ApiResponse(responseCode = "400", description = "Invalid request parameters. ", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Access forbidden. ", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Product not found for given parameters. ", content = @Content),
+        @ApiResponse(responseCode = "501", description = "Unsupported representation requested. ", content = @Content)
     })
     @GetMapping("/{materialnumber}/{representation}")
-    public ResponseEntity<?> getMapping(@RequestHeader("edc-bpn") String bpnl,
-                                        @Parameter(description = "The material number that the request receiving party uses for the material in question")
+    public ResponseEntity<PartTypeInformationSAMM> getMapping(@RequestHeader("edc-bpn") String bpnl,
+                                                              @Parameter(description = "The material number that the request receiving party uses for the material in question")
                                         @PathVariable String materialnumber,
-                                        @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
+                                                              @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
         materialnumber = new String (Base64.getDecoder().decode(materialnumber.getBytes(StandardCharsets.UTF_8)));
         if (!bpnlPattern.matcher(bpnl).matches() || !materialNumberPattern.matcher(materialnumber).matches()) {
             return ResponseEntity.badRequest().build();

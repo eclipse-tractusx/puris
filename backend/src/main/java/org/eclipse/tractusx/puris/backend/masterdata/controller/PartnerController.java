@@ -23,6 +23,7 @@ package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Validator;
@@ -195,9 +196,9 @@ public class PartnerController {
     @Operation(description = "Returns the requested PartnerDto.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Found Partner, returning it in response body."),
-        @ApiResponse(responseCode = "400", description = "Invalid parameter."),
-        @ApiResponse(responseCode = "404", description = "Requested Partner not found."),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+        @ApiResponse(responseCode = "400", description = "Invalid parameter.", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Requested Partner not found.", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     public ResponseEntity<PartnerDto> getPartner(
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
