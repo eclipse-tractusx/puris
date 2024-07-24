@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2024 Volkswagen AG
+Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -21,15 +22,15 @@ import { usePartnerStocks } from '@features/stock-view/hooks/usePartnerStocks';
 import { useStocks } from '@features/stock-view/hooks/useStocks';
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
 import { Site } from '@models/types/edc/site';
-import { useCallback, useReducer } from 'react';
+import { useCallback, useReducer, useState } from 'react';
 import { DashboardFilters } from './DashboardFilters';
 import { DemandTable } from './DemandTable';
 import { ProductionTable } from './ProductionTable';
-import { Box, Button, Stack, Typography, capitalize } from '@mui/material';
+import { Box, Button, capitalize, Stack, Typography } from '@mui/material';
 import { Delivery } from '@models/types/data/delivery';
 import { DeliveryInformationModal } from './DeliveryInformationModal';
 import { getPartnerType } from '../util/helpers';
-import { LoadingButton } from '@catena-x/portal-shared-components';
+import { LoadingButton, PageSnackbar, PageSnackbarStack } from '@catena-x/portal-shared-components';
 import { Refresh } from '@mui/icons-material';
 import { Demand } from '@models/types/data/demand';
 import { DemandCategoryModal } from './DemandCategoryModal';
@@ -41,12 +42,13 @@ import { PlannedProductionModal } from './PlannedProductionModal';
 import { useProduction } from '../hooks/useProduction';
 import { useReportedProduction } from '../hooks/useReportedProduction';
 
-import { requestReportedStocks } from '@services/stocks-service';
+import { requestReportedStocks, scheduleErpUpdateStocks } from '@services/stocks-service';
 import { useDelivery } from '../hooks/useDelivery';
 import { requestReportedDeliveries } from '@services/delivery-service';
 import { requestReportedProductions } from '@services/productions-service';
 import { requestReportedDemands } from '@services/demands-service';
 import { ModalMode } from '@models/types/data/modal-mode';
+import { Notification } from "@models/types/data/notification.ts";
 
 const NUMBER_OF_DAYS = 28;
 
@@ -61,6 +63,7 @@ type DashboardState = {
     demand: Partial<Demand> | null;
     production: Partial<Production> | null;
     isRefreshing: boolean;
+    isErpRefreshing: false;
 };
 
 type DashboardAction = {
@@ -83,6 +86,7 @@ const initialState: DashboardState = {
     demand: null,
     production: null,
     isRefreshing: false,
+    isErpRefreshing: false,
 };
 
 export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
@@ -104,15 +108,68 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
         state.selectedSite?.bpns ?? null
     );
 
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+
     const handleRefresh = () => {
-        dispatch({ type: 'isRefreshing', payload: true });
+        dispatch({type: 'isRefreshing', payload: true});
         Promise.all([
             requestReportedStocks(type === 'customer' ? 'material' : 'product', state.selectedMaterial?.ownMaterialNumber ?? null),
             requestReportedDeliveries(state.selectedMaterial?.ownMaterialNumber ?? null),
             type === 'customer'
                 ? requestReportedProductions(state.selectedMaterial?.ownMaterialNumber ?? null)
                 : requestReportedDemands(state.selectedMaterial?.ownMaterialNumber ?? null)
-        ]).finally(() => dispatch({ type: 'isRefreshing', payload: false }));
+        ]).then(() => {
+            setNotifications(ns => [
+                ...ns,
+                {
+                    title: 'Update requested',
+                    description: `Requested update from partners for ${state.selectedMaterial?.ownMaterialNumber}. Please reload dialog later.`,
+                    severity: 'success',
+                },
+            ]);
+        }).catch((error: unknown) => {
+            const msg = error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string' ? error.message : 'Unknown Error';
+            setNotifications(ns => [
+                ...ns,
+                {
+                    title: 'Error requesting update',
+                    description: msg,
+                    severity: 'error',
+                },
+            ]);
+        }).finally(() => dispatch({type: 'isRefreshing', payload: false}))
+    };
+        // };
+    const handleScheduleErpUpdate = () => {
+        dispatch({ type: 'isErpRefreshing', payload: true });
+        if (state.selectedPartnerSites){
+            const promises: Promise<void>[] = state.selectedPartnerSites.map((ps: Site) => {
+                return scheduleErpUpdateStocks(type === 'customer' ? 'material' : 'product', ps.belongsToPartnerBpnl, state.selectedMaterial?.ownMaterialNumber ?? null);
+            });
+            Promise.all(promises)
+                .then(() => {
+                    setNotifications(ns => [
+                        ...ns,
+                        {
+                            title: 'Update requested',
+                            description: `Scheduled ERP data update of stocks for ${state.selectedMaterial?.ownMaterialNumber} in your role as ${type}. Please reload dialog later.`,
+                            severity: 'success',
+                        },
+                    ]);
+                })
+                .catch((error: unknown) => {
+                    const msg = error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string' ? error.message : 'Unknown Error';
+                    setNotifications(ns => [
+                        ...ns,
+                        {
+                            title: 'Error scheduling ERP update',
+                            description: msg,
+                            severity: 'error',
+                        },
+                    ]);
+                })
+                .finally(() => dispatch({type: 'isErpRefreshing', payload:false }));
+        }
     };
     const openDeliveryDialog = useCallback(
         (d: Partial<Delivery>, mode: ModalMode, direction: 'incoming' | 'outgoing' = 'outgoing', site: Site | null) => {
@@ -193,12 +250,40 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                 </Box>
                 {state.selectedSite && (
                     <Stack width="100%">
-                        <Box display="flex" justifyContent="space-between">
+                        <Box
+                            display="flex"
+                            justifyContent="start"
+                            alignItems="center"
+                            width="100%"
+                            gap="0.5rem"
+                            marginBlock="0.5rem"
+                            paddingLeft=".5rem"
+                        >
                             <Typography variant="h5" component="h2">
                                 {`${capitalize(getPartnerType(type))} Information ${
                                     state.selectedMaterial ? `for ${state.selectedMaterial.description} (${state.selectedMaterial.ownMaterialNumber})` : ''
                                 }`}
                             </Typography>
+                            <Box marginLeft="auto" display="flex" gap="1rem">
+                            {state.selectedPartnerSites?.length &&
+                                (state.isErpRefreshing ? (
+                                    <LoadingButton
+                                        label="Schedule ERP Update"
+                                        loadIndicator="scheduling..."
+                                        loading={state.isErpRefreshing}
+                                        variant="contained"
+                                        onButtonClick={handleScheduleErpUpdate}
+                                        sx={{ width: '15rem' }}
+                                    />
+                                ) : (
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleScheduleErpUpdate}
+                                        sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '15rem' }}
+                                    >
+                                        <Refresh></Refresh> Schedule ERP Update
+                                    </Button>
+                                ))}
                             {state.selectedPartnerSites?.length &&
                                 (state.isRefreshing ? (
                                     <LoadingButton
@@ -218,6 +303,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                         <Refresh></Refresh> Refresh
                                     </Button>
                                 ))}
+                            </Box>
                         </Box>
                         <Stack spacing={4}>
                             {state.selectedPartnerSites ? (
@@ -280,6 +366,19 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                 delivery={state.delivery}
                 deliveries={deliveries ?? []}
             />
+            <PageSnackbarStack>
+                {notifications.map((notification, index) => (
+                    <PageSnackbar
+                        key={index}
+                        open={!!notification}
+                        severity={notification?.severity}
+                        title={notification?.title}
+                        description={notification?.description}
+                        autoClose={true}
+                        onCloseNotification={() => setNotifications((ns) => ns.filter((_, i) => i !== index) ?? [])}
+                    />
+                ))}
+            </PageSnackbarStack>
         </>
     );
 }

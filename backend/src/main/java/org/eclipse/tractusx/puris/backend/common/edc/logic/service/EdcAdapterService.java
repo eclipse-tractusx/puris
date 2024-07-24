@@ -200,7 +200,7 @@ public class EdcAdapterService {
 
     private boolean createSubmodelContractDefinitionForPartner(String semanticId, String assetId, Partner partner) {
         var body = edcRequestBodyBuilder.buildSubmodelContractDefinitionWithBpnRestrictedPolicy(assetId, partner);
-        try (var response = sendPostRequest(body, List.of("v2", "contractdefinitions"))) {
+        try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
                 log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
                 if (response.body() != null) {
@@ -217,7 +217,7 @@ public class EdcAdapterService {
 
     private boolean createDtrContractDefinitionForPartner(Partner partner) {
         var body = edcRequestBodyBuilder.buildDtrContractDefinitionForPartner(partner);
-        try (var response = sendPostRequest(body, List.of("v2", "contractdefinitions"))) {
+        try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
                 log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and DTR");
                 return false;
@@ -239,7 +239,7 @@ public class EdcAdapterService {
      */
     private boolean createBpnlAndMembershipPolicyDefinitionForPartner(Partner partner) {
         var body = edcRequestBodyBuilder.buildBpnAndMembershipRestrictedPolicy(partner);
-        try (var response = sendPostRequest(body, List.of("v2", "policydefinitions"))) {
+        try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
                 log.warn("Policy Registration failed");
                 if (response.body() != null) {
@@ -261,7 +261,7 @@ public class EdcAdapterService {
      */
     private boolean createContractPolicy() {
         var body = edcRequestBodyBuilder.buildFrameworkPolicy();
-        try (var response = sendPostRequest(body, List.of("v2", "policydefinitions"))) {
+        try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
                 log.warn("Framework Policy Registration failed");
                 if (response.body() != null) {
@@ -323,7 +323,7 @@ public class EdcAdapterService {
      * @return The response containing the full catalog, if successful
      */
     public Response getCatalogResponse(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException {
-        return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, partnerBpnl, filter), List.of("v2", "catalog", "request"));
+        return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, partnerBpnl, filter), List.of("v3", "catalog", "request"));
     }
 
     /**
@@ -374,7 +374,7 @@ public class EdcAdapterService {
         // use dspUrl as provided, if set - else use partner
         dspUrl = dspUrl != null && !dspUrl.isEmpty() ? dspUrl : partner.getEdcUrl();
         var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(partner, catalogItem, dspUrl);
-        try (Response response = sendPostRequest(requestBody, List.of("v2", "contractnegotiations"))) {
+        try (Response response = sendPostRequest(requestBody, List.of("v3", "contractnegotiations"))) {
             JsonNode responseNode = objectMapper.readTree(response.body().string());
             log.debug("Result from negotiation {}", responseNode.toPrettyString());
             return responseNode;
@@ -391,7 +391,7 @@ public class EdcAdapterService {
      * @throws IOException If the connection to your control plane fails
      */
     public JsonNode getNegotiationState(String negotiationId) throws IOException {
-        try (var response = sendGetRequest(List.of("v2", "contractnegotiations", negotiationId))) {
+        try (var response = sendGetRequest(List.of("v3", "contractnegotiations", negotiationId))) {
             String stringData = response.body().string();
             return objectMapper.readTree(stringData);
         }
@@ -406,7 +406,7 @@ public class EdcAdapterService {
      */
     public Response getAllNegotiations() throws IOException {
         var requestBody = edcRequestBodyBuilder.buildNegotiationsRequestBody();
-        return sendPostRequest(requestBody, List.of("v2", "contractnegotiations", "request"));
+        return sendPostRequest(requestBody, List.of("v3", "contractnegotiations", "request"));
     }
 
     /**
@@ -421,7 +421,7 @@ public class EdcAdapterService {
      */
     public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String assetId, String partnerEdcUrl) throws IOException {
         var body = edcRequestBodyBuilder.buildProxyPullRequestBody(partner, contractId, assetId, partnerEdcUrl);
-        try (var response = sendPostRequest(body, List.of("v2", "transferprocesses"))) {
+        try (var response = sendPostRequest(body, List.of("v3", "transferprocesses"))) {
             String data = response.body().string();
             JsonNode result = objectMapper.readTree(data);
             log.debug("Got response from Proxy pull transfer init: {}", result.toPrettyString());
@@ -443,7 +443,7 @@ public class EdcAdapterService {
      * @throws IOException If the connection to your control plane fails
      */
     public JsonNode getTransferState(String transferId) throws IOException {
-        try (var response = sendGetRequest(List.of("v2", "transferprocesses", transferId))) {
+        try (var response = sendGetRequest(List.of("v3", "transferprocesses", transferId))) {
             String data = response.body().string();
             return objectMapper.readTree(data);
         }
@@ -459,7 +459,7 @@ public class EdcAdapterService {
     public Response getAllTransfers() throws IOException {
         var requestBody = edcRequestBodyBuilder.buildTransfersRequestBody();
         log.debug("GetAllTransfers Request: {}", requestBody.toPrettyString());
-        return sendPostRequest(requestBody, List.of("v2", "transferprocesses", "request"));
+        return sendPostRequest(requestBody, List.of("v3", "transferprocesses", "request"));
     }
 
     /**
@@ -471,7 +471,7 @@ public class EdcAdapterService {
      * @throws IOException If the connection to your control plane fails
      */
     public String getContractAgreement(String contractAgreementId) throws IOException {
-        try (var response = sendGetRequest(List.of("v2", "contractagreements", contractAgreementId))) {
+        try (var response = sendGetRequest(List.of("v3", "contractagreements", contractAgreementId))) {
             return response.body().string();
         }
     }
@@ -985,7 +985,7 @@ public class EdcAdapterService {
 
         JsonNode body = edcRequestBodyBuilder.buildTransferProcessTerminationBody("Transfer done.");
 
-        try (Response response = sendPostRequest(body, List.of("v2", "transferprocesses", transferProcessId, "terminate"))) {
+        try (Response response = sendPostRequest(body, List.of("v3", "transferprocesses", transferProcessId, "terminate"))) {
 
             JsonNode resultNode = objectMapper.readTree(response.body().string());
             if (!response.isSuccessful()) {
