@@ -20,15 +20,12 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.controller;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.management.openmbean.KeyAlreadyExistsException;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedDelivery;
@@ -47,24 +44,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Validator;
-import lombok.extern.slf4j.Slf4j;
+import javax.management.openmbean.KeyAlreadyExistsException;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("delivery")
@@ -119,10 +108,10 @@ public class DeliveryController {
     @ResponseBody
     @Operation(summary = "Creates a new delivery")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Delivery was created."),
-            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-            @ApiResponse(responseCode = "409", description = "Delivery already exists."),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            @ApiResponse(responseCode = "201", description = "Delivery was created."),
+            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Delivery already exists.", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     @ResponseStatus(HttpStatus.CREATED)
     public DeliveryDto createDelivery(@RequestBody DeliveryDto deliveryDto) {
@@ -153,12 +142,12 @@ public class DeliveryController {
     @PutMapping()
     @Operation(summary = "Updates a delivery by its UUID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Delivery was updated."),
-            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-            @ApiResponse(responseCode = "404", description = "Delivery does not exist."),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            @ApiResponse(responseCode = "202", description = "Delivery was updated."),
+            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Delivery does not exist.", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public DeliveryDto updateDelivery(@RequestBody DeliveryDto dto) {
         OwnDelivery updatedDelivery = ownDeliveryService.update(convertToEntity(dto));
         if (updatedDelivery == null) {

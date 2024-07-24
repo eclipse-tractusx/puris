@@ -19,15 +19,11 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.demand.controller;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.management.openmbean.KeyAlreadyExistsException;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.OwnDemand;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.ReportedDemand;
@@ -41,7 +37,6 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,10 +45,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Validator;
+import javax.management.openmbean.KeyAlreadyExistsException;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("demand")
@@ -100,9 +98,9 @@ public class DemandController {
     @Operation(summary = "Creates a new demand")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Demand was created."),
-            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-            @ApiResponse(responseCode = "409", description = "Demand already exists. Use PUT instead."),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Demand already exists. Use PUT instead.", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     @ResponseStatus(HttpStatus.CREATED)
     public DemandDto createDemand(@RequestBody DemandDto demandDto) {
@@ -133,9 +131,9 @@ public class DemandController {
     @Operation(summary = "Updates a demand by its UUID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Demand was updated."),
-            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-            @ApiResponse(responseCode = "404", description = "Demand does not exist."),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Demand does not exist.", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     @ResponseStatus(HttpStatus.OK)
     public DemandDto updateDemand(@RequestBody DemandDto dto) {

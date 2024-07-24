@@ -51,7 +51,8 @@ public class DemandAndCapacityNotificationRequestApiController {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Operation(summary = "This endpoint receives the DemandAndCapacityNotification 2.0.0 requests")
+    @Operation(summary = "This endpoint receives the DemandAndCapacityNotification 2.0.0 requests. " +
+        "This endpoint is meant to be accessed by partners via EDC only. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok", content = @Content),
         @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
