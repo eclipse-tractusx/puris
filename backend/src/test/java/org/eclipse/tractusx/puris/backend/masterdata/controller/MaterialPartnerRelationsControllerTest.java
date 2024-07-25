@@ -39,6 +39,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Base64;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -84,6 +85,7 @@ public class MaterialPartnerRelationsControllerTest {
     public void createMaterialPartnerRelationTest() throws Exception {
         // given
         String partnerMaterialNumber = "MNR-8101-ID146955.001";
+        System.out.println(partnerMaterialNumber + " -> " + new String(Base64.getEncoder().encode(partnerMaterialNumber.getBytes())));
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
 
@@ -96,9 +98,9 @@ public class MaterialPartnerRelationsControllerTest {
 
         // then
         mockMvc.perform(post("/materialpartnerrelations")
-                .param("ownMaterialNumber", materialNumber)
+                .param("ownMaterialNumber", new String(Base64.getEncoder().encode(materialNumber.getBytes())))
                 .param("partnerBpnl", bpnl)
-                .param("partnerMaterialNumber", partnerMaterialNumber)
+                .param("partnerMaterialNumber", new String(Base64.getEncoder().encode(partnerMaterialNumber.getBytes())))
                 .param("partnerSupplies", "true")
                 .param("partnerBuys", "true"))
             .andExpect(status().isOk());
@@ -131,9 +133,9 @@ public class MaterialPartnerRelationsControllerTest {
 
         // then
         mockMvc.perform(post("/materialpartnerrelations")
-                .param("ownMaterialNumber", materialNumber)
+                .param("ownMaterialNumber", new String(Base64.getEncoder().encode(materialNumber.getBytes())))
                 .param("partnerBpnl", bpnlWrong)
-                .param("partnerMaterialNumber", partnerMaterialNumber)
+                .param("partnerMaterialNumber", new String(Base64.getEncoder().encode(partnerMaterialNumber.getBytes())))
                 .param("partnerSupplies", "true")
                 .param("partnerBuys", "true"))
             .andExpect(status().is4xxClientError());
@@ -160,9 +162,9 @@ public class MaterialPartnerRelationsControllerTest {
 
         // then
         mockMvc.perform(put("/materialpartnerrelations")
-                .param("ownMaterialNumber", materialNumber)
+                .param("ownMaterialNumber", new String(Base64.getEncoder().encode(materialNumber.getBytes())))
                 .param("partnerBpnl", bpnl)
-                .param("partnerMaterialNumber", partnerMaterialNumber2)
+                .param("partnerMaterialNumber", new String(Base64.getEncoder().encode(partnerMaterialNumber2.getBytes())))
                 .param("partnerSupplies", "true")
                 .param("partnerBuys", "true")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -200,9 +202,9 @@ public class MaterialPartnerRelationsControllerTest {
 
         // then
         mockMvc.perform(put("/materialpartnerrelations")
-                .param("ownMaterialNumber", materialNumber)
+                .param("ownMaterialNumber", new String(Base64.getEncoder().encode(materialNumber.getBytes())))
                 .param("partnerBpnl", bpnlWrong)
-                .param("partnerMaterialNumber", partnerMaterialNumber2)
+                .param("partnerMaterialNumber", new String(Base64.getEncoder().encode(partnerMaterialNumber.getBytes())))
                 .param("partnerSupplies", "true")
                 .param("partnerBuys", "true")
                 .contentType(MediaType.APPLICATION_JSON))

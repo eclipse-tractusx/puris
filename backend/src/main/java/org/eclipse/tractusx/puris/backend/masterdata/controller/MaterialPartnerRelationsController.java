@@ -71,8 +71,8 @@ public class MaterialPartnerRelationsController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public ResponseEntity<?> createMaterialPartnerRelation(
-        @Parameter(description = "The Material Number that is used in your own company to identify the Material.",
-            example = "MNR-7307-AU340474.002") @RequestParam String ownMaterialNumber,
+        @Parameter(description = "The Material Number that is used in your own company to identify the Material, "+
+            "encoded in base64") @RequestParam String ownMaterialNumber,
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
         @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material, "
@@ -85,7 +85,9 @@ public class MaterialPartnerRelationsController {
             example = "true") @RequestParam boolean partnerSupplies,
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
             example = "true") @RequestParam boolean partnerBuys) {
+
         ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        partnerMaterialNumber = new String(Base64.getDecoder().decode(partnerMaterialNumber));
         if (!materialPattern.matcher(ownMaterialNumber).matches() || !materialPattern.matcher(partnerMaterialNumber).matches()
             || !bpnlPattern.matcher(partnerBpnl).matches()) {
             log.warn("Rejected message parameters. ");
@@ -130,8 +132,8 @@ public class MaterialPartnerRelationsController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
     public ResponseEntity<?> updateMaterialPartnerRelation(
-        @Parameter(description = "The Material Number that is used in your own company to identify the Material.",
-            example = "MNR-7307-AU340474.002") @RequestParam String ownMaterialNumber,
+        @Parameter(description = "The Material Number that is used in your own company to identify the Material, " +
+            "encoded in base64") @RequestParam String ownMaterialNumber,
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
         @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material"
