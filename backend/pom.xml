@@ -47,7 +47,7 @@
         <postgresql.version>42.7.3</postgresql.version>
         <snakeyaml.version>2.2</snakeyaml.version>
         <springdoc.version>2.5.0</springdoc.version>
-        <edc-connector-version>0.7.0</edc-connector-version>
+        <edc-connector-version>0.7.1</edc-connector-version>
     </properties>
     <dependencies>
         <dependency>
