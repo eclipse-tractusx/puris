@@ -143,9 +143,8 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
     const handleScheduleErpUpdate = () => {
         dispatch({ type: 'isErpRefreshing', payload: true });
         if (state.selectedPartnerSites){
-            const base64MatNbr = btoa(state.selectedMaterial.ownMaterialNumber);
             const promises: Promise<void>[] = state.selectedPartnerSites.map((ps: Site) => {
-                return scheduleErpUpdateStocks(type === 'customer' ? 'material' : 'product', ps.belongsToPartnerBpnl, base64MatNbr);
+                return scheduleErpUpdateStocks(type === 'customer' ? 'material' : 'product', ps.belongsToPartnerBpnl, state.selectedMaterial?.ownMaterialNumber ?? null);
             });
             Promise.all(promises)
                 .then(() => {
