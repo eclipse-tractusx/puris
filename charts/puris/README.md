@@ -1,6 +1,6 @@
 # puris
 
-![Version: 2.7.0](https://img.shields.io/badge/Version-2.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.0.2](https://img.shields.io/badge/AppVersion-2.0.2-informational?style=flat-square)
+![Version: 2.7.0](https://img.shields.io/badge/Version-2.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.1.0](https://img.shields.io/badge/AppVersion-2.1.0-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
@@ -16,12 +16,12 @@ To install the chart with the release name `puris`:
 
 ```shell
 $ helm repo add tractusx-dev https://eclipse-tractusx.github.io/charts/dev
-$ helm install puris tractusx-dev/policy-hub
+$ helm install puris tractusx-dev/puris
 ```
 To install the helm chart into your cluster with your values:
 
 ```shell
-$ helm install -f your-values.yaml puris tractusx-dev/policy-hub
+$ helm install -f your-values.yaml puris tractusx-dev/puris
 ```
 
 To use the helm chart as a dependency:

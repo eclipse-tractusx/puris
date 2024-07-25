@@ -6,7 +6,9 @@ related to partners. This application scope follows the following information.
 ## Business Context
 
 PURIS FOSS may be operated in any supply network, but currently will likely be operated in the
-automotive supply network.
+automotive supply network. Different functions within a company operate supply chain functions. They can either work on
+long-term functions (such as demand and capacity management - not handled by this application) or short-term functions
+(like supply reliability - supported by this application). 
 
 ![Business Context](img/03-business-context.svg)
 

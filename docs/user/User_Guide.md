@@ -142,6 +142,21 @@ Afterwards, when the user refreshes the page, they will be presented with the up
 
 _**Note:** The update process can take a few seconds._
 
+#### Scheduling an ERP data update
+
+The data may be updated manually or be updated periodically by the system. Whenever a partner asked for a specific 
+information OR the user triggered "SCHEDULE ERP UPDATE", then a periodic update is scheduled. It is automatically 
+cancelled after the update has not been triggered for a configured number of days.
+
+This update is always:
+
+- per partner
+- per material
+- per information (currently only stock is supported)
+- per direction (e.g. stock is differentiated into stock as a customer or supplier)
+
+In case of further information (e.g., update intervals), please contact your administrator or consult the Admin Guide.
+
 ## View and Manage Stocks
 
 This view allows a user to either create material or product stocks and allocate them to a partner. Stocks always need
@@ -187,6 +202,40 @@ material / product.
 _**Note:** Stock information is updated asynchronously. The user may reload the page later to see the updated data._
 
 ![Stock View after selecting a Material Stock](img/stock_view_selected_material_stock.png)
+
+## Demand and Capacity Notifications
+
+_DISCLAIMER: This feature has not yet been finished. Currently, users neither can't react to notifications nor can close
+notifications._
+
+An user may use the page to send notifications to partners or read received notifications. One may chose the direction:
+
+- `OUTGOING` for messages sent to a partner
+- `INCOMING` for messages received from a partner
+
+![Overview of the notification view](img/notification_view.png)
+
+One may get further information by double clicking on a notification in the list.
+
+![Detailed notification after double clicking the entry](img/notification_detail.png)
+
+When triggering the button "SEND NOTIFICATION", a modal dialog is opened allowing a user to compose the demand and 
+capacity notification.
+
+![Send notification modal](img/notification_send.png)
+
+After filling the mandatory data (see `*`), the user can send the notification:
+
+- Text
+- Partner (supplier or customer relationship)
+- Leading Root Cause (one as defined by CX-0146 for demand and capacity notification)
+- Status (either `Open` or `Closed`, use close to close disruptions)
+- Effect (either `Increase` or `Decrease` of `Production` or `Demand`)
+- Start Date of Effect
+- End Date of Effect
+- Affected Sites Senders
+- Affected Sites Recipient
+- Affected Material Numbers (only those applicable to the partner)
 
 ## Catalog
 
@@ -253,3 +302,12 @@ Per Transfer the following information is listed:
 
 _**Note**: Per data request per partner, there are two Transfers as one contracts the partner's request asset and the
 partner contracts the user's response asset._
+
+---
+# NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris/docs/user/User_Guide.md

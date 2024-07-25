@@ -3,23 +3,43 @@ skinparam linetype polyline
 skinparam nodesep 150
 skinparam ranksep 50
 
+() mad_interface as "MAD Interface"
+() dtr_interface as "Registry & Discovery Interfaces"
+() oauth as "OAuth2"
+() erp_interface as "ERP SAMM\nAdapter Interface"
+() edc_interface as "EDC Management API"
+() not_interface as "Notification Interface"
+() erp_frontend_interface as "Frontend Trigger Interface"
+() data_interface as "Submodel \n& internal interface"
+
 package "<<system>> PURIS FOSS Backend"{
 
   [DTR] as dtr
+  [ERP Adapter] as erp
+  [Stock, Production, Demand,\nDelivery, Days of Supply\nInformation] as stock
   [EDC] as edc
-  [Stock, Production, Demand,\nDelivery Information] as stock
+  [Notifications] as not
   [MAD] as mad
 }
 
-"Registry & Discovery Interfaces" )-- dtr
-"MAD Interface" - mad
-edc -( "EDC Client Interface"
-stock --( "Submodel \n& internal interface"
+erp -left- erp_interface
+erp -left- erp_frontend_interface
+dtr_interface -down- dtr
+oauth )-down-  "use for authentication of DTR" dtr
 
-dtr -- "Register and discover twins\n& submodels" stock
-stock - "query catalog &\nget data (via edc)" edc
-mad - stock
+not -up- "use edc for communication" edc
 
-"OAuth2" )-  "uses for authentication of DTR" dtr
+dtr -down- "Register and discover twins\n& submodels" stock
+data_interface -down- stock
+stock -left- erp
+stock -right- "query catalog &\nget data (via edc)" edc
+stock -down- mad
+edc -right-( edc_interface
+
+mad -- mad_interface
+mad -right- not
+erp -- mad
+
+not -right- not_interface
 
 @enduml
