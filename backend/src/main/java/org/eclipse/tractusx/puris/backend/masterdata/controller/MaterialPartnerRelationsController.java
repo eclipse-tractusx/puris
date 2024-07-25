@@ -136,7 +136,7 @@ public class MaterialPartnerRelationsController {
             "encoded in base64") @RequestParam String ownMaterialNumber,
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
-        @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material"
+        @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material, "
             + "encoded in base64") @RequestParam(required = false) String partnerMaterialNumber,
         @Parameter(description = "The CatenaX Number that this Partner uses",
             example = "860fb504-b884-4009-9313-c6fb6cdc776b") @RequestParam(required = false) String partnerCXNumber,
