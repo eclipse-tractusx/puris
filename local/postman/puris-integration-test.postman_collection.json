@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "366237ef-086a-48bb-b723-c0da31f8e1ca",
+		"_postman_id": "8a41092f-829f-48e4-8061-3b365dce8b46",
 		"name": "puris-integration-test",
 		"description": "The collection assumes the following roles:\n\n- Customer PURIS (upper tier)\n- Supplier PURIS (lower tier)\n    \n\nIt creates the opposite partner and the respective view on the semiconductor material or product.\n\nTo run the tests correctly, take the environment and fill the respective secrets:\n\n- CUSTOMER_EDC_API_KEY\n- CUSTOMER_PURIS_BACKEND_API_KEY\n- CUSTOMER__MANAGE_CLIENT_SECRET\n- SUPPLIER_EDC_API_KEY\n- SUPPLIER_PURIS_BACKEND_API_KEY\n- SUPPLIER_MANAGE_CLIENT_SECRET\n    \n\nWhen using the another environment, update / create a new environment.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26605468"
+		"_exporter_id": "29870166"
 	},
 	"item": [
 		{
@@ -371,7 +371,23 @@
 															"    pm.response.to.have.status(200);",
 															"})"
 														],
-														"type": "text/javascript"
+														"type": "text/javascript",
+														"packages": {}
+													}
+												},
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"var plain = pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\")",
+															"var encoded = Buffer.from(plain).toString(\"base64\")",
+															"pm.collectionVariables.set(\"B64_MNR_CUSTOMER\", encoded)",
+															"var plain = pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\")",
+															"var encoded = Buffer.from(plain).toString(\"base64\")",
+															"pm.collectionVariables.set(\"B64_MNR_SUPPLIER\", encoded)"
+														],
+														"type": "text/javascript",
+														"packages": {}
 													}
 												}
 											],
@@ -379,7 +395,7 @@
 												"method": "POST",
 												"header": [],
 												"url": {
-													"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/materialpartnerrelations?partnerBpnl={{SUPPLIER_BPNL}}&ownMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}&partnerMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}&partnerSupplies=true&partnerBuys=false",
+													"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/materialpartnerrelations?partnerBpnl={{SUPPLIER_BPNL}}&ownMaterialNumber={{B64_MNR_CUSTOMER}}&partnerMaterialNumber={{B64_MNR_SUPPLIER}}&partnerSupplies=true&partnerBuys=false",
 													"host": [
 														"{{CUSTOMER_PURIS_BACKEND}}"
 													],
@@ -394,11 +410,11 @@
 														},
 														{
 															"key": "ownMaterialNumber",
-															"value": "{{MATERIAL_NUMBER_CUSTOMER}}"
+															"value": "{{B64_MNR_CUSTOMER}}"
 														},
 														{
 															"key": "partnerMaterialNumber",
-															"value": "{{MATERIAL_NUMBER_SUPPLIER}}"
+															"value": "{{B64_MNR_SUPPLIER}}"
 														},
 														{
 															"key": "partnerSupplies",
@@ -429,7 +445,8 @@
 															"        .and.have.jsonBody(pm.environment.get(\"CUSTOMER_BPNL\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\"));",
 															"});"
 														],
-														"type": "text/javascript"
+														"type": "text/javascript",
+														"packages": {}
 													}
 												}
 											],
@@ -437,7 +454,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/stockView/materialnumbers-mapping?ownMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}",
+													"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/stockView/materialnumbers-mapping?ownMaterialNumber={{B64_MNR_CUSTOMER}}",
 													"host": [
 														"{{CUSTOMER_PURIS_BACKEND}}"
 													],
@@ -449,7 +466,7 @@
 													"query": [
 														{
 															"key": "ownMaterialNumber",
-															"value": "{{MATERIAL_NUMBER_CUSTOMER}}"
+															"value": "{{B64_MNR_CUSTOMER}}"
 														}
 													]
 												}
@@ -789,7 +806,23 @@
 															"    pm.response.to.have.status(200);",
 															"})"
 														],
-														"type": "text/javascript"
+														"type": "text/javascript",
+														"packages": {}
+													}
+												},
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"var plain = pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\")",
+															"var encoded = Buffer.from(plain).toString(\"base64\")",
+															"pm.collectionVariables.set(\"B64_MNR_CUSTOMER\", encoded)",
+															"var plain = pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\")",
+															"var encoded = Buffer.from(plain).toString(\"base64\")",
+															"pm.collectionVariables.set(\"B64_MNR_SUPPLIER\", encoded)"
+														],
+														"type": "text/javascript",
+														"packages": {}
 													}
 												}
 											],
@@ -797,7 +830,7 @@
 												"method": "POST",
 												"header": [],
 												"url": {
-													"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/materialpartnerrelations?partnerBpnl={{CUSTOMER_BPNL}}&ownMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}&partnerMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}&partnerSupplies=false&partnerBuys=true",
+													"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/materialpartnerrelations?partnerBpnl={{CUSTOMER_BPNL}}&ownMaterialNumber={{B64_MNR_SUPPLIER}}&partnerMaterialNumber={{B64_MNR_CUSTOMER}}&partnerSupplies=false&partnerBuys=true",
 													"host": [
 														"{{SUPPLIER_PURIS_BACKEND}}"
 													],
@@ -812,11 +845,11 @@
 														},
 														{
 															"key": "ownMaterialNumber",
-															"value": "{{MATERIAL_NUMBER_SUPPLIER}}"
+															"value": "{{B64_MNR_SUPPLIER}}"
 														},
 														{
 															"key": "partnerMaterialNumber",
-															"value": "{{MATERIAL_NUMBER_CUSTOMER}}"
+															"value": "{{B64_MNR_CUSTOMER}}"
 														},
 														{
 															"key": "partnerSupplies",
@@ -847,7 +880,8 @@
 															"        .and.have.jsonBody(pm.environment.get(\"CUSTOMER_BPNL\"), pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\"));",
 															"});"
 														],
-														"type": "text/javascript"
+														"type": "text/javascript",
+														"packages": {}
 													}
 												}
 											],
@@ -855,7 +889,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/stockView/materialnumbers-mapping?ownMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}",
+													"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/stockView/materialnumbers-mapping?ownMaterialNumber={{B64_MNR_SUPPLIER}}",
 													"host": [
 														"{{SUPPLIER_PURIS_BACKEND}}"
 													],
@@ -867,7 +901,7 @@
 													"query": [
 														{
 															"key": "ownMaterialNumber",
-															"value": "{{MATERIAL_NUMBER_SUPPLIER}}"
+															"value": "{{B64_MNR_SUPPLIER}}"
 														}
 													]
 												}
@@ -1513,7 +1547,12 @@
 													"listen": "prerequest",
 													"script": {
 														"exec": [
-															""
+															"var plain = pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\")",
+															"var encoded = Buffer.from(plain).toString(\"base64\")",
+															"pm.collectionVariables.set(\"B64_MNR_CUSTOMER\", encoded)",
+															"var plain = pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\")",
+															"var encoded = Buffer.from(plain).toString(\"base64\")",
+															"pm.collectionVariables.set(\"B64_MNR_SUPPLIER\", encoded)"
 														],
 														"type": "text/javascript",
 														"packages": {}
@@ -1524,7 +1563,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/demand?ownMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}",
+													"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/demand?ownMaterialNumber={{B64_MNR_CUSTOMER}}",
 													"host": [
 														"{{CUSTOMER_PURIS_BACKEND}}"
 													],
@@ -1535,7 +1574,7 @@
 													"query": [
 														{
 															"key": "ownMaterialNumber",
-															"value": "{{MATERIAL_NUMBER_CUSTOMER}}"
+															"value": "{{B64_MNR_CUSTOMER}}"
 														}
 													]
 												}
@@ -2177,7 +2216,12 @@
 													"listen": "prerequest",
 													"script": {
 														"exec": [
-															""
+															"var plain = pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\")",
+															"var encoded = Buffer.from(plain).toString(\"base64\")",
+															"pm.collectionVariables.set(\"B64_MNR_CUSTOMER\", encoded)",
+															"var plain = pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\")",
+															"var encoded = Buffer.from(plain).toString(\"base64\")",
+															"pm.collectionVariables.set(\"B64_MNR_SUPPLIER\", encoded)"
 														],
 														"type": "text/javascript",
 														"packages": {}
@@ -2188,7 +2232,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/delivery?ownMaterialNumber={{MATERIAL_NUMBER_CUSTOMER}}",
+													"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/delivery?ownMaterialNumber={{B64_MNR_CUSTOMER}}",
 													"host": [
 														"{{CUSTOMER_PURIS_BACKEND}}"
 													],
@@ -2199,7 +2243,7 @@
 													"query": [
 														{
 															"key": "ownMaterialNumber",
-															"value": "{{MATERIAL_NUMBER_CUSTOMER}}"
+															"value": "{{B64_MNR_CUSTOMER}}"
 														}
 													]
 												}
@@ -2620,7 +2664,12 @@
 													"listen": "prerequest",
 													"script": {
 														"exec": [
-															""
+															"var plain = pm.collectionVariables.get(\"MATERIAL_NUMBER_CUSTOMER\")",
+															"var encoded = Buffer.from(plain).toString(\"base64\")",
+															"pm.collectionVariables.set(\"B64_MNR_CUSTOMER\", encoded)",
+															"var plain = pm.collectionVariables.get(\"MATERIAL_NUMBER_SUPPLIER\")",
+															"var encoded = Buffer.from(plain).toString(\"base64\")",
+															"pm.collectionVariables.set(\"B64_MNR_SUPPLIER\", encoded)"
 														],
 														"type": "text/javascript",
 														"packages": {}
@@ -2631,7 +2680,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/production?ownMaterialNumber={{MATERIAL_NUMBER_SUPPLIER}}",
+													"raw": "{{SUPPLIER_PURIS_BACKEND}}/catena/production?ownMaterialNumber={{B64_MNR_SUPPLIER}}",
 													"host": [
 														"{{SUPPLIER_PURIS_BACKEND}}"
 													],
@@ -2642,7 +2691,7 @@
 													"query": [
 														{
 															"key": "ownMaterialNumber",
-															"value": "{{MATERIAL_NUMBER_SUPPLIER}}"
+															"value": "{{B64_MNR_SUPPLIER}}"
 														}
 													]
 												}
@@ -4290,6 +4339,16 @@
 		},
 		{
 			"key": "SUPPLIER_BEARER_TOKEN",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "B64_MNR_CUSTOMER",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "B64_MNR_SUPPLIER",
 			"value": "",
 			"type": "string"
 		}
