@@ -118,7 +118,7 @@ public class StockViewController {
             @ExampleObject(name = "Basic sample", value = "{" +
                 "  \"BPNL1234567890ZZ\": \"MNR-8101-ID146955.001\"," +
                 "  \"BPNL4444444444XX\": \"MNR-7307-AU340474.002\"}")})),
-        @ApiResponse(responseCode = "400", description = "Invalid parameter")})
+        @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)})
     public ResponseEntity<Map<String, String>> getMaterialNumbers(
         @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
         ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
@@ -152,9 +152,9 @@ public class StockViewController {
     @Operation(description = "Creates a new product-stock")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Product Stock was created."),
-        @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-        @ApiResponse(responseCode = "409", description = "Product Stock does already exist."),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+        @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Product Stock does already exist.", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     public ProductStockDto createProductStocks(@RequestBody ProductStockDto productStockDto) {
         if(!validator.validate(productStockDto).isEmpty()) {
@@ -210,8 +210,8 @@ public class StockViewController {
     @Operation(description = "Updates an existing productstock")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Product Stock was updated."),
-        @ApiResponse(responseCode = "400", description = "Malformed request body."),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+        @ApiResponse(responseCode = "400", description = "Malformed request body.", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     public ProductStockDto updateProductStocks(@RequestBody ProductStockDto productStockDto) {
         if(!validator.validate(productStockDto).isEmpty()) {
@@ -300,9 +300,9 @@ public class StockViewController {
     @Operation(description = "Creates a new material-stock")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Material Stock was created."),
-        @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-        @ApiResponse(responseCode = "409", description = "Material Stock does already exist."),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+        @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Material Stock does already exist.", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     public MaterialStockDto createMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
         if(!validator.validate(materialStockDto).isEmpty()) {
@@ -355,8 +355,8 @@ public class StockViewController {
     @Operation(description = "Updates an existing material-stock")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Material Stock was updated."),
-        @ApiResponse(responseCode = "400", description = "Malformed request body."),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+        @ApiResponse(responseCode = "400", description = "Malformed request body.", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     public MaterialStockDto updateMaterialStocks(@RequestBody MaterialStockDto materialStockDto) {
         if(!validator.validate(materialStockDto).isEmpty()) {
@@ -431,7 +431,7 @@ public class StockViewController {
         " Only stocks for the given material number are returned.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
-        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+        @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)
     })
     public ResponseEntity<List<ReportedMaterialStockDto>> getSupplierMaterialStocks(
         @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
@@ -469,7 +469,7 @@ public class StockViewController {
         " Only stocks for the given material number are returned.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
-        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+        @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)
     })
     public ResponseEntity<List<ReportedProductStockDto>> getCustomerProductStocks(
         @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
@@ -506,7 +506,7 @@ public class StockViewController {
     @Operation(description = "Returns a list of all Partners that are ordering the given material")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
-        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+        @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)
     })
     public ResponseEntity<List<PartnerDto>> getCustomerPartnersOrderingMaterial(
         @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
@@ -523,7 +523,7 @@ public class StockViewController {
     @Operation(description = "Returns a list of all Partners that are supplying the given material")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
-        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+        @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)
     })
     public ResponseEntity<List<PartnerDto>> getSupplierPartnersSupplyingMaterial(
         @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
@@ -544,7 +544,7 @@ public class StockViewController {
         "call to the GET reported-material-stocks endpoint.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
-        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+        @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)
     })
     public ResponseEntity<List<PartnerDto>> triggerReportedMaterialStockUpdateForMaterialNumber(
         @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
@@ -575,7 +575,7 @@ public class StockViewController {
         "call to the GET reported-material-stocks endpoint.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
-        @ApiResponse(responseCode = "400", description = "Invalid parameter")
+        @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)
     })
     public ResponseEntity<List<PartnerDto>> triggerReportedProductStockUpdateForMaterialNumber(
         @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {

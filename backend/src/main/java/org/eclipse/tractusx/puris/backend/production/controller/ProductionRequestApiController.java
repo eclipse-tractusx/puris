@@ -21,6 +21,7 @@
 package org.eclipse.tractusx.puris.backend.production.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
@@ -49,12 +50,13 @@ public class ProductionRequestApiController {
     private final Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
 
 
-    @Operation(summary = "This endpoint receives the PlannedProduction Submodel 2.0.0 requests")
+    @Operation(summary = "This endpoint receives the PlannedProduction Submodel 2.0.0 requests. " +
+        "This endpoint is meant to be accessed by partners via EDC only. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),
-        @ApiResponse(responseCode = "400", description = "Bad Request"),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error"),
-        @ApiResponse(responseCode = "501", description = "Unsupported representation")
+        @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content),
+        @ApiResponse(responseCode = "501", description = "Unsupported representation", content = @Content)
     })
     @GetMapping("request/{materialnumbercx}/{representation}")
     public ResponseEntity<PlannedProductionOutput> getProductionMapping(

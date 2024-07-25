@@ -23,6 +23,7 @@ package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Validator;
@@ -131,8 +132,8 @@ public class MaterialController {
     @Operation(description = "Returns the requested Material dto, specified by the given ownMaterialNumber.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Returns the requested Material."),
-        @ApiResponse(responseCode = "400", description = "Invalid parameter"),
-        @ApiResponse(responseCode = "404", description = "Requested Material was not found.")
+        @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Requested Material was not found.", content = @Content)
     })
     public ResponseEntity<MaterialEntityDto> getMaterial(@Parameter(name = "ownMaterialNumber",
         description = "The Material Number that is used in your own company to identify the Material, encoded in base64"

@@ -21,6 +21,7 @@ package org.eclipse.tractusx.puris.backend.demand.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Validator;
@@ -100,9 +101,9 @@ public class DemandController {
     @Operation(summary = "Creates a new demand")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Demand was created."),
-            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-            @ApiResponse(responseCode = "409", description = "Demand already exists. Use PUT instead."),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Demand already exists. Use PUT instead.", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     @ResponseStatus(HttpStatus.CREATED)
     public DemandDto createDemand(@RequestBody DemandDto demandDto) {
@@ -133,9 +134,9 @@ public class DemandController {
     @Operation(summary = "Updates a demand by its UUID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Demand was updated."),
-            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-            @ApiResponse(responseCode = "404", description = "Demand does not exist."),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Demand does not exist.", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     @ResponseStatus(HttpStatus.OK)
     public DemandDto updateDemand(@RequestBody DemandDto dto) {

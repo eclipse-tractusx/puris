@@ -22,6 +22,7 @@ package org.eclipse.tractusx.puris.backend.delivery.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Validator;
@@ -110,10 +111,10 @@ public class DeliveryController {
     @ResponseBody
     @Operation(summary = "Creates a new delivery")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Delivery was created."),
-            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-            @ApiResponse(responseCode = "409", description = "Delivery already exists."),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            @ApiResponse(responseCode = "201", description = "Delivery was created."),
+            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Delivery already exists.", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     @ResponseStatus(HttpStatus.CREATED)
     public DeliveryDto createDelivery(@RequestBody DeliveryDto deliveryDto) {
@@ -144,12 +145,12 @@ public class DeliveryController {
     @PutMapping()
     @Operation(summary = "Updates a delivery by its UUID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Delivery was updated."),
-            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body."),
-            @ApiResponse(responseCode = "404", description = "Delivery does not exist."),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+            @ApiResponse(responseCode = "202", description = "Delivery was updated."),
+            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Delivery does not exist.", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public DeliveryDto updateDelivery(@RequestBody DeliveryDto dto) {
         OwnDelivery updatedDelivery = ownDeliveryService.update(convertToEntity(dto));
         if (updatedDelivery == null) {
