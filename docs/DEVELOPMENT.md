@@ -243,6 +243,33 @@ act --list
 act --job lint-test -e .act/pr-event.json
 ```
 
+# Notes on the release
+
+## Run helm test locally for n kubernetes versions
+
+Using act, you can run workflows locally. If you want to test how to use the workflow, update the file 
+`.act/workflow_dispatch_helm_test.json` that contains the input parameters.
+
+Check for supported kubernetes versions of kind per [release](https://github.com/kubernetes-sigs/kind/releases).
+
+```shell
+# root dir
+act workflow_dispatch -j lint-test -e .act/workflow_dispatch_helm_test.json
+```
+
+
+## Check license files
+
+For easier checks we created a small python script to check license files.
+
+It searches for the common contributor (Contributors to the EF) and prints files, not containing that
+
+```shell
+cd scripts
+
+python3 license-check.py
+```
+
 ## NOTICE
 
 This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
