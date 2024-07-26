@@ -36,7 +36,7 @@ CI
 
 Chore
 
-* Updated license information ([#468](https://github.com/eclipse-tractusx/puris/pull/468), [#476](https://github.com/eclipse-tractusx/puris/pull/476))
+* Updated license information ([#468](https://github.com/eclipse-tractusx/puris/pull/468), [#476](https://github.com/eclipse-tractusx/puris/pull/476), [#527](https://github.com/eclipse-tractusx/puris/pull/527))
 * Update of swagger documentation ([#514](https://github.com/eclipse-tractusx/puris/pull/514), [#516](https://github.com/eclipse-tractusx/puris/pull/516))
 * Version Bumps
   * Infrastructure Components
