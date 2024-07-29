@@ -2,12 +2,14 @@ name: "TruffleHog"
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-  workflow_dispatch:
+  
   schedule:
     - cron: "0 0 * * *" # Once a day
+    
+  workflow_dispatch:
+  # Trigger manually
 
 permissions:
   actions: read
