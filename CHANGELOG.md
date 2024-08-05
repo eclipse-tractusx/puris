@@ -5,6 +5,201 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v2.1.0](https://github.com/eclipse-tractusx/puris/releases/tag/2.1.0)
+
+The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs
+and understanding the concept changes.
+
+The **need for configuration updates** is **marked bold**.
+
+### Added
+
+* **ERP Adapter**
+  * Added client ([#443](https://github.com/eclipse-tractusx/puris/pull/443))
+  * Added trigger service ([#474](https://github.com/eclipse-tractusx/puris/pull/474))
+  * Added button to frontend ([#504](https://github.com/eclipse-tractusx/puris/pull/504))
+* backend implementation for Days of Supply ([CX-0145](https://catenax-ev.github.io/docs/next/standards/CX-0145-DaysofsupplyExchange)) ([#441](https://github.com/eclipse-tractusx/puris/pull/441))
+* Demand and Capacity Notifications ([CX-0146](https://catenax-ev.github.io/docs/next/standards/CX-0146-SupplyChainDisruptionNotifications)) can be sent between partners ([#447](https://github.com/eclipse-tractusx/puris/pull/447), [#451](https://github.com/eclipse-tractusx/puris/pull/451))
+
+### Changed
+
+Fixes
+
+* Fail contract negotiation if non-empty obligations or prohibitions are set ([#509](https://github.com/eclipse-tractusx/puris/pull/509))
+* Use expanded jsonLD when evaluating catalog offers ([#416](https://github.com/eclipse-tractusx/puris/pull/416))
+* Publish cxId to DTR when retrieving Part Type later ([#483](https://github.com/eclipse-tractusx/puris/pull/483))
+
+CI
+
+* Trivy Workflow ([#452](https://github.com/eclipse-tractusx/puris/pull/452))
+* Helm Test to only check for version bump in the end so that version bumps are not enforced anymore ([#450](https://github.com/eclipse-tractusx/puris/pull/450))
+
+Chore
+
+* Updated license information ([#468](https://github.com/eclipse-tractusx/puris/pull/468), [#476](https://github.com/eclipse-tractusx/puris/pull/476))
+* Update of swagger documentation ([#514](https://github.com/eclipse-tractusx/puris/pull/514), [#516](https://github.com/eclipse-tractusx/puris/pull/516))
+* Version Bumps
+  * Infrastructure Components
+    * Tractus-X EDC to 0.7.3 ([#508](https://github.com/eclipse-tractusx/puris/pull/508))
+    * Digital Twin Registry to 0.5.0 ([#496](https://github.com/eclipse-tractusx/puris/pull/496))
+  * Backend Dependencies
+    * spring boot starter parent to 3.3.1 ([#471](https://github.com/eclipse-tractusx/puris/pull/471))
+  * Frontend Dependencies
+    * vite to 5.3.3 ([#481](https://github.com/eclipse-tractusx/puris/pull/481))
+    * postcss to 8.4.39 ([#478](https://github.com/eclipse-tractusx/puris/pull/478))
+    * braces to 3.0.3 ([#453](https://github.com/eclipse-tractusx/puris/pull/453))
+    * typescript-eslint/eslint-plugin to 7.0.0 (7.0.0)
+  * IAM Mock (Local Deployment): certify to 2024.7.4 ([#484](https://github.com/eclipse-tractusx/puris/pull/484))
+  * CI
+    * actions/setup-python to 5.1.1 ([#492](https://github.com/eclipse-tractusx/puris/pull/492))
+    * github/codeql-action to 3.25.10 ([#448](https://github.com/eclipse-tractusx/puris/pull/448))
+    * checkmarx/kics-github-action to 2.1.0 ([#446](https://github.com/eclipse-tractusx/puris/pull/446))
+    * actions/download-artifact to 4.1.7 ([#396](https://github.com/eclipse-tractusx/puris/pull/396))
+    * azure/setup-helm to 4 ([#395](https://github.com/eclipse-tractusx/puris/pull/395))
+
+### Removed
+
+N.A.
+
+### Known Knowns
+
+#### Security
+
+The Backend is currently secured via API Key while the Frontend already uses an API-KEY.
+See [Admin Guide](./docs/admin/Admin_Guide.md) for further information.
+
+#### Upgradeability
+
+As currently no active user was known migrations of data are not yet supported. The chart technically is upgradeable.
+
+#### Data Sovereignty
+
+For productive use the following enhancements are encouraged
+
+* User FrontEnd available: Role Company Admin is able to query catalogue and see negotiations and transfers
+  But company rules / policies need to be configured upfront in backend (via postman) to enable automatic contract
+  negotiations, responsibility lies with Company Admin role
+  --> add section in the User Manual describing this and the (legal) importance and responsibility behind defining these
+  rules
+* Currently only one standard policy per reg. connector / customer instance is supported (more precisely one for DTR,
+  one for all submodels), negotiation happens automatically based on this
+  --> enhance option to select partner and define specific policies (to be planned in context of BPDM Integration)
+  --> UI for specific configuration by dedicated role (e.g. Comp Admin) and more flexible policy configuration (without
+  code changes) is needed
+* As a non-Admin user I do not have ability to view policies in detail --> transparency for users when interacting with
+  and requesting / consuming data via dashboard / views on underlying usage policies to be enhanced
+* ContractReference Constraint or configuration of policies specific to one partner only not implemented -->
+  clarification of potential reference to "PURIS standard contract" and enabling of ContractReference for 24.08.
+* unclear meaning of different stati in negotations --> add view of successfull contract agreeements wrt which data have
+  been closed
+* current logging only done on info level --> enhance logging of policies (currently only available at debug level)
+* in case of non-matching policies (tested in various scenarios) no negotiation takes place -->
+  **enhance visualization or specific Error message to user**
+* no validation of the Schema "profile": "cx-policy:profile2405" (required to ensure interop with other PURIS apps)
+
+#### Styleguide
+
+Overall
+
+* Brief description at the top of each page describing content would be nice for better user experience.
+
+
+Stocks
+
+* user needs better guidance to click on a stock to update it (else error prone to enter one
+  slightly different attribute and Add instead of update)
+* Refresh -- update request has been sent successfully. -> more information regarding data transfer needed for user
+
+Catalog
+
+* No action possible -> unclear to user when and how user will consume an offer
+
+Negotiations
+
+* Add filters for transparency (bpnl, state)
+
+## [v2.0.2](https://github.com/eclipse-tractusx/puris/releases/tag/2.0.2)
+
+The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs
+and understanding the concept changes.
+
+The **need for configuration updates** is **marked bold**.
+
+### Added
+
+* Added backend implementation to CRUD Demand and Capacity
+  Notifications ([#415](https://github.com/eclipse-tractusx/puris/pull/415))
+* Added ERP response interface ([#418](https://github.com/eclipse-tractusx/puris/pull/418))
+
+### Changed
+
+* Fixed check when answering delivery information request from a customer which prevented always to
+  answer ([#435](https://github.com/eclipse-tractusx/puris/pull/435))
+
+### Removed
+
+N.A.
+
+### Known Knowns
+
+#### Security
+
+The Backend is currently secured via API Key while the Frontend already uses an API-KEY.
+See [Admin Guide](./docs/admin/Admin_Guide.md) for further information.
+
+#### Upgradeability
+
+As currently no active user was known migrations of data are not yet supported. The chart technically is upgradeable.
+
+#### Data Sovereignty
+
+For productive use the following enhancements are encouraged
+
+* User FrontEnd available: Role Company Admin is able to query catalogue and see negotiations and transfers
+  But company rules / policies need to be configured upfront in backend (via postman) to enable automatic contract
+  negotiations, responsibility lies with Company Admin role
+  --> add section in the User Manual describing this and the (legal) importance and responsibility behind defining these
+  rules
+* Currently only one standard policy per reg. connector / customer instance is supported (more precisely one for DTR,
+  one for all submodels), negotiation happens automatically based on this
+  --> enhance option to select partner and define specific policies (to be planned in context of BPDM Integration)
+  --> UI for specific configuration by dedicated role (e.g. Comp Admin) and more flexible policy configuration (without
+  code changes) is needed
+* As a non-Admin user I do not have ability to view policies in detail --> transparency for users when interacting with
+  and requesting / consuming data via dashboard / views on underlying usage policies to be enhanced
+* ContractReference Constraint or configuration of policies specific to one partner only not implemented -->
+  clarification of potential reference to "PURIS standard contract" and enabling of ContractReference for 24.08.
+* unclear meaning of different stati in negotations --> add view of successfull contract agreeements wrt which data have
+  been closed
+* current logging only done on info level --> enhance logging of policies (currently only available at debug level)
+* in case of non-matching policies (tested in various scenarios) no negotiation takes place -->
+  **enhance visualization or specific Error message to user**
+* no validation of the Schema "profile": "cx-policy:profile2405" (required to ensure interop with other PURIS apps)
+
+#### Styleguide
+
+Overall
+
+* Brief description at the top of each page describing content would be nice for better user experience.
+
+Dashboard
+
+* Similar for Create Delivery (here SOME entries are reset but warnings stay) (**block**)
+
+Stocks
+
+* user needs better guidance to click on a stock to update it (else error prone to enter one
+  slightly different attribute and Add instead of update)
+* Refresh -- update request has been sent successfully. -> more information regarding data transfer needed for user
+
+Catalog
+
+* No action possible -> unclear to user when and how user will consume an offer
+
+Negotiations
+
+* Add filters for transparency (bpnl, state)
+
 ## [v2.0.1](https://github.com/eclipse-tractusx/puris/releases/tag/2.0.1)
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs

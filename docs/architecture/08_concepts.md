@@ -107,7 +107,7 @@ which restricts the `specificAssetIds` based on BPNLs.
 Two different policies are used depending on the Asset Type:
 
 - Digital Twin Registry: Use Access Policy also as Contract Policy
-- Submodels: Use Contract Policy as defined below
+- Submodels & Notification Endpoint: Use Contract Policy as defined below
 
 _Note: The submodel `PartTypeInformation` is also registered with the same Contract Policy as the other Submodels._
 
@@ -216,6 +216,34 @@ a submodel is requested, the DTR of a partner is queried.
 
 Whenever a partner is created, all exchanged information APIs that comply to a Catena-X standard are registered as
 contract offer for the partner's BPNL.
+
+## ERP Integration
+
+A first version of the erp integration for item stock is in preparation. It allows the application to schedule a
+periodic update of the specific information. It uses an asynchronous request & response flow in which the request should
+look like the semantic model of interest in which the `materialGlobalAssetId` is ignored.
+
+Currently, the following SAMM information is allowed:
+
+| response-type | samm-version |
+|---------------|--------------|
+| ItemStock     | 2.0          |
+
+The update is always triggered for the following information:
+
+- partner
+- material
+- SAMM / response type
+- direction (sometimes needed)
+
+An update is scheduled whenever:
+
+- a partner requested the data
+- the user requested the data in the dashboard
+
+In case no update has been scheduled, the information is not updated. The update will then be performed periodically
+until it has not been updated for a defined time. Please refer to the Admin Guide for more information to configure the
+erp adapter.
 
 ## Security
 

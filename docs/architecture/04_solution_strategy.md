@@ -4,7 +4,7 @@
 
 PURIS FOSS
 
-- follows the related standardization candidates or even published standards (CX-0112).
+- follows the related standardization candidates or even published standards (see below).
 - is developed parallel to the consortial SAFe project.
 
 **Up-to-dateness / real-time**
@@ -20,6 +20,17 @@ PURIS FOSS
     - Data Providers can offer their data or data providing API as a _Data Asset_.
     - Data Consumers can consume a Data Provider's _Data Asset_.
 - Data is exchanged using an asynchronous pull and push mechanism.
+
+Thus, the application follows the following Catena-X standards (business-wise) to the following degree:
+
+| Standard                                                                                                                                           | Level of implementation                   |
+|----------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|
+| [CX-0118 Delivery Information Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0118-ActualDeliveryInformationExchange)          | Compliant.                                |
+| [CX-0120 Short-Term Material Demand Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0120-ShortTermMaterialDemandExchange)      | Compliant.                                | 
+| [CX-0121 Planned Production Output Exchange 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0121-PlannedProductionOutputExchange)       | Compliant.                                |
+| [CX-0122 Item Stock Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0122-ItemStockExchange)                                    | Compliant.                                |                                                                                         
+| [CX-0145 Days of Supply Exchange 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0145-DaysofsupplyExchange)                             | Missing EDC and Frontend integration.     |                                                                           
+| [CX-0146 Supply Chain Disruption Notifications 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0146-SupplyChainDisruptionNotifications) | Missing functionality to react and close. |                                                             
 
 **Management of EDC and Digital Twins**
 
