@@ -39,6 +39,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -103,7 +104,7 @@ public class MaterialControllerTest {
 
         // then
         mockMvc.perform(get("/materials")
-                .param("ownMaterialNumber", materialNumber))
+                .param("ownMaterialNumber", new String(Base64.getEncoder().encode(materialNumber.getBytes()))))
             .andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.ownMaterialNumber").value(materialNumber));
 

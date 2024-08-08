@@ -21,6 +21,7 @@
 package org.eclipse.tractusx.puris.backend.delivery.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -48,6 +49,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -92,7 +94,8 @@ public class DeliveryController {
     @ResponseBody
     @Operation(summary = "Get all planned deliveries for the given Material",
         description = "Get all planned deliveries for the given material number. Optionally a bpns and partner bpnl can be provided to filter the deliveries further.")
-    public List<DeliveryDto> getAllDeliveries(String ownMaterialNumber, Optional<String> bpns, Optional<String> bpnl) {
+    public List<DeliveryDto> getAllDeliveries(@Parameter(description = "encoded in base64") String ownMaterialNumber, Optional<String> bpns, Optional<String> bpnl) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (material == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material does not exist.");
@@ -179,7 +182,9 @@ public class DeliveryController {
         summary = "Refreshes all reported deliveries", 
         description = "Refreshes all reported deliveries from the delivery request API."
     )
-    public ResponseEntity<List<PartnerDto>> refreshReportedDeliveries(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<PartnerDto>> refreshReportedDeliveries(
+        @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }

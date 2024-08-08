@@ -51,6 +51,9 @@ export const deleteProduction = async (id: UUID) => {
 }
 
 export const requestReportedProductions = async (materialNumber: string | null) => {
+  if (materialNumber != null) {
+    materialNumber = btoa(materialNumber);
+  }
   const res = await fetch(`${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_PRODUCTION}/reported/refresh?ownMaterialNumber=${materialNumber}`, {
     method: 'GET',
     headers: {

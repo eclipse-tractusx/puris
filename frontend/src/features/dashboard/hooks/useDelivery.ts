@@ -24,6 +24,9 @@ import { Delivery } from '@models/types/data/delivery';
 import { BPNS } from '@models/types/edc/bpn';
 
 export const useDelivery = (materialNumber: string | null, site: BPNS | null) => {
+    if (materialNumber != null) {
+        materialNumber = btoa(materialNumber);
+    }
     const {
         data: deliveries,
         error: deliveriesError,

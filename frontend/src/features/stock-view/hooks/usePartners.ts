@@ -23,6 +23,9 @@ import { config } from '@models/constants/config';
 import { Partner } from '@models/types/edc/partner';
 
 export const usePartners = (type: 'material' | 'product', materialNumber: string | null) => {
+  if (materialNumber != null) {
+    materialNumber = btoa(materialNumber);
+  }
   const endpoint = type === 'product' ? config.app.ENDPOINT_CUSTOMER : config.app.ENDPOINT_SUPPLIER;
   const { data: partners, isLoading: isLoadingPartners } = useFetch<Partner[]>(
       `${config.app.BACKEND_BASE_URL}${endpoint}${materialNumber}`

@@ -20,20 +20,21 @@
 
 package org.eclipse.tractusx.puris.backend.supply.controller;
 
-import java.util.List;
-
+import io.swagger.v3.oas.annotations.Operation;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.Supply;
 import org.eclipse.tractusx.puris.backend.supply.logic.dto.SupplyDto;
 import org.eclipse.tractusx.puris.backend.supply.logic.service.CustomerSupplyService;
 import org.eclipse.tractusx.puris.backend.supply.logic.service.SupplierSupplyService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.v3.oas.annotations.Operation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.List;
 
 @RestController
 @RequestMapping("days-of-supply")
@@ -49,32 +50,40 @@ public class SupplyController {
     @GetMapping("customer")
     @ResponseBody
     @Operation(summary = "Calculate days of supply for customer for given number of days.",
-        description = "Calculate days of supply for customer for given number of days. Filtered by given material number, partner bpnl and site bpns.")
+        description = "Calculate days of supply for customer for given number of days. Filtered by given material number, partner bpnl and site bpns. " +
+            "materialNumber is expected to be base64 encoded")
     public List<SupplyDto> calculateCustomerDaysOfSupply(String materialNumber, String bpnl, String siteBpns, int numberOfDays) {
+        materialNumber = new String(Base64.getDecoder().decode(materialNumber.getBytes(StandardCharsets.UTF_8)));
         return customerSupplyService.calculateCustomerDaysOfSupply(materialNumber, bpnl, siteBpns, numberOfDays)
             .stream().map(this::convertToDto).toList();
     }
 
     @GetMapping("customer/reported")
     @Operation(summary = "Get days of supply for customer.", 
-        description = "Get days of supply for customer for given material number and partner bpnl.")
+        description = "Get days of supply for customer for given material number and partner bpnl. " +
+            "materialNumber is expected to be base64 encoded")
     public List<SupplyDto> getCustomerDaysOfSupply(String materialNumber, String bpnl) {
+        materialNumber = new String(Base64.getDecoder().decode(materialNumber.getBytes(StandardCharsets.UTF_8)));
         return customerSupplyService.findByPartnerBpnlAndOwnMaterialNumber(materialNumber, bpnl)
             .stream().map(this::convertToDto).toList();
     }
 
     @GetMapping("supplier")
     @Operation(summary = "Calculate days of supply for supplier for given number of days.",
-        description = "Calculate days of supply for supplier for given number of days. Filtered by given material number, partner bpnl and site bpns.")
+        description = "Calculate days of supply for supplier for given number of days. Filtered by given material number, partner bpnl and site bpns. "+
+            "materialNumber is expected to be base64 encoded")
     public List<SupplyDto> calculateSupplierDaysOfSupply(String materialNumber, String bpnl, String siteBpns, int numberOfDays) {
+        materialNumber = new String(Base64.getDecoder().decode(materialNumber.getBytes(StandardCharsets.UTF_8)));
         return supplierSupplyService.calculateSupplierDaysOfSupply(materialNumber, bpnl, siteBpns, numberOfDays)
             .stream().map(this::convertToDto).toList();
     }
 
     @GetMapping("supplier/reported")
     @Operation(summary = "Get days of supply for supplier.", 
-        description = "Get days of supply for supplier for given material number and partner bpnl.")
+        description = "Get days of supply for supplier for given material number and partner bpnl. " +
+            "materialNumber is expected to be base64 encoded")
     public List<SupplyDto> getSupplierDaysOfSupply(String materialNumber, String bpnl) {
+        materialNumber = new String(Base64.getDecoder().decode(materialNumber.getBytes(StandardCharsets.UTF_8)));
         return supplierSupplyService.findByPartnerBpnlAndOwnMaterialNumber(materialNumber, bpnl)
             .stream().map(this::convertToDto).toList();
     }

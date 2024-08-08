@@ -20,6 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.demand.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -46,6 +47,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -88,7 +90,8 @@ public class DemandController {
     @GetMapping()
     @ResponseBody
     @Operation(summary = "Get all own demands for the given Material", description = "Get all own demands for the given material number. Optionally the demanding site can be filtered by its bpns.")
-    public List<DemandDto> getAllDemands(String ownMaterialNumber, Optional<String> site) {
+    public List<DemandDto> getAllDemands(@Parameter(description = "encoded in base64") String ownMaterialNumber, Optional<String> site) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         return ownDemandService.findAllByFilters(Optional.of(ownMaterialNumber), Optional.empty(), site, Optional.empty())
                 .stream().map(this::convertToDto).collect(Collectors.toList());
     }
@@ -167,8 +170,11 @@ public class DemandController {
         summary = "Get all demands of partners for a material", 
         description = "Get all demands of partners for a material number. Optionally the partners can be filtered by their bpnl and the demanding site can be filtered by its bpns."
     )
-    public List<DemandDto> getAllDemandsForPartner(String ownMaterialNumber, Optional<String> bpnl,
+    public List<DemandDto> getAllDemandsForPartner(@Parameter(description = "encoded in base64") String ownMaterialNumber, Optional<String> bpnl,
             Optional<String> site) {
+        if (ownMaterialNumber != null) {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        }
         return reportedDemandService.findAllByFilters(Optional.of(ownMaterialNumber), bpnl, site, Optional.empty())
                 .stream().map(this::convertToDto).collect(Collectors.toList());
     }
@@ -179,7 +185,9 @@ public class DemandController {
         summary = "Refreshes all reported demands", 
         description = "Refreshes all reported demands from the demand request API."
     )
-    public ResponseEntity<List<PartnerDto>> refreshReportedProductions(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<PartnerDto>> refreshReportedProductions(
+        @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }

@@ -23,6 +23,7 @@ package org.eclipse.tractusx.puris.backend.stock.controller;
 
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -50,10 +51,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -121,7 +119,13 @@ public class StockViewController {
                 "  \"BPNL1234567890ZZ\": \"MNR-8101-ID146955.001\"," +
                 "  \"BPNL4444444444XX\": \"MNR-7307-AU340474.002\"}")})),
         @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)})
-    public ResponseEntity<Map<String, String>> getMaterialNumbers(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<Map<String, String>> getMaterialNumbers(
+        @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        try {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.emptyMap());
+        }
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
@@ -433,7 +437,13 @@ public class StockViewController {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)
     })
-    public ResponseEntity<List<ReportedMaterialStockDto>> getSupplierMaterialStocks(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<ReportedMaterialStockDto>> getSupplierMaterialStocks(
+        @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        try {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
@@ -469,7 +479,13 @@ public class StockViewController {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)
     })
-    public ResponseEntity<List<ReportedProductStockDto>> getCustomerProductStocks(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<ReportedProductStockDto>> getCustomerProductStocks(
+        @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        try {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
@@ -504,7 +520,13 @@ public class StockViewController {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)
     })
-    public ResponseEntity<List<PartnerDto>> getCustomerPartnersOrderingMaterial(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<PartnerDto>> getCustomerPartnersOrderingMaterial(
+        @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        try {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
@@ -519,7 +541,13 @@ public class StockViewController {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)
     })
-    public ResponseEntity<List<PartnerDto>> getSupplierPartnersSupplyingMaterial(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<PartnerDto>> getSupplierPartnersSupplyingMaterial(
+        @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        try {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
@@ -538,7 +566,13 @@ public class StockViewController {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)
     })
-    public ResponseEntity<List<PartnerDto>> triggerReportedMaterialStockUpdateForMaterialNumber(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<PartnerDto>> triggerReportedMaterialStockUpdateForMaterialNumber(
+        @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        try {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
@@ -567,7 +601,13 @@ public class StockViewController {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content)
     })
-    public ResponseEntity<List<PartnerDto>> triggerReportedProductStockUpdateForMaterialNumber(@RequestParam String ownMaterialNumber) {
+    public ResponseEntity<List<PartnerDto>> triggerReportedProductStockUpdateForMaterialNumber(
+        @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        try {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }

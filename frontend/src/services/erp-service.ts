@@ -32,7 +32,9 @@ export const scheduleErpUpdate = async (partnerBpnl: string | null, materialNumb
     if (type != AssetType.ItemStock) {
         throw new Error("The ERP Adapter currently only implements ItemStock, you tried " + AssetType.ItemStock);
     }
-
+    if (materialNumber != null) {
+        materialNumber = btoa(materialNumber)
+    }
     const endpoint = config.app.ENDPOINT_ERP_SCHEDULE_UPDATE;
     const res = await fetch(`${config.app.BACKEND_BASE_URL}${endpoint}?${PARAM_BPNL}=${partnerBpnl}&${PARAM_MATERIAL_NUMBER}=${materialNumber}&${PARAM_ASSET_TYPE}=${type}&${PARAM_DIRECTION}=${direction}`, {
         method: 'POST',
