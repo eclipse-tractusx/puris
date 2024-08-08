@@ -44,7 +44,7 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
     const [selectedMaterial, setSelectedMaterial] = useState<Stock | null>(null);
     const { partnerStocks } = usePartnerStocks(
         type,
-        type === 'product' ? selectedMaterial?.material?.materialNumberSupplier : selectedMaterial?.material?.materialNumberCustomer
+        type === 'product' ? selectedMaterial?.material?.materialNumberSupplier ?? null : selectedMaterial?.material?.materialNumberCustomer ?? null
     );
     const [saving, setSaving] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState(false);
