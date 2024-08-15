@@ -49,7 +49,7 @@ jobs:
 
       - name: TruffleHog OSS
         id: trufflehog
-        uses: trufflesecurity/trufflehog@8a8ef8526527dd5f5d731d8e74843c121777b82d #v3.80.2
+        uses: trufflesecurity/trufflehog@f2c7bb93be9373d5d2a524a11c7ba739dc1de7f2 #v3.81.8
         continue-on-error: true
         with:
           path: ./  # Scan the entire repository
