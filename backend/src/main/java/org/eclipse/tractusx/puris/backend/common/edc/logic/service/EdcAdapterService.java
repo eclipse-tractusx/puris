@@ -263,6 +263,10 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildFrameworkPolicy();
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("Framework agreement policy definition already existed");
+                    return true;
+                }
                 log.warn("Framework Policy Registration failed");
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
@@ -300,6 +304,10 @@ public class EdcAdapterService {
     private boolean sendAssetRegistrationRequest(JsonNode body, String assetId) {
         try (var response = sendPostRequest(body, List.of("v3", "assets"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("Asset {} already existed", assetId);
+                    return true;
+                }
                 log.warn("Asset registration failed for {}", assetId);
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
