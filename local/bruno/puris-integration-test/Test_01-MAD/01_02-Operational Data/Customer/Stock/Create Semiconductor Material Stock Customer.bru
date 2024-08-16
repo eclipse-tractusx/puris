@@ -1,0 +1,64 @@
+meta {
+  name: Create Semiconductor Material Stock Customer
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/stockView/material-stocks
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+      "material": {
+          "materialFlag": true,
+          "productFlag": false,
+          "materialNumberCustomer": "{{MATERIAL_NUMBER_CUSTOMER}}",
+          "materialNumberCx": "{{MATERIAL_NUMBER_CX}}",
+          "name": "Semiconductor"
+      },
+      "quantity": 500.0,
+      "measurementUnit": "unit:piece",
+      "stockLocationBpns": "{{CUSTOMER_BPNS}}",
+      "stockLocationBpna": "{{CUSTOMER_BPNA}}",
+      "type": "MATERIAL",
+      "lastUpdatedOn": "2023-12-18T13:12:48.466+00:00",
+      "isBlocked": true,
+      "customerOrderNumber": "CNbr-1",
+      "customerOrderPositionNumber": "C-Pos-1",
+      "supplierOrderNumber": "SNbr-1",
+      "partner":{
+          "bpnl": "{{SUPPLIER_BPNL}}"
+      }
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Verify stock composition (material number with BPNS, BPNA and Partner BPNL)", function () {
+      var responseJson = res.getBody();
+  
+      expect(responseJson).to.have.property("material");
+      expect(responseJson.material).to.have.property("materialNumberCustomer");
+      expect(responseJson.material.materialNumberCustomer).to.equal(bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER"));
+  
+      expect(responseJson).to.have.property("stockLocationBpns");
+      expect(responseJson.stockLocationBpns).to.equal(bru.getEnvVar("CUSTOMER_BPNS"));
+  
+      expect(responseJson).to.have.property("stockLocationBpna");
+      expect(responseJson.stockLocationBpna).to.equal(bru.getEnvVar("CUSTOMER_BPNA"));
+  
+      expect(responseJson).to.have.property("partner");
+      expect(responseJson.partner).to.have.property("bpnl");
+      expect(responseJson.partner.bpnl).to.equal(bru.getEnvVar("SUPPLIER_BPNL"));
+  });
+}

@@ -1,0 +1,41 @@
+meta {
+  name: Get Delivery 5 days Semiconductor
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/delivery?ownMaterialNumber={{B64_MNR_SUPPLIER}}
+  body: none
+  auth: none
+}
+
+params:query {
+  ownMaterialNumber: {{B64_MNR_SUPPLIER}}
+}
+
+headers {
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+script:pre-request {
+  var plain = bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER")
+  var encoded = Buffer.from(plain).toString("base64")
+  bru.setEnvVar("B64_MNR_CUSTOMER", encoded)
+  var plain = bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER")
+  var encoded = Buffer.from(plain).toString("base64")
+  bru.setEnvVar("B64_MNR_SUPPLIER", encoded)
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const responseJson = res.getBody();
+  
+  test("5 deliveries found", function (){
+      expect(responseJson).to.be.an("array");
+      expect(responseJson).to.be.length(5);
+  })
+}

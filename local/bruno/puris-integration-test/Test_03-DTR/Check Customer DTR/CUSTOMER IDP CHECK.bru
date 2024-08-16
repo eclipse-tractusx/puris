@@ -1,0 +1,24 @@
+meta {
+  name: CUSTOMER IDP CHECK
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{CUSTOMER_IDP_URL}}/realms/{{CUSTOMER_IDP_REALM}}/protocol/openid-connect/token
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: client_credentials
+  client_id: {{CUSTOMER_MANAGE_CLIENT_ID}}
+  client_secret: {{CUSTOMER_MANAGE_CLIENT_SECRET}}
+}
+
+tests {
+  test("Save access token", function () {
+      var jsonData = res.getBody();
+      bru.setVar("CUSTOMER_BEARER_TOKEN", jsonData.access_token);
+  });
+}

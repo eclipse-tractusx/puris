@@ -1,0 +1,32 @@
+meta {
+  name: Create Control Unit Product
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/materials
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+      "materialFlag": false,
+      "productFlag": true,
+      "ownMaterialNumber": "MNR-4177-S",
+      "materialNumberCx": null,
+      "name": "Central Control Unit"
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+}

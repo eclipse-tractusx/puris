@@ -1,0 +1,32 @@
+meta {
+  name: Get Material Partner Mappings
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/stockView/materialnumbers-mapping?ownMaterialNumber={{B64_MNR_CUSTOMER}}
+  body: none
+  auth: none
+}
+
+params:query {
+  ownMaterialNumber: {{B64_MNR_CUSTOMER}}
+}
+
+headers {
+  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+}
+
+assert {
+  res.body.BPNL1234567890ZZ: eq MNR-8101-ID146955.001
+  res.body.BPNL4444444444XX: eq MNR-7307-AU340474.002
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+  
+  
+}

@@ -1,0 +1,51 @@
+meta {
+  name: Query dtr for ShellDescriptor Supplier
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{SUPPLIER_DTR}}/api/v3/lookup/shells?assetIds={{DTR_QUERY_SPECIFIC_ASSET_IDS_ENCODED}}
+  body: none
+  auth: bearer
+}
+
+params:query {
+  assetIds: {{DTR_QUERY_SPECIFIC_ASSET_IDS_ENCODED}}
+}
+
+headers {
+  Edc-Bpn: {{SUPPLIER_BPNL}}
+}
+
+auth:bearer {
+  token: {{SUPPLIER_BEARER_TOKEN}}
+}
+
+script:pre-request {
+  const materialNumberCustomer = bru.getEnvVar('MATERIAL_NUMBER_CUSTOMER');
+  const materialNumberSupplier = bru.getEnvVar('MATERIAL_NUMBER_SUPPLIER');
+  
+  const queryParam = '{"name":"customerPartId","value":"'+materialNumberCustomer+'"},{"name":"manufacturerPartId","value":"'+materialNumberSupplier+'"}';
+  
+  const encodedQueryParam = Buffer.from(queryParam).toString("base64");
+  
+  bru.setVar('DTR_QUERY_SPECIFIC_ASSET_IDS_ENCODED', encodedQueryParam);
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const responseJson = res.getBody();
+  
+  test("Verify response contains one shell descriptor", function () {
+      expect(responseJson.result).to.be.an("array").with.lengthOf(1);
+  });
+  
+  aas_id = responseJson.result[0];
+  
+  const encodedAasId = Buffer.from(aas_id).toString("base64");
+  bru.setVar("SUPPLIER_AAS_IDENTIFIER", encodedAasId);
+}

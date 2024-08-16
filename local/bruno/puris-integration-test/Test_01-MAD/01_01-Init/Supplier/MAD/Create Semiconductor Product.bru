@@ -1,0 +1,32 @@
+meta {
+  name: Create Semiconductor Product
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/materials
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+    "materialFlag": false,
+    "productFlag": true,
+    "ownMaterialNumber": "{{MATERIAL_NUMBER_SUPPLIER}}",
+    "materialNumberCx": "{{MATERIAL_NUMBER_CX}}",
+    "name": "Semiconductor"
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+}

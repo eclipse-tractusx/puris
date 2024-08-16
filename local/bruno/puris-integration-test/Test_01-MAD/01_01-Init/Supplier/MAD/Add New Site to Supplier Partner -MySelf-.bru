@@ -1,0 +1,42 @@
+meta {
+  name: Add New Site to Supplier Partner -MySelf-
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/partners/putSite?partnerBpnl={{SUPPLIER_BPNL}}
+  body: json
+  auth: none
+}
+
+params:query {
+  partnerBpnl: {{SUPPLIER_BPNL}}
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+  "bpns": "{{SUPPLIER_BPNS2}}",
+  "name": "Semiconductor Supplier Inc. Secondary Site",
+  "addresses": [
+      {
+          "bpna": "{{SUPPLIER_BPNA2}}",
+          "streetAndNumber": "Sunset Blvd. 345",
+          "zipCodeAndCity": "90001 Los Angeles",
+          "country": "USA"
+      }
+  ]
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+  
+}

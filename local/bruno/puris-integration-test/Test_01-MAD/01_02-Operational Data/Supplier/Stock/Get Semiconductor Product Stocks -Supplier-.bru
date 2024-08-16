@@ -1,0 +1,80 @@
+meta {
+  name: Get Semiconductor Product Stocks -Supplier-
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/stockView/product-stocks
+  body: none
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+  : 
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const responseJson = res.getBody();
+  
+  test("Verify response contains two product stock objects", function () {
+      expect(responseJson).to.be.an("array").with.lengthOf(2);
+  });
+  
+  test("Verify stock composition NY (material number with BPNS, BPNA and Partner BPNL)", function () {
+      const stockNy = responseJson.find(function (stock) {
+          return stock.stockLocationBpns === bru.getEnvVar("SUPPLIER_BPNS");
+      });
+  
+      expect(stockNy).to.have.property("material");
+      expect(stockNy.material).to.have.property("materialNumberCustomer");
+      expect(stockNy.material.materialNumberCustomer).to.equal(bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER"));
+  
+      expect(stockNy.material).to.have.property("materialNumberSupplier");
+      expect(stockNy.material.materialNumberSupplier).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
+  
+      expect(stockNy.material).to.have.property("materialNumberCx");
+      expect(stockNy.material.materialNumberCx).to.equal(bru.getEnvVar("MATERIAL_NUMBER_CX"));
+  
+      expect(stockNy.material).to.have.property("materialFlag");
+      expect(stockNy.material.materialFlag).to.be.false;
+  
+      expect(stockNy.material).to.have.property("productFlag");
+      expect(stockNy.material.productFlag).to.be.true;
+  
+      expect(stockNy).to.have.property("stockLocationBpns");
+      expect(stockNy.stockLocationBpns).to.equal(bru.getEnvVar("SUPPLIER_BPNS"));
+  
+      expect(stockNy).to.have.property("stockLocationBpna");
+      expect(stockNy.stockLocationBpna).to.equal(bru.getEnvVar("SUPPLIER_BPNA"));
+  
+      expect(stockNy).to.have.property("partner");
+      expect(stockNy.partner).to.have.property("bpnl");
+      expect(stockNy.partner.bpnl).to.equal(bru.getEnvVar("CUSTOMER_BPNL"));
+  });
+  
+  test("Verify stock composition LA (material number with BPNS, BPNA and Partner BPNL)", function () {
+      const stockLa = responseJson.find(function (stock) {
+          return stock.stockLocationBpns === bru.getEnvVar("SUPPLIER_BPNS2");
+      });
+  
+      expect(stockLa).to.have.property("material");
+      expect(stockLa.material).to.have.property("materialNumberSupplier");
+      expect(stockLa.material.materialNumberSupplier).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
+  
+      expect(stockLa).to.have.property("stockLocationBpns");
+      expect(stockLa.stockLocationBpns).to.equal(bru.getEnvVar("SUPPLIER_BPNS2"));
+  
+      expect(stockLa).to.have.property("stockLocationBpna");
+      expect(stockLa.stockLocationBpna).to.equal(bru.getEnvVar("SUPPLIER_BPNA2"));
+  
+      expect(stockLa).to.have.property("partner");
+      expect(stockLa.partner).to.have.property("bpnl");
+      expect(stockLa.partner.bpnl).to.equal(bru.getEnvVar("CUSTOMER_BPNL"));
+  });
+}

@@ -1,0 +1,97 @@
+meta {
+  name: Get ShellDescriptor by found AAS ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{SUPPLIER_DTR}}/api/v3/shell-descriptors/:aasIdentifier
+  body: none
+  auth: bearer
+}
+
+params:path {
+  aasIdentifier: {{SUPPLIER_AAS_IDENTIFIER}}
+}
+
+headers {
+  Edc-Bpn: {{SUPPLIER_BPNL}}
+}
+
+auth:bearer {
+  token: {{SUPPLIER_BEARER_TOKEN}}
+}
+
+script:pre-request {
+  const materialNumberCustomer = bru.getEnvVar('MATERIAL_NUMBER_CUSTOMER');
+  const materialNumberSupplier = bru.getEnvVar('MATERIAL_NUMBER_SUPPLIER');
+  
+  const queryParam = '{"name":"customerPartId","value":"'+materialNumberCustomer+'"},{"name":"manufacturerPartId","value":"'+materialNumberSupplier+'"}';
+  
+  const encodedQueryParam = Buffer.from(queryParam).toString("base64");
+  bru.setVar('DTR_QUERY_SPECIFIC_ASSET_IDS_ENCODED', encodedQueryParam);
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonData = res.getBody();
+  
+  const expectedSpecificAssetIds = [
+      { name: "customerPartId", value: bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER") },
+      { name: "digitalTwinType", value: "PartType" },
+      { name: "manufacturerPartId", value: bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER") },
+      { name: "manufacturerId", value: bru.getEnvVar("SUPPLIER_BPNL") }
+  ];
+  
+  expectedSpecificAssetIds.forEach(expectedAsset => {
+      const foundAsset = jsonData.specificAssetIds.find(asset => asset.name === expectedAsset.name);
+  
+      test(`SpecificAssetId - Name is "${expectedAsset.name}"`, () => {
+          expect(foundAsset).to.not.be.undefined;
+      });
+  
+      test(`SpecificAssetId - Value for "${expectedAsset.name}" is "${expectedAsset.value}"`, () => {
+          expect(foundAsset.value).to.eql(expectedAsset.value);
+      });
+  });
+  
+  
+  const expectedSemanticIds = [
+      "urn:samm:io.catenax.item_stock:2.0.0#ItemStock",
+      "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation",
+      "urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput",
+      "urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation"
+  ];
+  
+  expectedSemanticIds.forEach(function(semanticId){
+      console.info(semanticId);
+      // get SubmodelDescriptor for ItemStock (implicit samm version check)
+      const submodelDescriptor = jsonData.submodelDescriptors.find(function (submodelDescriptor) {
+          return submodelDescriptor.semanticId.keys[0].value === semanticId;
+      });
+  
+      const submodelName = semanticId.split("#")[1];
+  
+      test("SubmodelDescriptor " + submodelName +" - Verify that SubmodelDescriptor exists and follows DT Standard", function () {
+          expect(submodelDescriptor, "SubmodelDescriptor " + submodelName +" - Verify that SubmodelDescriptor for Item Stock exists").to.not.undefined;
+  
+          // get DSP endpoint
+          const dspEndpoint = submodelDescriptor.endpoints.find(function (endpoint) {
+              return endpoint.protocolInformation.subprotocol === "DSP";
+          });
+          
+          expect(dspEndpoint, "SubmodelDescriptor " + submodelName + " - Verify that DSP Endpoint is set").to.not.undefined;
+  
+          expect(dspEndpoint.interface, "SubmodelDescriptor " + submodelName + " - Verify that DSP Endpoint interface is set to Submodel").to.equal("SUBMODEL-3.0");
+  
+          const PROTOCOL_URL = bru.getEnvVar("SUPPLIER_EDC_EXT_HOSTNAME")+ "/" + bru.getEnvVar("PROTOCOL_PATH");
+          expect(dspEndpoint.protocolInformation.subprotocolBody, "SubmodelDescriptor " + submodelName + " - Verify that DSP subprotocolBody is set (id)").to.contain("id=");
+          expect(dspEndpoint.protocolInformation.subprotocolBody, "SubmodelDescriptor " + submodelName + " - Verify that DSP subprotocolBody is set (dspEndpoint)").to.contain(";dspEndpoint="+PROTOCOL_URL);
+  
+          expect(dspEndpoint.protocolInformation.href.startsWith(bru.getEnvVar("SUPPLIER_DP_EDC_EXT_HOSTNAME")+"/api/public"), "SubmodelDescriptor " + submodelName + " - Verify that DSP href is set starting with dataplane").to.be.true;
+      });
+  });
+}

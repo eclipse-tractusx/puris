@@ -1,0 +1,148 @@
+meta {
+  name: Create Production range Semiconductor
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/production/range
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  [
+      {
+          "partner": {
+              "bpnl": "{{CUSTOMER_BPNL}}"
+          },
+          "material": {
+              "materialFlag": false,
+              "productFlag": true,
+              "materialNumberCustomer": "{{MATERIAL_NUMBER_CUSTOMER}}",
+              "materialNumberSupplier": "{{MATERIAL_NUMBER_SUPPLIER}}",
+              "materialNumberCx": "{{MATERIAL_NUMBER_CX}}",
+              "name": "Semiconductor"
+          },
+          "quantity": 600,
+          "measurementUnit": "unit:piece",
+          "productionSiteBpns": "{{SUPPLIER_BPNS}}",
+          "estimatedTimeOfCompletion": "{{DATE_TIME_CALCULATED_2}}"
+      },
+      {
+          "partner": {
+              "bpnl": "{{CUSTOMER_BPNL}}"
+          },
+          "material": {
+              "materialFlag": false,
+              "productFlag": true,
+              "materialNumberCustomer": "{{MATERIAL_NUMBER_CUSTOMER}}",
+              "materialNumberSupplier": "{{MATERIAL_NUMBER_SUPPLIER}}",
+              "materialNumberCx": "{{MATERIAL_NUMBER_CX}}",
+              "name": "Semiconductor"
+          },
+          "quantity": 550,
+          "measurementUnit": "unit:piece",
+          "productionSiteBpns": "{{SUPPLIER_BPNS}}",
+          "estimatedTimeOfCompletion": "{{DATE_TIME_CALCULATED_3}}",
+          "customerOrderNumber": "CNbr-2",
+          "customerOrderPositionNumber": "C-Pos-2",
+          "supplierOrderNumber": "SNbr-2"
+      },
+      {
+          "partner": {
+              "bpnl": "{{CUSTOMER_BPNL}}"
+          },
+          "material": {
+              "materialFlag": false,
+              "productFlag": true,
+              "materialNumberCustomer": "{{MATERIAL_NUMBER_CUSTOMER}}",
+              "materialNumberSupplier": "{{MATERIAL_NUMBER_SUPPLIER}}",
+              "materialNumberCx": "{{MATERIAL_NUMBER_CX}}",
+              "name": "Semiconductor"
+          },
+          "quantity": 650,
+          "measurementUnit": "unit:piece",
+          "productionSiteBpns": "{{SUPPLIER_BPNS}}",
+          "estimatedTimeOfCompletion": "{{DATE_TIME_CALCULATED_4}}"
+      },
+      {
+          "partner": {
+              "bpnl": "{{CUSTOMER_BPNL}}"
+          },
+          "material": {
+              "materialFlag": false,
+              "productFlag": true,
+              "materialNumberCustomer": "{{MATERIAL_NUMBER_CUSTOMER}}",
+              "materialNumberSupplier": "{{MATERIAL_NUMBER_SUPPLIER}}",
+              "materialNumberCx": "{{MATERIAL_NUMBER_CX}}",
+              "name": "Semiconductor"
+          },
+          "quantity": 200,
+          "measurementUnit": "unit:piece",
+          "productionSiteBpns": "{{SUPPLIER_BPNS}}",
+          "estimatedTimeOfCompletion": "{{DATE_TIME_CALCULATED_4}}"
+      },
+      {
+          "partner": {
+              "bpnl": "{{CUSTOMER_BPNL}}"
+          },
+          "material": {
+              "materialFlag": false,
+              "productFlag": true,
+              "materialNumberCustomer": "{{MATERIAL_NUMBER_CUSTOMER}}",
+              "materialNumberSupplier": "{{MATERIAL_NUMBER_SUPPLIER}}",
+              "materialNumberCx": "{{MATERIAL_NUMBER_CX}}",
+              "name": "Semiconductor"
+          },
+          "quantity": 300,
+          "measurementUnit": "unit:piece",
+          "productionSiteBpns": "{{SUPPLIER_BPNS}}",
+          "estimatedTimeOfCompletion": "{{DATE_TIME_CALCULATED_4_1}}"
+      }
+  ]
+}
+
+script:pre-request {
+  // Create the formattedDate
+  const today = new Date();
+  today.setDate(today.getDate() + 1);
+  let dateFormatted = today.toISOString().slice(0, 16);
+  
+  // Set the formattedDate in the environment variable
+  bru.setVar('DATE_TIME_CALCULATED_1', dateFormatted);
+  
+  today.setDate(today.getDate() + 2);
+  dateFormatted = today.toISOString().slice(0, 16);
+  
+  // Set the formattedDate in the environment variable
+  bru.setVar('DATE_TIME_CALCULATED_2', dateFormatted);
+  
+  today.setDate(today.getDate() + 3);
+  dateFormatted = today.toISOString().slice(0, 16);
+  
+  // Set the formattedDate in the environment variable
+  bru.setVar('DATE_TIME_CALCULATED_3', dateFormatted);
+  
+  today.setDate(today.getDate() + 4);
+  dateFormatted = today.toISOString().slice(0, 16);
+  
+  // Set the formattedDate in the environment variable
+  bru.setVar('DATE_TIME_CALCULATED_4', dateFormatted);
+  
+  today.setHours(today.getHours() + 1);
+  dateFormatted = today.toISOString().slice(0, 16);
+  
+  // Set the formattedDate in the environment variable
+  bru.setVar('DATE_TIME_CALCULATED_4_1', dateFormatted);
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(201);
+  })
+}
