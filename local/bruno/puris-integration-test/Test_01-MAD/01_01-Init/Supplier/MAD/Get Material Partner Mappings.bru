@@ -18,14 +18,21 @@ headers {
   X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
 }
 
-assert {
-  res.body.BPNL1234567890ZZ: eq MNR-8101-ID146955.001
-  res.body.BPNL4444444444XX: eq MNR-7307-AU340474.002
-}
-
 tests {
   test("response is ok", function() {
       expect(res.getStatus()).to.equal(200);
+  })
+  
+  test("Customer Mapping ok", function() {
+    const customerBPNL = bru.getEnvVar("CUSTOMER_BPNL");
+    const customerMatNbr = bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER");
+    expect(res.getBody()[customerBPNL]).to.equal(customerMatNbr);
+  })
+  
+  test("Supplier Mapping ok", function() {
+    const supplierBPNL = bru.getEnvVar("SUPPLIER_BPNL");
+    const supplierMatNbr = bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER");
+    expect(res.getBody()[supplierBPNL]).to.equal(supplierMatNbr);
   })
   
 }

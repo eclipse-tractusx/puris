@@ -25,10 +25,10 @@ headers {
 script:pre-request {
   var plain = bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER")
   var encoded = Buffer.from(plain).toString("base64")
-  bru.setEnvVar("B64_MNR_CUSTOMER", encoded)
+  bru.setVar("B64_MNR_CUSTOMER", encoded)
   var plain = bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER")
   var encoded = Buffer.from(plain).toString("base64")
-  bru.setEnvVar("B64_MNR_SUPPLIER", encoded)
+  bru.setVar("B64_MNR_SUPPLIER", encoded)
 }
 
 tests {

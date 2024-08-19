@@ -31,6 +31,7 @@ script:pre-request {
   
   const encodedQueryParam = Buffer.from(queryParam).toString("base64");
   bru.setVar('DTR_QUERY_SPECIFIC_ASSET_IDS_ENCODED', encodedQueryParam);
+  
 }
 
 tests {
