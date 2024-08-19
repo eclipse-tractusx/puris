@@ -36,7 +36,16 @@ import java.util.concurrent.Executors;
 public class PurisApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(PurisApplication.class, args);
+        SpringApplication app = new SpringApplication(PurisApplication.class);
+        app.setBanner((environment, sourceClass, out) -> {
+            out.println("  ____             _       ____             _                  _");
+            out.println(" |  _ \\ _   _ _ __(_)___  | __ )  __ _  ___| | _____ _ __   __| |");
+            out.println(" | |_) | | | | '__| / __| |  _ \\ / _` |/ __| |/ / _ \\ '_ \\ / _` |");
+            out.println(" |  __/| |_| | |  | \\__ \\ | |_) | (_| | (__|   <  __/ | | | (_| |");
+            out.println(" |_|    \\__,_|_|  |_|___/ |____/ \\__,_|\\___|_|\\_\\___|_| |_|\\__,_|");
+            out.println();
+        });
+        app.run(args);
     }
 
     @Bean
