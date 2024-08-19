@@ -22,4 +22,8 @@ tests {
       bru.setVar("CUSTOMER_BEARER_TOKEN", jsonData.access_token);
   });
   
+  // when run in batch mode, this waiting period is necessary 
+  // to allow time for updating of the DTR by the puris backend
+  await new Promise(resolve => setTimeout(resolve, 15000));
+  
 }
