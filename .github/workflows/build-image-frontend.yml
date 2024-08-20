@@ -53,10 +53,10 @@ jobs:
 
         steps:
             -   name: Checkout
-                uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+                uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
             -   name: Setup Node
-                uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+                uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
                 with:
                     node-version: 20
                     registry-url: https://registry.npmjs.org/
@@ -95,7 +95,7 @@ jobs:
 
             # Needed to create multi-platfrom image
             -   name: Set up Docker Buildx
-                uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # v3.3.0
+                uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
 
             # Create SemVer or ref tags dependent of trigger event
             -   name: Docker meta
@@ -133,7 +133,7 @@ jobs:
             # https://github.com/peter-evans/dockerhub-description
             -   name: Update Docker Hub description
                 if: github.event_name != 'pull_request'
-                uses: peter-evans/dockerhub-description@dc67fad7001ef9e8e3c124cb7a64e16d0a63d864 # v3.4.2
+                uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
                 with:
                     username: ${{ secrets.DOCKER_HUB_USER }}
                     password: ${{ secrets.DOCKER_HUB_TOKEN }}

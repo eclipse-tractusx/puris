@@ -42,10 +42,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0  # Ensure full clone for pull request workflows
-          ref: ${{ github.head_ref }}  # Fetch specific branch/commit for pull requests
 
       - name: TruffleHog OSS
         id: trufflehog
