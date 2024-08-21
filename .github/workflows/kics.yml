@@ -50,7 +50,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: KICS scan
-        uses: checkmarx/kics-github-action@aacf8e81cd48e227259c937c215b352e02ad447a # v2.1.0
+        uses: checkmarx/kics-github-action@530ac1f8efe6202b0f12c9a6e952597ae707b755 # v2.1.2
         with:
           path: "."
           fail_on: high
