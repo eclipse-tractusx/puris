@@ -1,0 +1,42 @@
+meta {
+  name: Get Supplier Partner
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/partners?partnerBpnl={{SUPPLIER_BPNL}}
+  body: none
+  auth: none
+}
+
+params:query {
+  partnerBpnl: {{SUPPLIER_BPNL}}
+}
+
+headers {
+  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+}
+
+tests {
+  test("response is ok", function () {
+      expect(res.getStatus()).to.equal(200);
+  })
+  
+  test("Verify partner values (BPNL with one BPNS with one BPNA)", function () {
+      const responseJson = res.getBody();
+  
+      expect(responseJson).to.have.property("bpnl");
+      expect(responseJson.bpnl).to.equal(bru.getEnvVar("SUPPLIER_BPNL"));
+  
+      expect(responseJson.sites).to.be.an("array").with.lengthOf(1);
+  
+      const site = responseJson.sites[0];
+      expect(site).to.have.property("bpns", bru.getEnvVar("SUPPLIER_BPNS"));
+  
+      expect(site.addresses).to.be.an("array").with.lengthOf(1);
+  
+      const address = site.addresses[0];
+      expect(address).to.have.property("bpna", bru.getEnvVar("SUPPLIER_BPNA"));
+  });
+}

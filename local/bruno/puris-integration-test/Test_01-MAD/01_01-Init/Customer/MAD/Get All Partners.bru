@@ -1,0 +1,49 @@
+meta {
+  name: Get All Partners
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/partners/all
+  body: none
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+  
+  test("Verify response contains two objects (puris owner, supplier partner)", function () {
+      expect(res.getBody()).to.be.an("array").with.lengthOf(2);
+  });
+  
+  test("Verify supplier partner values (BPNL with one BPNS with one BPNA)", function () {
+      const responseJson = res.getBody();
+  
+      const supplierPartner = responseJson.find(function (partner) {
+          return partner.bpnl === bru.getEnvVar("SUPPLIER_BPNL");
+      });
+  
+      expect(supplierPartner).to.have.property("bpnl");
+  
+      expect(supplierPartner.bpnl).to.equal(bru.getEnvVar("SUPPLIER_BPNL"));
+  
+      expect(supplierPartner.sites).to.be.an("array").with.lengthOf(2);
+  
+      // check only the newly added site as the other one has been checked earlier
+      const site = supplierPartner.sites.find(function (site) {
+          return site.bpns === bru.getEnvVar("SUPPLIER_BPNS2");
+      });
+  
+      expect(site.addresses).to.be.an("array").with.lengthOf(1);
+  
+      const address = site.addresses[0];
+      expect(address).to.have.property("bpna", bru.getEnvVar("SUPPLIER_BPNA2"));
+  });
+}

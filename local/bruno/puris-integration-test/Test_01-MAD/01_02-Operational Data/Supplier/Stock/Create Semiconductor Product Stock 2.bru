@@ -1,0 +1,47 @@
+meta {
+  name: Create Semiconductor Product Stock 2
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/stockView/product-stocks
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+      "material": {
+          "materialFlag": false,
+          "productFlag": true,
+          "materialNumberCustomer": "{{MATERIAL_NUMBER_CUSTOMER}}",
+          "materialNumberSupplier": "{{MATERIAL_NUMBER_SUPPLIER}}",
+          "materialNumberCx": "{{MATERIAL_NUMBER_CX}}",
+          "name": "Semiconductor"
+      },
+      "quantity": 400.0,
+      "measurementUnit": "unit:piece",
+      "stockLocationBpns": "{{SUPPLIER_BPNS2}}",
+      "stockLocationBpna": "{{SUPPLIER_BPNA2}}",
+      "type": "PRODUCT",
+      "lastUpdatedOn": "2023-12-18T14:12:48.466+00:00",
+      "isBlocked": false,
+      "customerOrderNumber": "CNbr-2",
+      "customerOrderPositionNumber": "C-Pos-2",
+      "supplierOrderNumber": "SNbr-2",
+      "partner":{
+          "bpnl": "{{CUSTOMER_BPNL}}"
+      }
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+}

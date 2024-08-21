@@ -1,0 +1,36 @@
+meta {
+  name: Get Own Sites
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/partners/ownSites
+  body: none
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+  
+  test("Verify own site values (one BPNS with one BPNA)", function () {
+      const responseJson = res.getBody();
+  
+      expect(responseJson).to.be.an("array").with.lengthOf(2);
+  
+      const site = responseJson.find(function (site) {
+          return site.bpns === bru.getEnvVar("SUPPLIER_BPNS");
+      });
+      
+      expect(site.addresses).to.be.an("array").with.lengthOf(1);
+  
+      const address = site.addresses[0];
+      expect(address).to.have.property("bpna", bru.getEnvVar("SUPPLIER_BPNA"));
+  });
+}

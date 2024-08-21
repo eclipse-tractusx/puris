@@ -1,0 +1,45 @@
+meta {
+  name: Register Supplier Partner
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/partners
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+    "name": "Semiconductor Supplier Inc.",
+    "edcUrl": "{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+    "bpnl": "{{SUPPLIER_BPNL}}",
+    "addresses": [],
+    "sites": [
+      {
+        "bpns": "{{SUPPLIER_BPNS}}",
+        "name": "Semiconductor Supplier Inc. Headquarter",
+        "addresses": [
+          {
+            "bpna": "{{SUPPLIER_BPNA}}",
+            "streetAndNumber": "Wall Street 101",
+            "zipCodeAndCity": "10001 New York",
+            "country": "USA"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+}
