@@ -240,7 +240,7 @@ act --list
 >> 0      lint-test                    lint-test                    Lint and Test Charts                            helm-test.yml              pull_request,workflow_dispatch     
 
 # run action with job-id lint-test for event as defined in pr-event.json
-act --job lint-test -e .act/pr-event.json
+act --job lint-test -e .act/pr_event.json
 ```
 
 # Notes on the release
