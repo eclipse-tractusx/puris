@@ -1,0 +1,153 @@
+install:
+  postgresql: true
+  vault: false
+
+participant:
+  # -- BPN Number
+  id: <path:puris/data/customer#bpnl>
+
+controlplane:
+  # -- endpoints of the control plane
+  endpoints:
+    management:
+      authKey: <path:puris/data/customer/edc#api-key>
+  bdrs:
+    # time that a cached BPN/DID resolution map is valid in seconds, default is 10 min
+    cache_validity_seconds: 0
+    server:
+      # URL of the BPN/DID Resolution Service - required:
+      url: <path:puris/data/environment#bdrs-url>    
+
+  ## Ingress declaration to expose the network service.
+  ingresses:
+    ## Public / Internet facing Ingress
+    - enabled: true
+      # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
+      hostname: <path:puris/data/customer/edc#hostname-internet>
+      # -- Additional ingress annotations to add
+      annotations:
+        # cert manager for ingress on CX int
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      # -- EDC endpoints exposed by this ingress resource
+      endpoints:
+        - protocol
+        - management
+      # -- Defines the [ingress class](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class)  to use
+      className: "nginx"
+      # -- TLS [tls class](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls) applied to the ingress resource
+      tls:
+        # -- Enables TLS on the ingress resource
+        enabled: true
+        # -- If present overwrites the default secret name
+        secretName: tls-secret-edc-customer-controlplane
+    ## Public / Internet facing Ingress
+    - enabled: true
+      # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
+      hostname: <path:puris/data/customer/edc#hostname-intranet>
+      # -- EDC endpoints exposed by this ingress resource
+      endpoints:
+        - control
+      # -- Defines the [ingress class](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class)  to use
+      className: "nginx"
+      # -- TLS [tls class](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls) applied to the ingress resource
+      tls:
+        # -- Enables TLS on the ingress resource
+        enabled: false
+  # -- declare where to mount [volumes](https://kubernetes.io/docs/concepts/storage/volumes/) into the container
+  # -- configuration of the [Java Util Logging Facade](https://docs.oracle.com/javase/7/docs/technotes/guides/logging/overview.html)
+  logging: |-
+    .level=DEBUG
+    org.eclipse.edc.level=ALL
+    handlers=java.util.logging.ConsoleHandler
+    java.util.logging.ConsoleHandler.formatter=java.util.logging.SimpleFormatter
+    java.util.logging.ConsoleHandler.level=ALL
+    java.util.logging.SimpleFormatter.format=[%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS] [%4$-7s] %5$s%6$s%n
+
+iatp:
+  # Decentralized IDentifier
+  id: <path:puris/data/customer#did-url>
+  # -- Configures the trusted issuers for this runtime
+  trustedIssuers: # array [] that needs to be expand but likely like (sorry unconfirmed on how this is done, as I also would need to check)
+    - <path:puris/data/environment#trusted-issuer-1>
+  sts:
+    dim: #TDO urls
+      url: <path:puris/data/environment#dim-url>
+    oauth:
+      token_url: <path:puris/data/customer#dim-idp-token-url>
+      client:
+        id: <path:puris/data/customer#dim-idp-client-id>
+        # not supported, see https://github.com/eclipse-edc/Connector/discussions/4135
+        # secret_alias: "puris/data/customer#dim-idp-client-secret"
+        secret_alias: "CUSTOMER_EDC/CLIENT_SECRET"
+
+dataplane:
+  endpoints:
+    proxy:
+      authKey: <path:puris/data/customer/edc#api-key>
+
+  token:
+    signer:
+      privatekey_alias: DATAPLANE_PROXY_PRIVATE_KEY
+    verifier:
+      publickey_alias: DATAPLANE_PROXY_PUBLIC_KEY
+
+  # "valueFrom" environment variable references that will be added to deployment pods. Name is templated.
+  # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#envvarsource-v1-core
+  ## Ingress declaration to expose the network service.
+  ingresses:
+    ## Public / Internet facing Ingress
+    - enabled: true
+      # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
+      hostname: <path:puris/data/customer/edc#hostname-internet>
+      # -- Additional ingress annotations to add
+      annotations:
+        # cert manager for ingress on CX int
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      # -- EDC endpoints exposed by this ingress resource
+      endpoints:
+        - public
+      # -- Defines the [ingress class](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class)  to use
+      className: "nginx"
+      # -- TLS [tls class](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls) applied to the ingress resource
+      tls:
+        # -- Enables TLS on the ingress resosurce
+        enabled: true
+        # -- If present overwrites the default secret name
+        secretName: tls-secret-edc-customer-dataplane
+      ## Adds [cert-manager](https://cert-manager.io/docs/) annotations to the ingress resource
+  logging: |-
+    .level=DEBUG
+    org.eclipse.edc.level=ALL
+    handlers=java.util.logging.ConsoleHandler
+    java.util.logging.ConsoleHandler.formatter=java.util.logging.SimpleFormatter
+    java.util.logging.ConsoleHandler.level=ALL
+    java.util.logging.SimpleFormatter.format=[%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS] [%4$-7s] %5$s%6$s%n
+postgresql:
+  jdbcUrl: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/<path:puris/data/customer/edc/postgres#database>"
+  primary:
+    persistence:
+      enabled: false
+  readReplicas:
+    persistence:
+      enabled: false
+  auth:
+    database: <path:puris/data/customer/edc/postgres#database>
+    username: <path:puris/data/customer/edc/postgres#user>
+    password: <path:puris/data/customer/edc/postgres#password>
+  resources:
+    requests:
+      cpu: "20m"
+    limits:
+      cpu: "200m"
+vault:
+  hashicorp:
+    enabled: true
+    url: <path:puris/data/environment#vault-url>
+    token: <path:puris/data/environment#vault-token>
+    timeout: 30
+    healthCheck:
+      enabled: true
+      standbyOk: true
+    paths:
+      secret: /v1/puris
+      health: /v1/sys/health

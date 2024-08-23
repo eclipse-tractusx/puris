@@ -1,0 +1,130 @@
+nameOverride: 
+# fullnameOverride: dtr-customer
+# enables the default postgres database
+enablePostgres: true
+# enables the default keycloak identity provider
+# relies on a postgres instance
+enableKeycloak: true
+registry:
+  image:
+    registry: docker.io
+    repository: tractusx/sldt-digital-twin-registry
+    # This version property overwrites the default image version.
+    # The default image version is the appVersion of the Chart.yaml.
+    version: ""
+  replicaCount: 1
+  imagePullPolicy: IfNotPresent
+  containerPort: 4243
+  host: <path:puris/data/customer/dtr#hostname>
+  ## If 'authentication' is set to false, no OAuth authentication is enforced
+  authentication: true
+  # Issuer url for the dtr (resource server),
+  # make sure that the url points to an externally resolvable hostname.
+  # If no value is committed, and the integrated Keycloak is enabled,
+  # the K8s internal service name is used, which is a problem, when
+  # validating the issuer claim in an access token
+  idpIssuerUri: "https://<path:puris/data/customer/dtr/keycloak#hostname>/realms/default-realm"
+  idpClientId: <path:puris/data/customer/dtr/keycloak#client-id>
+  tenantId: <path:puris/data/customer#bpnl>
+  useGranularAccessControl: "false"
+  granularAccessControlFetchSize: "500"
+  service:
+    port: 8080
+    type: ClusterIP
+  livenessProbe:
+    failureThreshold: 3
+    periodSeconds: 3
+    initialDelaySeconds: 100
+  readinessProbe:
+    failureThreshold: 3
+    periodSeconds: 3
+    initialDelaySeconds: 100
+  dataSource:
+    driverClassName: org.postgresql.Driver
+    sqlInitPlatform: pg
+  ingress:
+    enabled: true
+    tls: 
+      enabled: true
+      secretName: tls-secret-dtr-customer
+    urlPrefix: /semantics/registry
+    className: nginx
+    annotations: {
+      cert-manager.io/cluster-issuer: "letsencrypt-prod",
+      nginx.ingress.kubernetes.io/rewrite-target: /$2,
+      nginx.ingress.kubernetes.io/use-regex: "true",
+      nginx.ingress.kubernetes.io/enable-cors: "true",
+      nginx.ingress.kubernetes.io/cors-allow-credentials: "true",
+      nginx.ingress.kubernetes.io/x-forwarded-prefix: /semantics/registry
+    }
+  resources:
+    limits:
+      cpu: 750m
+      memory: 1024Mi
+    requests:
+      cpu: 10m
+      memory: 1024Mi
+  podSecurityContext:
+    runAsUser: 100
+  securityContext:
+    runAsUser: 100
+    allowPrivilegeEscalation: false
+postgresql:
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+  service:
+    ports:
+      postgresql: 5432
+  auth:
+    username: <path:puris/data/customer/dtr/postgres#user>
+    # if password is empty, the postgres password will be generated random via postgres-init
+    password: <path:puris/data/customer/dtr/postgres#password>
+    database: <path:puris/data/customer/dtr/postgres#database>
+    # -- Secret contains passwords for username postgres.
+    existingSecret: secret-dtr-postgres-init-customer
+  resources:
+    requests:
+      cpu: "5m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"  
+keycloak:
+  type: NodePort
+  auth:
+    adminUser: <path:puris/data/customer/dtr/keycloak#admin-user>
+    adminPassword: <path:puris/data/customer/dtr/keycloak#admin-password>
+  ingress:
+    enabled: true
+    hostname: <path:puris/data/customer/dtr/keycloak#hostname>
+    path: /
+    tls: 
+      enabled: true
+      secretName: tls-secret-dtr-keycloak-customer
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      external-dns.alpha.kubernetes.io/hostname: <path:puris/data/customer/dtr/keycloak#hostname>
+      nginx.org/location-snippets: |
+          add_header X-Forwarded-Proto https;
+          add_header X-Forwarded-For <path:puris/data/customer/dtr/keycloak#hostname>;
+  extraVolumes:
+    - name: init-script-vol
+      configMap:
+        name: registry-keycloak-customer-configmap # = dtr.fullname + "-keycloak-configmap"
+  # Mounting a keycloak realm configuration file
+  fullnameOverride: registry-keycloak-customer
+  database-credentials:
+    fullnameOverride: database-credentials-customer
+  extraVolumeMounts:
+    - mountPath: /opt/keycloak/data/import/default-realm-import.json
+      subPath: default-realm-import.json
+      name: init-script-vol
+  # Using a pre-configured Keycloak with a default realm,
+  # containing a test client and user with the necessary roles to
+  # authorize requests to the digital twin registry.
+  # Make sure to remove the '--hostname' property when deploying
+  # in a non-test scanrio
+  command: ["/bin/sh", "-c"]
+  args: ["kc.sh import --file /opt/keycloak/data/import/default-realm-import.json; kc.sh start-dev --hostname=<path:puris/data/customer/dtr/keycloak#hostname> --hostname-strict=false --proxy=edge"]
