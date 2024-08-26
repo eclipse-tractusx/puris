@@ -93,6 +93,8 @@ postgresql:
       memory: "256Mi"  
 keycloak:
   type: NodePort
+  postgresql:
+    enabled: true
   auth:
     adminUser: <path:puris/data/customer/dtr/keycloak#admin-user>
     adminPassword: <path:puris/data/customer/dtr/keycloak#admin-password>
