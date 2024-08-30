@@ -1,0 +1,45 @@
+meta {
+  name: Register Customer Partner
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/partners
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+    "name": "Control Unit Creator Inc.",
+    "edcUrl": "{{CUSTOMER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+    "bpnl": "{{CUSTOMER_BPNL}}",
+    "addresses": [],
+    "sites": [
+      {
+        "bpns": "{{CUSTOMER_BPNS}}",
+        "name": "Control Unit Creator Headquarter",
+        "addresses": [
+          {
+            "bpna": "{{CUSTOMER_BPNA}}",
+            "streetAndNumber": "13th Street 47",
+            "zipCodeAndCity": "10011 New York",
+            "country": "USA"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+}

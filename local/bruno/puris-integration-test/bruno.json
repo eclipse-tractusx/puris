@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "puris-integration-test",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

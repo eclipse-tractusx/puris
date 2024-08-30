@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Address;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -58,6 +59,9 @@ public class PartnerController {
 
     @Autowired
     private PartnerService partnerService;
+
+    @Autowired
+    private VariablesService variablesService;
 
     @Autowired
     private Validator validator;
@@ -221,8 +225,11 @@ public class PartnerController {
     @GetMapping("/all")
     @Operation(description = "Returns a list of all Partners. ")
     public ResponseEntity<List<PartnerDto>> listPartners() {
-        return new ResponseEntity<>(partnerService.findAll().
-            stream().map(partner -> modelMapper.map(partner, PartnerDto.class)).collect(Collectors.toList()),
+        final String ownBpnl = variablesService.getOwnBpnl();
+        return new ResponseEntity<>(partnerService.findAll().stream()
+            .filter(partner -> !partner.getBpnl().equals(ownBpnl))
+            .map(partner -> modelMapper.map(partner, PartnerDto.class))
+            .collect(Collectors.toList()),
             HttpStatusCode.valueOf(200));
     }
 

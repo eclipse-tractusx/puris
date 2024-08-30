@@ -1,0 +1,33 @@
+meta {
+  name: Get All Materials
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/materials/all
+  body: none
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+  
+  test("Verify response contains one material objects", function () {
+      expect(res.getBody()).to.be.an("array").with.lengthOf(1);
+  });
+  
+  test("Verify ownMaterialNumber values", function () {
+      const material = res.getBody()[0];
+  
+      expect(material).to.have.property("ownMaterialNumber");
+      expect(material.ownMaterialNumber).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
+  });
+  
+}

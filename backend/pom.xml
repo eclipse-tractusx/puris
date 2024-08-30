@@ -211,6 +211,7 @@
                     <include>application.properties</include>
                     <!-- add json-ld data-->
                     <include>json-ld/*</include>
+                    <include>banner.txt</include>
                 </includes>
                 <targetPath>BOOT-INF/classes/</targetPath>
             </resource>

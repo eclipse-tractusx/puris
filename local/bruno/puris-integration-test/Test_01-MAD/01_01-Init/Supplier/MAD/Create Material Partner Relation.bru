@@ -1,0 +1,38 @@
+meta {
+  name: Create Material Partner Relation
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/materialpartnerrelations?partnerBpnl={{CUSTOMER_BPNL}}&ownMaterialNumber={{B64_MNR_SUPPLIER}}&partnerMaterialNumber={{B64_MNR_CUSTOMER}}&partnerSupplies=false&partnerBuys=true
+  body: none
+  auth: none
+}
+
+params:query {
+  partnerBpnl: {{CUSTOMER_BPNL}}
+  ownMaterialNumber: {{B64_MNR_SUPPLIER}}
+  partnerMaterialNumber: {{B64_MNR_CUSTOMER}}
+  partnerSupplies: false
+  partnerBuys: true
+}
+
+headers {
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+script:pre-request {
+  var plain = bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER")
+  var encoded = Buffer.from(plain).toString("base64")
+  bru.setVar("B64_MNR_CUSTOMER", encoded)
+  var plain = bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER")
+  var encoded = Buffer.from(plain).toString("base64")
+  bru.setVar("B64_MNR_SUPPLIER", encoded)
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+}
