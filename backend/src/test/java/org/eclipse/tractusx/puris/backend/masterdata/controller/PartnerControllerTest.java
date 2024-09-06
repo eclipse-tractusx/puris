@@ -24,6 +24,7 @@ import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfigurati
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Address;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
@@ -62,6 +63,9 @@ public class PartnerControllerTest {
 
     @MockBean
     private MaterialPartnerRelationService mprService;
+
+    @MockBean
+    private VariablesService variablesService;
 
     private final ModelMapper modelMapper = new ModelMapper();
     private final String bpnl = "BPNL2222222222RR";

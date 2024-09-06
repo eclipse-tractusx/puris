@@ -23,13 +23,18 @@ package org.eclipse.tractusx.puris.backend.erpadapter.domain.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.validation.Constraint;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -40,6 +45,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @ToString
 public class ErpAdapterRequest {
+
+    public final static List<AssetType> SUPPORTED_TYPES = List.of(AssetType.ITEM_STOCK_SUBMODEL);
+
     @GeneratedValue
     @Id
     private UUID id;
@@ -48,9 +56,9 @@ public class ErpAdapterRequest {
     @NotNull
     private String partnerBpnl;
 
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     @NotNull
-    private String requestType;
+    @ValidRequestType
+    private AssetType requestType;
 
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     @NotNull
@@ -68,4 +76,17 @@ public class ErpAdapterRequest {
     private String ownMaterialNumber;
 
     private DirectionCharacteristic directionCharacteristic;
+
+
+
+    @Constraint(validatedBy = RequestTypeValidator.class)
+    private @interface ValidRequestType {
+    }
+
+    private static class RequestTypeValidator implements ConstraintValidator<ValidRequestType, AssetType> {
+        @Override
+        public boolean isValid(AssetType value, ConstraintValidatorContext context) {
+            return SUPPORTED_TYPES.contains(value);
+        }
+    }
 }
