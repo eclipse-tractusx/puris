@@ -154,9 +154,32 @@ backend:
       version: "1"
   resources:
     requests:
-      cpu: "5m"
+      cpu: "50m"
     limits:
       cpu: "200m"
+  livenessProbe:
+    # -- Number of failures (threshold) for a liveness probe
+    failureThreshold: 5
+    # -- Delay in seconds after which an initial liveness probe is checked
+    initialDelaySeconds: 180
+    # -- Wait time in seconds between liveness probes
+    periodSeconds: 10
+    # -- Number of trys until a pod is marked alive
+    successThreshold: 1
+    # -- Timeout in seconds of the liveness probe
+    timeoutSeconds: 1
+  # -- Checks if the pod is fully ready to operate
+  readinessProbe:
+    # -- Number of failures (threshold) for a readiness probe
+    failureThreshold: 5
+    # -- Delay in seconds after which an initial readiness probe is checked
+    initialDelaySeconds: 180
+    # -- Wait time in seconds between readiness probes
+    periodSeconds: 10
+    # -- Number of trys until a pod is marked ready
+    successThreshold: 1
+    # -- Timeout in seconds of the readiness probe
+    timeoutSeconds: 1
 
 postgresql:
   # -- Enable postgres by default, set to false to use existing postgres. Make sure to set
