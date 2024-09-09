@@ -134,7 +134,7 @@ backend:
             # -- id of the client that has a service account with roles to view the DTR. Used by the application to create
             # DTR asset in the edc with read only access. See Admin Guide. Mandatory if
             # backend.puris.dtr.idp.enabled = true.
-            id: <path:puris/data/supplier/dtr#client-id>
+            id: <path:puris/data/supplier/dtr/keycloak#client-id>
             secret:
               # -- alias for the vault used by the EDC in which the secret is stored. Mandatory if
               # backend.puris.dtr.idp.enabled = true.
