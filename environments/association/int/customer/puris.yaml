@@ -5,6 +5,8 @@ global:
 # FRONTEND -----------
 frontend:
   # fullnameOverride: "customer-frontend"
+  image:
+    tag: "latest"
   ingress:
     # -- Enable the Ingress
     enabled: true
@@ -51,6 +53,8 @@ frontend:
 # BACKEND -----------
 backend:
   # fullnameOverride: "customer-backend"
+  image:
+    tag: "latest"
   env:
     LOGGING_LEVEL_ORG_ECLIPSE_TRACTUSX_PURIS_BACKEND: DEBUG
   ingress:

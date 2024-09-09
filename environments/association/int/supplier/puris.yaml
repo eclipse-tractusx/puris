@@ -4,6 +4,8 @@ global:
       ingress: &domain <path:puris/data/supplier/puris#backend-hostname>
 # FRONTEND -----------
 frontend:
+  image:
+    tag: "latest"
   # fullnameOverride: "supplier-frontend"
   ingress:
     # -- Enable the Ingress
@@ -50,6 +52,8 @@ frontend:
 
 # BACKEND -----------
 backend:
+  image:
+    tag: "latest"
   # fullnameOverride: "supplier-backend"
   env:
     LOGGING_LEVEL_ORG_ECLIPSE_TRACTUSX_PURIS_BACKEND: DEBUG
