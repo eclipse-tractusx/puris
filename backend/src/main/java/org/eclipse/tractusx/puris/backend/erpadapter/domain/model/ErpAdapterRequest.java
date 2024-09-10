@@ -26,6 +26,7 @@ import jakarta.persistence.Id;
 import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Payload;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
@@ -33,6 +34,10 @@ import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -56,7 +61,6 @@ public class ErpAdapterRequest {
     @NotNull
     private String partnerBpnl;
 
-    @NotNull
     @ValidRequestType
     private AssetType requestType;
 
@@ -77,16 +81,23 @@ public class ErpAdapterRequest {
 
     private DirectionCharacteristic directionCharacteristic;
 
-
-
+    // AssetType validation helpers:
     @Constraint(validatedBy = RequestTypeValidator.class)
+    @Target({ElementType.FIELD, ElementType.PARAMETER})
+    @Retention(RetentionPolicy.RUNTIME)
     private @interface ValidRequestType {
+        String message() default
+            "Request Type must be listed in SUPPORTED_TYPES";
+
+        Class<?>[] groups() default {};
+
+        Class<? extends Payload>[] payload() default {};
     }
 
-    private static class RequestTypeValidator implements ConstraintValidator<ValidRequestType, AssetType> {
+    public static class RequestTypeValidator implements ConstraintValidator<ValidRequestType, AssetType> {
         @Override
         public boolean isValid(AssetType value, ConstraintValidatorContext context) {
-            return SUPPORTED_TYPES.contains(value);
+            return value != null && SUPPORTED_TYPES.contains(value);
         }
     }
 }
