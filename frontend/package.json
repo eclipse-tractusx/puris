@@ -19,7 +19,7 @@
         "@catena-x/portal-shared-components": "^2.1.31",
         "@mui/icons-material": "^5.14.12",
         "@mui/material": "^5.14.12",
-        "keycloak-js": "^23.0.5",
+        "keycloak-js": "^25.0.5",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-markdown": "^8.0.5",
