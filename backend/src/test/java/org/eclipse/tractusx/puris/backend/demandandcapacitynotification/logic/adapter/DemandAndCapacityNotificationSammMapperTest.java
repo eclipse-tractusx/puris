@@ -319,6 +319,11 @@ public class DemandAndCapacityNotificationSammMapperTest {
         for (var field: jsonNode.get("materialNumberCustomer")) {
             Assertions.assertEquals(CUSTOMER_MAT_NUMBER, field.asText());
         }
+
+        Assertions.assertTrue(jsonNode.get("materialGlobalAssetId").isArray());
+        for (var field: jsonNode.get("materialGlobalAssetId")) {
+            Assertions.assertEquals(CX_MAT_NUMBER, field.asText());
+        }
     }
 
     @ParameterizedTest
