@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.assertj.core.api.Assertions;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.erpadapter.ErpAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
@@ -36,6 +37,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import java.io.InputStream;
 import java.util.Date;
 import java.util.Map;
@@ -67,7 +69,7 @@ public class ErpAdapterRequestClientTest {
 
     private static final String apiSecret = "my-secret";
 
-    private static final String requestType = "itemstock";
+    private static final AssetType requestType = AssetType.ITEM_STOCK_SUBMODEL;
 
     private static final String sammVersion = "2.0";
 
@@ -118,7 +120,7 @@ public class ErpAdapterRequestClientTest {
 
         Assertions.assertThat(parameters.size()).isEqualTo(5);
         Assertions.assertThat(parameters.get("bpnl")).isEqualTo(supplierPartnerBpnl);
-        Assertions.assertThat(parameters.get("request-type")).isEqualTo(requestType);
+        Assertions.assertThat(parameters.get("request-type")).isEqualTo(requestType.ERP_KEYWORD);
         Assertions.assertThat(parameters.get("samm-version")).isEqualTo(sammVersion);
         Assertions.assertThat(parameters.get("request-timestamp")).isEqualTo(String.valueOf(erpAdapterRequest.getRequestDate().getTime()));
         Assertions.assertThat(parameters.get("request-id")).isEqualTo(uuid.toString());

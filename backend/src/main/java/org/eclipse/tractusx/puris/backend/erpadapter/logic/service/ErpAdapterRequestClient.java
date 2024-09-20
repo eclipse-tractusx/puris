@@ -45,7 +45,7 @@ public class ErpAdapterRequestClient {
     public Integer sendRequest(ErpAdapterRequest erpAdapterRequest){
         HttpUrl.Builder urlBuilder = HttpUrl.parse(erpAdapterConfiguration.getErpAdapterUrl()).newBuilder();
         urlBuilder.addQueryParameter("bpnl", erpAdapterRequest.getPartnerBpnl());
-        urlBuilder.addQueryParameter("request-type", erpAdapterRequest.getRequestType());
+        urlBuilder.addQueryParameter("request-type", erpAdapterRequest.getRequestType().ERP_KEYWORD);
         urlBuilder.addQueryParameter("request-id", erpAdapterRequest.getId().toString());
         urlBuilder.addQueryParameter("samm-version", erpAdapterRequest.getSammVersion());
         urlBuilder.addQueryParameter("request-timestamp", String.valueOf(erpAdapterRequest.getRequestDate().getTime()));

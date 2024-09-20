@@ -109,7 +109,7 @@ public class ErpAdapterTriggerService {
                         DirectionCharacteristic directionCharacteristic = dataset.getDirectionCharacteristic().isEmpty() ?
                             null : DirectionCharacteristic.valueOf(dataset.getDirectionCharacteristic());
                         request.setDirectionCharacteristic(directionCharacteristic);
-                        request.setRequestType(dataset.getAssetType().ERP_KEYWORD);
+                        request.setRequestType(dataset.getAssetType());
                         request.setSammVersion(dataset.getAssetType().ERP_SAMMVERSION);
                         executorService.submit(() -> erpAdapterRequestService.createAndSend(request));
 
@@ -156,7 +156,7 @@ public class ErpAdapterTriggerService {
             erpAdapterRequest.setPartnerBpnl(partnerBpnl);
             erpAdapterRequest.setOwnMaterialNumber(ownMaterialNumber);
             erpAdapterRequest.setDirectionCharacteristic(direction);
-            erpAdapterRequest.setRequestType(type.ERP_KEYWORD);
+            erpAdapterRequest.setRequestType(type);
             erpAdapterRequest.setSammVersion(type.ERP_SAMMVERSION);
             executorService.submit(() -> erpAdapterRequestService.createAndSend(erpAdapterRequest));
 
