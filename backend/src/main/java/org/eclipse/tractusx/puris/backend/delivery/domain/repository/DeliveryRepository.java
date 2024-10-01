@@ -20,11 +20,37 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.domain.repository;
 
-import java.util.UUID;
-
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.Delivery;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+import java.util.UUID;
+
 public interface DeliveryRepository<T extends Delivery> extends JpaRepository<T, UUID> {
-    
+
+    default List<T> getForOwnMaterialNumber(String ownMatNbr) {
+        // default implementation prevents Jpa from trying to
+        // auto-generate this method.
+        throw new UnsupportedOperationException("Implementation needed");
+    }
+
+    default List<T> getForOwnMaterialNumberAndPartnerBPNL(String ownMatNbr, String bpnl) {
+        // default implementation prevents Jpa from trying to
+        // auto-generate this method.
+        throw new UnsupportedOperationException("Implementation needed");
+    }
+
+    default List<T> getForOwnMaterialNumberAndBPNS(String ownMatNbr, String bpns) {
+        // default implementation prevents Jpa from trying to
+        // auto-generate this method.
+        throw new UnsupportedOperationException("Implementation needed");
+    }
+
+    default List<T> getForOwnMaterialNumberAndPartnerBPNLAndBPNS(String ownMatNbr, String bpnl, String bpns) {
+        // default implementation prevents Jpa from trying to
+        // auto-generate this method.
+        throw new UnsupportedOperationException("Implementation needed");
+    }
+
+
 }

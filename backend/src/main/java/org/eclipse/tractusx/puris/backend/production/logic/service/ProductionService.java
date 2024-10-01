@@ -21,18 +21,20 @@ package org.eclipse.tractusx.puris.backend.production.logic.service;
 
 import org.eclipse.tractusx.puris.backend.production.domain.model.Production;
 import org.eclipse.tractusx.puris.backend.production.domain.repository.ProductionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Stream;
 
 public abstract class ProductionService<T extends Production>  {
-    @Autowired
-    protected ProductionRepository<T> repository;
+
+    protected final ProductionRepository<T> repository;
+
+    protected ProductionService(ProductionRepository<T> repository) {
+        this.repository = repository;
+    }
 
     public final List<T> findAll() {
         return repository.findAll();
@@ -57,28 +59,36 @@ public abstract class ProductionService<T extends Production>  {
         Optional<String> bpnl,
         Optional<String> bpns,
         Optional<Date> dayOfCompletion) {
-        Stream<T> stream = repository.findAll().stream();
-        if (ownMaterialNumber.isPresent()) {
-            stream = stream.filter(production -> production.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
-        }
-        if (bpnl.isPresent()) {
-            stream = stream.filter(production -> production.getPartner().getBpnl().equals(bpnl.get()));
-        }
-        if (bpns.isPresent()) {
-            stream = stream.filter(production -> production.getProductionSiteBpns().equals(bpns.get()));
-        }
-        if (dayOfCompletion.isPresent()) {
+        if (ownMaterialNumber.isPresent() && bpnl.isPresent() && bpns.isPresent() && dayOfCompletion.isPresent()) {
+            var resultList = repository.getForOwnMaterialNumberAndPartnerBPNLAndBPNS(ownMaterialNumber.get(), bpnl.get(), bpns.get());
             LocalDate localEstimatedTimeOfCompletion = Instant.ofEpochMilli(dayOfCompletion.get().getTime())
                 .atOffset(ZoneOffset.UTC)
                 .toLocalDate();
-            stream = stream.filter(production -> {
-                LocalDate productionEstimatedTimeOfCompletion = Instant.ofEpochMilli(production.getEstimatedTimeOfCompletion().getTime())
-                    .atOffset(ZoneOffset.UTC)
-                    .toLocalDate();
-                return productionEstimatedTimeOfCompletion.getDayOfMonth() == localEstimatedTimeOfCompletion.getDayOfMonth();
-            });
+            
+            return resultList.stream()
+                .filter(production -> {
+                    LocalDate productionEstimatedTimeOfCompletion = Instant.ofEpochMilli(production.getEstimatedTimeOfCompletion().getTime())
+                        .atOffset(ZoneOffset.UTC)
+                        .toLocalDate();
+                    return productionEstimatedTimeOfCompletion.getDayOfMonth() == localEstimatedTimeOfCompletion.getDayOfMonth()
+                        && productionEstimatedTimeOfCompletion.getMonth() == localEstimatedTimeOfCompletion.getMonth() &&
+                        productionEstimatedTimeOfCompletion.getYear() == localEstimatedTimeOfCompletion.getYear();
+                }).toList();
         }
-        return stream.toList();
+        if (ownMaterialNumber.isPresent() && bpnl.isPresent() && bpns.isPresent()) {
+            return repository.getForOwnMaterialNumberAndPartnerBPNLAndBPNS(ownMaterialNumber.get(), bpnl.get(), bpns.get());
+        }
+        if (ownMaterialNumber.isPresent() && bpnl.isPresent()) {
+            return repository.getForOwnMaterialNumberAndPartnerBPNL(ownMaterialNumber.get(), bpnl.get());
+        }
+        if (ownMaterialNumber.isPresent() && bpns.isPresent()) {
+            return repository.getForOwnMaterialNumberAndBPNS(ownMaterialNumber.get(), bpns.get());
+        }
+        if (ownMaterialNumber.isPresent()) {
+            return repository.getForOwnMaterialNumber(ownMaterialNumber.get());
+        }
+        return List.of();
+
     }
 
     public final List<Double> getQuantityForDays(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
@@ -96,18 +106,24 @@ public abstract class ProductionService<T extends Production>  {
         return quantities;
     }
 
+    public abstract boolean validate(T production);
+
     public final T update(T production) {
         if (production.getUuid() == null || repository.findById(production.getUuid()).isEmpty()) {
             return null;
         }
-        return repository.save(production);
+        if (validate(production)) {
+            return repository.save(production);
+        } else {
+            return null;
+        }
     }
 
     public final void delete(UUID uuid) {
         repository.deleteById(uuid);
     }
 
-    private final double getSumOfQuantities(List<T> productions) {
+    private double getSumOfQuantities(List<T> productions) {
         double sum = 0;
         for (T production : productions) {
             sum += production.getQuantity();

@@ -20,18 +20,16 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.function.Function;
-
-import javax.management.openmbean.KeyAlreadyExistsException;
-
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.EventTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.repository.OwnDeliveryRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.stereotype.Service;
+
+import javax.management.openmbean.KeyAlreadyExistsException;
+import java.util.Date;
+import java.util.function.Function;
 
 @Service
 public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
@@ -44,19 +42,10 @@ public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
     private Partner ownPartnerEntity;
 
     public OwnDeliveryService(OwnDeliveryRepository repository, PartnerService partnerService) {
+        super(repository);
         this.repository = repository;
         this.partnerService = partnerService;
         this.validator = this::validate;
-    }
-
-    public final List<OwnDelivery> findAllByBpnl(String bpnl) {
-        return repository.findAll().stream().filter(delivery -> delivery.getPartner().getBpnl().equals(bpnl))
-                .toList();
-    }
-
-    public final List<OwnDelivery> findAllByOwnMaterialNumber(String ownMaterialNumber) {
-        return repository.findAll().stream().filter(delivery -> delivery.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
-                .toList();
     }
 
     public final OwnDelivery create(OwnDelivery delivery) {
@@ -69,17 +58,7 @@ public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
         return repository.save(delivery);
     }
 
-    public final List<OwnDelivery> createAll(List<OwnDelivery> deliveries) {
-        if (deliveries.stream().anyMatch(delivery -> !validator.apply(delivery))) {
-            throw new IllegalArgumentException("Invalid delivery");
-        }
-        if (repository.findAll().stream()
-                .anyMatch(existing -> deliveries.stream().anyMatch(delivery -> delivery.equals(existing)))) {
-            throw new KeyAlreadyExistsException("delivery already exists");
-        }
-        return repository.saveAll(deliveries);
-    }
-
+    @Override
     public boolean validate(OwnDelivery delivery) {
         if (ownPartnerEntity == null) {
             ownPartnerEntity = partnerService.getOwnPartnerEntity();
