@@ -20,17 +20,15 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Function;
-
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.EventTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.repository.ReportedDeliveryRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.function.Function;
 
 @Service
 public class ReportedDeliveryService extends DeliveryService<ReportedDelivery> {
@@ -43,14 +41,10 @@ public class ReportedDeliveryService extends DeliveryService<ReportedDelivery> {
     private Partner ownPartnerEntity;
 
     public ReportedDeliveryService(ReportedDeliveryRepository repository, PartnerService partnerService) {
+        super(repository);
         this.repository = repository;
         this.partnerService = partnerService;
         this.validator = this::validate;
-    }
-
-    public final List<ReportedDelivery> findAllByReportedId(UUID reportedId) {
-        return repository.findAll().stream().filter(delivery -> delivery.getPartner().getUuid().equals(reportedId))
-            .toList();
     }
 
     public final ReportedDelivery create(ReportedDelivery delivery) {
@@ -63,17 +57,7 @@ public class ReportedDeliveryService extends DeliveryService<ReportedDelivery> {
         return repository.save(delivery);
     }
 
-    public final List<ReportedDelivery> createAll(List<ReportedDelivery> deliveries) {
-        if (deliveries.stream().anyMatch(delivery -> !validator.apply(delivery))) {
-            return null;
-        }
-        if (repository.findAll().stream()
-                .anyMatch(existing -> deliveries.stream().anyMatch(delivery -> delivery.equals(existing)))) {
-            return null;
-        }
-        return repository.saveAll(deliveries);
-    }
-
+    @Override
     public boolean validate(ReportedDelivery delivery) {
         return 
             delivery.getQuantity() > 0 && 

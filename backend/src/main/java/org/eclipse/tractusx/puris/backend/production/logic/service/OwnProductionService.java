@@ -20,16 +20,15 @@ SPDX-License-Identifier: Apache-2.0
 
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
-import java.util.List;
-import java.util.function.Function;
-
-import javax.management.openmbean.KeyAlreadyExistsException;
-
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.eclipse.tractusx.puris.backend.production.domain.repository.OwnProductionRepository;
 import org.springframework.stereotype.Service;
+
+import javax.management.openmbean.KeyAlreadyExistsException;
+import java.util.List;
+import java.util.function.Function;
 
 @Service
 public class OwnProductionService extends ProductionService<OwnProduction> {
@@ -40,6 +39,7 @@ public class OwnProductionService extends ProductionService<OwnProduction> {
     protected final Function<OwnProduction, Boolean> validator;
 
     public OwnProductionService(OwnProductionRepository repository, PartnerService partnerService) {
+        super(repository);
         this.repository = repository;
         this.partnerService = partnerService;
         this.validator = this::validate;
@@ -67,6 +67,7 @@ public class OwnProductionService extends ProductionService<OwnProduction> {
         return repository.saveAll(productions);
     }
 
+    @Override
     public boolean validate(OwnProduction production) {
         Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
         return 

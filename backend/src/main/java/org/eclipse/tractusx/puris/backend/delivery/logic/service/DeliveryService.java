@@ -20,25 +20,26 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
+import org.eclipse.tractusx.puris.backend.delivery.domain.model.Delivery;
+import org.eclipse.tractusx.puris.backend.delivery.domain.repository.DeliveryRepository;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
-import org.eclipse.tractusx.puris.backend.delivery.domain.model.Delivery;
-import org.eclipse.tractusx.puris.backend.delivery.domain.repository.DeliveryRepository;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
-import org.springframework.beans.factory.annotation.Autowired;
-
 public abstract class DeliveryService<T extends Delivery> {
-    @Autowired
-    protected DeliveryRepository<T> repository;
+
+    final protected DeliveryRepository<T> repository;
+
+    protected DeliveryService(DeliveryRepository<T> repository) {
+        this.repository = repository;
+    }
+
+    public abstract boolean validate(T delivery);
 
     public final List<T> findAll() {
         return repository.findAll();
@@ -54,17 +55,8 @@ public abstract class DeliveryService<T extends Delivery> {
         Optional<String> bpnl,
         Optional<Date> day,
         Optional<DirectionCharacteristic> direction) {
-        Stream<T> stream = repository.findAll().stream();
-        if (ownMaterialNumber.isPresent()) {
-            stream = stream.filter(delivery -> delivery.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
-        }
-        if (bpns.isPresent()) {
-            stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()) || delivery.getOriginBpns().equals(bpns.get()));
-        }
-        if (bpnl.isPresent()) {
-            stream = stream.filter(delivery -> delivery.getPartner().getBpnl().equals(bpnl.get()));
-        }
-        if (day.isPresent()) {
+        if (day.isPresent() && direction.isPresent() && ownMaterialNumber.isPresent() && bpns.isPresent() && bpnl.isPresent()) {
+            Stream<T> stream = repository.getForOwnMaterialNumberAndPartnerBPNLAndBPNS(ownMaterialNumber.get(), bpnl.get(), bpns.get()).stream();
             LocalDate localDayDate = Instant.ofEpochMilli(day.get().getTime())
                 .atOffset(ZoneOffset.UTC)
                 .toLocalDate();
@@ -77,15 +69,27 @@ public abstract class DeliveryService<T extends Delivery> {
                     .toLocalDate();
                 return deliveryDayDate.getDayOfMonth() == localDayDate.getDayOfMonth();
             });
-        }
-        if (direction.isPresent()) {
             if (direction.get() == DirectionCharacteristic.INBOUND) {
                 stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()));
             } else {
                 stream = stream.filter(delivery -> delivery.getOriginBpns().equals(bpns.get()));
             }
+            return stream.toList();
         }
-        return stream.toList();
+        if (ownMaterialNumber.isPresent() && bpns.isPresent() && bpnl.isPresent()) {
+            return repository.getForOwnMaterialNumberAndPartnerBPNLAndBPNS(ownMaterialNumber.get(), bpnl.get(), bpns.get());
+        }
+        if (ownMaterialNumber.isPresent() && bpns.isPresent()) {
+            return repository.getForOwnMaterialNumberAndBPNS(ownMaterialNumber.get(), bpns.get());
+        }
+        if (ownMaterialNumber.isPresent() && bpnl.isPresent()) {
+            return repository.getForOwnMaterialNumberAndPartnerBPNL(ownMaterialNumber.get(), bpnl.get());
+        }
+        if (ownMaterialNumber.isPresent()) {
+            return repository.getForOwnMaterialNumber(ownMaterialNumber.get());
+        }
+
+        return List.of();
     }
 
     public final double getSumOfQuantities(List<T> deliveries) {
@@ -114,7 +118,11 @@ public abstract class DeliveryService<T extends Delivery> {
         if (delivery.getUuid() == null || repository.findById(delivery.getUuid()).isEmpty()) {
             return null;
         }
-        return repository.save(delivery);
+        if (validate(delivery)) {
+            return repository.save(delivery);
+        } else {
+            return null;
+        }
     }
 
     public final void delete(UUID id) {

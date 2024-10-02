@@ -23,7 +23,37 @@ package org.eclipse.tractusx.puris.backend.production.domain.repository;
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface OwnProductionRepository extends ProductionRepository<OwnProduction> {
+
+    List<OwnProduction> findAllByMaterial_OwnMaterialNumber(String ownMaterialNumber);
+
+    @Override
+    default List<OwnProduction> getForOwnMaterialNumber(String ownMatNbr) {
+        return findAllByMaterial_OwnMaterialNumber(ownMatNbr);
+    }
+
+    List<OwnProduction> findAllByMaterial_OwnMaterialNumberAndPartner_Bpnl(String ownMaterialNumber, String partnerBpnl);
+
+    @Override
+    default List<OwnProduction> getForOwnMaterialNumberAndPartnerBPNL(String ownMatNbr, String bpnl) {
+        return findAllByMaterial_OwnMaterialNumberAndPartner_Bpnl(ownMatNbr, bpnl);
+    }
+
+    List<OwnProduction> findAllByMaterial_OwnMaterialNumberAndPartner_BpnlAndProductionSiteBpns(String ownMaterialNumber, String partnerBpnl, String bpns);
+
+    @Override
+    default List<OwnProduction> getForOwnMaterialNumberAndPartnerBPNLAndBPNS(String ownMatNbr, String bpnl, String bpns) {
+        return findAllByMaterial_OwnMaterialNumberAndPartner_BpnlAndProductionSiteBpns(ownMatNbr, bpnl, bpns);
+    }
+
+    List<OwnProduction> findAllByMaterial_OwnMaterialNumberAndProductionSiteBpns(String ownMatNbr, String bpns);
+
+    @Override
+    default List<OwnProduction> getForOwnMaterialNumberAndBPNS(String ownMatNbr, String bpns) {
+        return findAllByMaterial_OwnMaterialNumberAndProductionSiteBpns(ownMatNbr, bpns);
+    }
 
 }
