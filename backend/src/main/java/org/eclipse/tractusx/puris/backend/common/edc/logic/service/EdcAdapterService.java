@@ -423,12 +423,11 @@ public class EdcAdapterService {
      *
      * @param partner    The partner
      * @param contractId The contract id
-     * @param assetId    The asset id
      * @return The response object
      * @throws IOException If the connection to your control plane fails
      */
-    public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String assetId, String partnerEdcUrl) throws IOException {
-        var body = edcRequestBodyBuilder.buildProxyPullRequestBody(partner, contractId, assetId, partnerEdcUrl);
+    public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String partnerEdcUrl) throws IOException {
+        var body = edcRequestBodyBuilder.buildProxyPullRequestBody(partner, contractId, partnerEdcUrl);
         try (var response = sendPostRequest(body, List.of("v3", "transferprocesses"))) {
             String data = response.body().string();
             JsonNode result = objectMapper.readTree(data);
@@ -437,8 +436,8 @@ public class EdcAdapterService {
         }
     }
 
-    public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String assetId) throws IOException {
-        return initiateProxyPullTransfer(partner, contractId, assetId, partner.getEdcUrl());
+    public JsonNode initiateProxyPullTransfer(Partner partner, String contractId) throws IOException {
+        return initiateProxyPullTransfer(partner, contractId, partner.getEdcUrl());
     }
 
     /**
@@ -551,7 +550,7 @@ public class EdcAdapterService {
                 }
             }
             // Request EdrToken
-            var transferResp = initiateProxyPullTransfer(partner, contractId, assetId, partnerDspUrl);
+            var transferResp = initiateProxyPullTransfer(partner, contractId, partnerDspUrl);
             log.debug("Transfer Request {}", transferResp.toPrettyString());
             String transferId = transferResp.get("@id").asText();
             // try proxy pull and terminate request
@@ -620,7 +619,7 @@ public class EdcAdapterService {
                 log.warn("URL from AAS: " + partnerDspUrl);
             }
             // Request EdrToken
-            var transferResp = initiateProxyPullTransfer(partner, submodelContractId, assetId, partnerDspUrl);
+            var transferResp = initiateProxyPullTransfer(partner, submodelContractId, partnerDspUrl);
             log.debug("Transfer Request {}", transferResp.toPrettyString());
             String transferId = transferResp.get("@id").asText();
             // try proxy pull and terminate request
@@ -853,7 +852,7 @@ public class EdcAdapterService {
                 assetId = dtrContractData[0];
                 contractId = dtrContractData[1];
             }
-            var transferResp = initiateProxyPullTransfer(partner, contractId, assetId);
+            var transferResp = initiateProxyPullTransfer(partner, contractId);
             String transferId = transferResp.get("@id").asText();
             try {
                 EdrDto edrDto = getAndAwaitEdrDto(transferId);
