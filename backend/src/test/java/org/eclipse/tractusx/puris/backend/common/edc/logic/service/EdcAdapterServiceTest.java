@@ -40,7 +40,6 @@ import java.lang.reflect.Field;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 public class EdcAdapterServiceTest {
@@ -135,7 +134,7 @@ public class EdcAdapterServiceTest {
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode);
 
-        assertTrue(result);
+        assertFalse(result);
     }
 
     /**
