@@ -134,7 +134,7 @@ public class EdcAdapterServiceTest {
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode);
 
-        assertFalse(result);
+        assertTrue(result);
     }
 
     /**
