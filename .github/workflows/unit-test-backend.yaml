@@ -29,7 +29,7 @@ on:
 
 jobs:
   unit-test-backend:
-    if: github.repository_owner == 'eschrewe' # prevent running on forks
+    if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
     runs-on: ubuntu-latest
     permissions:
       packages: write
