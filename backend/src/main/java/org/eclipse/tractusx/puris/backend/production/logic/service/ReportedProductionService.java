@@ -20,12 +20,12 @@ SPDX-License-Identifier: Apache-2.0
 
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
-import java.util.List;
-import java.util.function.Function;
-
 import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedProduction;
 import org.eclipse.tractusx.puris.backend.production.domain.repository.ReportedProductionRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.function.Function;
 
 @Service
 public class ReportedProductionService extends ProductionService<ReportedProduction> {
@@ -34,6 +34,7 @@ public class ReportedProductionService extends ProductionService<ReportedProduct
     protected final Function<ReportedProduction, Boolean> validator;
 
     public ReportedProductionService(ReportedProductionRepository repository) {
+        super(repository);
         this.repository = repository;
         this.validator = this::validate;
     }
@@ -59,6 +60,7 @@ public class ReportedProductionService extends ProductionService<ReportedProduct
         return repository.saveAll(productions);
     }
 
+    @Override
     public boolean validate(ReportedProduction production) {
         return 
             production.getQuantity() > 0 && 
