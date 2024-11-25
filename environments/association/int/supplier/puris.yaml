@@ -147,7 +147,7 @@ backend:
             # Mandatory if backend.puris.dtr.idp.enabled = true.
             secret: <path:puris/data/supplier/dtr/keycloak#client-secret>
     frameworkagreement: ## data sovereingty
-      credential: Puris
+      credential: DataExchangeGovernance
       version: "1.0"
     purpose:
       name: "cx.puris.base"

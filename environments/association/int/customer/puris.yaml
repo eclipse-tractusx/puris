@@ -43,7 +43,7 @@ frontend:
       # -- Name of the client which is used for the application.
       clientId: <path:puris/data/customer/puris/idp#client-id>
       # -- URL to use as keycloak redirect url.
-      redirectUrlFrontend: ""
+      redirectUrlFrontend: "https://puris-customer.int.catena-x.net"
   resources:
     requests:
       cpu: "5m"
@@ -147,7 +147,7 @@ backend:
             # Mandatory if backend.puris.dtr.idp.enabled = true.
             secret: <path:puris/data/customer/dtr/keycloak#client-secret>
     frameworkagreement: ## data sovereingty
-      credential: Puris
+      credential: DataExchangeGovernance
       version: "1.0"
     purpose:
       name: "cx.puris.base"
