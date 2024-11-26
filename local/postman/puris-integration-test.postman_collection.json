@@ -45,7 +45,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n  \"materialFlag\": true,\n  \"productFlag\": false,\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n  \"materialNumberCx\": \"{{MATERIAL_NUMBER_CX}}\",\n  \"name\": \"Semiconductor\"\n}"
+													"raw": "{\n  \"materialFlag\": true,\n  \"productFlag\": false,\n  \"ownMaterialNumber\": \"{{MATERIAL_NUMBER_CUSTOMER}}\",\n  \"name\": \"Semiconductor\"\n}"
 												},
 												"url": {
 													"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/materials",
@@ -86,7 +86,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"materialFlag\": false,\n    \"productFlag\": true,\n    \"ownMaterialNumber\": \"MNR-4177-S\",\n    \"materialNumberCx\": null,\n    \"name\": \"Central Control Unit\"\n}"
+													"raw": "{\n    \"materialFlag\": false,\n    \"productFlag\": true,\n    \"ownMaterialNumber\": \"MNR-4177-S\",\n    \"name\": \"Central Control Unit\"\n}"
 												},
 												"url": {
 													"raw": "{{CUSTOMER_PURIS_BACKEND}}/catena/materials",
@@ -310,8 +310,8 @@
 															"    pm.response.to.have.status(200);",
 															"})",
 															"",
-															"pm.test(\"Verify response contains two objects (puris owner, supplier partner)\", function () {",
-															"    pm.expect(pm.response.json()).to.be.an(\"array\").with.lengthOf(2);",
+															"pm.test(\"Verify response contains one partner (supplier partner)\", function () {",
+															"    pm.expect(pm.response.json()).to.be.an(\"array\").with.lengthOf(1);",
 															"});",
 															"",
 															"pm.test(\"Verify supplier partner values (BPNL with one BPNS with one BPNA)\", function () {",
