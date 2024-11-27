@@ -17,15 +17,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
-package org.eclipse.tractusx.puris.backend.supply.domain.repository;
+import jakarta.persistence.Entity;
+import lombok.ToString;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.eclipse.tractusx.puris.backend.supply.domain.model.ReportedCustomerSupply;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface ReportedCustomerSupplyRepository extends JpaRepository<ReportedCustomerSupply, UUID> {
-    List<ReportedCustomerSupply> findByMaterial_OwnMaterialNumberAndPartner_Bpnl(String ownMaterialNumber, String bpnl);
+@Entity
+@ToString(callSuper = true)
+public class DaysOfSupplyContractMapping extends ContractMapping {
 }

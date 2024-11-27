@@ -21,20 +21,34 @@
 package org.eclipse.tractusx.puris.backend.supply.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.Supply;
 import org.eclipse.tractusx.puris.backend.supply.logic.dto.SupplyDto;
 import org.eclipse.tractusx.puris.backend.supply.logic.service.CustomerSupplyService;
+import org.eclipse.tractusx.puris.backend.supply.logic.service.DaysOfSupplyRequestApiService;
 import org.eclipse.tractusx.puris.backend.supply.logic.service.SupplierSupplyService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("days-of-supply")
@@ -45,7 +59,16 @@ public class SupplyController {
     private SupplierSupplyService supplierSupplyService;
 
     @Autowired
+    private DaysOfSupplyRequestApiService daysOfSupplyRequestApiService;
+    @Autowired
+    private MaterialService materialService;
+    @Autowired
+    private MaterialPartnerRelationService mprService;
+    @Autowired
     private ModelMapper modelMapper;
+    private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
+    @Autowired
+    private ExecutorService executorService;
 
     @GetMapping("customer")
     @ResponseBody
@@ -64,8 +87,28 @@ public class SupplyController {
             "materialNumber is expected to be base64 encoded")
     public List<SupplyDto> getCustomerDaysOfSupply(String materialNumber, String bpnl) {
         materialNumber = new String(Base64.getDecoder().decode(materialNumber.getBytes(StandardCharsets.UTF_8)));
-        return customerSupplyService.findByPartnerBpnlAndOwnMaterialNumber(materialNumber, bpnl)
+        return customerSupplyService.findAllByMaterialNumberAndPartnerBpnl(materialNumber, bpnl)
             .stream().map(this::convertToDto).toList();
+    }
+
+    @GetMapping("customer/reported/refresh")
+    @ResponseBody
+    @Operation(
+        summary = "Refreshes all reported customer days of supply", 
+        description = "Refreshes all reported customer Days of Supply for the specified Material from the days of supply request API."
+    )
+    public ResponseEntity<List<PartnerDto>> refreshReportedCustomerSupply(@RequestParam @Parameter(description = "base64 encoded") String ownMaterialNumber) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        List<Partner> allCustomerPartnerEntities = mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber);
+        for (Partner customerPartner : allCustomerPartnerEntities) {
+            executorService.submit(() ->
+                daysOfSupplyRequestApiService.doReportedDaysOfSupplyRequest(customerPartner, materialEntity, DirectionCharacteristic.INBOUND));
+        }
+        return ResponseEntity.ok(allCustomerPartnerEntities.stream().map(partner -> modelMapper.map(partner, PartnerDto.class)).toList());
     }
 
     @GetMapping("supplier")
@@ -84,8 +127,28 @@ public class SupplyController {
             "materialNumber is expected to be base64 encoded")
     public List<SupplyDto> getSupplierDaysOfSupply(String materialNumber, String bpnl) {
         materialNumber = new String(Base64.getDecoder().decode(materialNumber.getBytes(StandardCharsets.UTF_8)));
-        return supplierSupplyService.findByPartnerBpnlAndOwnMaterialNumber(materialNumber, bpnl)
+        return supplierSupplyService.findAllByMaterialNumberAndPartnerBpnl(materialNumber, bpnl)
             .stream().map(this::convertToDto).toList();
+    }
+
+    @GetMapping("supplier/reported/refresh")
+    @ResponseBody
+    @Operation(
+        summary = "Refreshes all reported supplier days of supply", 
+        description = "Refreshes all reported supplier Days of Supply for the specified Material from the days of supply request API."
+    )
+    public ResponseEntity<List<PartnerDto>> refreshReportedSupplierSupply(@RequestParam @Parameter(description = "base64 encoded") String ownMaterialNumber) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        Material materialEntity = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
+        for (Partner supplierPartner : allSupplierPartnerEntities) {
+            executorService.submit(() ->
+                daysOfSupplyRequestApiService.doReportedDaysOfSupplyRequest(supplierPartner, materialEntity, DirectionCharacteristic.OUTBOUND));
+        }
+        return ResponseEntity.ok(allSupplierPartnerEntities.stream().map(partner -> modelMapper.map(partner, PartnerDto.class)).toList());
     }
     
     private SupplyDto convertToDto(Supply entity) {

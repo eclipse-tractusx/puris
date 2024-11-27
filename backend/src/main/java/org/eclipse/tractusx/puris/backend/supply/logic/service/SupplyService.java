@@ -25,21 +25,56 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
 
+import javax.management.openmbean.KeyAlreadyExistsException;
+
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockService;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.Supply;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public abstract class SupplyService<T extends Supply> {
+public abstract class SupplyService<T extends Supply, TReported extends Supply, TRepository extends JpaRepository<TReported, UUID>, TStock extends ItemStock, TStockService extends ItemStockService<TStock>> {
     @Autowired
-    private MaterialItemStockService stockService;
+    private TStockService stockService;
     @Autowired
     private MaterialService materialService;
+    @Autowired
+    protected PartnerService partnerService;
+    protected final TRepository repository;
 
     protected abstract T createSupplyInstance();
     protected abstract List<Double> getAddedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays);
     protected abstract List<Double> getConsumedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays);
+    protected abstract boolean validate(TReported daysOfSupply);
+
+    protected final Function<TReported, Boolean> validator;
+
+    public SupplyService(TRepository repository, PartnerService partnerService, MaterialService materialService) {
+        this.repository = repository;
+        this.partnerService = partnerService;
+        this.materialService = materialService;
+        this.validator = this::validate;
+    }
+
+    public final TReported createReportedSupply(TReported supply) {
+        if (!validator.apply(supply)) {
+            throw new IllegalArgumentException("Invalid days of supply");
+        }
+        if (repository.findAll().stream().anyMatch(d -> d.equals(supply))) {
+            throw new KeyAlreadyExistsException("Supply already exists");
+        }
+        return repository.save(supply);
+    }
+
+    public final void deleteReportedSupply(TReported entity) {
+        repository.delete(entity);
+    }
 
     /**
      * Calculates the days of supply for a given material, partner, and site over a specified number of days.
@@ -54,6 +89,7 @@ public abstract class SupplyService<T extends Supply> {
     public final List<T> calculateDaysOfSupply(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
         List<T> supplyList = new ArrayList<>();
         LocalDate localDate = LocalDate.now();
+        Partner partner = partnerService.findByBpnl(partnerBpnl);
 
         List<Double> addedValues = getAddedValues(material, partnerBpnl, siteBpns, numberOfDays);
         List<Double> consumedValues = getConsumedValues(material, partnerBpnl, siteBpns, numberOfDays);
@@ -70,6 +106,7 @@ public abstract class SupplyService<T extends Supply> {
             supply.setMaterial(materialService.findByOwnMaterialNumber(material));
             supply.setDate(date);
             supply.setDaysOfSupply(daysOfSupply);
+            supply.setPartner(partner);
             supplyList.add(supply);
 
             stockQuantity = stockQuantity - consumedValues.get(i) + addedValues.get(i);

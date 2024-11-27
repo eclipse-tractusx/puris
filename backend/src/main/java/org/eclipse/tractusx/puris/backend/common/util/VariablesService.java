@@ -143,6 +143,20 @@ public class VariablesService {
      */
     private String notificationAssetId;
 
+    @Value("${puris.baseurl}" + "catena/days-of-supply/request")
+    /**
+     * The url under which this application's request endpoint can
+     * be reached by external machines.
+     */
+    private String daysOfSupplySubmodelEndpoint;
+
+    @Value("${puris.daysofsupplysubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the request API
+     * during asset creation.
+     */
+    private String daysOfSupplySubmodelAssetId;
+
     @Value("${puris.frameworkagreement.credential}")
     /**
      * The name of the framework agreement to be used.
@@ -283,6 +297,10 @@ public class VariablesService {
 
     public String getDeliverySubmodelApiAssetId() {
         return deliverySubmodelAssetId + "@" + ownBpnl;
+    }
+
+    public String getDaysOfSupplySubmodelApiAssetId() {
+        return daysOfSupplySubmodelAssetId + "@" + ownBpnl;
     }
 
     public String getNotificationApiAssetId() {
