@@ -19,8 +19,8 @@ tests {
       expect(res.getStatus()).to.equal(200);
   })
   
-  test("Verify response contains two objects (puris owner, supplier partner)", function () {
-      expect(res.getBody()).to.be.an("array").with.lengthOf(2);
+  test("Verify response contains one partner (supplier partner)", function () {
+      expect(res.getBody()).to.be.an("array").with.lengthOf(1);
   });
   
   test("Verify supplier partner values (BPNL with one BPNS with one BPNA)", function () {
