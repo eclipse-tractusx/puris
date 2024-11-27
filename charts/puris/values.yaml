@@ -429,6 +429,9 @@ backend:
     deliverysubmodel:
       # -- Asset ID for DeliverySubmodel API
       apiassetid: deliverysubmodel-api-asset
+    daysofsupplysubmodel:
+      # -- Asset ID for DaysOfSupplySubmodel API
+      apiassetid: daysofsupply-api-asset
     notification:
       # -- Asset ID for Notification API
       apiassetid: notification-api-asset
