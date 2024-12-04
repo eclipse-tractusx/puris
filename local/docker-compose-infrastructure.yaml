@@ -104,6 +104,7 @@ services:
     environment:
       WEB_HTTP_PORT: 8580
       WEB_HTTP_PATH: /api
+      edc.iam.trusted-issuer.issuer.id: did:web:mock-util-service/trusted-issuer
     ports:
       - "127.0.0.1:8580:8580"
       - "127.0.0.1:8581:8581"
