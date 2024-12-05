@@ -18,7 +18,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-version: "3"
+
 services:
 
   puris-frontend-customer:
@@ -73,6 +73,11 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/puris_customer
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
+      puris.dtr.idp.edc-client.id: ${KC_MANAGE_CLIENT_ID}
+      puris.dtr.idp.edc-client.secret.alias: ${CUSTOMER_KC_DTR_PURIS_CLIENT_ALIAS}
+      puris.dtr.idp.puris-client.id: ${KC_MANAGE_CLIENT_ID}
+      puris.dtr.idp.puris-client.secret: ${CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET}
+
     networks:
       - miw-net
     extra_hosts:
@@ -146,6 +151,13 @@ services:
     container_name: customer-control-plane
     env_file:
       - ./tractus-x-edc/config/customer/control-plane.properties
+    environment:
+#      edc.datasource.policy-monitor.name: policy-monitor
+#      edc.datasource.policy-monitor.url: jdbc:postgresql://postgres-all:5432/edc_customer
+#      edc.datasource.policy-monitor.user: ${PG_USER}
+#      edc.datasource.policy-monitor.password: ${PG_PW}
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
+
     ports:
       - "127.0.0.1:8180:8180"
       - "127.0.0.1:8181:8181"
@@ -181,6 +193,8 @@ services:
       - "127.0.0.1:8299:8299"
     env_file:
       - ./tractus-x-edc/config/customer/data-plane.properties
+    environment:
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
     networks:
       - miw-net
     extra_hosts:
@@ -238,6 +252,11 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/puris_supplier
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
+      server.error.include-message: always
+      puris.dtr.idp.edc-client.id: ${KC_MANAGE_CLIENT_ID}
+      puris.dtr.idp.edc-client.secret.alias: ${SUPPLIER_KC_DTR_PURIS_CLIENT_ALIAS}
+      puris.dtr.idp.puris-client.id: ${KC_MANAGE_CLIENT_ID}
+      puris.dtr.idp.puris-client.secret: ${SUPPLIER_KC_DTR_PURIS_CLIENT_SECRET}
     networks:
       - miw-net
     extra_hosts:
@@ -297,6 +316,8 @@ services:
       retries: 20
     env_file:
       - ./tractus-x-edc/config/supplier/control-plane.properties
+    environment:
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
     networks:
       - miw-net
     extra_hosts:
@@ -321,6 +342,8 @@ services:
       - "127.0.0.1:9299:9299"
     env_file:
       - ./tractus-x-edc/config/supplier/data-plane.properties
+    environment:
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
     networks:
       - miw-net
     extra_hosts:
