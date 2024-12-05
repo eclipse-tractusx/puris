@@ -328,12 +328,11 @@ public class EdcRequestBodyBuilder {
      * @param assetId    The assetId
      * @return The request body
      */
-    public JsonNode buildProxyPullRequestBody(Partner partner, String contractID, String assetId, String partnerEdcUrl) {
+    public JsonNode buildProxyPullRequestBody(Partner partner, String contractID, String partnerEdcUrl) {
         var body = getEdcContextObject();
         body.put("connectorId", partner.getBpnl());
         body.put("counterPartyAddress", partnerEdcUrl);
         body.put("contractId", contractID);
-        body.put("assetId", assetId);
         body.put("protocol", "dataspace-protocol-http");
         body.put("managedResources", false);
         body.put("transferType", "HttpData-PULL");

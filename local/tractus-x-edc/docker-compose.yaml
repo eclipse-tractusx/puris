@@ -18,16 +18,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-version: "3"
+
 services:
   control-plane:
-    image: tractusx/edc-controlplane-postgresql-hashicorp-vault:0.7.3
+    image: tractusx/edc-controlplane-postgresql-hashicorp-vault:0.8.0
     volumes:
       - ./config/default/opentelemetry.properties:/app/opentelemetry.properties
       - ./config/default/logging.properties:/app/logging.properties
 
   data-plane:
-    image: tractusx/edc-dataplane-hashicorp-vault:0.7.3
+    image: tractusx/edc-dataplane-hashicorp-vault:0.8.0
     volumes:
       - ./config/default/opentelemetry.properties:/app/opentelemetry.properties
       - ./config/default/logging.properties:/app/logging.properties
