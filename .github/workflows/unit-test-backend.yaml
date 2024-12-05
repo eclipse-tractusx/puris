@@ -1,7 +1,6 @@
 ###############################################################
-# Copyright (c) 2023 Contributors to the Eclipse Foundation
-# Copyright (c) 2023 Volkswagen AG
-# Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+# Copyright (c) 2024 Contributors to the Eclipse Foundation
+# Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 # (represented by Fraunhofer ISST)
 #
 # See the NOTICE file(s) distributed with this work for additional
@@ -21,32 +20,32 @@
 ###############################################################
 ---
 
-name: "Render static puml files"
-# Trigger as you want here in example each time a PlantUML file was updated on main branch
-on:
-  push:
-    branches:
-      - 'main'
-    paths:
-      - '**/*.puml'
-  workflow_dispatch:
-  # Trigger manually
-  
-jobs:
-  render-images:
-    uses: eclipse-tractusx/sig-infra/.github/workflows/reusable-generate-puml-svg.yaml@main
+name: Unit Test - Backend
 
-  store-images:
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  unit-test-backend:
+    if: github.repository_owner == 'eclipse-tractusx' # prevent running on forks
     runs-on: ubuntu-latest
-    # 2nd job needs to wait for first job to finish
-    needs: render-images
+    permissions:
+      packages: write
+
     steps:
-      - name: checkout source repo
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: download generated svg file from job before
-        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v3
-        id: download
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
         with:
-          name: artifacts
-          path: ${{ github.workspace }}
-      # now you can handle the files in your desired way
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build and test with Maven
+        run: |
+          cd backend
+          mvn clean install

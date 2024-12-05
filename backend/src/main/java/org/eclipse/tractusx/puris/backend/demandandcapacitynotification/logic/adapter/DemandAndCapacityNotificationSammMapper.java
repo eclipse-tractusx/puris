@@ -19,28 +19,54 @@
  */
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.adapter;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.demandandcapacitynotficationsamm.DemandAndCapacityNotificationSamm;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class DemandAndCapacityNotificationSammMapper {
     @Autowired
     private MaterialPartnerRelationService mprService;
     @Autowired
+    private MaterialService materialService;
+    @Autowired
     private PartnerService partnerService;
 
     public DemandAndCapacityNotificationSamm ownNotificationToSamm(OwnDemandAndCapacityNotification notification) {
-        List<String> affectedMaterialGlobalAssetIds = notification.getMaterials().stream().map(mat -> mat.getMaterialNumberCx()).collect(Collectors.toList());
+        List<String> affectedMaterialGlobalAssetIds = new ArrayList<>();
+        List<String> affectedCustomerMaterialIds = new ArrayList<>();
+        List<String> affectedSupplierMaterialIds = new ArrayList<>();
+        var mprs = notification.getMaterials().stream().map(material -> mprService.find(material, notification.getPartner())).toList();
+        switch (notification.getEffect()) {
+            case DEMAND_INCREASE, DEMAND_REDUCTION -> {
+                // we are customer, recipient is supplier
+                affectedMaterialGlobalAssetIds.addAll(mprs.stream().map(MaterialPartnerRelation::getPartnerCXNumber).toList());
+                affectedCustomerMaterialIds.addAll(mprs.stream().map(mpr -> mpr.getMaterial().getOwnMaterialNumber()).toList());
+                affectedSupplierMaterialIds.addAll(mprs.stream().map(MaterialPartnerRelation::getPartnerMaterialNumber).toList());
+            }
+            case CAPACITY_INCREASE, CAPACITY_REDUCTION -> {
+                // we are supplier, recipient is customer
+                affectedMaterialGlobalAssetIds.addAll(mprs.stream().map(mpr -> mpr.getMaterial().getMaterialNumberCx()).toList());
+                affectedSupplierMaterialIds.addAll(mprs.stream().map(mpr -> mpr.getMaterial().getOwnMaterialNumber()).toList());
+                affectedCustomerMaterialIds.addAll(mprs.stream().map(MaterialPartnerRelation::getPartnerMaterialNumber).toList());
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + notification.getEffect());
+        }
+
         List<String> affectedSitesBpnsSender = notification.getAffectedSitesSender().stream().map(site -> site.getBpns()).collect(Collectors.toList());
         List<String> affectedSitesBpnsRecipient = notification.getAffectedSitesRecipient().stream().map(site -> site.getBpns()).collect(Collectors.toList());
         var builder = DemandAndCapacityNotificationSamm.builder();
@@ -53,20 +79,47 @@ public class DemandAndCapacityNotificationSammMapper {
                 .effect(notification.getEffect())
                 .status(notification.getStatus())
                 .materialGlobalAssetId(affectedMaterialGlobalAssetIds)
+                .materialNumberCustomer(affectedCustomerMaterialIds)
+                .materialNumberSupplier(affectedSupplierMaterialIds)
                 .affectedSitesSender(affectedSitesBpnsSender)
                 .affectedSitesRecipient(affectedSitesBpnsRecipient)
                 .startDateOfEffect(notification.getStartDateOfEffect())
                 .expectedEndDateOfEffect(notification.getExpectedEndDateOfEffect())
                 .contentChangedAt(notification.getContentChangedAt())
                 .build();
+
         return samm;
     }
 
     public ReportedDemandAndCapacityNotification sammToReportedDemandAndCapacityNotification(DemandAndCapacityNotificationSamm samm, Partner partner) {
         var builder = ReportedDemandAndCapacityNotification.builder();
-        var materials = samm.getMaterialGlobalAssetId().stream()
-            .map(partnerMaterialNumberCx -> mprService.findByPartnerAndPartnerCXNumber(partner, partnerMaterialNumberCx).getMaterial())
-            .collect(Collectors.toList());
+        HashSet<Material> materialsSet = new HashSet<>();
+        switch (samm.getEffect()) {
+            case DEMAND_INCREASE, DEMAND_REDUCTION -> {
+                // sender of Samm is customer, we are supplier
+                samm.getMaterialGlobalAssetId().forEach(assetId -> materialsSet.add(materialService.findByMaterialNumberCx(assetId)));
+                samm.getMaterialNumberSupplier().forEach(matNbr -> materialsSet.add(materialService.findByOwnMaterialNumber(matNbr)));
+                samm.getMaterialNumberCustomer()
+                    .stream()
+                    .flatMap(matNbr -> mprService.findAllByPartnerMaterialNumber(matNbr).stream())
+                    .map(material -> mprService.find(material, partner))
+                    .filter(mpr -> mpr.getPartner().equals(partner))
+                    .forEach(mpr -> materialsSet.add(mpr.getMaterial()));
+            }
+            case CAPACITY_INCREASE, CAPACITY_REDUCTION -> {
+                // sender of Samm is supplier, we are customer
+                samm.getMaterialGlobalAssetId().forEach(assetId -> materialsSet.add(mprService.findByPartnerAndPartnerCXNumber(partner, assetId).getMaterial()));
+                samm.getMaterialNumberCustomer().forEach(matNbr -> materialsSet.add(materialService.findByOwnMaterialNumber(matNbr)));
+                samm.getMaterialNumberSupplier()
+                    .stream()
+                    .flatMap(matNbr -> mprService.findAllByPartnerMaterialNumber(matNbr).stream())
+                    .map(material -> mprService.find(material, partner))
+                    .filter(mpr -> mpr.getPartner().equals(partner))
+                    .forEach(mpr -> materialsSet.add(mpr.getMaterial()));
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + samm.getEffect());
+        }
+
         var affectedSitesSender = partner.getSites().stream()
             .filter(site -> samm.getAffectedSitesSender().contains(site.getBpns()))
             .collect(Collectors.toList());
@@ -84,7 +137,7 @@ public class DemandAndCapacityNotificationSammMapper {
                 .startDateOfEffect(samm.getStartDateOfEffect())
                 .expectedEndDateOfEffect(samm.getExpectedEndDateOfEffect())
                 .partner(partner)
-                .materials(materials)
+                .materials(new ArrayList<>(materialsSet))
                 .affectedSitesSender(affectedSitesSender)
                 .affectedSitesRecipient(affectedSitesBpnsRecipient)
                 .contentChangedAt(samm.getContentChangedAt())

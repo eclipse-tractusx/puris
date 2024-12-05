@@ -85,9 +85,13 @@ public class MaterialPartnerRelationsController {
             example = "true") @RequestParam boolean partnerSupplies,
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
             example = "true") @RequestParam boolean partnerBuys) {
-
-        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
-        partnerMaterialNumber = new String(Base64.getDecoder().decode(partnerMaterialNumber));
+        try {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+            partnerMaterialNumber = new String(Base64.getDecoder().decode(partnerMaterialNumber));
+        } catch (Exception e) {
+            log.error("parameters were not properly encoded in base64");
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
         if (!materialPattern.matcher(ownMaterialNumber).matches() || !materialPattern.matcher(partnerMaterialNumber).matches()
             || !bpnlPattern.matcher(partnerBpnl).matches()) {
             log.warn("Rejected message parameters. ");
@@ -146,9 +150,14 @@ public class MaterialPartnerRelationsController {
             example = "true") @RequestParam(required = false) Boolean partnerSupplies,
         @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
             example = "true") @RequestParam(required = false) Boolean partnerBuys) {
-        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        try {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+            partnerMaterialNumber = new String(Base64.getDecoder().decode(partnerMaterialNumber));
+        } catch (Exception e) {
+            log.error("parameters were not properly encoded in base64");
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
         MaterialPartnerRelation existingRelation = null;
-
         if (!bpnlPattern.matcher(partnerBpnl).matches() || !materialPattern.matcher(ownMaterialNumber).matches() ||
             (partnerMaterialNumber != null && !materialPattern.matcher(partnerMaterialNumber).matches())) {
             log.warn("Rejected message parameters. ");
