@@ -18,12 +18,14 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
+import { Stack, Typography } from '@mui/material';
+
 export const ErrorView = () => {
     return (
-        <div className="flex flex-col items-center pt-10 w-full h-full">
-            <h1 className="text-4xl font-bold text-gray-700 mb-5">Error</h1>
-            <p className="text-gray-500">Something went wrong.</p>
-            <p className="text-gray-500">Try reloading the page. If the error persists please contact our support team.</p>
-        </div>
+        <Stack alignItems="center" width="100%" height="100%" paddingTop="2.5rem" spacing={1}>
+            <Typography variant="h1">Error</Typography>
+            <Typography variant="body1">Something went wrong.</Typography>
+            <Typography variant="body1">Try reloading the page. If the error persists please contact our support team.</Typography>
+        </Stack>
     );
 }

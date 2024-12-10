@@ -17,11 +17,12 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
+
 import { useEffect, useMemo, useState } from 'react';
 import { Input, PageSnackbar, PageSnackbarStack, Table } from '@catena-x/portal-shared-components';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Production } from '@models/types/data/production';
-import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, Typography, capitalize } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, capitalize } from '@mui/material';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { deleteProduction, postProductionRange } from '@services/productions-service';
@@ -30,19 +31,7 @@ import { Close, Delete, Save } from '@mui/icons-material';
 import { DateTime } from '@components/ui/DateTime';
 import { ModalMode } from '@models/types/data/modal-mode';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
-
-const GridItem = ({ label, value }: { label: string; value: string }) => (
-    <Grid item xs={6}>
-        <Stack>
-            <Typography variant="caption1" fontWeight={500}>
-                {label}:
-            </Typography>
-            <Typography variant="body3" paddingLeft=".5rem">
-                {value}
-            </Typography>
-        </Stack>
-    </Grid>
-);
+import { GridItem } from '@components/ui/GridItem';
 
 const createProductionColumns = (handleDelete?: (row: Production) => void) => {
     const columns = [
@@ -197,7 +186,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
     return (
         <>
             <Dialog open={open && production !== null} onClose={onClose}>
-                <DialogTitle fontWeight={600} textAlign="center">
+                <DialogTitle variant='h3' textAlign="center">
                     {capitalize(mode)} Production Information
                 </DialogTitle>
                 <Stack padding="0 2rem 2rem" sx={{ width: '50rem' }}>
@@ -248,6 +237,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                                 quantity: e.target.value ? parseFloat(e.target.value) : undefined,
                                             }))
                                         }
+                                        sx={{ marginTop: '.5rem' }}
                                     />
                                 </Grid>
                                 <Grid item xs={6}>

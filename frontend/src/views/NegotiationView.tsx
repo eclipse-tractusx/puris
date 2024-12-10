@@ -21,33 +21,32 @@ SPDX-License-Identifier: Apache-2.0
 import { useNegotiations } from '@hooks/edc/useNegotiations';
 import { Table } from '@catena-x/portal-shared-components';
 import { Box } from '@mui/material';
+import { ConfidentialBanner } from '@components/ConfidentialBanner';
 
 export const NegotiationView = () => {
     const { negotiations } = useNegotiations();
     return (
-        <div className="flex flex-col items-center w-full h-full">
-            <h1 className="text-3xl font-semibold text-gray-700 mb-10">Negotiation</h1>
-            <Box width="100%">
-                <Table
-                    title="Negotiation history"
-                    columns={[
-                        { headerName: 'Negotiation Id', field: '@id', width: 120 },
-                        { headerName: 'Agreement Id', field: 'contractAgreementId', width: 120 },
-                        { headerName: 'Type', field: 'type', width: 150 },
-                        { headerName: 'State', field: 'state', width: 150 },
-                        { headerName: 'CounterParty', field: 'counterPartyId', width: 200 },
-                        { headerName: 'Counterparty EDC URL', field: 'counterPartyAddress', width: 350 },
-                        {
-                            headerName: 'Timestamp',
-                            field: 'createdAt',
-                            width: 180,
-                            valueFormatter: (params) => new Date(params.value).toLocaleString(),
-                        },
-                    ]}
-                    rows={negotiations ?? []}
-                    getRowId={(row) => row['@id']}
-                />
-            </Box>
-        </div>
+        <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <ConfidentialBanner />
+            <Table
+                title="Negotiation history"
+                columns={[
+                    { headerName: 'Negotiation Id', field: '@id', flex: 1 },
+                    { headerName: 'Agreement Id', field: 'contractAgreementId', flex: 1 },
+                    { headerName: 'Type', field: 'type', flex: 0.75 },
+                    { headerName: 'State', field: 'state', flex: 0.75 },
+                    { headerName: 'CounterParty', field: 'counterPartyId', flex: 0.75 },
+                    { headerName: 'Counterparty EDC URL', field: 'counterPartyAddress', flex: 1.15 },
+                    {
+                        headerName: 'Timestamp',
+                        field: 'createdAt',
+                        flex: 1,
+                        valueFormatter: (params) => new Date(params.value).toLocaleString(),
+                    },
+                ]}
+                rows={negotiations ?? []}
+                getRowId={(row) => row['@id']}
+            />
+        </Box>
     );
 };
