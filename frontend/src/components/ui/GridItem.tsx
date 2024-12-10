@@ -18,13 +18,19 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Stack, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
-export const NotFoundView = () => {
-    return (
-        <Stack alignItems="center" width="100%" height="100%" paddingTop="2.5rem" spacing={1}>
-            <Typography variant="h1">Error 404</Typography>
-            <Typography variant="body1">Page not found.</Typography>
+type GridItemProps = { label: string; value: string };
+
+export const GridItem = ({ label, value }: GridItemProps) => (
+    <Grid item xs={6}>
+        <Stack>
+            <Typography variant="body1">{label}:</Typography>
+            <Typography variant="body2" paddingLeft=".5rem">
+                {value}
+            </Typography>
         </Stack>
-    );
-};
+    </Grid>
+);
