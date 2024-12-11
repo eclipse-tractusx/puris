@@ -152,10 +152,6 @@ services:
     env_file:
       - ./tractus-x-edc/config/customer/control-plane.properties
     environment:
-#      edc.datasource.policy-monitor.name: policy-monitor
-#      edc.datasource.policy-monitor.url: jdbc:postgresql://postgres-all:5432/edc_customer
-#      edc.datasource.policy-monitor.user: ${PG_USER}
-#      edc.datasource.policy-monitor.password: ${PG_PW}
       edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
 
     ports:
@@ -252,7 +248,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/puris_supplier
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
-      server.error.include-message: always
       puris.dtr.idp.edc-client.id: ${KC_MANAGE_CLIENT_ID}
       puris.dtr.idp.edc-client.secret.alias: ${SUPPLIER_KC_DTR_PURIS_CLIENT_ALIAS}
       puris.dtr.idp.puris-client.id: ${KC_MANAGE_CLIENT_ID}
