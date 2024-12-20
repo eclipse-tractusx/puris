@@ -174,7 +174,7 @@ public class EdcAdapterService {
             variablesService.getNotificationApiAssetId(),
             variablesService.getNotificationEndpoint()
         )));
-        log.info("Registration of Days of Supply 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+        log.info("Registration of Days of Supply 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getDaysOfSupplySubmodelApiAssetId(),
             variablesService.getDaysOfSupplySubmodelEndpoint(),
             AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID

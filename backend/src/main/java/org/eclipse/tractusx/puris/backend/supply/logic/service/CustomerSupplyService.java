@@ -110,7 +110,11 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply, Repo
             daysOfSupply.getMaterial() != null &&
             daysOfSupply.getDate() != null &&
             daysOfSupply.getStockLocationBPNS() != null &&
+            daysOfSupply.getStockLocationBPNA() != null &&
             daysOfSupply.getPartner() != partnerService.getOwnPartnerEntity() &&
-            daysOfSupply.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(daysOfSupply.getStockLocationBPNS()));
+            daysOfSupply.getPartner().getSites().stream().anyMatch(site -> 
+                site.getBpns().equals(daysOfSupply.getStockLocationBPNS()) && 
+                site.getAddresses().stream().anyMatch(address -> address.getBpna().equals(daysOfSupply.getStockLocationBPNA()))
+            );
     }
 }

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 @RequestMapping("days-of-supply")
 @Slf4j
 /**
- * This class offers the endpoint for requesting the DaysOfSupply Submodel 1.0.0
+ * This class offers the endpoint for requesting the DaysOfSupply Submodel 2.0.0
  */
 public class DaysOfSupplyRequestApiController {
 
@@ -49,7 +49,7 @@ public class DaysOfSupplyRequestApiController {
 
     private final Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
 
-    @Operation(summary = "This endpoint receives the DaysOfSupply Submodel 1.0.0 requests")
+    @Operation(summary = "This endpoint receives the DaysOfSupply Submodel 2.0.0 requests")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Ok"),
             @ApiResponse(responseCode = "400", description = "Bad Request"),
@@ -63,11 +63,11 @@ public class DaysOfSupplyRequestApiController {
             @PathVariable DirectionCharacteristic direction,
             @PathVariable String representation) {
         if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumbercx).matches()) {
-            log.warn("Rejecting request at DaysOfSupply Submodel request 1.0.0 endpoint");
+            log.warn("Rejecting request at DaysOfSupply Submodel request 2.0.0 endpoint");
             return ResponseEntity.badRequest().build();
         }
         if (!"$value".equals(representation)) {
-            log.warn("Rejecting request at DaysOfSupply Submodel request 1.0.0 endpoint, missing '$value' in request");
+            log.warn("Rejecting request at DaysOfSupply Submodel request 2.0.0 endpoint, missing '$value' in request");
             if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
                 representation = "<REPLACED_INVALID_REPRESENTATION>";
             }

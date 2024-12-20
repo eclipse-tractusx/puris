@@ -143,12 +143,13 @@ public class VariablesService {
      */
     private String notificationAssetId;
 
-    @Value("${puris.baseurl}" + "catena/days-of-supply/request")
     /**
      * The url under which this application's request endpoint can
      * be reached by external machines.
      */
-    private String daysOfSupplySubmodelEndpoint;
+    public String getDaysOfSupplySubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "days-of-supply/request";
+    }
 
     @Value("${puris.daysofsupplysubmodel.apiassetid}")
     /**
