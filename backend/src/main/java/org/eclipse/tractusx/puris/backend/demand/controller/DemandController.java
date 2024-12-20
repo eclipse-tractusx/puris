@@ -92,7 +92,7 @@ public class DemandController {
     @Operation(summary = "Get all own demands for the given Material", description = "Get all own demands for the given material number. Optionally the demanding site can be filtered by its bpns.")
     public List<DemandDto> getAllDemands(@Parameter(description = "encoded in base64") String ownMaterialNumber, Optional<String> site) {
         ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
-        return ownDemandService.findAllByFilters(Optional.of(ownMaterialNumber), Optional.empty(), site, Optional.empty())
+        return ownDemandService.findAllByFilters(Optional.of(ownMaterialNumber), Optional.empty(), site)
                 .stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
@@ -175,7 +175,7 @@ public class DemandController {
         if (ownMaterialNumber != null) {
             ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         }
-        return reportedDemandService.findAllByFilters(Optional.of(ownMaterialNumber), bpnl, site, Optional.empty())
+        return reportedDemandService.findAllByFilters(Optional.of(ownMaterialNumber), bpnl, site)
                 .stream().map(this::convertToDto).collect(Collectors.toList());
     }
 

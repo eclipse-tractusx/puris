@@ -19,8 +19,10 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.demand.logic.services;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +35,9 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class OwnDemandService extends DemandService<OwnDemand, OwnDemandRepository> {
     public OwnDemandService(OwnDemandRepository repository, PartnerService partnerService, MaterialPartnerRelationService mprService) {
@@ -42,11 +47,15 @@ public class OwnDemandService extends DemandService<OwnDemand, OwnDemandReposito
     public final List<Double> getQuantityForDays(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
         List<Double> quantities = new ArrayList<>();
         LocalDate localDate = LocalDate.now();
-
+        List<OwnDemand> demands = findAllByFilters(Optional.of(material), Optional.of(partnerBpnl), Optional.of(siteBpns));
         for (int i = 0; i < numberOfDays; i++) {
             Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            List<OwnDemand> demands = findAllByFilters(Optional.of(material), Optional.of(partnerBpnl), Optional.of(siteBpns), Optional.of(date));
-            double demandQuantity = getSumOfQuantities(demands);
+            LocalDate localDayDate = Instant.ofEpochMilli(date.getTime()).atOffset(ZoneOffset.UTC).toLocalDate();
+            List<OwnDemand> demandsForDate = demands.stream().filter(demand -> {
+                LocalDate demandDayDate = Instant.ofEpochMilli(demand.getDay().getTime()).atOffset(ZoneOffset.UTC).toLocalDate();
+                return demandDayDate.getDayOfMonth() == localDayDate.getDayOfMonth();
+            }).toList();
+            double demandQuantity = getSumOfQuantities(demandsForDate);
             quantities.add(demandQuantity);
 
             localDate = localDate.plusDays(1);

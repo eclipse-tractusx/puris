@@ -174,6 +174,11 @@ public class EdcAdapterService {
             variablesService.getNotificationApiAssetId(),
             variablesService.getNotificationEndpoint()
         )));
+        log.info("Registration of Days of Supply 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getDaysOfSupplySubmodelApiAssetId(),
+            variablesService.getDaysOfSupplySubmodelEndpoint(),
+            AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID
+        )));
         log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
         result &= assetRegistration;
         return result;
@@ -194,6 +199,7 @@ public class EdcAdapterService {
         result &= createSubmodelContractDefinitionForPartner(AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDemandSubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDeliverySubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.NOTIFICATION.URN_SEMANTIC_ID, variablesService.getNotificationApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
         result &= createDtrContractDefinitionForPartner(partner);
         return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
     }
@@ -597,6 +603,7 @@ public class EdcAdapterService {
             case DEMAND_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DELIVERY_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, direction);
             case NOTIFICATION -> throw new IllegalArgumentException("DemandAndCapacityNotification not supported");
+            case DAYS_OF_SUPPLY -> fetchSubmodelDataByDirection(mpr, AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
         };
         boolean failed = true;
@@ -1032,6 +1039,7 @@ public class EdcAdapterService {
             case DEMAND_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DELIVERY_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, direction);
             case NOTIFICATION -> throw new IllegalArgumentException("DemandAndCapacityNotification not supported");
+            case DAYS_OF_SUPPLY -> fetchSubmodelDataByDirection(mpr, AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
         };
         Map<String, String> equalFilters = new HashMap<>();

@@ -86,7 +86,7 @@ public class DemandRequestApiService {
             return null;
         }
 
-        var currentDemands = ownDemandService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty(), Optional.empty());
+        var currentDemands = ownDemandService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
         return sammMapper.ownDemandToSamm(currentDemands, partner, material);
     }
 
@@ -109,7 +109,7 @@ public class DemandRequestApiService {
                 }
             }
             // delete older data:
-            var oldDemands = reportedDemandService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty(), Optional.empty());
+            var oldDemands = reportedDemandService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
             for (var oldDemand : oldDemands) {
                 reportedDemandService.delete(oldDemand.getUuid());
             }
