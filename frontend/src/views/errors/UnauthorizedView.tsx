@@ -18,10 +18,13 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
+import { Stack, Typography } from '@mui/material';
+
 export const UnauthorizedView = () => {
     return (
-        <div className="flex flex-col items-center justify-center w-full h-full">
-            <h1 className="text-4xl font-bold text-gray-700">Unauthorized</h1>
-        </div>
+        <Stack alignItems="center" width="100%" height="100%" paddingTop="2.5rem" spacing={1}>
+            <Typography variant="h1">Unauthorized</Typography>
+            <Typography variant="body1">You need to be logged in to access this page.</Typography>
+        </Stack>
     );
-}
+};
