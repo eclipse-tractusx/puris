@@ -18,15 +18,15 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { LoadingButton, Table } from '@catena-x/portal-shared-components';
+import { Table } from '@catena-x/portal-shared-components';
 import { Stock, StockType } from '@models/types/data/stock';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { getUnitOfMeasurement } from '@util/helpers';
 
 type PartnerStockTableProps<T extends StockType> = {
     type: T;
     materialName?: string | null;
     partnerStocks: Stock[];
-    isRefreshing: boolean;
     lastUpdated?: Date | null;
     onRefresh: () => void;
 };
@@ -40,8 +40,7 @@ const partnerStockTableColumns = [
     },
     {
         field: 'quantity',
-        valueGetter: (data: { row: Stock }) =>
-            data.row.quantity + ' ' + getUnitOfMeasurement(data.row.measurementUnit),
+        valueGetter: (data: { row: Stock }) => data.row.quantity + ' ' + getUnitOfMeasurement(data.row.measurementUnit),
         headerName: 'Quantity',
         flex: 3,
     },
@@ -58,10 +57,10 @@ const partnerStockTableColumns = [
     {
         field: 'customerOrder',
         renderCell: (params: { row: Stock }) => (
-            <div className="flex flex-col">
-                <span>{params.row.customerOrderNumber}</span>
-                <span>{params.row.customerOrderPositionNumber}</span>
-            </div>
+            <Stack>
+                <Box>{params.row.customerOrderNumber}</Box>
+                <Box>{params.row.customerOrderPositionNumber}</Box>
+            </Stack>
         ),
         headerName: 'Customer Order',
         flex: 3,
@@ -79,9 +78,21 @@ const partnerStockTableColumns = [
     },
 ];
 
-export const PartnerStockTable = <T extends StockType>({ type, materialName, partnerStocks, onRefresh, isRefreshing, lastUpdated = null }: PartnerStockTableProps<T>) => {
+export const PartnerStockTable = <T extends StockType>({
+    type,
+    materialName,
+    partnerStocks,
+    onRefresh,
+    lastUpdated = null,
+}: PartnerStockTableProps<T>) => {
     return (
-        <div className="relative">
+        <Stack spacing={1}>
+            <Stack direction="row" alignItems="center" justifyContent="end" spacing={1}>
+                {lastUpdated && <Typography variant="body2">refresh requested at {lastUpdated.toLocaleTimeString()}</Typography>}
+                <Button
+                    onClick={() => onRefresh()}
+                >Refresh Stocks</Button>
+            </Stack>
             <Table
                 title={`Your ${type === 'product' ? 'Customers' : 'Suppliers'}' Stocks ${materialName ? `for ${materialName}` : ''}`}
                 noRowsMsg={
@@ -93,11 +104,8 @@ export const PartnerStockTable = <T extends StockType>({ type, materialName, par
                 rows={partnerStocks ?? []}
                 getRowId={(row) => row.uuid}
                 hideFooter={true}
+                sx={{flexGrow: 1, flexShrink: 1}}
             ></Table>
-            <div className="absolute top-8 end-8 flex items-center gap-3">
-                {lastUpdated && <div>refresh requested at {lastUpdated.toLocaleTimeString()}</div>}
-                <LoadingButton label='Refresh Stocks' loadIndicator='refreshing...' loading={isRefreshing}  variant="contained" onButtonClick={() => onRefresh()} />
-            </div>
-        </div>
+        </Stack>
     );
 };

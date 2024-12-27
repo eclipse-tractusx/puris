@@ -18,14 +18,29 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
+import { Box, Typography, useTheme } from '@mui/material';
+
 export const ConfidentialBanner = () => {
+    const theme = useTheme();
     return (
-        <header className="bg-orange-100 text-red-500 font-semibold w-full flex items-center justify-center p-3 mb-5 text-center">
-            <span>
+        <Box
+            component="header"
+            sx={{
+                backgroundColor: theme.palette.warning.light,
+                color: theme.palette.warning.main,
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                py: 1,
+                px: 3,
+                boxSizing: 'border-box'
+            }}
+        >
+            <Typography variant="body3">
                 IMPORTANT: Please note that the data shown may be <b> competitively sensitive </b> and, according to appliable antitrust
                 laws,
                 <b> must not </b> be shared with competitors. Please consult your legal department, if necessary.
-            </span>
-        </header>
+            </Typography>
+        </Box>
     );
 };

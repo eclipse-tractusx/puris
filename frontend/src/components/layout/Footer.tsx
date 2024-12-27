@@ -18,12 +18,12 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Stack } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 
 export const Footer = () => {
     return (
-      <Stack component="footer" width="100%" justifyContent="center" textAlign="center" gap=".5rem">
-        Copyright © Catena-X Automotive Network
-      </Stack>
+        <Stack component="footer" width="100%" justifyContent="center" textAlign="center" gap=".5rem">
+            <Typography variant="body3">Copyright © Catena-X Automotive Network</Typography>
+        </Stack>
     );
-}
+};

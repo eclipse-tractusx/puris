@@ -23,7 +23,7 @@ import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Delivery } from '@models/types/data/delivery';
 import { Close, Delete, Save } from '@mui/icons-material';
-import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, Typography, capitalize } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, capitalize } from '@mui/material';
 import { deleteDelivery, postDelivery } from '@services/delivery-service';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { useEffect, useMemo, useState } from 'react';
@@ -33,19 +33,7 @@ import { ARRIVAL_TYPES, DEPARTURE_TYPES } from '@models/constants/event-type';
 import { ModalMode } from '@models/types/data/modal-mode';
 import { Site } from '@models/types/edc/site';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
-
-const GridItem = ({ label, value }: { label: string; value: string }) => (
-    <Grid item xs={6}>
-        <Stack>
-            <Typography variant="caption1" fontWeight={500}>
-                {label}:
-            </Typography>
-            <Typography variant="body3" paddingLeft=".5rem">
-                {value}
-            </Typography>
-        </Stack>
-    </Grid>
-);
+import { GridItem } from '@components/ui/GridItem';
 
 const createDeliveryColumns = (handleDelete: (row: Delivery) => void) => {
     return [
@@ -327,7 +315,7 @@ export const DeliveryInformationModal = ({
     return (
         <>
             <Dialog open={open && delivery !== null} onClose={handleClose}>
-                <DialogTitle fontWeight={600} textAlign="center">
+                <DialogTitle variant="h3" textAlign="center">
                     {capitalize(mode)} Delivery Information
                 </DialogTitle>
                 <Stack padding="0 2rem 2rem" sx={{ width: '80rem' }}>
@@ -450,7 +438,7 @@ export const DeliveryInformationModal = ({
                                                     (s) =>
                                                         (direction === 'incoming'
                                                             ? s.bpns === temporaryDelivery.originBpns
-                                                            : s.bpns === temporaryDelivery.destinationBpns) ?? ''
+                                                            : s.bpns === temporaryDelivery.destinationBpns)
                                                 ) ?? null
                                         }
                                         label={`${direction === 'incoming' ? 'Origin' : 'Destination'}*`}
@@ -474,6 +462,7 @@ export const DeliveryInformationModal = ({
                                                 quantity: e.target.value ? parseFloat(e.target.value) : undefined,
                                             }))
                                         }
+                                        sx={{ marginTop: '.5rem' }}
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -506,6 +495,7 @@ export const DeliveryInformationModal = ({
                                         onChange={(event) =>
                                             setTemporaryDelivery({ ...temporaryDelivery, trackingNumber: event.target.value })
                                         }
+                                        sx={{ marginTop: '.5rem' }}
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
