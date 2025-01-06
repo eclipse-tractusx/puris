@@ -19,7 +19,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Link } from '@mui/material';
+import { Box, Link, Stack, Typography } from '@mui/material';
 import aboutPage from '@assets/aboutPage.json';
 import { Table } from '@catena-x/portal-shared-components';
 
@@ -45,9 +45,9 @@ const aboutPageColumns = [
 
 export const AboutLicenseView = () => {
     return (
-        <div className="flex flex-col items-center w-full h-full">
-            <h1 className="text-3xl font-semibold text-gray-700 mb-10">About License</h1>
-            <div className='w-[32rem]'>
+        <Stack alignItems="center" width="100%" spacing={3}>
+            <Typography variant="h1">About License</Typography>
+            <Box width="32rem">
                 <Table
                     columnHeaderHeight={0}
                     title='License Information'
@@ -56,7 +56,7 @@ export const AboutLicenseView = () => {
                     getRowId={(row) => row.header}
                     rows={aboutPage}
                 />
-            </div>
-        </div>
+            </Box>
+        </Stack>
     );
 }

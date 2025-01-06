@@ -29,6 +29,7 @@ import { DemandCapacityNotification } from '@models/types/data/demand-capacity-n
 import { EFFECTS } from '@models/constants/effects';
 import { LEADING_ROOT_CAUSE } from '@models/constants/leading-root-causes';
 import { STATUS } from '@models/constants/status';
+import { ConfidentialBanner } from '@components/ConfidentialBanner';
 
 
 export const DemandCapacityNotificationView = () => {
@@ -65,8 +66,8 @@ export const DemandCapacityNotificationView = () => {
     return (
         <>
             <Stack spacing={2} alignItems='center' width='100%' height='100%'>
-                <h1 className="text-3xl font-semibold text-gray-700 mb-10">Demand And Capacity Notifications</h1>
-                <Stack width='100%' direction="row" justifyContent="space-between">
+                <ConfidentialBanner />
+                <Stack width='100%' direction="row" justifyContent="space-between" alignItems="center">
                     <Tabs value={selectedTab} onChange={(_, value: number) => setSelectedTab(value)}>
                         {tabs.map((tab, index) => <Tab key={index} label={tab} />)}
                     </Tabs>
@@ -114,14 +115,14 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                 noRowsMsg='No Notifications found'
                 title="Demand and Capacity Notifications"
                 columns={[
-                    { headerName: 'Text', field: 'text', width: 200 },
-                    { headerName: 'Partner Bpnl', field: 'partnerBpnl', width: 200 },
-                    { headerName: 'Leading Root Cause', field: 'leadingRootCause', width: 180, valueFormatter: (params) => LEADING_ROOT_CAUSE.find((cause) => cause.key === params.value)?.value },
-                    { headerName: 'Effect', field: 'effect', width: 180, valueFormatter: (params) => EFFECTS.find((effect) => effect.key === params.value)?.value, },
-                    { headerName: ' Affected Material Numbers', field: 'affectedMaterialNumbers', width: 200 },
-                    { headerName: ' Affected Sites Sender', field: 'affectedSitesBpnsSender', width: 200 },
-                    { headerName: ' Affected Sites Recipient', field: 'affectedSitesBpnsRecipient', width: 200 },
-                    { headerName: 'Status', field: 'status', width: 100, valueFormatter: (params) => STATUS.find((status) => status.key === params.value)?.value },
+                    { headerName: 'Partner Bpnl', field: 'partnerBpnl', flex: 1 },
+                    { headerName: 'Leading Root Cause', field: 'leadingRootCause', flex: 1, valueFormatter: (params) => LEADING_ROOT_CAUSE.find((cause) => cause.key === params.value)?.value },
+                    { headerName: 'Effect', field: 'effect', flex: 1, valueFormatter: (params) => EFFECTS.find((effect) => effect.key === params.value)?.value, },
+                    { headerName: ' Affected Material Numbers', field: 'affectedMaterialNumbers', flex: 1 },
+                    { headerName: ' Affected Sites Sender', field: 'affectedSitesBpnsSender', flex: 1 },
+                    { headerName: ' Affected Sites Recipient', field: 'affectedSitesBpnsRecipient', flex: 1 },
+                    { headerName: 'Text', field: 'text', flex: 1.25 },
+                    { headerName: 'Status', field: 'status', flex: 0.5, valueFormatter: (params) => STATUS.find((status) => status.key === params.value)?.value },
 
                 ]}
                 rows={notifications ?? []}

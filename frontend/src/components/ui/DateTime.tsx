@@ -79,25 +79,27 @@ export const DateTime = ({ error, value, onValueChange, ...props }: DateTimeProp
     return (
         <Stack width="100%">
             <FormLabel>{props.label}</FormLabel>
-            <Box display="flex" gap=".25rem" width="100%" marginTop="auto">
-                <Box display="flex" flexGrow="1" sx={{ '& .MuiFormControl-root, & .MuiBox-root': { minWidth: '100% !important' } }}>
-                    <Datepicker
-                        {...props}
-                        error={error}
-                        value={date?.toISOString().split('T')[0]}
-                        readOnly={false}
-                        onChangeItem={(event) => handleDateChange(event)}
+            <div className="date-time-picker">
+                <Box display="flex" gap=".25rem" width="100%" marginTop="auto">
+                    <Box display="flex" flexGrow="1" sx={{ '& .MuiFormControl-root, & .MuiBox-root': { minWidth: '100% !important' } }}>
+                        <Datepicker
+                            {...props}
+                            error={error}
+                            value={date?.toISOString().split('T')[0]}
+                            readOnly={false}
+                            onChangeItem={(event) => handleDateChange(event)}
+                        />
+                    </Box>
+                    <input
+                        ref={timeRef}
+                        className={`${error && !isValidTime(timeRef.current?.value) ? 'error' : ''}`}
+                        type="time"
+                        id={'time' + props.label.toLowerCase()}
+                        name={'etoc' + props.label.toLowerCase()}
+                        onChange={handleTimeChange}
                     />
                 </Box>
-                <input
-                    ref={timeRef}
-                    className={`${error && !isValidTime(timeRef.current?.value) ? 'error' : ''}`}
-                    type="time"
-                    id={'time' + props.label.toLowerCase()}
-                    name={'etoc' + props.label.toLowerCase()}
-                    onChange={handleTimeChange}
-                />
-            </Box>
+            </div>
         </Stack>
     );
 };

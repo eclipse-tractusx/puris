@@ -21,7 +21,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Datepicker, Input, PageSnackbar, PageSnackbarStack, Table } from '@catena-x/portal-shared-components';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Demand } from '@models/types/data/demand';
-import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, Typography } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack } from '@mui/material';
 import { getUnitOfMeasurement } from '@util/helpers';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { Notification } from '@models/types/data/notification';
@@ -30,19 +30,7 @@ import { DEMAND_CATEGORY } from '@models/constants/demand-category';
 import { Close, Delete, Save } from '@mui/icons-material';
 import { ModalMode } from '@models/types/data/modal-mode';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
-
-const GridItem = ({ label, value }: { label: string; value: string }) => (
-    <Grid item xs={6}>
-        <Stack>
-            <Typography variant="caption1" fontWeight={500}>
-                {label}:
-            </Typography>
-            <Typography variant="body3" paddingLeft=".5rem">
-                {value}
-            </Typography>
-        </Stack>
-    </Grid>
-);
+import { GridItem } from '@components/ui/GridItem';
 
 const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
     const columns = [
@@ -213,7 +201,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
     return (
         <>
             <Dialog open={open && demand !== null} onClose={handleClose}>
-                <DialogTitle fontWeight={600} textAlign="center">
+                <DialogTitle variant="h3" textAlign="center">
                     Demand Information
                 </DialogTitle>
                 <Stack padding="0 2rem 2rem">
@@ -222,18 +210,20 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                             <GridItem label="Material Number" value={temporaryDemand.ownMaterialNumber ?? ''} />
                             <GridItem label="Site" value={temporaryDemand.demandLocationBpns ?? ''} />
                             <Grid item xs={6}>
-                                <FormLabel>Day*</FormLabel>
-                                <Datepicker
-                                    id="day"
-                                    label=""
-                                    hiddenLabel
-                                    placeholder="Pick a Day"
-                                    locale="de"
-                                    error={formError && !temporaryDemand?.day}
-                                    readOnly={false}
-                                    value={temporaryDemand?.day}
-                                    onChangeItem={(value) => setTemporaryDemand((curr) => ({ ...curr, day: value ?? undefined }))}
-                                />
+                                <FormLabel sx={{ marginBottom: '.5rem', display: 'block' }}>Day*</FormLabel>
+                                <div className="date-picker">
+                                    <Datepicker
+                                        id="day"
+                                        label=""
+                                        hiddenLabel
+                                        placeholder="Pick a Day"
+                                        locale="de"
+                                        error={formError && !temporaryDemand?.day}
+                                        readOnly={false}
+                                        value={temporaryDemand?.day}
+                                        onChangeItem={(value) => setTemporaryDemand((curr) => ({ ...curr, day: value ?? undefined }))}
+                                    />
+                                </div>
                             </Grid>
                             <Grid item xs={6}>
                                 <LabelledAutoComplete
@@ -270,6 +260,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                                 : { ...curr, quantity: 0 }
                                         )
                                     }
+                                    sx={{ marginTop: '.5rem' }}
                                 />
                             </Grid>
                             <Grid item xs={6}>
@@ -355,7 +346,6 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                         {mode === 'create' && (
                             <Button
                                 variant="contained"
-                                color="primary"
                                 sx={{ display: 'flex', gap: '.25rem' }}
                                 onClick={() => handleSaveClick(temporaryDemand)}
                             >
