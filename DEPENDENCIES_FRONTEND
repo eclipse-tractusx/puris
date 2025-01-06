@@ -19,7 +19,7 @@ npm/npmjs/-/function-bind/1.1.2, MIT, approved, #11063
 npm/npmjs/-/hasown/2.0.2, MIT, approved, #11097
 npm/npmjs/-/hast-util-whitespace/2.0.1, MIT, approved, clearlydefined
 npm/npmjs/-/hoist-non-react-statics/3.3.2, BSD-3-Clause, approved, clearlydefined
-npm/npmjs/-/i18next/24.0.5, unknown, restricted, none
+npm/npmjs/-/i18next/24.0.5, MIT, approved, #18015
 npm/npmjs/-/ignore/5.3.2, MIT, approved, #11665
 npm/npmjs/-/inline-style-parser/0.1.1, MIT, approved, #2971
 npm/npmjs/-/is-arrayish/0.2.1, MIT, approved, clearlydefined
