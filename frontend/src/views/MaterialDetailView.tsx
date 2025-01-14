@@ -1,6 +1,6 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Volkswagen AG
+Copyright (c) 2025 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -18,9 +18,15 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-export type MaterialDescriptor = {
-    ownMaterialNumber: string;
-    description: string;
-    name: string;
-    direction: string;
-};
+import { Stack, Typography } from '@mui/material';
+import { Link } from 'react-router-dom';
+
+export function MaterialDetailView() {
+    return (
+        <Stack alignItems="center" spacing={2}>
+            <Typography variant="h1">Material Details</Typography>
+            <Typography>This is a placeholder</Typography>
+            <Link to="/materials">Back to Material overview</Link>
+        </Stack>
+    );
+}

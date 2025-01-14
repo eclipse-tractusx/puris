@@ -26,10 +26,11 @@ import { StockType } from '@models/types/data/stock';
 export const useMaterials = (type: StockType) => {
     const endpoint = type === 'material' ? config.app.ENDPOINT_STOCK_VIEW_MATERIALS : config.app.ENDPOINT_PRODUCTS;
     const {
-        data: materials,
+        data,
         error: materialsError,
         isLoading: isLoadingMaterials,
     } = useFetch<MaterialDescriptor[]>(config.app.BACKEND_BASE_URL + endpoint);
+    const materials = data?.map((material) => ({...material, direction: type === 'material' ? 'inbound' : 'outbound'}));
     return {
         materials,
         materialsError,

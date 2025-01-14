@@ -113,6 +113,7 @@ type SideBarItemProps = (
 };
 
 const sideBarItems: SideBarItemProps[] = [
+    { name: 'Materials', icon: <HomeOutlined />, path: '/materials' },
     { name: 'Dashboard', icon: <HomeOutlined />, path: '/dashboard' },
     { name: 'Notifications', icon: <NotificationsOutlined />, path: '/notifications' },
     { name: 'Stocks', icon: <Inventory2Outlined />, path: '/stocks' },
@@ -141,7 +142,7 @@ export default function MiniDrawer() {
             <DrawerHeader>
                 {open ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: '.5rem' }}>
-                        <img height="30px" src="puris-logo.svg" alt="Puris icon"></img>
+                        <img height="30px" src="/puris-logo.svg" alt="Puris icon"></img>
 
                         <IconButton sx={{ p: 0, borderRadius: 0 }} onClick={handleDrawerClose}>
                             <ChevronLeftOutlined />
