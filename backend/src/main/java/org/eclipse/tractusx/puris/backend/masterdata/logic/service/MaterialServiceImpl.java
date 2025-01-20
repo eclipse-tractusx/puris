@@ -31,6 +31,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialR
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -73,6 +74,7 @@ public class MaterialServiceImpl implements MaterialService {
         }
         var searchResult = materialRepository.findById(material.getOwnMaterialNumber());
         if (searchResult.isEmpty()) {
+            material.setLastUpdatedOn(new Date());
             dtmService.create(material);
             return materialRepository.save(material);
         }
@@ -133,6 +135,16 @@ public class MaterialServiceImpl implements MaterialService {
     @Override
     public List<Material> findAll() {
         return materialRepository.findAll();
+    }
+
+    @Override
+    public Material updateTimestamp(String ownMaterialNumber) {
+        var searchResult = findByOwnMaterialNumber(ownMaterialNumber);
+        if (searchResult != null) {
+            searchResult.setLastUpdatedOn(new Date());
+            return materialRepository.save(searchResult);
+        }
+        return searchResult;
     }
 
     @Override

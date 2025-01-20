@@ -32,8 +32,10 @@ export function MaterialList({ materials, onRowClick }: MaterialListProps) {
         <Table
             title="Materials"
             columns={[
-                { headerName: 'Material Number', field: 'ownMaterialNumber', flex: 1 },
-                { headerName: 'Name', field: 'description', flex: 1 },
+                { headerName: 'Material Number', field: 'ownMaterialNumber', flex: 1.5 },
+                { headerName: 'Name', field: 'description', flex: 2 },
+                { headerName: 'Days of Supply', field: 'daysOfSupply', flex: 1, valueGetter: (params) => params.row.daysOfSupply.toFixed(2),},
+                { headerName: 'Updated', field: 'lastUpdatedOn', flex: 1, valueGetter: (params) => new Date(params.row.lastUpdatedOn).toLocaleString() },
                 { headerName: 'Direction', flex: 1, field: 'direction' },
             ]}
             rows={materials ?? []}

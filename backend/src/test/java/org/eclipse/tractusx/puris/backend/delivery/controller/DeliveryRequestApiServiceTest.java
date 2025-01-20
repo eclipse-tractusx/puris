@@ -93,7 +93,8 @@ public class DeliveryRequestApiServiceTest {
         true,
         "Own-Mnr",
         MATERIAL_NUMBER_CX_CUSTOMER,
-        "Test Material"
+        "Test Material",
+        new Date()
     );
 
     private static final Material TEST_MATERIAL_SUPPLIER = new Material(
@@ -101,7 +102,8 @@ public class DeliveryRequestApiServiceTest {
         true,
         "Own-Mnr",
         MATERIAL_NUMBER_CX_SUPPLIER,
-        "Test Material"
+        "Test Material",
+        new Date()
     );
 
     @BeforeEach

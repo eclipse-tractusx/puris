@@ -62,13 +62,13 @@ public class SupplierSupplyService extends SupplyService<OwnSupplierSupply> {
     }
 
     @Override
-    protected List<Double> getAddedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+    protected List<Double> getAddedValues(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         List<Double> productions = productionService.getQuantityForDays(material, partnerBpnl, siteBpns, numberOfDays);
         return productions;
     }
 
     @Override
-    protected List<Double> getConsumedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+    protected List<Double> getConsumedValues(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         List<Double> ownDeliveries = ownDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionCharacteristic.OUTBOUND, numberOfDays);
         List<Double> reportedDeliveries = reportedDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionCharacteristic.OUTBOUND, numberOfDays);
         List<Double> deliveries = mergeDeliveries(ownDeliveries, reportedDeliveries);
@@ -85,7 +85,7 @@ public class SupplierSupplyService extends SupplyService<OwnSupplierSupply> {
      * @param numberOfDays the number of days over which the forecast should be calculated.
      * @return a list of {@link OwnSupplierSupply} objects, each containing the calculated days of supply for a specific date.
      */
-    public final List<OwnSupplierSupply> calculateSupplierDaysOfSupply(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+    public final List<OwnSupplierSupply> calculateSupplierDaysOfSupply(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         return calculateDaysOfSupply(material, partnerBpnl, siteBpns, numberOfDays);
     }
 

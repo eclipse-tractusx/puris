@@ -23,28 +23,56 @@ import { SearchInput } from '@components/ui/SearchInput';
 import { MaterialList } from '@features/material-list/components/MaterialList';
 import { useMaterials } from '@features/stock-view/hooks/useMaterials';
 
-import { Stack } from '@mui/material';
-import { useState } from 'react';
+import { MenuItem, Select, Stack } from '@mui/material';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export function MaterialListView() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    const { materials } = useMaterials('material');
-    const { materials: products } = useMaterials('product');
-    const materialsAndProducts = materials?.concat(products ?? []).filter((material) => 
-        material.description.toLowerCase().includes(searchTerm.toLowerCase()) || material.ownMaterialNumber.toLowerCase().includes(searchTerm.toLowerCase())) ?? [];
+    const [direction, setDirection] = useState('');
+    const { materials } = useMaterials('material', true);
+    const { materials: products } = useMaterials('product', true);
+    const materialsAndProducts = useMemo(
+        () =>
+            materials
+                ?.concat(products ?? [])
+                .filter(
+                    (material) =>
+                        (material.direction.includes(direction) && (material.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        material.ownMaterialNumber.toLowerCase().includes(searchTerm.toLowerCase())))
+                ) ?? [],
+        [materials, products, direction, searchTerm]
+    );
     return (
         <Stack spacing={3}>
             <ConfidentialBanner />
             <Stack
                 direction="row"
                 spacing={2}
+                justifyContent="space-between"
                 sx={{ padding: '.5rem 1rem', backgroundColor: 'white', borderRadius: '1rem', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)' }}
             >
                 <SearchInput placeholder="Search for materials" onSearch={(query) => setSearchTerm(query)} />
+                <Stack direction="row" spacing={2} alignItems="center">
+                    <label htmlFor="direction-selector">Direction: </label>
+                    <Select
+                        id="direction-selector"
+                        variant="filled"
+                        defaultValue="all"
+                        onChange={(event) => setDirection(event.target.value === 'all' ? '' : event.target.value)}
+                        sx={{ minWidth: '12rem' }}
+                    >
+                        <MenuItem value="all">all</MenuItem>
+                        <MenuItem value="inbound">inbound</MenuItem>
+                        <MenuItem value="outbound">outbound</MenuItem>
+                    </Select>
+                </Stack>
             </Stack>
-            <MaterialList materials={materialsAndProducts} onRowClick={(material) => navigate(`/materials/${material.direction}/${material.ownMaterialNumber}`)} />
+            <MaterialList
+                materials={materialsAndProducts}
+                onRowClick={(material) => navigate(`/materials/${material.direction}/${material.ownMaterialNumber}`)}
+            />
         </Stack>
     );
 }

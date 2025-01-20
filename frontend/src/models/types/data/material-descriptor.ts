@@ -23,4 +23,6 @@ export type MaterialDescriptor = {
     description: string;
     name: string;
     direction: string;
+    daysOfSupply: number;
+    lastUpdatedOn: string;
 };

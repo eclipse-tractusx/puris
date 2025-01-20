@@ -25,6 +25,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
@@ -38,8 +39,8 @@ public abstract class SupplyService<T extends Supply> {
     private MaterialService materialService;
 
     protected abstract T createSupplyInstance();
-    protected abstract List<Double> getAddedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays);
-    protected abstract List<Double> getConsumedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays);
+    protected abstract List<Double> getAddedValues(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays);
+    protected abstract List<Double> getConsumedValues(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays);
 
     /**
      * Calculates the days of supply for a given material, partner, and site over a specified number of days.
@@ -51,7 +52,7 @@ public abstract class SupplyService<T extends Supply> {
      * @param numberOfDays the number of days over which the forecast should be calculated.
      * @return a list of {@link Supply} objects, each containing the calculated days of supply for a specific date.
      */
-    public final List<T> calculateDaysOfSupply(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+    public final List<T> calculateDaysOfSupply(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         List<T> supplyList = new ArrayList<>();
         LocalDate localDate = LocalDate.now();
 

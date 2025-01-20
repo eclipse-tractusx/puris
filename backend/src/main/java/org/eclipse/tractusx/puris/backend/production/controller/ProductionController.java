@@ -126,7 +126,9 @@ public class ProductionController {
         }
 
         try {
-            return convertToDto(ownProductionService.create(convertToEntity(productionDto)));
+            var dto =  convertToDto(ownProductionService.create(convertToEntity(productionDto)));
+            materialService.updateTimestamp(productionDto.getMaterial().getMaterialNumberSupplier());
+            return dto;
         } catch (KeyAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Production already exists. Use PUT instead.");
         } catch (IllegalArgumentException e) {
@@ -161,7 +163,10 @@ public class ProductionController {
             return convertToEntity(dto);
         }).collect(Collectors.toList());
         try {
-            return ownProductionService.createAll(productions).stream().map(this::convertToDto).collect(Collectors.toList());
+            return ownProductionService.createAll(productions).stream().map(entity -> {
+                materialService.updateTimestamp(entity.getMaterial().getOwnMaterialNumber());
+                return convertToDto(entity);
+            }).collect(Collectors.toList());
         } catch (KeyAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "One or more productions already exist. Use PUT instead.");
         } catch (IllegalArgumentException e) {
@@ -183,6 +188,7 @@ public class ProductionController {
         if (updatedProduction == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Production does not exist.");
         }
+        materialService.updateTimestamp(updatedProduction.getMaterial().getOwnMaterialNumber());
         return convertToDto(updatedProduction);
     }
 
@@ -201,6 +207,7 @@ public class ProductionController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Production does not exist.");
         }
         ownProductionService.delete(id);
+        materialService.updateTimestamp(production.getMaterial().getOwnMaterialNumber());
     }
 
     @GetMapping("reported")

@@ -43,6 +43,8 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialIte
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
+import org.eclipse.tractusx.puris.backend.supply.logic.service.CustomerSupplyService;
+import org.eclipse.tractusx.puris.backend.supply.logic.service.SupplierSupplyService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -70,6 +72,12 @@ public class StockViewController {
 
     @Autowired
     private MaterialItemStockService materialItemStockService;
+
+    @Autowired
+    private CustomerSupplyService customerSupplyService;
+
+    @Autowired
+    private SupplierSupplyService supplierSupplyService;
 
     @Autowired
     private ReportedMaterialItemStockService reportedMaterialItemStockService;
@@ -103,11 +111,19 @@ public class StockViewController {
     @GetMapping("materials")
     @ResponseBody
     @Operation(description = "Returns a list of all materials (excluding products)")
-    public List<FrontendMaterialDto> getMaterials() {
+    public List<FrontendMaterialDto> getMaterials(Optional<Boolean> includeDaysOfSupply) {
         return materialService.findAllMaterials()
             .stream()
-            .map(mat -> new FrontendMaterialDto(mat.getOwnMaterialNumber(), mat.getName()))
-            .collect(Collectors.toList());
+            .map(mat -> {
+                Optional<Double> daysOfSupply = Optional.empty();
+                if (includeDaysOfSupply.orElse(false)) {
+                    daysOfSupply = Optional.of(
+                        customerSupplyService.calculateCustomerDaysOfSupply(mat.getOwnMaterialNumber(), Optional.empty(), Optional.empty(), 28).get(0).getDaysOfSupply()
+                    );
+                };
+                var newMat = new FrontendMaterialDto(mat.getOwnMaterialNumber(), mat.getName(), mat.getLastUpdatedOn(), daysOfSupply);
+                return newMat;
+            }).collect(Collectors.toList());
     }
 
     @GetMapping("materialnumbers-mapping")
@@ -135,11 +151,19 @@ public class StockViewController {
     @GetMapping("products")
     @ResponseBody
     @Operation(description = "Returns a list of all products (excluding materials)")
-    public List<FrontendMaterialDto> getProducts() {
+    public List<FrontendMaterialDto> getProducts(Optional<Boolean> includeDaysOfSupply) {
         return materialService.findAllProducts()
             .stream()
-            .map(mat -> new FrontendMaterialDto(mat.getOwnMaterialNumber(), mat.getName()))
-            .collect(Collectors.toList());
+            .map(mat -> {
+                Optional<Double> daysOfSupply = Optional.empty();
+                if (includeDaysOfSupply.orElse(false)) {
+                    daysOfSupply = Optional.of(
+                        supplierSupplyService.calculateSupplierDaysOfSupply(mat.getOwnMaterialNumber(), Optional.empty(), Optional.empty(), 28).get(0).getDaysOfSupply()
+                    );
+                };
+                var newMat = new FrontendMaterialDto(mat.getOwnMaterialNumber(), mat.getName(), mat.getLastUpdatedOn(), daysOfSupply);
+                return newMat;
+            }).collect(Collectors.toList());
     }
 
     @GetMapping("product-stocks")
@@ -206,6 +230,7 @@ public class StockViewController {
         }
         log.info("Created product-stock: " + createdProductStock);
 
+        materialService.updateTimestamp(createdProductStock.getMaterial().getOwnMaterialNumber());
         return convertToDto(createdProductStock);
     }
 
@@ -239,6 +264,7 @@ public class StockViewController {
         existingProductStock = productItemStockService.update(existingProductStock);
         log.info("Updated product-stock: " + existingProductStock);
 
+        materialService.updateTimestamp(existingProductStock.getMaterial().getOwnMaterialNumber());
         return convertToDto(existingProductStock);
     }
 
@@ -350,7 +376,7 @@ public class StockViewController {
         if (createdMaterialStock == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock could not be created.");
         }
-
+        materialService.updateTimestamp(createdMaterialStock.getMaterial().getOwnMaterialNumber());
         return convertToDto(createdMaterialStock);
     }
 
@@ -381,6 +407,7 @@ public class StockViewController {
 
         existingMaterialStock = materialItemStockService.update(existingMaterialStock);
 
+        materialService.updateTimestamp(existingMaterialStock.getMaterial().getOwnMaterialNumber());
         return convertToDto(existingMaterialStock);
     }
 

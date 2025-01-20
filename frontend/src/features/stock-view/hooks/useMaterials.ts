@@ -23,13 +23,13 @@ import { MaterialDescriptor } from '@models/types/data/material-descriptor';
 import { useFetch } from '@hooks/useFetch';
 import { StockType } from '@models/types/data/stock';
 
-export const useMaterials = (type: StockType) => {
+export const useMaterials = (type: StockType, includeDaysOfSupply?: boolean) => {
     const endpoint = type === 'material' ? config.app.ENDPOINT_STOCK_VIEW_MATERIALS : config.app.ENDPOINT_PRODUCTS;
     const {
         data,
         error: materialsError,
         isLoading: isLoadingMaterials,
-    } = useFetch<MaterialDescriptor[]>(config.app.BACKEND_BASE_URL + endpoint);
+    } = useFetch<MaterialDescriptor[]>(config.app.BACKEND_BASE_URL + endpoint + (includeDaysOfSupply ? '?includeDaysOfSupply=true' : ''));
     const materials = data?.map((material) => ({...material, direction: type === 'material' ? 'inbound' : 'outbound'}));
     return {
         materials,

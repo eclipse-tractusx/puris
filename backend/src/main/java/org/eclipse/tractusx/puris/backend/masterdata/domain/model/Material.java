@@ -28,6 +28,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -104,6 +105,8 @@ public class Material {
      */
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String name;
+
+    private Date lastUpdatedOn;
 
     @Override
     public boolean equals(Object o) {
