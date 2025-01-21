@@ -39,7 +39,7 @@ export function MaterialListView() {
                 ?.concat(products ?? [])
                 .filter(
                     (material) =>
-                        (material.direction.includes(direction) && (material.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        (material.direction.includes(direction.toLowerCase()) && (material.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         material.ownMaterialNumber.toLowerCase().includes(searchTerm.toLowerCase())))
                 ) ?? [],
         [materials, products, direction, searchTerm]
@@ -59,13 +59,13 @@ export function MaterialListView() {
                     <Select
                         id="direction-selector"
                         variant="filled"
-                        defaultValue="all"
-                        onChange={(event) => setDirection(event.target.value === 'all' ? '' : event.target.value)}
+                        defaultValue="All"
+                        onChange={(event) => setDirection(event.target.value === 'All' ? '' : event.target.value)}
                         sx={{ minWidth: '12rem' }}
                     >
-                        <MenuItem value="all">all</MenuItem>
-                        <MenuItem value="inbound">inbound</MenuItem>
-                        <MenuItem value="outbound">outbound</MenuItem>
+                        <MenuItem value="All">All</MenuItem>
+                        <MenuItem value="Inbound">Inbound</MenuItem>
+                        <MenuItem value="Outbound">Outbound</MenuItem>
                     </Select>
                 </Stack>
             </Stack>

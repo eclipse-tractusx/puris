@@ -20,6 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import { Table } from '@catena-x/portal-shared-components';
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
+import { capitalize } from '@mui/material';
 
 type MaterialListProps = {
     materials: MaterialDescriptor[];
@@ -36,7 +37,7 @@ export function MaterialList({ materials, onRowClick }: MaterialListProps) {
                 { headerName: 'Name', field: 'description', flex: 2 },
                 { headerName: 'Days of Supply', field: 'daysOfSupply', flex: 1, valueGetter: (params) => params.row.daysOfSupply.toFixed(2),},
                 { headerName: 'Updated', field: 'lastUpdatedOn', flex: 1, valueGetter: (params) => new Date(params.row.lastUpdatedOn).toLocaleString() },
-                { headerName: 'Direction', flex: 1, field: 'direction' },
+                { headerName: 'Direction', flex: 1, field: 'direction', valueGetter: (params) => capitalize(params.row.direction) },
             ]}
             rows={materials ?? []}
             getRowId={(row) => row.ownMaterialNumber + row.direction}
