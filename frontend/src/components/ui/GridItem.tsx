@@ -28,7 +28,7 @@ export const GridItem = ({ label, value }: GridItemProps) => (
     <Grid item xs={6}>
         <Stack>
             <Typography variant="body1">{label}:</Typography>
-            <Typography variant="body2" paddingLeft=".5rem">
+            <Typography variant="body2" padding="1rem .5rem !important">
                 {value}
             </Typography>
         </Stack>

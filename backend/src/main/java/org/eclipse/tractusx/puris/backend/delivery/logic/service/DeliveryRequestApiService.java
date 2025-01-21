@@ -134,10 +134,17 @@ public class DeliveryRequestApiService {
             Optional.empty(),
             Optional.empty());
 
+        /* 
+        NOTE: 
+            This filter is disabled at the moment, because applying it breaks the edge case where a partner is both supplier and customer. 
+            Since the refresh requests take ownMaterialNumber as their only parameter, we are unable to distinguish the desired role of the partner and 
+            have to get the data for both roles if present. If this is not the desired behavior, a change to the refresh endpoint of the 
+            delivery controller is necessary.
+        
         Predicate<OwnDelivery> parnterRoleDirectionPredicate = partnerRoleDirectionPredicate(partnerIsCustomer, mpr);
         currentDeliveries = currentDeliveries.stream().filter(
             parnterRoleDirectionPredicate
-        ).toList();
+        ).toList(); */
         log.debug(
             "Found '{}' deliveries for material number cx '{}' for partner with bpnl '{}' asking in role '{}'.",
             currentDeliveries.size(),

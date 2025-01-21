@@ -1,7 +1,6 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Volkswagen AG
+Copyright (c) 2025 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -19,12 +18,19 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Address } from './address';
-import { BPNL, BPNS } from './bpn';
+import { InfoOutlined } from '@mui/icons-material';
+import { IconButton, Tooltip } from '@mui/material';
 
-export type Site = {
-    bpns: BPNS;
-    name: string;
-    addresses: Address[];
-    belongsToPartnerBpnl?: BPNL;
+type InfoButtonProps = {
+    text: string;
 };
+
+export function InfoButton({ text }: InfoButtonProps) {
+    return (
+        <Tooltip title={text}>
+            <IconButton sx={{ padding: 0, fontSize: '1rem', color: '#999' }}>
+                <InfoOutlined />
+            </IconButton>
+        </Tooltip>
+    );
+}

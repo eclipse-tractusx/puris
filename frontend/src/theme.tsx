@@ -34,8 +34,9 @@ const theme = createTheme({
         primary: {
             dark: '#081F4B',
             main: '#264580',
-            light: '#0085FF',
+            light: '#365186',
             contrastText: '#fff',
+            shadow: 'rgba(0,0,0,0.1) 0px 1px 3px 0px'
         },
         secondary: {
             main: '#0085FF',
@@ -77,12 +78,15 @@ const theme = createTheme({
         },
         body1: {
             fontSize: '1rem',
+            lineHeight: 1,
         },
         body2: {
             fontSize: '.875rem',
+            lineHeight: 1,
         },
         body3: {
             fontSize: '.75rem',
+            lineHeight: 1,
             fontFamily: ['Inter', 'sans-serif'].join(','),
         },
         button: {
@@ -113,7 +117,7 @@ const theme = createTheme({
         MuiSvgIcon: {
             styleOverrides: {
                 root: {
-                    fontSize: '1rem',
+                    fontSize: 'inherit',
                 },
             },
         },

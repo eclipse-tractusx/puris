@@ -22,21 +22,21 @@ import { config } from '@models/constants/config';
 import { Stock, StockType } from '@models/types/data/stock';
 import { useFetch } from '@hooks/useFetch';
 
-export const usePartnerStocks = <T extends StockType>(type: T, materialNumber?: string | null) => {
+export const useReportedStocks = <T extends StockType>(type: T, materialNumber?: string | null) => {
     if (materialNumber != null) {
         materialNumber = btoa(materialNumber);
     }
   const url = type === 'material' ? config.app.ENDPOINT_REPORTED_MATERIAL_STOCKS : config.app.ENDPOINT_REPORTED_PRODUCT_STOCKS;
     const {
-        data: partnerStocks,
-        error: partnerStocksError,
-        isLoading: isLoadingPartnerStocks,
-        refresh: refreshPartnerStocks,
+        data: reportedStocks,
+        error: reportedStocksError,
+        isLoading: isLoadingReportedStocks,
+        refresh: refreshReportedStocks,
     } = useFetch<Stock[]>(config.app.BACKEND_BASE_URL + url + materialNumber)
     return {
-        partnerStocks,
-        partnerStocksError,
-        isLoadingPartnerStocks,
-        refreshPartnerStocks,
+        reportedStocks,
+        reportedStocksError,
+        isLoadingReportedStocks,
+        refreshReportedStocks,
     };
 };

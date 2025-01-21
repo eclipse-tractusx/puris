@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -19,12 +18,4 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Address } from './address';
-import { BPNL, BPNS } from './bpn';
-
-export type Site = {
-    bpns: BPNS;
-    name: string;
-    addresses: Address[];
-    belongsToPartnerBpnl?: BPNL;
-};
+export const getPartnerType = (type: 'customer' | 'supplier') => (type === 'customer' ? 'supplier' : 'customer');

@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
 import { Tab, TabPanel, Tabs, Table } from '@catena-x/portal-shared-components';
 import { Box, Button, Stack } from '@mui/material';
 import { getDemandAndCapacityNotification } from '@services/demand-capacity-notification';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Send } from '@mui/icons-material';
 import { DemandCapacityNotificationInformationModal } from '@features/notifications/components/NotificationInformationModal';
 import { DemandCapacityNotification } from '@models/types/data/demand-capacity-notification';
@@ -30,17 +30,22 @@ import { EFFECTS } from '@models/constants/effects';
 import { LEADING_ROOT_CAUSE } from '@models/constants/leading-root-causes';
 import { STATUS } from '@models/constants/status';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
+import { useTitle } from '@contexts/titleProvider';
 
 
 export const DemandCapacityNotificationView = () => {
-
     const [selectedTab, setSelectedTab] = useState<number>(0);
     const [demandCapacityNotification, setDemandCapacityNotification] = useState<DemandCapacityNotification[]>([]);
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [selectedNotification, setSelectedNotification] = useState<DemandCapacityNotification | null>(null);
+    const { setTitle } = useTitle();
 
-    const tabs = ['Incoming', 'Outgoing'];
-
+    const tabs = useMemo(() => ['Incoming', 'Outgoing'], []);
+    
+    useEffect(() => {
+        setTitle(`${tabs[selectedTab]} Notifications`);
+    }, [selectedTab, setTitle, tabs])
+    
     const fetchAndLogNotification = useCallback(async () => {
         try {
             const result = await getDemandAndCapacityNotification(selectedTab === 0);

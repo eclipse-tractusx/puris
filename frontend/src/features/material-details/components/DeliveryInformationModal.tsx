@@ -17,7 +17,7 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-import { Input, PageSnackbar, PageSnackbarStack, Table } from '@catena-x/portal-shared-components';
+import { Input, Table } from '@catena-x/portal-shared-components';
 import { DateTime } from '@components/ui/DateTime';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
@@ -27,13 +27,15 @@ import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, capitalize } 
 import { deleteDelivery, postDelivery } from '@services/delivery-service';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { useEffect, useMemo, useState } from 'react';
-import { Notification } from '@models/types/data/notification';
 import { INCOTERMS } from '@models/constants/incoterms';
 import { ARRIVAL_TYPES, DEPARTURE_TYPES } from '@models/constants/event-type';
 import { ModalMode } from '@models/types/data/modal-mode';
 import { Site } from '@models/types/edc/site';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
+import { useSites } from '@features/stock-view/hooks/useSites';
+import { useNotifications } from '@contexts/notificationContext';
+import { DirectionType } from '@models/types/erp/directionType';
 
 const createDeliveryColumns = (handleDelete: (row: Delivery) => void) => {
     return [
@@ -226,7 +228,7 @@ const isValidDelivery = (delivery: Partial<Delivery>) =>
 type DeliveryInformationModalProps = {
     open: boolean;
     mode: ModalMode;
-    direction: 'incoming' | 'outgoing';
+    direction: DirectionType;
     site: Site | null;
     onClose: () => void;
     onSave: () => void;
@@ -245,21 +247,22 @@ export const DeliveryInformationModal = ({
     deliveries,
 }: DeliveryInformationModalProps) => {
     const [temporaryDelivery, setTemporaryDelivery] = useState<Partial<Delivery>>(delivery ?? {});
-    const { partners } = usePartners('product', temporaryDelivery?.ownMaterialNumber ?? null);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const { partners } = usePartners(direction === DirectionType.Inbound ? 'product' : 'material', temporaryDelivery?.ownMaterialNumber ?? null);
+    const { sites } = useSites();
+    const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
     const dailyDeliveries = useMemo(
         () =>
             deliveries?.filter(
                 (d) =>
-                    (direction === 'incoming' &&
-                        d.destinationBpns === site?.bpns &&
+                    (direction === DirectionType.Inbound &&
+                        (!site || d.destinationBpns === site?.bpns) &&
                         new Date(d.dateOfArrival).toLocaleDateString() === new Date(delivery!.dateOfArrival).toLocaleDateString()) ||
-                    (direction === 'outgoing' &&
-                        d.originBpns === site?.bpns &&
+                    (direction === DirectionType.Outbound &&
+                        (!site || d.originBpns === site?.bpns) &&
                         new Date(d.dateOfDeparture).toLocaleDateString() === new Date(delivery!.dateOfDeparture).toLocaleDateString())
             ) ?? [],
-        [deliveries, delivery, direction, site?.bpns]
+        [deliveries, delivery, direction, site]
     );
 
     const handleSaveClick = () => {
@@ -275,24 +278,20 @@ export const DeliveryInformationModal = ({
         postDelivery(temporaryDelivery)
             .then(() => {
                 onSave();
-                setNotifications((ns) => [
-                    ...ns,
-                    {
+                notify({
                         title: 'Delivery Added',
                         description: 'The Delivery has been added',
                         severity: 'success',
                     },
-                ]);
+                );
             })
             .catch((error) => {
-                setNotifications((ns) => [
-                    ...ns,
-                    {
+                notify({
                         title: error.status === 409 ? 'Conflict' : 'Error requesting update',
                         description: error.status === 409 ? 'Delivery conflicting with an existing one' : error.error,
                         severity: 'error',
                     },
-                ]);
+                );
             })
             .finally(() => onClose());
     };
@@ -318,17 +317,41 @@ export const DeliveryInformationModal = ({
                 <DialogTitle variant="h3" textAlign="center">
                     {capitalize(mode)} Delivery Information
                 </DialogTitle>
-                <Stack padding="0 2rem 2rem" sx={{ width: '80rem' }}>
+                <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
                     <Grid container spacing={1} padding=".25rem">
                         {mode === 'create' ? (
                             <>
                                 <GridItem label="Material Number" value={temporaryDelivery.ownMaterialNumber ?? ''} />
-                                <GridItem
-                                    label={direction === 'incoming' ? 'Destination Site' : 'Origin Site'}
-                                    value={
-                                        (direction === 'incoming' ? temporaryDelivery.destinationBpns : temporaryDelivery.originBpns) ?? ''
-                                    }
-                                />
+                                <Grid item xs={6}>
+                                    <LabelledAutoComplete
+                                        id="partnerBpns"
+                                        options={sites ?? []}
+                                        getOptionLabel={(option) => option.name ?? ''}
+                                        isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
+                                        onChange={(_, value) =>
+                                            setTemporaryDelivery({
+                                                ...temporaryDelivery,
+                                                ...(direction === DirectionType.Outbound
+                                                    ? { originBpns: value?.bpns ?? undefined }
+                                                    : { destinationBpns: value?.bpns ?? undefined }),
+                                            })
+                                        }
+                                        value={
+                                            sites?.find(
+                                                    (s) =>
+                                                        (direction === DirectionType.Outbound
+                                                            ? s.bpns === temporaryDelivery.originBpns
+                                                            : s.bpns === temporaryDelivery.destinationBpns)
+                                                ) ?? null
+                                        }
+                                        label={`${direction === DirectionType.Outbound ? 'Origin' : 'Destination'}*`}
+                                        placeholder={`Select a ${direction === DirectionType.Outbound ? 'Origin' : 'Destination'} Site`}
+                                        error={
+                                            formError &&
+                                            (direction === DirectionType.Outbound ? !temporaryDelivery.originBpns : !temporaryDelivery.destinationBpns)
+                                        }
+                                    />
+                                </Grid>
                                 <Grid item xs={6}>
                                     <LabelledAutoComplete
                                         id="departure-type"
@@ -426,7 +449,7 @@ export const DeliveryInformationModal = ({
                                         onChange={(_, value) =>
                                             setTemporaryDelivery({
                                                 ...temporaryDelivery,
-                                                ...(direction === 'incoming'
+                                                ...(direction === DirectionType.Inbound
                                                     ? { originBpns: value?.bpns ?? undefined }
                                                     : { destinationBpns: value?.bpns ?? undefined }),
                                             })
@@ -436,16 +459,16 @@ export const DeliveryInformationModal = ({
                                                 ?.find((s) => s.bpnl === temporaryDelivery?.partnerBpnl)
                                                 ?.sites.find(
                                                     (s) =>
-                                                        (direction === 'incoming'
+                                                        (direction === DirectionType.Inbound
                                                             ? s.bpns === temporaryDelivery.originBpns
                                                             : s.bpns === temporaryDelivery.destinationBpns)
                                                 ) ?? null
                                         }
-                                        label={`${direction === 'incoming' ? 'Origin' : 'Destination'}*`}
-                                        placeholder={`Select a ${direction === 'incoming' ? 'Origin' : 'Destination'} Site`}
+                                        label={`${direction === DirectionType.Inbound ? 'Origin' : 'Destination'}*`}
+                                        placeholder={`Select a ${direction === DirectionType.Inbound ? 'Origin' : 'Destination'} Site`}
                                         error={
                                             formError &&
-                                            (direction === 'incoming' ? !temporaryDelivery.originBpns : !temporaryDelivery.destinationBpns)
+                                            (direction === DirectionType.Inbound ? !temporaryDelivery.originBpns : !temporaryDelivery.destinationBpns)
                                         }
                                     />
                                 </Grid>
@@ -507,7 +530,7 @@ export const DeliveryInformationModal = ({
                                                 : null
                                         }
                                         options={INCOTERMS.filter((i) =>
-                                            direction === 'incoming' ? i.responsibility !== 'supplier' : i.responsibility !== 'customer'
+                                            direction === DirectionType.Inbound ? i.responsibility !== 'supplier' : i.responsibility !== 'customer'
                                         )}
                                         getOptionLabel={(option) => option?.value ?? ''}
                                         label="Incoterm*"
@@ -563,16 +586,20 @@ export const DeliveryInformationModal = ({
                             <Grid item xs={12}>
                                 {
                                     <Table
-                                        title={`${capitalize(direction ?? '')} Deliveries ${
-                                            temporaryDelivery?.dateOfDeparture
-                                                ? ' on ' +
-                                                  new Date(temporaryDelivery?.dateOfDeparture).toLocaleDateString('en-UK', {
+                                        title={`${direction === DirectionType.Outbound ? 'Outgoing Shipments' : 'Incoming Deliveries'} on ${
+                                            direction === DirectionType.Outbound
+                                                ? new Date(temporaryDelivery.dateOfDeparture!).toLocaleDateString('en-UK', {
                                                       weekday: 'long',
                                                       day: '2-digit',
                                                       month: '2-digit',
                                                       year: 'numeric',
                                                   })
-                                                : ''
+                                                : new Date(temporaryDelivery.dateOfArrival!).toLocaleDateString('en-UK', {
+                                                    weekday: 'long',
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric',
+                                                })
                                         }`}
                                         density="standard"
                                         getRowId={(row) => row.uuid}
@@ -601,19 +628,6 @@ export const DeliveryInformationModal = ({
                     </Box>
                 </Stack>
             </Dialog>
-            <PageSnackbarStack>
-                {notifications.map((notification, index) => (
-                    <PageSnackbar
-                        key={index}
-                        open={!!notification}
-                        severity={notification?.severity}
-                        title={notification?.title}
-                        description={notification?.description}
-                        autoClose={true}
-                        onCloseNotification={() => setNotifications((ns) => ns.filter((_, i) => i !== index) ?? [])}
-                    />
-                ))}
-            </PageSnackbarStack>
         </>
     );
 };

@@ -17,14 +17,13 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-import { Input, PageSnackbar, PageSnackbarStack, Textarea } from '@catena-x/portal-shared-components';
+import { Input, Textarea } from '@catena-x/portal-shared-components';
 import { DateTime } from '@components/ui/DateTime';
 import { Close, Send } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Dialog, DialogTitle, FormLabel, Grid, InputLabel, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { postDemandAndCapacityNotification } from '@services/demand-capacity-notification';
-import { Notification } from '@models/types/data/notification';
 import { EFFECTS } from '@models/constants/effects';
 import { useAllPartners } from '@hooks/useAllPartners';
 import { LEADING_ROOT_CAUSE } from '@models/constants/leading-root-causes';
@@ -34,6 +33,7 @@ import { Site } from '@models/types/edc/site';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { usePartnerMaterials } from '@hooks/usePartnerMaterials';
 import { Partner } from '@models/types/edc/partner';
+import { useNotifications } from '@contexts/notificationContext';
 
 const isValidDemandCapacityNotification = (notification: Partial<DemandCapacityNotification>) =>
     notification.partnerBpnl &&
@@ -126,7 +126,7 @@ export const DemandCapacityNotificationInformationModal = ({
     const { partners } = useAllPartners();
     const { partnerMaterials } = usePartnerMaterials(temporaryDemandCapacityNotification.partnerBpnl ?? `BPNL`);
 
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
 
     const { sites } = useSites();
@@ -148,24 +148,20 @@ export const DemandCapacityNotificationInformationModal = ({
         postDemandAndCapacityNotification(temporaryDemandCapacityNotification)
             .then(() => {
                 onSave();
-                setNotifications((ns) => [
-                    ...ns,
-                    {
+                notify({
                         title: 'Notification Added',
                         description: 'Notification has been added',
                         severity: 'success',
                     },
-                ]);
+                );
             })
             .catch((error) => {
-                setNotifications((ns) => [
-                    ...ns,
-                    {
+                notify({
                         title: error.status === 409 ? 'Conflict' : 'Error requesting update',
                         description: error.status === 409 ? 'DemandCapacityNotification conflicting with an existing one' : error.error,
                         severity: 'error',
                     },
-                ]);
+                );
             })
             .finally(handleClose);
     };
@@ -421,19 +417,6 @@ export const DemandCapacityNotificationInformationModal = ({
                     </Box>
                 </Stack>
             </Dialog>
-            <PageSnackbarStack>
-                {notifications.map((notification, index) => (
-                    <PageSnackbar
-                        key={index}
-                        open={!!notification}
-                        severity={notification?.severity}
-                        title={notification?.title}
-                        description={notification?.description}
-                        autoClose={true}
-                        onCloseNotification={() => setNotifications((ns) => ns.filter((_, i) => i !== index) ?? [])}
-                    />
-                ))}
-            </PageSnackbarStack>
         </>
     );
 };

@@ -29,7 +29,7 @@ import { StockUpdateForm } from './StockUpdateForm';
 import { PartnerStockTable } from './PartnerStockTable';
 import { StockTable } from './StockTable';
 import { useStocks } from '../hooks/useStocks';
-import { usePartnerStocks } from '../hooks/usePartnerStocks';
+import { useReportedStocks } from '../hooks/useReportedStocks';
 import { compareStocks } from '@util/stock-helpers';
 import { Notification } from '@models/types/data/notification';
 import { Partner } from '@models/types/edc/partner';
@@ -43,7 +43,7 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
     const { materials } = useMaterials(type);
     const { stocks, refreshStocks } = useStocks(type);
     const [selectedMaterial, setSelectedMaterial] = useState<Stock | null>(null);
-    const { partnerStocks } = usePartnerStocks(
+    const { partnerStocks } = useReportedStocks(
         type,
         type === 'product'
             ? selectedMaterial?.material?.materialNumberSupplier ?? null
