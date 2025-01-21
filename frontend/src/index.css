@@ -48,29 +48,49 @@ body {
 .MuiDataGrid-root > .MuiBox-root {
     background-color: #081f4b;
     color: white;
-    
 }
 
 .MuiDataGrid-root > .MuiBox-root > .MuiBox-root {
     min-height: unset;
-    padding: .5rem .75rem;
-    min-height: 2.5rem;
+    padding: 0.25rem 0.5rem;
+    min-height: 2rem;
 }
 
 .MuiDataGrid-root > .MuiBox-root > .MuiBox-root h5 {
-    font-size: 1rem;
+    font-size: 0.875rem !important;
+    line-height: 1;
 }
 
-.MuiDataGrid-columnHeader, .MuiDataGrid-columnHeaders {
+.MuiDataGrid-columnHeader,
+.MuiDataGrid-columnHeaders {
     background-color: #f7f7f7;
     color: #444;
     border: none !important;
     line-height: 1 !important;
     height: auto !important;
-    min-height: 2.25rem !important;
+    min-height: 2.5rem !important;
+    max-height: unset !important;
+    height: unset !important;
 }
 
-.MuiDataGrid-row, .MuiDataGrid-row > * {
+.MuiDataGrid-columnHeader .MuiDataGrid-iconButtonContainer {
+    display: none !important;
+}
+
+.MuiDataGrid-columnHeader,
+.MuiDataGrid-columnHeaders {
+    background-color: #f7f7f7;
+    color: #444;
+    border: none !important;
+    line-height: 1 !important;
+    height: auto !important;
+    min-height: 2.5rem !important;
+    max-height: unset !important;
+    height: unset !important;
+}
+
+.MuiDataGrid-row,
+.MuiDataGrid-row > * {
     border: none !important;
 }
 
@@ -98,8 +118,9 @@ body {
 
 /* Input overrides */
 
-.MuiFilledInput-root, .MuiInputBase-root {
-    padding: .25rem 1rem !important;
+.MuiFilledInput-root,
+.MuiInputBase-root {
+    padding: 0.25rem 1rem !important;
     border-radius: 2rem !important;
 }
 
@@ -112,13 +133,13 @@ body {
 }
 
 .MuiChip-root {
-    font-size: .75rem !important;
-    padding: .125rem .25rem !important;
+    font-size: 0.75rem !important;
+    padding: 0.125rem 0.25rem !important;
     height: unset !important;
 }
 
 .MuiChip-label {
-    font-size: .75rem !important;
+    font-size: 0.75rem !important;
     line-height: 1 !important;
 }
 
@@ -136,6 +157,10 @@ label:has(+* input[aria-invalid=true]) {
 .date-picker {
     background-color: #f5f5f5;
     border-radius: 2rem;
+}
+
+.date-picker .MuiFormControl-root {
+    width: 100% !important;
 }
 
 .date-time-picker .MuiOutlinedInput-root fieldset,
@@ -216,7 +241,7 @@ textarea:focus {
 /* Markdown styles */
 
 .markdown {
-    font-family: 'Inter', sans-serif
+    font-family: 'Inter', sans-serif;
 }
 
 .markdown h1 {

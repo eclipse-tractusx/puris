@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
 import { Tab, TabPanel, Tabs, Table } from '@catena-x/portal-shared-components';
 import { Box, Button, Stack } from '@mui/material';
 import { getDemandAndCapacityNotification } from '@services/demand-capacity-notification';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Send } from '@mui/icons-material';
 import { DemandCapacityNotificationInformationModal } from '@features/notifications/components/NotificationInformationModal';
 import { DemandCapacityNotification } from '@models/types/data/demand-capacity-notification';
@@ -39,7 +39,7 @@ export const DemandCapacityNotificationView = () => {
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [selectedNotification, setSelectedNotification] = useState<DemandCapacityNotification | null>(null);
 
-    const tabs = ['Incoming', 'Outgoing'];
+    const tabs = useMemo(() => ['Incoming', 'Outgoing'], []);
 
     const fetchAndLogNotification = useCallback(async () => {
         try {
