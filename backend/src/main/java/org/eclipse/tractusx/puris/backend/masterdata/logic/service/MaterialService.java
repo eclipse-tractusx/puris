@@ -42,6 +42,12 @@ public interface MaterialService {
     
     List<Material> findAll();
     
+    /**
+     * This method will update the timestamp of the material with the given ownMaterialNumber. It should be 
+     * called whenever the material or its related data is updated.
+     * This includes Demands, Productions, Deliveries, etc. 
+     * @param ownMaterialNumber the ownMaterialNumber of the material to be updated
+     */
     Material updateTimestamp(String ownMaterialNumber);
 
     /**
