@@ -100,6 +100,8 @@ public class ProductionRequestApiService {
                 reportedProductionService.create(newProduction);
             }
             log.info("Updated ReportedProduction for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+
+            materialService.updateTimestamp(material.getOwnMaterialNumber());
         } catch (Exception e) {
             log.error("Error in ReportedProductionRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
         }

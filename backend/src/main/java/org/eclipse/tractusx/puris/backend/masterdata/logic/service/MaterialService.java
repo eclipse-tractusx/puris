@@ -39,8 +39,16 @@ public interface MaterialService {
     Material findByOwnMaterialNumber(String ownMaterialNumber);
 
     Material findByMaterialNumberCx(String materialNumberCx);
-
+    
     List<Material> findAll();
+    
+    /**
+     * This method will update the timestamp of the material with the given ownMaterialNumber. It should be 
+     * called whenever the material or its related data is updated.
+     * This includes Demands, Productions, Deliveries, etc. 
+     * @param ownMaterialNumber the ownMaterialNumber of the material to be updated
+     */
+    Material updateTimestamp(String ownMaterialNumber);
 
     /**
      * This method will do a best effort attempt to return a Material Entity for the given input arguments.
@@ -99,5 +107,6 @@ public interface MaterialService {
      * @return                 the Material, or null if no matching material was found
      */
     Material findFromSupplierPerspective(String materialNumberCx, String customerMatNbr, String supplierMatNbr, Partner partner);
+
 
 }

@@ -96,13 +96,13 @@ public abstract class DeliveryService<T extends Delivery> {
         return sum;
     }
 
-    public final List<Double> getQuantityForDays(String material, String partnerBpnl, String siteBpns, DirectionCharacteristic direction, int numberOfDays) {
+    public final List<Double> getQuantityForDays(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, DirectionCharacteristic direction, int numberOfDays) {
         List<Double> deliveryQtys = new ArrayList<>();
         LocalDate localDate = LocalDate.now();
 
         for (int i = 0; i < numberOfDays; i++) {
             Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            List<T> deliveries = findAllByFilters(Optional.of(material), Optional.of(siteBpns), Optional.of(partnerBpnl), Optional.of(date), Optional.of(direction));
+            List<T> deliveries = findAllByFilters(Optional.of(material), siteBpns, partnerBpnl, Optional.of(date), Optional.of(direction));
             deliveryQtys.add(getSumOfQuantities(deliveries));
 
             localDate = localDate.plusDays(1);

@@ -39,13 +39,13 @@ public class OwnDemandService extends DemandService<OwnDemand, OwnDemandReposito
         super(repository, partnerService, mprService);
     }
 
-    public final List<Double> getQuantityForDays(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+    public final List<Double> getQuantityForDays(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         List<Double> quantities = new ArrayList<>();
         LocalDate localDate = LocalDate.now();
 
         for (int i = 0; i < numberOfDays; i++) {
             Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            List<OwnDemand> demands = findAllByFilters(Optional.of(material), Optional.of(partnerBpnl), Optional.of(siteBpns), Optional.of(date));
+            List<OwnDemand> demands = findAllByFilters(Optional.of(material), partnerBpnl, siteBpns, Optional.of(date));
             double demandQuantity = getSumOfQuantities(demands);
             quantities.add(demandQuantity);
 

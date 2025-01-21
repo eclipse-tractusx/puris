@@ -26,6 +26,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Date;
+import java.util.Optional;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 @Getter
@@ -37,4 +40,6 @@ public class FrontendMaterialDto {
     private String ownMaterialNumber;
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String description;
+    private Date lastUpdatedOn;
+    private Optional<Double> daysOfSupply;
 }

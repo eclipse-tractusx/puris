@@ -31,6 +31,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.repository.ItemStockRepos
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -123,8 +124,11 @@ public abstract class ItemStockService<T extends ItemStock> {
         return sum;
     }
 
-    public final double getInitialStockQuantity(String material, String partnerBpnl) {
-        List<T> stocks = findAllByMaterialAndPartner(material, partnerBpnl);
+    public final double getInitialStockQuantity(String material, Optional<String> partnerBpnl) {
+        List<T> stocks = repository.findAll().stream()
+                .filter(stock -> 
+                    stock.getMaterial().getOwnMaterialNumber().equals(material) && (partnerBpnl.isEmpty() || stock.getPartner().getBpnl().equals(partnerBpnl.get())))
+                .toList();
         double initialStockQuantity = getSumOfQuantities(stocks);
 
         return initialStockQuantity;

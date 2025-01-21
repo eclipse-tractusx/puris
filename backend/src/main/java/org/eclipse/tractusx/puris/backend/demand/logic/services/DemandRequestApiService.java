@@ -29,6 +29,7 @@ import org.eclipse.tractusx.puris.backend.demand.logic.dto.demandsamm.ShortTermM
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,8 @@ public class DemandRequestApiService {
     private PartnerService partnerService;
     @Autowired
     private MaterialPartnerRelationService mprService;
+    @Autowired
+    private MaterialService materialService;
     @Autowired
     private OwnDemandService ownDemandService;
     @Autowired
@@ -117,6 +120,8 @@ public class DemandRequestApiService {
                 reportedDemandService.create(newDemand);
             }
             log.info("Updated ReportedDemand for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+
+            materialService.updateTimestamp(material.getOwnMaterialNumber());
         } catch (Exception e) {
             log.error("Error in ReportedDemandRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
         }

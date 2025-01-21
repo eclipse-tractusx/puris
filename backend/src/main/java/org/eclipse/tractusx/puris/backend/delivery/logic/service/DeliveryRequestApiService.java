@@ -176,6 +176,8 @@ public class DeliveryRequestApiService {
                 reportedDeliveryService.create(newDelivery);
             }
             log.info("Updated Reported Deliveries for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+
+            materialService.updateTimestamp(material.getOwnMaterialNumber());
         } catch (Exception e) {
             log.error("Error in Reported Deliveries Request for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
         }
