@@ -22,9 +22,9 @@ import { createContext, ReactNode, useCallback, useContext, useMemo, useReducer,
 import { Site } from '@models/types/edc/site';
 import { ModalMode } from '@models/types/data/modal-mode';
 import { Delivery } from '@models/types/data/delivery';
-import { DemandCategoryModal } from '@features/dashboard/components/DemandCategoryModal';
-import { PlannedProductionModal } from '@features/dashboard/components/PlannedProductionModal';
-import { DeliveryInformationModal } from '@features/dashboard/components/DeliveryInformationModal';
+import { DemandCategoryModal } from '@features/material-details/components/DemandCategoryModal';
+import { PlannedProductionModal } from '@features/material-details/components/PlannedProductionModal';
+import { DeliveryInformationModal } from '@features/material-details/components/DeliveryInformationModal';
 import { DEMAND_CATEGORY } from '@models/constants/demand-category';
 import { Demand } from '@models/types/data/demand';
 import { Production } from '@models/types/data/production';

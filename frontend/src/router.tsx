@@ -34,7 +34,6 @@ import { UserGuideView } from '@views/UserGuideView';
 import { DemandCapacityNotificationView } from '@views/DemandCapacityNotificationView';
 import { MaterialListView } from '@views/MaterialListView';
 import { MaterialDetailView } from '@views/MaterialDetailView';
-import { DashboardView } from '@views/DashboardView';
 
 export const router = createBrowserRouter([
     {
@@ -48,10 +47,6 @@ export const router = createBrowserRouter([
                     {
                         path: 'stocks',
                         element: <StockView />,
-                    },
-                    {
-                        path: 'dashboard',
-                        element: <DashboardView />,
                     },
                     {
                         path: 'notifications',

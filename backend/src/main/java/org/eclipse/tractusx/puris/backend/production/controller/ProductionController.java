@@ -233,6 +233,9 @@ public class ProductionController {
     )
     public ResponseEntity<List<PartnerDto>> refreshReportedProductions(
         @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        if (ownMaterialNumber != null) {
+            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        }
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
