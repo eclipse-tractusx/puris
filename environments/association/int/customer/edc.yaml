@@ -126,10 +126,10 @@ postgresql:
   jdbcUrl: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/<path:puris/data/customer/edc/postgres#database>"
   primary:
     persistence:
-      enabled: false
+      enabled: true
   readReplicas:
     persistence:
-      enabled: false
+      enabled: true
   auth:
     database: <path:puris/data/customer/edc/postgres#database>
     username: <path:puris/data/customer/edc/postgres#user>

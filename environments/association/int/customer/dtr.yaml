@@ -129,4 +129,4 @@ keycloak:
   # Make sure to remove the '--hostname' property when deploying
   # in a non-test scanrio
   command: ["/bin/sh", "-c"]
-  args: ["kc.sh import --file /opt/keycloak/data/import/default-realm-import.json; kc.sh start-dev --hostname=<path:puris/data/customer/dtr/keycloak#hostname> --hostname-strict=false --proxy=edge"]
+  args: ["kc.sh start-dev --hostname=<path:puris/data/customer/dtr/keycloak#hostname> --hostname-strict=false --proxy=edge"]
