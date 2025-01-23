@@ -26,7 +26,16 @@ export const useProduction = (materialNumber: string | null, site: BPNS | null) 
   if (materialNumber != null) {
     materialNumber = btoa(materialNumber);
   }
-  const {data: productions, error: productionsError, isLoading: isLoadingProductions, refresh: refreshProduction } = useFetch<Production[]>(materialNumber && site ? `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_PRODUCTION}?ownMaterialNumber=${materialNumber}&site=${site}` : undefined);
+  const params = new URLSearchParams();
+  let url: string | undefined = undefined;
+  if (materialNumber) {
+    params.set('ownMaterialNumber', materialNumber);
+    if (site) {
+      params.set('site', site)
+    }
+    url = `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_PRODUCTION}?${params.toString()}`;
+  }
+  const {data: productions, error: productionsError, isLoading: isLoadingProductions, refresh: refreshProduction } = useFetch<Production[]>(url);
   return {
     productions,
     productionsError,

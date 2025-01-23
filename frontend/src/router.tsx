@@ -26,7 +26,6 @@ import { CatalogView } from '@views/CatalogView';
 import { NegotiationView } from '@views/NegotiationView';
 import { TransferView } from '@views/TransferView';
 import { StockView } from '@views/StockView';
-import { DashboardView } from '@views/DashboardView';
 import { AboutLicenseView } from '@views/AboutLicenseView';
 import { UnauthorizedView } from '@views/errors/UnauthorizedView';
 import { ErrorView } from '@views/errors/ErrorView';
@@ -35,6 +34,7 @@ import { UserGuideView } from '@views/UserGuideView';
 import { DemandCapacityNotificationView } from '@views/DemandCapacityNotificationView';
 import { MaterialListView } from '@views/MaterialListView';
 import { MaterialDetailView } from '@views/MaterialDetailView';
+import { DashboardView } from '@views/DashboardView';
 
 export const router = createBrowserRouter([
     {

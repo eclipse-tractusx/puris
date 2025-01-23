@@ -27,20 +27,20 @@ export const useDelivery = (materialNumber: string | null, site: BPNS | null) =>
     if (materialNumber != null) {
         materialNumber = btoa(materialNumber);
     }
-    const {
-        data: deliveries,
-        error: deliveriesError,
-        isLoading: isLoadingDeliverys,
-        refresh: refreshDelivery,
-    } = useFetch<Delivery[]>(
-        materialNumber && site
-            ? `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_DELIVERY}?ownMaterialNumber=${materialNumber}&site=${site}`
-            : undefined
-    );
+    const params = new URLSearchParams();
+    let url: string | undefined = undefined;
+    if (materialNumber) {
+        params.set('ownMaterialNumber', materialNumber);
+        if (site) {
+            params.set('site', site);
+        }
+        url = `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_DELIVERY}?${params.toString()}`;
+    }
+    const { data: deliveries, error: deliveriesError, isLoading, refresh: refreshDelivery } = useFetch<Delivery[]>(url);
     return {
         deliveries,
         deliveriesError,
-        isLoadingDeliverys,
+        isLoadingDeliveries: isLoading,
         refreshDelivery,
     };
 };

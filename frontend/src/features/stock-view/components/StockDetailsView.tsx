@@ -29,7 +29,7 @@ import { StockUpdateForm } from './StockUpdateForm';
 import { PartnerStockTable } from './PartnerStockTable';
 import { StockTable } from './StockTable';
 import { useStocks } from '../hooks/useStocks';
-import { usePartnerStocks } from '../hooks/usePartnerStocks';
+import { useReportedStocks } from '../hooks/useReportedStocks';
 import { compareStocks } from '@util/stock-helpers';
 import { Notification } from '@models/types/data/notification';
 import { Partner } from '@models/types/edc/partner';
@@ -43,7 +43,7 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
     const { materials } = useMaterials(type);
     const { stocks, refreshStocks } = useStocks(type);
     const [selectedMaterial, setSelectedMaterial] = useState<Stock | null>(null);
-    const { partnerStocks } = usePartnerStocks(
+    const { reportedStocks } = useReportedStocks(
         type,
         type === 'product'
             ? selectedMaterial?.material?.materialNumberSupplier ?? null
@@ -125,14 +125,14 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
     return (
         <Stack spacing={2.5} paddingBottom={1.25}>
             <Box marginInline="auto">
-                <StockUpdateForm items={materials} type={type} selectedItem={selectedMaterial} onSubmit={saveStock} />
+                <StockUpdateForm items={materials ?? []} type={type} selectedItem={selectedMaterial} onSubmit={saveStock} />
             </Box>
             <Stack spacing={4} sx={{ backgroundColor: 'white', borderRadius: 2, padding: 2 }}>
                 <StockTable type={type} onSelection={setSelectedMaterial} stocks={stocks ?? []} />
                 <PartnerStockTable
                     type={type}
                     materialName={selectedMaterial?.material?.name}
-                    partnerStocks={partnerStocks ?? []}
+                    partnerStocks={reportedStocks ?? []}
                     onRefresh={handleStockRefresh}
                     lastUpdated={lastUpdated}
                 />

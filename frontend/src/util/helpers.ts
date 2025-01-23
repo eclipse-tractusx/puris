@@ -21,7 +21,6 @@ SPDX-License-Identifier: Apache-2.0
 import { INCOTERMS } from '@models/constants/incoterms';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { OrderReference } from '@models/types/data/order-reference';
-import { OrderReference } from '@models/types/data/order-reference';
 import { UnitOfMeasurementKey } from '@models/types/data/uom';
 
 export const getUnitOfMeasurement = (unitOfMeasurementKey: UnitOfMeasurementKey) =>

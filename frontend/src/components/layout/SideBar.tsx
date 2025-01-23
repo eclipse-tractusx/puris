@@ -46,6 +46,7 @@ import {
     NotificationsOutlined,
     SyncAltOutlined,
 } from '@mui/icons-material';
+import { visuallyHidden } from '@mui/utils';
 import { Link, useLocation } from 'react-router-dom';
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -113,8 +114,8 @@ type SideBarItemProps = (
 };
 
 const sideBarItems: SideBarItemProps[] = [
-    { name: 'Materials', icon: <HomeOutlined />, path: '/materials' },
     { name: 'Dashboard', icon: <HomeOutlined />, path: '/dashboard' },
+    { name: 'Materials', icon: <HomeOutlined />, path: '/materials' },
     { name: 'Notifications', icon: <NotificationsOutlined />, path: '/notifications' },
     { name: 'Stocks', icon: <Inventory2Outlined />, path: '/stocks' },
     { name: 'Catalog', icon: <AutoStoriesOutlined />, path: '/catalog', requiredRoles: ['PURIS_ADMIN'] },
@@ -146,11 +147,13 @@ export default function MiniDrawer() {
 
                         <IconButton sx={{ p: 0, borderRadius: 0 }} onClick={handleDrawerClose}>
                             <ChevronLeftOutlined />
+                            <Typography variant="body1" sx={visuallyHidden}>Collapse Sidebar</Typography>
                         </IconButton>
                     </Box>
                 ) : (
                     <IconButton sx={{ p: 0, borderRadius: 0, mx: 'auto' }} onClick={handleDrawerOpen}>
                         <MenuOutlined />
+                        <Typography variant="body1" sx={visuallyHidden}>Expand Sidebar</Typography>
                     </IconButton>
                 )}
             </DrawerHeader>
