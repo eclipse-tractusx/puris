@@ -134,10 +134,6 @@ public class DeliveryRequestApiService {
             Optional.empty(),
             Optional.empty());
 
-        Predicate<OwnDelivery> parnterRoleDirectionPredicate = partnerRoleDirectionPredicate(partnerIsCustomer, mpr);
-        currentDeliveries = currentDeliveries.stream().filter(
-            parnterRoleDirectionPredicate
-        ).toList();
         log.debug(
             "Found '{}' deliveries for material number cx '{}' for partner with bpnl '{}' asking in role '{}'.",
             currentDeliveries.size(),

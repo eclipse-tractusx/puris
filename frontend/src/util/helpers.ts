@@ -70,3 +70,12 @@ export const isErrorResponse = (response: unknown): response is ErrorResponse =>
 export const isValidOrderReference = (ref: Partial<OrderReference>) =>
     (ref.customerOrderNumber && ref.customerOrderPositionNumber) ||
     (!ref.customerOrderNumber && !ref.customerOrderPositionNumber && !ref.supplierOrderNumber);
+
+export function groupBy<TItem>(arr: TItem[], callback: (item: TItem, index: number, array: TItem[]) => PropertyKey) {
+    return arr.reduce((acc: Record<PropertyKey, TItem[]> = {}, ...args) => {
+        const key = callback(...args);
+        acc[key] ??= [];
+        acc[key].push(args[0]);
+        return acc;
+    }, {});
+}
