@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 import { Material } from '@models/types/data/stock';
 import { DirectionType } from '@models/types/erp/directionType';
 import { Add, ChevronLeftOutlined, } from '@mui/icons-material';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Button, capitalize, Stack, Typography } from '@mui/material';
 import { useDataModal } from '@contexts/dataModalContext';
 import { Link } from 'react-router-dom';
 
@@ -33,7 +33,7 @@ export function MaterialDetailsHeader({ material, direction, }: MaterialDetailsH
             <Stack direction="row" alignItems="center" spacing={1} width="100%">
                 <Link to="/materials"> <Box padding="0.25rem" display="flex" alignItems="center"> <ChevronLeftOutlined /> </Box> </Link>
                 <Typography variant="h3" component="h1" marginRight="auto !important">
-                    {direction === DirectionType.Outbound ? 'Production Information' : 'Demand Information'} for {material?.name}
+                    {direction === DirectionType.Outbound ? 'Production Information' : 'Demand Information'} for {material?.name} ({capitalize(direction.toLowerCase())})
                 </Typography>
                 {direction === DirectionType.Outbound ? (
                     <Button sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => openDialog('production', {}, [], 'create')}>
