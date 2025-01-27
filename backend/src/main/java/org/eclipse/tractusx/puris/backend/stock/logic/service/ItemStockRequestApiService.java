@@ -128,7 +128,7 @@ public class ItemStockRequestApiService {
     public void doItemStockSubmodelReportedMaterialItemStockRequest(Partner partner, Material material) {
         try {
             var mpr = mprService.find(material, partner);
-            var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL, mpr, DirectionCharacteristic.OUTBOUND, 1);
+            var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL, mpr, DirectionCharacteristic.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedMaterialItemStock(samm, partner);
             for (var stock : stocks) {
@@ -159,7 +159,7 @@ public class ItemStockRequestApiService {
                 mprService.triggerPartTypeRetrievalTask(partner);
                 mpr = mprService.find(material, partner);
             }
-            var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL ,mpr, DirectionCharacteristic.INBOUND, 1);
+            var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL ,mpr, DirectionCharacteristic.OUTBOUND, 1);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedProductItemStock(samm, partner);
             for (var stock : stocks) {
