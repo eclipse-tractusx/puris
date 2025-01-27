@@ -1,0 +1,117 @@
+meta {
+  name: Create Delivery Semiconductor
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/delivery
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+    "partnerBpnl": "{{CUSTOMER_BPNL}}",
+    "ownMaterialNumber": "{{MATERIAL_NUMBER_SUPPLIER}}",
+    "quantity": 3000,
+    "measurementUnit": "unit:piece",
+    "trackingNumber": "TN1",
+    "incoterm": "CIP",
+    "supplierOrderNumber": null,
+    "customerOrderNumber": null,
+    "customerOrderPositionNumber": null,
+    "destinationBpns": "{{CUSTOMER_BPNS}}",
+    "destinationBpna": null,
+    "originBpns": "{{SUPPLIER_BPNS}}",
+    "originBpna": null,
+    "dateOfDeparture": "{{DEPARTURE_TIME_CALCULATED}}",
+    "dateOfArrival": "{{ARRIVAL_TIME_CALCULATED}}",
+    "departureType": "estimated-departure",
+    "arrivalType": "estimated-arrival"
+  }
+}
+
+script:pre-request {
+  // Create the formattedDate
+  const today = new Date();
+  today.setDate(today.getDate() + 7);
+  const departureDateFormatted = today.toISOString();
+  
+  // set arrival date 2 days after departure
+  today.setDate(today.getDate() + 1);
+  const arrivalDateFormatted = today.toISOString();
+  
+  // Set the formattedDate in the environment variable
+  bru.setVar('DEPARTURE_TIME_CALCULATED', departureDateFormatted);
+  bru.setVar('ARRIVAL_TIME_CALCULATED', arrivalDateFormatted);
+  
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Verify delivery composition (material number with BPNS, BPNA and Partner BPNL)", function () {
+      const responseJson = res.getBody();
+  
+      expect(responseJson).to.have.property("uuid");
+      expect(responseJson.uuid).to.not.be.undefined;
+  
+      expect(responseJson).to.have.property("ownMaterialNumber");
+      expect(responseJson.ownMaterialNumber).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
+  
+      expect(responseJson).to.have.property("partnerBpnl");
+      expect(responseJson.partnerBpnl).to.equal(bru.getEnvVar("CUSTOMER_BPNL"));
+  
+      expect(responseJson).to.have.property("quantity");
+      expect(responseJson.quantity).to.equal(3000);
+  
+      expect(responseJson).to.have.property("measurementUnit");
+      expect(responseJson.measurementUnit).to.equal("unit:piece");
+  
+      expect(responseJson).to.have.property("trackingNumber");
+      expect(responseJson.trackingNumber).to.equal("TN1");
+  
+      expect(responseJson).to.have.property("incoterm");
+      expect(responseJson.incoterm).to.equal("CIP");
+  
+      expect(responseJson).to.have.property("supplierOrderNumber");
+      expect(responseJson.supplierOrderNumber).to.equal(null);
+  
+      expect(responseJson).to.have.property("customerOrderNumber");
+      expect(responseJson.customerOrderNumber).to.equal(null);
+  
+      expect(responseJson).to.have.property("customerOrderPositionNumber");
+      expect(responseJson.customerOrderPositionNumber).to.equal(null);
+  
+      expect(responseJson).to.have.property("destinationBpns");
+      expect(responseJson.destinationBpns).to.equal(bru.getEnvVar("CUSTOMER_BPNS"));
+  
+      expect(responseJson).to.have.property("destinationBpna");
+      expect(responseJson.destinationBpna).to.equal(null);
+  
+      expect(responseJson).to.have.property("originBpns");
+      expect(responseJson.originBpns).to.equal(bru.getEnvVar("SUPPLIER_BPNS"));
+  
+      expect(responseJson).to.have.property("originBpna");
+      expect(responseJson.originBpna).to.equal(null);
+  
+      expect(responseJson).to.have.property("dateOfDeparture");
+      expect(new Date(responseJson.dateOfDeparture).toISOString()).to.equal(bru.getVar("DEPARTURE_TIME_CALCULATED"));
+  
+      expect(responseJson).to.have.property("dateOfArrival");
+      expect(new Date(responseJson.dateOfArrival).toISOString()).to.equal(bru.getVar("ARRIVAL_TIME_CALCULATED"));
+  
+      expect(responseJson).to.have.property("departureType");
+      expect(responseJson.departureType).to.equal("estimated-departure");
+  
+      expect(responseJson).to.have.property("arrivalType");
+      expect(responseJson.arrivalType).to.equal("estimated-arrival");
+  });
+}
