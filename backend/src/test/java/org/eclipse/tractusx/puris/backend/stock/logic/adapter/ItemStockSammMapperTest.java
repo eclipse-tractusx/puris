@@ -30,7 +30,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
 import org.junit.jupiter.api.*;
 import org.junit.platform.commons.logging.Logger;
@@ -172,19 +172,19 @@ public class ItemStockSammMapperTest {
     /**
      * Tests following Scenario: Supplier asks the Customer for Stocks of a given material that the customer
      * has in place and has been supplied by the Supplier earlier. The supplier receives the INBOUND ItemStockSAMM and
-     * maps it to the ReportedProductItemStock.
+     * maps it to the ReportedMaterialItemStock.
      *
      * In technical terms, this means the following:
      * <li>Given: Create INBOUND ItemStock to represent the Stock level on Customer side</li>
-     * <li>When: Use mapper to create the ReportedProductItemStock</li>
+     * <li>When: Use mapper to create the ReportedMaterialsItemStock</li>
      * <li>Then: Validate the Mappings</li>
      *
      * Note: The test brings fills the {@code SAMM_FROM_CUSTOMER_PARTNER}.
      */
     @Test
     @Order(2)
-    void map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStock() {
-        // If we want to map a Samm to a ProductItemStock entity, then this implies
+    void map_WhenReportedSammToMaterialItemStock_ReturnsMultipleReportedMaterialItemStock() {
+        // If we want to map a Samm to aMaterialItemStock entity, then this implies
         // that we are the supplier, who has received a Samm from his customer partner.
         // That customer partner therefore would have generated the Samm from his
         // MaterialEntityStock entities.
@@ -192,10 +192,10 @@ public class ItemStockSammMapperTest {
         // are INBOUND, then we have to set the DirectionCharacteristic accordingly.
 
         // Given
-        ItemStockSamm inboundProductStockSamm = new ItemStockSamm();
+        ItemStockSamm inboundMaterialStockSamm = new ItemStockSamm();
 
-        inboundProductStockSamm.setDirection(DirectionCharacteristic.INBOUND);
-        inboundProductStockSamm.setMaterialGlobalAssetId(CX_MAT_NUMBER);
+        inboundMaterialStockSamm.setDirection(DirectionCharacteristic.INBOUND);
+        inboundMaterialStockSamm.setMaterialGlobalAssetId(CX_MAT_NUMBER);
 
         // first position
         Position anonymousPosition = new Position();
@@ -262,7 +262,7 @@ public class ItemStockSammMapperTest {
             OPR_REF_CUSTOMER_POS_ID
         ));
 
-        inboundProductStockSamm.setPositions(Set.of(anonymousPosition, positionWithOrderPositionReference));
+        inboundMaterialStockSamm.setPositions(Set.of(anonymousPosition, positionWithOrderPositionReference));
 
         Site site2 = new Site(SUPPLIER_BPNS2, "Site 2", SUPPLIER_BPNA2, "Test Street 2", "44174 Dortmund", "Germany");
 
@@ -282,29 +282,32 @@ public class ItemStockSammMapperTest {
         MaterialPartnerRelation mpr = new MaterialPartnerRelation();
         mpr.setPartner(customerPartner);
         mpr.setMaterial(semiconductorProduct);
-        mpr.setPartnerBuysMaterial(false);
-        mpr.setPartnerSuppliesMaterial(true);
+        mpr.setPartnerBuysMaterial(true);
+        mpr.setPartnerSuppliesMaterial(false);
         mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
 
         // When
-        // Find material based on CX number and mpr
-        when(mprService.find(semiconductorProduct, customerPartner)).thenReturn(mpr);
+        // Find material based on CX number
         when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(semiconductorProduct);
 
-        // Then we should build 5 reported product stocks:
+        // When
+        // Find MPR based on material and partner
+        when(mprService.find(semiconductorProduct, customerPartner)).thenReturn(mpr);
+
+        // Then we should build 5 reported material item stocks:
         // - no OrderPositionReference (OPR), blocked, 10 pieces, BPNS & BPNA
         // - no OPR, not blocked, 20 kilo, BPNS2 & BPNA2
         // - no OPR, not blocked, 20 kilo, BPNS & BPNA
         // - OPR, blocked, 10 pieces, BPNS & BPNA
         // - OPR, not blocked, 20 kilo, BPNS & BPNA
-        List<ReportedProductItemStock> reportedProductItemStocks = itemStockSammMapper.itemStockSammToReportedProductItemStock(inboundProductStockSamm, customerPartner);
+        List<ReportedMaterialItemStock> reportedMaterialItemStocks = itemStockSammMapper.itemStockSammToReportedMaterialItemStock(inboundMaterialStockSamm, customerPartner);
         // Then
-        assertEquals(5, reportedProductItemStocks.size());
+        assertEquals(5, reportedMaterialItemStocks.size());
 
         // 1. anonymous stocks
         // Check for stockBlocked
         List<? extends ItemStock> potentialBlockedAnonymousStock = filterReportedItemStock(
-            reportedProductItemStocks,
+            reportedMaterialItemStocks,
             stockBlocked,
             anonymousPosition,
             CX_MAT_NUMBER
@@ -313,14 +316,14 @@ public class ItemStockSammMapperTest {
         assertEquals(1, potentialBlockedAnonymousStock.size());
 
         // Test that the anonymous stock has null values (not empty strings)
-        ReportedProductItemStock reportedProductItemStock = (ReportedProductItemStock) potentialBlockedAnonymousStock.get(0);
-        assertNull(reportedProductItemStock.getCustomerOrderId());
-        assertNull(reportedProductItemStock.getSupplierOrderId());
-        assertNull(reportedProductItemStock.getCustomerOrderPositionId());
+        ReportedMaterialItemStock reportedMaterialItemStock = (ReportedMaterialItemStock) potentialBlockedAnonymousStock.get(0);
+        assertNull(reportedMaterialItemStock.getCustomerOrderId());
+        assertNull(reportedMaterialItemStock.getSupplierOrderId());
+        assertNull(reportedMaterialItemStock.getCustomerOrderPositionId());
 
         // Check for stockNOTBlocked
         List<? extends ItemStock> potentialNotBlockedAnonymousStock = filterReportedItemStock(
-            reportedProductItemStocks,
+            reportedMaterialItemStocks,
             stockNotBlocked,
             anonymousPosition,
             CX_MAT_NUMBER
@@ -330,7 +333,7 @@ public class ItemStockSammMapperTest {
 
         // Check for stockBlocked
         List<? extends ItemStock> potentialAnonymousStockOtherSite = filterReportedItemStock(
-            reportedProductItemStocks,
+            reportedMaterialItemStocks,
             stockOtherSite,
             anonymousPosition,
             CX_MAT_NUMBER
@@ -341,7 +344,7 @@ public class ItemStockSammMapperTest {
 
         // Check for oprStockBlocked
         List<? extends ItemStock> potentialOprStockBlocked = filterReportedItemStock(
-            reportedProductItemStocks,
+            reportedMaterialItemStocks,
             oprStockBlocked,
             positionWithOrderPositionReference,
             CX_MAT_NUMBER
@@ -349,14 +352,14 @@ public class ItemStockSammMapperTest {
         assertEquals(1, potentialOprStockBlocked.size());
 
         // Test that the OPR is mapped correctly
-        ReportedProductItemStock reportedOprProductItemStock = (ReportedProductItemStock) potentialOprStockBlocked.get(0);
-        assertEquals(OPR_REF_CUSTOMER_ORDER_ID, reportedOprProductItemStock.getCustomerOrderId());
-        assertEquals(OPR_REF_SUPPLIER_ORDER_ID, reportedOprProductItemStock.getSupplierOrderId());
-        assertEquals(OPR_REF_CUSTOMER_POS_ID, reportedOprProductItemStock.getCustomerOrderPositionId());
+        ReportedMaterialItemStock reportedOprMaterialItemStock = (ReportedMaterialItemStock) potentialOprStockBlocked.get(0);
+        assertEquals(OPR_REF_CUSTOMER_ORDER_ID, reportedOprMaterialItemStock.getCustomerOrderId());
+        assertEquals(OPR_REF_SUPPLIER_ORDER_ID, reportedOprMaterialItemStock.getSupplierOrderId());
+        assertEquals(OPR_REF_CUSTOMER_POS_ID, reportedOprMaterialItemStock.getCustomerOrderPositionId());
 
         // Check for oprStockNotBlocked
         List<? extends ItemStock> potentialOprStockNotBlocked = filterReportedItemStock(
-            reportedProductItemStocks,
+            reportedMaterialItemStocks,
             oprStockBlocked,
             positionWithOrderPositionReference,
             CX_MAT_NUMBER
@@ -365,11 +368,11 @@ public class ItemStockSammMapperTest {
 
         // ATTENTION: This variable is used in marshalling tests
         // This has been done to do the perspective Switch (supplier)
-        SAMM_FROM_CUSTOMER_PARTNER = inboundProductStockSamm;
+        SAMM_FROM_CUSTOMER_PARTNER = inboundMaterialStockSamm;
     }
 
     /**
-     * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedProductItemStock
+     * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedMaterialItemStock
      *
      * In technical terms, this means the following:
      * <li>Given: Use the {@code SAMM_FROM_CUSTOMER_PARTNER} created in previous test</li>
@@ -395,13 +398,13 @@ public class ItemStockSammMapperTest {
         when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(material);
         when(mprService.find(material, customerPartner)).thenReturn(mpr);
 
-        var list = itemStockSammMapper.itemStockSammToReportedProductItemStock(SAMM_FROM_CUSTOMER_PARTNER, supplierPartner);
+        var list = itemStockSammMapper.itemStockSammToReportedMaterialItemStock(SAMM_FROM_CUSTOMER_PARTNER, supplierPartner);
         assertNotNull(list);
         assertEquals(5, list.size());
     }
 
     /**
-     * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedProductItemStock via the
+     * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedMaterialItemStock via the
      * JSON serializationS
      *
      * In technical terms, this means the following:
@@ -440,15 +443,15 @@ public class ItemStockSammMapperTest {
         });
         var itemStockSamm = objectMapper.readValue(sammJsonString, ItemStockSamm.class);
         assertEquals(SAMM_FROM_CUSTOMER_PARTNER, itemStockSamm);
-        var list = itemStockSammMapper.itemStockSammToReportedProductItemStock(itemStockSamm, supplierPartner);
+        var list = itemStockSammMapper.itemStockSammToReportedMaterialItemStock(itemStockSamm, supplierPartner);
         assertEquals(5, list.size());
     }
 
-    private List<? extends ItemStock> filterReportedItemStock(List<? extends ItemStock> reportedProductItemStocks, AllocatedStock allocatedStock, Position position, String cxMaterialNumber) {
+    private List<? extends ItemStock> filterReportedItemStock(List<? extends ItemStock> reportedMaterialItemStocks, AllocatedStock allocatedStock, Position position, String cxMaterialNumber) {
 
         if (position.getOrderPositionReference() == null) {
 
-            List<? extends ItemStock> potentialStocks = reportedProductItemStocks.stream()
+            List<? extends ItemStock> potentialStocks = reportedMaterialItemStocks.stream()
                 .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
                 .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
                 .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
@@ -462,7 +465,7 @@ public class ItemStockSammMapperTest {
                 .collect(Collectors.toList());
             return potentialStocks;
         } else {
-            List<? extends ItemStock> potentialStocks = reportedProductItemStocks.stream()
+            List<? extends ItemStock> potentialStocks = reportedMaterialItemStocks.stream()
                 .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
                 .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
                 .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
