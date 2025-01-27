@@ -19,14 +19,20 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Tab, TabPanel, Tabs } from '@catena-x/portal-shared-components';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import { StockDetailsView } from '@features/stock-view/components/StockDetailsView';
 import { Box, Stack, Typography } from '@mui/material';
+import { useTitle } from '@contexts/titleProvider';
 
 export const StockView = () => {
     const [selectedTab, setSelectedTab] = useState<number>(0);
+    const { setTitle } = useTitle();
+
+    useEffect(() => {
+        setTitle('Stocks');
+    }, [setTitle])
     return (
         <Stack width="100%" height="100%" spacing={2}>
             <ConfidentialBanner />

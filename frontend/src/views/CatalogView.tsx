@@ -21,13 +21,14 @@ SPDX-License-Identifier: Apache-2.0
 
 import { Input, Table } from '@catena-x/portal-shared-components';
 import { useCatalog } from '@hooks/edc/useCatalog';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CatalogOperation, CatalogPermission } from '@models/types/edc/catalog';
 import { Box, Button, Stack, Typography, Autocomplete } from '@mui/material';
 import { Partner } from '@models/types/edc/partner';
 import { useAllPartners } from '@hooks/useAllPartners';
 import { getCatalogOperator } from '@util/helpers';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
+import { useTitle } from '@contexts/titleProvider';
 
 const PermissionList = ({ permission }: { permission: CatalogPermission }) => {
     return (
@@ -103,6 +104,11 @@ export const CatalogView = () => {
     const [partner, setPartner] = useState<Partner | null>(null);
     const { catalog, catalogError, isLoadingCatalog } = useCatalog(partner);
     const partnerRef = useRef<Partner | null>(null);
+    const { setTitle } = useTitle();
+
+    useEffect(() => {
+        setTitle('Catalog');
+    }, [setTitle])
     return (
         <Stack spacing={2}>
             <ConfidentialBanner />

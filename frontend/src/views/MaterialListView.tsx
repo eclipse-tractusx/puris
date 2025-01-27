@@ -20,11 +20,12 @@ SPDX-License-Identifier: Apache-2.0
 
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import { SearchInput } from '@components/ui/SearchInput';
+import { useTitle } from '@contexts/titleProvider';
 import { MaterialList } from '@features/material-list/components/MaterialList';
 import { useMaterials } from '@features/stock-view/hooks/useMaterials';
 
 import { MenuItem, Select, Stack } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export function MaterialListView() {
@@ -33,6 +34,12 @@ export function MaterialListView() {
     const [direction, setDirection] = useState('');
     const { materials } = useMaterials('material', true);
     const { materials: products } = useMaterials('product', true);
+    const { setTitle } = useTitle();
+    
+    useEffect(() => {
+        setTitle('Materials');
+    }, [setTitle]);
+
     const materialsAndProducts = useMemo(
         () =>
             materials

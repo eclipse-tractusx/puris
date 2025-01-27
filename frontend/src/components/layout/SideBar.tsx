@@ -163,7 +163,6 @@ export default function MiniDrawer() {
                     return (
                         <ListItem key={item.name} disablePadding sx={{ display: 'block', px: 1, py: 0.5 }}>
                             <ListItemButton
-                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                 LinkComponent={({ href, ...props }) => <Link to={href} {...props} />}
                                 sx={{
                                     gap: open ? 1 : 0,

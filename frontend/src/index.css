@@ -92,20 +92,16 @@ body {
 .MuiDataGrid-row,
 .MuiDataGrid-row > * {
     border: none !important;
+    line-height: 1 !important;
+    height: auto !important;
+    min-height: 2.5rem !important;
+    max-height: unset !important;
+    height: unset !important;
 }
 
-.table-container {
-    display: flex;
-    width: 100%;
-    border: 1px solid #e0e0e0;
-    border-radius: .75rem !important;
-    overflow: hidden;
-    background-color: white !important;
-}
-
-.table-container .MuiDataGrid-root {
+.MuiDataGrid-row,
+.MuiDataGrid-row > * {
     border: none !important;
-    border-radius: 0 !important;
 }
 
 .MuiDialog-container .MuiPaper-root {

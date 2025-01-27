@@ -17,16 +17,25 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
+
 import { Material } from '@models/types/data/stock';
 import { DirectionType } from '@models/types/erp/directionType';
-import { Add, ChevronLeftOutlined, } from '@mui/icons-material';
+import { Add, ChevronLeftOutlined, Refresh, Schedule } from '@mui/icons-material';
 import { Box, Button, capitalize, Stack, Typography } from '@mui/material';
 import { useDataModal } from '@contexts/dataModalContext';
 import { Link } from 'react-router-dom';
+import { LoadingButton } from '@components/ui/LoadingButton';
 
-type MaterialDetailsHeaderProps = { material: Material; direction: DirectionType; };
+type MaterialDetailsHeaderProps = {
+    material: Material;
+    direction: DirectionType;
+    isRefreshing: boolean;
+    isSchedulingUpdate: boolean;
+    onRefresh: () => void;
+    onScheduleUpdate: () => void;
+};
 
-export function MaterialDetailsHeader({ material, direction, }: MaterialDetailsHeaderProps) {
+export function MaterialDetailsHeader({ material, direction, isRefreshing, isSchedulingUpdate, onRefresh, onScheduleUpdate }: MaterialDetailsHeaderProps) {
     const { openDialog } = useDataModal();
     return (
         <>
@@ -35,6 +44,8 @@ export function MaterialDetailsHeader({ material, direction, }: MaterialDetailsH
                 <Typography variant="h3" component="h1" marginRight="auto !important">
                     {direction === DirectionType.Outbound ? 'Production Information' : 'Demand Information'} for {material?.name} ({capitalize(direction.toLowerCase())})
                 </Typography>
+                <LoadingButton Icon={Schedule} isLoading={isSchedulingUpdate} onClick={onScheduleUpdate}> Schedule ERP Update </LoadingButton>
+                <LoadingButton Icon={Refresh} isLoading={isRefreshing} onClick={onRefresh}> Refresh </LoadingButton>
                 {direction === DirectionType.Outbound ? (
                     <Button sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => openDialog('production', {}, [], 'create')}>
                         <Add></Add> Add Production
@@ -47,9 +58,18 @@ export function MaterialDetailsHeader({ material, direction, }: MaterialDetailsH
                 <Button
                     sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                     onClick={() =>
-                        openDialog('delivery', { departureType: 'estimated-departure', arrivalType: 'estimated-arrival' }, [], 'create', direction, null)
+                        openDialog(
+                            'delivery',
+                            { departureType: 'estimated-departure', arrivalType: 'estimated-arrival' },
+                            [],
+                            'create',
+                            direction,
+                            null
+                        )
                     }
-                > <Add></Add> Add Delivery </Button>
+                >
+                    <Add></Add> Add Delivery
+                </Button>
             </Stack>
         </>
     );

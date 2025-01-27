@@ -28,7 +28,7 @@ export const getUnitOfMeasurement = (unitOfMeasurementKey: UnitOfMeasurementKey)
 
 export const getIncoterm = (incoterm: string) => {
     return INCOTERMS.find((i) => i.key === incoterm)?.value;
-}
+};
 
 export const getCatalogOperator = (operatorId: string) => {
     switch (operatorId) {

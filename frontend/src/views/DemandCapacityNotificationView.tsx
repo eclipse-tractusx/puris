@@ -30,16 +30,22 @@ import { EFFECTS } from '@models/constants/effects';
 import { LEADING_ROOT_CAUSE } from '@models/constants/leading-root-causes';
 import { STATUS } from '@models/constants/status';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
+import { useTitle } from '@contexts/titleProvider';
 
 
 export const DemandCapacityNotificationView = () => {
-
     const [selectedTab, setSelectedTab] = useState<number>(0);
     const [demandCapacityNotification, setDemandCapacityNotification] = useState<DemandCapacityNotification[]>([]);
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [selectedNotification, setSelectedNotification] = useState<DemandCapacityNotification | null>(null);
 
     const tabs = useMemo(() => ['Incoming', 'Outgoing'], []);
+
+    const { setTitle } = useTitle();
+
+    useEffect(() => {
+        setTitle('Notifications');
+    }, [setTitle]);
 
     const fetchAndLogNotification = useCallback(async () => {
         try {
