@@ -36,6 +36,20 @@ Within PURIS this results in the following steps:
     - is usually not set (acting as supplier)
     - is set to the supplier's material's catena-X id (acting as customer)
 
+## Exchanged Information Patterns
+
+The PURIS FOSS stores information within the database. This is done for own information and partner information received via the `Connector`.
+
+Partner information always has the Prefix `Reported*` as it's reported by a partner to us. This is commonly easy to distinguish but for some cases a direction and the naming conventions are not always easy to understand. The following table provides information.
+
+| Information Name             | Received from Partner                       | Description / Understanding                                                                                                                                                                                                                                                                           |
+|------------------------------|--------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Production                   | Reported Production                        | As a customer, I received the `ReportedProduction` of my supplier.                                                                                                                                                                                                                                     |
+| Demand                       | Reported Demand                           | As a supplier, I received the `ReportedDemand` of my customer.                                                                                                                                                                                                                                         |
+| DeliveryInformation           | Reported Delivery Information              | As a supplier or customer, I received the `ReportedDeliveryInformation` from my partner. The direction depends on the `IncoTerms` and partner relationship.                                                                                                                                              |
+| Days of Supply               | Reported Customer / Supplier Supply       | I can have a days of supply calculation in both roles (customer, supplier) leading to the respective `CustomerSupply` or `SupplierSupply`.  \n- If I as a supplier request the days of supply of my customer, I receive inbound material supply as `ReportedCustomerSupply`.  \n- If I as a customer request the days of supply of my supplier, I receive outbound product supply as `ReportedSupplierSupply`.  |
+| Item Stock                   | Reported Material / Product Stock         | As any role, inbound stock is referred to as `MaterialStock` and outbound stock is referred to as `ProductStock`.  \n- If I as a supplier receive a stock from my customer partner, I consider this a `ReportedMaterialItemStock` (provided as stock with direction `INBOUND`).  \n- If I as a customer receive a stock from my supplier, I consider this a `ReportedProductItemStock` (provided as stock with direction `OUTBOUND`). |
+
 ## Data Sovereignty
 
 Following the standard, the following measures have been taken:
