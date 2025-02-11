@@ -141,7 +141,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
     const handleRefresh = () => {
         setIsRefreshing(true);
         Promise.all([
-            requestReportedStocks(direction === DirectionType.Outbound ? 'material' : 'product', material.ownMaterialNumber),
+            requestReportedStocks(direction === DirectionType.Outbound ? 'product' : 'material', material.ownMaterialNumber),
             requestReportedDeliveries(material.ownMaterialNumber),
             direction === DirectionType.Inbound
                 ? requestReportedProductions(material.ownMaterialNumber)
