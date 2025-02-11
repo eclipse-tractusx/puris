@@ -23,9 +23,16 @@ import { useTransfers } from '@hooks/edc/useTransfers';
 import { Table } from '@catena-x/portal-shared-components';
 import { Box } from '@mui/material';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
+import { useTitle } from '@contexts/titleProvider';
+import { useEffect } from 'react';
 
 export const TransferView = () => {
     const { transfers } = useTransfers();
+    const { setTitle } = useTitle();
+
+    useEffect(() => {
+        setTitle('Transfers');
+    }, [setTitle])
     return (
         <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <ConfidentialBanner />

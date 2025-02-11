@@ -22,6 +22,8 @@ SPDX-License-Identifier: Apache-2.0
 import { Box, Link, Stack, Typography } from '@mui/material';
 import aboutPage from '@assets/aboutPage.json';
 import { Table } from '@catena-x/portal-shared-components';
+import { useTitle } from '@contexts/titleProvider';
+import { useEffect } from 'react';
 
 const aboutPageColumns = [
     {
@@ -44,6 +46,11 @@ const aboutPageColumns = [
 ];
 
 export const AboutLicenseView = () => {
+    const { setTitle } = useTitle();
+
+    useEffect(() => {
+        setTitle('About License');
+    }, [setTitle])
     return (
         <Stack alignItems="center" width="100%" spacing={3}>
             <Typography variant="h1">About License</Typography>

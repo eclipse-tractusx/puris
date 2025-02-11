@@ -24,27 +24,25 @@ import { Box, capitalize, Stack, Typography } from '@mui/material';
 import { MaterialDetailsHeader } from './MaterialDetailsHeader';
 import { SummaryPanel } from './SummaryPanel';
 import { CollapsibleSummary } from './CollapsibleSummary';
-import { DataCategory, useDataModal } from '@contexts/dataModalContext';
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { DataCategory, useMaterialDetails } from '../hooks/useMaterialDetails';
+import { useNotifications } from '@contexts/notificationContext';
+import { useDataModal } from '@contexts/dataModalContext';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { groupBy } from '@util/helpers';
 import { DirectionType } from '@models/types/erp/directionType';
 import { createSummary } from '../util/summary-service';
 import { Partner } from '@models/types/edc/partner';
+import { requestReportedStocks, scheduleErpUpdateStocks } from '@services/stocks-service';
+import { requestReportedDeliveries } from '@services/delivery-service';
+import { requestReportedProductions } from '@services/productions-service';
+import { requestReportedDemands } from '@services/demands-service';
 import { NotFoundView } from '@views/errors/NotFoundView';
 import { Material } from '@models/types/data/stock';
 import { BPNS } from '@models/types/edc/bpn';
-import { useSites } from '@features/stock-view/hooks/useSites';
-import { useProduction } from '../hooks/useProduction';
-import { useDemand } from '../hooks/useDemand';
-import { useDelivery } from '../hooks/useDelivery';
-import { useStocks } from '@features/stock-view/hooks/useStocks';
-import { usePartners } from '@features/stock-view/hooks/usePartners';
-import { Expandable } from '../models/expandable';
-import { useReportedProduction } from '../hooks/useReportedProduction';
-import { useReportedDemand } from '../hooks/useReportedDemand';
-import { useReportedStocks } from '@features/stock-view/hooks/useReportedStocks';
 
-type SummaryContainerProps = { children: ReactNode; };
+type SummaryContainerProps = {
+    children: ReactNode;
+};
 
 function SummaryContainer({ children }: SummaryContainerProps) {
     return (
@@ -61,56 +59,31 @@ function SummaryContainer({ children }: SummaryContainerProps) {
     );
 }
 
-type MaterialDetailsProps = { material: Material; direction: DirectionType; };
+type MaterialDetailsProps = {
+    material: Material;
+    direction: DirectionType;
+};
 
 export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isSchedulingUpdate, setIsSchedulingUpdate] = useState(false);
+    const { notify } = useNotifications();
     const { addOnSaveListener, removeOnSaveListener } = useDataModal();
-    const { sites, isLoadingSites } = useSites();
-    const { productions, isLoadingProductions, refreshProduction } = useProduction(material.ownMaterialNumber ?? null, null);
-    const { demands, isLoadingDemands, refreshDemand } = useDemand(material.ownMaterialNumber ?? null, null);
-    const { deliveries, isLoadingDeliveries, refreshDelivery } = useDelivery(material.ownMaterialNumber ?? null, null);
-    const { stocks, isLoadingStocks, refreshStocks } = useStocks(direction === 'INBOUND' ? 'material' : 'product');
-    const { partners, isLoadingPartners } = usePartners(direction === 'INBOUND' ? 'product' : 'material', material.ownMaterialNumber);
-    const [expandablePartners, setExpandablePartners] = useState<Expandable<Partner>[]>([]);
-    const { reportedProductions, isLoadingReportedProductions } = useReportedProduction(material.ownMaterialNumber ?? null);
-    const { reportedDemands, isLoadingReportedDemands } = useReportedDemand(material.ownMaterialNumber ?? null);
-    const { reportedStocks, isLoadingReportedStocks } = useReportedStocks(direction === 'INBOUND' ? 'product' : 'material', material.ownMaterialNumber ?? null);
-
-    const refresh = useCallback(
-        (categoriesToRefresh: DataCategory[]) => {
-            categoriesToRefresh.forEach((category) => {
-                switch (category) {
-                    case 'production':
-                        refreshProduction();
-                        break;
-                    case 'demand':
-                        refreshDemand();
-                        break;
-                    case 'delivery':
-                        refreshDelivery();
-                        break;
-                    case 'stock':
-                        refreshStocks();
-                        break;
-                    default:
-                        return;
-                }
-            });
-        },
-        [refreshDelivery, refreshDemand, refreshProduction, refreshStocks]
-    );
-    const isLoading =
-        isLoadingProductions ||
-        isLoadingDemands ||
-        isLoadingDeliveries ||
-        isLoadingStocks ||
-        isLoadingPartners ||
-        isLoadingSites ||
-        isLoadingReportedProductions ||
-        isLoadingReportedDemands ||
-        isLoadingReportedStocks;
-    const incomingDeliveries = deliveries?.filter((d) => sites?.some((site) => site.bpns === d.destinationBpns));
-    const outgoingShipments = deliveries?.filter((d) => sites?.some((site) => site.bpns === d.originBpns));
+    const {
+        productions,
+        demands,
+        deliveries,
+        stocks,
+        expandablePartners,
+        sites,
+        reportedDemands,
+        reportedProductions,
+        reportedStocks,
+        isLoading,
+        refresh,
+    } = useMaterialDetails(material.ownMaterialNumber ?? '', direction);
+    const incomingDeliveries = useMemo(() => deliveries?.filter((d) => sites?.some((site) => site.bpns === d.destinationBpns)), [deliveries, sites]);
+    const outgoingShipments = useMemo(() => deliveries?.filter((d) => sites?.some((site) => site.bpns === d.originBpns)), [deliveries, sites]);
     const groupedProductions = useMemo(() => groupBy(productions ?? [], (prod) => prod.productionSiteBpns), [productions]);
     const groupedDemands = useMemo(() => groupBy(demands ?? [], (dem) => dem.demandLocationBpns), [demands]);
     const groupedIncomingDeliveries = useMemo(() => groupBy(incomingDeliveries ?? [], (del) => del.destinationBpns), [incomingDeliveries]);
@@ -118,19 +91,21 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
     const groupedStocks = useMemo(() => groupBy(stocks ?? [], (stock) => stock.stockLocationBpns), [stocks]);
 
     useEffect(() => {
-        if (isLoadingPartners) return;
-        setExpandablePartners(partners?.map((p) => ({ isExpanded: false, ...p })) ?? []);
-    }, [isLoadingPartners, partners]);
-    useEffect(() => {
         const callback = (category: DataCategory) => refresh([category]);
         addOnSaveListener(callback);
         return () => removeOnSaveListener(callback);
     }, [addOnSaveListener, refresh, removeOnSaveListener]);
 
-    if (isLoading) { return <Typography variant="body1">Loading...</Typography>; }
-    if (!material) { return <NotFoundView />; }
+    if (isLoading) {
+        return <Typography variant="body1">Loading...</Typography>;
+    }
 
-    const summary = direction === DirectionType.Outbound
+    if (!material) {
+        return <NotFoundView />;
+    }
+
+    const summary =
+        direction === DirectionType.Outbound
             ? createSummary('production', productions ?? [], outgoingShipments ?? [], stocks ?? [])
             : createSummary('demand', demands ?? [], incomingDeliveries ?? [], stocks ?? []);
 
@@ -142,22 +117,103 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
             partnerStocks = partnerStocks?.filter((stock) => stock.stockLocationBpns === partnerSite);
         }
         if (direction === DirectionType.Outbound) {
-            const demands = reportedDemands?.filter((d) =>
-                d.partnerBpnl === partner.bpnl && (!partnerSite || d.demandLocationBpns === partnerSite) && (!ownSite || d.supplierLocationBpns === ownSite)
+            const demands = reportedDemands?.filter(
+                (d) =>
+                    d.partnerBpnl === partner.bpnl &&
+                    (!partnerSite || d.demandLocationBpns === partnerSite) &&
+                    (!ownSite || d.supplierLocationBpns === ownSite)
             );
-            const deliveries = outgoingShipments?.filter((d) => partnerBpnss.includes(d.destinationBpns) && (!ownSite || d.originBpns === ownSite));
+            const deliveries = outgoingShipments?.filter(
+                (d) => partnerBpnss.includes(d.destinationBpns) && (!ownSite || d.originBpns === ownSite)
+            );
             return createSummary('demand', demands ?? [], deliveries ?? [], partnerStocks ?? []);
         } else {
-            const productions = reportedProductions?.filter((p) => p.partner.bpnl === partner.bpnl && (!partnerSite || p.productionSiteBpns === partnerSite));
-            const shipments = incomingDeliveries?.filter((d) => partnerBpnss.includes(d.originBpns) && (!ownSite || d.destinationBpns === ownSite));
+            const productions = reportedProductions?.filter(
+                (p) => p.partner.bpnl === partner.bpnl && (!partnerSite || p.productionSiteBpns === partnerSite)
+            );
+            const shipments = incomingDeliveries?.filter(
+                (d) => partnerBpnss.includes(d.originBpns) && (!ownSite || d.destinationBpns === ownSite)
+            );
             return createSummary('production', productions ?? [], shipments ?? [], partnerStocks ?? []);
         }
     };
+
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        Promise.all([
+            requestReportedStocks(direction === DirectionType.Outbound ? 'product' : 'material', material.ownMaterialNumber),
+            requestReportedDeliveries(material.ownMaterialNumber),
+            direction === DirectionType.Inbound
+                ? requestReportedProductions(material.ownMaterialNumber)
+                : requestReportedDemands(material.ownMaterialNumber),
+        ])
+            .then(() => {
+                notify({
+                    title: 'Update requested',
+                    description: `Requested update from partners for ${material.ownMaterialNumber}. Please reload dialog later.`,
+                    severity: 'success',
+                });
+            })
+            .catch((error: unknown) => {
+                const msg =
+                    error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+                        ? error.message
+                        : 'Unknown Error';
+                notify({
+                    title: 'Error requesting update',
+                    description: msg,
+                    severity: 'error',
+                });
+            })
+            .finally(() => setIsRefreshing(false));
+    };
+
+    const handleScheduleUpdate = () => {
+        setIsSchedulingUpdate(true);
+        Promise.all(
+            expandablePartners.map((partner) =>
+                scheduleErpUpdateStocks(
+                    direction === DirectionType.Outbound ? 'product' : 'material',
+                    partner.bpnl,
+                    material.ownMaterialNumber
+                )
+            )
+        )
+            .then(() => {
+                notify({
+                    title: 'Update requested',
+                    description: `Scheduled ERP data update of stocks for ${material?.ownMaterialNumber} in your role as ${
+                        direction === DirectionType.Inbound ? 'Customer' : 'Supplier'
+                    }. Please reload dialog later.`,
+                    severity: 'success',
+                });
+            })
+            .catch((error: unknown) => {
+                const msg =
+                    error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+                        ? error.message
+                        : 'Unknown Error';
+                notify({
+                    title: 'Error scheduling ERP update',
+                    description: msg,
+                    severity: 'error',
+                });
+            })
+            .finally(() => setIsSchedulingUpdate(false));
+    };
+
     return (
         <CalendarWeekProvider>
             <Stack spacing={2}>
                 <ConfidentialBanner />
-                <MaterialDetailsHeader material={material} direction={direction} />
+                <MaterialDetailsHeader
+                    material={material}
+                    direction={direction}
+                    isRefreshing={isRefreshing}
+                    isSchedulingUpdate={isSchedulingUpdate}
+                    onRefresh={handleRefresh}
+                    onScheduleUpdate={handleScheduleUpdate}
+                />
                 <Stack spacing={5}>
                     <SummaryContainer>
                         <SummaryPanel title={`${capitalize(summary.type ?? '')} Summary`} summary={summary} showHeader />
@@ -177,11 +233,13 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                         key={site.bpns}
                                         summary={createSummaryByPartnerAndDirection(partner, direction, site.bpns)}
                                         variant="sub"
-                                        renderTitle={() => (<>
-                                                                <Typography variant="body2" color="#ccc"> {partner.name}/</Typography>
-                                                                <Typography variant="body1">{site.name}</Typography>
-                                                                <Typography variant="body3" color="#ccc">({site.bpns})</Typography>
-                                                            </>)}
+                                        renderTitle={() => (
+                                            <>
+                                                <Typography variant="body2" color="#ccc">{partner.name}/</Typography>
+                                                <Typography variant="body1">{site.name}</Typography>
+                                                <Typography variant="body3" color="#ccc">({site.bpns})</Typography>
+                                            </>
+                                        )}
                                     />
                                 ))}
                             </CollapsibleSummary>
@@ -191,19 +249,20 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                         <SummaryContainer key={site.bpns}>
                             <SummaryPanel
                                 title={site.name}
-                                summary={direction === DirectionType.Outbound
-                                            ? createSummary(
-                                                'production',
-                                                groupedProductions[site.bpns] ?? [],
-                                                groupedOutgoingShipments[site.bpns] ?? [],
-                                                groupedStocks[site.bpns] ?? []
-                                            )
-                                            : createSummary(
-                                                'demand',
-                                                groupedDemands[site.bpns] ?? [],
-                                                groupedIncomingDeliveries[site.bpns] ?? [],
-                                                groupedStocks[site.bpns] ?? []
-                                            )
+                                summary={
+                                    direction === DirectionType.Outbound
+                                        ? createSummary(
+                                              'production',
+                                              groupedProductions[site.bpns] ?? [],
+                                              groupedOutgoingShipments[site.bpns] ?? [],
+                                              groupedStocks[site.bpns] ?? []
+                                          )
+                                        : createSummary(
+                                              'demand',
+                                              groupedDemands[site.bpns] ?? [],
+                                              groupedIncomingDeliveries[site.bpns] ?? [],
+                                              groupedStocks[site.bpns] ?? []
+                                          )
                                 }
                                 showHeader
                             ></SummaryPanel>
@@ -214,7 +273,9 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                     renderTitle={() => (
                                         <>
                                             <Typography variant="body1">{partner.name}</Typography>
-                                            <Typography variant="body3" color="#ccc"> ({partner.bpnl}) </Typography>
+                                            <Typography variant="body3" color="#ccc">
+                                                ({partner.bpnl})
+                                            </Typography>
                                         </>
                                     )}
                                 >
@@ -225,9 +286,13 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                             variant="sub"
                                             renderTitle={() => (
                                                 <>
-                                                    <Typography variant="body2" color="#ccc">{partner.name}/</Typography>
+                                                    <Typography variant="body2" color="#ccc">
+                                                        {partner.name}/
+                                                    </Typography>
                                                     <Typography variant="body1">{partnerSite.name}</Typography>
-                                                    <Typography variant="body3" color="#ccc">({partnerSite.bpns})</Typography>
+                                                    <Typography variant="body3" color="#ccc">
+                                                        ({partnerSite.bpns})
+                                                    </Typography>
                                                 </>
                                             )}
                                         />

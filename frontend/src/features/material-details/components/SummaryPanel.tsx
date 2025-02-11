@@ -17,12 +17,19 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
+
 import { Stack, SxProps, Theme, Typography, useTheme } from '@mui/material';
 import { CalendarWeekSummary } from '../../material-details/components/CalendarWeekSummary';
 import { Summary, SummaryType } from '../util/summary-service';
 import { useCalendarWeeks } from '@contexts/calendarWeekContext';
+import { InfoButton } from '@components/ui/InfoButton';
 
-type SummaryPanelProps<TType extends SummaryType> = { sx?: SxProps<Theme>; title?: string; summary: Summary<TType>; showHeader?: boolean; };
+type SummaryPanelProps<TType extends SummaryType> = {
+    sx?: SxProps<Theme>
+    title?: string;
+    summary: Summary<TType>;
+    showHeader?: boolean;
+};
 
 export function SummaryPanel<TType extends SummaryType>({ sx = {}, title, summary, showHeader = false }: SummaryPanelProps<TType>) {
     const theme = useTheme();
@@ -39,7 +46,12 @@ export function SummaryPanel<TType extends SummaryType>({ sx = {}, title, summar
                         <Stack
                             justifyContent="center"
                             paddingInlineStart=".5rem"
-                            sx={{ backgroundColor: theme.palette.primary.dark, color: theme.palette.primary.contrastText, height: '2.25rem', zIndex: 10, }}
+                            sx={{
+                                backgroundColor: theme.palette.primary.dark,
+                                color: theme.palette.primary.contrastText,
+                                height: '2.25rem',
+                                zIndex: 10,
+                            }}
                         >
                             <Typography variant={title && title.length < 30 ? 'body1' : 'body2'} component="h3" textAlign={title && title.length < 30 ? 'start' : 'start'}>
                                 {title}
@@ -50,11 +62,16 @@ export function SummaryPanel<TType extends SummaryType>({ sx = {}, title, summar
                 )}
                 <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} padding=".75rem .5rem">
                     {summary.type === 'production' ? 'Planned Production' : 'Material Demand'}
+                    <InfoButton text={summary.type === 'production' ? 'The planned production output for the material on the given date' : 'The estimated demand for the material on the given date.'}></InfoButton>
                 </Stack>
                 <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} padding=".75rem .5rem">
                     {summary.type === 'production' ? 'Outgoing Shipments' : 'Incoming Deliveries'}
+                    <InfoButton text={`The total quantity of ${summary.type === 'production' ? 'outgoing shipments departing' : 'incoming deliveries arriving'} on the given date.`}></InfoButton>
                 </Stack>
-                <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} padding=".75rem .5rem"> Projected Item Stock </Stack>
+                <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} padding=".75rem .5rem">
+                    Projected Item Stock
+                    <InfoButton text="The projected item stock for the material on a given date. The summary for projected item stock reflects the item stock at the end of the calendar week."></InfoButton>
+                </Stack>
             </Stack>
             <Stack direction="row" width="100%">
                 {calendarWeeks.map((cw, index) => (

@@ -24,12 +24,23 @@ import { DirectionType } from '@models/types/erp/directionType';
 import { DataModalProvider } from '@contexts/dataModalContext';
 import { MaterialDetails } from '@features/material-details/components/MaterialDetails';
 import { useMaterial } from '@hooks/useMaterial';
-import { Box } from '@mui/material';
+import { Box, capitalize } from '@mui/material';
+import { useTitle } from '@contexts/titleProvider';
+import { useEffect } from 'react';
 
 export function MaterialDetailView() {
     const { materialNumber, direction } = useParams();
     const directionType: DirectionType = direction === 'inbound' ? DirectionType.Inbound : DirectionType.Outbound;
     const { material, isLoading } = useMaterial(materialNumber ?? '');
+    const { setTitle } = useTitle();
+
+    useEffect(() => {
+        if (isLoading) {
+            setTitle('Loading...');
+            return;
+        }
+        setTitle(`${material?.name} (${capitalize(direction)})`);
+    }, [direction, isLoading, material?.name, materialNumber, setTitle]);
 
     if (isLoading) return <Box>Loading...</Box>;
     if (!['OUTBOUND', 'INBOUND'].includes(direction?.toUpperCase() ?? '') || !materialNumber || !material) return <NotFoundView />;
