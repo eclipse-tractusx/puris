@@ -156,6 +156,7 @@ public class DeliveryRequestApiServiceTest {
         delivery2.setIncoterm(IncotermEnumeration.FCA);
 
         // Delivery with incoterm with SUPPLIER responsibility
+        // TODO rene: for some reason the third delivery has been found, too.
         OwnDelivery delivery3 = getDelivery();
         delivery3.setIncoterm(IncotermEnumeration.DAP);
 
