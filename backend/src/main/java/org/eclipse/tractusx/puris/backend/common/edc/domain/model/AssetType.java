@@ -27,6 +27,7 @@ public enum AssetType {
     DEMAND_SUBMODEL("urn:samm:io.catenax.short_term_material_demand:1.0.0#ShortTermMaterialDemand", "$value", "ShortTermMaterialDemand", "1.0"),
     DELIVERY_SUBMODEL("urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation", "$value", "DeliveryInformation", "2.0"),
     NOTIFICATION("urn:samm:io.catenax.demand_and_capacity_notification:2.0.0#DemandAndCapacityNotification", "none", "none", "2.0"),
+    DAYS_OF_SUPPLY("urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply", "$value", "DaysOfSupply", "2.0"),
     PART_TYPE_INFORMATION_SUBMODEL("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value", "none", "1.0");
 
     public final String URN_SEMANTIC_ID;

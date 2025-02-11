@@ -23,14 +23,16 @@ package org.eclipse.tractusx.puris.backend.supply.logic.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.OwnDeliveryService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.ReportedDeliveryService;
 import org.eclipse.tractusx.puris.backend.demand.logic.services.OwnDemandService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.OwnCustomerSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.ReportedCustomerSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.repository.ReportedCustomerSupplyRepository;
@@ -38,11 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CustomerSupplyService extends SupplyService<OwnCustomerSupply> {
-    @Autowired
-    private ReportedCustomerSupplyRepository repository;
-    @Autowired
-    private PartnerService partnerService;
+public class CustomerSupplyService extends SupplyService<OwnCustomerSupply, ReportedCustomerSupply, ReportedCustomerSupplyRepository, MaterialItemStock, MaterialItemStockService> {
     @Autowired
     private OwnDeliveryService ownDeliveryService;
     @Autowired
@@ -50,10 +48,8 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply> {
     @Autowired
     private OwnDemandService demandService;
 
-    protected final Function<ReportedCustomerSupply, Boolean> validator;
-
-    public CustomerSupplyService() {
-        this.validator = this::validate;
+    public CustomerSupplyService(ReportedCustomerSupplyRepository repository, PartnerService partnerService, MaterialService materialService) {
+        super(repository, partnerService, materialService);
     }
 
     @Override
@@ -89,8 +85,8 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply> {
         return calculateDaysOfSupply(material, partnerBpnl, siteBpns, numberOfDays);
     }
     
-    public final List<ReportedCustomerSupply> findAll() {
-        return repository.findAll();
+    public final List<ReportedCustomerSupply> findAllByMaterialNumberAndPartnerBpnl(String ownMaterialNumber, String partnerBpnl) {
+        return repository.findByMaterial_OwnMaterialNumberAndPartner_Bpnl(ownMaterialNumber, partnerBpnl);
     }
 
     public final ReportedCustomerSupply findById(UUID id) {
@@ -108,18 +104,17 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply> {
         return stream.toList();
     }
 
-    public final List<ReportedCustomerSupply> findByPartnerBpnlAndOwnMaterialNumber(String partnerBpnl, String ownMaterialNumber) {
-        return repository.findByPartner_BpnlAndMaterial_OwnMaterialNumber(partnerBpnl, ownMaterialNumber);
-    }
-
     public boolean validate(ReportedCustomerSupply daysOfSupply) {
         return 
             daysOfSupply.getPartner() != null &&
             daysOfSupply.getMaterial() != null &&
             daysOfSupply.getDate() != null &&
             daysOfSupply.getStockLocationBPNS() != null &&
+            daysOfSupply.getStockLocationBPNA() != null &&
             daysOfSupply.getPartner() != partnerService.getOwnPartnerEntity() &&
-            daysOfSupply.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(daysOfSupply.getStockLocationBPNS())) &&
-            (daysOfSupply.getStockLocationBPNA().equals(null) || daysOfSupply.getStockLocationBPNA().equals(daysOfSupply.getStockLocationBPNS()));
+            daysOfSupply.getPartner().getSites().stream().anyMatch(site -> 
+                site.getBpns().equals(daysOfSupply.getStockLocationBPNS()) && 
+                site.getAddresses().stream().anyMatch(address -> address.getBpna().equals(daysOfSupply.getStockLocationBPNA()))
+            );
     }
 }

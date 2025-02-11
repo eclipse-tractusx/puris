@@ -174,6 +174,11 @@ public class EdcAdapterService {
             variablesService.getNotificationApiAssetId(),
             variablesService.getNotificationEndpoint()
         )));
+        log.info("Registration of Days of Supply 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getDaysOfSupplySubmodelApiAssetId(),
+            variablesService.getDaysOfSupplySubmodelEndpoint(),
+            AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID
+        )));
         log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
         result &= assetRegistration;
         return result;
@@ -194,6 +199,7 @@ public class EdcAdapterService {
         result &= createSubmodelContractDefinitionForPartner(AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDemandSubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDeliverySubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.NOTIFICATION.URN_SEMANTIC_ID, variablesService.getNotificationApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
         result &= createDtrContractDefinitionForPartner(partner);
         return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
     }
@@ -423,12 +429,11 @@ public class EdcAdapterService {
      *
      * @param partner    The partner
      * @param contractId The contract id
-     * @param assetId    The asset id
      * @return The response object
      * @throws IOException If the connection to your control plane fails
      */
-    public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String assetId, String partnerEdcUrl) throws IOException {
-        var body = edcRequestBodyBuilder.buildProxyPullRequestBody(partner, contractId, assetId, partnerEdcUrl);
+    public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String partnerEdcUrl) throws IOException {
+        var body = edcRequestBodyBuilder.buildProxyPullRequestBody(partner, contractId, partnerEdcUrl);
         try (var response = sendPostRequest(body, List.of("v3", "transferprocesses"))) {
             String data = response.body().string();
             JsonNode result = objectMapper.readTree(data);
@@ -437,8 +442,8 @@ public class EdcAdapterService {
         }
     }
 
-    public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String assetId) throws IOException {
-        return initiateProxyPullTransfer(partner, contractId, assetId, partner.getEdcUrl());
+    public JsonNode initiateProxyPullTransfer(Partner partner, String contractId) throws IOException {
+        return initiateProxyPullTransfer(partner, contractId, partner.getEdcUrl());
     }
 
     /**
@@ -551,7 +556,7 @@ public class EdcAdapterService {
                 }
             }
             // Request EdrToken
-            var transferResp = initiateProxyPullTransfer(partner, contractId, assetId, partnerDspUrl);
+            var transferResp = initiateProxyPullTransfer(partner, contractId, partnerDspUrl);
             log.debug("Transfer Request {}", transferResp.toPrettyString());
             String transferId = transferResp.get("@id").asText();
             // try proxy pull and terminate request
@@ -598,6 +603,7 @@ public class EdcAdapterService {
             case DEMAND_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DELIVERY_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, direction);
             case NOTIFICATION -> throw new IllegalArgumentException("DemandAndCapacityNotification not supported");
+            case DAYS_OF_SUPPLY -> fetchSubmodelDataByDirection(mpr, AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
         };
         boolean failed = true;
@@ -620,7 +626,7 @@ public class EdcAdapterService {
                 log.warn("URL from AAS: " + partnerDspUrl);
             }
             // Request EdrToken
-            var transferResp = initiateProxyPullTransfer(partner, submodelContractId, assetId, partnerDspUrl);
+            var transferResp = initiateProxyPullTransfer(partner, submodelContractId, partnerDspUrl);
             log.debug("Transfer Request {}", transferResp.toPrettyString());
             String transferId = transferResp.get("@id").asText();
             // try proxy pull and terminate request
@@ -853,7 +859,7 @@ public class EdcAdapterService {
                 assetId = dtrContractData[0];
                 contractId = dtrContractData[1];
             }
-            var transferResp = initiateProxyPullTransfer(partner, contractId, assetId);
+            var transferResp = initiateProxyPullTransfer(partner, contractId);
             String transferId = transferResp.get("@id").asText();
             try {
                 EdrDto edrDto = getAndAwaitEdrDto(transferId);
@@ -954,7 +960,7 @@ public class EdcAdapterService {
         if (retries < 0) return null;
         boolean failed = true;
         try (Response response = sendGetRequest(
-            List.of("v2", "edrs", transferProcessId, "dataaddress"),
+            List.of("v3", "edrs", transferProcessId, "dataaddress"),
             Map.of("auto_refresh", "true"))
         ) {
             if (response.isSuccessful() && response.body() != null) {
@@ -1033,6 +1039,7 @@ public class EdcAdapterService {
             case DEMAND_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DELIVERY_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, direction);
             case NOTIFICATION -> throw new IllegalArgumentException("DemandAndCapacityNotification not supported");
+            case DAYS_OF_SUPPLY -> fetchSubmodelDataByDirection(mpr, AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
         };
         Map<String, String> equalFilters = new HashMap<>();

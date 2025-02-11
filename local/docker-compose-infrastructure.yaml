@@ -17,7 +17,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-version: "3"
 
 services:
   # Outcommented as not updated for R24.05 but scheduled for R24.08
@@ -104,6 +103,7 @@ services:
     environment:
       WEB_HTTP_PORT: 8580
       WEB_HTTP_PATH: /api
+      edc.iam.trusted-issuer.issuer.id: did:web:mock-util-service/trusted-issuer
     ports:
       - "127.0.0.1:8580:8580"
       - "127.0.0.1:8581:8581"

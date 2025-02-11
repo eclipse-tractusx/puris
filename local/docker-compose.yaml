@@ -18,7 +18,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-version: "3"
+
 services:
 
   puris-frontend-customer:
@@ -73,6 +73,11 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/puris_customer
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
+      puris.dtr.idp.edc-client.id: ${KC_MANAGE_CLIENT_ID}
+      puris.dtr.idp.edc-client.secret.alias: ${CUSTOMER_KC_DTR_PURIS_CLIENT_ALIAS}
+      puris.dtr.idp.puris-client.id: ${KC_MANAGE_CLIENT_ID}
+      puris.dtr.idp.puris-client.secret: ${CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET}
+
     networks:
       - miw-net
     extra_hosts:
@@ -146,12 +151,20 @@ services:
     container_name: customer-control-plane
     env_file:
       - ./tractus-x-edc/config/customer/control-plane.properties
+    environment:
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
+
     ports:
       - "127.0.0.1:8180:8180"
       - "127.0.0.1:8181:8181"
       - "127.0.0.1:8182:8182"
       - "127.0.0.1:8183:8183"
       - "127.0.0.1:8184:8184"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q --spider http://customer-control-plane:8180/api/check/health" ]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     networks:
       - miw-net
     extra_hosts:
@@ -160,6 +173,8 @@ services:
   edc-customer-data-plane:
     depends_on:
       postgres-all:
+        condition: service_healthy
+      edc-customer-control-plane:
         condition: service_healthy
     restart: on-failure
     extends:
@@ -174,6 +189,8 @@ services:
       - "127.0.0.1:8299:8299"
     env_file:
       - ./tractus-x-edc/config/customer/data-plane.properties
+    environment:
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
     networks:
       - miw-net
     extra_hosts:
@@ -231,6 +248,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/puris_supplier
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
+      puris.dtr.idp.edc-client.id: ${KC_MANAGE_CLIENT_ID}
+      puris.dtr.idp.edc-client.secret.alias: ${SUPPLIER_KC_DTR_PURIS_CLIENT_ALIAS}
+      puris.dtr.idp.puris-client.id: ${KC_MANAGE_CLIENT_ID}
+      puris.dtr.idp.puris-client.secret: ${SUPPLIER_KC_DTR_PURIS_CLIENT_SECRET}
     networks:
       - miw-net
     extra_hosts:
@@ -283,8 +304,15 @@ services:
       - "127.0.0.1:9183:9183"
       - "127.0.0.1:9184:9184"
       - "127.0.0.1:1044:1044"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q --spider http://supplier-control-plane:9180/api/check/health" ]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     env_file:
       - ./tractus-x-edc/config/supplier/control-plane.properties
+    environment:
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
     networks:
       - miw-net
     extra_hosts:
@@ -293,6 +321,8 @@ services:
   edc-supplier-data-plane:
     depends_on:
       postgres-all:
+        condition: service_healthy
+      edc-supplier-control-plane:
         condition: service_healthy
     restart: on-failure
     extends:
@@ -307,6 +337,8 @@ services:
       - "127.0.0.1:9299:9299"
     env_file:
       - ./tractus-x-edc/config/supplier/data-plane.properties
+    environment:
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
     networks:
       - miw-net
     extra_hosts:
