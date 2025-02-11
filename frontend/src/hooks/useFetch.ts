@@ -64,9 +64,9 @@ export const useFetch = <T = unknown>(url?: string, options?: RequestInit) => {
         fetchData();
     }, [fetchData]);
 
-    const refresh = () => {
+    const refresh = useCallback(() => {
         return fetchData();
-    }
+    }, [fetchData]);
     return {
         data,
         error,

@@ -47,6 +47,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
@@ -75,7 +76,7 @@ public class SupplyController {
     @Operation(summary = "Calculate days of supply for customer for given number of days.",
         description = "Calculate days of supply for customer for given number of days. Filtered by given material number, partner bpnl and site bpns. " +
             "materialNumber is expected to be base64 encoded")
-    public List<SupplyDto> calculateCustomerDaysOfSupply(String materialNumber, String bpnl, String siteBpns, int numberOfDays) {
+    public List<SupplyDto> calculateCustomerDaysOfSupply(String materialNumber, Optional<String> bpnl, Optional<String> siteBpns, int numberOfDays) {
         materialNumber = new String(Base64.getDecoder().decode(materialNumber.getBytes(StandardCharsets.UTF_8)));
         return customerSupplyService.calculateCustomerDaysOfSupply(materialNumber, bpnl, siteBpns, numberOfDays)
             .stream().map(this::convertToDto).toList();
@@ -94,7 +95,7 @@ public class SupplyController {
     @GetMapping("customer/reported/refresh")
     @ResponseBody
     @Operation(
-        summary = "Refreshes all reported customer days of supply", 
+        summary = "Refreshes all reported customer days of supply",
         description = "Refreshes all reported customer Days of Supply for the specified Material from the days of supply request API."
     )
     public ResponseEntity<List<PartnerDto>> refreshReportedCustomerSupply(@RequestParam @Parameter(description = "base64 encoded") String ownMaterialNumber) {
@@ -115,7 +116,7 @@ public class SupplyController {
     @Operation(summary = "Calculate days of supply for supplier for given number of days.",
         description = "Calculate days of supply for supplier for given number of days. Filtered by given material number, partner bpnl and site bpns. "+
             "materialNumber is expected to be base64 encoded")
-    public List<SupplyDto> calculateSupplierDaysOfSupply(String materialNumber, String bpnl, String siteBpns, int numberOfDays) {
+    public List<SupplyDto> calculateSupplierDaysOfSupply(String materialNumber, Optional<String> bpnl, Optional<String> siteBpns, int numberOfDays) {
         materialNumber = new String(Base64.getDecoder().decode(materialNumber.getBytes(StandardCharsets.UTF_8)));
         return supplierSupplyService.calculateSupplierDaysOfSupply(materialNumber, bpnl, siteBpns, numberOfDays)
             .stream().map(this::convertToDto).toList();
@@ -134,7 +135,7 @@ public class SupplyController {
     @GetMapping("supplier/reported/refresh")
     @ResponseBody
     @Operation(
-        summary = "Refreshes all reported supplier days of supply", 
+        summary = "Refreshes all reported supplier days of supply",
         description = "Refreshes all reported supplier Days of Supply for the specified Material from the days of supply request API."
     )
     public ResponseEntity<List<PartnerDto>> refreshReportedSupplierSupply(@RequestParam @Parameter(description = "base64 encoded") String ownMaterialNumber) {
@@ -150,7 +151,7 @@ public class SupplyController {
         }
         return ResponseEntity.ok(allSupplierPartnerEntities.stream().map(partner -> modelMapper.map(partner, PartnerDto.class)).toList());
     }
-    
+
     private SupplyDto convertToDto(Supply entity) {
         SupplyDto dto = modelMapper.map(entity, SupplyDto.class);
         

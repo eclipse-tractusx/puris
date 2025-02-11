@@ -17,32 +17,21 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Datepicker, Input, PageSnackbar, PageSnackbarStack, Table } from '@catena-x/portal-shared-components';
+import { useEffect, useMemo, useState } from 'react';
+import { Datepicker, Input, Table } from '@catena-x/portal-shared-components';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Demand } from '@models/types/data/demand';
-import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, Typography } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack } from '@mui/material';
 import { getUnitOfMeasurement } from '@util/helpers';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
-import { Notification } from '@models/types/data/notification';
 import { deleteDemand, postDemand } from '@services/demands-service';
 import { DEMAND_CATEGORY } from '@models/constants/demand-category';
 import { Close, Delete, Save } from '@mui/icons-material';
 import { ModalMode } from '@models/types/data/modal-mode';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
-
-const GridItem = ({ label, value }: { label: string; value: string }) => (
-    <Grid item xs={6}>
-        <Stack>
-            <Typography variant="caption1" fontWeight={500}>
-                {label}:
-            </Typography>
-            <Typography variant="body3" paddingLeft=".5rem">
-                {value}
-            </Typography>
-        </Stack>
-    </Grid>
-);
+import { GridItem } from '@components/ui/GridItem';
+import { useSites } from '@features/stock-view/hooks/useSites';
+import { useNotifications } from '@contexts/notificationContext';
 
 const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
     const columns = [
@@ -53,7 +42,7 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
             disableColumnMenu: true,
             headerAlign: 'center',
             type: 'string',
-            width: 120,
+            flex: 1,
             renderCell: (data: { row: Demand }) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
@@ -69,7 +58,7 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
             disableColumnMenu: true,
             headerAlign: 'center',
             type: 'string',
-            width: 200,
+            flex: 1,
             renderCell: (data: { row: Demand }) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
@@ -85,7 +74,7 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
             disableColumnMenu: true,
             headerAlign: 'center',
             type: 'string',
-            width: 200,
+            flex: 1,
             renderCell: (data: { row: Demand }) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
@@ -101,7 +90,7 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
             disableColumnMenu: true,
             headerAlign: 'center',
             type: 'string',
-            width: 200,
+            flex: 1,
             renderCell: (data: { row: Demand }) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
@@ -152,7 +141,8 @@ const isValidDemand = (demand: Partial<Demand>) =>
 export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, demands }: DemandCategoryModalProps) => {
     const [temporaryDemand, setTemporaryDemand] = useState<Partial<Demand>>(demand ?? {});
     const { partners } = usePartners('material', temporaryDemand?.ownMaterialNumber ?? null);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const { sites } = useSites();
+    const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
     const dailyDemands = useMemo(
         () =>
@@ -162,39 +152,30 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
         [demands, demand?.day]
     );
 
-    const handleSaveClick = useCallback(
-        (demand: Partial<Demand>) => {
-            if (!isValidDemand(demand)) {
-                setFormError(true);
-                return;
-            }
-            setFormError(false);
-            postDemand(demand)
-                .then(() => {
-                    onSave();
-                    setNotifications((ns) => [
-                        ...ns,
-                        {
-                            title: 'Demand Created',
-                            description: 'The Demand has been saved successfully',
-                            severity: 'success',
-                        },
-                    ]);
-                })
-                .catch((error) => {
-                    setNotifications((ns) => [
-                        ...ns,
-                        {
-                            title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                            description: error.status === 409 ? 'Date conflicting with another Demand' : error.error,
-                            severity: 'error',
-                        },
-                    ]);
-                })
-                .finally(onClose);
-        },
-        [onClose, onSave]
-    );
+    const handleSaveClick = (demand: Partial<Demand>) => {
+        if (!isValidDemand(demand)) {
+            setFormError(true);
+            return;
+        }
+        setFormError(false);
+        postDemand(demand)
+            .then(() => {
+                onSave();
+                notify({
+                    title: 'Demand Created',
+                    description: 'The Demand has been saved successfully',
+                    severity: 'success',
+                });
+            })
+            .catch((error) => {
+                notify({
+                    title: error.status === 409 ? 'Conflict' : 'Error requesting update',
+                    description: error.status === 409 ? 'Date conflicting with another Demand' : error.error,
+                    severity: 'error',
+                });
+            })
+            .finally(onClose);
+    };
 
     const handleClose = () => {
         setTemporaryDemand({});
@@ -205,6 +186,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
     const handleDelete = (row: Demand) => {
         if (row.uuid) deleteDemand(row.uuid).then(onSave);
     };
+
     useEffect(() => {
         if (demand) {
             setTemporaryDemand(demand);
@@ -213,27 +195,43 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
     return (
         <>
             <Dialog open={open && demand !== null} onClose={handleClose}>
-                <DialogTitle fontWeight={600} textAlign="center">
+                <DialogTitle variant="h3" textAlign="center">
                     Demand Information
                 </DialogTitle>
-                <Stack padding="0 2rem 2rem">
+                <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
                     {mode === 'create' ? (
-                        <Grid container spacing={2} width="32rem" padding=".25rem">
+                        <Grid container spacing={2} padding=".25rem">
                             <GridItem label="Material Number" value={temporaryDemand.ownMaterialNumber ?? ''} />
-                            <GridItem label="Site" value={temporaryDemand.demandLocationBpns ?? ''} />
                             <Grid item xs={6}>
-                                <FormLabel>Day*</FormLabel>
-                                <Datepicker
-                                    id="day"
-                                    label=""
-                                    hiddenLabel
-                                    placeholder="Pick a Day"
-                                    locale="de"
-                                    error={formError && !temporaryDemand?.day}
-                                    readOnly={false}
-                                    value={temporaryDemand?.day}
-                                    onChangeItem={(value) => setTemporaryDemand((curr) => ({ ...curr, day: value ?? undefined }))}
+                                <LabelledAutoComplete
+                                    id="demandLocationBpns"
+                                    options={sites ?? []}
+                                    getOptionLabel={(option) => option.name ?? ''}
+                                    error={formError}
+                                    isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
+                                    onChange={(_, value) =>
+                                        setTemporaryDemand({ ...temporaryDemand, demandLocationBpns: value?.bpns ?? undefined })
+                                    }
+                                    value={sites?.find((s) => s.bpns === temporaryDemand.demandLocationBpns) ?? null}
+                                    label="Demand Site"
+                                    placeholder="Select a Site"
                                 />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <FormLabel sx={{ marginBottom: '.5rem', display: 'block' }}>Day*</FormLabel>
+                                <div className="date-picker">
+                                    <Datepicker
+                                        id="day"
+                                        label=""
+                                        hiddenLabel
+                                        placeholder="Pick a Day"
+                                        locale="de"
+                                        error={formError && !temporaryDemand?.day}
+                                        readOnly={false}
+                                        value={temporaryDemand?.day}
+                                        onChangeItem={(value) => setTemporaryDemand((curr) => ({ ...curr, day: value ?? undefined }))}
+                                    />
+                                </div>
                             </Grid>
                             <Grid item xs={6}>
                                 <LabelledAutoComplete
@@ -270,6 +268,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                                 : { ...curr, quantity: 0 }
                                         )
                                     }
+                                    sx={{ marginTop: '.5rem' }}
                                 />
                             </Grid>
                             <Grid item xs={6}>
@@ -355,7 +354,6 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                         {mode === 'create' && (
                             <Button
                                 variant="contained"
-                                color="primary"
                                 sx={{ display: 'flex', gap: '.25rem' }}
                                 onClick={() => handleSaveClick(temporaryDemand)}
                             >
@@ -365,19 +363,6 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                     </Box>
                 </Stack>
             </Dialog>
-            <PageSnackbarStack>
-                {notifications.map((notification, index) => (
-                    <PageSnackbar
-                        key={index}
-                        open={!!notification}
-                        severity={notification?.severity}
-                        title={notification?.title}
-                        description={notification?.description}
-                        autoClose={true}
-                        onCloseNotification={() => setNotifications((ns) => ns.filter((_, i) => i !== index) ?? [])}
-                    />
-                ))}
-            </PageSnackbarStack>
         </>
     );
 };

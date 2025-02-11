@@ -18,11 +18,13 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
+import { Stack, Typography } from '@mui/material';
+
 export const NotFoundView = () => {
     return (
-        <div className="flex flex-col items-center justify-center w-full h-full">
-            <h1 className="text-4xl font-bold text-gray-700">404</h1>
-            <p className="text-gray-700">Page not found</p>
-        </div>
+        <Stack alignItems="center" width="100%" height="100%" paddingTop="2.5rem" spacing={1}>
+            <Typography variant="h1">Error 404</Typography>
+            <Typography variant="body1">Page not found.</Typography>
+        </Stack>
     );
-}
+};

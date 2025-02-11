@@ -59,7 +59,15 @@ public abstract class DeliveryService<T extends Delivery> {
             stream = stream.filter(delivery -> delivery.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
         }
         if (bpns.isPresent()) {
-            stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()) || delivery.getOriginBpns().equals(bpns.get()));
+            if (direction.isPresent()) {
+                if (direction.get() == DirectionCharacteristic.INBOUND) {
+                    stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()));
+                } else {
+                    stream = stream.filter(delivery -> delivery.getOriginBpns().equals(bpns.get()));
+                }
+            } else {
+                stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()) || delivery.getOriginBpns().equals(bpns.get()));
+            }
         }
         if (bpnl.isPresent()) {
             stream = stream.filter(delivery -> delivery.getPartner().getBpnl().equals(bpnl.get()));
@@ -78,13 +86,6 @@ public abstract class DeliveryService<T extends Delivery> {
                 return deliveryDayDate.getDayOfMonth() == localDayDate.getDayOfMonth();
             });
         }
-        if (direction.isPresent()) {
-            if (direction.get() == DirectionCharacteristic.INBOUND) {
-                stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()));
-            } else {
-                stream = stream.filter(delivery -> delivery.getOriginBpns().equals(bpns.get()));
-            }
-        }
         return stream.toList();
     }
 
@@ -96,13 +97,13 @@ public abstract class DeliveryService<T extends Delivery> {
         return sum;
     }
 
-    public final List<Double> getQuantityForDays(String material, String partnerBpnl, String siteBpns, DirectionCharacteristic direction, int numberOfDays) {
+    public final List<Double> getQuantityForDays(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, DirectionCharacteristic direction, int numberOfDays) {
         List<Double> deliveryQtys = new ArrayList<>();
         LocalDate localDate = LocalDate.now();
 
         for (int i = 0; i < numberOfDays; i++) {
             Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            List<T> deliveries = findAllByFilters(Optional.of(material), Optional.of(siteBpns), Optional.of(partnerBpnl), Optional.of(date), Optional.of(direction));
+            List<T> deliveries = findAllByFilters(Optional.of(material), siteBpns, partnerBpnl, Optional.of(date), Optional.of(direction));
             deliveryQtys.add(getSumOfQuantities(deliveries));
 
             localDate = localDate.plusDays(1);

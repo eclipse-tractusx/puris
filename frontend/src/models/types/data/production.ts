@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { UUID } from 'crypto';
 import { UnitOfMeasurementKey } from './uom';
-import { MaterialDetails } from './stock';
+import { Material } from './stock';
 import { BPNS } from '../edc/bpn';
 import { Partner } from '../edc/partner';
 import { OrderReference } from './order-reference';
@@ -27,7 +27,7 @@ import { OrderReference } from './order-reference';
 export type Production = {
   uuid?: UUID;
   partner: Partner;
-  material: MaterialDetails;
+  material: Material;
   quantity: number;
   measurementUnit: UnitOfMeasurementKey;
   productionSiteBpns: BPNS;

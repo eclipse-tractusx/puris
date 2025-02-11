@@ -36,9 +36,13 @@ type LabelledAutoCompleteProps<TValue> = {
 
 export const LabelledAutoComplete = <TValue,>({ label, placeholder, error, ...rest }: LabelledAutoCompleteProps<TValue>) => {
     return (
-        <Stack width="100%">
+        <Stack spacing={1}>
             <InputLabel>{label}</InputLabel>
-            <Autocomplete {...rest} renderInput={(params) => <Input hiddenLabel {...params} placeholder={placeholder} error={error} />} />
+            <Autocomplete
+                sx={{ width: '100%' }}
+                {...rest}
+                renderInput={(params) => <Input hiddenLabel {...params} placeholder={placeholder} error={error} />}
+            />
         </Stack>
     );
 };

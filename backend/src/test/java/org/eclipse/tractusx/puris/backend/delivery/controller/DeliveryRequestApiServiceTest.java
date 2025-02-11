@@ -93,7 +93,8 @@ public class DeliveryRequestApiServiceTest {
         true,
         "Own-Mnr",
         MATERIAL_NUMBER_CX_CUSTOMER,
-        "Test Material"
+        "Test Material",
+        new Date()
     );
 
     private static final Material TEST_MATERIAL_SUPPLIER = new Material(
@@ -101,7 +102,8 @@ public class DeliveryRequestApiServiceTest {
         true,
         "Own-Mnr",
         MATERIAL_NUMBER_CX_SUPPLIER,
-        "Test Material"
+        "Test Material",
+        new Date()
     );
 
     @BeforeEach
@@ -154,6 +156,7 @@ public class DeliveryRequestApiServiceTest {
         delivery2.setIncoterm(IncotermEnumeration.FCA);
 
         // Delivery with incoterm with SUPPLIER responsibility
+        // TODO rene: for some reason the third delivery has been found, too.
         OwnDelivery delivery3 = getDelivery();
         delivery3.setIncoterm(IncotermEnumeration.DAP);
 

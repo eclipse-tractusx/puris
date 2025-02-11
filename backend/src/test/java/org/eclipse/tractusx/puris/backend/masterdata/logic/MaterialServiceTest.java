@@ -33,6 +33,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -66,7 +67,7 @@ public class MaterialServiceTest {
     @Test
     void create_WhenMaterialDoesNotExist_ReturnsCreatedMaterial() {
         // Given
-        Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material");
+        Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material", new Date());
 
         // When
         when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
@@ -84,7 +85,7 @@ public class MaterialServiceTest {
     @Test
     void create_WhenMaterialExists_ReturnsNull() {
         // Given
-        Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material");
+        Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material", new Date());
 
         // When
         when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.of(material));

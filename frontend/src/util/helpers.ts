@@ -21,7 +21,6 @@ SPDX-License-Identifier: Apache-2.0
 import { INCOTERMS } from '@models/constants/incoterms';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { OrderReference } from '@models/types/data/order-reference';
-import { OrderReference } from '@models/types/data/order-reference';
 import { UnitOfMeasurementKey } from '@models/types/data/uom';
 
 export const getUnitOfMeasurement = (unitOfMeasurementKey: UnitOfMeasurementKey) =>
@@ -29,7 +28,7 @@ export const getUnitOfMeasurement = (unitOfMeasurementKey: UnitOfMeasurementKey)
 
 export const getIncoterm = (incoterm: string) => {
     return INCOTERMS.find((i) => i.key === incoterm)?.value;
-}
+};
 
 export const getCatalogOperator = (operatorId: string) => {
     switch (operatorId) {
@@ -71,3 +70,12 @@ export const isErrorResponse = (response: unknown): response is ErrorResponse =>
 export const isValidOrderReference = (ref: Partial<OrderReference>) =>
     (ref.customerOrderNumber && ref.customerOrderPositionNumber) ||
     (!ref.customerOrderNumber && !ref.customerOrderPositionNumber && !ref.supplierOrderNumber);
+
+export function groupBy<TItem>(arr: TItem[], callback: (item: TItem, index: number, array: TItem[]) => PropertyKey) {
+    return arr.reduce((acc: Record<PropertyKey, TItem[]> = {}, ...args) => {
+        const key = callback(...args);
+        acc[key] ??= [];
+        acc[key].push(args[0]);
+        return acc;
+    }, {});
+}

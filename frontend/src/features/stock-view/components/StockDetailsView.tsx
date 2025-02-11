@@ -29,10 +29,11 @@ import { StockUpdateForm } from './StockUpdateForm';
 import { PartnerStockTable } from './PartnerStockTable';
 import { StockTable } from './StockTable';
 import { useStocks } from '../hooks/useStocks';
-import { usePartnerStocks } from '../hooks/usePartnerStocks';
+import { useReportedStocks } from '../hooks/useReportedStocks';
 import { compareStocks } from '@util/stock-helpers';
 import { Notification } from '@models/types/data/notification';
 import { Partner } from '@models/types/edc/partner';
+import { Box, Stack } from '@mui/material';
 
 type StockDetailsViewProps<T extends StockType> = {
     type: T;
@@ -42,12 +43,14 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
     const { materials } = useMaterials(type);
     const { stocks, refreshStocks } = useStocks(type);
     const [selectedMaterial, setSelectedMaterial] = useState<Stock | null>(null);
-    const { partnerStocks } = usePartnerStocks(
+    const { reportedStocks } = useReportedStocks(
         type,
-        type === 'product' ? selectedMaterial?.material?.materialNumberSupplier ?? null : selectedMaterial?.material?.materialNumberCustomer ?? null
+        type === 'product'
+            ? selectedMaterial?.material?.materialNumberSupplier ?? null
+            : selectedMaterial?.material?.materialNumberCustomer ?? null
     );
     const [saving, setSaving] = useState<boolean>(false);
-    const [refreshing, setRefreshing] = useState(false);
+    const [, setRefreshing] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -64,13 +67,18 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
                     ...ns,
                     {
                         title: 'Update requested',
-                        description: `Stock update has been requested for ${partners.length < 3 ? partners.map((p) => p.name).join(', ') : `${partners.length} partners`}`,
+                        description: `Stock update has been requested for ${
+                            partners.length < 3 ? partners.map((p) => p.name).join(', ') : `${partners.length} partners`
+                        }`,
                         severity: 'success',
                     },
                 ]);
             })
             .catch((error: unknown) => {
-                const msg = error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string' ? error.message : 'Unknown Error';
+                const msg =
+                    error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+                        ? error.message
+                        : 'Unknown Error';
                 setNotifications((ns) => [
                     ...ns,
                     {
@@ -85,8 +93,7 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
 
     const saveStock = (stock: Stock) => {
         if (saving) return;
-        stock.uuid =
-            stocks?.find((s) =>compareStocks(s, stock))?.uuid ?? null;
+        stock.uuid = stocks?.find((s) => compareStocks(s, stock))?.uuid ?? null;
         stock.customerOrderNumber ||= null;
         stock.customerOrderPositionNumber ||= null;
         stock.supplierOrderNumber ||= null;
@@ -116,19 +123,20 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
     };
 
     return (
-        <div className="flex flex-col gap-10 pb-5">
-            <div className="mx-auto">
-                <StockUpdateForm items={materials} type={type} selectedItem={selectedMaterial} onSubmit={saveStock} isSaving={saving} />
-            </div>
-            <StockTable type={type} onSelection={setSelectedMaterial} stocks={stocks ?? []} />
-            <PartnerStockTable
-                type={type}
-                materialName={selectedMaterial?.material?.name}
-                partnerStocks={partnerStocks ?? []}
-                onRefresh={handleStockRefresh}
-                isRefreshing={refreshing}
-                lastUpdated={lastUpdated}
-            />
+        <Stack spacing={2.5} paddingBottom={1.25}>
+            <Box marginInline="auto">
+                <StockUpdateForm items={materials ?? []} type={type} selectedItem={selectedMaterial} onSubmit={saveStock} />
+            </Box>
+            <Stack spacing={4} sx={{ backgroundColor: 'white', borderRadius: 2, padding: 2 }}>
+                <StockTable type={type} onSelection={setSelectedMaterial} stocks={stocks ?? []} />
+                <PartnerStockTable
+                    type={type}
+                    materialName={selectedMaterial?.material?.name}
+                    partnerStocks={reportedStocks ?? []}
+                    onRefresh={handleStockRefresh}
+                    lastUpdated={lastUpdated}
+                />
+            </Stack>
             <PageSnackbarStack>
                 {notifications.map((notification, index) => (
                     <PageSnackbar
@@ -142,6 +150,6 @@ export const StockDetailsView = <T extends StockType>({ type }: StockDetailsView
                     />
                 ))}
             </PageSnackbarStack>
-        </div>
+        </Stack>
     );
 };

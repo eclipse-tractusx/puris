@@ -49,8 +49,7 @@ const createShipmentRow = (numberOfDays: number, deliveries: Delivery[], site: S
             const d = deliveries
                 .filter(
                     (delivery) =>
-                        new Date(delivery.dateOfDeparture!).toDateString() === date.toDateString() &&
-                        delivery.originBpns === site.bpns
+                        new Date(delivery.dateOfDeparture!).toDateString() === date.toDateString() && delivery.originBpns === site.bpns
                 )
                 .reduce((sum, delivery) => sum + delivery.quantity!, 0);
             return { ...acc, [index]: d };
@@ -139,33 +138,35 @@ export const ProductionTable = ({
     };
     return (
         <Stack spacing={2}>
-            <Box
-                display="flex"
-                justifyContent="start"
-                alignItems="center"
-                width="100%"
-                gap="0.5rem"
-                marginBlock="0.5rem"
-                paddingLeft=".5rem"
-            >
-                <Typography variant="caption1" component="h3" fontWeight={600}>
-                    {' '}
-                    Site:{' '}
+            <Box display="flex" justifyContent="start" alignItems="baseline" width="100%" gap="0.5rem" paddingLeft=".5rem">
+                <Typography variant="h4" component="h3">
+                    Site:
                 </Typography>
                 {site.name} ({site.bpns})
                 {!readOnly && (
-                    <Box marginLeft="auto" display="flex" gap="1rem">
-                        <Button variant="contained" onClick={() => onDeliveryClick({ originBpns: site.bpns, departureType: 'estimated-departure', arrivalType: 'estimated-arrival' }, 'create')}>
+                    <Box marginLeft="auto" display="flex" gap="1rem" alignItems="center">
+                        <Button
+                            sx={{ display: 'flex', alignItems: 'center' }}
+                            onClick={() =>
+                                onDeliveryClick(
+                                    { originBpns: site.bpns, departureType: 'estimated-departure', arrivalType: 'estimated-arrival' },
+                                    'create'
+                                )
+                            }
+                        >
                             <Add></Add> Add Delivery
                         </Button>
-                        <Button variant="contained" onClick={() => onProductionClick({ productionSiteBpns: site.bpns }, 'create')}>
+                        <Button
+                            sx={{ display: 'flex', alignItems: 'center' }}
+                            onClick={() => onProductionClick({ productionSiteBpns: site.bpns }, 'create')}
+                        >
                             <Add></Add> Add Production
                         </Button>
                     </Box>
                 )}
             </Box>
             <TableWithRowHeader
-                title=""
+                title="Production Summary"
                 noRowsMsg="Select a Site to show production data"
                 columns={createDateColumnHeaders(numberOfDays)}
                 onCellClick={handleCellClick}

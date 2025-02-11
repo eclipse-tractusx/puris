@@ -52,7 +52,7 @@ export const DashboardFilters = ({
     const { partners } = usePartners(type === 'customer' ? 'material' : 'product', material?.ownMaterialNumber ?? null);
     const { sites } = useSites();
     return (
-        <Grid container spacing={2} maxWidth={1024}>
+        <Grid container spacing={2} maxWidth={1024} sx={{p: 2}}>
             <Grid item md={6} paddingTop='0 !important'>
                 <LabelledAutoComplete
                     id="material"

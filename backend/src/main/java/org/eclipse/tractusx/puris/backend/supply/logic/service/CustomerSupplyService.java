@@ -58,7 +58,7 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply, Repo
     }
 
     @Override
-    protected List<Double> getAddedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+    protected List<Double> getAddedValues(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         List<Double> ownDeliveries = ownDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionCharacteristic.INBOUND, numberOfDays);
         List<Double> reportedDeliveries = reportedDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionCharacteristic.INBOUND, numberOfDays);
         List<Double> deliveries = mergeDeliveries(ownDeliveries, reportedDeliveries);
@@ -66,7 +66,7 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply, Repo
     }
 
     @Override
-    protected List<Double> getConsumedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+    protected List<Double> getConsumedValues(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         List<Double> demands = demandService.getQuantityForDays(material, partnerBpnl, siteBpns, numberOfDays);
         return demands;
     }
@@ -81,7 +81,7 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply, Repo
      * @param numberOfDays the number of days over which the forecast should be calculated.
      * @return a list of {@link OwnCustomerSupply} objects, each containing the calculated days of supply for a specific date.
      */
-    public final List<OwnCustomerSupply> calculateCustomerDaysOfSupply(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+    public final List<OwnCustomerSupply> calculateCustomerDaysOfSupply(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         return calculateDaysOfSupply(material, partnerBpnl, siteBpns, numberOfDays);
     }
     

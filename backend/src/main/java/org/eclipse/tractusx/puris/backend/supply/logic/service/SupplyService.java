@@ -25,6 +25,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -49,8 +50,8 @@ public abstract class SupplyService<T extends Supply, TReported extends Supply, 
     protected final TRepository repository;
 
     protected abstract T createSupplyInstance();
-    protected abstract List<Double> getAddedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays);
-    protected abstract List<Double> getConsumedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays);
+    protected abstract List<Double> getAddedValues(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays);
+    protected abstract List<Double> getConsumedValues(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays);
     protected abstract boolean validate(TReported daysOfSupply);
 
     protected final Function<TReported, Boolean> validator;
@@ -86,10 +87,11 @@ public abstract class SupplyService<T extends Supply, TReported extends Supply, 
      * @param numberOfDays the number of days over which the forecast should be calculated.
      * @return a list of {@link Supply} objects, each containing the calculated days of supply for a specific date.
      */
-    public final List<T> calculateDaysOfSupply(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+    public final List<T> calculateDaysOfSupply(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         List<T> supplyList = new ArrayList<>();
         LocalDate localDate = LocalDate.now();
-        Partner partner = partnerService.findByBpnl(partnerBpnl);
+        // TODO rene: partner may not be empty as set in line 113
+        Partner partner = partnerBpnl.isPresent()? partnerService.findByBpnl(partnerBpnl.get()) : null;
 
         List<Double> addedValues = getAddedValues(material, partnerBpnl, siteBpns, numberOfDays);
         List<Double> consumedValues = getConsumedValues(material, partnerBpnl, siteBpns, numberOfDays);
@@ -106,7 +108,10 @@ public abstract class SupplyService<T extends Supply, TReported extends Supply, 
             supply.setMaterial(materialService.findByOwnMaterialNumber(material));
             supply.setDate(date);
             supply.setDaysOfSupply(daysOfSupply);
-            supply.setPartner(partner);
+            // TODO rene: see above
+            if (partner != null){
+                supply.setPartner(partner);
+            };
             supplyList.add(supply);
 
             stockQuantity = stockQuantity - consumedValues.get(i) + addedValues.get(i);

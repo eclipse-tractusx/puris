@@ -26,5 +26,5 @@ export type Site = {
     bpns: BPNS;
     name: string;
     addresses: Address[];
-    belongsToPartnerBpnl: BPNL;
+    belongsToPartnerBpnl?: BPNL;
 };
