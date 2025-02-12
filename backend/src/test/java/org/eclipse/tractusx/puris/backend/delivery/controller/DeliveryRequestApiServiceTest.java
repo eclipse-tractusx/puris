@@ -203,7 +203,7 @@ public class DeliveryRequestApiServiceTest {
         // verfy that samm mapper has been called correctly (our concern)
         verify(sammMapper)
             .ownDeliveryToSamm(
-                eq(Arrays.asList(delivery, delivery2)),
+                eq(deliveries),
                 eq(SUPPLIER_PARTNER),
                 eq(mpr.getMaterial())
             );

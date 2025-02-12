@@ -36,20 +36,21 @@ import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockSe
 import org.eclipse.tractusx.puris.backend.supply.domain.model.OwnSupplierSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.ReportedSupplierSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.repository.ReportedSupplierSupplyRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SupplierSupplyService extends SupplyService<OwnSupplierSupply, ReportedSupplierSupply, ReportedSupplierSupplyRepository, ProductItemStock, ProductItemStockService> {
-    @Autowired
+
     private OwnDeliveryService ownDeliveryService;
-    @Autowired
     private ReportedDeliveryService reportedDeliveryService;
-    @Autowired
     private OwnProductionService productionService;
 
-    public SupplierSupplyService(ReportedSupplierSupplyRepository repository, PartnerService partnerService, MaterialService materialService) {
-        super(repository, partnerService, materialService);
+    public SupplierSupplyService(ProductItemStockService stockService, MaterialService materialService,
+            PartnerService partnerService, ReportedSupplierSupplyRepository repository, OwnDeliveryService ownDeliveryService, ReportedDeliveryService reportedDeliveryService, OwnProductionService productionService) {
+        super(stockService, materialService, partnerService, repository);
+        this.ownDeliveryService = ownDeliveryService;
+        this.reportedDeliveryService = reportedDeliveryService;
+        this.productionService = productionService;
     }
 
     @Override

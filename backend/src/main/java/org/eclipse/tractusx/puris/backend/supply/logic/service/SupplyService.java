@@ -37,17 +37,13 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockService;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.Supply;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public abstract class SupplyService<T extends Supply, TReported extends Supply, TRepository extends JpaRepository<TReported, UUID>, TStock extends ItemStock, TStockService extends ItemStockService<TStock>> {
-    @Autowired
     private TStockService stockService;
-    @Autowired
     private MaterialService materialService;
-    @Autowired
     protected PartnerService partnerService;
-    protected final TRepository repository;
+    protected TRepository repository;
 
     protected abstract T createSupplyInstance();
     protected abstract List<Double> getAddedValues(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays);
@@ -56,10 +52,11 @@ public abstract class SupplyService<T extends Supply, TReported extends Supply, 
 
     protected final Function<TReported, Boolean> validator;
 
-    public SupplyService(TRepository repository, PartnerService partnerService, MaterialService materialService) {
+    public SupplyService(TStockService stockService, MaterialService materialService, PartnerService partnerService, TRepository repository) {
         this.repository = repository;
         this.partnerService = partnerService;
         this.materialService = materialService;
+        this.stockService = stockService;
         this.validator = this::validate;
     }
 
@@ -90,31 +87,30 @@ public abstract class SupplyService<T extends Supply, TReported extends Supply, 
     public final List<T> calculateDaysOfSupply(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         List<T> supplyList = new ArrayList<>();
         LocalDate localDate = LocalDate.now();
-        // TODO rene: partner may not be empty as set in line 113
         Partner partner = partnerBpnl.isPresent()? partnerService.findByBpnl(partnerBpnl.get()) : null;
 
         List<Double> addedValues = getAddedValues(material, partnerBpnl, siteBpns, numberOfDays);
         List<Double> consumedValues = getConsumedValues(material, partnerBpnl, siteBpns, numberOfDays);
         double stockQuantity = stockService.getInitialStockQuantity(material, partnerBpnl);
 
-        for (int i = 0; i < numberOfDays; i++) {
+        for (int i = 0; i < numberOfDays - 1; i++) {
             Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-            var remainingAddedValues = addedValues.subList(i, addedValues.size());
-            var remainingConsumedValues = consumedValues.subList(i, consumedValues.size());
-            double daysOfSupply = getDaysOfSupply(stockQuantity, remainingAddedValues, remainingConsumedValues);
+            stockQuantity = stockQuantity - consumedValues.get(i) + addedValues.get(i);
+
+            var remainingConsumedValues = consumedValues.subList(i + 1, consumedValues.size());
+
+            double daysOfSupply = getDaysOfSupply(stockQuantity, remainingConsumedValues);
 
             T supply = createSupplyInstance();
             supply.setMaterial(materialService.findByOwnMaterialNumber(material));
             supply.setDate(date);
             supply.setDaysOfSupply(daysOfSupply);
-            // TODO rene: see above
             if (partner != null){
                 supply.setPartner(partner);
             };
             supplyList.add(supply);
 
-            stockQuantity = stockQuantity - consumedValues.get(i) + addedValues.get(i);
 
             localDate = localDate.plusDays(1);
         }
@@ -149,20 +145,19 @@ public abstract class SupplyService<T extends Supply, TReported extends Supply, 
      * @param consumedValues Remaining list of consumed values for current iteration
      * @return The number of days of supply that the stock can cover.
      */
-    private final double getDaysOfSupply(double stockQuantity, List<Double> addedValues, List<Double> consumedValues) {
+    private double getDaysOfSupply(double stockQuantity, List<Double> consumedValues) {
         double daysOfSupply = 0;
 
-        for (int i = 0; i < addedValues.size(); i++) {
-            Double addedValue = addedValues.get(i);
+        for (int i = 0; i < consumedValues.size(); i++) {
             Double consumedValue = consumedValues.get(i);
 
-            if ((stockQuantity + addedValue - consumedValue) >= 0) {
+            if ((stockQuantity - consumedValue) >= 0) {
                 daysOfSupply += 1;
-                stockQuantity = stockQuantity + addedValue - consumedValue;
-            } else if ((stockQuantity + addedValue - consumedValue) < 0 && stockQuantity > 0) {
-                double fractional = (stockQuantity + addedValue) / consumedValue;
+                stockQuantity = stockQuantity - consumedValue;
+            } else if ((stockQuantity - consumedValue) < 0 && stockQuantity > 0) {
+                double fractional = stockQuantity / consumedValue;
                 daysOfSupply += fractional;
-                stockQuantity = stockQuantity + addedValue - consumedValue;
+                stockQuantity = stockQuantity - consumedValue;
                 break;
             } else {
                 break;

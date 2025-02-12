@@ -122,9 +122,9 @@ export function CalendarWeekSummary<TType extends SummaryType>({ cw, summary, is
                                     <Box flex={1} display="flex" justifyContent="center" alignItems="center">
                                         <Typography
                                             variant="body2"
-                                            color={ summary.dailySummaries[date.toLocaleDateString()]?.stockTotal < 0 ? '#f44336bb' : 'inherit' }
+                                            color={ summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal < 0 ? '#f44336bb' : 'inherit' }
                                         >
-                                            {summary.dailySummaries[date.toLocaleDateString()]?.stockTotal}
+                                            {summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal}
                                         </Typography>
                                     </Box>
                                 </Stack>
@@ -175,7 +175,7 @@ export function CalendarWeekSummary<TType extends SummaryType>({ cw, summary, is
                                 {
                                     [...weekDates]
                                         .reverse()
-                                        .map((date) => summary.dailySummaries[date.toLocaleDateString()])
+                                        .map((date) => summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()])
                                         .find((sum) => sum)?.stockTotal
                                 }
                             </Typography>

@@ -19,13 +19,13 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { Expandable } from '@features/material-details/models/expandable';
-import { CalendarWeek, getCalendarWeek, incrementCalendarWeek } from '@util/date-helpers';
+import { CalendarWeek, getCalendarWeek, incrementCalendarWeek, incrementDate } from '@util/date-helpers';
 
 function initializeCalendarWeeks(): Expandable<CalendarWeek>[] {
-    const today = new Date();
-    const numberOfWeeks = today.getUTCDay() === 1 ? 4 : 5;
+    const yesterday = incrementDate(new Date(), -1);
+    const numberOfWeeks = yesterday.getUTCDay() === 1 ? 4 : 5;
     const weeks: Expandable<CalendarWeek>[] = [];
-    const currentCalendarWeek = getCalendarWeek(today);
+    const currentCalendarWeek = getCalendarWeek(yesterday);
     for (let i = 0; i < numberOfWeeks; i++) {
         weeks.push({
             ...incrementCalendarWeek(currentCalendarWeek, i),
