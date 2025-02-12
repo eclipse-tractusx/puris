@@ -1,0 +1,64 @@
+meta {
+  name: Create new Demand Semiconductor Material
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/demand
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+    "partnerBpnl": "{{SUPPLIER_BPNL}}",
+    "ownMaterialNumber": "{{MATERIAL_NUMBER_CUSTOMER}}",
+    "quantity": 810.00,
+    "measurementUnit": "unit:piece",
+    "day": "{{DATE_TIME_CALCULATED}}",
+    "demandLocationBpns": "{{CUSTOMER_BPNS}}",
+    "supplierLocationBpns": "{{SUPPLIER_BPNS}}",
+    "demandCategoryCode": "A1S1"
+  }
+}
+
+script:pre-request {
+  // Create the formattedDate
+  const today = new Date();
+  today.setDate(today.getDate() + 11);
+  const dateFormatted = today.toISOString().slice(0, 16);
+  
+  // Set the formattedDate in the environment variable
+  bru.setVar('DATE_TIME_CALCULATED', dateFormatted);
+  
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Verify demand composition (material number with BPNS, BPNA and Partner BPNL)", function () {
+      var responseJson = res.getBody();
+  
+      expect(responseJson).to.have.property("uuid");
+      expect(responseJson.uuid).to.not.undefined;
+  
+      expect(responseJson).to.have.property("ownMaterialNumber");
+      expect(responseJson.ownMaterialNumber).to.equal(bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER"));
+  
+      expect(responseJson).to.have.property("partnerBpnl");
+      expect(responseJson.partnerBpnl).to.equal(bru.getEnvVar("SUPPLIER_BPNL"));
+  
+      expect(responseJson).to.have.property("demandLocationBpns");
+      expect(responseJson.demandLocationBpns).to.equal(bru.getEnvVar("CUSTOMER_BPNS"));
+  
+      expect(responseJson).to.have.property("supplierLocationBpns");
+      expect(responseJson.supplierLocationBpns).to.equal(bru.getEnvVar("SUPPLIER_BPNS"));
+  });
+}
