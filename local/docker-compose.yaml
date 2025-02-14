@@ -46,6 +46,8 @@ services:
       - ENDPOINT_PRODUCTION=production
       - ENDPOINT_PRODUCTION_RANGE=production/range
       - ENDPOINT_DELIVERY=delivery
+      - ENDPOINT_DAYS_OF_SUPPLY=days-of-supply
+      - ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION=demand-and-capacity-notification
       - IDP_DISABLE=true
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
@@ -221,6 +223,8 @@ services:
       - ENDPOINT_PRODUCTION=production
       - ENDPOINT_PRODUCTION_RANGE=production/range
       - ENDPOINT_DELIVERY=delivery
+      - ENDPOINT_DAYS_OF_SUPPLY=days-of-supply
+      - ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION=demand-and-capacity-notification
       - IDP_DISABLE=true
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
