@@ -22,7 +22,7 @@ import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import { CalendarWeekProvider } from '@contexts/calendarWeekContext';
 import { Box, capitalize, Stack, Typography } from '@mui/material';
 import { MaterialDetailsHeader } from './MaterialDetailsHeader';
-import { SummaryPanel } from './SummaryPanel';
+import { OwnSummaryPanel } from './SummaryPanel';
 import { CollapsibleSummary } from './CollapsibleSummary';
 import { DataCategory, useMaterialDetails } from '../hooks/useMaterialDetails';
 import { useNotifications } from '@contexts/notificationContext';
@@ -39,6 +39,7 @@ import { requestReportedDemands } from '@services/demands-service';
 import { NotFoundView } from '@views/errors/NotFoundView';
 import { Material } from '@models/types/data/stock';
 import { BPNS } from '@models/types/edc/bpn';
+import { requestReportedSupply } from '@services/supply-service';
 
 type SummaryContainerProps = {
     children: ReactNode;
@@ -146,6 +147,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
             direction === DirectionType.Inbound
                 ? requestReportedProductions(material.ownMaterialNumber)
                 : requestReportedDemands(material.ownMaterialNumber),
+            requestReportedSupply(material.ownMaterialNumber, direction)
         ])
             .then(() => {
                 notify({
@@ -216,11 +218,13 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                 />
                 <Stack spacing={5}>
                     <SummaryContainer>
-                        <SummaryPanel title={`${capitalize(summary.type ?? '')} Summary`} summary={summary} showHeader />
+                        <OwnSummaryPanel title={`${capitalize(summary.type ?? '')} Summary`} summary={summary} materialNumber={material.ownMaterialNumber ?? ''} showHeader includeDaysOfSupply />
                         {expandablePartners.map((partner) => (
                             <CollapsibleSummary
                                 key={partner.bpnl}
                                 summary={createSummaryByPartnerAndDirection(partner, direction)}
+                                materialNumber={material.ownMaterialNumber ?? ''}
+                                partnerBpnl={partner.bpnl}
                                 renderTitle={() => (
                                     <>
                                         <Typography variant="body1">{partner.name}</Typography>
@@ -232,6 +236,9 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                     <CollapsibleSummary
                                         key={site.bpns}
                                         summary={createSummaryByPartnerAndDirection(partner, direction, site.bpns)}
+                                        materialNumber={material.ownMaterialNumber ?? ''}
+                                        partnerBpnl={partner.bpnl}
+                                        site={site.bpns}
                                         variant="sub"
                                         renderTitle={() => (
                                             <>
@@ -240,6 +247,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                                 <Typography variant="body3" color="#ccc">({site.bpns})</Typography>
                                             </>
                                         )}
+                                        includeDaysOfSupply
                                     />
                                 ))}
                             </CollapsibleSummary>
@@ -247,7 +255,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                     </SummaryContainer>
                     {sites?.map((site) => (
                         <SummaryContainer key={site.bpns}>
-                            <SummaryPanel
+                            <OwnSummaryPanel
                                 title={site.name}
                                 summary={
                                     direction === DirectionType.Outbound
@@ -264,12 +272,18 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                               groupedStocks[site.bpns] ?? []
                                           )
                                 }
+                                materialNumber={material.ownMaterialNumber ?? ''}
+                                site={site.bpns}
                                 showHeader
-                            ></SummaryPanel>
+                                includeDaysOfSupply
+                            ></OwnSummaryPanel>
                             {expandablePartners.map((partner) => (
                                 <CollapsibleSummary
                                     key={partner.bpnl}
                                     summary={createSummaryByPartnerAndDirection(partner, direction, undefined, site.bpns)}
+                                    materialNumber={material.ownMaterialNumber ?? ''}
+                                    site={site.bpns}
+                                    partnerBpnl={partner.bpnl}
                                     renderTitle={() => (
                                         <>
                                             <Typography variant="body1">{partner.name}</Typography>
@@ -283,6 +297,9 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                         <CollapsibleSummary
                                             key={partnerSite.bpns}
                                             summary={createSummaryByPartnerAndDirection(partner, direction, partnerSite.bpns, site.bpns)}
+                                            materialNumber={material.ownMaterialNumber ?? ''}
+                                            site={site.bpns}
+                                            partnerBpnl={partner.bpnl}
                                             variant="sub"
                                             renderTitle={() => (
                                                 <>

@@ -130,7 +130,7 @@ public class DaysOfSupplyRequestApiService {
                         return;
                     }
                 }
-                var oldSupplies = customerSupplyService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()));
+                var oldSupplies = customerSupplyService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
                 for (var oldSupply : oldSupplies) {
                 customerSupplyService.deleteReportedSupply(oldSupply);
                 }
@@ -148,7 +148,7 @@ public class DaysOfSupplyRequestApiService {
                         return;
                     }
                 }
-                var oldSupplies = supplierSupplyService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()));
+                var oldSupplies = supplierSupplyService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
                 for (var oldSupply : oldSupplies) {
                 supplierSupplyService.deleteReportedSupply(oldSupply);
                 }

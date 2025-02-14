@@ -193,7 +193,7 @@ public class SupplyServiceTest {
         Optional<String> partnerBpnl = Optional.of(BPNL_SUPPLIER);
         when(partnerService.findByBpnl(partnerBpnl.get())).thenReturn(SUPPLIER_PARTNER);
 
-        when(materialItemStockService.getInitialStockQuantity(TEST_MATERIAL.getOwnMaterialNumber(), partnerBpnl)).thenReturn(100.0);
+        when(materialItemStockService.getInitialStockQuantity(TEST_MATERIAL.getOwnMaterialNumber(), partnerBpnl, Optional.empty())).thenReturn(100.0);
         when(materialService.findByOwnMaterialNumber(TEST_MATERIAL.getOwnMaterialNumber())).thenReturn(TEST_MATERIAL);
 
         List<OwnCustomerSupply> customerSupplies = customerSupplyService.calculateCustomerDaysOfSupply(TEST_MATERIAL.getOwnMaterialNumber(), partnerBpnl, Optional.empty(), 6);
@@ -235,7 +235,7 @@ public class SupplyServiceTest {
         Optional<String> partnerBpnl = Optional.of(BPNL_CUSTOMER);
         when(partnerService.findByBpnl(partnerBpnl.get())).thenReturn(CUSTOMER_PARTNER);
 
-        when(productItemStockService.getInitialStockQuantity(TEST_PRODUCT.getOwnMaterialNumber(), partnerBpnl)).thenReturn(100.0);
+        when(productItemStockService.getInitialStockQuantity(TEST_PRODUCT.getOwnMaterialNumber(), partnerBpnl, Optional.empty())).thenReturn(100.0);
         when(materialService.findByOwnMaterialNumber(TEST_PRODUCT.getOwnMaterialNumber())).thenReturn(TEST_PRODUCT);
 
         List<OwnSupplierSupply> supplierSupplies = supplierSupplyService.calculateSupplierDaysOfSupply(TEST_PRODUCT.getOwnMaterialNumber(), partnerBpnl, Optional.empty(), 6);

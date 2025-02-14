@@ -19,18 +19,23 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { ReactNode, useState } from 'react';
 import { Button, Stack, useTheme } from '@mui/material';
-import { SummaryPanel } from './SummaryPanel';
+import { OwnSummaryPanel, ReportedSummaryPanel } from './SummaryPanel';
 import { ChevronRightOutlined, SubdirectoryArrowRightOutlined } from '@mui/icons-material';
 import { Summary, SummaryType } from '../util/summary-service';
+import { BPNL, BPNS } from '@models/types/edc/bpn';
 
 type CollapsibleSummaryProps<TType extends SummaryType> = {
     variant?: 'default' | 'sub';
     summary: Summary<TType>;
+    materialNumber: string;
+    site?: BPNS;
+    partnerBpnl?: BPNL;
     renderTitle: () => ReactNode;
     children?: ReactNode;
+    includeDaysOfSupply?: boolean;
 };
 
-export function CollapsibleSummary<TType extends SummaryType>({ summary, renderTitle, children, variant = 'default', }: CollapsibleSummaryProps<TType>) {
+export function CollapsibleSummary<TType extends SummaryType>({ summary, materialNumber, site, partnerBpnl, renderTitle, children, variant = 'default', includeDaysOfSupply = false }: CollapsibleSummaryProps<TType>) {
     const theme = useTheme();
     const [isExpanded, setIsExpanded] = useState(false);
     return (
@@ -67,7 +72,24 @@ export function CollapsibleSummary<TType extends SummaryType>({ summary, renderT
                     {renderTitle()}
                 </Stack>
             </Button>
-            <SummaryPanel sx={{ display: isExpanded ? 'flex' : 'none' }} summary={summary} />
+            {partnerBpnl ? 
+                <ReportedSummaryPanel 
+                    sx={{ display: isExpanded ? 'flex' : 'none' }}
+                    materialNumber={materialNumber}
+                    site={site}
+                    partnerBpnl={partnerBpnl}
+                    summary={summary}
+                    includeDaysOfSupply={includeDaysOfSupply}
+                /> :
+                <OwnSummaryPanel 
+                    sx={{ display: isExpanded ? 'flex' : 'none' }}
+                    materialNumber={materialNumber}
+                    site={site}
+                    partnerBpnl={partnerBpnl}
+                    summary={summary}
+                    includeDaysOfSupply={includeDaysOfSupply}
+                />
+            }
             {isExpanded ? children : null}
         </>
     );

@@ -33,6 +33,8 @@ import java.util.stream.Stream;
 
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.Delivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.repository.DeliveryRepository;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -40,6 +42,11 @@ public abstract class DeliveryService<T extends Delivery> {
     @Autowired
     protected DeliveryRepository<T> repository;
 
+    @Autowired
+    private PartnerService partnerService;
+
+    private Partner ownPartnerEntity;
+    
     public final List<T> findAll() {
         return repository.findAll();
     }
@@ -58,16 +65,18 @@ public abstract class DeliveryService<T extends Delivery> {
         if (ownMaterialNumber.isPresent()) {
             stream = stream.filter(delivery -> delivery.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
         }
-        if (bpns.isPresent()) {
-            if (direction.isPresent()) {
-                if (direction.get() == DirectionCharacteristic.INBOUND) {
-                    stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()));
-                } else {
-                    stream = stream.filter(delivery -> delivery.getOriginBpns().equals(bpns.get()));
-                }
-            } else {
-                stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()) || delivery.getOriginBpns().equals(bpns.get()));
+        if (direction.isPresent()) {
+            if (ownPartnerEntity == null) {
+                ownPartnerEntity = partnerService.getOwnPartnerEntity();
             }
+            if (direction.get() == DirectionCharacteristic.INBOUND) {
+                stream = stream.filter(delivery -> ownPartnerEntity.getSites().stream().anyMatch(site -> delivery.getDestinationBpns().equals(site.getBpns())));
+            } else {
+                stream = stream.filter(delivery -> ownPartnerEntity.getSites().stream().anyMatch(site -> delivery.getOriginBpns().equals(site.getBpns())));
+            }
+        }
+        if (bpns.isPresent()) {
+            stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()) || delivery.getOriginBpns().equals(bpns.get()));
         }
         if (bpnl.isPresent()) {
             stream = stream.filter(delivery -> delivery.getPartner().getBpnl().equals(bpnl.get()));

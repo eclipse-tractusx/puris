@@ -102,7 +102,7 @@ public abstract class SupplyService<T extends Supply, TReported extends Supply, 
 
         List<Double> addedValues = getAddedValues(material, partnerBpnl, siteBpns, numberOfDays);
         List<Double> consumedValues = getConsumedValues(material, partnerBpnl, siteBpns, numberOfDays);
-        double projectedStockQuantity = stockService.getInitialStockQuantity(material, partnerBpnl);
+        double projectedStockQuantity = stockService.getInitialStockQuantity(material, partnerBpnl, siteBpns);
 
         for (int i = 0; i < numberOfDays - 1; i++) {
             Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());

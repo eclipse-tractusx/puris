@@ -39,7 +39,7 @@ export function MaterialDetailView() {
             setTitle('Loading...');
             return;
         }
-        setTitle(`${material?.name} (${capitalize(direction)})`);
+        setTitle(`${material?.name} (${capitalize(direction ?? '')})`);
     }, [direction, isLoading, material?.name, materialNumber, setTitle]);
 
     if (isLoading) return <Box>Loading...</Box>;

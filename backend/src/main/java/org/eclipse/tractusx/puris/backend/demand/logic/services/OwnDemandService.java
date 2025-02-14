@@ -53,7 +53,7 @@ public class OwnDemandService extends DemandService<OwnDemand, OwnDemandReposito
             LocalDate localDayDate = Instant.ofEpochMilli(date.getTime()).atOffset(ZoneOffset.UTC).toLocalDate();
             List<OwnDemand> demandsForDate = demands.stream().filter(demand -> {
                 LocalDate demandDayDate = Instant.ofEpochMilli(demand.getDay().getTime()).atOffset(ZoneOffset.UTC).toLocalDate();
-                return demandDayDate.getDayOfMonth() == localDayDate.getDayOfMonth();
+                return demandDayDate.getDayOfMonth() == localDayDate.getDayOfMonth() && demandDayDate.getMonthValue() == localDayDate.getMonthValue();
             }).toList();
             double demandQuantity = getSumOfQuantities(demandsForDate);
             quantities.add(demandQuantity);
