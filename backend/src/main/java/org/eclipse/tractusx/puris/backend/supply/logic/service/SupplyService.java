@@ -76,8 +76,10 @@ public abstract class SupplyService<T extends Supply, TReported extends Supply, 
 
     /**
      * Calculates the days of supply for a given material, partner, and site over a specified number of days.
-     * It combines added values (deliveries/productions), and consumed values (deliveries/demands) to forecast the number of days the stock will last.
+     * It combines the projected item stock of a given day and consumed values (outbound deliveries/demands) on the following days
+     * to forecast the number of days the stock will last.
      *
+     * NOTE: Added values (inbound deliveries/production) are only used for calculation projected stocks and not for the calculation of Days Of Supply
      * @param material the material identifier for which the days of supply are being calculated.
      * @param partnerBpnl The bpnl of the partner.
      * @param siteBpns the bpns of the site where the added values and consumed values are recorded.
@@ -85,22 +87,31 @@ public abstract class SupplyService<T extends Supply, TReported extends Supply, 
      * @return a list of {@link Supply} objects, each containing the calculated days of supply for a specific date.
      */
     public final List<T> calculateDaysOfSupply(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
+        /* 
+         * Due to the nature of the Days of Supply calculation logic, calculating Days of Supply for less than 2 days does not make sense
+         * since there are no upcoming days to base the Days of Supply on. 
+         * 
+         * This logic also leads to the length of the List of Supply to always be numberOfDays - 1
+         */
+        if (numberOfDays < 2) {
+            return new ArrayList<T>();
+        }
         List<T> supplyList = new ArrayList<>();
         LocalDate localDate = LocalDate.now();
         Partner partner = partnerBpnl.isPresent()? partnerService.findByBpnl(partnerBpnl.get()) : null;
 
         List<Double> addedValues = getAddedValues(material, partnerBpnl, siteBpns, numberOfDays);
         List<Double> consumedValues = getConsumedValues(material, partnerBpnl, siteBpns, numberOfDays);
-        double stockQuantity = stockService.getInitialStockQuantity(material, partnerBpnl);
+        double projectedStockQuantity = stockService.getInitialStockQuantity(material, partnerBpnl);
 
         for (int i = 0; i < numberOfDays - 1; i++) {
             Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-            stockQuantity = stockQuantity - consumedValues.get(i) + addedValues.get(i);
+            projectedStockQuantity = projectedStockQuantity - consumedValues.get(i) + addedValues.get(i);
 
             var remainingConsumedValues = consumedValues.subList(i + 1, consumedValues.size());
 
-            double daysOfSupply = getDaysOfSupply(stockQuantity, remainingConsumedValues);
+            double daysOfSupply = getDaysOfSupply(projectedStockQuantity, remainingConsumedValues);
 
             T supply = createSupplyInstance();
             supply.setMaterial(materialService.findByOwnMaterialNumber(material));
@@ -110,7 +121,6 @@ public abstract class SupplyService<T extends Supply, TReported extends Supply, 
                 supply.setPartner(partner);
             };
             supplyList.add(supply);
-
 
             localDate = localDate.plusDays(1);
         }
