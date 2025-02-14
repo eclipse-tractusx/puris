@@ -38,8 +38,8 @@ maven/mavencentral/jakarta.xml.bind/jakarta.xml.bind-api/4.0.2, BSD-3-Clause, ap
 maven/mavencentral/junit/junit/4.13.2, EPL-2.0, approved, CQ23636
 maven/mavencentral/net.bytebuddy/byte-buddy-agent/1.14.17, Apache-2.0, approved, #7164
 maven/mavencentral/net.bytebuddy/byte-buddy/1.14.17, Apache-2.0 AND BSD-3-Clause, approved, #7163
-maven/mavencentral/net.minidev/accessors-smart/2.5.1, Apache-2.0, approved, clearlydefined
-maven/mavencentral/net.minidev/json-smart/2.5.1, Apache-2.0, approved, clearlydefined
+maven/mavencentral/net.minidev/accessors-smart/2.5.1, Apache-2.0, approved, #19432
+maven/mavencentral/net.minidev/json-smart/2.5.1, Apache-2.0, approved, #19431
 maven/mavencentral/org.antlr/antlr4-runtime/4.13.0, BSD-3-Clause, approved, #10767
 maven/mavencentral/org.apache.commons/commons-lang3/3.14.0, Apache-2.0, approved, #11677
 maven/mavencentral/org.apache.logging.log4j/log4j-api/2.23.1, Apache-2.0, approved, #13368
