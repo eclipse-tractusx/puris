@@ -1,0 +1,20 @@
+meta {
+  name: Test_01-MAD
+}
+
+script:pre-request {
+  const btoa = require("btoa");
+  
+  const customerMaterial = bru.getEnvVar('MATERIAL_NUMBER_CUSTOMER');
+  const supplierMaterial = bru.getEnvVar('MATERIAL_NUMBER_SUPPLIER');
+  const customerMaterialBase64 = bru.getEnvVar('MATERIAL_NUMBER_CUSTOMER_BASE64');
+  const supplierMaterialBase64 = bru.getEnvVar('MATERIAL_NUMBER_SUPPLIER_BASE64');
+  
+  if (btoa(customerMaterial) !== customerMaterialBase64) {
+    bru.setEnvVar('MATERIAL_NUMBER_CUSTOMER_BASE64', btoa(customerMaterial));
+  }
+  
+  if (btoa(supplierMaterial) !== supplierMaterialBase64) {
+    bru.setEnvVar('MATERIAL_NUMBER_SUPPLIER_BASE64', btoa(supplierMaterial));
+  }
+}

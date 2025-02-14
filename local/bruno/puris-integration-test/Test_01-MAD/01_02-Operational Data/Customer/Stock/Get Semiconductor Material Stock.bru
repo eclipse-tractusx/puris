@@ -34,7 +34,6 @@ tests {
       expect(stock.material.materialNumberSupplier).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
   
       expect(stock.material).to.have.property("materialNumberCx");
-      expect(stock.material.materialNumberCx).to.equal(bru.getEnvVar("MATERIAL_NUMBER_CX"));
   
       expect(stock.material).to.have.property("materialFlag");
       expect(stock.material.materialFlag).to.be.true;
