@@ -129,7 +129,7 @@ npm/npmjs/@types/hast/2.3.10, MIT, approved, clearlydefined
 npm/npmjs/@types/mdast/3.0.15, MIT, approved, clearlydefined
 npm/npmjs/@types/ms/0.7.34, MIT, approved, #10811
 npm/npmjs/@types/node/20.8.3, MIT, approved, #10804
-npm/npmjs/@types/parse-json/4.0.2, MIT, approved, clearlydefined
+npm/npmjs/@types/parse-json/4.0.2, MIT, approved, #19199
 npm/npmjs/@types/unist/2.0.10, MIT, approved, clearlydefined
 npm/npmjs/@typescript-eslint/eslint-plugin/7.18.0, BSD-2-Clause AND MIT AND (BSD-2-Clause AND ISC AND MIT), approved, #15825
 npm/npmjs/@typescript-eslint/parser/7.0.0, BSD-2-Clause AND (BSD-2-Clause AND ISC AND MIT) AND MIT, approved, #13312

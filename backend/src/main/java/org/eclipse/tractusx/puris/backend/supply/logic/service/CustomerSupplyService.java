@@ -36,20 +36,21 @@ import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockS
 import org.eclipse.tractusx.puris.backend.supply.domain.model.OwnCustomerSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.ReportedCustomerSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.repository.ReportedCustomerSupplyRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CustomerSupplyService extends SupplyService<OwnCustomerSupply, ReportedCustomerSupply, ReportedCustomerSupplyRepository, MaterialItemStock, MaterialItemStockService> {
-    @Autowired
+    
     private OwnDeliveryService ownDeliveryService;
-    @Autowired
     private ReportedDeliveryService reportedDeliveryService;
-    @Autowired
     private OwnDemandService demandService;
-
-    public CustomerSupplyService(ReportedCustomerSupplyRepository repository, PartnerService partnerService, MaterialService materialService) {
-        super(repository, partnerService, materialService);
+    
+    public CustomerSupplyService(MaterialItemStockService stockService, MaterialService materialService,
+            PartnerService partnerService, ReportedCustomerSupplyRepository repository, OwnDeliveryService ownDeliveryService, ReportedDeliveryService reportedDeliveryService, OwnDemandService demandService) {
+        super(stockService, materialService, partnerService, repository);
+        this.ownDeliveryService = ownDeliveryService;
+        this.reportedDeliveryService = reportedDeliveryService;
+        this.demandService = demandService;
     }
 
     @Override
@@ -81,7 +82,7 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply, Repo
      * @param numberOfDays the number of days over which the forecast should be calculated.
      * @return a list of {@link OwnCustomerSupply} objects, each containing the calculated days of supply for a specific date.
      */
-    public final List<OwnCustomerSupply> calculateCustomerDaysOfSupply(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
+    public List<OwnCustomerSupply> calculateCustomerDaysOfSupply(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         return calculateDaysOfSupply(material, partnerBpnl, siteBpns, numberOfDays);
     }
     
