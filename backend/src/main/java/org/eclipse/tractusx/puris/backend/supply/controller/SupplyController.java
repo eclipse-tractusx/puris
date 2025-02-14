@@ -86,9 +86,9 @@ public class SupplyController {
     @Operation(summary = "Get days of supply for customer.", 
         description = "Get days of supply for customer for given material number and partner bpnl. " +
             "materialNumber is expected to be base64 encoded")
-    public List<SupplyDto> getCustomerDaysOfSupply(String materialNumber, String bpnl) {
+    public List<SupplyDto> getCustomerDaysOfSupply(String materialNumber, String bpnl, Optional<String> siteBpns) {
         materialNumber = new String(Base64.getDecoder().decode(materialNumber.getBytes(StandardCharsets.UTF_8)));
-        return customerSupplyService.findAllByMaterialNumberAndPartnerBpnl(materialNumber, bpnl)
+        return customerSupplyService.findAllByFilters(Optional.of(materialNumber), Optional.of(bpnl), siteBpns)
             .stream().map(this::convertToDto).toList();
     }
 
@@ -126,9 +126,9 @@ public class SupplyController {
     @Operation(summary = "Get days of supply for supplier.", 
         description = "Get days of supply for supplier for given material number and partner bpnl. " +
             "materialNumber is expected to be base64 encoded")
-    public List<SupplyDto> getSupplierDaysOfSupply(String materialNumber, String bpnl) {
+    public List<SupplyDto> getSupplierDaysOfSupply(String materialNumber, String bpnl, Optional<String> siteBpns) {
         materialNumber = new String(Base64.getDecoder().decode(materialNumber.getBytes(StandardCharsets.UTF_8)));
-        return supplierSupplyService.findAllByMaterialNumberAndPartnerBpnl(materialNumber, bpnl)
+        return supplierSupplyService.findAllByFilters(Optional.of(materialNumber), Optional.of(bpnl), siteBpns)
             .stream().map(this::convertToDto).toList();
     }
 

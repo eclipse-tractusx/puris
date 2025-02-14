@@ -39,6 +39,7 @@ const app = {
     ENDPOINT_PRODUCTION: import.meta.env.VITE_ENDPOINT_PRODUCTION.trim() as string,
     ENDPOINT_PRODUCTION_RANGE: import.meta.env.VITE_ENDPOINT_PRODUCTION_RANGE.trim() as string,
     ENDPOINT_DELIVERY: import.meta.env.VITE_ENDPOINT_DELIVERY.trim() as string,
+    ENDPOINT_DAYS_OF_SUPPLY: import.meta.env.VITE_ENDPOINT_DAYS_OF_SUPPLY.trim() as string,
     ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION: import.meta.env.VITE_ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION.trim() as string,
 };
 
