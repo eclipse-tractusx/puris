@@ -25,7 +25,7 @@ import { scheduleErpUpdate } from '@services/erp-service'
 import { AssetType } from "@models/types/erp/assetType.ts";
 import { DirectionType } from "@models/types/erp/directionType.ts";
 
-export const postStocks = async (type: StockType, stock: Stock) => {
+export const postStocks = async (type: StockType, stock: Partial<Stock>) => {
   const endpoint = type === 'product' ? config.app.ENDPOINT_PRODUCT_STOCKS : config.app.ENDPOINT_MATERIAL_STOCKS;
   const res = await fetch(config.app.BACKEND_BASE_URL + endpoint, {
     method: 'POST',
@@ -55,6 +55,21 @@ export const putStocks = async (type: StockType, stock: Stock) => {
       throw await res.json();
   }
   return res.json();
+}
+
+export const deleteStocks = async (type: StockType, id: string) => {
+  const endpoint = type === 'product' ? config.app.ENDPOINT_PRODUCT_STOCKS : config.app.ENDPOINT_MATERIAL_STOCKS;
+  const res = await fetch(`${config.app.BACKEND_BASE_URL}${endpoint}/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-KEY': config.app.BACKEND_API_KEY,
+    },
+  });
+  if(res.status >= 400) {
+      throw await res.json();
+  }
+  return ;
 }
 
 export const requestReportedStocks = async (type: StockType, materialNumber: string | null) => {

@@ -27,6 +27,7 @@ import { DirectionType } from '@models/types/erp/directionType';
 import { Demand } from '@models/types/data/demand';
 import { Production } from '@models/types/data/production';
 import { Delivery } from '@models/types/data/delivery';
+import { Stock } from '@models/types/data/stock';
 
 type CalendarWeekSummaryProps<TType extends SummaryType> = {
     cw: CalendarWeek;
@@ -120,12 +121,33 @@ export function CalendarWeekSummary<TType extends SummaryType>({ cw, summary, is
                                         </Button>
                                     </Box>
                                     <Box flex={1} display="flex" justifyContent="center" alignItems="center">
-                                        <Typography
-                                            variant="body2"
-                                            color={ summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal < 0 ? '#f44336bb' : 'inherit' }
-                                        >
-                                            {summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal}
-                                        </Typography>
+                                        {incrementDate(date, 1).toLocaleDateString() === new Date().toLocaleDateString() ? 
+                                            <Button 
+                                                variant="text"
+                                                sx={{ padding: 0 }}
+                                                onClick={() =>
+                                                    openDialog(
+                                                        'stock',
+                                                        {},
+                                                        summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stocks as Stock[],
+                                                        'view',
+                                                        summary.type === 'demand' ? DirectionType.Inbound : DirectionType.Outbound
+                                                    )}
+                                            >
+                                                <Typography
+                                                    variant="body2"
+                                                    color={ summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal < 0 ? '#f44336bb' : 'inherit' }
+                                                >
+                                                    {summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal}
+                                                </Typography>
+                                            </Button> :
+                                            <Typography
+                                                variant="body2"
+                                                color={ summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal < 0 ? '#f44336bb' : 'inherit' }
+                                            >
+                                                {summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal}
+                                            </Typography>
+                                        }
                                     </Box>
                                 </Stack>
                             </Grid>
