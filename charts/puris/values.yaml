@@ -195,6 +195,10 @@ frontend:
     endpointProductionRange: production/range
     # -- The endpoint for the delivery submodel
     endpointDelivery: delivery
+    # -- The endpoint for the days of supply submodel
+    endpointDaysOfSupply: days-of-supply
+    # -- The endpoint for demand and capacity notifications
+    endpointDemandAndCapacityNotification: demand-and-capacity-notification
     keycloak:
       # -- Disable the Keycloak integration.
       disabled: true

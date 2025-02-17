@@ -170,8 +170,10 @@ dependencies:
 | frontend.puris.appName | string | `"PURIS"` | The name of the app displayed in the frontend |
 | frontend.puris.baseUrl | string | `"your-backend-host-address.com"` | The base URL for the backend base URL without further endpoints |
 | frontend.puris.endpointCustomer | string | `"stockView/customer?ownMaterialNumber="` | The endpoint for the customers who buy a material identified via the own material number for the stock view |
+| frontend.puris.endpointDaysOfSupply | string | `"days-of-supply"` | The endpoint for the days of supply submodel |
 | frontend.puris.endpointDelivery | string | `"delivery"` | The endpoint for the delivery submodel |
 | frontend.puris.endpointDemand | string | `"demand"` | The endpoint for the demand submodel |
+| frontend.puris.dendpointDemandAndCapacityNotification | string | `"demand-and-capacity-notification"` | The endpoint for demand and capacity notifications |
 | frontend.puris.endpointErpScheduleUpdate | string | `"erp-adapter/trigger"` | The endpoint for scheduling an update of erp data (currently only stock supported) |
 | frontend.puris.endpointMaterialStocks | string | `"stockView/material-stocks"` | The endpoint for material stocks for the stock view |
 | frontend.puris.endpointMaterials | string | `"stockView/materials"` | The endpoint for materials for the stock view |
