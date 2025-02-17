@@ -23,6 +23,7 @@ import { config } from '@models/constants/config';
 import { Supply } from '@models/types/data/supply';
 import { BPNL, BPNS } from '@models/types/edc/bpn';
 import { DirectionType } from '@models/types/erp/directionType';
+import { incrementDate } from '@util/date-helpers';
 
 export function useDaysOfSupply(materialNumber: string, direction: DirectionType, siteBpns?: BPNS, bpnl?: BPNL, numberOfDays = 28) {
     const params = new URLSearchParams();
@@ -36,5 +37,8 @@ export function useDaysOfSupply(materialNumber: string, direction: DirectionType
     params.set('numberOfDays', (numberOfDays ?? 28).toString());
     const url = `${config.app.BACKEND_BASE_URL}days-of-supply/${direction === DirectionType.Inbound ? 'customer' : 'supplier'}?`
     const { data, error, isLoading, refresh } = useFetch<Supply[]>(url + params.toString());
-    return { supplies: data, error, isLoadingSupply: isLoading, refreshSupply: refresh };
+    // adjust dates to local timezone
+    const today = new Date();
+    const supplies = data?.map((supply, index) => ({ ...supply, date: incrementDate(today, index) }));
+    return { supplies, error, isLoadingSupply: isLoading, refreshSupply: refresh };
 }

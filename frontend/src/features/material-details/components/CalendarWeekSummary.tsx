@@ -28,6 +28,7 @@ import { Demand } from '@models/types/data/demand';
 import { Production } from '@models/types/data/production';
 import { Delivery } from '@models/types/data/delivery';
 import { Supply } from '@models/types/data/supply';
+import { InfoButton } from '@components/ui/InfoButton';
 
 type CalendarWeekSummaryProps<TType extends SummaryType> = {
     supplies: Supply[];
@@ -131,11 +132,13 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                         </Typography>
                                     </Box>
                                     {includeDaysOfSupply && <Box flex={1} display="flex" justifyContent="center" alignItems="center">
-                                        <Typography
-                                            variant="body2"
-                                        >
-                                            {supplies.find(sup => new Date(sup.date).toLocaleDateString() === date.toLocaleDateString())?.daysOfSupply?.toFixed(2)}
-                                        </Typography>
+                                        {supplies.length > 0 ? 
+                                            <Typography variant="body2">
+                                                {supplies.find(sup => new Date(sup.date).toLocaleDateString() === date.toLocaleDateString())?.daysOfSupply?.toFixed(2)}
+                                            </Typography> :
+                                            <Stack direction="row" gap=".25rem">
+                                                <Typography variant="body2"> n.a. </Typography> <InfoButton text="Reported days of supply for this partner are not available at the moment. Please refresh partner data." />
+                                            </Stack>}
                                     </Box>}
                                 </Stack>
                             </Grid>
