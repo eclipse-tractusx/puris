@@ -35,7 +35,7 @@ export function useDaysOfSupply(materialNumber: string, direction: DirectionType
         params.set('bpnl', bpnl);
     }
     params.set('numberOfDays', (numberOfDays ?? 28).toString());
-    const url = `${config.app.BACKEND_BASE_URL}days-of-supply/${direction === DirectionType.Inbound ? 'customer' : 'supplier'}?`
+    const url = `${config.app.BACKEND_BASE_URL}days-of-supply/${direction === DirectionType.Inbound ? 'customer' : 'supplier'}?`;
     const { data, error, isLoading, refresh } = useFetch<Supply[]>(url + params.toString());
     // adjust dates to local timezone
     const today = new Date();
