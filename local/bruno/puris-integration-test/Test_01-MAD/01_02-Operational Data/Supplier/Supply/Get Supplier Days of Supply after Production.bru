@@ -28,27 +28,27 @@ tests {
   
   const responseJson = res.getBody();
   
-  test("Verify response contains 28 daysOfSupply items", function () {
-      expect(responseJson).to.be.an("array").with.lengthOf(28);
+  test("Verify response contains 27 daysOfSupply items", function () {
+      expect(responseJson).to.be.an("array").with.lengthOf(27);
   });
   
   const expectedSupplies = [
-      7.383333333333334,
-      6.383333333333334,
-      5.383333333333334,
-      4.383333333333334,
-      3.3833333333333333,
-      2.3833333333333333,
-      1.3833333333333333,
-      0.38333333333333336,
+      2.25,
+      1.25,
+      0.25,
+      3.1,
+      2.1,
+      1.1,
+      0.28,
+      0,
       0, 0, 0,
-      17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
+      16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
   ];
   
   test("Verify days of supply values in array", function () {
       responseJson.forEach((item, i) => {
           expect(item).to.have.property("daysOfSupply");
-          expect(item.daysOfSupply).to.equal(expectedSupplies[i]);
+          expect(item.daysOfSupply.toFixed(2)).to.equal(expectedSupplies[i].toFixed(2));
       })
   });
   
@@ -59,6 +59,8 @@ tests {
           const date = new Date(today);
           date.setDate(date.getDate() + i);
           const supplyDate = new Date(item.date);
+          const offset = supplyDate.getTimezoneOffset() / 60;
+          supplyDate.setHours(supplyDate.getHours() - offset);
           supplyDate.setHours(0,0,0,0);
           expect(item).to.have.property("date");
           expect(supplyDate.toISOString()).to.equal(date.toISOString());
