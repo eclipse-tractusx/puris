@@ -20,33 +20,33 @@ SPDX-License-Identifier: Apache-2.0
 export type CalendarWeek = { week: number; isoYear: number; startDate: Date; }
 
 export function getCalendarWeek(date: Date): CalendarWeek {
-  const targetDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  targetDate.setUTCDate(targetDate.getUTCDate() + 4 - (targetDate.getUTCDay() || 7));
+  const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  targetDate.setDate(targetDate.getDate() + 3 - (targetDate.getDay() || 7));
   const startOfTargetWeek = new Date(targetDate);
-  startOfTargetWeek.setUTCDate(targetDate.getUTCDate() - 3);
-  const isoYear = targetDate.getUTCFullYear();
-  const firstThursday = new Date(Date.UTC(isoYear, 0, 4));
+  startOfTargetWeek.setDate(targetDate.getDate() - 3);
+  const isoYear = targetDate.getFullYear();
+  const firstThursday = new Date(isoYear, 0, 4);
   const startOfFirstWeek = new Date(firstThursday);
-  startOfFirstWeek.setUTCDate(firstThursday.getUTCDate() - (firstThursday.getUTCDay() || 7) + 1);
+  startOfFirstWeek.setDate(firstThursday.getDate() - (firstThursday.getDay() || 7));
   const week = Math.ceil(((+targetDate - +startOfFirstWeek) / 86400000 + 1) / 7);
   return { week, isoYear, startDate: startOfTargetWeek };
 }
 
 export function incrementCalendarWeek(cw: CalendarWeek, amount: number) {
   const {week, isoYear} = cw;
-  const firstThursday = new Date(Date.UTC(isoYear, 0, 4));
+  const firstThursday = new Date(isoYear, 0, 4);
   const startOfFirstWeek = new Date(firstThursday);
-  startOfFirstWeek.setUTCDate(firstThursday.getUTCDate() - (firstThursday.getUTCDay() || 7) + 1);
+  startOfFirstWeek.setDate(firstThursday.getDate() - (firstThursday.getDay() || 7) + 1);
   const currentWeekStart = new Date(startOfFirstWeek);
-  currentWeekStart.setUTCDate(startOfFirstWeek.getUTCDate() + (week - 1) * 7);
+  currentWeekStart.setDate(startOfFirstWeek.getDate() + (week - 1) * 7);
   const nextWeekStart = new Date(currentWeekStart);
-  nextWeekStart.setUTCDate(currentWeekStart.getUTCDate() + 7 * amount);
+  nextWeekStart.setDate(currentWeekStart.getDate() + 7 * amount);
   const nextThursday = new Date(nextWeekStart);
-  nextThursday.setUTCDate(nextWeekStart.getUTCDate() + 3 - (nextWeekStart.getUTCDay() || 7));
-  const newIsoYear = nextThursday.getUTCFullYear();
-  const newYearFirstThursday = new Date(Date.UTC(newIsoYear, 0, 4));
+  nextThursday.setDate(nextWeekStart.getDate() + 3 - (nextWeekStart.getDay() || 7));
+  const newIsoYear = nextThursday.getFullYear();
+  const newYearFirstThursday = new Date(newIsoYear, 0, 4);
   const newYearStartOfFirstWeek = new Date(newYearFirstThursday);
-  newYearStartOfFirstWeek.setUTCDate(newYearFirstThursday.getUTCDate() - (newYearFirstThursday.getUTCDay() || 7) + 1);
+  newYearStartOfFirstWeek.setDate(newYearFirstThursday.getDate() - (newYearFirstThursday.getDay() || 7) + 1);
   const newWeekNumber = Math.ceil(((+nextWeekStart - +newYearStartOfFirstWeek) / 86400000 + 1) / 7);
   return { week: newWeekNumber, isoYear: newIsoYear, startDate: nextWeekStart };
 }
