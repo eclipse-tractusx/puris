@@ -25,14 +25,14 @@ import { NotFoundView } from '@views/errors/NotFoundView';
 import { CatalogView } from '@views/CatalogView';
 import { NegotiationView } from '@views/NegotiationView';
 import { TransferView } from '@views/TransferView';
-import { StockView } from '@views/StockView';
-import { DashboardView } from '@views/DashboardView';
 import { AboutLicenseView } from '@views/AboutLicenseView';
 import { UnauthorizedView } from '@views/errors/UnauthorizedView';
 import { ErrorView } from '@views/errors/ErrorView';
 import { RouteGuard } from '@components/RouteGuard';
 import { UserGuideView } from '@views/UserGuideView';
 import { DemandCapacityNotificationView } from '@views/DemandCapacityNotificationView';
+import { MaterialListView } from '@views/MaterialListView';
+import { MaterialDetailView } from '@views/MaterialDetailView';
 
 export const router = createBrowserRouter([
     {
@@ -44,16 +44,16 @@ export const router = createBrowserRouter([
                 errorElement: <ErrorView />,
                 children: [
                     {
-                        path: 'stocks',
-                        element: <StockView />,
-                    },
-                    {
-                        path: 'dashboard',
-                        element: <DashboardView />,
-                    },
-                    {
                         path: 'notifications',
                         element: <DemandCapacityNotificationView />,
+                    },
+                    {
+                        path: 'materials',
+                        element: <MaterialListView />,
+                    },
+                    {
+                        path: 'materials/:direction/:materialNumber',
+                        element: <MaterialDetailView />,
                     }
                 ],
             },
@@ -77,7 +77,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: '/',
-                loader: () => redirect('/dashboard'),
+                loader: () => redirect('/materials'),
             },
             {
                 path: 'user-guide',

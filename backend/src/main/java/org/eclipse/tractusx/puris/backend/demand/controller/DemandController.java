@@ -122,7 +122,9 @@ public class DemandController {
         }
 
         try {
-            return convertToDto(ownDemandService.create(convertToEntity(demandDto)));
+            var dto = convertToDto(ownDemandService.create(convertToEntity(demandDto)));
+            materialService.updateTimestamp(demandDto.getOwnMaterialNumber());
+            return dto;
         } catch (KeyAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Demand already exists. Use PUT instead.");
         } catch (IllegalArgumentException e) {
@@ -144,6 +146,7 @@ public class DemandController {
         if (updatedDemand == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Demand does not exist.");
         }
+        materialService.updateTimestamp(dto.getOwnMaterialNumber());
         return convertToDto(updatedDemand);
     }
 
@@ -162,6 +165,7 @@ public class DemandController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Demand does not exist.");
         }
         ownDemandService.delete(id);
+        materialService.updateTimestamp(demand.getMaterial().getOwnMaterialNumber());
     }
 
     @GetMapping("reported")

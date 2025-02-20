@@ -28,6 +28,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -104,6 +105,12 @@ public class Material {
      */
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String name;
+
+    /**
+     * The last date and time when this material was updated. This property should be updated whenever the Material or its related data is updated. This 
+     * includes Demands, Productions, Deliveries, etc. 
+     */
+    private Date lastUpdatedOn;
 
     @Override
     public boolean equals(Object o) {

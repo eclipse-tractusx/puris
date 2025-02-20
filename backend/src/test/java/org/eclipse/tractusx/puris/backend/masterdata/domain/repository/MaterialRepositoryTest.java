@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,12 +39,12 @@ public class MaterialRepositoryTest {
     @Test
     void findAllByMaterialFlagTrue_ReturnsListOfMaterials() {
         // Given
-        Material material1 = new Material(true, false, "MNR-123", UUID.randomUUID().toString(), "Test Material 1");
+        Material material1 = new Material(true, false, "MNR-123", UUID.randomUUID().toString(), "Test Material 1", new Date());
 
-        Material material2 = new Material(true, false, "MNR-234", UUID.randomUUID().toString(), "Test Material 2");
+        Material material2 = new Material(true, false, "MNR-234", UUID.randomUUID().toString(), "Test Material 2", new Date());
 
         // would be more realistic with relationship, but didn't add it here as we just want to test the MaterialRepo
-        Material product = new Material(false, true, "MNR-456", UUID.randomUUID().toString(), "Test Product 1");
+        Material product = new Material(false, true, "MNR-456", UUID.randomUUID().toString(), "Test Product 1", new Date());
 
         materialRepository.save(material1);
         materialRepository.save(material2);

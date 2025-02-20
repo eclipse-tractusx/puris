@@ -124,7 +124,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         Partner mySelf = supplierPartner;
         Partner externalPartner = customerPartner;
         Material semiconductorMaterial = new Material(false,
-            true, SUPPLIER_MAT_NUMBER, CX_MAT_NUMBER, "Semiconductor");
+            true, SUPPLIER_MAT_NUMBER, CX_MAT_NUMBER, "Semiconductor", new Date());
 
         MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
             externalPartner,
@@ -188,7 +188,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         Partner externalPartner = supplierPartner;
 
         Material semiconductorMaterial = new Material(true, false,
-            CUSTOMER_MAT_NUMBER, null, "Semiconductor");
+            CUSTOMER_MAT_NUMBER, null, "Semiconductor", new Date());
 
         MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial, externalPartner,
             SUPPLIER_MAT_NUMBER, true, false);
@@ -270,7 +270,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         Partner mySelf = customerPartner;
         Partner externalPartner = supplierPartner;
         Material semiconductorMaterial = new Material(true,
-            false, CUSTOMER_MAT_NUMBER, null, "Semiconductor");
+            false, CUSTOMER_MAT_NUMBER, null, "Semiconductor", new Date());
 
         MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
             externalPartner,
@@ -336,7 +336,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         Partner externalPartner = customerPartner;
 
         Material semiconductorMaterial = new Material(true, false,
-            SUPPLIER_MAT_NUMBER, CX_MAT_NUMBER, "Semiconductor");
+            SUPPLIER_MAT_NUMBER, CX_MAT_NUMBER, "Semiconductor", new Date());
 
         MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial, externalPartner,
             CUSTOMER_MAT_NUMBER, false, true);
@@ -419,7 +419,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         Partner mySelf = supplierPartner;
         Partner externalPartner = customerPartner;
         Material semiconductorMaterial = new Material(false,
-            true, SUPPLIER_MAT_NUMBER, CX_MAT_NUMBER, "Semiconductor");
+            true, SUPPLIER_MAT_NUMBER, CX_MAT_NUMBER, "Semiconductor", new Date());
 
         MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
             externalPartner,
@@ -428,7 +428,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
             true);
 
         Material dummyMaterial = new Material(false,
-            true, DUMMY_MATERIAL_SUPPLIER_MNR, DUMMY_MATERIAL_CX, "Dummy Material");
+            true, DUMMY_MATERIAL_SUPPLIER_MNR, DUMMY_MATERIAL_CX, "Dummy Material", new Date());
 
         MaterialPartnerRelation dummyMpr = new MaterialPartnerRelation(dummyMaterial,
             externalPartner,
@@ -509,13 +509,13 @@ public class DemandAndCapacityNotificationSammMapperTest {
         Partner externalPartner = supplierPartner;
 
         Material semiconductorMaterial = new Material(false, true,
-            CUSTOMER_MAT_NUMBER, null, "Semiconductor");
+            CUSTOMER_MAT_NUMBER, null, "Semiconductor", new Date());
 
         MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial, externalPartner,
             SUPPLIER_MAT_NUMBER, true, false);
 
         Material dummyMaterial = new Material(true,
-            false, DUMMY_MATERIAL_CUSTOMER_MNR, null, "Dummy Material");
+            false, DUMMY_MATERIAL_CUSTOMER_MNR, null, "Dummy Material", new Date());
 
         MaterialPartnerRelation dummyMpr = new MaterialPartnerRelation(dummyMaterial, externalPartner,
             DUMMY_MATERIAL_CUSTOMER_MNR, true, false);

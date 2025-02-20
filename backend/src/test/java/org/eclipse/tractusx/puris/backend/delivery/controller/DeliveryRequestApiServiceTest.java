@@ -20,7 +20,6 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
@@ -73,8 +72,6 @@ public class DeliveryRequestApiServiceTest {
     @Mock
     private DeliveryInformationSammMapper sammMapper;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     private static final String MATERIAL_NUMBER_CX_CUSTOMER = UUID.randomUUID().toString();
     private static final String BPNL_CUSTOMER = "BPNL4444444444XX";
     private static final String BPNS_CUSTOMER = "BPNS4444444444XX";
@@ -93,16 +90,10 @@ public class DeliveryRequestApiServiceTest {
         true,
         "Own-Mnr",
         MATERIAL_NUMBER_CX_CUSTOMER,
-        "Test Material"
+        "Test Material",
+        new Date()
     );
 
-    private static final Material TEST_MATERIAL_SUPPLIER = new Material(
-        true,
-        true,
-        "Own-Mnr",
-        MATERIAL_NUMBER_CX_SUPPLIER,
-        "Test Material"
-    );
 
     @BeforeEach
     void setUp() {
@@ -153,11 +144,7 @@ public class DeliveryRequestApiServiceTest {
         OwnDelivery delivery2 = getDelivery();
         delivery2.setIncoterm(IncotermEnumeration.FCA);
 
-        // Delivery with incoterm with SUPPLIER responsibility
-        OwnDelivery delivery3 = getDelivery();
-        delivery3.setIncoterm(IncotermEnumeration.DAP);
-
-        List<OwnDelivery> deliveries = Arrays.asList(delivery, delivery2, delivery3);
+        List<OwnDelivery> deliveries = Arrays.asList(delivery, delivery2);
 
         // partner supplies only
         MaterialPartnerRelation mpr = getMpr(SUPPLIER_PARTNER, true, false);
@@ -178,7 +165,6 @@ public class DeliveryRequestApiServiceTest {
         }).when(mprService).triggerPartTypeRetrievalTask(SUPPLIER_PARTNER);
 
         // return all deliveries defined above
-        // predicate for customer case will return delivery, delivery2
         when(ownDeliveryService.findAllByFilters(
             Optional.of(mpr.getMaterial().getOwnMaterialNumber()),
             Optional.empty(),
@@ -200,7 +186,7 @@ public class DeliveryRequestApiServiceTest {
         // verfy that samm mapper has been called correctly (our concern)
         verify(sammMapper)
             .ownDeliveryToSamm(
-                eq(Arrays.asList(delivery, delivery2)),
+                eq(deliveries),
                 eq(SUPPLIER_PARTNER),
                 eq(mpr.getMaterial())
             );

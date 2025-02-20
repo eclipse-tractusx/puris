@@ -19,31 +19,40 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Tab, TabPanel, Tabs } from '@catena-x/portal-shared-components';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import { StockDetailsView } from '@features/stock-view/components/StockDetailsView';
+import { Box, Stack, Typography } from '@mui/material';
+import { useTitle } from '@contexts/titleProvider';
 
 export const StockView = () => {
     const [selectedTab, setSelectedTab] = useState<number>(0);
+    const { setTitle } = useTitle();
+
+    useEffect(() => {
+        setTitle('Stocks');
+    }, [setTitle])
     return (
-        <>
+        <Stack width="100%" height="100%" spacing={2}>
             <ConfidentialBanner />
-            <div className="flex flex-col items-center w-full h-full p-5">
-                <h1 className="text-3xl font-semibold text-gray-700 mb-10">View and manage stocks</h1>
-                <Tabs value={selectedTab} onChange={(_, value: number) => setSelectedTab(value)}>
-                    <Tab label="Material Stocks"></Tab>
-                    <Tab label="Product Stocks"></Tab>
-                </Tabs>
-                <div className="flex w-full">
+            <Stack width='100%' p={2}  sx={{backgroundColor: 'white', borderRadius: "1rem", flexGrow: 1}}>
+                <Stack spacing={1} sx={{p: 2, width: '100%'}}>
+                    <Typography variant='h1'>View and manage stocks</Typography>
+                    <Tabs value={selectedTab} onChange={(_, value: number) => setSelectedTab(value)}>
+                        <Tab label="Material Stocks"></Tab>
+                        <Tab label="Product Stocks"></Tab>
+                    </Tabs>
+                </Stack>
+                <Box width='100%'>
                     <TabPanel value={selectedTab} index={0}>
                         <StockDetailsView type="material" />
                     </TabPanel>
                     <TabPanel value={selectedTab} index={1}>
                         <StockDetailsView type="product" />
                     </TabPanel>
-                </div>
-            </div>
-        </>
+                </Box>
+            </Stack>
+        </Stack>
     );
 };

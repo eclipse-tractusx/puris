@@ -18,37 +18,38 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-import { usePartnerStocks } from '@features/stock-view/hooks/usePartnerStocks';
+
 import { useStocks } from '@features/stock-view/hooks/useStocks';
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
 import { Site } from '@models/types/edc/site';
-import { useCallback, useReducer, useState } from 'react';
+import { useCallback, useReducer, } from 'react';
 import { DashboardFilters } from './DashboardFilters';
 import { DemandTable } from './DemandTable';
 import { ProductionTable } from './ProductionTable';
 import { Box, Button, capitalize, Stack, Typography } from '@mui/material';
 import { Delivery } from '@models/types/data/delivery';
-import { DeliveryInformationModal } from './DeliveryInformationModal';
-import { getPartnerType } from '../util/helpers';
-import { LoadingButton, PageSnackbar, PageSnackbarStack } from '@catena-x/portal-shared-components';
 import { Refresh } from '@mui/icons-material';
 import { Demand } from '@models/types/data/demand';
-import { DemandCategoryModal } from './DemandCategoryModal';
 import { DEMAND_CATEGORY } from '@models/constants/demand-category';
-import { useDemand } from '../hooks/useDemand';
-import { useReportedDemand } from '../hooks/useReportedDemand';
 import { Production } from '@models/types/data/production';
-import { PlannedProductionModal } from './PlannedProductionModal';
-import { useProduction } from '../hooks/useProduction';
-import { useReportedProduction } from '../hooks/useReportedProduction';
 
 import { requestReportedStocks, scheduleErpUpdateStocks } from '@services/stocks-service';
-import { useDelivery } from '../hooks/useDelivery';
 import { requestReportedDeliveries } from '@services/delivery-service';
 import { requestReportedProductions } from '@services/productions-service';
 import { requestReportedDemands } from '@services/demands-service';
 import { ModalMode } from '@models/types/data/modal-mode';
-import { Notification } from "@models/types/data/notification.ts";
+import { useReportedStocks } from '@features/stock-view/hooks/useReportedStocks';
+import { useDemand } from '@features/material-details/hooks/useDemand';
+import { useReportedDemand } from '@features/material-details/hooks/useReportedDemand';
+import { useProduction } from '@features/material-details/hooks/useProduction';
+import { useReportedProduction } from '@features/material-details/hooks/useReportedProduction';
+import { useDelivery } from '@features/material-details/hooks/useDelivery';
+import { getPartnerType } from '@features/material-details/util/helpers';
+import { DemandCategoryModal } from '@features/material-details/components/DemandCategoryModal';
+import { PlannedProductionModal } from '@features/material-details/components/PlannedProductionModal';
+import { DeliveryInformationModal } from '@features/material-details/components/DeliveryInformationModal';
+import { DirectionType } from '@models/types/erp/directionType';
+import { useNotifications } from '@contexts/notificationContext';
 
 const NUMBER_OF_DAYS = 28;
 
@@ -56,7 +57,7 @@ type DashboardState = {
     selectedMaterial: MaterialDescriptor | null;
     selectedSite: Site | null;
     selectedPartnerSites: Site[] | null;
-    deliveryDialogOptions: { open: boolean; mode: ModalMode, direction: 'incoming' | 'outgoing', site: Site | null };
+    deliveryDialogOptions: { open: boolean; mode: ModalMode; direction: DirectionType; site: Site | null };
     demandDialogOptions: { open: boolean; mode: ModalMode };
     productionDialogOptions: { open: boolean; mode: ModalMode };
     delivery: Delivery | null;
@@ -79,7 +80,7 @@ const initialState: DashboardState = {
     selectedMaterial: null,
     selectedSite: null,
     selectedPartnerSites: null,
-    deliveryDialogOptions: { open: false, mode: 'edit', direction: 'incoming', site: null },
+    deliveryDialogOptions: { open: false, mode: 'edit', direction: DirectionType.Inbound, site: null },
     demandDialogOptions: { open: false, mode: 'edit' },
     productionDialogOptions: { open: false, mode: 'edit' },
     delivery: null,
@@ -92,7 +93,7 @@ const initialState: DashboardState = {
 export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const { stocks } = useStocks(type === 'customer' ? 'material' : 'product');
-    const { partnerStocks } = usePartnerStocks(
+    const { reportedStocks } = useReportedStocks(
         type === 'customer' ? 'material' : 'product',
         state.selectedMaterial?.ownMaterialNumber ?? null
     );
@@ -107,72 +108,77 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
         state.selectedMaterial?.ownMaterialNumber ?? null,
         state.selectedSite?.bpns ?? null
     );
-
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const { notify } = useNotifications();
 
     const handleRefresh = () => {
-        dispatch({type: 'isRefreshing', payload: true});
+        dispatch({ type: 'isRefreshing', payload: true });
         Promise.all([
             requestReportedStocks(type === 'customer' ? 'material' : 'product', state.selectedMaterial?.ownMaterialNumber ?? null),
             requestReportedDeliveries(state.selectedMaterial?.ownMaterialNumber ?? null),
             type === 'customer'
                 ? requestReportedProductions(state.selectedMaterial?.ownMaterialNumber ?? null)
-                : requestReportedDemands(state.selectedMaterial?.ownMaterialNumber ?? null)
-        ]).then(() => {
-            setNotifications(ns => [
-                ...ns,
-                {
-                    title: 'Update requested',
-                    description: `Requested update from partners for ${state.selectedMaterial?.ownMaterialNumber}. Please reload dialog later.`,
-                    severity: 'success',
-                },
-            ]);
-        }).catch((error: unknown) => {
-            const msg = error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string' ? error.message : 'Unknown Error';
-            setNotifications(ns => [
-                ...ns,
-                {
-                    title: 'Error requesting update',
-                    description: msg,
-                    severity: 'error',
-                },
-            ]);
-        }).finally(() => dispatch({type: 'isRefreshing', payload: false}))
+                : requestReportedDemands(state.selectedMaterial?.ownMaterialNumber ?? null),
+        ])
+            .then(() => {
+                notify(
+                    {
+                        title: 'Update requested',
+                        description: `Requested update from partners for ${state.selectedMaterial?.ownMaterialNumber}. Please reload dialog later.`,
+                        severity: 'success',
+                    },
+                );
+            })
+            .catch((error: unknown) => {
+                const msg =
+                    error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+                        ? error.message
+                        : 'Unknown Error';
+                notify({
+                        title: 'Error requesting update',
+                        description: msg,
+                        severity: 'error',
+                    },
+                );
+            })
+            .finally(() => dispatch({ type: 'isRefreshing', payload: false }));
     };
-        // };
+    // };
     const handleScheduleErpUpdate = () => {
         dispatch({ type: 'isErpRefreshing', payload: true });
-        if (state.selectedPartnerSites){
+        if (state.selectedPartnerSites) {
             const promises: Promise<void>[] = state.selectedPartnerSites.map((ps: Site) => {
-                return scheduleErpUpdateStocks(type === 'customer' ? 'material' : 'product', ps.belongsToPartnerBpnl, state.selectedMaterial?.ownMaterialNumber ?? null);
+                return scheduleErpUpdateStocks(
+                    type === 'customer' ? 'material' : 'product',
+                    ps.belongsToPartnerBpnl ?? null,
+                    state.selectedMaterial?.ownMaterialNumber ?? null
+                );
             });
             Promise.all(promises)
                 .then(() => {
-                    setNotifications(ns => [
-                        ...ns,
-                        {
+                    notify({
                             title: 'Update requested',
                             description: `Scheduled ERP data update of stocks for ${state.selectedMaterial?.ownMaterialNumber} in your role as ${type}. Please reload dialog later.`,
                             severity: 'success',
                         },
-                    ]);
+                    );
                 })
                 .catch((error: unknown) => {
-                    const msg = error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string' ? error.message : 'Unknown Error';
-                    setNotifications(ns => [
-                        ...ns,
-                        {
+                    const msg =
+                        error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+                            ? error.message
+                            : 'Unknown Error';
+                    notify({
                             title: 'Error scheduling ERP update',
                             description: msg,
                             severity: 'error',
                         },
-                    ]);
+                    );
                 })
-                .finally(() => dispatch({type: 'isErpRefreshing', payload:false }));
+                .finally(() => dispatch({ type: 'isErpRefreshing', payload: false }));
         }
     };
     const openDeliveryDialog = useCallback(
-        (d: Partial<Delivery>, mode: ModalMode, direction: 'incoming' | 'outgoing' = 'outgoing', site: Site | null) => {
+        (d: Partial<Delivery>, mode: ModalMode, direction: DirectionType = DirectionType.Inbound, site: Site | null) => {
             d.ownMaterialNumber = state.selectedMaterial?.ownMaterialNumber ?? '';
             dispatch({ type: 'delivery', payload: d });
             dispatch({ type: 'deliveryDialogOptions', payload: { open: true, mode, direction, site } });
@@ -190,6 +196,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
         p.material ??= {
             materialFlag: true,
             productFlag: false,
+            ownMaterialNumber: state.selectedMaterial?.ownMaterialNumber ?? '',
             materialNumberSupplier: state.selectedMaterial?.ownMaterialNumber ?? '',
             materialNumberCustomer: null,
             materialNumberCx: null,
@@ -206,7 +213,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
     }, []);
     return (
         <>
-            <Stack spacing={3} alignItems={'center'} useFlexGap>
+            <Stack spacing={3} useFlexGap>
                 <DashboardFilters
                     type={type}
                     material={state.selectedMaterial}
@@ -217,9 +224,14 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                     onPartnerSitesChange={(sites) => dispatch({ type: 'selectedPartnerSites', payload: sites })}
                 />
                 <Box width="100%" marginTop="1rem">
-                    <Typography variant="h5" component="h2">
+                    <Typography variant="h3" component="h2">
                         Production Information
-                        {state.selectedMaterial && state.selectedSite && <> for {state.selectedMaterial.description} ({state.selectedMaterial.ownMaterialNumber})</>}
+                        {state.selectedMaterial && state.selectedSite && (
+                            <>
+                                {' '}
+                                for {state.selectedMaterial.description} ({state.selectedMaterial.ownMaterialNumber})
+                            </>
+                        )}
                     </Typography>
                     {state.selectedSite && state.selectedMaterial ? (
                         type === 'supplier' ? (
@@ -228,7 +240,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                 numberOfDays={NUMBER_OF_DAYS}
                                 stocks={stocks ?? []}
                                 site={state.selectedSite}
-                                onDeliveryClick={(delivery, mode) => openDeliveryDialog(delivery, mode, 'outgoing', state.selectedSite)}
+                                onDeliveryClick={(delivery, mode) => openDeliveryDialog(delivery, mode, DirectionType.Outbound, state.selectedSite)}
                                 onProductionClick={openProductionDialog}
                                 productions={productions ?? []}
                                 deliveries={deliveries ?? []}
@@ -238,7 +250,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                 numberOfDays={NUMBER_OF_DAYS}
                                 stocks={stocks}
                                 site={state.selectedSite}
-                                onDeliveryClick={(delivery, mode) => openDeliveryDialog(delivery, mode, 'incoming', state.selectedSite)}
+                                onDeliveryClick={(delivery, mode) => openDeliveryDialog(delivery, mode, DirectionType.Inbound, state.selectedSite)}
                                 onDemandClick={openDemandDialog}
                                 demands={demands}
                                 deliveries={deliveries ?? []}
@@ -259,23 +271,15 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                             marginBlock="0.5rem"
                             paddingLeft=".5rem"
                         >
-                            <Typography variant="h5" component="h2">
+                            <Typography variant="h3" component="h2">
                                 {`${capitalize(getPartnerType(type))} Information ${
-                                    state.selectedMaterial ? `for ${state.selectedMaterial.description} (${state.selectedMaterial.ownMaterialNumber})` : ''
+                                    state.selectedMaterial
+                                        ? `for ${state.selectedMaterial.description} (${state.selectedMaterial.ownMaterialNumber})`
+                                        : ''
                                 }`}
                             </Typography>
                             <Box marginLeft="auto" display="flex" gap="1rem">
-                            {state.selectedPartnerSites?.length &&
-                                (state.isErpRefreshing ? (
-                                    <LoadingButton
-                                        label="Schedule ERP Update"
-                                        loadIndicator="scheduling..."
-                                        loading={state.isErpRefreshing}
-                                        variant="contained"
-                                        onButtonClick={handleScheduleErpUpdate}
-                                        sx={{ width: '15rem' }}
-                                    />
-                                ) : (
+                                {state.selectedPartnerSites?.length && (
                                     <Button
                                         variant="contained"
                                         onClick={handleScheduleErpUpdate}
@@ -283,18 +287,8 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                     >
                                         <Refresh></Refresh> Schedule ERP Update
                                     </Button>
-                                ))}
-                            {state.selectedPartnerSites?.length &&
-                                (state.isRefreshing ? (
-                                    <LoadingButton
-                                        label="Refresh"
-                                        loadIndicator="refreshing..."
-                                        loading={state.isRefreshing}
-                                        variant="contained"
-                                        onButtonClick={handleRefresh}
-                                        sx={{ width: '10rem' }}
-                                    />
-                                ) : (
+                                )}
+                                {state.selectedPartnerSites?.length && (
                                     <Button
                                         variant="contained"
                                         onClick={handleRefresh}
@@ -302,7 +296,7 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                     >
                                         <Refresh></Refresh> Refresh
                                     </Button>
-                                ))}
+                                )}
                             </Box>
                         </Box>
                         <Stack spacing={4}>
@@ -312,9 +306,9 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                         <DemandTable
                                             key={ps.bpns}
                                             numberOfDays={NUMBER_OF_DAYS}
-                                            stocks={partnerStocks}
+                                            stocks={reportedStocks}
                                             site={ps}
-                                            onDeliveryClick={(delivery, mode) => openDeliveryDialog(delivery, mode, 'incoming', ps)}
+                                            onDeliveryClick={(delivery, mode) => openDeliveryDialog(delivery, mode, DirectionType.Inbound, ps)}
                                             onDemandClick={openDemandDialog}
                                             demands={reportedDemands?.filter((d) => d.demandLocationBpns === ps.bpns) ?? []}
                                             deliveries={deliveries ?? []}
@@ -324,9 +318,9 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
                                         <ProductionTable
                                             key={ps.bpns}
                                             numberOfDays={NUMBER_OF_DAYS}
-                                            stocks={partnerStocks ?? []}
+                                            stocks={reportedStocks ?? []}
                                             site={ps}
-                                            onDeliveryClick={(delivery, mode) => openDeliveryDialog(delivery, mode, 'outgoing', ps)}
+                                            onDeliveryClick={(delivery, mode) => openDeliveryDialog(delivery, mode, DirectionType.Outbound, ps)}
                                             onProductionClick={openProductionDialog}
                                             productions={reportedProductions?.filter((p) => p.productionSiteBpns === ps.bpns) ?? []}
                                             deliveries={deliveries ?? []}
@@ -352,33 +346,20 @@ export const Dashboard = ({ type }: { type: 'customer' | 'supplier' }) => {
             />
             <PlannedProductionModal
                 {...state.productionDialogOptions}
-                onClose={() => dispatch({ type: 'productionDialogOptions', payload: { open: false, mode: state.productionDialogOptions.mode } })}
+                onClose={() =>
+                    dispatch({ type: 'productionDialogOptions', payload: { open: false, mode: state.productionDialogOptions.mode } })
+                }
                 onSave={refreshProduction}
                 production={state.production}
                 productions={(state.productionDialogOptions.mode === 'view' ? reportedProductions : productions) ?? []}
             />
             <DeliveryInformationModal
                 {...state.deliveryDialogOptions}
-                onClose={() =>
-                    dispatch({ type: 'deliveryDialogOptions', payload: { ...state.deliveryDialogOptions, open: false, } })
-                }
+                onClose={() => dispatch({ type: 'deliveryDialogOptions', payload: { ...state.deliveryDialogOptions, open: false } })}
                 onSave={refreshDelivery}
                 delivery={state.delivery}
                 deliveries={deliveries ?? []}
             />
-            <PageSnackbarStack>
-                {notifications.map((notification, index) => (
-                    <PageSnackbar
-                        key={index}
-                        open={!!notification}
-                        severity={notification?.severity}
-                        title={notification?.title}
-                        description={notification?.description}
-                        autoClose={true}
-                        onCloseNotification={() => setNotifications((ns) => ns.filter((_, i) => i !== index) ?? [])}
-                    />
-                ))}
-            </PageSnackbarStack>
         </>
     );
-}
+};

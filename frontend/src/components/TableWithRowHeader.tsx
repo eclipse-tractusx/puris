@@ -23,12 +23,12 @@ import { Box } from '@mui/material';
 
 type TableWithRowHeaderProps = TableProps;
 
-export const TableWithRowHeader = ({ rows, ...tableProps }: TableWithRowHeaderProps) => {
+export const TableWithRowHeader = ({ rows, title, ...tableProps }: TableWithRowHeaderProps) => {
     return (
         <Box sx={{width: '100%'}}>
             <div className="table-container">
                 <Table
-                    title=''
+                    title={title}
                     columns={[{ field: 'name', headerName: '', width: 180 }]}
                     rows={rows}
                     density='standard'
@@ -39,7 +39,7 @@ export const TableWithRowHeader = ({ rows, ...tableProps }: TableWithRowHeaderPr
                     sortingMode={'server'}
                 />
                 <Box sx={{width: '100%', display: 'flex', overflowX: 'auto'}}>
-                    <Table {...tableProps} rows={rows} density='standard' disableColumnFilter disableColumnMenu sortingMode={'server'} showCellVerticalBorder showColumnVerticalBorder />
+                    <Table title=" " {...tableProps} rows={rows} density='standard' disableColumnFilter disableColumnMenu sortingMode={'server'} showCellVerticalBorder showColumnVerticalBorder />
                 </Box>
             </div>
         </Box>

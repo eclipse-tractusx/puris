@@ -147,6 +147,8 @@ public class ItemStockRequestApiService {
                 reportedMaterialItemStockService.create(newStock);
             }
             log.info("Updated ReportedMaterialItemStocks for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+
+            materialService.updateTimestamp(material.getOwnMaterialNumber());
         } catch (Exception e) {
             log.error("Error in ReportedMaterialItemStockRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
         }
@@ -179,6 +181,8 @@ public class ItemStockRequestApiService {
                 reportedProductItemStockService.create(newStock);
             }
             log.info("Updated ReportedProductItemStocks for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+
+            materialService.updateTimestamp(material.getOwnMaterialNumber());
         } catch (Exception e) {
             log.error("Error in ReportedProductItemStockRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
         }

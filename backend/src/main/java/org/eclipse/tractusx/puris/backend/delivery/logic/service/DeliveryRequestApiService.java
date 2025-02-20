@@ -134,10 +134,6 @@ public class DeliveryRequestApiService {
             Optional.empty(),
             Optional.empty());
 
-        Predicate<OwnDelivery> parnterRoleDirectionPredicate = partnerRoleDirectionPredicate(partnerIsCustomer, mpr);
-        currentDeliveries = currentDeliveries.stream().filter(
-            parnterRoleDirectionPredicate
-        ).toList();
         log.debug(
             "Found '{}' deliveries for material number cx '{}' for partner with bpnl '{}' asking in role '{}'.",
             currentDeliveries.size(),
@@ -176,6 +172,8 @@ public class DeliveryRequestApiService {
                 reportedDeliveryService.create(newDelivery);
             }
             log.info("Updated Reported Deliveries for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+
+            materialService.updateTimestamp(material.getOwnMaterialNumber());
         } catch (Exception e) {
             log.error("Error in Reported Deliveries Request for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
         }

@@ -87,7 +87,7 @@ public class DaysOfSupplyRequestApiService {
             List<List<OwnSupplierSupply>> suppliesBySite = new ArrayList<>();
             for (var site : sites) {
                 var supplierSupply = supplierSupplyService.calculateSupplierDaysOfSupply(
-                        material.getOwnMaterialNumber(), partner.getBpnl(), site.getBpns(), 28);
+                        material.getOwnMaterialNumber(), Optional.of(partner.getBpnl()), Optional.of(site.getBpns()), 28);
                 supplierSupply.forEach(supply -> {
                     supply.setStockLocationBPNS(site.getBpns());
                     supply.setStockLocationBPNA(site.getAddresses().first().getBpna());
@@ -99,7 +99,7 @@ public class DaysOfSupplyRequestApiService {
             List<List<OwnCustomerSupply>> suppliesBySite = new ArrayList<>();
             for (var site : sites) {
                 var customerSupply = customerSupplyService.calculateCustomerDaysOfSupply(
-                    material.getOwnMaterialNumber(), partner.getBpnl(), site.getBpns(), 28);
+                    material.getOwnMaterialNumber(), Optional.of(partner.getBpnl()), Optional.of(site.getBpns()), 28);
                 customerSupply.forEach(supply -> {
                     supply.setStockLocationBPNS(site.getBpns());
                     supply.setStockLocationBPNA(site.getAddresses().first().getBpna());
@@ -130,7 +130,7 @@ public class DaysOfSupplyRequestApiService {
                         return;
                     }
                 }
-                var oldSupplies = customerSupplyService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()));
+                var oldSupplies = customerSupplyService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
                 for (var oldSupply : oldSupplies) {
                 customerSupplyService.deleteReportedSupply(oldSupply);
                 }
@@ -148,7 +148,7 @@ public class DaysOfSupplyRequestApiService {
                         return;
                     }
                 }
-                var oldSupplies = supplierSupplyService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()));
+                var oldSupplies = supplierSupplyService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
                 for (var oldSupply : oldSupplies) {
                 supplierSupplyService.deleteReportedSupply(oldSupply);
                 }

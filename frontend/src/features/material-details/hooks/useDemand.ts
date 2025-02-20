@@ -27,7 +27,16 @@ export const useDemand = (materialNumber: string | null, site: BPNS | null) => {
   if (materialNumber != null) {
     materialNumber = btoa(materialNumber);
   }
-  const {data: demands, error: demandsError, isLoading: isLoadingDemands, refresh: refreshDemand } = useFetch<Demand[]>(materialNumber && site ? `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_DEMAND}?ownMaterialNumber=${materialNumber}&site=${site}` : undefined);
+  const params = new URLSearchParams();
+  let url: string | undefined = undefined;
+  if (materialNumber) {
+    params.set('ownMaterialNumber', materialNumber);
+    if (site) {
+      params.set('site', site)
+    }
+    url = `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_DEMAND}?${params.toString()}`;
+  }
+  const {data: demands, error: demandsError, isLoading: isLoadingDemands, refresh: refreshDemand } = useFetch<Demand[]>(url);
   return {
     demands,
     demandsError,
