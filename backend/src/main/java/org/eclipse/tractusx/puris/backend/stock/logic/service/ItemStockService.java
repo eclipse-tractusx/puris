@@ -124,10 +124,13 @@ public abstract class ItemStockService<T extends ItemStock> {
         return sum;
     }
 
-    public final double getInitialStockQuantity(String material, Optional<String> partnerBpnl) {
+    public final double getInitialStockQuantity(String material, Optional<String> partnerBpnl, Optional<String> siteBpns) {
         List<T> stocks = repository.findAll().stream()
                 .filter(stock -> 
-                    stock.getMaterial().getOwnMaterialNumber().equals(material) && (partnerBpnl.isEmpty() || stock.getPartner().getBpnl().equals(partnerBpnl.get())))
+                    stock.getMaterial().getOwnMaterialNumber().equals(material) &&
+                    (partnerBpnl.isEmpty() || stock.getPartner().getBpnl().equals(partnerBpnl.get())) &&
+                    (siteBpns.isEmpty() || stock.getLocationBpns().equals(siteBpns.get()))
+                )
                 .toList();
         double initialStockQuantity = getSumOfQuantities(stocks);
 

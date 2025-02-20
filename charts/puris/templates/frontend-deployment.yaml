@@ -92,6 +92,10 @@ spec:
               value: "{{ .Values.frontend.puris.endpointProductionRange }}"
             - name: ENDPOINT_DELIVERY
               value: "{{ .Values.frontend.puris.endpointDelivery }}"
+            - name: ENDPOINT_DAYS_OF_SUPPLY
+              value: "{{ .Values.frontend.puris.endpointDaysOfSupply }}"
+            - name: ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION
+              value: "{{ .Values.frontend.puris.endpointDemandAndCapacityNotification }}"
             - name: BACKEND_API_KEY
               value: "{{ .Values.backend.puris.api.key}}"
             - name: IDP_DISABLE

@@ -28,16 +28,20 @@ import { Demand } from '@models/types/data/demand';
 import { Production } from '@models/types/data/production';
 import { Delivery } from '@models/types/data/delivery';
 import { Stock } from '@models/types/data/stock';
+import { Supply } from '@models/types/data/supply';
+import { InfoButton } from '@components/ui/InfoButton';
 
 type CalendarWeekSummaryProps<TType extends SummaryType> = {
+    supplies: Supply[];
     cw: CalendarWeek;
     summary: Summary<TType>;
     isExpanded: boolean;
     showHeader: boolean;
+    includeDaysOfSupply: boolean;
     onToggleExpanded?: (state: boolean) => void;
 };
 
-export function CalendarWeekSummary<TType extends SummaryType>({ cw, summary, isExpanded, onToggleExpanded, showHeader = false,}: CalendarWeekSummaryProps<TType>) {
+export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, summary, isExpanded, onToggleExpanded, showHeader = false, includeDaysOfSupply = false }: CalendarWeekSummaryProps<TType>) {
     const theme = useTheme();
     const { openDialog } = useDataModal();
     const weekDates = useMemo(() => Array.from(new Array(7).keys()).map((key) => incrementDate(cw.startDate, key)), [cw.startDate]);
@@ -149,6 +153,15 @@ export function CalendarWeekSummary<TType extends SummaryType>({ cw, summary, is
                                             </Typography>
                                         }
                                     </Box>
+                                    {includeDaysOfSupply && <Box flex={1} display="flex" justifyContent="center" alignItems="center">
+                                        {supplies.length > 0 ? 
+                                            <Typography variant="body2">
+                                                {supplies.find(sup => new Date(sup.date).toLocaleDateString() === date.toLocaleDateString())?.daysOfSupply?.toFixed(2)}
+                                            </Typography> :
+                                            <Stack direction="row" gap=".25rem">
+                                                <Typography variant="body2"> n.a. </Typography> <InfoButton text="Reported days of supply for this partner are not available at the moment. Please refresh partner data." />
+                                            </Stack>}
+                                    </Box>}
                                 </Stack>
                             </Grid>
                         ))}
@@ -202,6 +215,11 @@ export function CalendarWeekSummary<TType extends SummaryType>({ cw, summary, is
                                 }
                             </Typography>
                         </Box>
+                        {includeDaysOfSupply && <Box flex={1} display="flex" justifyContent="center" alignItems="center">
+                            <Typography variant="body2">
+                                -
+                            </Typography>
+                        </Box>}
                     </Stack>
                 </Grid>
             </Grid>
