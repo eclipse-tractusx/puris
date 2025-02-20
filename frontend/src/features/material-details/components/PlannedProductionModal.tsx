@@ -146,6 +146,8 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
         [productions, production?.estimatedTimeOfCompletion]
     );
 
+    const canDelete = Boolean(sites?.find(site => productions?.some(d => d.productionSiteBpns === site.bpns)));
+
     const handleSaveClick = () => {
         temporaryProduction.customerOrderNumber ||= undefined;
         temporaryProduction.customerOrderPositionNumber ||= undefined;
@@ -329,7 +331,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                             : ''
                                     }`}
                                     getRowId={(row) => row.uuid}
-                                    columns={createProductionColumns(mode === 'view' ? undefined : handleDelete)}
+                                    columns={createProductionColumns(canDelete ? handleDelete : undefined)}
                                     rows={dailyProductions}
                                     hideFooter
                                     density="standard"

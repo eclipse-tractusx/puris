@@ -152,6 +152,8 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
         [demands, demand?.day]
     );
 
+    const canDelete = Boolean(sites?.find(site => demands?.some(d => d.demandLocationBpns === site.bpns)));
+
     const handleSaveClick = (demand: Partial<Demand>) => {
         if (!isValidDemand(demand)) {
             setFormError(true);
@@ -342,7 +344,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                             }`}
                             density="standard"
                             getRowId={(row) => row.uuid}
-                            columns={createDemandColumns(mode === 'view' ? undefined : handleDelete)}
+                            columns={createDemandColumns(canDelete ? handleDelete : undefined)}
                             rows={dailyDemands ?? []}
                             hideFooter
                         />
