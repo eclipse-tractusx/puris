@@ -1,0 +1,68 @@
+meta {
+  name: Get Supplier Days of Supply after Delivery
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/days-of-supply/supplier?bpnl={{CUSTOMER_BPNL}}&siteBpns={{SUPPLIER_BPNS}}&numberOfDays=28&materialNumber={{MATERIAL_NUMBER_SUPPLIER_BASE64}}
+  body: none
+  auth: none
+}
+
+params:query {
+  bpnl: {{CUSTOMER_BPNL}}
+  siteBpns: {{SUPPLIER_BPNS}}
+  numberOfDays: 28
+  materialNumber: {{MATERIAL_NUMBER_SUPPLIER_BASE64}}
+}
+
+headers {
+  X-API-KEY: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const responseJson = res.getBody();
+  
+  test("Verify response contains 27 daysOfSupply items", function () {
+      expect(responseJson).to.be.an("array").with.lengthOf(27);
+  });
+  
+  const expectedSupplies = [
+      2.25,
+      1.25,
+      0.25,
+      3.1,
+      2.1,
+      1.1,
+      0.28,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  ];
+  
+  test("Verify days of supply values in array", function () {
+      responseJson.forEach((item, i) => {
+          expect(item).to.have.property("daysOfSupply");
+          expect(item.daysOfSupply.toFixed(2)).to.equal(expectedSupplies[i].toFixed(2));
+      })
+  });
+  
+  test("Verify date values in array", function () {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      responseJson.forEach((item, i) => {
+          const date = new Date(today);
+          date.setDate(date.getDate() + i);
+          const supplyDate = new Date(item.date);
+          const offset = supplyDate.getTimezoneOffset() / 60;
+          supplyDate.setHours(supplyDate.getHours() - offset);
+          supplyDate.setHours(0,0,0,0);
+          expect(item).to.have.property("date");
+          expect(supplyDate.toISOString()).to.equal(date.toISOString());
+      })
+  });
+  
+}

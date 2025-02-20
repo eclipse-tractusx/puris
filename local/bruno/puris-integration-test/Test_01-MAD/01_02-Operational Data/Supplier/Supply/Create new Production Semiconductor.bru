@@ -1,0 +1,73 @@
+meta {
+  name: Create new Production Semiconductor
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/production
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+    "partner": {
+      "bpnl": "{{CUSTOMER_BPNL}}"
+    },
+    "material": {
+      "materialFlag": false,
+      "productFlag": true,
+      "materialNumberCustomer": "{{MATERIAL_NUMBER_CUSTOMER}}",
+      "materialNumberSupplier": "{{MATERIAL_NUMBER_SUPPLIER}}",
+      "materialNumberCx": "{{MATERIAL_NUMBER_CX}}",
+      "name": "Semiconductor"
+    },
+    "quantity": 1200,
+    "measurementUnit": "unit:piece",
+    "productionSiteBpns": "{{SUPPLIER_BPNS}}",
+    "estimatedTimeOfCompletion": "{{DATE_TIME_CALCULATED}}",
+    "customerOrderNumber": "CNbr-2",
+    "customerOrderPositionNumber": "C-Pos-2",
+    "supplierOrderNumber": "SNbr-2"
+  }
+}
+
+script:pre-request {
+  // Create the formattedDate
+  const today = new Date();
+  today.setDate(today.getDate() + 11);
+  const dateFormatted = today.toISOString().slice(0, 16);
+  
+  // Set the formattedDate in the environment variable
+  bru.setVar('DATE_TIME_CALCULATED', dateFormatted);
+  
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(201);
+  })
+  
+  test("Verify demand composition (material number with BPNS, BPNA and Partner BPNL)", function () {
+      const responseJson = res.getBody();
+  
+      expect(responseJson).to.have.property("uuid");
+      expect(responseJson.uuid).to.not.undefined;
+  
+      expect(responseJson).to.have.property("material");
+      expect(responseJson.material).to.have.property("materialNumberSupplier");
+      expect(responseJson.material.materialNumberSupplier).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
+  
+      expect(responseJson).to.have.property("partner");
+      expect(responseJson.partner).to.have.property("bpnl");
+      expect(responseJson.partner.bpnl).to.equal(bru.getEnvVar("CUSTOMER_BPNL"));
+  
+      expect(responseJson).to.have.property("productionSiteBpns");
+      expect(responseJson.productionSiteBpns).to.equal(bru.getEnvVar("SUPPLIER_BPNS"));
+  });
+}
