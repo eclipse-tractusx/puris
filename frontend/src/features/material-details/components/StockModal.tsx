@@ -97,6 +97,17 @@ const createStockColumns = (handleDelete?: (row: Stock) => void) => {
                 </Box>
             ),
         },
+        {
+            field: 'isBlocked',
+            headerName: 'is blocked',
+            headerAlign: 'center',
+            flex: 1,
+            renderCell: (data: { row: Stock }) => (
+                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                    {data.row.isBlocked ? 'Yes' : 'No'}
+                </Box>
+            ),
+        },
     ] as const;
     if (handleDelete) {
         return [
