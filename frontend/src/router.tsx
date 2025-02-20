@@ -25,7 +25,6 @@ import { NotFoundView } from '@views/errors/NotFoundView';
 import { CatalogView } from '@views/CatalogView';
 import { NegotiationView } from '@views/NegotiationView';
 import { TransferView } from '@views/TransferView';
-import { StockView } from '@views/StockView';
 import { AboutLicenseView } from '@views/AboutLicenseView';
 import { UnauthorizedView } from '@views/errors/UnauthorizedView';
 import { ErrorView } from '@views/errors/ErrorView';
@@ -44,10 +43,6 @@ export const router = createBrowserRouter([
                 element: <RouteGuard roles={['PURIS_ADMIN', 'PURIS_USER']} />,
                 errorElement: <ErrorView />,
                 children: [
-                    {
-                        path: 'stocks',
-                        element: <StockView />,
-                    },
                     {
                         path: 'notifications',
                         element: <DemandCapacityNotificationView />,

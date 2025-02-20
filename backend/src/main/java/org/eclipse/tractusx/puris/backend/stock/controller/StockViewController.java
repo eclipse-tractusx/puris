@@ -268,6 +268,23 @@ public class StockViewController {
         return convertToDto(existingProductStock);
     }
 
+    @DeleteMapping("product-stocks/{id}")
+    @Operation(description = "Deletes an existing material-stock")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Product Stock was deleted."),
+        @ApiResponse(responseCode = "404", description = "Product Stock not found.", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
+    })
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProductStock(@PathVariable UUID id) {
+        ProductItemStock stock = productItemStockService.findById(id);
+        if (stock == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product stock does not exist.");
+        }
+        productItemStockService.delete(id);
+        materialService.updateTimestamp(stock.getMaterial().getOwnMaterialNumber());
+    }
+
     private ProductStockDto convertToDto(ProductItemStock entity) {
         ProductStockDto dto = modelMapper.map(entity, ProductStockDto.class);
         dto.getMaterial().setMaterialNumberSupplier(entity.getMaterial().getOwnMaterialNumber());
@@ -409,6 +426,23 @@ public class StockViewController {
 
         materialService.updateTimestamp(existingMaterialStock.getMaterial().getOwnMaterialNumber());
         return convertToDto(existingMaterialStock);
+    }
+
+    @DeleteMapping("material-stocks/{id}")
+    @Operation(description = "Deletes an existing material-stock")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Material Stock was deleted."),
+        @ApiResponse(responseCode = "404", description = "Material Stock not found.", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
+    })
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteMaterialStock(@PathVariable UUID id) {
+        MaterialItemStock stock = materialItemStockService.findById(id);
+        if (stock == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "material stock does not exist.");
+        }
+        materialItemStockService.delete(id);
+        materialService.updateTimestamp(stock.getMaterial().getOwnMaterialNumber());
     }
 
     private MaterialStockDto convertToDto(MaterialItemStock entity) {

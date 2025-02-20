@@ -27,6 +27,7 @@ import { DirectionType } from '@models/types/erp/directionType';
 import { Demand } from '@models/types/data/demand';
 import { Production } from '@models/types/data/production';
 import { Delivery } from '@models/types/data/delivery';
+import { Stock } from '@models/types/data/stock';
 import { Supply } from '@models/types/data/supply';
 import { InfoButton } from '@components/ui/InfoButton';
 
@@ -91,14 +92,14 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                                           'demand',
                                                           { day: date },
                                                           summary.dailySummaries[date.toLocaleDateString()]?.primaryValues as Demand[],
-                                                          'view',
+                                                          'edit',
                                                           DirectionType.Inbound
                                                       )
                                                     : openDialog(
                                                           'production',
                                                           { estimatedTimeOfCompletion: date },
                                                           summary.dailySummaries[date.toLocaleDateString()]?.primaryValues as Production[],
-                                                          'view',
+                                                          'edit',
                                                           DirectionType.Outbound
                                                       )
                                             }
@@ -124,12 +125,33 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                         </Button>
                                     </Box>
                                     <Box flex={1} display="flex" justifyContent="center" alignItems="center">
-                                        <Typography
-                                            variant="body2"
-                                            color={ summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal < 0 ? '#f44336bb' : 'inherit' }
-                                        >
-                                            {summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal}
-                                        </Typography>
+                                        {incrementDate(date, 1).toLocaleDateString() === new Date().toLocaleDateString() ? 
+                                            <Button 
+                                                variant="text"
+                                                sx={{ padding: 0 }}
+                                                onClick={() =>
+                                                    openDialog(
+                                                        'stock',
+                                                        {},
+                                                        summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stocks as Stock[],
+                                                        'view',
+                                                        summary.type === 'demand' ? DirectionType.Inbound : DirectionType.Outbound
+                                                    )}
+                                            >
+                                                <Typography
+                                                    variant="body2"
+                                                    color={ summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal < 0 ? '#f44336bb' : 'inherit' }
+                                                >
+                                                    {summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal}
+                                                </Typography>
+                                            </Button> :
+                                            <Typography
+                                                variant="body2"
+                                                color={ summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal < 0 ? '#f44336bb' : 'inherit' }
+                                            >
+                                                {summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal}
+                                            </Typography>
+                                        }
                                     </Box>
                                     {includeDaysOfSupply && <Box flex={1} display="flex" justifyContent="center" alignItems="center">
                                         {supplies.length > 0 ? 

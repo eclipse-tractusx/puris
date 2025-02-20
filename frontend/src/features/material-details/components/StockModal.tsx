@@ -1,6 +1,6 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Volkswagen AG
+Copyright (c) 2025 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -18,54 +18,64 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Input, Table } from '@catena-x/portal-shared-components';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
-import { Production } from '@models/types/data/production';
-import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, capitalize } from '@mui/material';
+import { Stock, StockType } from '@models/types/data/stock';
+import { Box, Button, Checkbox, Dialog, DialogTitle, FormLabel, Grid, InputLabel, Stack, capitalize } from '@mui/material';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
-import { deleteProduction, postProductionRange } from '@services/productions-service';
 import { Close, Delete, Save } from '@mui/icons-material';
-import { DateTime } from '@components/ui/DateTime';
 import { ModalMode } from '@models/types/data/modal-mode';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
+import { deleteStocks, postStocks } from '@services/stocks-service';
 
-const createProductionColumns = (handleDelete?: (row: Production) => void) => {
+const createStockColumns = (handleDelete?: (row: Stock) => void) => {
     const columns = [
-        {
-            field: 'estimatedTimeOfCompletion',
-            headerName: 'Completion Time',
-            headerAlign: 'center',
-            flex: 1.5,
-            renderCell: (data: { row: Production }) => (
-                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    {new Date(data.row.estimatedTimeOfCompletion).toLocaleTimeString('de-DE')}
-                </Box>
-            ),
-        },
         {
             field: 'quantity',
             headerName: 'Quantity',
             headerAlign: 'center',
             flex: 1.2,
-            renderCell: (data: { row: Production }) => (
+            renderCell: (data: { row: Stock }) => (
                 <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
                     {`${data.row.quantity} ${getUnitOfMeasurement(data.row.measurementUnit)}`}
                 </Box>
             ),
         },
         {
+          field: 'stockLocationBpns',
+          headerName: 'Site',
+          headerAlign: 'center',
+          flex: 2,
+          renderCell: (data: { row: Stock }) => (
+              <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                  {data.row.stockLocationBpns}
+              </Box>
+          ),
+      },
+        {
             field: 'partner',
             headerName: 'Partner',
             headerAlign: 'center',
             flex: 2,
-            renderCell: (data: { row: Production }) => (
+            renderCell: (data: { row: Stock }) => (
                 <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
                     {data.row.partner?.name}
+                </Box>
+            ),
+        },
+        {
+            field: 'lastUpdatedOn',
+            headerName: 'Updated',
+            headerAlign: 'center',
+            flex: 1.5,
+            renderCell: (data: { row: Stock }) => (
+                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                    {new Date(data.row.lastUpdatedOn).toLocaleTimeString('en-GB')}
                 </Box>
             ),
         },
@@ -74,7 +84,7 @@ const createProductionColumns = (handleDelete?: (row: Production) => void) => {
             headerName: 'Order Reference',
             headerAlign: 'center',
             flex: 2,
-            renderCell: (data: { row: Production }) => (
+            renderCell: (data: { row: Stock }) => (
                 <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
                     {data.row.customerOrderNumber ? (
                         <Stack>
@@ -84,6 +94,17 @@ const createProductionColumns = (handleDelete?: (row: Production) => void) => {
                     ) : (
                         '-'
                     )}
+                </Box>
+            ),
+        },
+        {
+            field: 'isBlocked',
+            headerName: 'Blocked',
+            headerAlign: 'center',
+            flex: 1,
+            renderCell: (data: { row: Stock }) => (
+                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                    {data.row.isBlocked ? 'Yes' : 'No'}
                 </Box>
             ),
         },
@@ -99,7 +120,7 @@ const createProductionColumns = (handleDelete?: (row: Production) => void) => {
                 headerAlign: 'center',
                 type: 'string',
                 width: 30,
-                renderCell: (data: { row: Production }) => {
+                renderCell: (data: { row: Stock }) => {
                     return (
                         <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
                             <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
@@ -114,111 +135,69 @@ const createProductionColumns = (handleDelete?: (row: Production) => void) => {
     return columns;
 };
 
-type PlannedProductionModalProps = {
+type StockModalProps = {
     open: boolean;
     mode: ModalMode;
     onClose: () => void;
     onSave: () => void;
-    production: Partial<Production> | null;
-    productions: Production[];
+    stock: Partial<Stock> | null;
+    stocks: Stock[];
+    stockType: StockType;
 };
-const isValidProduction = (production: Partial<Production>) =>
-    production &&
-    production.estimatedTimeOfCompletion &&
-    production.quantity &&
-    production.measurementUnit &&
-    production.partner &&
-    isValidOrderReference(production);
+const isValidStock = (stock: Partial<Stock>) =>
+    stock && stock.quantity && stock.measurementUnit && stock.partner && stock.stockLocationBpns && stock.stockLocationBpna && isValidOrderReference(stock);
 
-export const PlannedProductionModal = ({ open, mode, onClose, onSave, production, productions }: PlannedProductionModalProps) => {
-    const [temporaryProduction, setTemporaryProduction] = useState<Partial<Production>>(production ?? {});
-    const { partners } = usePartners('product', temporaryProduction?.material?.materialNumberSupplier ?? null);
+export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockType }: StockModalProps) => {
+    const [temporaryStock, setTemporaryStock] = useState<Partial<Stock>>(stock ?? {});
+    const { partners } = usePartners(stockType, temporaryStock?.material?.ownMaterialNumber ?? null);
     const { sites } = useSites();
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
-    const dailyProductions = useMemo(
-        () =>
-            productions.filter(
-                (p) =>
-                    new Date(p.estimatedTimeOfCompletion).toLocaleDateString() ===
-                    new Date(production?.estimatedTimeOfCompletion ?? Date.now()).toLocaleDateString()
-            ),
-        [productions, production?.estimatedTimeOfCompletion]
-    );
-
-    const canDelete = Boolean(sites?.find(site => productions?.some(d => d.productionSiteBpns === site.bpns)));
 
     const handleSaveClick = () => {
-        temporaryProduction.customerOrderNumber ||= undefined;
-        temporaryProduction.customerOrderPositionNumber ||= undefined;
-        temporaryProduction.supplierOrderNumber ||= undefined;
-        if (!isValidProduction(temporaryProduction)) {
+        temporaryStock.customerOrderNumber ||= undefined;
+        temporaryStock.customerOrderPositionNumber ||= undefined;
+        temporaryStock.supplierOrderNumber ||= undefined;
+        if (!isValidStock(temporaryStock)) {
             setFormError(true);
             return;
         }
         setFormError(false);
-        postProductionRange([temporaryProduction])
+        postStocks(stockType, temporaryStock)
             .then(() => {
                 onSave();
                 notify({
-                    title: 'Production Created',
-                    description: 'The Production has been saved successfully',
+                    title: 'Stock Created',
+                    description: 'The Stock has been saved successfully',
                     severity: 'success',
                 });
             })
             .catch((error) => {
                 notify({
                     title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                    description: error.status === 409 ? 'Date conflicting with another Production' : error.error,
+                    description: error.status === 409 ? 'Date conflicting with another Stock' : error.error,
                     severity: 'error',
                 });
             })
             .finally(onClose);
     };
-    const handleDelete = (row: Production) => {
-        if (row.uuid) deleteProduction(row.uuid).then(onSave);
+    const handleDelete = (row: Stock) => {
+        if (row.uuid) deleteStocks(stockType, row.uuid).then(onSave);
     };
     useEffect(() => {
-        if (production) setTemporaryProduction(production);
-    }, [production]);
+        if (stock) setTemporaryStock(stock);
+    }, [stock]);
     return (
         <>
-            <Dialog open={open && production !== null} onClose={onClose}>
+            <Dialog open={open && stock !== null} onClose={onClose}>
                 <DialogTitle variant="h3" textAlign="center">
-                    {capitalize(mode)} Production Information
+                    {capitalize(mode)} {capitalize(stockType)} Stock
                 </DialogTitle>
                 <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
                     <Grid container spacing={2} padding=".25rem">
                         {mode === 'create' ? (
                             <>
-                                <GridItem label="Material Number" value={temporaryProduction.material?.materialNumberSupplier ?? ''} />
-                                <Grid item xs={6}>
-                                    <LabelledAutoComplete
-                                        id="productionSiteBpns"
-                                        options={sites ?? []}
-                                        getOptionLabel={(option) => option.name ?? ''}
-                                        error={formError}
-                                        isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
-                                        onChange={(_, value) =>
-                                            setTemporaryProduction({ ...temporaryProduction, productionSiteBpns: value?.bpns ?? undefined })
-                                        }
-                                        value={sites?.find((s) => s.bpns === temporaryProduction.productionSiteBpns) ?? null}
-                                        label="Production Site"
-                                        placeholder="Select a Site"
-                                    />
-                                </Grid>
-                                <Grid item xs={6} display="flex" alignItems="end">
-                                    <DateTime
-                                        label="Estimated Completion Time"
-                                        placeholder="Pick Production Date"
-                                        locale="de"
-                                        error={formError}
-                                        value={temporaryProduction.estimatedTimeOfCompletion ?? null}
-                                        onValueChange={(date) =>
-                                            setTemporaryProduction({ ...temporaryProduction, estimatedTimeOfCompletion: date ?? undefined })
-                                        }
-                                    />
-                                </Grid>
+                                <GridItem label="Material Number" value={temporaryStock.material?.ownMaterialNumber ?? ''} />
                                 <Grid item xs={6}>
                                     <LabelledAutoComplete
                                         sx={{ margin: '0' }}
@@ -227,12 +206,48 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                         getOptionLabel={(option) => option?.name ?? ''}
                                         label="Partner*"
                                         placeholder="Select a Partner"
-                                        error={formError && !temporaryProduction?.partner}
-                                        onChange={(_, value) =>
-                                            setTemporaryProduction({ ...temporaryProduction, partner: value ?? undefined })
-                                        }
-                                        value={temporaryProduction.partner ?? null}
+                                        error={formError && !temporaryStock?.partner}
+                                        onChange={(_, value) => setTemporaryStock({ ...temporaryStock, partner: value ?? undefined })}
+                                        value={temporaryStock.partner ?? null}
                                         isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
+                                    />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <LabelledAutoComplete
+                                        id="stockLocationBpns"
+                                        options={sites ?? []}
+                                        getOptionLabel={(option) => option.name ?? ''}
+                                        error={formError}
+                                        isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
+                                        onChange={(_, value) =>
+                                            setTemporaryStock({ 
+                                                ...temporaryStock,
+                                                stockLocationBpns: value?.bpns ?? undefined,
+                                                stockLocationBpna: value ? temporaryStock.stockLocationBpna : undefined 
+                                            })
+                                        }
+                                        value={sites?.find((s) => s.bpns === temporaryStock.stockLocationBpns) ?? null}
+                                        label="Stock Site"
+                                        placeholder="Select a Site"
+                                    />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <LabelledAutoComplete
+                                        id="stockLocationBpna"
+                                        options={sites?.find(site => site.bpns === temporaryStock.stockLocationBpns)?.addresses ?? []}
+                                        getOptionLabel={(option) => option.streetAndNumber ?? ''}
+                                        error={formError}
+                                        isOptionEqualToValue={(option, value) => option?.bpna === value.bpna}
+                                        onChange={(_, value) =>
+                                            setTemporaryStock({ ...temporaryStock, stockLocationBpna: value?.bpna ?? undefined })
+                                        }
+                                        value={sites?.find(site => 
+                                            site.bpns === temporaryStock.stockLocationBpns)?.addresses?.find((a) => 
+                                                a.bpna === temporaryStock.stockLocationBpna) ?? null
+                                        }
+                                        label="Stock Address"
+                                        placeholder="Select an address"
+                                        disabled={!temporaryStock.stockLocationBpns}
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -241,10 +256,10 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                         id="quantity"
                                         type="number"
                                         placeholder="Enter quantity"
-                                        value={temporaryProduction.quantity ?? ''}
-                                        error={formError && !temporaryProduction?.quantity}
+                                        value={temporaryStock.quantity ?? ''}
+                                        error={formError && !temporaryStock?.quantity}
                                         onChange={(e) =>
-                                            setTemporaryProduction((curr) => ({
+                                            setTemporaryStock((curr) => ({
                                                 ...curr,
                                                 quantity: e.target.value ? parseFloat(e.target.value) : undefined,
                                             }))
@@ -256,10 +271,10 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     <LabelledAutoComplete
                                         id="uom"
                                         value={
-                                            temporaryProduction.measurementUnit
+                                            temporaryStock.measurementUnit
                                                 ? {
-                                                      key: temporaryProduction.measurementUnit,
-                                                      value: getUnitOfMeasurement(temporaryProduction.measurementUnit),
+                                                      key: temporaryStock.measurementUnit,
+                                                      value: getUnitOfMeasurement(temporaryStock.measurementUnit),
                                                   }
                                                 : null
                                         }
@@ -267,10 +282,8 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                         getOptionLabel={(option) => option?.value ?? ''}
                                         label="UOM*"
                                         placeholder="Select unit"
-                                        error={formError && !temporaryProduction?.measurementUnit}
-                                        onChange={(_, value) =>
-                                            setTemporaryProduction((curr) => ({ ...curr, measurementUnit: value?.key }))
-                                        }
+                                        error={formError && !temporaryStock?.measurementUnit}
+                                        onChange={(_, value) => setTemporaryStock((curr) => ({ ...curr, measurementUnit: value?.key }))}
                                         isOptionEqualToValue={(option, value) => option?.key === value?.key}
                                     />
                                 </Grid>
@@ -279,10 +292,10 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     <Input
                                         id="customer-order-number"
                                         type="text"
-                                        error={formError && !isValidOrderReference(temporaryProduction)}
-                                        value={temporaryProduction?.customerOrderNumber ?? ''}
+                                        error={formError && !isValidOrderReference(temporaryStock)}
+                                        value={temporaryStock?.customerOrderNumber ?? ''}
                                         onChange={(event) =>
-                                            setTemporaryProduction({ ...temporaryProduction, customerOrderNumber: event.target.value })
+                                            setTemporaryStock({ ...temporaryStock, customerOrderNumber: event.target.value })
                                         }
                                     />
                                 </Grid>
@@ -291,11 +304,11 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     <Input
                                         id="customer-order-position-number"
                                         type="text"
-                                        error={formError && !isValidOrderReference(temporaryProduction)}
-                                        value={temporaryProduction?.customerOrderPositionNumber ?? ''}
+                                        error={formError && !isValidOrderReference(temporaryStock)}
+                                        value={temporaryStock?.customerOrderPositionNumber ?? ''}
                                         onChange={(event) =>
-                                            setTemporaryProduction({
-                                                ...temporaryProduction,
+                                            setTemporaryStock({
+                                                ...temporaryStock,
                                                 customerOrderPositionNumber: event.target.value,
                                             })
                                         }
@@ -306,33 +319,33 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     <Input
                                         id="supplier-order-number"
                                         type="text"
-                                        value={temporaryProduction?.supplierOrderNumber ?? ''}
+                                        value={temporaryStock?.supplierOrderNumber ?? ''}
                                         onChange={(event) =>
-                                            setTemporaryProduction({
-                                                ...temporaryProduction,
+                                            setTemporaryStock({
+                                                ...temporaryStock,
                                                 supplierOrderNumber: event.target.value ?? '',
                                             })
                                         }
                                     />
                                 </Grid>
+                                <Grid item xs={6} alignContent="end">
+                                    <Stack direction="row" alignItems="center">
+                                        <Checkbox
+                                            id="isBlocked"
+                                            checked={temporaryStock?.isBlocked ?? false}
+                                            onChange={(event) => setTemporaryStock({ ...temporaryStock, isBlocked: event.target.checked })}
+                                        />
+                                        <InputLabel htmlFor="isBlocked"> is Blocked </InputLabel>
+                                    </Stack>
+                                </Grid>
                             </>
                         ) : (
                             <Grid item xs={12}>
                                 <Table
-                                    title={`Planned Production ${
-                                        temporaryProduction?.estimatedTimeOfCompletion
-                                            ? ' on ' +
-                                              new Date(temporaryProduction?.estimatedTimeOfCompletion).toLocaleDateString(undefined, {
-                                                  weekday: 'long',
-                                                  day: '2-digit',
-                                                  month: '2-digit',
-                                                  year: 'numeric',
-                                              })
-                                            : ''
-                                    }`}
+                                    title={`Current ${stockType} stock`}
                                     getRowId={(row) => row.uuid}
-                                    columns={createProductionColumns(canDelete ? handleDelete : undefined)}
-                                    rows={dailyProductions}
+                                    columns={createStockColumns(sites?.find(s => stocks.some(stock => stock.stockLocationBpns === s.bpns)) ? handleDelete : undefined)}
+                                    rows={stocks}
                                     hideFooter
                                     density="standard"
                                 />
