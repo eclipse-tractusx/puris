@@ -99,7 +99,7 @@ const createStockColumns = (handleDelete?: (row: Stock) => void) => {
         },
         {
             field: 'isBlocked',
-            headerName: 'is blocked',
+            headerName: 'Blocked',
             headerAlign: 'center',
             flex: 1,
             renderCell: (data: { row: Stock }) => (
