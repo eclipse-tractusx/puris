@@ -35,14 +35,17 @@ import { Production } from '@models/types/data/production';
 import { Demand } from '@models/types/data/demand';
 import { Delivery } from '@models/types/data/delivery';
 import { Stock } from '@models/types/data/stock';
+import { useDaysOfSupply } from './useDaysOfSupply';
+import { Supply } from '@models/types/data/supply';
 
-export type DataCategory = 'production' | 'demand' | 'stock' | 'delivery';
+export type DataCategory = 'production' | 'demand' | 'stock' | 'delivery' | 'supply';
 
 export type DataCategoryTypeMap = {
     'production': Production;
     'demand': Demand;
     'delivery': Delivery;
     'stock': Stock;
+    'supply': Supply;
 }
 
 export function useMaterialDetails(materialNumber: string, direction: DirectionType) {
@@ -51,6 +54,7 @@ export function useMaterialDetails(materialNumber: string, direction: DirectionT
     const { demands, isLoadingDemands, refreshDemand } = useDemand(materialNumber ?? null, null);
     const { deliveries, isLoadingDeliveries, refreshDelivery } = useDelivery(materialNumber ?? null, null);
     const { stocks, isLoadingStocks, refreshStocks } = useStocks(direction === 'INBOUND' ? 'material' : 'product');
+    const { supplies, isLoadingSupply, refreshSupply } = useDaysOfSupply(materialNumber, direction);
     const { partners, isLoadingPartners } = usePartners(direction === 'INBOUND' ? 'material' : 'product', materialNumber);
     const [expandablePartners, setExpandablePartners] = useState<Expandable<Partner>[]>([]);
     const { reportedProductions, isLoadingReportedProductions } = useReportedProduction(materialNumber ?? null);
@@ -75,17 +79,21 @@ export function useMaterialDetails(materialNumber: string, direction: DirectionT
                 case 'stock':
                     refreshStocks();
                     break;
+                case 'supply':
+                    refreshSupply();
+                    break;
                 default:
                     return;
             }
         })
-    }, [refreshDelivery, refreshDemand, refreshProduction, refreshStocks]);
+    }, [refreshDelivery, refreshDemand, refreshProduction, refreshStocks, refreshSupply]);
 
     const isLoading =
         isLoadingProductions ||
         isLoadingDemands ||
         isLoadingDeliveries ||
         isLoadingStocks ||
+        isLoadingSupply ||
         isLoadingPartners ||
         isLoadingSites ||
         isLoadingReportedProductions ||
@@ -101,6 +109,7 @@ export function useMaterialDetails(materialNumber: string, direction: DirectionT
         demands,
         deliveries,
         stocks,
+        supplies,
         sites,
         expandablePartners,
         reportedProductions,

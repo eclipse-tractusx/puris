@@ -24,7 +24,7 @@ import { useFetch } from '@hooks/useFetch';
 import { StockType } from '@models/types/data/stock';
 
 export const useMaterials = (type: StockType, includeDaysOfSupply?: boolean) => {
-    const endpoint = type === 'material' ? config.app.ENDPOINT_STOCK_VIEW_MATERIALS : config.app.ENDPOINT_PRODUCTS;
+    const endpoint = type === 'material' ? config.app.ENDPOINT_MATERIALS : config.app.ENDPOINT_PRODUCTS;
     const {
         data,
         error: materialsError,

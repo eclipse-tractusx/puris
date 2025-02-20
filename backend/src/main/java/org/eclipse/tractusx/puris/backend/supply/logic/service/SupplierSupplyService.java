@@ -94,14 +94,17 @@ public class SupplierSupplyService extends SupplyService<OwnSupplierSupply, Repo
         return repository.findById(id).orElse(null);
     }
 
-    public final List<ReportedSupplierSupply> findAllByFilters(Optional<String> ownMaterialNumber, Optional<String> bpnl) {
+    public final List<ReportedSupplierSupply> findAllByFilters(Optional<String> ownMaterialNumber, Optional<String> bpnl, Optional<String> siteBpns) {
         Stream<ReportedSupplierSupply> stream = repository.findAll().stream();
         if (ownMaterialNumber.isPresent()) {
             stream = stream.filter(dayOfSupply -> dayOfSupply.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
         }
         if (bpnl.isPresent()) {
             stream = stream.filter(dayOfSupply -> dayOfSupply.getPartner().getBpnl().equals(bpnl.get()));
-        } 
+        }
+        if (siteBpns.isPresent()) {
+            stream = stream.filter(daysOfSupply -> daysOfSupply.getStockLocationBPNS().equals(siteBpns.get()));
+        }
         return stream.toList();
     }
 
