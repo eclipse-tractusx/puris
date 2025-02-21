@@ -14,7 +14,7 @@ httptools==0.6.1
 httpx==0.26.0
 idna==3.7
 itsdangerous==2.1.2
-Jinja2==3.1.4
+Jinja2==3.1.5
 MarkupSafe==2.1.4
 orjson==3.9.15
 pycparser==2.22
