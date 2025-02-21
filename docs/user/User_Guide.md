@@ -2,150 +2,91 @@
 
 This guide explains the overall masks that may be used by different roles.
 
-- A `PURIS_USER` may see use the views "Dashboard" and "Stocks".
-- A `PURIS_ADMIN` may _additionally_ use the views "Catalog", "Negotiations" and "Transfers".
+- A `PURIS_USER` may see and use the material list view, material details view, view this user guide, view the license information and log out.
+- A `PURIS_ADMIN` may _additionally_ use the views "Notifications", "Catalog", "Negotiations" and "Transfers".
 
 In the following the views are explained.
 
-_**Note:** A user may additionally log out or see license information of the application._
+## Material List View
 
-## Dashboard
+![Material List View](img/materials_list_view.png)
+The Material List View allows users to quickly search and filter through materials.
+It includes the following:
 
-![Dashboard overview](img/dashboard_view.png)
+1. A search bar
+2. A dropdown menu to select either incoming, outgoing, or any direction of the materials
+3. A sortable list of all materials
 
-The Dashboard gives an overview over the user's own production output and demands and the corresponding information from the user's partners as well as incoming and outgoing deliveries.
+### Searching materials
 
-It is visually divided in 4 horizontal parts:
+The user can find a specific material by using the search bar. The user can search through the materials using the material name or number. By default, it will be searching in any (incoming and outgoing) material direction. The user can choose a specific direction with the “Direction” dropdown.
+By using the “Direction” dropdown menu the user can chose to narrow their search to view incoming materials, outgoing materials or both. The “Direction” dropdown can also be used to list all incoming or outgoing materials by leaving the search bar empty.
 
-1. Tabs for selecting the assumed role (customer or supplier)
-2. Filters for selecting material, site and partner sites
-3. Production/Demand information for selected site
-4. Corresponding data for selected partner sites
+The user can further sort the materials by model number, material name, days of supply, direction and when they were last updated by clicking on the appropriate headers of the table.
+The user can select a material by clicking on it. This will open the Materials Detail View.
 
-### Selecting the user's role
+## Materials detail view
 
-Using the tabs the user can choose the role they want to assume. This choice determines what information is shown to them.
+![Material Detail View](img/materials_detail_view.png)
 
-As a customer, the user will be shown the user's own site's demand and incoming deliveries as well as the user's customers' production output and outgoing shipments.
+The Material Detail View allows users to see a detailed view of the selected material. When selecting outgoing materials, the user is viewing their own production and their suppliers' demands. When selecting incoming materials, the user is viewing their own demand and partners' production.
 
-As a supplier, the user will be shown the user's own site's production output and outgoing shipments as well as the user's customers' demands and incoming deliveries.
+It includes several expandable nested tables presented in the following order, based on the direction of the material:
 
-In either case the user will always see the current and projected item stocks of both the user's own and the user's partners' sites.
+- Outgoing materials
+  1. Production summary for the material
+  2. Production summary at a specific location
+- Incoming materials
+  1. Demand summary for the material
+  2. Demand summary at a specific location
 
-### Using the filters
+### Summary tables
 
-![Dashboard filters](img/dashboard_filters.png)
+Each overall or location specific summary table is separated into the following sections depending on the direction:
 
-To show information in the dashboard the user have to first pick the material number the user are interested in followed by the user's own site. This will immediately display the available information for that material and site. the user can further select one or more partner sites to display the corresponding data.
+- Outgoing materials
+  1. A production summary for the material
+  2. A collapsible demand summary per customer
+  3. A collapsible demand summary per specific location of a customer
+- Incoming materials
+  1. A demand summary for the material
+  2. A collapsible production summary per supplier
+  3. A collapsible production summary per specific location of a supplier
 
-_**Note:** Each filter requires the previous ones. The user can not filter by material number and partner sites alone._
+### Data overview
 
-### Own site data
+All the data is available for a 4 calendar-week period displaying the following data for supplier/customer respectively:
 
-![Own site view](img/dashboard_own_site.png)
+- Supplier
+  1. Planned production
+  2. Outgoing shipments
+  3. Projected item stock
+  4. Days of Supply
+- Customer
+  1. Short term material demand
+  2. Incoming deliveries
+  3. Projected item stock
+  4. Days of Supply
 
-Once the user has selected a material number and site they are presented with an overview of the site's data. Depending on the user's role they will see the demand and incoming deliveries or production output and outgoing shipments for customer and supplier respectively. In addition the user will see the current and projected item stock.
+Each calendar week is summarised in its own collapsable column. By clicking on the header, the column can be expanded to reveal detailed day to day information.
+The user can view the data for an individula cell by clicking on the number.
 
-The data is displayed for up to the next 4 weeks depending on available data.
-
-By clicking on an individual demand, production or delivery data cell the user can display detailed information for the given day.
-
-### Adding data
-
-![Add data buttons](img/dashboard_add_buttons.png)
-
-In addition to viewing the user's own data, the user can also add new data for the selected material and site. The buttons for adding new data are located to the top right of the data view.
-
-The user can add demands for the customer role as well as production output for the supplier. Deliveries can be added for either role, but they are always from the supplier to the customer.
-
-#### Adding demand
-
-![Demand creation modal](img/dashboard_add_demand.png)
-
-Upon clicking the "create demand" button, a popup will prompt the user to enter the details for the new demand. The material number and site for the demand will be pre-filled for the user based on the filters the user have currently selected.
-
-To add a new demand the user:
-
-1. Enters the day of the demand
-2. Selects the demand category
-3. Enters the quantity required
-4. Selects the unit of measurement
-5. Selects the supplying partner
-6. (Optional) Selects the expected supplier site
-7. Clicks the "save" button
-
-A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added demand reflected in the their site data overview.
-
-#### Adding production
-
-![Production creation modal](img/dashboard_add_production.png)
-
-Upon clicking the "create production" button, a popup will prompt the user to enter the details for the new production output. The material number and site for the production output will be pre-filled for the user based on the filters they have currently selected.
-
-To add a new production output, the user:
-
-1. Enters the estimated time of completion
-2. Selects the customer to allocate the production to
-3. Enters the quantity produced
-4. Selects the unit of measurement
-5. (Optional) Fills the order position reference
-6. Clicks the "save" button
-
-A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added production output reflected in their site data overview.
-
-#### Adding deliveries
-
-![Delivery creation modal](img/dashboard_add_delivery.png)
-
-Unlike demand and production output, deliveries can be added regardless of the user's role. Upon clicking "add delivery" the user will be presented with a popup for adding a new delivery. The material number will be pre-filled based on the user's selected material. Furthermore the origin or destination site will be filled for the supplier and customer roles respectively.
-
-To add a new delivery the user:
-
-1. Selects the departure type
-2. Selects the date of departure
-3. Selects the arrival type
-4. Selects the date of arrival
-5. Selects the partner for the delivery
-6. Chooses the origin or destination site (depending on the user's role)
-7. Enters the quantity
-8. Selects the unit of measurement
-9. (Optional) Enters the tracking number
-10. Selects the incoterms for the delivery
-11. (Optional) Fills the order position reference
-12. Clicks the "save" button
-
-A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added delivery reflected in their site data overview.
-
-_**Note:** When entering a new delivery the user should make sure that:_
-
-- _a date can only be of type actual if it is in the past_
-- _arrival can only be of type actual if departure is as well_
-- _departure must be before arrival_
-
-### Partner site data
-
-![Partner site view](img/dashboard_partner_site.png)
-
-By selecting one or more partner sites from the filters the user is presented with their data. Depending on the user's chosen role these tables will show the demand and incoming shipments or planned production output and outgoing shipments respectively. In both cases they will also show the current and projected item stock at each partner site.
-
-The data is displayed for up to the next 4 weeks depending on available data.
-
-The user can click individual production output, demand or delivery data cells to display detailed information.
+Negative projected stock values inidicate a problem in the supply and will be marked in red
 
 #### Updating partner data
 
-The displayed data in this section is mostly reported data from the partner. Therefore it can become outdated.
+The displayed data is mostly reported data from the partner. Therefore, it can become outdated.
 
 In order to request an update of the data, the user can click the "Refresh" button at the top right of the section. This will start a request for updated data in the background.
 
-Afterwards, when the user refreshes the page, they will be presented with the updated data.
+After a short period of time, the user can refresh the page to be presented with the updated data.
 
-_**Note:** The update process can take a few seconds._
+_**Note:** The update process can take up to a minute._
 
 #### Scheduling an ERP data update
 
-The data may be updated manually or be updated periodically by the system. Whenever a partner asked for a specific 
-information OR the user triggered "SCHEDULE ERP UPDATE", then a periodic update is scheduled. It is automatically 
+The data may be updated manually or be updated periodically by the system. Whenever a partner asked for a specific
+information OR the user triggered "SCHEDULE ERP UPDATE", then a periodic update is scheduled. It is automatically
 cancelled after the update has not been triggered for a configured number of days.
 
 This update is always:
@@ -157,76 +98,114 @@ This update is always:
 
 In case of further information (e.g., update intervals), please contact your administrator or consult the Admin Guide.
 
-## View and Manage Stocks
+### Adding data
 
-This view allows a user to either create material or product stocks and allocate them to a partner. Stocks always need
-to be allocated to a partner due to potential multi-sourcing scenarios.
+In addition to viewing the user's own data, the user can also add new data for the selected material. The buttons for adding new data are located to the top right of the data view.
 
-![Stock View with a Material Stock](img/stock_view.png)
+The user can add demand for the customer role as well as production output for the supplier. Deliveries and stock can be added for either role.
 
-The view is divided horizontally into three parts:
+#### Adding demand
 
-1. Create or Update Material / Product Stocks
-2. Own Stocks
-3. Reported Stocks from partners
+![Demand creation modal](img/materials_add_demand.png)
 
-### Create or update Material / Product Stocks
+Upon clicking the "add demand" button, a popup will prompt the user to enter the details for the new demand. The material number will be pre-filled for the user.
 
-This view allows the user to add a material or product by choosing the corresponding tab.
+To add a new demand the user:
+
+1. Selects the appropriate demand location
+2. Enters the estimated time of completion
+3. Selects the demand category
+4. Enters the quantity and the unit of measurement required
+5. Selects the partner
+6. (optional) Selects the expected supplier site
+7. Clicks the "save" button
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added demand reflected in detailed material overview.
+
+#### Adding production
+
+![Production creation modal](img/materials_add_production.png)
+
+Upon clicking the "add production" button, a popup will prompt the user to enter the details for the new production output. The material number will be pre-filled for the user based on the selected material.
+
+To add a new production output, the user:
+
+1. Selects the production site
+2. Selects the partner to allocate the production to
+3. Enters the estimated time of completion
+4. Enters the quantity produced and the unit of measurement
+5. (Optional) Fills the customer order number, customer position number and supplier order number
+6. Clicks the "save" button
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added production output reflected in their detailed material overview.
+
+#### Adding deliveries
+
+![Delivery creation modal](img/materials_add_delivery.png)
+
+Unlike demand and production output, deliveries can be added regardless of the user's role. Upon clicking "add delivery" the user will be presented with a popup for adding a new delivery. The material number will be pre-filled based on the user's selected material.
+
+To add a new delivery the user:
+
+1. Selects the partner for the delivery
+2. Selects the incoterms for the delivery
+3. Selects the quantity and unit of measurement
+4. Enters the tracking number
+5. Chooses the origin and destination site
+6. Selects the departure type
+7. Selects the date of departure
+8. Selects the arrival type
+9. Selects the date of arrival
+10. (Optional) Fills the customer order number, customer position number and supplier order number
+11. Clicks the "save" button
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added delivery reflected in their detailed material overview.
+
+_**Note:** When entering a new delivery the user should make sure that:_
+
+- _a date can only be of type actual if it is in the past_
+- _arrival can only be of type actual if departure is as well_
+- _departure must be before arrival_
+
+#### Adding stock
+
+![Stock creation modal](img/materials_add_stock.png)
+
+Upon clicking the "Add stock" button, a popup will prompt the user to enter the details for the stock. The material number will be pre-filled for the user based on the selected material.
 
 To add a new item, the user:
 
-1. Selects the Material/Product from the dropdown
-2. Sets the partner who will receive (Product) or from whom one received (Material) the stock.
-3. Sets a quantity that is on stock with a selected unit of measurement (UOM).
-4. Whether the stock is blocked or not (e.g. quality assurance ongoing).
-5. The stocks location based on a Site (BPNS) and a corresponding Address (BPNA).
-6. Optionally adds a reference to order positions.
-7. Clicks the "Add or Update" Button
+1. Selects the partner
+2. Selects the quantity and unit of measurement
+3. Selects the stock location BPNS
+4. Selects the stock location BPNA
+5. (Optional) Fills the customer order number, customer position number and supplier order number
+6. (Optional) Checks the ‘is Blocked’ checkbox
+7. Clicks the "save" button
 
-Upon successful creation a toast notification is displayed and the new stock is added to the "Your Stock" table.
-
-![Stock View after adding a Material Stock](img/stock_view_added_material_stock.png)
-
-### The User's Stocks
-
-The table shows the relevant information regarding all material / product stocks that are at the user's sites. The user may select one
-stock to see the corresponding stock at the partner's site.
-
-### The User's Customers' / Suppliers' Stocks
-
-Upon selecting a material / product this table shows detailed information about the corresponding stocks at this partner's site. Using the button
-"Refresh Stocks", the user may request an update of this data for all partners who supply the
-material / product.
-
-_**Note:** Stock information is updated asynchronously. The user may reload the page later to see the updated data._
-
-![Stock View after selecting a Material Stock](img/stock_view_selected_material_stock.png)
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added stock reflected in their detailed material overview.
 
 ## Demand and Capacity Notifications
 
-_DISCLAIMER: This feature has not yet been finished. Currently, users neither can't react to notifications nor can close
-notifications._
+_DISCLAIMER: This feature has not yet been finished. Currently, users neither can't react to notifications nor can close notifications._
 
-An user may use the page to send notifications to partners or read received notifications. One may chose the direction:
+A user may use the page to send notifications to partners or read received notifications. One may choose the direction:
 
 - `OUTGOING` for messages sent to a partner
 - `INCOMING` for messages received from a partner
 
 ![Overview of the notification view](img/notification_view.png)
 
-One may get further information by double clicking on a notification in the list.
+One may get further information by clicking on a notification in the list.
 
 ![Detailed notification after double clicking the entry](img/notification_detail.png)
 
-When triggering the button "SEND NOTIFICATION", a modal dialog is opened allowing a user to compose the demand and 
-capacity notification.
+When triggering the button "SEND NOTIFICATION", a modal dialog is opened allowing a user to compose the demand and capacity notification.
 
 ![Send notification modal](img/notification_send.png)
 
 After filling the mandatory data (see `*`), the user can send the notification:
 
-- Text
 - Partner (supplier or customer relationship)
 - Leading Root Cause (one as defined by CX-0146 for demand and capacity notification)
 - Status (either `Open` or `Closed`, use close to close disruptions)
@@ -234,8 +213,9 @@ After filling the mandatory data (see `*`), the user can send the notification:
 - Start Date of Effect
 - End Date of Effect
 - Affected Sites Senders
-- Affected Sites Recipient
 - Affected Material Numbers (only those applicable to the partner)
+- Affected Sites Recipient
+- Text
 
 ## Catalog
 
@@ -304,10 +284,11 @@ _**Note**: Per data request per partner, there are two Transfers as one contract
 partner contracts the user's response asset._
 
 ---
-# NOTICE
+
+## NOTICE
 
 This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 - SPDX-License-Identifier: Apache-2.0
 - SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
-- Source URL: https://github.com/eclipse-tractusx/puris/docs/user/User_Guide.md
+- Source URL: [https://github.com/eclipse-tractusx/puris/blob/main/docs/user/User_Guide.md](https://github.com/eclipse-tractusx/puris/blob/main/docs/user/User_Guide.md)

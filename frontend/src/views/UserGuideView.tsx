@@ -40,7 +40,7 @@ export const UserGuideView = () => {
             });
     }, []);
     return (
-        <Box marginInline="auto" maxWidth="48rem">
+        <Box marginInline="auto" maxWidth="60rem">
             <Markdown className="markdown">{markdown}</Markdown>
         </Box>
     );
