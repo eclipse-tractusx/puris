@@ -54,7 +54,7 @@ cd local/iam-mock
 cat requirements.txt | grep -v \# \
 | sed -E -e 's|([^= ]+)==([^= ]+)|pypi/pypi/-/\1/\2|' -e 's| ||g' \
 | sort | uniq \
-| eclipseDashTool -summary DEPENDENCIES -
+| eclipseDashTool -project automotive.tractusx -summary DEPENDENCIES -
 ```
 
 Note: Dash action provided by eclipse-tractusx/sig-infra does not provide to opportunity for python.
