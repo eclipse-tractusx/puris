@@ -932,7 +932,10 @@
 															"",
 															"    const address = site.addresses[0];",
 															"    pm.expect(address).to.have.property(\"bpna\", pm.environment.get(\"SUPPLIER_BPNA\"));",
-															"});"
+															"});",
+                                                            "",
+                                                            "// wait for 15 seconds after last test for MAD so that Twins can be updated asynchronously.",
+                                                            "setTimeout(function(){}, [25000]);"
 														],
 														"type": "text/javascript",
 														"packages": {}
