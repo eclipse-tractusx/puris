@@ -332,14 +332,26 @@ backend:
             # -- Topology key of the Kubernetes cluster
             topologyKey: kubernetes.io/hostname
 
+  # delay livenessProbe and readinessProbe till application is reachable
+  startupProbe:
+    # enable startup probe so that you can delay the liveness and readiness probe till the application is reachable.
+    enabled: true
+    # -- Number of failures (threshold) for a readiness probe
+    failureThreshold: 5
+    # -- Delay in seconds after which an initial readiness probe is checked
+    initialDelaySeconds: 120
+    # -- Wait time in seconds between readiness probes
+    periodSeconds: 30
+    # -- Number of trys until a pod is marked ready
+    successThreshold: 1
   # -- Checks whether a pod is alive or not
   livenessProbe:
     # -- Number of failures (threshold) for a liveness probe
-    failureThreshold: 3
+    failureThreshold: 1
     # -- Delay in seconds after which an initial liveness probe is checked
-    initialDelaySeconds: 120
+    initialDelaySeconds: 0
     # -- Wait time in seconds between liveness probes
-    periodSeconds: 25
+    periodSeconds: 5
     # -- Number of trys until a pod is marked alive
     successThreshold: 1
     # -- Timeout in seconds of the liveness probe
@@ -347,11 +359,11 @@ backend:
   # -- Checks if the pod is fully ready to operate
   readinessProbe:
     # -- Number of failures (threshold) for a readiness probe
-    failureThreshold: 3
+    failureThreshold: 1
     # -- Delay in seconds after which an initial readiness probe is checked
-    initialDelaySeconds: 120
+    initialDelaySeconds: 0
     # -- Wait time in seconds between readiness probes
-    periodSeconds: 25
+    periodSeconds: 5
     # -- Number of trys until a pod is marked ready
     successThreshold: 1
     # -- Timeout in seconds of the readiness probe

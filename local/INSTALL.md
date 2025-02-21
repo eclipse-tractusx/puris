@@ -1,5 +1,13 @@
 # Creating a local testing and development setup via Docker
 
+This guide helps you to run PURIS for local demonstration and testing purposes. You can either choose to use
+the "Extended Run Instructions" or to use the "Run with simplified Deployment Script".
+
+**Prerequisites**
+
+- [jq](https://jqlang.github.io/jq/download/) -> used to auto generate environment files
+- [docker engine](https://docs.docker.com/engine/install/) (docker & docker compose) -> used for the setup
+
 ## Additional information for Windows users
 
 If you want to use the local setup on a Windows machine, it seems advisable to use the Windows subsystem for Linux (
@@ -8,7 +16,57 @@ An installation guide can be found [here](https://learn.microsoft.com/en-us/wind
 
 Also see this [additional information about using Docker in combination with WSL2](https://docs.docker.com/desktop/wsl/)
 
-## Initial Setup
+## Run with simplified Deployment Script (Bash)
+
+This script allows easier startup for testing and demonstration.
+
+### Build PURIS
+
+Same as for the extended run build PURIS manually.
+
+```shell
+cd ../backend
+docker build -t puris-backend:dev .
+
+cd ../frontend
+docker build -t puris-frontend:dev .
+
+cd ../local
+```
+
+Then use the deployment script to fulfill common scenarios:
+
+```shell
+cd local
+
+# deploy PURIS from scratch with a cleanup upfront
+sh deploy.sh -c
+
+# redeploy puris but keep infrastructure
+sh deploy.sh
+
+# redeploy puris but keep infrastructure and show logs of EDC, DTR, PURIS
+sh deploy.sh -l
+
+# remove role definition in puris-backend.properties and seed INT test data from scratch with a cleanup upfront
+sh deploy.sh -ci
+```
+
+The script also checks if the respective services are healthy (sometimes simplified).
+
+But you now need to get logs on your own
+
+```shell
+# identify container names
+docker container ls
+
+# e.g. puris backend of customer, use '-f' option to follow logs.
+docker logs customer-backend
+```
+
+## Extended Run Instructions
+
+### Initial Setup
 
 In case you had any previous installations of this project on your machine, it is advisable to remove them via the
 script
@@ -113,7 +171,7 @@ cd local
 sh cleanup.sh
 ```
 
-Then start your containers again with the aforementioned commands. 
+Then start your containers again with the aforementioned commands.
 
 ## NOTICE
 
