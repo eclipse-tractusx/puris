@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Volkswagen AG
+ * Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -87,7 +88,7 @@ public class SecurityConfig {
                         "/stockView/**",
                         "/partners/**",
                         "/materials/**",
-                        "/materialpartnerrelations/**", 
+                        "/materialpartnerrelations/**",
                         "/item-stock/**",
                         "/production/**",
                         "/delivery/**",
@@ -102,7 +103,7 @@ public class SecurityConfig {
                         "/parttypeinformation/**"
                     )
                     .authenticated()
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/health/**").permitAll()
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/health/**").permitAll()
                     .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
             )
             .httpBasic(

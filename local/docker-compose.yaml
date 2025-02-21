@@ -18,12 +18,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-
 services:
 
   puris-frontend-customer:
     image: puris-frontend:dev
     container_name: customer-frontend
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://puris-frontend-customer:3000"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:3000:8080"
     environment:
@@ -62,11 +66,16 @@ services:
     container_name: customer-backend
     depends_on:
       edc-customer-control-plane:
-        condition: service_started #service_healthy
+        condition: service_healthy
       postgres-all:
         condition: service_healthy
       dtr-customer:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://puris-backend-customer:8081/catena/actuator/health"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:8081:8081" # expose port of server.port
     env_file:
@@ -79,7 +88,6 @@ services:
       puris.dtr.idp.edc-client.secret.alias: ${CUSTOMER_KC_DTR_PURIS_CLIENT_ALIAS}
       puris.dtr.idp.puris-client.id: ${KC_MANAGE_CLIENT_ID}
       puris.dtr.idp.puris-client.secret: ${CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET}
-
     networks:
       - miw-net
     extra_hosts:
@@ -95,7 +103,7 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://dtr-customer:4243/actuator/health/readiness"]
       interval: 4s
       timeout: 3s
-      retries: 20
+      retries: 30
     ports:
       - "127.0.0.1:4243:4243"
     environment:
@@ -155,18 +163,17 @@ services:
       - ./tractus-x-edc/config/customer/control-plane.properties
     environment:
       edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
-
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://edc-customer-control-plane:8180/api/check/health"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:8180:8180"
       - "127.0.0.1:8181:8181"
       - "127.0.0.1:8182:8182"
       - "127.0.0.1:8183:8183"
       - "127.0.0.1:8184:8184"
-    healthcheck:
-      test: [ "CMD-SHELL", "wget -q --spider http://customer-control-plane:8180/api/check/health" ]
-      interval: 4s
-      timeout: 3s
-      retries: 20
     networks:
       - miw-net
     extra_hosts:
@@ -183,6 +190,11 @@ services:
       file: ./tractus-x-edc/docker-compose.yaml
       service: data-plane
     container_name: customer-data-plane
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://edc-customer-data-plane:8280/api/check/health"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:8280:8280"
       - "127.0.0.1:8281:8281"
@@ -239,11 +251,16 @@ services:
     container_name: supplier-backend
     depends_on:
       edc-supplier-control-plane:
-        condition: service_started #service_healthy
+        condition: service_healthy
       postgres-all:
         condition: service_healthy
       dtr-supplier:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://puris-backend-supplier:8082/catena/actuator/health"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:8082:8082"
     env_file:
@@ -271,7 +288,7 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://dtr-supplier:4243/actuator/health/readiness"]
       interval: 4s
       timeout: 3s
-      retries: 20
+      retries: 30
     ports:
       - "127.0.0.1:4244:4243"
     environment:
@@ -301,6 +318,11 @@ services:
       file: ./tractus-x-edc/docker-compose.yaml
       service: control-plane
     container_name: supplier-control-plane
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://edc-supplier-control-plane:9180/api/check/health"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:9180:9180"
       - "127.0.0.1:9181:9181"
@@ -308,11 +330,6 @@ services:
       - "127.0.0.1:9183:9183"
       - "127.0.0.1:9184:9184"
       - "127.0.0.1:1044:1044"
-    healthcheck:
-      test: [ "CMD-SHELL", "wget -q --spider http://supplier-control-plane:9180/api/check/health" ]
-      interval: 4s
-      timeout: 3s
-      retries: 20
     env_file:
       - ./tractus-x-edc/config/supplier/control-plane.properties
     environment:
@@ -333,6 +350,11 @@ services:
       file: ./tractus-x-edc/docker-compose.yaml
       service: data-plane
     container_name: supplier-data-plane
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://edc-supplier-data-plane:9280/api/check/health"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:9280:9280"
       - "127.0.0.1:9281:9281"
