@@ -26,14 +26,14 @@ on:
         inputs:
             node_image:
                 description: 'kindest/node image for k8s kind cluster'
-                # k8s version from 3.1 release as default
-                default: 'kindest/node:v1.27.3'
+                # k8s version from 25.03 release as default
+                default: 'kindest/node:v1.32.2'
                 required: false
                 type: string
             upgrade_from:
                 description: 'chart version to upgrade from'
-                # chart version from 1.0.0 (R24.03) release as default
-                default: '1.0.0'
+                # chart version from 2.7.0 (R24.08) release as default
+                default: '2.7.0'
                 required: false
                 type: string
             helm_version:
