@@ -113,6 +113,10 @@ TLDR; you define the definition of the policy you want to use and that you'll ac
 that is templated. You can only configure the name and version of the Framework Agreement Credential and the Usage
 Purpose.
 
+> NOTE:
+> 
+> The odrl:profile of Catena-X is currently hard-coded to `cx-policy:profile2405`.
+
 ### Framework Agreement
 
 To configure the Framework Agreement credential, that is automatically enforced by the EDC during contracting
@@ -121,10 +125,10 @@ configured.
 The table contains
 the puris defaults for release R24.05.
 
-| Helm                                        | Docker                              | Configuration |
-|---------------------------------------------|-------------------------------------|---------------|
-| backend.puris.frameworkagreement.credential | PURIS_FRAMEWORKAGREEMENT_CREDENTIAL | Puris         |
-| backend.puris.frameworkagreement.version    | PURIS_FRAMEWORKAGREEMENT_VERSION    | 1.0           |
+| Helm                                        | Docker                              | Configuration          |
+|---------------------------------------------|-------------------------------------|------------------------|
+| backend.puris.frameworkagreement.credential | PURIS_FRAMEWORKAGREEMENT_CREDENTIAL | DataExchangeGovernance |
+| backend.puris.frameworkagreement.version    | PURIS_FRAMEWORKAGREEMENT_VERSION    | 1.0                    |
 
 _**ATTENTION**: If the credential is NOT listed in
 the [odrl profile](https://github.com/catenax-eV/cx-odrl-profile/blob/main/profile.md)
