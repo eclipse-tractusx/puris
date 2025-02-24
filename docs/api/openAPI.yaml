@@ -20,6 +20,32 @@ components:
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       type: object
+    AllocatedDaysOfSupply:
+      additionalProperties: false
+      properties:
+        amountOfAllocatedDaysOfSupply:
+          items:
+            $ref: '#/components/schemas/QuantityOfDaysOfSupply'
+          maxItems: 50
+          type: array
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        stockLocationBPNA:
+          maxItems: 50
+          pattern: ^BPNA[0-9a-zA-Z]{12}$
+          type: string
+        stockLocationBPNS:
+          maxItems: 50
+          pattern: ^BPNS[0-9a-zA-Z]{12}$
+          type: string
+      required:
+      - amountOfAllocatedDaysOfSupply
+      - lastUpdatedOnDateTime
+      - stockLocationBPNA
+      - stockLocationBPNS
+      type: object
     AllocatedPlannedProductionOutput:
       additionalProperties: false
       properties:
@@ -42,6 +68,49 @@ components:
       - lastUpdatedOnDateTime
       - plannedProductionQuantity
       - productionSiteBpns
+      type: object
+    Classification:
+      additionalProperties: false
+      properties:
+        classificationDescription:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        classificationID:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        classificationStandard:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+      required:
+      - classificationID
+      - classificationStandard
+      type: object
+    DaysOfSupply:
+      additionalProperties: false
+      properties:
+        allocatedDaysOfSupply:
+          items:
+            $ref: '#/components/schemas/AllocatedDaysOfSupply'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        direction:
+          enum:
+          - INBOUND
+          - OUTBOUND
+          maxItems: 50
+          type: string
+        materialGlobalAssetId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+      required:
+      - allocatedDaysOfSupply
+      - direction
+      - materialGlobalAssetId
       type: object
     DeliveryDto:
       additionalProperties: false
@@ -288,104 +357,6 @@ components:
           maxItems: 50
           type: string
       type: object
-    DemandAndCapacityNotificationSamm:
-      additionalProperties: false
-      properties:
-        affectedSitesRecipient:
-          items:
-            maxItems: 50
-            pattern: ^BPNS[0-9a-zA-Z]{12}$
-            type: string
-          maxItems: 50
-          type: array
-        affectedSitesSender:
-          items:
-            maxItems: 50
-            pattern: ^BPNS[0-9a-zA-Z]{12}$
-            type: string
-          maxItems: 50
-          type: array
-        contentChangedAt:
-          format: date-time
-          maxItems: 50
-          type: string
-        effect:
-          enum:
-          - demand-reduction
-          - demand-increase
-          - capacity-reduction
-          - capacity-increase
-          maxItems: 50
-          type: string
-        expectedEndDateOfEffect:
-          format: date-time
-          maxItems: 50
-          type: string
-        leadingRootCause:
-          enum:
-          - strike
-          - natural-disaster
-          - production-incident
-          - pandemic-or-epidemic
-          - logistics-disruption
-          - war
-          - other
-          maxItems: 50
-          type: string
-        materialGlobalAssetId:
-          items:
-            maxItems: 50
-            pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
-            type: string
-          maxItems: 50
-          type: array
-        materialNumberCustomer:
-          items:
-            maxItems: 50
-            pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
-            type: string
-          maxItems: 50
-          type: array
-        materialNumberSupplier:
-          items:
-            maxItems: 50
-            pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
-            type: string
-          maxItems: 50
-          type: array
-        notificationId:
-          maxItems: 50
-          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
-          type: string
-        relatedNotificationId:
-          maxItems: 50
-          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
-          type: string
-        sourceNotificationId:
-          maxItems: 50
-          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
-          type: string
-        startDateOfEffect:
-          format: date-time
-          maxItems: 50
-          type: string
-        status:
-          enum:
-          - resolved
-          - open
-          maxItems: 50
-          type: string
-        text:
-          maxItems: 50
-          type: string
-      required:
-      - contentChangedAt
-      - effect
-      - leadingRootCause
-      - notificationId
-      - startDateOfEffect
-      - status
-      type: object
     DemandDto:
       additionalProperties: false
       properties:
@@ -514,9 +485,16 @@ components:
     FrontendMaterialDto:
       additionalProperties: false
       properties:
+        daysOfSupply:
+          format: double
+          type: number
         description:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        lastUpdatedOn:
+          format: date-time
+          maxItems: 50
           type: string
         ownMaterialNumber:
           maxItems: 50
@@ -600,6 +578,10 @@ components:
     Material:
       additionalProperties: false
       properties:
+        lastUpdatedOn:
+          format: date-time
+          maxItems: 50
+          type: string
         materialFlag:
           type: boolean
         materialNumberCx:
@@ -763,6 +745,69 @@ components:
       required:
       - customerOrderId
       - customerOrderPositionId
+      type: object
+    PartSitesInformationAsPlanned:
+      additionalProperties: false
+      properties:
+        catenaXsiteId:
+          maxItems: 50
+          pattern: ^BPNS[0-9a-zA-Z]{12}$
+          type: string
+        function:
+          enum:
+          - production
+          - warehouse
+          - spare part warehouse
+          maxItems: 50
+          type: string
+        functionValidFrom:
+          maxItems: 50
+          pattern: ^(?:[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:[.][0-9]+)?Z|[0-9]{4}-[0-9]{2}-[0-9]{2}(?:T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:[.][0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2}))?)$
+          type: string
+        functionValidUntil:
+          maxItems: 50
+          pattern: ^(?:[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:[.][0-9]+)?Z|[0-9]{4}-[0-9]{2}-[0-9]{2}(?:T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:[.][0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2}))?)$
+          type: string
+      required:
+      - catenaXsiteId
+      - function
+      type: object
+    PartTypeInformationBody:
+      additionalProperties: false
+      properties:
+        manufacturerPartId:
+          maxItems: 50
+          type: string
+        nameAtManufacturer:
+          maxItems: 50
+          type: string
+        partClassification:
+          items:
+            $ref: '#/components/schemas/Classification'
+          maxItems: 50
+          type: array
+      required:
+      - manufacturerPartId
+      - nameAtManufacturer
+      type: object
+    PartTypeInformationSAMM:
+      additionalProperties: false
+      properties:
+        catenaXId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        partSitesInformationAsPlanned:
+          items:
+            $ref: '#/components/schemas/PartSitesInformationAsPlanned'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        partTypeInformation:
+          $ref: '#/components/schemas/PartTypeInformationBody'
+      required:
+      - catenaXId
+      - partTypeInformation
       type: object
     PartnerDto:
       additionalProperties: false
@@ -985,6 +1030,20 @@ components:
           maxItems: 50
           type: string
       type: object
+    QuantityOfDaysOfSupply:
+      additionalProperties: false
+      properties:
+        date:
+          format: date-time
+          maxItems: 50
+          type: string
+        daysOfSupply:
+          format: double
+          type: number
+      required:
+      - date
+      - daysOfSupply
+      type: object
     ReportedMaterialStockDto:
       additionalProperties: false
       properties:
@@ -1197,13 +1256,14 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 2.1.0
+  version: 3.0.0
 openapi: 3.0.1
 paths:
   /days-of-supply/customer:
     get:
       description: Calculate days of supply for customer for given number of days.
-        Filtered by given material number, partner bpnl and site bpns.
+        Filtered by given material number, partner bpnl and site bpns. materialNumber
+        is expected to be base64 encoded
       operationId: calculateCustomerDaysOfSupply
       parameters:
       - in: query
@@ -1215,14 +1275,14 @@ paths:
           type: string
       - in: query
         name: bpnl
-        required: true
+        required: false
         schema:
           additionalProperties: false
           maxItems: 50
           type: string
       - in: query
         name: siteBpns
-        required: true
+        required: false
         schema:
           additionalProperties: false
           maxItems: 50
@@ -1251,7 +1311,7 @@ paths:
   /days-of-supply/customer/reported:
     get:
       description: Get days of supply for customer for given material number and partner
-        bpnl.
+        bpnl. materialNumber is expected to be base64 encoded
       operationId: getCustomerDaysOfSupply
       parameters:
       - in: query
@@ -1264,6 +1324,13 @@ paths:
       - in: query
         name: bpnl
         required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: siteBpns
+        required: false
         schema:
           additionalProperties: false
           maxItems: 50
@@ -1282,10 +1349,106 @@ paths:
       summary: Get days of supply for customer.
       tags:
       - supply-controller
+  /days-of-supply/customer/reported/refresh:
+    get:
+      description: Refreshes all reported customer Days of Supply for the specified
+        Material from the days of supply request API.
+      operationId: refreshReportedCustomerSupply
+      parameters:
+      - description: base64 encoded
+        in: query
+        name: ownMaterialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Refreshes all reported customer days of supply
+      tags:
+      - supply-controller
+  /days-of-supply/request/{materialnumbercx}/{direction}/{representation}:
+    get:
+      operationId: getDaysOfSupplyMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: materialnumbercx
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: direction
+        required: true
+        schema:
+          additionalProperties: false
+          enum:
+          - INBOUND
+          - OUTBOUND
+          maxItems: 50
+          type: string
+      - in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DaysOfSupply'
+                additionalProperties: false
+          description: Ok
+        '400':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DaysOfSupply'
+                additionalProperties: false
+          description: Bad Request
+        '500':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DaysOfSupply'
+                additionalProperties: false
+          description: Internal Server Error
+        '501':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DaysOfSupply'
+                additionalProperties: false
+          description: Unsupported representation
+      summary: This endpoint receives the DaysOfSupply Submodel 2.0.0 requests
+      tags:
+      - days-of-supply-request-api-controller
   /days-of-supply/supplier:
     get:
       description: Calculate days of supply for supplier for given number of days.
-        Filtered by given material number, partner bpnl and site bpns.
+        Filtered by given material number, partner bpnl and site bpns. materialNumber
+        is expected to be base64 encoded
       operationId: calculateSupplierDaysOfSupply
       parameters:
       - in: query
@@ -1297,14 +1460,14 @@ paths:
           type: string
       - in: query
         name: bpnl
-        required: true
+        required: false
         schema:
           additionalProperties: false
           maxItems: 50
           type: string
       - in: query
         name: siteBpns
-        required: true
+        required: false
         schema:
           additionalProperties: false
           maxItems: 50
@@ -1333,7 +1496,7 @@ paths:
   /days-of-supply/supplier/reported:
     get:
       description: Get days of supply for supplier for given material number and partner
-        bpnl.
+        bpnl. materialNumber is expected to be base64 encoded
       operationId: getSupplierDaysOfSupply
       parameters:
       - in: query
@@ -1346,6 +1509,13 @@ paths:
       - in: query
         name: bpnl
         required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: query
+        name: siteBpns
+        required: false
         schema:
           additionalProperties: false
           maxItems: 50
@@ -1364,13 +1534,42 @@ paths:
       summary: Get days of supply for supplier.
       tags:
       - supply-controller
+  /days-of-supply/supplier/reported/refresh:
+    get:
+      description: Refreshes all reported supplier Days of Supply for the specified
+        Material from the days of supply request API.
+      operationId: refreshReportedSupplierSupply
+      parameters:
+      - description: base64 encoded
+        in: query
+        name: ownMaterialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/PartnerDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Refreshes all reported supplier days of supply
+      tags:
+      - supply-controller
   /delivery:
     get:
       description: Get all planned deliveries for the given material number. Optionally
         a bpns and partner bpnl can be provided to filter the deliveries further.
       operationId: getAllDeliveries
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -1415,40 +1614,18 @@ paths:
               additionalProperties: false
         required: true
       responses:
-        '200':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DeliveryDto'
-                additionalProperties: false
-          description: Delivery was created.
         '201':
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/DeliveryDto'
                 additionalProperties: false
-          description: Created
+          description: Delivery was created.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DeliveryDto'
-                additionalProperties: false
           description: Malformed or invalid request body.
         '409':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DeliveryDto'
-                additionalProperties: false
           description: Delivery already exists.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DeliveryDto'
-                additionalProperties: false
           description: Internal Server Error.
       summary: Creates a new delivery
       tags:
@@ -1463,14 +1640,7 @@ paths:
               additionalProperties: false
         required: true
       responses:
-        '200':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DeliveryDto'
-                additionalProperties: false
-          description: OK
-        '204':
+        '202':
           content:
             '*/*':
               schema:
@@ -1478,25 +1648,10 @@ paths:
                 additionalProperties: false
           description: Delivery was updated.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DeliveryDto'
-                additionalProperties: false
           description: Malformed or invalid request body.
         '404':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DeliveryDto'
-                additionalProperties: false
           description: Delivery does not exist.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DeliveryDto'
-                additionalProperties: false
           description: Internal Server Error.
       summary: Updates a delivery by its UUID
       tags:
@@ -1535,27 +1690,13 @@ paths:
                 additionalProperties: false
           description: Ok
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DeliveryInformation'
-                additionalProperties: false
           description: Bad Request
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DeliveryInformation'
-                additionalProperties: false
           description: Internal Server Error
         '501':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DeliveryInformation'
-                additionalProperties: false
           description: Unsupported representation
-      summary: This endpoint receives the Delivery Information Submodel 2.0.0 requests
+      summary: 'This endpoint receives the Delivery Information Submodel 2.0.0 requests.
+        This endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - delivery-request-api-controller
   /delivery/reported/refresh:
@@ -1563,7 +1704,8 @@ paths:
       description: Refreshes all reported deliveries from the delivery request API.
       operationId: refreshReportedDeliveries
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -1614,7 +1756,8 @@ paths:
         demanding site can be filtered by its bpns.
       operationId: getAllDemands
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -1660,25 +1803,10 @@ paths:
                 additionalProperties: false
           description: Demand was created.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandDto'
-                additionalProperties: false
           description: Malformed or invalid request body.
         '409':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandDto'
-                additionalProperties: false
           description: Demand already exists. Use PUT instead.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandDto'
-                additionalProperties: false
           description: Internal Server Error.
       summary: Creates a new demand
       tags:
@@ -1701,25 +1829,10 @@ paths:
                 additionalProperties: false
           description: Demand was updated.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandDto'
-                additionalProperties: false
           description: Malformed or invalid request body.
         '404':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandDto'
-                additionalProperties: false
           description: Demand does not exist.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandDto'
-                additionalProperties: false
           description: Internal Server Error.
       summary: Updates a demand by its UUID
       tags:
@@ -1769,25 +1882,10 @@ paths:
                 additionalProperties: false
           description: Notification was created.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
-                additionalProperties: false
           description: Malformed or invalid request body.
         '409':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
-                additionalProperties: false
           description: Notification already exists. Use PUT instead.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
-                additionalProperties: false
           description: Internal Server Error.
       summary: Creates a new notification
       tags:
@@ -1810,25 +1908,10 @@ paths:
                 additionalProperties: false
           description: Notification was updated.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
-                additionalProperties: false
           description: Malformed or invalid request body.
         '404':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
-                additionalProperties: false
           description: Notification does not exist.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandAndCapacityNotificationDto'
-                additionalProperties: false
           description: Internal Server Error.
       summary: Updates a notification by its UUID
       tags:
@@ -1874,34 +1957,49 @@ paths:
       requestBody:
         content:
           application/json:
+            example:
+              content:
+                demandAndCapacityNotification:
+                  affectedSitesRecipient:
+                  - BPNS6666787765VQ
+                  affectedSitesSender:
+                  - BPNS7588787849VQ
+                  contentChangedAt: '2023-12-13T15:00:00+01:00'
+                  effect: demand-reduction
+                  expectedEndDateOfEffect: '2023-12-17T08:00:00+01:00'
+                  leadingRootCause: strike
+                  materialGlobalAssetId:
+                  - urn:uuid:48878d48-6f1d-47f5-8ded-a441d0d879df
+                  materialNumberCustomer:
+                  - MNR-7307-AU340474.002
+                  materialNumberSupplier:
+                  - MNR-8101-ID146955.001
+                  notificationId: urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362
+                  relatedNotificationId: urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04
+                  sourceNotificationId: urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e
+                  startDateOfEffect: '2023-12-13T15:00:00+01:00'
+                  status: resolved
+                  text: Capacity reduction due to ongoing strike.
+              header:
+                context: CX-DemandAndCapacityNotification:2.0
+                messageId: 3b4edc05-e214-47a1-b0c2-1d831cdd9ba9
+                receiverBpn: BPNL6666787765VQ
+                senderBpn: BPNL7588787849VQ
+                sentDateTime: '2023-06-19T21:24:00+07:00'
+                version: 3.0.0
             schema:
+              $ref: '#/components/schemas/JsonNode'
               additionalProperties: false
-              maxItems: 50
-              type: string
         required: true
       responses:
         '200':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandAndCapacityNotificationSamm'
-                additionalProperties: false
           description: Ok
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandAndCapacityNotificationSamm'
-                additionalProperties: false
           description: Bad Request
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DemandAndCapacityNotificationSamm'
-                additionalProperties: false
           description: Internal Server Error
-      summary: This endpoint receives the DemandAndCapacityNotification 2.0.0 requests
+      summary: 'This endpoint receives the DemandAndCapacityNotification 2.0.0 requests.
+        This endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - demand-and-capacity-notification-request-api-controller
   /demand-and-capacity-notification/{id}:
@@ -1935,7 +2033,8 @@ paths:
         by its bpns.
       operationId: getAllDemandsForPartner
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -1975,7 +2074,8 @@ paths:
       description: Refreshes all reported demands from the demand request API.
       operationId: refreshReportedProductions_1
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -2258,7 +2358,8 @@ paths:
           additionalProperties: false
           maxItems: 50
           type: string
-      - in: query
+      - description: encoded in base64
+        in: query
         name: own-materialnumber
         required: true
         schema:
@@ -2277,6 +2378,7 @@ paths:
           - DEMAND_SUBMODEL
           - DELIVERY_SUBMODEL
           - NOTIFICATION
+          - DAYS_OF_SUPPLY
           - PART_TYPE_INFORMATION_SUBMODEL
           maxItems: 50
           type: string
@@ -2364,27 +2466,13 @@ paths:
                 additionalProperties: false
           description: Ok
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ItemStockSamm'
-                additionalProperties: false
           description: Bad Request
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ItemStockSamm'
-                additionalProperties: false
           description: Internal Server Error
         '501':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ItemStockSamm'
-                additionalProperties: false
           description: Unsupported representation
-      summary: This endpoint receives the ItemStock Submodel 2.0.0 requests
+      summary: 'This endpoint receives the ItemStock Submodel 2.0.0 requests. This
+        endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - item-stock-request-api-controller
   /material-demand/request/{materialnumbercx}/{representation}:
@@ -2421,27 +2509,13 @@ paths:
                 additionalProperties: false
           description: Ok
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ShortTermMaterialDemand'
-                additionalProperties: false
           description: Bad Request
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ShortTermMaterialDemand'
-                additionalProperties: false
           description: Internal Server Error
         '501':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ShortTermMaterialDemand'
-                additionalProperties: false
           description: Unsupported representation
-      summary: This endpoint receives the ShortTermMaterialDemand Submodel 1.0.0 requests
+      summary: 'This endpoint receives the ShortTermMaterialDemand Submodel 1.0.0
+        requests. This endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - demand-request-api-controller
   /materialpartnerrelations:
@@ -2452,8 +2526,7 @@ paths:
       operationId: createMaterialPartnerRelation
       parameters:
       - description: The Material Number that is used in your own company to identify
-          the Material.
-        example: MNR-7307-AU340474.002
+          the Material, encoded in base64
         in: query
         name: ownMaterialNumber
         required: true
@@ -2471,8 +2544,7 @@ paths:
           maxItems: 50
           type: string
       - description: The Material Number that this Partner is using in his own company
-          to identify the Material.
-        example: MNR-8101-ID146955.001
+          to identify the Material, encoded in base64
         in: query
         name: partnerMaterialNumber
         required: true
@@ -2554,8 +2626,7 @@ paths:
       operationId: updateMaterialPartnerRelation
       parameters:
       - description: The Material Number that is used in your own company to identify
-          the Material.
-        example: MNR-7307-AU340474.002
+          the Material, encoded in base64
         in: query
         name: ownMaterialNumber
         required: true
@@ -2573,8 +2644,7 @@ paths:
           maxItems: 50
           type: string
       - description: The Material Number that this Partner is using in his own company
-          to identify the Material.
-        example: MNR-8101-ID146955.001
+          to identify the Material, encoded in base64
         in: query
         name: partnerMaterialNumber
         required: false
@@ -2655,8 +2725,7 @@ paths:
       operationId: getMaterial
       parameters:
       - description: The Material Number that is used in your own company to identify
-          the Material.
-        example: MNR-7307-AU340474.002
+          the Material, encoded in base64
         in: query
         name: ownMaterialNumber
         required: true
@@ -2673,18 +2742,8 @@ paths:
                 additionalProperties: false
           description: Returns the requested Material.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MaterialEntityDto'
-                additionalProperties: false
           description: Invalid parameter
         '404':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MaterialEntityDto'
-                additionalProperties: false
           description: Requested Material was not found.
       tags:
       - material-controller
@@ -2812,25 +2871,10 @@ paths:
                 additionalProperties: false
           description: Found Partner, returning it in response body.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/PartnerDto'
-                additionalProperties: false
           description: Invalid parameter.
         '404':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/PartnerDto'
-                additionalProperties: false
           description: Requested Partner not found.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/PartnerDto'
-                additionalProperties: false
           description: Internal Server Error.
       tags:
       - partner-controller
@@ -3040,9 +3084,11 @@ paths:
       - partner-controller
   /parttypeinformation/{materialnumber}/{representation}:
     get:
-      description: Endpoint that delivers PartTypeInformation of own products to customer
-        partners. 'materialnumber' must be set to the ownMaterialNumber of the party,
-        that receives the request
+      description: 'Endpoint that delivers PartTypeInformation of own products to
+        customer partners. ''materialnumber'' must be set to the ownMaterialNumber
+        of the party, that receives the request. Please note that the SAMMs delivered
+        by this endpoint don''t provide partClassification and partSitesInformationAsPlanned
+        data. This endpoint is meant to be accessed by partners via EDC only. '
       operationId: getMapping
       parameters:
       - in: header
@@ -3074,36 +3120,16 @@ paths:
           content:
             '*/*':
               schema:
+                $ref: '#/components/schemas/PartTypeInformationSAMM'
                 additionalProperties: false
-                type: object
           description: Ok
         '400':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                type: object
           description: 'Invalid request parameters. '
         '401':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                type: object
           description: 'Access forbidden. '
         '404':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                type: object
           description: 'Product not found for given parameters. '
         '501':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                type: object
           description: 'Unsupported representation requested. '
       tags:
       - part-type-information-controller
@@ -3141,27 +3167,13 @@ paths:
                 additionalProperties: false
           description: Ok
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/PlannedProductionOutput'
-                additionalProperties: false
           description: Bad Request
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/PlannedProductionOutput'
-                additionalProperties: false
           description: Internal Server Error
         '501':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/PlannedProductionOutput'
-                additionalProperties: false
           description: Unsupported representation
-      summary: This endpoint receives the PlannedProduction Submodel 2.0.0 requests
+      summary: 'This endpoint receives the PlannedProduction Submodel 2.0.0 requests.
+        This endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - production-request-api-controller
   /production:
@@ -3170,7 +3182,8 @@ paths:
         the production site can be filtered by its bpns.
       operationId: getAllProductions
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -3216,25 +3229,10 @@ paths:
                 additionalProperties: false
           description: Planned Production was created.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductionDto'
-                additionalProperties: false
           description: Malformed or invalid request body.
         '409':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductionDto'
-                additionalProperties: false
           description: Planned Production already exists.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductionDto'
-                additionalProperties: false
           description: Internal Server Error.
       summary: Creates a new planned production
       tags:
@@ -3257,25 +3255,10 @@ paths:
                 additionalProperties: false
           description: Planned Productions was updated.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductionDto'
-                additionalProperties: false
           description: Malformed or invalid request body.
         '404':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductionDto'
-                additionalProperties: false
           description: Planned Production does not exist.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductionDto'
-                additionalProperties: false
           description: Internal Server Error.
       summary: Updates a planned production by its UUID
       tags:
@@ -3305,34 +3288,10 @@ paths:
                 type: array
           description: Planned Productions were created.
         '400':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                items:
-                  $ref: '#/components/schemas/ProductionDto'
-                maxItems: 50
-                type: array
           description: Malformed or invalid request body.
         '409':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                items:
-                  $ref: '#/components/schemas/ProductionDto'
-                maxItems: 50
-                type: array
           description: Planned Productions already exist.
         '500':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                items:
-                  $ref: '#/components/schemas/ProductionDto'
-                maxItems: 50
-                type: array
           description: Internal Server Error.
       summary: Creates a range of planned productions
       tags:
@@ -3344,7 +3303,8 @@ paths:
         filtered by its bpns.
       operationId: getAllProductionsForPartner
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -3385,7 +3345,8 @@ paths:
         API.
       operationId: refreshReportedProductions
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -3435,7 +3396,8 @@ paths:
       description: Returns a list of all Partners that are ordering the given material
       operationId: getCustomerPartnersOrderingMaterial
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -3454,14 +3416,6 @@ paths:
                 type: array
           description: OK
         '400':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                items:
-                  $ref: '#/components/schemas/PartnerDto'
-                maxItems: 50
-                type: array
           description: Invalid parameter
       tags:
       - stock-view-controller
@@ -3501,25 +3455,10 @@ paths:
                 additionalProperties: false
           description: Material Stock was created.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MaterialStockDto'
-                additionalProperties: false
           description: Malformed or invalid request body.
         '409':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MaterialStockDto'
-                additionalProperties: false
           description: Material Stock does already exist.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MaterialStockDto'
-                additionalProperties: false
           description: Internal Server Error.
       tags:
       - stock-view-controller
@@ -3542,18 +3481,30 @@ paths:
                 additionalProperties: false
           description: Material Stock was updated.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MaterialStockDto'
-                additionalProperties: false
           description: Malformed request body.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/MaterialStockDto'
-                additionalProperties: false
+          description: Internal Server Error.
+      tags:
+      - stock-view-controller
+  /stockView/material-stocks/{id}:
+    delete:
+      description: Deletes an existing material-stock
+      operationId: deleteMaterialStock
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      responses:
+        '204':
+          description: Material Stock was deleted.
+        '404':
+          description: Material Stock not found.
+        '500':
           description: Internal Server Error.
       tags:
       - stock-view-controller
@@ -3563,7 +3514,8 @@ paths:
         are usingfor the material given in the request parameter.
       operationId: getMaterialNumbers
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -3582,13 +3534,6 @@ paths:
                     BPNL4444444444XX: MNR-7307-AU340474.002
           description: OK
         '400':
-          content:
-            '*/*':
-              schema:
-                additionalProperties:
-                  maxItems: 50
-                  type: string
-                type: object
           description: Invalid parameter
       tags:
       - stock-view-controller
@@ -3596,6 +3541,13 @@ paths:
     get:
       description: Returns a list of all materials (excluding products)
       operationId: getMaterials
+      parameters:
+      - in: query
+        name: includeDaysOfSupply
+        required: false
+        schema:
+          additionalProperties: false
+          type: boolean
       responses:
         '200':
           content:
@@ -3645,25 +3597,10 @@ paths:
                 additionalProperties: false
           description: Product Stock was created.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductStockDto'
-                additionalProperties: false
           description: Malformed or invalid request body.
         '409':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductStockDto'
-                additionalProperties: false
           description: Product Stock does already exist.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductStockDto'
-                additionalProperties: false
           description: Internal Server Error.
       tags:
       - stock-view-controller
@@ -3686,18 +3623,30 @@ paths:
                 additionalProperties: false
           description: Product Stock was updated.
         '400':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductStockDto'
-                additionalProperties: false
           description: Malformed request body.
         '500':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ProductStockDto'
-                additionalProperties: false
+          description: Internal Server Error.
+      tags:
+      - stock-view-controller
+  /stockView/product-stocks/{id}:
+    delete:
+      description: Deletes an existing material-stock
+      operationId: deleteProductStock
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      responses:
+        '204':
+          description: Product Stock was deleted.
+        '404':
+          description: Product Stock not found.
+        '500':
           description: Internal Server Error.
       tags:
       - stock-view-controller
@@ -3705,6 +3654,13 @@ paths:
     get:
       description: Returns a list of all products (excluding materials)
       operationId: getProducts
+      parameters:
+      - in: query
+        name: includeDaysOfSupply
+        required: false
+        schema:
+          additionalProperties: false
+          type: boolean
       responses:
         '200':
           content:
@@ -3724,7 +3680,8 @@ paths:
         he has at his site. Only stocks for the given material number are returned.
       operationId: getSupplierMaterialStocks
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -3743,14 +3700,6 @@ paths:
                 type: array
           description: OK
         '400':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                items:
-                  $ref: '#/components/schemas/ReportedMaterialStockDto'
-                maxItems: 50
-                type: array
           description: Invalid parameter
       tags:
       - stock-view-controller
@@ -3760,7 +3709,8 @@ paths:
         he has at his site. Only stocks for the given material number are returned.
       operationId: getCustomerProductStocks
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -3779,14 +3729,6 @@ paths:
                 type: array
           description: OK
         '400':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                items:
-                  $ref: '#/components/schemas/ReportedProductStockDto'
-                maxItems: 50
-                type: array
           description: Invalid parameter
       tags:
       - stock-view-controller
@@ -3795,7 +3737,8 @@ paths:
       description: Returns a list of all Partners that are supplying the given material
       operationId: getSupplierPartnersSupplyingMaterial
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -3814,14 +3757,6 @@ paths:
                 type: array
           description: OK
         '400':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                items:
-                  $ref: '#/components/schemas/PartnerDto'
-                maxItems: 50
-                type: array
           description: Invalid parameter
       tags:
       - stock-view-controller
@@ -3836,7 +3771,8 @@ paths:
         endpoint.
       operationId: triggerReportedMaterialStockUpdateForMaterialNumber
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -3855,14 +3791,6 @@ paths:
                 type: array
           description: OK
         '400':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                items:
-                  $ref: '#/components/schemas/PartnerDto'
-                maxItems: 50
-                type: array
           description: Invalid parameter
       tags:
       - stock-view-controller
@@ -3877,7 +3805,8 @@ paths:
         endpoint.
       operationId: triggerReportedProductStockUpdateForMaterialNumber
       parameters:
-      - in: query
+      - description: encoded in base64
+        in: query
         name: ownMaterialNumber
         required: true
         schema:
@@ -3896,19 +3825,8 @@ paths:
                 type: array
           description: OK
         '400':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                items:
-                  $ref: '#/components/schemas/PartnerDto'
-                maxItems: 50
-                type: array
           description: Invalid parameter
       tags:
       - stock-view-controller
 security:
 - X-API-KEY: []
-servers:
-- description: Generated server url
-  url: http://localhost:8081/catena
