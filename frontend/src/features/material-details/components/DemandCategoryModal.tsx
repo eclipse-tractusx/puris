@@ -356,6 +356,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                         {mode === 'create' && (
                             <Button
                                 variant="contained"
+                                color="primary"
                                 sx={{ display: 'flex', gap: '.25rem' }}
                                 onClick={() => handleSaveClick(temporaryDemand)}
                             >

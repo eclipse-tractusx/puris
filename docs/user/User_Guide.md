@@ -7,7 +7,7 @@ This guide explains the overall masks that may be used by different roles.
 
 In the following the views are explained.
 
-## Material List View
+## Material list view
 
 ![Material List View](img/materials_list_view.png)
 The Material List View allows users to quickly search and filter through materials.
@@ -22,7 +22,7 @@ It includes the following:
 The user can find a specific material by using the search bar. The user can search through the materials using the material name or number. By default, it will be searching in any (incoming and outgoing) material direction. The user can choose a specific direction with the “Direction” dropdown.
 By using the “Direction” dropdown menu the user can chose to narrow their search to view incoming materials, outgoing materials or both. The “Direction” dropdown can also be used to list all incoming or outgoing materials by leaving the search bar empty.
 
-The user can further sort the materials by model number, material name, days of supply, direction and when they were last updated by clicking on the appropriate headers of the table.
+The user can further sort the materials by material number, material name, days of supply, direction and when they were last updated by clicking on the appropriate headers of the table.
 The user can select a material by clicking on it. This will open the Materials Detail View.
 
 ## Materials detail view
@@ -33,10 +33,10 @@ The Material Detail View allows users to see a detailed view of the selected mat
 
 It includes several expandable nested tables presented in the following order, based on the direction of the material:
 
-- Outgoing materials
+- When seeing material details for outgoing materials, the following summaries are shown:
   1. Production summary for the material
   2. Production summary at a specific location
-- Incoming materials
+- When seeing materials for the incoming direction, the following summaries are shown:
   1. Demand summary for the material
   2. Demand summary at a specific location
 
@@ -44,11 +44,11 @@ It includes several expandable nested tables presented in the following order, b
 
 Each overall or location specific summary table is separated into the following sections depending on the direction:
 
-- Outgoing materials
+- When seeing materials for the outgoing direction, the following summaries are shown:
   1. A production summary for the material
   2. A collapsible demand summary per customer
   3. A collapsible demand summary per specific location of a customer
-- Incoming materials
+- When seeing materials for the incoming direction, the following summaries are shown:
   1. A demand summary for the material
   2. A collapsible production summary per supplier
   3. A collapsible production summary per specific location of a supplier
@@ -134,7 +134,7 @@ To add a new production output, the user:
 2. Selects the partner to allocate the production to
 3. Enters the estimated time of completion
 4. Enters the quantity produced and the unit of measurement
-5. (Optional) Fills the customer order number, customer position number and supplier order number
+5. (optional) Fills the customer order number, customer position number and supplier order number
 6. Clicks the "save" button
 
 A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added production output reflected in their detailed material overview.
@@ -150,13 +150,13 @@ To add a new delivery the user:
 1. Selects the partner for the delivery
 2. Selects the incoterms for the delivery
 3. Selects the quantity and unit of measurement
-4. Enters the tracking number
+4. (optional) Enters the tracking number
 5. Chooses the origin and destination site
 6. Selects the departure type
 7. Selects the date of departure
 8. Selects the arrival type
 9. Selects the date of arrival
-10. (Optional) Fills the customer order number, customer position number and supplier order number
+10. (optional) Fills the customer order number, customer position number and supplier order number
 11. Clicks the "save" button
 
 A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added delivery reflected in their detailed material overview.
@@ -177,10 +177,10 @@ To add a new item, the user:
 
 1. Selects the partner
 2. Selects the quantity and unit of measurement
-3. Selects the stock location BPNS
-4. Selects the stock location BPNA
-5. (Optional) Fills the customer order number, customer position number and supplier order number
-6. (Optional) Checks the ‘is Blocked’ checkbox
+3. Selects the site of the stock location (BPNS)
+4. (optional) Selects the address of the stock location (BPNA)
+5. (optional) Fills the customer order number, customer position number and supplier order number
+6. (optional) Checks the ‘is Blocked’ checkbox
 7. Clicks the "save" button
 
 A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added stock reflected in their detailed material overview.
@@ -211,11 +211,11 @@ After filling the mandatory data (see `*`), the user can send the notification:
 - Status (either `Open` or `Closed`, use close to close disruptions)
 - Effect (either `Increase` or `Decrease` of `Production` or `Demand`)
 - Start Date of Effect
-- End Date of Effect
-- Affected Sites Senders
-- Affected Material Numbers (only those applicable to the partner)
-- Affected Sites Recipient
-- Text
+- (optional) End Date of Effect
+- (optional) Affected Sites Senders
+- (optional) Affected Material Numbers (only those applicable to the partner)
+- (optional) Affected Sites Recipient
+- (optional) Text
 
 ## Catalog
 
