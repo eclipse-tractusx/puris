@@ -16,7 +16,11 @@ controlplane:
     cache_validity_seconds: 0
     server:
       # URL of the BPN/DID Resolution Service - required:
-      url: <path:puris/data/environment#bdrs-url>    
+      url: <path:puris/data/environment#bdrs-url>
+  # 0.9.0: disable policy validation first
+  policy:
+    validation:
+      enabled: false
 
   ## Ingress declaration to expose the network service.
   ingresses:
