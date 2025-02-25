@@ -6,7 +6,7 @@ global:
 frontend:
   # fullnameOverride: "customer-frontend"
   image:
-    tag: "latest"
+    tag: "3.0.0-rc1"
   ingress:
     # -- Enable the Ingress
     enabled: true

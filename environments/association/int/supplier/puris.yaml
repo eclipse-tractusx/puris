@@ -5,7 +5,7 @@ global:
 # FRONTEND -----------
 frontend:
   image:
-    tag: "latest"
+    tag: "3.0.0-rc1"
   # fullnameOverride: "supplier-frontend"
   ingress:
     # -- Enable the Ingress
