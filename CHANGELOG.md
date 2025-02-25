@@ -29,10 +29,10 @@ Fixes
 
 UI enhancements
 
-* Reworked UI theme ([#709](https://github.com/eclipse-tractusx/puris/pull/709), [#701](https://github.com/eclipse-tractusx/puris/issues/701), [#769](https://github.com/eclipse-tractusx/puris/pull/769))
-* Added Material List View ([#702](https://github.com/eclipse-tractusx/puris/issues/702))
-* Added Material Details View ([#737](https://github.com/eclipse-tractusx/puris/issues/737), [#747](https://github.com/eclipse-tractusx/puris/pull/747), [#750](https://github.com/eclipse-tractusx/puris/pull/750))
-* Integrated Stock View into Material Details View ([#742](https://github.com/eclipse-tractusx/puris/pull/742), [#427](https://github.com/eclipse-tractusx/puris/issues/427), [#778](https://github.com/eclipse-tractusx/puris/pull/778))
+* Reworked UI theme ([#709](https://github.com/eclipse-tractusx/puris/pull/709))
+* Added Material List View ([#732](https://github.com/eclipse-tractusx/puris/pull/732))
+* Added Material Details View ([#747](https://github.com/eclipse-tractusx/puris/pull/747), [#750](https://github.com/eclipse-tractusx/puris/pull/750))
+* Integrated Stock View into Material Details View ([#778](https://github.com/eclipse-tractusx/puris/pull/778))
 
 Days of Supply Information implementation
 
@@ -51,10 +51,10 @@ CI
 
 Chore
 
-* edited license headers to follow TRG 7.02 ([#562](https://github.com/eclipse-tractusx/puris/pull/562))
-* cleanup erp adapter request feature ([issue#584](https://github.com/eclipse-tractusx/puris/issues/584)) ([#578](https://github.com/eclipse-tractusx/puris/pull/578))
-
-* Update of swagger documentation (TBD)
+* Changed license headers to follow TRG 7.02 ([#562](https://github.com/eclipse-tractusx/puris/pull/562))
+* Cleaned up erp adapter request feature ([#578](https://github.com/eclipse-tractusx/puris/pull/578))
+* Updated User Guide ([#780](https://github.com/eclipse-tractusx/puris/pull/780))
+* Update of swagger documentation ([#794](https://github.com/eclipse-tractusx/puris/pull/794))
 
 Version Bumps
 
