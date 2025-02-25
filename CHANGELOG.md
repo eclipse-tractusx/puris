@@ -5,6 +5,135 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.0.0](https://github.com/eclipse-tractusx/puris/releases/tag/3.0.0)
+
+The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
+
+The **need for configuration updates** is **marked bold**.
+
+### Added
+
+* Added banner for puris backend ([#556](https://github.com/eclipse-tractusx/puris/pull/556))
+* Add bruno integration test collection ([#546](https://github.com/eclipse-tractusx/puris/pull/546))
+
+### Changed
+
+Fixes
+
+* Encode material numbers in frontend parameters with base64 ([#512](https://github.com/eclipse-tractusx/puris/pull/512), [#580](https://github.com/eclipse-tractusx/puris/pull/580))(*breaking change*)
+* Change log message for already existing edc assets on startup ([547](https://github.com/eclipse-tractusx/puris/pull/547))
+* Don't return own partner entity from partner/all endpoint ([#563](https://github.com/eclipse-tractusx/puris/pull/563))
+* Fix material number issues and partner/all endpoint in integration test suite ([#689](https://github.com/eclipse-tractusx/puris/pull/689))
+
+* improve demand and capacity notification (accept material number correctly, added test, role specific differentiation) ([#576](https://github.com/eclipse-tractusx/puris/pull/576))
+
+UI enhancements
+
+* Reworked UI theme ([#709](https://github.com/eclipse-tractusx/puris/pull/709))
+* Added Material List View ([#732](https://github.com/eclipse-tractusx/puris/pull/732))
+* Added Material Details View ([#747](https://github.com/eclipse-tractusx/puris/pull/747), [#750](https://github.com/eclipse-tractusx/puris/pull/750))
+* Integrated Stock View into Material Details View ([#778](https://github.com/eclipse-tractusx/puris/pull/778))
+
+Days of Supply Information implementation
+
+* Added Days of Supply EDC integration ([#694](https://github.com/eclipse-tractusx/puris/pull/694))
+* Added Days of Supply to the frontend ([#776](https://github.com/eclipse-tractusx/puris/pull/776))
+* Added unit tests for Days of Supply to the backend ([#454](https://github.com/eclipse-tractusx/puris/issues/454), [#694](https://github.com/eclipse-tractusx/puris/pull/694))
+* Add integration test cases for bruno for days of supply ([#752](https://github.com/eclipse-tractusx/puris/pull/752))
+* Fix days of supply calculation by only relying on the projected stocks without the addedValue ([#773](https://github.com/eclipse-tractusx/puris/pull/773))
+
+CI
+
+* Added workflow for backend unit tests ([#616](https://github.com/eclipse-tractusx/puris/pull/616))
+* Added trufflehog secret scanning tool ([#531](https://github.com/eclipse-tractusx/puris/pull/531), [#555](https://github.com/eclipse-tractusx/puris/pull/555))
+* Updated Triviy version and workflow failure ([#452](https://github.com/eclipse-tractusx/puris/pull/452))
+* Changed Helm Test workflow to only check for version bump in the end so that version bumps are not enforced anymore ([#450](https://github.com/eclipse-tractusx/puris/pull/450))
+
+Chore
+
+* Changed license headers to follow TRG 7.02 ([#562](https://github.com/eclipse-tractusx/puris/pull/562))
+* Cleaned up erp adapter request feature ([#578](https://github.com/eclipse-tractusx/puris/pull/578))
+* Updated User Guide ([#780](https://github.com/eclipse-tractusx/puris/pull/780))
+* Update of swagger documentation ([#794](https://github.com/eclipse-tractusx/puris/pull/794))
+
+Version Bumps
+
+* Infrastructure Components
+    * Tractus-X Connector to 0.8.0 ([#705](https://github.com/eclipse-tractusx/puris/pull/705)) and 0.9.0-rc2 ([#781](https://github.com/eclipse-tractusx/puris/pull/781))
+    * Digital Twin Registry to 0.7.0 ([#781](https://github.com/eclipse-tractusx/puris/pull/781))
+* Backend Dependencies
+    * edc-connector-version from 0.7.0 to 0.11.1 in /backend ([#781](https://github.com/eclipse-tractusx/puris/pull/781))
+    * org.springdoc:springdoc-openapi-starter-webmvc-ui in /backend ([#790](https://github.com/eclipse-tractusx/puris/pull/790))
+    * org.springframework.boot:spring-boot-starter-parent in /backend ([#790](https://github.com/eclipse-tractusx/puris/pull/790))
+* IAM Mock (Local Deployment)
+    * jinja2 from 3.1.4 to 3.1.5 ([#784](https://github.com/eclipse-tractusx/puris/pull/784))
+    * python-multipart from 0.0.7 to 0.0.18 ([#784](https://github.com/eclipse-tractusx/puris/pull/784))
+    * starlette from 0.37.2 to 0.40.0 ([#784](https://github.com/eclipse-tractusx/puris/pull/784))
+    * cryptography from 42.0.5 to 44.0.1 ([#784](https://github.com/eclipse-tractusx/puris/pull/784))
+* CI
+    * peter-evans/dockerhub-description from 3.4.2 to 4.0.0 ([#460](https://github.com/eclipse-tractusx/puris/pull/460))
+    * actions/checkout from 4.1.6 to 4.2.3 ([#461](https://github.com/eclipse-tractusx/puris/pull/461), [#629](https://github.com/eclipse-tractusx/puris/pull/629), [#607](https://github.com/eclipse-tractusx/puris/pull/607), [#646](https://github.com/eclipse-tractusx/puris/pull/646))
+    * actions/setup-node from 4.0.2 to 4.1.0 ([#552](https://github.com/eclipse-tractusx/puris/pull/552), [#594](https://github.com/eclipse-tractusx/puris/pull/594), [#650](https://github.com/eclipse-tractusx/puris/pull/650))
+    * trufflesecurity/trufflehog from 3.80.2 to 3.82.13 ([#544](https://github.com/eclipse-tractusx/puris/pull/544), [#557](https://github.com/eclipse-tractusx/puris/pull/557), [#571](https://github.com/eclipse-tractusx/puris/pull/571), [#588](https://github.com/eclipse-tractusx/puris/pull/588), [#603](https://github.com/eclipse-tractusx/puris/pull/603), [#608](https://github.com/eclipse-tractusx/puris/pull/608), [#610](https://github.com/eclipse-tractusx/puris/pull/610), [#630](https://github.com/eclipse-tractusx/puris/pull/630), [#636](https://github.com/eclipse-tractusx/puris/pull/636), [#639](https://github.com/eclipse-tractusx/puris/pull/639), [#651](https://github.com/eclipse-tractusx/puris/pull/651))
+    * docker/setup-buildx-action from 3.3.0 to 3.7.1 ([#553](https://github.com/eclipse-tractusx/puris/pull/553), [#618](https://github.com/eclipse-tractusx/puris/pull/618))
+    * docker/login-action from 3.1.0 to 3.3.0 ([#548](https://github.com/eclipse-tractusx/puris/pull/548))
+    * docker/setup-qemu-action from 3.0.0 to 3.2.0 ([#549](https://github.com/eclipse-tractusx/puris/pull/549))
+    * github/codeql-action from 3.25.10 to 3.26.13 ([#545](https://github.com/eclipse-tractusx/puris/pull/545), [#558](https://github.com/eclipse-tractusx/puris/pull/558), [#567](https://github.com/eclipse-tractusx/puris/pull/567), [#569](https://github.com/eclipse-tractusx/puris/pull/569), [#589](https://github.com/eclipse-tractusx/puris/pull/589), [#593](https://github.com/eclipse-tractusx/puris/pull/593), [#604](https://github.com/eclipse-tractusx/puris/pull/604), [#614](https://github.com/eclipse-tractusx/puris/pull/614), [#624](https://github.com/eclipse-tractusx/puris/pull/624), [#632](https://github.com/eclipse-tractusx/puris/pull/632), [#645](https://github.com/eclipse-tractusx/puris/pull/645))
+    * actions/setup-java from 3.13.0 to 4.5.0 ([#535](https://github.com/eclipse-tractusx/puris/pull/535), [#605](https://github.com/eclipse-tractusx/puris/pull/605), [#628](https://github.com/eclipse-tractusx/puris/pull/628), [#649](https://github.com/eclipse-tractusx/puris/pull/649))
+    * docker/build-push-action from 5.3.0 to 6.9.0 ([#543](https://github.com/eclipse-tractusx/puris/pull/543), [#612](https://github.com/eclipse-tractusx/puris/pull/612))
+    * actions/setup-python from 5.1.1 to 5.2.0 ([#570](https://github.com/eclipse-tractusx/puris/pull/570)) to 5.3.0 ([#648](https://github.com/eclipse-tractusx/puris/pull/648))
+    * checkmarx/kics-github-action from 2.1.0 to 2.1.3 ([#560](https://github.com/eclipse-tractusx/puris/pull/560), [#619](https://github.com/eclipse-tractusx/puris/pull/619))
+    * aquasecurity/trivy-action from 0.22.0 to 0.24.0 ([#559](https://github.com/eclipse-tractusx/puris/pull/559),[#627](https://github.com/eclipse-tractusx/puris/pull/627), [#635](https://github.com/eclipse-tractusx/puris/pull/635))
+    * keycloak-js from 23.0.5 to 25.0.6 in /frontend ([#595](https://github.com/eclipse-tractusx/puris/pull/595))
+
+### Removed
+
+N.A.
+
+### Known Knowns
+
+#### Security
+
+The Backend is currently secured via API Key while the Frontend already uses a Keycloak integration.
+See [Admin Guide](./docs/admin/Admin_Guide.md) for further information.
+
+#### Upgradeability
+
+As currently no active user was known migrations of data are not yet supported. The chart technically is upgradeable.
+
+#### Data Sovereignty
+
+For productive use the following enhancements are encouraged
+
+* User FrontEnd available: Role Company Admin is able to query catalogue and see negotiations and transfers
+  But company rules / policies need to be configured upfront in backend (via postman) to enable automatic contract
+  negotiations, responsibility lies with Company Admin role
+  --> add section in the User Manual describing this and the (legal) importance and responsibility behind defining these rules
+* Currently only one standard policy per reg. connector / customer instance is supported (more precisely one for DTR,
+  one for all submodels), negotiation happens automatically based on this
+  --> enhance option to select partner and define specific policies (to be planned in context of BPDM Integration)
+  --> UI for specific configuration by dedicated role (e.g. Comp Admin) and more flexible policy configuration (withoutv code changes) is needed
+* As a non-Admin user I do not have ability to view policies in detail --> transparency for users when interacting with and requesting / consuming data via dashboard / views on underlying usage policies to be enhanced
+* ContractReference Constraint or configuration of policies specific to one partner only has notnot implemented --> clarification of potential reference to "PURIS standard contract" and enabling of ContractReference for 24.08.
+* unclear meaning of different stati in negotations --> add view of successfull contract agreeements wrt which data have been closed
+* current logging only done on info level --> enhance logging of policies (currently only available at debug level)
+* in case of non-matching policies (tested in various scenarios) no negotiation takes place --> **enhance visualization or specific Error message to user**
+* no validation of the Schema "profile": "cx-policy:profile2405" (required to ensure interop with other PURIS apps)
+
+#### Styleguide
+
+Overall
+
+* Brief description at the top of each page describing content would be nice for better user experience.
+
+Catalog
+
+* No action possible -> unclear to user when and how user will consume an offer
+
+Negotiations
+
+* Add filters for transparency (bpnl, state)
+
 ## [v2.1.0](https://github.com/eclipse-tractusx/puris/releases/tag/2.1.0)
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs

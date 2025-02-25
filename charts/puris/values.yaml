@@ -441,7 +441,7 @@ backend:
       apiassetid: notification-api-asset
     frameworkagreement:
       # -- The name of the framework agreement. Starting with Uppercase and using CamelCase.
-      credential: Puris
+      credential: DataExchangeGovernance
       # -- The version of the framework agreement, NEEDS TO BE PUT AS "STRING"!
       version: "1.0"
     purpose:

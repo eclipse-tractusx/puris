@@ -1,6 +1,6 @@
 # puris
 
-![Version: 2.7.0](https://img.shields.io/badge/Version-2.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.1.0](https://img.shields.io/badge/AppVersion-2.1.0-informational?style=flat-square)
+![Version: 2.8.0](https://img.shields.io/badge/Version-2.8.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.0.0](https://img.shields.io/badge/AppVersion-3.0.0-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
@@ -102,7 +102,7 @@ dependencies:
 | backend.puris.erpadapter.timelimit | int | `7` | Period since last received partner request after which no more new update requests to the erp adapter will be sent (days) |
 | backend.puris.erpadapter.url | string | `"http://my-erpadapter:8080"` | The url of your ERP adapter's request api |
 | backend.puris.existingSecret | string | `"secret-puris-backend"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
-| backend.puris.frameworkagreement.credential | string | `"Puris"` | The name of the framework agreement. Starting with Uppercase and using CamelCase. |
+| backend.puris.frameworkagreement.credential | string | `"DataExchangeGovernance"` | The name of the framework agreement. Starting with Uppercase and using CamelCase. |
 | backend.puris.frameworkagreement.version | string | `"1.0"` | The version of the framework agreement, NEEDS TO BE PUT AS "STRING"! |
 | backend.puris.generatematerialcatenaxid | bool | `true` | Flag that decides whether the auto-generation feature of the puris backend is enabled. Since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing CatenaX-Id via the materials-API of the backend, when you are inserting a new Material entity to the backend's database. If a CatenaX-Id was not assigned to your Material so far, then this feature can auto-generate one randomly. In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that Material entity. |
 | backend.puris.itemstocksubmodel.apiassetid | string | `"itemstocksubmodel-api-asset"` | Asset ID for ItemStockSubmodel API |
