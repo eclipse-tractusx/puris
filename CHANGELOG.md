@@ -29,6 +29,7 @@ Fixes
 * Missing indicators for mandatory fields ([#800](https://github.com/eclipse-tractusx/puris/pull/800))
 * Update "Supplier Site" label on add demand dialog to "Expected Supplier Site" ([#800](https://github.com/eclipse-tractusx/puris/pull/800))
 * fixed translation of weekdays to english language ([#800](https://github.com/eclipse-tractusx/puris/pull/800))
+* fixed missing mandatory indicator for Estimated Completion Time ([#801](https://github.com/eclipse-tractusx/puris/pull/801))
 
 UI enhancements
 
