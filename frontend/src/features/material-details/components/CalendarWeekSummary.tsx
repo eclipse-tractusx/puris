@@ -78,7 +78,7 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                             spacing={0.25}
                                             sx={{ backgroundColor: '#f5f5f5' }}
                                         >
-                                            <Typography variant="body2"> {date.toLocaleDateString(undefined, { weekday: 'long' })} </Typography>
+                                            <Typography variant="body2"> {date.toLocaleDateString('en-GB', { weekday: 'long' })} </Typography>
                                             <Typography variant="body2" color="#777"> {date.toLocaleDateString()} </Typography>
                                         </Stack>
                                     )}
