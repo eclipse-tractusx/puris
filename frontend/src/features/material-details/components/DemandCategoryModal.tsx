@@ -324,7 +324,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                             ?.find((s) => s.bpnl === temporaryDemand.partnerBpnl)
                                             ?.sites.find((s) => s.bpns === temporaryDemand.supplierLocationBpns) ?? null
                                     }
-                                    label="Supplier Site"
+                                    label="Expected Supplier Site"
                                     placeholder="Select a Site"
                                 />
                             </Grid>
