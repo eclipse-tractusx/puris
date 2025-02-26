@@ -24,8 +24,11 @@ Fixes
 * Change log message for already existing edc assets on startup ([547](https://github.com/eclipse-tractusx/puris/pull/547))
 * Don't return own partner entity from partner/all endpoint ([#563](https://github.com/eclipse-tractusx/puris/pull/563))
 * Fix material number issues and partner/all endpoint in integration test suite ([#689](https://github.com/eclipse-tractusx/puris/pull/689))
-
 * improve demand and capacity notification (accept material number correctly, added test, role specific differentiation) ([#576](https://github.com/eclipse-tractusx/puris/pull/576))
+* Can't create select a partner when creating deliveries ([#800](https://github.com/eclipse-tractusx/puris/pull/800))
+* Missing indicators for mandatory fields ([#800](https://github.com/eclipse-tractusx/puris/pull/800))
+* Update "Supplier Site" label on add demand dialog to "Expected Supplier Site" ([#800](https://github.com/eclipse-tractusx/puris/pull/800))
+* fixed translation of weekdays to english language ([#800](https://github.com/eclipse-tractusx/puris/pull/800))
 
 UI enhancements
 
