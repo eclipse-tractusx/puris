@@ -5,7 +5,7 @@ global:
 # FRONTEND -----------
 frontend:
   image:
-    tag: "3.0.0-rc1"
+    tag: "3.0.0-rc2"
   # fullnameOverride: "supplier-frontend"
   ingress:
     # -- Enable the Ingress
@@ -53,7 +53,7 @@ frontend:
 # BACKEND -----------
 backend:
   image:
-    tag: "latest"
+    tag: "3.0.0-rc2"
   # fullnameOverride: "supplier-backend"
   env:
     LOGGING_LEVEL_ORG_ECLIPSE_TRACTUSX_PURIS_BACKEND: DEBUG
