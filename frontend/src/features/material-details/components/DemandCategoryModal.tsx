@@ -136,7 +136,7 @@ type DemandCategoryModalProps = {
 };
 
 const isValidDemand = (demand: Partial<Demand>) =>
-    demand?.day && demand?.quantity && demand.demandCategoryCode && demand?.measurementUnit && demand?.partnerBpnl;
+    demand?.day && demand?.demandLocationBpns && demand?.quantity && demand.demandCategoryCode && demand?.measurementUnit && demand?.partnerBpnl;
 
 export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, demands }: DemandCategoryModalProps) => {
     const [temporaryDemand, setTemporaryDemand] = useState<Partial<Demand>>(demand ?? {});
@@ -215,7 +215,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                         setTemporaryDemand({ ...temporaryDemand, demandLocationBpns: value?.bpns ?? undefined })
                                     }
                                     value={sites?.find((s) => s.bpns === temporaryDemand.demandLocationBpns) ?? null}
-                                    label="Demand Site"
+                                    label="Demand Site*"
                                     placeholder="Select a Site"
                                 />
                             </Grid>

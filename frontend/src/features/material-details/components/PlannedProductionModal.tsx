@@ -124,6 +124,7 @@ type PlannedProductionModalProps = {
 };
 const isValidProduction = (production: Partial<Production>) =>
     production &&
+    production.productionSiteBpns &&
     production.estimatedTimeOfCompletion &&
     production.quantity &&
     production.measurementUnit &&
@@ -203,7 +204,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                             setTemporaryProduction({ ...temporaryProduction, productionSiteBpns: value?.bpns ?? undefined })
                                         }
                                         value={sites?.find((s) => s.bpns === temporaryProduction.productionSiteBpns) ?? null}
-                                        label="Production Site"
+                                        label="Production Site*"
                                         placeholder="Select a Site"
                                     />
                                 </Grid>
