@@ -247,7 +247,7 @@ export const DeliveryInformationModal = ({
     deliveries,
 }: DeliveryInformationModalProps) => {
     const [temporaryDelivery, setTemporaryDelivery] = useState<Partial<Delivery>>(delivery ?? {});
-    const { partners } = usePartners(direction === DirectionType.Inbound ? 'product' : 'material', temporaryDelivery?.ownMaterialNumber ?? null);
+    const { partners } = usePartners(direction === DirectionType.Outbound ? 'product' : 'material', temporaryDelivery?.ownMaterialNumber ?? null);
     const { sites } = useSites();
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
