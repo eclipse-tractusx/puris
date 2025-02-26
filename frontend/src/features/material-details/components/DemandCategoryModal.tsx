@@ -334,7 +334,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                             title={`Material Demand ${
                                 temporaryDemand?.day
                                     ? ' on ' +
-                                      new Date(temporaryDemand?.day).toLocaleDateString(undefined, {
+                                      new Date(temporaryDemand?.day).toLocaleDateString('en-GB', {
                                           weekday: 'long',
                                           day: '2-digit',
                                           month: '2-digit',

@@ -323,7 +323,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     title={`Planned Production ${
                                         temporaryProduction?.estimatedTimeOfCompletion
                                             ? ' on ' +
-                                              new Date(temporaryProduction?.estimatedTimeOfCompletion).toLocaleDateString(undefined, {
+                                              new Date(temporaryProduction?.estimatedTimeOfCompletion).toLocaleDateString('en-GB', {
                                                   weekday: 'long',
                                                   day: '2-digit',
                                                   month: '2-digit',
