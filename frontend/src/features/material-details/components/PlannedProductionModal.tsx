@@ -210,7 +210,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                 </Grid>
                                 <Grid item xs={6} display="flex" alignItems="end">
                                     <DateTime
-                                        label="Estimated Completion Time"
+                                        label="Estimated Completion Time*"
                                         placeholder="Pick Production Date"
                                         locale="de"
                                         error={formError}
