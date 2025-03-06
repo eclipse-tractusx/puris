@@ -81,6 +81,7 @@ dependencies:
 | backend.puris.datasource.password | string | `""` | Password for the database user. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.url | string | `"jdbc:postgresql://postgresql-name:5432/puris-database"` | URL of the database. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.username | string | `"db-user"` | Username of the database. Ignored if postgres.enabled is true. |
+| backend.puris.daysofsupplysubmodel.apiassetid | string | `"daysofsupply-api-asset"` | Asset ID for DaysOfSupplySubmodel API |
 | backend.puris.deliverysubmodel.apiassetid | string | `"deliverysubmodel-api-asset"` | Asset ID for DeliverySubmodel API |
 | backend.puris.demandsubmodel.apiassetid | string | `"demandsubmodel-api-asset"` | Asset ID for DemandSubmodel API |
 | backend.puris.demonstrator.role | string | `nil` | Current role of the PURIS demonstrator. Default value should be empty. Can be set to "customer" or "supplier" to enable demonstration setup |
@@ -97,6 +98,7 @@ dependencies:
 | backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc |
 | backend.puris.edc.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api |
 | backend.puris.erpadapter.authkey | string | `"x-api-key"` | The auth key to be used on your ERP adapter's request api |
+| backend.puris.erpadapter.authsecret | string | `""` | The auth secret to be used on your ERP adapter's request api. Reused from existing secret. Secret key "puris-erpadapter-authsecret". |
 | backend.puris.erpadapter.enabled | bool | `false` | Toggles usage of the ERP adapter |
 | backend.puris.erpadapter.refreshinterval | int | `720` | Interval between two requests to the erp adapter for the same issue (minutes) |
 | backend.puris.erpadapter.timelimit | int | `7` | Period since last received partner request after which no more new update requests to the erp adapter will be sent (days) |
@@ -173,7 +175,7 @@ dependencies:
 | frontend.puris.endpointDaysOfSupply | string | `"days-of-supply"` | The endpoint for the days of supply submodel |
 | frontend.puris.endpointDelivery | string | `"delivery"` | The endpoint for the delivery submodel |
 | frontend.puris.endpointDemand | string | `"demand"` | The endpoint for the demand submodel |
-| frontend.puris.dendpointDemandAndCapacityNotification | string | `"demand-and-capacity-notification"` | The endpoint for demand and capacity notifications |
+| frontend.puris.endpointDemandAndCapacityNotification | string | `"demand-and-capacity-notification"` | The endpoint for demand and capacity notifications |
 | frontend.puris.endpointErpScheduleUpdate | string | `"erp-adapter/trigger"` | The endpoint for scheduling an update of erp data (currently only stock supported) |
 | frontend.puris.endpointMaterialStocks | string | `"stockView/material-stocks"` | The endpoint for material stocks for the stock view |
 | frontend.puris.endpointMaterials | string | `"stockView/materials"` | The endpoint for materials for the stock view |
