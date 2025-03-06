@@ -490,6 +490,8 @@ backend:
       url: http://my-erpadapter:8080
       # -- The auth key to be used on your ERP adapter's request api
       authkey: x-api-key
+      # -- The auth secret to be used on your ERP adapter's request api. Reused from existing secret. Secret key "puris-erpadapter-authsecret".
+      authsecret: ""
       # -- Interval between two requests to the erp adapter for the same issue (minutes)
       refreshinterval: 720
       # -- Period since last received partner request after which no more new update requests to the
