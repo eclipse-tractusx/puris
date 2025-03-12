@@ -124,6 +124,7 @@ type PlannedProductionModalProps = {
 };
 const isValidProduction = (production: Partial<Production>) =>
     production &&
+    production.productionSiteBpns &&
     production.estimatedTimeOfCompletion &&
     production.quantity &&
     production.measurementUnit &&
@@ -203,13 +204,13 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                             setTemporaryProduction({ ...temporaryProduction, productionSiteBpns: value?.bpns ?? undefined })
                                         }
                                         value={sites?.find((s) => s.bpns === temporaryProduction.productionSiteBpns) ?? null}
-                                        label="Production Site"
+                                        label="Production Site*"
                                         placeholder="Select a Site"
                                     />
                                 </Grid>
                                 <Grid item xs={6} display="flex" alignItems="end">
                                     <DateTime
-                                        label="Estimated Completion Time"
+                                        label="Estimated Completion Time*"
                                         placeholder="Pick Production Date"
                                         locale="de"
                                         error={formError}
@@ -322,7 +323,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                     title={`Planned Production ${
                                         temporaryProduction?.estimatedTimeOfCompletion
                                             ? ' on ' +
-                                              new Date(temporaryProduction?.estimatedTimeOfCompletion).toLocaleDateString(undefined, {
+                                              new Date(temporaryProduction?.estimatedTimeOfCompletion).toLocaleDateString('en-GB', {
                                                   weekday: 'long',
                                                   day: '2-digit',
                                                   month: '2-digit',

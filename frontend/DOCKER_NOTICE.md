@@ -14,6 +14,7 @@ Eclipse Tractus-X product(s) installed within the image:
 **Used Base Image [Frontend]**
 `nginxinc/nginx-unprivileged:alpine`
 
+- [Dockerfile (alpine)](https://github.com/nginxinc/docker-nginx-unprivileged/blob/main/Dockerfile-alpine.template)
 - DockerHub: https://hub.docker.com/r/nginxinc/nginx-unprivileged
 - GitHub project: https://github.com/nginxinc/docker-nginx-unprivileged
 

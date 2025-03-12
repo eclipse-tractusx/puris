@@ -136,7 +136,7 @@ type DemandCategoryModalProps = {
 };
 
 const isValidDemand = (demand: Partial<Demand>) =>
-    demand?.day && demand?.quantity && demand.demandCategoryCode && demand?.measurementUnit && demand?.partnerBpnl;
+    demand?.day && demand?.demandLocationBpns && demand?.quantity && demand.demandCategoryCode && demand?.measurementUnit && demand?.partnerBpnl;
 
 export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, demands }: DemandCategoryModalProps) => {
     const [temporaryDemand, setTemporaryDemand] = useState<Partial<Demand>>(demand ?? {});
@@ -215,7 +215,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                         setTemporaryDemand({ ...temporaryDemand, demandLocationBpns: value?.bpns ?? undefined })
                                     }
                                     value={sites?.find((s) => s.bpns === temporaryDemand.demandLocationBpns) ?? null}
-                                    label="Demand Site"
+                                    label="Demand Site*"
                                     placeholder="Select a Site"
                                 />
                             </Grid>
@@ -324,7 +324,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                             ?.find((s) => s.bpnl === temporaryDemand.partnerBpnl)
                                             ?.sites.find((s) => s.bpns === temporaryDemand.supplierLocationBpns) ?? null
                                     }
-                                    label="Supplier Site"
+                                    label="Expected Supplier Site"
                                     placeholder="Select a Site"
                                 />
                             </Grid>
@@ -334,7 +334,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                             title={`Material Demand ${
                                 temporaryDemand?.day
                                     ? ' on ' +
-                                      new Date(temporaryDemand?.day).toLocaleDateString(undefined, {
+                                      new Date(temporaryDemand?.day).toLocaleDateString('en-GB', {
                                           weekday: 'long',
                                           day: '2-digit',
                                           month: '2-digit',
@@ -356,6 +356,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                         {mode === 'create' && (
                             <Button
                                 variant="contained"
+                                color="primary"
                                 sx={{ display: 'flex', gap: '.25rem' }}
                                 onClick={() => handleSaveClick(temporaryDemand)}
                             >

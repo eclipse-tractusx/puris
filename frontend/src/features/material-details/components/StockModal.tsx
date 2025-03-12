@@ -227,7 +227,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                                             })
                                         }
                                         value={sites?.find((s) => s.bpns === temporaryStock.stockLocationBpns) ?? null}
-                                        label="Stock Site"
+                                        label="Stock Site*"
                                         placeholder="Select a Site"
                                     />
                                 </Grid>
@@ -245,7 +245,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                                             site.bpns === temporaryStock.stockLocationBpns)?.addresses?.find((a) => 
                                                 a.bpna === temporaryStock.stockLocationBpna) ?? null
                                         }
-                                        label="Stock Address"
+                                        label="Stock Address*"
                                         placeholder="Select an address"
                                         disabled={!temporaryStock.stockLocationBpns}
                                     />
