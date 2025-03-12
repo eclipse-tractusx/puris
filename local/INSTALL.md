@@ -39,17 +39,29 @@ Then use the deployment script to fulfill common scenarios:
 ```shell
 cd local
 
+# First run: 
+# - generate secrets and keys
+# - start infrastructure
+# - seed bdrs
+# - deploy puris, dtr, edc
+# If run again, the existing infrastructure will be reused:
+# - remove services for puris, dtr, edc
+# - deploy puris, dtr, edc
+sh deploy.sh
+
 # deploy PURIS from scratch with a cleanup upfront
 sh deploy.sh -c
 
-# redeploy puris but keep infrastructure
-sh deploy.sh
+# same as without any option, but attaches customer and supplier puris backends after successful startup
+sh deploy.sh -a
+
+# removes role definition in puris backends and seeds INT test data from scratch with a cleanup upfront
+sh deploy.sh -i
 
 # redeploy puris but keep infrastructure and show logs of EDC, DTR, PURIS
 sh deploy.sh -l
 
-# remove role definition in puris-backend.properties and seed INT test data from scratch with a cleanup upfront
-sh deploy.sh -ci
+
 ```
 
 The script also checks if the respective services are healthy (sometimes simplified).

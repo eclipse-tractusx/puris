@@ -24,10 +24,14 @@ edc_only=0
 int_seed=0
 logs=0
 # Remove previous installations if -c flag has been specified, and generate new keys
-while getopts "ceilh" opt;do
+while getopts "aceilh" opt;do
   case $opt in
+    a)
+        echo "Alright, we'll run PURIS backends in attached mode."
+        attach=1
+        ;;
     c)
-      echo "Cleanup requested."
+      echo "Alright, we'll clean-up the infrastructure."
       cleanup=1
       ;;
     i)
@@ -35,26 +39,26 @@ while getopts "ceilh" opt;do
       int_seed=1
       ;;
     l)
-          echo "Alright, you'll see the logs of the edc, dtr, puris."
-          logs=1
-          ;;
+      echo "Alright, you'll see the logs of the edc, dtr, puris."
+      logs=1
+      ;;
     h)
       echo "By default the tool does the following:"
       echo "- ensure that environment and keys have been generated"
       echo "- startup infrastructure, if needed"
       echo "- (delete and re-) start edc, dtr, puris"
       echo ""
-      echo "If no option -e is provided, then start PURIS, with same result as running following commands:"
+      echo "If no option is provided, then start PURIS (detached mode), with same result as running following commands:"
       echo "\$sh generate-keys.sh # if no .env exists"
       echo "\$docker compose -f docker-compose-infrastructure up # if no keycloak is running"
       echo "\$docker compose down -v"
       echo "\$docker compose up"
       echo ""
       echo "You can use options to alter behavior:"
+      echo "-a attach        = attach puris backend containers after whole setup (includes int data seed). -l option will be ignored."
       echo "-c clean         = run sh.cleanup before starting to create a new environment (Wallet, Keycloak, Keys)"
-      echo "-i seed-int-data = TBD seed integration test data"
-      echo "-l logs          = Follows the logs of the EDC, DTR and PURIS same as today with docker-compose."
-      echo "-p puris         = start PURIS, same result as 'docker compose up' with previous 'docker compose down -v'"
+      echo "-i seed-int-data = start backends with empty role and seed integration test data"
+      echo "-l logs          = Follows the logs of the EDC, DTR and PURIS same as with docker-compose but detached mode."
       echo "\nExiting..."
       exit 1
       ;;
@@ -131,7 +135,11 @@ if [ $int_seed -eq 1 ]; then
   echo "...seeded data. PLEASE CHECK RESULTS ON YOUR OWN."
 fi
 
-if [ $logs -eq 1 ]; then
+if [ $attach -eq 1 ]; then
+  echo "...attach customer and supplier backend"
+  docker compose logs puris-backend-customer puris-backend-supplier
+  docker compose up --attach puris-backend-customer --attach puris-backend-supplier --no-recreate
+elif [ $logs -eq 1 ]; then
   echo "Opening logs for edcs, dtrs, puris."
   docker compose logs -f dtr-customer edc-customer-control-plane edc-supplier-control-plane postgres-all \
                          puris-backend-supplier puris-frontend-supplier dtr-supplier edc-customer-data-plane \
