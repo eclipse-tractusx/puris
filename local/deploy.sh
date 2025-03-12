@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 # Copyright (c) 2024 Contributors to the Eclipse Foundation
@@ -23,6 +23,7 @@ cleanup=0
 edc_only=0
 int_seed=0
 logs=0
+attach=0
 # Remove previous installations if -c flag has been specified, and generate new keys
 while getopts "aceilh" opt;do
   case $opt in
