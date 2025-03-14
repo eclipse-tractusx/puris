@@ -3,7 +3,7 @@
 #
 # Copyright (c) 2023 Volkswagen AG
 # Copyright (c) 2023 Contributors to the Eclipse Foundation
-# Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
