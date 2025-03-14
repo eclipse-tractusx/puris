@@ -54,6 +54,7 @@ jobs:
         with:
           path: "."
           fail_on: high
+          exclude_paths: ./local/,./docs/api
           # Disable secrets detection - we use GitGuardian
           disable_secrets: true
           output_path: kicsResults/

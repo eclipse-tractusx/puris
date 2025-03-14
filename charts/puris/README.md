@@ -18,6 +18,7 @@ To install the chart with the release name `puris`:
 $ helm repo add tractusx-dev https://eclipse-tractusx.github.io/charts/dev
 $ helm install puris tractusx-dev/puris
 ```
+
 To install the helm chart into your cluster with your values:
 
 ```shell
@@ -39,8 +40,8 @@ dependencies:
 
 ## Requirements
 
-| Repository | Name | Version |
-|------------|------|---------|
+| Repository                         | Name       | Version |
+|------------------------------------|------------|---------|
 | https://charts.bitnami.com/bitnami | postgresql | 12.12.x |
 
 ## Values
@@ -64,10 +65,10 @@ dependencies:
 | backend.ingress.enabled | bool | `false` | Enable the Ingress |
 | backend.ingress.hosts | list | `[{"host":"your-backend-host-address.com","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
 | backend.ingress.tls | list | `[]` | TLS certificates for the Ingress controller |
-| backend.livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":120,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
-| backend.livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
-| backend.livenessProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial liveness probe is checked |
-| backend.livenessProbe.periodSeconds | int | `25` | Wait time in seconds between liveness probes |
+| backend.livenessProbe | object | `{"failureThreshold":1,"initialDelaySeconds":0,"periodSeconds":5,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
+| backend.livenessProbe.failureThreshold | int | `1` | Number of failures (threshold) for a liveness probe |
+| backend.livenessProbe.initialDelaySeconds | int | `0` | Delay in seconds after which an initial liveness probe is checked |
+| backend.livenessProbe.periodSeconds | int | `5` | Wait time in seconds between liveness probes |
 | backend.livenessProbe.successThreshold | int | `1` | Number of trys until a pod is marked alive |
 | backend.livenessProbe.timeoutSeconds | int | `1` | Timeout in seconds of the liveness probe |
 | backend.nameOverride | string | `""` | Possibility to override the name |
@@ -122,10 +123,10 @@ dependencies:
 | backend.puris.productionsubmodel.apiassetid | string | `"productionsubmodel-api-asset"` | Asset ID for ProductionSubmodel API |
 | backend.puris.purpose.name | string | `"cx.puris.base"` | The name of the purpose to use for submodel contracts |
 | backend.puris.purpose.version | string | `"1"` | The version of the purpose to use for submodel contracts. NEEDS TO BE PUT AS "STRING"! |
-| backend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":120,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
-| backend.readinessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a readiness probe |
-| backend.readinessProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial readiness probe is checked |
-| backend.readinessProbe.periodSeconds | int | `25` | Wait time in seconds between readiness probes |
+| backend.readinessProbe | object | `{"failureThreshold":1,"initialDelaySeconds":0,"periodSeconds":5,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
+| backend.readinessProbe.failureThreshold | int | `1` | Number of failures (threshold) for a readiness probe |
+| backend.readinessProbe.initialDelaySeconds | int | `0` | Delay in seconds after which an initial readiness probe is checked |
+| backend.readinessProbe.periodSeconds | int | `5` | Wait time in seconds between readiness probes |
 | backend.readinessProbe.successThreshold | int | `1` | Number of trys until a pod is marked ready |
 | backend.readinessProbe.timeoutSeconds | int | `1` | Timeout in seconds of the readiness probe |
 | backend.replicaCount | int | `1` | Number of replicas of the Kubernetes deployment |
@@ -141,6 +142,11 @@ dependencies:
 | backend.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | backend.serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | backend.serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
+| backend.startupProbe.enabled | bool | `true` |  |
+| backend.startupProbe.failureThreshold | int | `5` | Number of failures (threshold) for a readiness probe |
+| backend.startupProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial readiness probe is checked |
+| backend.startupProbe.periodSeconds | int | `30` | Wait time in seconds between readiness probes |
+| backend.startupProbe.successThreshold | int | `1` | Number of trys until a pod is marked ready |
 | backend.tolerations | list | `[]` | Constrains for tolerations |
 | frontend.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app.kubernetes.io/name","operator":"DoesNotExist"}]},"topologyKey":"kubernetes.io/hostname"},"weight":100}]` | Rules for the scheduler to find a pod |
 | frontend.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions | list | `[{"key":"app.kubernetes.io/name","operator":"DoesNotExist"}]` | Matching Expressions as key and operators for the pod affinity |

@@ -11,7 +11,7 @@ pypi/pypi/-/cryptography/44.0.1, Apache-2.0 AND BSD-3-Clause AND Apache-2.0 AND 
 pypi/pypi/-/dnspython/2.6.1, ISC, approved, #14862
 pypi/pypi/-/email-validator/2.1.0.post1, CC0-1.0, approved, clearlydefined
 pypi/pypi/-/exceptiongroup/1.2.0, MIT AND PSF-2.0, approved, #12076
-pypi/pypi/-/fastapi/0.111.0, MIT AND Apache-2.0, approved, #14863
+pypi/pypi/-/fastapi/0.115.11, MIT, approved, #19828
 pypi/pypi/-/h11/0.14.0, MIT AND BSD-3-Clause, approved, #13077
 pypi/pypi/-/httpcore/1.0.2, BSD-2-Clause AND BSD-3-Clause, approved, clearlydefined
 pypi/pypi/-/httptools/0.6.1, MIT, approved, #14635
