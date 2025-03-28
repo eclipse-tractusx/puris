@@ -5,6 +5,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.1.0](https://github.com/eclipse-tractusx/puris/releases/tag/3.1.0) _unpublished_
+
+The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
+
+The **need for configuration updates** is **marked bold**.
+
+### Added
+
+* One line local deployment script ([#469](https://github.com/eclipse-tractusx/puris/pull/469))
+
+### Changed
+
+* Switch to spring actuator helm endpoint including enhancement of health, liveness and startup probe ([#469](https://github.com/eclipse-tractusx/puris/pull/469))
+
+Fixes
+
+* Expect dtr base url to include `api/v3` in asset ([#844](https://github.com/eclipse-tractusx/puris/pull/824)) (**updated default values and asset definition**)
+
+### Removed
+
+N.A.
+
+### Known Knowns
+
+#### Security
+
+The Backend is currently secured via API Key while the Frontend already uses a Keycloak integration.
+See [Admin Guide](./docs/admin/Admin_Guide.md) for further information.
+
+#### Upgradeability
+
+As currently no active user was known migrations of data are not yet supported. The chart technically is upgradeable.
+
+#### Data Sovereignty
+
+For productive use the following enhancements are encouraged
+
+* User FrontEnd available: Role Company Admin is able to query catalogue and see negotiations and transfers
+  But company rules / policies need to be configured upfront in backend (via postman) to enable automatic contract
+  negotiations, responsibility lies with Company Admin role
+  --> add section in the User Manual describing this and the (legal) importance and responsibility behind defining these rules
+* Currently only one standard policy per reg. connector / customer instance is supported (more precisely one for DTR,
+  one for all submodels), negotiation happens automatically based on this
+  --> enhance option to select partner and define specific policies (to be planned in context of BPDM Integration)
+  --> UI for specific configuration by dedicated role (e.g. Comp Admin) and more flexible policy configuration (withoutv code changes) is needed
+* As a non-Admin user I do not have ability to view policies in detail --> transparency for users when interacting with and requesting / consuming data via dashboard / views on underlying usage policies to be enhanced
+* ContractReference Constraint or configuration of policies specific to one partner only has notnot implemented --> clarification of potential reference to "PURIS standard contract" and enabling of ContractReference for 24.08.
+* unclear meaning of different stati in negotations --> add view of successfull contract agreeements wrt which data have been closed
+* current logging only done on info level --> enhance logging of policies (currently only available at debug level)
+* in case of non-matching policies (tested in various scenarios) no negotiation takes place --> **enhance visualization or specific Error message to user**
+* no validation of the Schema "profile": "cx-policy:profile2405" (required to ensure interop with other PURIS apps)
+
+#### Styleguide
+
+Overall
+
+* Brief description at the top of each page describing content would be nice for better user experience.
+
+Catalog
+
+* No action possible -> unclear to user when and how user will consume an offer
+
+Negotiations
+
+* Add filters for transparency (bpnl, state)
+
 ## [v3.0.0](https://github.com/eclipse-tractusx/puris/releases/tag/3.0.0)
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
