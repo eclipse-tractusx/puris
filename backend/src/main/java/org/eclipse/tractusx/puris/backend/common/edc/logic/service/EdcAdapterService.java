@@ -869,9 +869,8 @@ public class EdcAdapterService {
                 } else {
                     log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
                 }
+                // expected per CX-0002: dtr base url should contain /api/v3
                 HttpUrl.Builder urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
-                    .addPathSegment("api")
-                    .addPathSegment("v3")
                     .addPathSegment("lookup")
                     .addPathSegment("shells");
                 String query = "{\"name\":\"manufacturerPartId\",\"value\":\"" + manufacturerPartId + "\"}";
@@ -894,9 +893,8 @@ public class EdcAdapterService {
                             log.info(resultArray.toPrettyString());
                         }
                         String aasId = resultArray.get(0).asText();
+                        // expected per CX-0002: dtr base url should contain /api/v3
                         urlBuilder = HttpUrl.parse(edrDto.endpoint()).newBuilder()
-                            .addPathSegment("api")
-                            .addPathSegment("v3")
                             .addPathSegment("shell-descriptors");
                         String base64AasId = Base64.getEncoder().encodeToString(aasId.getBytes(StandardCharsets.UTF_8));
                         urlBuilder.addPathSegment(base64AasId);

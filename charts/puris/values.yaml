@@ -462,8 +462,8 @@ backend:
       # -- The version of the purpose to use for submodel contracts. NEEDS TO BE PUT AS "STRING"!
       version: "1"
     dtr:
-      # --Endpoint for DTR
-      url: http://localhost:4243
+      # --Endpoint for DTR including api/v3 prefix
+      url: http://localhost:4243/api/v3
       idp:
         # -- enables the usage of the IDP for the DTR.
         enabled: true
