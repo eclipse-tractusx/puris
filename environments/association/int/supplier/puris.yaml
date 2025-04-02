@@ -124,6 +124,10 @@ backend:
       zipcodeandcity: "10001 New York"
       # -- Own name (self-description)
       name: "Semiconductor Supplier Inc."
+    jpa:
+      hibernate:
+        # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones
+        ddl-auto: update
     dtr:
       url: https://<path:puris/data/supplier/dtr#hostname>/semantics/registry
       idp:
