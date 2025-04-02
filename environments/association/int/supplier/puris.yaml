@@ -195,6 +195,9 @@ postgresql:
       postgresql: 5432
   auth:
     existingSecret: "supplier-secret-postgres-init"
+    username: <path:puris/data/supplier/puris/postgres#username>
+    password: <path:puris/data/supplier/puris/postgres#password>
+    passwordPostgres: <path:puris/data/supplier/puris/postgres#postgres-password>
   resources:
     requests:
       cpu: "20m"
