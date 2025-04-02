@@ -6,7 +6,8 @@ global:
 frontend:
   # fullnameOverride: "customer-frontend"
   image:
-    tag: "3.0.0-rc2"
+    tag: "main"
+    pullPolicy: IfNotPresent
   ingress:
     # -- Enable the Ingress
     enabled: true
@@ -54,7 +55,8 @@ frontend:
 backend:
   # fullnameOverride: "customer-backend"
   image:
-    tag: "3.0.0-rc2"
+    tag: "main"
+    pullPolicy: IfNotPresent
   env:
     LOGGING_LEVEL_ORG_ECLIPSE_TRACTUSX_PURIS_BACKEND: DEBUG
   ingress:
