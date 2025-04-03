@@ -73,7 +73,7 @@ postgresql:
   primary:
     persistence:
       enabled: true
-      size: 10Gi
+      size: 2Gi
   service:
     ports:
       postgresql: 5432
@@ -87,14 +87,27 @@ postgresql:
   resources:
     requests:
       cpu: "5m"
-      memory: "128Mi"
+      memory: "256Mi"
     limits:
       cpu: "200m"
       memory: "256Mi"  
 keycloak:
   type: NodePort
   postgresql:
+    # if not overridden you run into template issues due to 2nd postgres
+    # will be completed to <release-name>-keycloak-postgres
+    nameOverride: keycloak-postgres
+    # install postgress
     enabled: true
+    primary:
+      persistence:
+        enabled: true
+        size: 2Gi
+    auth:
+      username: <path:puris/data/customer/dtr/keycloak/postgres#user>
+      password: <path:puris/data/customer/dtr/keycloak/postgres#password>
+      database: <path:puris/data/customer/dtr/keycloak/postgres#database>
+      postgresPassword: <path:puris/data/customer/dtr/keycloak/postgres#postgres-password>
   auth:
     adminUser: <path:puris/data/customer/dtr/keycloak#admin-user>
     adminPassword: <path:puris/data/customer/dtr/keycloak#admin-password>
@@ -104,29 +117,43 @@ keycloak:
     path: /
     tls: 
       enabled: true
-      secretName: tls-secret-dtr-keycloak-customer
+      secretName: tls-secret-customer-dtr-keycloak
     annotations:
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
       external-dns.alpha.kubernetes.io/hostname: <path:puris/data/customer/dtr/keycloak#hostname>
       nginx.org/location-snippets: |
           add_header X-Forwarded-Proto https;
           add_header X-Forwarded-For <path:puris/data/customer/dtr/keycloak#hostname>;
-  extraVolumes:
-    - name: init-script-vol
-      configMap:
-        name: registry-keycloak-customer-configmap # = dtr.fullname + "-keycloak-configmap"
+  # extraVolumes:
+  #   - name: init-script-vol
+  #     configMap:
+  #       name: registry-keycloak-customer-configmap # = dtr.fullname + "-keycloak-configmap"
   # Mounting a keycloak realm configuration file
-  fullnameOverride: registry-keycloak-customer
-  database-credentials:
-    fullnameOverride: database-credentials-customer
-  extraVolumeMounts:
-    - mountPath: /opt/keycloak/data/import/default-realm-import.json
-      subPath: default-realm-import.json
-      name: init-script-vol
+  fullnameOverride: customer-dtr-keycloak
+  # remove as we won't use the init script as this hinders the startup (non-empty startup command does not lead to finding the postgres)
+  # database-credentials:
+  #   fullnameOverride: database-credentials-customer
+  
+  # override to empty as default client is inserted manually for now
+  extraVolumes: []
+  extraVolumeMounts: []
+  # extraVolumeMounts:
+  #   - mountPath: /opt/keycloak/data/import/default-realm-import.json
+  #     subPath: default-realm-import.json
+  #     name: init-script-vol
   # Using a pre-configured Keycloak with a default realm,
   # containing a test client and user with the necessary roles to
   # authorize requests to the digital twin registry.
   # Make sure to remove the '--hostname' property when deploying
   # in a non-test scanrio
-  command: ["/bin/sh", "-c"]
-  args: ["kc.sh start-dev --hostname=<path:puris/data/customer/dtr/keycloak#hostname> --hostname-strict=false --proxy=edge"]
+  # command: ["/bin/sh", "-c"]
+  # args: ["kc.sh start-dev --hostname=<path:puris/data/customer/dtr/keycloak#hostname> --hostname-strict=false --proxy=edge"]
+  command: []
+  args: []
+  resources:
+    requests:
+      cpu: "256m"
+      memory: "512Mi"
+    limits:
+      cpu: "512m"
+      memory: "512Mi"  

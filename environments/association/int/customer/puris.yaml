@@ -197,6 +197,10 @@ postgresql:
     ports:
       # -- Port of postgres database.
       postgresql: 5432
+  primary:
+      persistence:
+        enabled: true
+        size: 2Gi
   auth:
     existingSecret: "customer-secret-postgres-init"
     username: <path:puris/data/customer/puris/postgres#username>
@@ -205,5 +209,7 @@ postgresql:
   resources:
     requests:
       cpu: "20m"
+      memory: "256Mi"
     limits:
       cpu: "200m"
+      memory: "256Mi"

@@ -131,6 +131,7 @@ postgresql:
   primary:
     persistence:
       enabled: true
+      size: 2Gi
   readReplicas:
     persistence:
       enabled: true
@@ -141,8 +142,10 @@ postgresql:
   resources:
     requests:
       cpu: "20m"
+      memory: "256Mi"
     limits:
       cpu: "200m"
+      memory: "256Mi"
 vault:
   hashicorp:
     enabled: true
