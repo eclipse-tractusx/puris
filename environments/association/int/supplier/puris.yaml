@@ -129,7 +129,7 @@ backend:
         # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones
         ddl-auto: update
     dtr:
-      url: https://<path:puris/data/supplier/dtr#hostname>/semantics/registry
+      url: https://<path:puris/data/supplier/dtr#hostname>
       idp:
         enabled: true
         # -- token url of the idp for your specific realm. May be different to other idp token url in this config.
@@ -197,6 +197,10 @@ postgresql:
     ports:
       # -- Port of postgres database.
       postgresql: 5432
+  primary:
+      persistence:
+        enabled: true
+        size: 2Gi
   auth:
     existingSecret: "supplier-secret-postgres-init"
     username: <path:puris/data/supplier/puris/postgres#username>

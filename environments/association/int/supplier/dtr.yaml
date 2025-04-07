@@ -55,7 +55,7 @@ registry:
           paths:
             - path: /
     annotations: {
-      cert-manager.io/cluster-issuer: "letsencrypt",
+      cert-manager.io/cluster-issuer: "letsencrypt-prod",
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true",
       nginx.ingress.kubernetes.io/ssl-passthrough: "true"
     }
@@ -131,6 +131,10 @@ keycloak:
   #     configMap:
   #       name: registry-keycloak-supplier-configmap # = dtr.fullname + "-keycloak-configmap"
   # override to empty as default client is inserted manually for now
+  # new versions for proxyHeaders
+  # proxyHeaders: xforwarded
+  # forward https to http (enable reverse proxy via ingress)
+  proxy: edge
   fullnameOverride: supplier-dtr-keycloak
   extraVolumes: []
   extraVolumeMounts: []
