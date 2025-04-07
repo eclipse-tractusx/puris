@@ -47,15 +47,17 @@ registry:
     tls: 
       enabled: true
       secretName: tls-secret-dtr-supplier
-    urlPrefix: /semantics/registry
+    urlPrefix: ""
     className: nginx
+    rules:
+      - host:
+        http:
+          paths:
+            - path: /
     annotations: {
-      cert-manager.io/cluster-issuer: "letsencrypt-prod",
-      nginx.ingress.kubernetes.io/rewrite-target: /$2,
-      nginx.ingress.kubernetes.io/use-regex: "true",
-      nginx.ingress.kubernetes.io/enable-cors: "true",
-      nginx.ingress.kubernetes.io/cors-allow-credentials: "true",
-      nginx.ingress.kubernetes.io/x-forwarded-prefix: /semantics/registry
+      cert-manager.io/cluster-issuer: "letsencrypt",
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true",
+      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
     }
   resources:
     limits:
@@ -73,7 +75,7 @@ postgresql:
   primary:
     persistence:
       enabled: true
-      size: 10Gi
+      size: 2Gi
   service:
     ports:
       postgresql: 5432
@@ -87,12 +89,27 @@ postgresql:
   resources:
     requests:
       cpu: "5m"
-      memory: "128Mi"
+      memory: "256Mi"
     limits:
       cpu: "200m"
       memory: "256Mi"  
 keycloak:
   type: NodePort
+  postgresql:
+    # if not overridden you run into template issues due to 2nd postgres
+    # will be completed to <release-name>-keycloak-postgres
+    nameOverride: keycloak-postgres
+    # install postgress
+    enabled: true
+    primary:
+      persistence:
+        enabled: true
+        size: 2Gi
+    auth:
+      username: <path:puris/data/supplier/dtr/keycloak/postgres#user>
+      password: <path:puris/data/supplier/dtr/keycloak/postgres#password>
+      database: <path:puris/data/supplier/dtr/keycloak/postgres#database>
+      postgresPassword: <path:puris/data/supplier/dtr/keycloak/postgres#postgres-password>
   auth:
     adminUser: <path:puris/data/supplier/dtr/keycloak#admin-user>
     adminPassword: <path:puris/data/supplier/dtr/keycloak#admin-password>
@@ -109,22 +126,34 @@ keycloak:
       nginx.org/location-snippets: |
           add_header X-Forwarded-Proto https;
           add_header X-Forwarded-For <path:puris/data/supplier/dtr/keycloak#hostname>;
-  extraVolumes:
-    - name: init-script-vol
-      configMap:
-        name: registry-keycloak-supplier-configmap # = dtr.fullname + "-keycloak-configmap"
+  # extraVolumes:
+  #   - name: init-script-vol
+  #     configMap:
+  #       name: registry-keycloak-supplier-configmap # = dtr.fullname + "-keycloak-configmap"
+  # override to empty as default client is inserted manually for now
+  fullnameOverride: supplier-dtr-keycloak
+  extraVolumes: []
+  extraVolumeMounts: []
   # Mounting a keycloak realm configuration file
-  fullnameOverride: registry-keycloak-supplier
-  database-credentials:
-    fullnameOverride: database-credentials-supplier
-  extraVolumeMounts:
-    - mountPath: /opt/keycloak/data/import/default-realm-import.json
-      subPath: default-realm-import.json
-      name: init-script-vol
+  # database-credentials:
+  #   fullnameOverride: database-credentials-supplier
+  # extraVolumeMounts:
+  #   - mountPath: /opt/keycloak/data/import/default-realm-import.json
+  #     subPath: default-realm-import.json
+  #     name: init-script-vol
   # Using a pre-configured Keycloak with a default realm,
   # containing a test client and user with the necessary roles to
   # authorize requests to the digital twin registry.
   # Make sure to remove the '--hostname' property when deploying
   # in a non-test scanrio
-  command: ["/bin/sh", "-c"]
-  args: ["kc.sh start-dev --hostname=<path:puris/data/supplier/dtr/keycloak#hostname> --hostname-strict=false --proxy=edge"]
+  # command: ["/bin/sh", "-c"]
+  # args: ["kc.sh start-dev --hostname=<path:puris/data/supplier/dtr/keycloak#hostname> --hostname-strict=false --proxy=edge"]
+  command: []
+  args: []
+  resources:
+    requests:
+      cpu: "256m"
+      memory: "512Mi"
+    limits:
+      cpu: "512m"
+      memory: "512Mi"  
