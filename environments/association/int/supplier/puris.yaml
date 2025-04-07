@@ -129,7 +129,7 @@ backend:
         # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones
         ddl-auto: update
     dtr:
-      url: https://<path:puris/data/supplier/dtr#hostname>
+      url: https://<path:puris/data/supplier/dtr#hostname>/api/v3
       idp:
         enabled: true
         # -- token url of the idp for your specific realm. May be different to other idp token url in this config.
