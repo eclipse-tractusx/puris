@@ -119,7 +119,7 @@ keycloak:
     path: /
     tls: 
       enabled: true
-      secretName: tls-secret-dtr-keycloak-supplier
+      secretName: tls-secret-supplier-dtr-keycloak
     annotations:
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
       external-dns.alpha.kubernetes.io/hostname: <path:puris/data/supplier/dtr/keycloak#hostname>
