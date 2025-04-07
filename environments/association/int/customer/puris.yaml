@@ -203,6 +203,7 @@ postgresql:
         size: 2Gi
   auth:
     existingSecret: "customer-secret-postgres-init"
+    database: <path:puris/data/customer/puris/postgres#database>
     username: <path:puris/data/customer/puris/postgres#username>
     password: <path:puris/data/customer/puris/postgres#password>
     passwordPostgres: <path:puris/data/customer/puris/postgres#postgres-password>
