@@ -21,7 +21,8 @@ The **need for configuration updates** is **marked bold**.
 
 Fixes
 
-* Expect dtr base url to include `api/v3` in asset ([#844](https://github.com/eclipse-tractusx/puris/pull/824)) (**updated default values and asset definition**)
+* Expect dtr base url to include `api/v3` in asset ([#824](https://github.com/eclipse-tractusx/puris/pull/824)) (**updated default values and asset definition**)
+* Creating own partner entity does not run into ([#838](https://github.com/eclipse-tractusx/puris/pull/838))
 
 ### Removed
 
