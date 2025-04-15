@@ -148,8 +148,8 @@ export default function MiniDrawer() {
             title: 'Copied to Clipboard',
             description: 'Your company BPNL was copied to the clipboard',
             severity: 'success'
-        })
-    }
+        });
+    };
 
     return (
         <Drawer variant="permanent" open={open}>
