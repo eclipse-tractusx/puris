@@ -233,6 +233,12 @@ public class PartnerController {
             HttpStatusCode.valueOf(200));
     }
 
+    @GetMapping("/own")
+    @Operation(description = "Returns the own partnr entity.")
+    public ResponseEntity<Partner> getOwnPartnerEntity() {
+        return new ResponseEntity<>(partnerService.getOwnPartnerEntity(), HttpStatus.OK);
+    }
+
     @GetMapping("/ownSites")
     @Operation(description = "Returns all sites of the puris partner using the puris system.")
     public ResponseEntity<List<SiteDto>> getOwnSites() {

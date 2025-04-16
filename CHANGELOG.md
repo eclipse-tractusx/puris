@@ -18,6 +18,7 @@ The **need for configuration updates** is **marked bold**.
 ### Changed
 
 * Switch to spring actuator helm endpoint including enhancement of health, liveness and startup probe ([#469](https://github.com/eclipse-tractusx/puris/pull/469))
+* Company name and BPNL display in the sidebar for easier distinguishing between applications ([#837](https://github.com/eclipse-tractusx/puris/pull/837))
 
 Fixes
 

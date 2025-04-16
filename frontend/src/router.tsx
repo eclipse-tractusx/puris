@@ -84,7 +84,7 @@ export const router = createBrowserRouter([
                 element: <UserGuideView />,
             },
             {
-                path: 'aboutLicense',
+                path: 'about-license',
                 element: <AboutLicenseView />,
             },
             {
