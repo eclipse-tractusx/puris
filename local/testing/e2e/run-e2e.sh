@@ -20,15 +20,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-open=0
 browser="chrome"
 valid_browsers="chrome webkit firefox edge electron"
 
+
 while [ "$1" != "" ]; do
   case $1 in
-    -o)
-      open=1
-      ;;
     --browser)
       shift
       browser=$1
@@ -39,9 +36,8 @@ while [ "$1" != "" ]; do
       fi
       ;;
     -h)
-      echo "If no option is provided, the tests will be run headless."
+      echo "If no option is provided, the tests will be run headless in chrome."
       echo "You can use options to alter behavior:"
-      echo "-o: opens the cypress test runner in a browser window."
       echo "--browser <browser>: specifies the browser to use (chrome, webkit, firefox, edge, electron)."
       echo "\nExiting..."
       exit 1
@@ -50,14 +46,8 @@ while [ "$1" != "" ]; do
   shift
 done
 
-if [ $open -eq 1 ]; then
-  echo "Starting cypress test runner"
-  docker compose -f ./testing/docker-compose-e2e-open.yaml up
-  docker compose -f ./testing/docker-compose-e2e-open.yaml down -v
-else
-  echo "executing e2e tests..."
-  export BROWSER=$browser
-  echo "Using browser: $BROWSER"
-  docker compose -f ./testing/docker-compose-e2e.yaml up
-  docker compose -f ./testing/docker-compose-e2e.yaml down -v
-fi
+echo "executing e2e tests..."
+export BROWSER=$browsers
+echo "Using browser: $BROWSER"
+docker compose -f ./docker-compose-e2e.yaml up
+docker compose -f ./docker-compose-e2e.yaml down -v

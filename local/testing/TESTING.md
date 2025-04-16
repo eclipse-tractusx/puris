@@ -12,22 +12,11 @@ End-to-end testing for the PURIS FOSS application is done using Cypress. The Cyp
 The tests can be run using the command:
 
 ```shell
-cd local
+cd local/testing/e2e
 sh run-e2e.sh
 ```
 
 This will run the tests in the cli using a headless browser.
-
-## Opening the Test Runner
-
-To open the test runner for Cypress you can use:
-
-```shell
-cd local
-sh run-e2e.sh -o
-```
-
-This will let you choose which specs to run and which browser to use.
 
 ## Available browsers
 
@@ -36,7 +25,7 @@ By default tests are run in Google Chrome. In addition tests can also be run usi
 To run the tests using a specific browser you can use the `--browser` command line argument. For example if you want to run WebKit:
 
 ```shell
-cd local
+cd local/testing/e2e
 sh run-e2e.sh --browser webkit
 ```
 

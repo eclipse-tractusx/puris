@@ -36,7 +36,13 @@ module.exports = defineConfig({
             }
           })
         },
-        experimentalWebKitSupport: true,
+        baseUrl: 'http://localhost:3000',
+        viewportWidth: 1280,
+        viewportHeight: 720,
+        experimentalWebKitSupport: true
+    },
+    env: {
+      supplierUrl: 'http://localhost:3001'
     },
     video: true,
 });

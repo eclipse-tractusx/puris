@@ -18,19 +18,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-services:
-  cypress:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: cypress-e2e
-    working_dir: /testing
-    command: "--browser ${BROWSER:-chrome}"
-    volumes:
-      - ./cypress:/testing/cypress
-    environment:
-      - CYPRESS_BASE_URL=http://localhost:3000
-      - CYPRESS_SUPPLIER_URL=http://localhost:3001
-      - CYPRESS_VIEWPORT_WIDTH=1280
-      - CYPRESS_VIEWPORT_HEIGHT=1080
-    network_mode: "host"
+FROM cypress/included:14.2.0
+
+WORKDIR /testing
+
+COPY . .
+
+RUN npm install playwright-webkit --save-dev
+
+RUN npx playwright install-deps webkit
+
+USER node
