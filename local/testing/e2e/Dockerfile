@@ -22,10 +22,19 @@ FROM cypress/included:14.2.0
 
 WORKDIR /testing
 
+RUN chown -R node:node /testing
+
+# switch to node user to create files and folders as non-root and install playwright for node
+USER node
+
 COPY . .
 
 RUN npm install playwright-webkit --save-dev
 
+# switch back to root temporarily to install missing dependencies for playwright webkit
+USER root
+
 RUN npx playwright install-deps webkit
 
+# switch back to node user to run the tests
 USER node

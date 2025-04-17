@@ -47,7 +47,7 @@ while [ "$1" != "" ]; do
 done
 
 echo "executing e2e tests..."
-export BROWSER=$browsers
+export BROWSER=$browser
 echo "Using browser: $BROWSER"
 docker compose -f ./docker-compose-e2e.yaml up
 docker compose -f ./docker-compose-e2e.yaml down -v
