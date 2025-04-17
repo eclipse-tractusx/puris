@@ -22,8 +22,6 @@ name: "Quality Checks (Release Guidelines)"
 on:
   workflow_dispatch:
   pull_request:
-    branches:
-      - main
 
 jobs:
   check-quality:

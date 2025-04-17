@@ -24,8 +24,6 @@ name: Unit Test - Backend
 
 on:
   pull_request:
-    branches:
-      - main
 
 jobs:
   unit-test-backend:
