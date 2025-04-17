@@ -1,0 +1,36 @@
+[
+  {
+    "target": "/materials",
+    "name": "Materials",
+    "iconid": "HomeOutlinedIcon"
+  },
+  {
+    "target": "/notifications",
+    "name": "Notifications",
+    "iconid": "NotificationsOutlinedIcon"
+  },
+  {
+    "target": "/catalog",
+    "name": "Catalog",
+    "iconid": "AutoStoriesOutlinedIcon"
+  },
+  {
+    "target": "/negotiations",
+    "name": "Negotiations",
+    "iconid": "HandshakeOutlinedIcon"
+  },
+  {
+    "target": "/transfers",
+    "name": "Transfers",
+    "iconid": "SyncAltOutlinedIcon"
+  },
+  {
+    "target": "/user-guide",
+    "name": "User Guide",
+    "iconid": "HelpOutlineOutlinedIcon"
+  },
+  {
+    "name": "Logout",
+    "iconid": "LogoutOutlinedIcon"
+  }
+]

@@ -136,7 +136,7 @@ export default function MiniDrawer() {
     };
 
     return (
-        <Drawer variant="permanent" open={open}>
+        <Drawer variant="permanent" open={open} data-testid="sidebar">
             <DrawerHeader>
                 {open ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: '.5rem' }}>
@@ -159,7 +159,13 @@ export default function MiniDrawer() {
                     if (item.requiredRoles && !hasRole(item.requiredRoles)) return null;
 
                     return (
-                        <ListItem key={item.name} disablePadding sx={{ display: 'block', px: 1, py: 0.5 }}>
+                        <ListItem 
+                            key={item.name}
+                            disablePadding
+                            sx={{ display: 'block', px: 1, py: 0.5 }}
+                            data-testid={`sidebar-menu-item-${item.name.replace(' ', '').toLowerCase()}`}
+                            aria-selected={item.variant !== 'button' && pathname.startsWith(item.path)}
+                        >
                             <ListItemButton
                                 LinkComponent={({ href, ...props }) => <Link to={href} {...props} />}
                                 sx={{
@@ -199,7 +205,7 @@ export default function MiniDrawer() {
                 })}
             </List>
             <List sx={{ marginTop: 'auto', p: 0 }}>
-                <ListItem disablePadding sx={{ display: 'block' }}>
+                <ListItem disablePadding sx={{ display: 'block' }} data-testid="sidebar-item-license">
                     <ListItemButton
                         LinkComponent={({ href, ...props }) => <Link to={href} {...props} />}
                         sx={{
