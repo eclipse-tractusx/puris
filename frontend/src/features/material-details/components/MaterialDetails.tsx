@@ -128,8 +128,8 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                 summary: createSummaryByPartnerAndDirection(partner, direction),
                 siteSummaries
             }
-        }
-    }, {}), [createSummaryByPartnerAndDirection, direction, expandablePartners])
+        };
+    }, {}), [createSummaryByPartnerAndDirection, direction, expandablePartners]);
 
     const handleRefresh = async () => {
         refresh(['partner-data'])
@@ -180,7 +180,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                 severity: 'error',
             });
         });
-    }
+    };
         
     const handleScheduleUpdate = () => {
         setIsSchedulingUpdate(true);
