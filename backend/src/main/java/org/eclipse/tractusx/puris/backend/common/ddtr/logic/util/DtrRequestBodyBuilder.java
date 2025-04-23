@@ -175,7 +175,6 @@ public class DtrRequestBodyBuilder {
         for (var refObject : refObjects) {
             keysArray.add(refObject);
         }
-        keysArray.add(createOwnReferenceObject());
         return idObject;
     }
 
@@ -200,10 +199,6 @@ public class DtrRequestBodyBuilder {
         refObject.put("type", "GlobalReference");
         refObject.put("value", bpnl);
         return refObject;
-    }
-
-    private ObjectNode createOwnReferenceObject() {
-        return createReferenceObject(variablesService.getOwnBpnl());
     }
 
     private JsonNode createSubmodelObject(String semanticId, String href, String assetId) {
