@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -33,12 +35,29 @@ public enum AssetType {
     public final String URN_SEMANTIC_ID;
     public final String REPRESENTATION;
     public final String ERP_KEYWORD;
-    public final String ERP_SAMMVERSION;
+    public final String ERP_SAMM_VERSION;
 
-    AssetType(String URN_SEMANTIC_ID, String REPRESENTATION, String ERP_KEYWORD, String ERP_SAMMVERSION) {
+    public static AssetType fromUrn(String urnSemanticId) {
+        return switch (urnSemanticId) {
+            case "urn:samm:io.catenax.item_stock:2.0.0#ItemStock" -> AssetType.ITEM_STOCK_SUBMODEL;
+            case "urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput" ->
+                AssetType.PRODUCTION_SUBMODEL;
+            case "urn:samm:io.catenax.short_term_material_demand:1.0.0#ShortTermMaterialDemand" ->
+                AssetType.DEMAND_SUBMODEL;
+            case "urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation" -> AssetType.DELIVERY_SUBMODEL;
+            case "urn:samm:io.catenax.demand_and_capacity_notification:2.0.0#DemandAndCapacityNotification" ->
+                AssetType.NOTIFICATION;
+            case "urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply" -> AssetType.DAYS_OF_SUPPLY;
+            case "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation" ->
+                AssetType.PART_TYPE_INFORMATION_SUBMODEL;
+            default -> AssetType.DTR; // Handle unknown URN by returning a default enum value
+        };
+    }
+
+    AssetType(String URN_SEMANTIC_ID, String REPRESENTATION, String ERP_KEYWORD, String ERP_SAMM_VERSION) {
         this.URN_SEMANTIC_ID = URN_SEMANTIC_ID;
         this.REPRESENTATION = REPRESENTATION;
         this.ERP_KEYWORD = ERP_KEYWORD;
-        this.ERP_SAMMVERSION = ERP_SAMMVERSION;
+        this.ERP_SAMM_VERSION = ERP_SAMM_VERSION;
     }
 }
