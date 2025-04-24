@@ -24,8 +24,12 @@ Fixes
 
 * Expect dtr base url to include `api/v3` in asset ([#824](https://github.com/eclipse-tractusx/puris/pull/824)) (**updated default values and asset definition**)
 * Creating own partner entity does not run into exception ([#838](https://github.com/eclipse-tractusx/puris/pull/838))
-* Submodels are exposed via `submodel/$value` and not `$value` including the update of SubmodelDescriptors
-* use own bpnl as default tenant (`Edc-Bpn`) when updating own dtr and only use partner BPNL in externalSubjectId
+* Submodels are exposed via `submodel/$value` and not `$value` including the update of
+  SubmodelDescriptors ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
+* use own bpnl as default tenant (`Edc-Bpn`) when updating own dtr and only use partner BPNL in
+  externalSubjectId ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
+* use `assetId` instead of `semanticId` and `dct:type=submodel` during catalog request for submodel
+  assets ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
 
 ### Removed
 
