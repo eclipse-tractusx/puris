@@ -29,6 +29,7 @@ import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.Directio
 import org.eclipse.tractusx.puris.backend.supply.logic.dto.daysofsupplysamm.DaysOfSupply;
 import org.eclipse.tractusx.puris.backend.supply.logic.service.DaysOfSupplyRequestApiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +49,12 @@ public class DaysOfSupplyRequestApiController {
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
     private final Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
+
+    @RequestMapping(value = "/**")
+    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+    public ResponseEntity<String> handleNotImplemented() {
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    }
 
     @Operation(summary = "This endpoint receives the DaysOfSupply Submodel 2.0.0 requests")
     @ApiResponses(value = {

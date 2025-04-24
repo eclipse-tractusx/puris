@@ -35,6 +35,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,6 +58,12 @@ public class PartTypeInformationController {
     private MaterialPartnerRelationService mprService;
     @Autowired
     private PartTypeInformationSammMapper sammMapper;
+
+    @RequestMapping(value = "/**")
+    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+    public ResponseEntity<String> handleNotImplemented() {
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    }
 
     @Operation(description = "Endpoint that delivers PartTypeInformation of own products to customer partners. " +
         "'materialnumber' must be set to the ownMaterialNumber of the party, that receives the request. Please note that the " +
@@ -86,7 +93,7 @@ public class PartTypeInformationController {
         if (partner == null) {
             return ResponseEntity.status(401).build();
         }
-        log.info(bpnl + " requests part type information on " + materialnumber);
+        log.info("{} requests part type information on {}", bpnl, materialnumber);
         Material material = materialService.findByOwnMaterialNumber(materialnumber);
         if (material == null || !material.isProductFlag()) {
             return ResponseEntity.status(404).build();
