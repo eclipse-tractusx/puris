@@ -31,6 +31,7 @@ import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproductionsamm.PlannedProductionOutput;
 import org.eclipse.tractusx.puris.backend.production.logic.service.ProductionRequestApiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,6 +52,11 @@ public class ProductionRequestApiController {
 
     private final Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
 
+    @RequestMapping(value = "/**")
+    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+    public ResponseEntity<String> handleNotImplemented() {
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    }
 
     @Operation(summary = "This endpoint receives the PlannedProduction Submodel 2.0.0 requests. " +
         "This endpoint is meant to be accessed by partners via EDC only. ")
