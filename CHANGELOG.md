@@ -26,6 +26,13 @@ Fixes
 * Creating own partner entity does not run into ([#838](https://github.com/eclipse-tractusx/puris/pull/838))
 * submodel endpoint returns 501 instead of 500 for operations not
   implemented ([#850](https://github.com/eclipse-tractusx/puris/pull/850))
+* Creating own partner entity does not run into exception ([#838](https://github.com/eclipse-tractusx/puris/pull/838))
+* Submodels are exposed via `submodel/$value` and not `$value` including the update of
+  SubmodelDescriptors ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
+* use own bpnl as default tenant (`Edc-Bpn`) when updating own dtr and only use partner BPNL in
+  externalSubjectId ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
+* use `assetId` instead of `semanticId` and `dct:type=submodel` during catalog request for submodel
+  assets ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
 
 ### Removed
 

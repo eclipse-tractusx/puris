@@ -64,7 +64,7 @@ public class ErpAdapterRequestValidationTest {
             .partnerBpnl(supplierPartnerBpnl)
             .ownMaterialNumber(matNbrCustomer)
             .requestType(type)
-            .sammVersion(type.ERP_SAMMVERSION)
+            .sammVersion(type.ERP_SAMM_VERSION)
             .build();
 
         // when
@@ -87,7 +87,7 @@ public class ErpAdapterRequestValidationTest {
             .partnerBpnl("wrong-bpnl") // should fail regex check
             .ownMaterialNumber("illegal-material-number\n") // should fail regex check
             .requestType(AssetType.ITEM_STOCK_SUBMODEL)
-            .sammVersion(AssetType.ITEM_STOCK_SUBMODEL.ERP_SAMMVERSION)
+            .sammVersion(AssetType.ITEM_STOCK_SUBMODEL.ERP_SAMM_VERSION)
             .build();
 
         // when

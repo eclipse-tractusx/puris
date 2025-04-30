@@ -1,6 +1,8 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -35,12 +37,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.regex.Pattern;
 
-@RestController
-@RequestMapping("material-demand")
-@Slf4j
 /**
  * This class offers the endpoint for requesting the ShortTermMaterialDemand Submodel 1.0.0
  */
+@RestController
+@RequestMapping("material-demand")
+@Slf4j
 public class DemandRequestApiController {
 
     @Autowired
@@ -64,7 +66,7 @@ public class DemandRequestApiController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content),
         @ApiResponse(responseCode = "501", description = "Unsupported representation", content = @Content)
     })
-    @GetMapping("request/{materialnumbercx}/{representation}")
+    @GetMapping("request/{materialnumbercx}/submodel/{representation}")
     public ResponseEntity<ShortTermMaterialDemand> getDemandMapping(
         @RequestHeader("edc-bpn") String bpnl,
         @PathVariable String materialnumbercx,
@@ -76,9 +78,6 @@ public class DemandRequestApiController {
         }
         if (!"$value".equals(representation)) {
             log.warn("Rejecting request at ShortTermMaterialDemand Submodel request 1.0.0 endpoint, missing '$value' in request");
-            if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
-                representation = "<REPLACED_INVALID_REPRESENTATION>";
-            }
             return ResponseEntity.status(501).build();
         }
         var samm = demandRequestApiService.handleDemandSubmodelRequest(bpnl, materialnumbercx);

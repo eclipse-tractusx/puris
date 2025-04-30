@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -35,12 +37,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.regex.Pattern;
 
-@RestController
-@RequestMapping("days-of-supply")
-@Slf4j
 /**
  * This class offers the endpoint for requesting the DaysOfSupply Submodel 2.0.0
  */
+@RestController
+@RequestMapping("days-of-supply")
+@Slf4j
 public class DaysOfSupplyRequestApiController {
 
     @Autowired
@@ -63,7 +65,7 @@ public class DaysOfSupplyRequestApiController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
             @ApiResponse(responseCode = "501", description = "Unsupported representation")
     })
-    @GetMapping("request/{materialnumbercx}/{direction}/{representation}")
+    @GetMapping("request/{materialnumbercx}/{direction}/submodel/{representation}")
     public ResponseEntity<DaysOfSupply> getDaysOfSupplyMapping(
             @RequestHeader("edc-bpn") String bpnl,
             @PathVariable String materialnumbercx,
@@ -75,9 +77,6 @@ public class DaysOfSupplyRequestApiController {
         }
         if (!"$value".equals(representation)) {
             log.warn("Rejecting request at DaysOfSupply Submodel request 2.0.0 endpoint, missing '$value' in request");
-            if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
-                representation = "<REPLACED_INVALID_REPRESENTATION>";
-            }
             return ResponseEntity.status(501).build();
         }
         var samm = daysOfSupplyRequestApiService.handleDaysOfSupplySubmodelRequest(bpnl, materialnumbercx, direction);
