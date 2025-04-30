@@ -1041,12 +1041,13 @@ public class EdcAdapterService {
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
         };
         Map<String, String> equalFilters = new HashMap<>();
+        // use only assetId and version (previously semanticId, submodel type, no assetId) to follow all conventions:
+        // - asset per asset type per material
+        // - asset per asset type
+        // - asset for submodel bundle
         equalFilters.put(EdcRequestBodyBuilder.CX_COMMON_NAMESPACE + "version", "3.0");
-        equalFilters.put(
-            "'" + EdcRequestBodyBuilder.DCT_NAMESPACE + "type'.'@id'",
-            EdcRequestBodyBuilder.CX_TAXO_NAMESPACE + "Submodel"
-        );
-        equalFilters.put("'" + EdcRequestBodyBuilder.AAS_SEMANTICS_NAMESPACE + "semanticId'.'@id'", type.URN_SEMANTIC_ID);
+        equalFilters.put(EdcRequestBodyBuilder.EDC_NAMESPACE + "id", submodelData.assetId);
+
         return negotiateContract(partner, submodelData.assetId(), type, submodelData.dspUrl(), equalFilters);
     }
 

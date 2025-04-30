@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -34,12 +36,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.regex.Pattern;
 
-@RestController
-@RequestMapping("planned-production")
-@Slf4j
 /**
  * This class offers the endpoint for requesting the PlannedProduction Submodel 2.0.0
  */
+@RestController
+@RequestMapping("planned-production")
+@Slf4j
 public class ProductionRequestApiController {
 
     @Autowired
@@ -58,7 +60,7 @@ public class ProductionRequestApiController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content),
         @ApiResponse(responseCode = "501", description = "Unsupported representation", content = @Content)
     })
-    @GetMapping("request/{materialnumbercx}/{representation}")
+    @GetMapping("request/{materialnumbercx}/submodel/{representation}")
     public ResponseEntity<PlannedProductionOutput> getProductionMapping(
         @RequestHeader("edc-bpn") String bpnl,
         @PathVariable String materialnumbercx,
@@ -70,9 +72,6 @@ public class ProductionRequestApiController {
         }
         if (!"$value".equals(representation)) {
             log.warn("Rejecting request at PlannedProduction Submodel request 2.0.0 endpoint, missing '$value' in request");
-            if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
-                representation = "<REPLACED_INVALID_REPRESENTATION>";
-            }
             return ResponseEntity.status(501).build();
         }
         var samm = productionRequestApiService.handleProductionSubmodelRequest(bpnl, materialnumbercx);

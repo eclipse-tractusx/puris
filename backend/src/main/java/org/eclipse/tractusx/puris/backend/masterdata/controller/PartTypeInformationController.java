@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -69,7 +71,7 @@ public class PartTypeInformationController {
         @ApiResponse(responseCode = "404", description = "Product not found for given parameters. ", content = @Content),
         @ApiResponse(responseCode = "501", description = "Unsupported representation requested. ", content = @Content)
     })
-    @GetMapping("/{materialnumber}/{representation}")
+    @GetMapping("/{materialnumber}/submodel/{representation}")
     public ResponseEntity<PartTypeInformationSAMM> getMapping(@RequestHeader("edc-bpn") String bpnl,
                                                               @Parameter(description = "The material number that the request receiving party uses for the material in question")
                                         @PathVariable String materialnumber,
