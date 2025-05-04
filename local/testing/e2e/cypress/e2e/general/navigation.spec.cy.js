@@ -19,6 +19,11 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 describe("navigation", () => {
+    beforeEach(() => {
+        cy.visit('/')
+        cy.login('customer');
+    })
+
     it("allows navigating to all sidebar menu pages", () => {
         cy.fixture("menu.json").then((menu) => {
             menu.forEach((item) => {
