@@ -78,6 +78,7 @@ public class DtrAdapterService {
             .post(body)
             .url(urlBuilder.build())
             .header("Content-Type", "application/json")
+            .header("Edc-Bpn", variablesService.getOwnBpnl())
             .build();
         return CLIENT.newCall(request).execute();
     }
@@ -92,6 +93,7 @@ public class DtrAdapterService {
             .put(body)
             .url(urlBuilder.build())
             .header("Content-Type", "application/json")
+            .header("Edc-Bpn", variablesService.getOwnBpnl())
             .build();
         return CLIENT.newCall(request).execute();
     }
@@ -108,6 +110,10 @@ public class DtrAdapterService {
         }
         var requestBuilder = new Request.Builder().url(urlBuilder.build());
         if (headerData != null) {
+            // ensure own tenant is set
+            if (!headerData.containsKey("Edc-Bpn")) {
+                headerData.put("Edc-Bpn", variablesService.getOwnBpnl());
+            }
             for (var header : headerData.entrySet()) {
                 requestBuilder.header(header.getKey(), header.getValue());
             }
