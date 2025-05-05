@@ -142,7 +142,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
             })
             .catch(() => {
                 notify({
-                    title: 'Partner data refresh errir',
+                    title: 'Partner data refresh error',
                     description: `There was an error refreshing the requested partner data. Please try manually reloading the page`,
                     severity: 'error'
                 })
@@ -169,17 +169,24 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
     const handlePartnerDataRequest = () => {
         setIsRefreshing(true);
         refreshPartnerData(material.ownMaterialNumber)
-        .catch((error: unknown) => {
-            const msg =
-            error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
-            ? error.message
-            : 'Unknown Error';
-            notify({
-                title: 'Error requesting update',
-                description: msg,
-                severity: 'error',
+            .then(() => {
+                notify({
+                    title: 'Partner data update requested.',
+                    description: `An update to the partner data for ${material.name} was requested`,
+                    severity: 'success'
+                })
+            })
+            .catch((error: unknown) => {
+                const msg =
+                error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+                ? error.message
+                : 'Unknown Error';
+                notify({
+                    title: 'Error requesting update',
+                    description: msg,
+                    severity: 'error',
+                });
             });
-        });
     };
         
     const handleScheduleUpdate = () => {

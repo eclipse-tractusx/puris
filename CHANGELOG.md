@@ -18,6 +18,7 @@ The **need for configuration updates** is **marked bold**.
 ### Changed
 
 * Switch to spring actuator helm endpoint including enhancement of health, liveness and startup probe ([#469](https://github.com/eclipse-tractusx/puris/pull/469))
+* Updated partner data request flow to automatically update the UI when the data is received ([#847](https://github.com/eclipse-tractusx/puris/pull/847))
 
 Fixes
 
