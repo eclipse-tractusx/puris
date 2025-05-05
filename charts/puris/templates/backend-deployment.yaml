@@ -133,8 +133,8 @@ spec:
                 {{- else }}
               value: "http://{{ $baseUrl }}/"
                 {{- end}}
-            - name: PURIS_ALLOWED-ORIGINS:
-              value: "{{ .Values.backend.puris.allowedOrigins}}"
+            - name: PURIS_ALLOWED-ORIGINS
+              value: "{{ .Values.backend.puris.allowedOrigins | default .Values.frontend.puris.baseUrl }}"
             - name: PURIS_ITEMSTOCKSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.itemstocksubmodel.apiassetid }}"
             - name: PURIS_PRODUCTIONSUBMODEL_APIASSETID
