@@ -958,7 +958,7 @@ public class EdcAdapterService {
         if (retries < 0) return null;
         boolean failed = true;
         try (Response response = sendGetRequest(
-            List.of("v3", "edrs", transferProcessId, "dataaddress"),
+            List.of("v2", "edrs", transferProcessId, "dataaddress"),
             Map.of("auto_refresh", "true"))
         ) {
             if (response.isSuccessful() && response.body() != null) {
