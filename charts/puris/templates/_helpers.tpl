@@ -22,7 +22,8 @@
 Expand the name of the chart.
 */}}
 {{- define "puris.backend.name" -}}
-{{- default .Chart.Name "backend" .Values.backend.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- $nameOverride := .Values.backend.nameOverride | default "" }}
+{{- printf "%s-%sbackend" .Release.Name (ternary "" ($nameOverride | printf "%s-") (eq $nameOverride "")) | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -86,7 +87,8 @@ FRONTEND
 Expand the name of the chart.
 */}}
 {{- define "puris.frontend.name" -}}
-{{- default .Chart.Name "frontend" .Values.frontend.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- $nameOverride := .Values.frontend.nameOverride | default "" }}
+{{- printf "%s-%sfrontend" .Release.Name (ternary "" ($nameOverride | printf "%s-") (eq $nameOverride "")) | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
