@@ -7,6 +7,12 @@ End-to-end testing for the PURIS FOSS application is done using Cypress. The Cyp
 * PURIS FOSS application is running locally in docker compose
 * the app was seeded with integration test data using the `-i` flag
 
+## Configuring the tests
+
+Before running the tests make sure to configure the `baseUrl` in `cypress.config.json` and `supplierUrl` in `cypress.env.json`. `baseUrl` is expected to match the customer frontend url.
+
+In order to run the tests with login, the environment file `cypress.env.json` needs to be configured with the appropriate information. Set `idp_enabled` to true and fill in your login information for the IDP. Make sure that the company names match the configured names in the IDP.
+
 ## Running the tests
 
 The tests can be run using the command:
@@ -33,7 +39,7 @@ sh run-e2e.sh --browser webkit
 
 ## Developing tests
 
-When developing tests, the `run-e2e.sh` command can simply be re-run whenever specs, fixtures or support files change. Only changes to the cypress config should require re-building the docker image.
+When developing tests, it should not be necessary to rebuild the docker image.
 
 ## Test structure
 

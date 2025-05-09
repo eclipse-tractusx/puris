@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 describe("sidebar", () => {
     beforeEach(() => {
         cy.visit("/");
-        cy.login();
+        cy.login('customer');
     });
 
     it("shows 7 menu items and one is selected", () => {

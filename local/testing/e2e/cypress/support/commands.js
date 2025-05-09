@@ -35,8 +35,15 @@ Cypress.Commands.add('getByTestIdContains', (testid) => {
   return cy.get(`[data-testid*="${testid}"]`);
 })
 
-Cypress.Commands.add('login', () => {
-  if (Cypress.env('IDP_ENABLED')) {
-    // TODO: conditionally handle login for local and int environments
+Cypress.Commands.add('login', (role) => {
+  if (Cypress.env('idp_enabled')) {
+    cy.origin(Cypress.env('central_idp_url'), { args: { role }}, ({ role }) => {
+      cy.contains(Cypress.env(role).company_name).click();
+    });
+    cy.origin(Cypress.env('shared_idp_url'), { args: { role }}, ({ role }) => {
+      cy.get('#username').should('exist').type(Cypress.env(role).username);
+      cy.get('#password').should('exist').type(Cypress.env(role).password);
+      cy.get('#kc-login').should('exist').click();
+    });
   }
 })

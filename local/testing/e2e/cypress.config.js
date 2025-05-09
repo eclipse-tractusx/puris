@@ -41,8 +41,5 @@ module.exports = defineConfig({
         viewportHeight: 720,
         experimentalWebKitSupport: true
     },
-    env: {
-      supplierUrl: 'http://localhost:3001'
-    },
     video: true,
 });
