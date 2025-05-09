@@ -372,6 +372,8 @@ backend:
   puris:
     # -- Base url of the PURIS backend
     baseurl: *domain
+    # -- Allowed origins for the frontend
+    allowedOrigins: "https://your-frontend-url"
     # -- Secret for backend passwords. For more information look into 'backend-secrets.yaml' file.
     existingSecret: "secret-puris-backend"
     api:

@@ -27,19 +27,17 @@ import { CollapsibleSummary } from './CollapsibleSummary';
 import { DataCategory, useMaterialDetails } from '../hooks/useMaterialDetails';
 import { useNotifications } from '@contexts/notificationContext';
 import { useDataModal } from '@contexts/dataModalContext';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { groupBy } from '@util/helpers';
 import { DirectionType } from '@models/types/erp/directionType';
-import { createSummary } from '../util/summary-service';
+import { createSummary, PartnerSummary } from '../util/summary-service';
 import { Partner } from '@models/types/edc/partner';
-import { requestReportedStocks, scheduleErpUpdateStocks } from '@services/stocks-service';
-import { requestReportedDeliveries } from '@services/delivery-service';
-import { requestReportedProductions } from '@services/productions-service';
-import { requestReportedDemands } from '@services/demands-service';
+import { scheduleErpUpdateStocks } from '@services/stocks-service';
 import { NotFoundView } from '@views/errors/NotFoundView';
 import { Material } from '@models/types/data/stock';
 import { BPNS } from '@models/types/edc/bpn';
-import { requestReportedSupply } from '@services/supply-service';
+import { useSubscription } from 'react-stomp-hooks';
+import { refreshPartnerData } from '@services/refresh-service';
 
 type SummaryContainerProps = {
     children: ReactNode;
@@ -80,7 +78,6 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
         reportedDemands,
         reportedProductions,
         reportedStocks,
-        isLoading,
         refresh,
     } = useMaterialDetails(material.ownMaterialNumber ?? '', direction);
     const incomingDeliveries = useMemo(() => deliveries?.filter((d) => sites?.some((site) => site.bpns === d.destinationBpns)), [deliveries, sites]);
@@ -91,26 +88,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
     const groupedOutgoingShipments = useMemo(() => groupBy(outgoingShipments ?? [], (del) => del.originBpns), [outgoingShipments]);
     const groupedStocks = useMemo(() => groupBy(stocks ?? [], (stock) => stock.stockLocationBpns), [stocks]);
 
-    useEffect(() => {
-        const callback = (category: DataCategory) => refresh([category]);
-        addOnSaveListener(callback);
-        return () => removeOnSaveListener(callback);
-    }, [addOnSaveListener, refresh, removeOnSaveListener]);
-
-    if (isLoading) {
-        return <Typography variant="body1">Loading...</Typography>;
-    }
-
-    if (!material) {
-        return <NotFoundView />;
-    }
-
-    const summary =
-        direction === DirectionType.Outbound
-            ? createSummary('production', productions ?? [], outgoingShipments ?? [], stocks ?? [])
-            : createSummary('demand', demands ?? [], incomingDeliveries ?? [], stocks ?? []);
-
-    const createSummaryByPartnerAndDirection = (partner: Partner, direction: DirectionType, partnerSite?: BPNS, ownSite?: BPNS) => {
+    const createSummaryByPartnerAndDirection = useCallback((partner: Partner, direction: DirectionType, partnerSite?: BPNS, ownSite?: BPNS) => {
         let partnerStocks = reportedStocks?.filter((s) => s.partner.bpnl === partner.bpnl);
         let partnerBpnss = partner.sites.map((s) => s.bpns);
         if (partnerSite) {
@@ -121,8 +99,8 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
             const demands = reportedDemands?.filter(
                 (d) =>
                     d.partnerBpnl === partner.bpnl &&
-                    (!partnerSite || d.demandLocationBpns === partnerSite) &&
-                    (!ownSite || d.supplierLocationBpns === ownSite)
+                (!partnerSite || d.demandLocationBpns === partnerSite) &&
+                (!ownSite || d.supplierLocationBpns === ownSite)
             );
             const deliveries = outgoingShipments?.filter(
                 (d) => partnerBpnss.includes(d.destinationBpns) && (!ownSite || d.originBpns === ownSite)
@@ -137,39 +115,80 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
             );
             return createSummary('production', productions ?? [], shipments ?? [], partnerStocks ?? []);
         }
-    };
+    }, [incomingDeliveries, outgoingShipments, reportedDemands, reportedProductions, reportedStocks]);
 
-    const handleRefresh = () => {
-        setIsRefreshing(true);
-        Promise.all([
-            requestReportedStocks(direction === DirectionType.Outbound ? 'product' : 'material', material.ownMaterialNumber),
-            requestReportedDeliveries(material.ownMaterialNumber),
-            direction === DirectionType.Inbound
-                ? requestReportedProductions(material.ownMaterialNumber)
-                : requestReportedDemands(material.ownMaterialNumber),
-            requestReportedSupply(material.ownMaterialNumber, direction)
-        ])
+    const partnerSummaries: PartnerSummary = useMemo(() => expandablePartners.reduce((summaries, partner) => {
+        const siteSummaries = partner.sites.reduce((summaries, site) => ({
+            ...summaries,
+            [site.bpns]: createSummaryByPartnerAndDirection(partner, direction, site.bpns)
+        }), {});
+        return {
+            ...summaries,
+            [partner.bpnl]: {
+                summary: createSummaryByPartnerAndDirection(partner, direction),
+                siteSummaries
+            }
+        };
+    }, {}), [createSummaryByPartnerAndDirection, direction, expandablePartners]);
+
+    const handleRefresh = async () => {
+        refresh(['partner-data'])
             .then(() => {
                 notify({
-                    title: 'Update requested',
-                    description: `Requested update from partners for ${material.ownMaterialNumber}. Please reload dialog later.`,
-                    severity: 'success',
-                });
+                    title: 'Partner data updated',
+                    description: `The partner data for ${material.name} was updated as requested`,
+                    severity: 'success'
+                })
+            })
+            .catch(() => {
+                notify({
+                    title: 'Partner data refresh error',
+                    description: `There was an error refreshing the requested partner data. Please try manually reloading the page`,
+                    severity: 'error'
+                })
+            });
+        setIsRefreshing(false);
+    };
+    useSubscription('/topic/material/' + material.ownMaterialNumber, handleRefresh);
+    
+    useEffect(() => {
+        const callback = (category: DataCategory) => refresh([category]);
+        addOnSaveListener(callback);
+        return () => removeOnSaveListener(callback);
+    }, [addOnSaveListener, refresh, removeOnSaveListener]);
+    
+    if (!material) {
+        return <NotFoundView />;
+    }
+    
+    const summary =
+    direction === DirectionType.Outbound
+    ? createSummary('production', productions ?? [], outgoingShipments ?? [], stocks ?? [])
+    : createSummary('demand', demands ?? [], incomingDeliveries ?? [], stocks ?? []);
+    
+    const handlePartnerDataRequest = () => {
+        setIsRefreshing(true);
+        refreshPartnerData(material.ownMaterialNumber)
+            .then(() => {
+                notify({
+                    title: 'Partner data update requested.',
+                    description: `An update to the partner data for ${material.name} was requested`,
+                    severity: 'success'
+                })
             })
             .catch((error: unknown) => {
                 const msg =
-                    error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
-                        ? error.message
-                        : 'Unknown Error';
+                error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+                ? error.message
+                : 'Unknown Error';
                 notify({
                     title: 'Error requesting update',
                     description: msg,
                     severity: 'error',
                 });
-            })
-            .finally(() => setIsRefreshing(false));
+            });
     };
-
+        
     const handleScheduleUpdate = () => {
         setIsSchedulingUpdate(true);
         Promise.all(
@@ -178,34 +197,33 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                     direction === DirectionType.Outbound ? 'product' : 'material',
                     partner.bpnl,
                     material.ownMaterialNumber
-                )
             )
-        )
-            .then(() => {
-                notify({
-                    title: 'Update requested',
-                    description: `Scheduled ERP data update of stocks for ${material?.ownMaterialNumber} in your role as ${
+        ))
+        .then(() => {
+            notify({
+                title: 'Update requested',
+                description: `Scheduled ERP data update of stocks for ${material?.ownMaterialNumber} in your role as ${
                         direction === DirectionType.Inbound ? 'Customer' : 'Supplier'
                     }. Please reload dialog later.`,
                     severity: 'success',
                 });
-            })
-            .catch((error: unknown) => {
-                const msg =
-                    error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
-                        ? error.message
-                        : 'Unknown Error';
-                notify({
-                    title: 'Error scheduling ERP update',
-                    description: msg,
-                    severity: 'error',
-                });
-            })
-            .finally(() => setIsSchedulingUpdate(false));
+        })
+        .catch((error: unknown) => {
+            const msg =
+            error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+            ? error.message
+            : 'Unknown Error';
+            notify({
+                title: 'Error scheduling ERP update',
+                description: msg,
+                severity: 'error',
+            });
+        })
+        .finally(() => setIsSchedulingUpdate(false));
     };
-
-    return (
-        <CalendarWeekProvider>
+        
+        return (
+            <CalendarWeekProvider>
             <Stack spacing={2}>
                 <ConfidentialBanner />
                 <MaterialDetailsHeader
@@ -213,7 +231,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                     direction={direction}
                     isRefreshing={isRefreshing}
                     isSchedulingUpdate={isSchedulingUpdate}
-                    onRefresh={handleRefresh}
+                    onRefresh={handlePartnerDataRequest}
                     onScheduleUpdate={handleScheduleUpdate}
                 />
                 <Stack spacing={5}>
@@ -222,7 +240,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                         {expandablePartners.map((partner) => (
                             <CollapsibleSummary
                                 key={partner.bpnl}
-                                summary={createSummaryByPartnerAndDirection(partner, direction)}
+                                summary={partnerSummaries[partner.bpnl].summary}
                                 materialNumber={material.ownMaterialNumber ?? ''}
                                 partnerBpnl={partner.bpnl}
                                 renderTitle={() => (
@@ -235,7 +253,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                 {partner.sites.map((site) => (
                                     <CollapsibleSummary
                                         key={site.bpns}
-                                        summary={createSummaryByPartnerAndDirection(partner, direction, site.bpns)}
+                                        summary={partnerSummaries[partner.bpnl].siteSummaries[site.bpns]}
                                         materialNumber={material.ownMaterialNumber ?? ''}
                                         partnerBpnl={partner.bpnl}
                                         site={site.bpns}

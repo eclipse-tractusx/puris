@@ -46,7 +46,7 @@ maven/mavencentral/org.antlr/antlr4-runtime/4.13.0, BSD-3-Clause, approved, #107
 maven/mavencentral/org.apache.commons/commons-lang3/3.17.0, Apache-2.0, approved, #16044
 maven/mavencentral/org.apache.logging.log4j/log4j-api/2.24.3, Apache-2.0, approved, #16095
 maven/mavencentral/org.apache.logging.log4j/log4j-to-slf4j/2.24.3, Apache-2.0, approved, #16094
-maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-core/10.1.36, Apache-2.0 AND (EPL-2.0 OR (GPL-2.0 WITH Classpath-exception-2.0)) AND CDDL-1.0 AND (CDDL-1.1 OR (GPL-2.0-only WITH Classpath-exception-2.0)) AND EPL-2.0, approved, #15195
+maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-core/10.1.36, Apache-2.0 AND (EPL-2.0 OR (GPL-2.0-only WITH Classpath-exception-2.0)) AND CDDL-1.0 AND (CDDL-1.1 OR (GPL-2.0-only WITH Classpath-exception-2.0)) AND EPL-2.0, approved, #15195
 maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-el/10.1.36, Apache-2.0, approved, #6997
 maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-websocket/10.1.36, Apache-2.0, approved, #7920
 maven/mavencentral/org.apiguardian/apiguardian-api/1.1.2, Apache-2.0, approved, #17641
@@ -116,6 +116,7 @@ maven/mavencentral/org.springframework.boot/spring-boot-starter-security/3.4.3, 
 maven/mavencentral/org.springframework.boot/spring-boot-starter-test/3.4.3, Apache-2.0, approved, #17541
 maven/mavencentral/org.springframework.boot/spring-boot-starter-tomcat/3.4.3, Apache-2.0, approved, #17526
 maven/mavencentral/org.springframework.boot/spring-boot-starter-web/3.4.3, Apache-2.0, approved, #17569
+maven/mavencentral/org.springframework.boot/spring-boot-starter-websocket/3.4.3, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.springframework.boot/spring-boot-starter/3.4.3, Apache-2.0, approved, #17538
 maven/mavencentral/org.springframework.boot/spring-boot-test-autoconfigure/3.4.3, Apache-2.0, approved, #17555
 maven/mavencentral/org.springframework.boot/spring-boot-test/3.4.3, Apache-2.0, approved, #17566
@@ -136,11 +137,13 @@ maven/mavencentral/org.springframework/spring-core/6.2.3, Apache-2.0 AND BSD-3-C
 maven/mavencentral/org.springframework/spring-expression/6.2.3, Apache-2.0, approved, #17544
 maven/mavencentral/org.springframework/spring-jcl/6.2.3, Apache-2.0, approved, #17571
 maven/mavencentral/org.springframework/spring-jdbc/6.2.3, Apache-2.0, approved, #17543
+maven/mavencentral/org.springframework/spring-messaging/6.2.3, Apache-2.0, approved, #18225
 maven/mavencentral/org.springframework/spring-orm/6.2.3, Apache-2.0, approved, #17572
 maven/mavencentral/org.springframework/spring-test/6.2.3, Apache-2.0, approved, #17559
 maven/mavencentral/org.springframework/spring-tx/6.2.3, Apache-2.0, approved, #17547
 maven/mavencentral/org.springframework/spring-web/6.2.3, Apache-2.0, approved, #17558
 maven/mavencentral/org.springframework/spring-webmvc/6.2.3, Apache-2.0, approved, #17532
+maven/mavencentral/org.springframework/spring-websocket/6.2.3, Apache-2.0, approved, #18223
 maven/mavencentral/org.webjars/swagger-ui/5.18.3, Apache-2.0, approved, #17636
 maven/mavencentral/org.webjars/webjars-locator-lite/1.0.1, MIT, approved, clearlydefined
 maven/mavencentral/org.xmlunit/xmlunit-core/2.10.0, Apache-2.0, approved, #14590

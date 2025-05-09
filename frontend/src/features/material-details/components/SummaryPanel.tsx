@@ -28,6 +28,7 @@ import { useDaysOfSupply } from '../hooks/useDaysOfSupply';
 import { DirectionType } from '@models/types/erp/directionType';
 import { Supply } from '@models/types/data/supply';
 import { useReportedDaysOfSupply } from '../hooks/useReportedDaysOfSupply';
+import { useEffect } from 'react';
 
 type SummaryPanelProps<TType extends SummaryType> = {
     sx?: SxProps<Theme>
@@ -46,7 +47,10 @@ export function OwnSummaryPanel<TType extends SummaryType>({ summary, materialNu
 }
 
 export function ReportedSummaryPanel<TType extends SummaryType>({ summary, materialNumber, site, partnerBpnl, ...props }: SummaryPanelProps<TType>) {
-    const { supplies } = useReportedDaysOfSupply(materialNumber, summary.type === 'demand' ? DirectionType.Inbound : DirectionType.Outbound, site, partnerBpnl);
+    const { supplies, refreshSupply } = useReportedDaysOfSupply(materialNumber, summary.type === 'demand' ? DirectionType.Inbound : DirectionType.Outbound, site, partnerBpnl);
+    useEffect(() => {
+        refreshSupply()
+    }, [refreshSupply, summary])
     return <SummaryPanelContent summary={summary} {...props} supplies={supplies ?? []} />
 }
 
