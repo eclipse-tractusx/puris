@@ -33,6 +33,7 @@ frontend:
     appName: PURIS supplier
     # # -- The base URL for the backend base URL without further endpoints
     baseUrl: *domain
+    allowedOrigins: ""
     # endpointPartner: partners
     keycloak: # TODO, should be fine
       # -- Disable the Keycloak integration. #TODO
