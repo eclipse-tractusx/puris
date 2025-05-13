@@ -34,7 +34,6 @@ frontend:
     appName: PURIS supplier
     # # -- The base URL for the backend base URL without further endpoints
     baseUrl: *domain
-    allowedOrigins: ""
     # endpointPartner: partners
     keycloak: # TODO, should be fine
       # -- Disable the Keycloak integration. #TODO
@@ -91,6 +90,7 @@ backend:
   puris:
     existingSecret: "supplier-secret-backend-puris"
     baseurl: *domain
+    allowedOrigins: "https://<path:puris/data/supplier/puris#frontend-hostname>"
 #    baseurl: puris-backend-supplier.int.catena-x.net/
     api:
       # -- The API key of the PURIS application

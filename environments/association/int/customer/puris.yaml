@@ -7,8 +7,8 @@ frontend:
   # fullnameOverride: "customer-frontend"
   image:
     tag: "main"
-    pullPolicy: Always
-    # pullPolicy: IfNotPresent
+    # pullPolicy: Always
+    pullPolicy: IfNotPresent
   ingress:
     # -- Enable the Ingress
     enabled: true
@@ -90,7 +90,7 @@ backend:
   puris:
     existingSecret: "customer-secret-backend-puris"
     baseurl: *domain
-    allowedOrigins: ""
+    allowedOrigins: "https://<path:puris/data/customer/puris#frontend-hostname>"
 #    baseurl: puris-backend-customer.int.catena-x.net/
     api:
       # -- The API key of the PURIS application
