@@ -1,6 +1,6 @@
 # puris
 
-![Version: 2.7.0](https://img.shields.io/badge/Version-2.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.1.0](https://img.shields.io/badge/AppVersion-2.1.0-informational?style=flat-square)
+![Version: 2.9.0](https://img.shields.io/badge/Version-2.9.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.1.0](https://img.shields.io/badge/AppVersion-3.1.0-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
@@ -52,7 +52,7 @@ dependencies:
 | backend.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey | string | `"kubernetes.io/hostname"` | Topology key of the Kubernetes cluster |
 | backend.autoscaling.enabled | bool | `false` | Enable or disable the autoscaling of pods |
 | backend.env | object | `{}` | Extra environment variables that will be passed onto the backend deployment pods |
-| backend.image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
+| backend.image.pullPolicy | string | `"IfNotPresent"` | THe policy for the image pull process |
 | backend.image.repository | string | `"tractusx/app-puris-backend"` | Repository of the docker image |
 | backend.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | backend.imagePullSecrets | list | `[]` | List of used secrets |
@@ -64,10 +64,10 @@ dependencies:
 | backend.ingress.enabled | bool | `false` | Enable the Ingress |
 | backend.ingress.hosts | list | `[{"host":"your-backend-host-address.com","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Hosts for the Ingress controller |
 | backend.ingress.tls | list | `[]` | TLS certificates for the Ingress controller |
-| backend.livenessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":120,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
-| backend.livenessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a liveness probe |
-| backend.livenessProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial liveness probe is checked |
-| backend.livenessProbe.periodSeconds | int | `25` | Wait time in seconds between liveness probes |
+| backend.livenessProbe | object | `{"failureThreshold":1,"initialDelaySeconds":0,"periodSeconds":5,"successThreshold":1,"timeoutSeconds":1}` | Checks whether a pod is alive or not |
+| backend.livenessProbe.failureThreshold | int | `1` | Number of failures (threshold) for a liveness probe |
+| backend.livenessProbe.initialDelaySeconds | int | `0` | Delay in seconds after which an initial liveness probe is checked |
+| backend.livenessProbe.periodSeconds | int | `5` | Wait time in seconds between liveness probes |
 | backend.livenessProbe.successThreshold | int | `1` | Number of trys until a pod is marked alive |
 | backend.livenessProbe.timeoutSeconds | int | `1` | Timeout in seconds of the liveness probe |
 | backend.nameOverride | string | `""` | Possibility to override the name |
@@ -77,10 +77,12 @@ dependencies:
 | backend.puris.api.key | string | `"test"` | The API key of the PURIS application |
 | backend.puris.api.rootDir | string | `"/catena"` | The root directory of the API |
 | backend.puris.baseurl | string | `"your-backend-host-address.com"` | Base url of the PURIS backend |
+| backend.puris.allowedOrigins | string | `"your-frontend-host-address.com"` | Origin of the frontends that will be accessing the backend |
 | backend.puris.datasource.driverClassName | string | `"org.postgresql.Driver"` | Driver class name of the database |
 | backend.puris.datasource.password | string | `""` | Password for the database user. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.url | string | `"jdbc:postgresql://postgresql-name:5432/puris-database"` | URL of the database. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.username | string | `"db-user"` | Username of the database. Ignored if postgres.enabled is true. |
+| backend.puris.daysofsupplysubmodel.apiassetid | string | `"daysofsupply-api-asset"` | Asset ID for DaysOfSupplySubmodel API |
 | backend.puris.deliverysubmodel.apiassetid | string | `"deliverysubmodel-api-asset"` | Asset ID for DeliverySubmodel API |
 | backend.puris.demandsubmodel.apiassetid | string | `"demandsubmodel-api-asset"` | Asset ID for DemandSubmodel API |
 | backend.puris.demonstrator.role | string | `nil` | Current role of the PURIS demonstrator. Default value should be empty. Can be set to "customer" or "supplier" to enable demonstration setup |
@@ -90,23 +92,24 @@ dependencies:
 | backend.puris.dtr.idp.clients.puris.secret | string | `""` | secret of the client with write access (no vault alias). No default value will be created if empty. Mandatory if backend.puris.dtr.idp.enabled = true. |
 | backend.puris.dtr.idp.enabled | bool | `true` | enables the usage of the IDP for the DTR. |
 | backend.puris.dtr.idp.tokenurl | string | `"https://keycloak-service.com/realms/your-realm/openid-connect/token"` | token url of the idp for your specific realm. May be different to other idp token url in this config. Mandatory if backend.puris.dtr.idp.enabled = true. |
-| backend.puris.dtr.url | string | `"http://localhost:4243"` | Endpoint for DTR |
+| backend.puris.dtr.url | string | `"http://localhost:4243/api/v3"` | Endpoint for DTR including api/v3 prefix |
 | backend.puris.edc.controlplane.host | string | `"172.17.0.2"` |  |
 | backend.puris.edc.controlplane.key | string | `"password"` | Key for the EDC control plane |
 | backend.puris.edc.controlplane.management.url | string | `"https:/your-edc-address:8181/management"` | Url to the EDC controlplane management of the edc |
 | backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc |
 | backend.puris.edc.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api |
 | backend.puris.erpadapter.authkey | string | `"x-api-key"` | The auth key to be used on your ERP adapter's request api |
+| backend.puris.erpadapter.authsecret | string | `""` | The auth secret to be used on your ERP adapter's request api. Reused from existing secret. Secret key "puris-erpadapter-authsecret". |
 | backend.puris.erpadapter.enabled | bool | `false` | Toggles usage of the ERP adapter |
 | backend.puris.erpadapter.refreshinterval | int | `720` | Interval between two requests to the erp adapter for the same issue (minutes) |
 | backend.puris.erpadapter.timelimit | int | `7` | Period since last received partner request after which no more new update requests to the erp adapter will be sent (days) |
 | backend.puris.erpadapter.url | string | `"http://my-erpadapter:8080"` | The url of your ERP adapter's request api |
 | backend.puris.existingSecret | string | `"secret-puris-backend"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
-| backend.puris.frameworkagreement.credential | string | `"Puris"` | The name of the framework agreement. Starting with Uppercase and using CamelCase. |
+| backend.puris.frameworkagreement.credential | string | `"DataExchangeGovernance"` | The name of the framework agreement. Starting with Uppercase and using CamelCase. |
 | backend.puris.frameworkagreement.version | string | `"1.0"` | The version of the framework agreement, NEEDS TO BE PUT AS "STRING"! |
 | backend.puris.generatematerialcatenaxid | bool | `true` | Flag that decides whether the auto-generation feature of the puris backend is enabled. Since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing CatenaX-Id via the materials-API of the backend, when you are inserting a new Material entity to the backend's database. If a CatenaX-Id was not assigned to your Material so far, then this feature can auto-generate one randomly. In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that Material entity. |
 | backend.puris.itemstocksubmodel.apiassetid | string | `"itemstocksubmodel-api-asset"` | Asset ID for ItemStockSubmodel API |
-| backend.puris.jpa.hibernate.ddl-auto | string | `"create"` | Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones |
+| backend.puris.jpa.hibernate.ddl-auto | string | `"update"` | Initialises SQL database with Hibernate property "update" to allow Hibernate to add things to schema so that it doesn't drop tables |
 | backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans | bool | `true` | Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction |
 | backend.puris.notification.apiassetid | string | `"notification-api-asset"` | Asset ID for Notification API |
 | backend.puris.own.bpna | string | `"BPNA4444444444ZZ"` | Own BPNA of the EDC |
@@ -120,10 +123,10 @@ dependencies:
 | backend.puris.productionsubmodel.apiassetid | string | `"productionsubmodel-api-asset"` | Asset ID for ProductionSubmodel API |
 | backend.puris.purpose.name | string | `"cx.puris.base"` | The name of the purpose to use for submodel contracts |
 | backend.puris.purpose.version | string | `"1"` | The version of the purpose to use for submodel contracts. NEEDS TO BE PUT AS "STRING"! |
-| backend.readinessProbe | object | `{"failureThreshold":3,"initialDelaySeconds":120,"periodSeconds":25,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
-| backend.readinessProbe.failureThreshold | int | `3` | Number of failures (threshold) for a readiness probe |
-| backend.readinessProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial readiness probe is checked |
-| backend.readinessProbe.periodSeconds | int | `25` | Wait time in seconds between readiness probes |
+| backend.readinessProbe | object | `{"failureThreshold":1,"initialDelaySeconds":0,"periodSeconds":5,"successThreshold":1,"timeoutSeconds":1}` | Checks if the pod is fully ready to operate |
+| backend.readinessProbe.failureThreshold | int | `1` | Number of failures (threshold) for a readiness probe |
+| backend.readinessProbe.initialDelaySeconds | int | `0` | Delay in seconds after which an initial readiness probe is checked |
+| backend.readinessProbe.periodSeconds | int | `5` | Wait time in seconds between readiness probes |
 | backend.readinessProbe.successThreshold | int | `1` | Number of trys until a pod is marked ready |
 | backend.readinessProbe.timeoutSeconds | int | `1` | Timeout in seconds of the readiness probe |
 | backend.replicaCount | int | `1` | Number of replicas of the Kubernetes deployment |
@@ -139,6 +142,11 @@ dependencies:
 | backend.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | backend.serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | backend.serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
+| backend.startupProbe.enabled | bool | `true` |  |
+| backend.startupProbe.failureThreshold | int | `5` | Number of failures (threshold) for a readiness probe |
+| backend.startupProbe.initialDelaySeconds | int | `120` | Delay in seconds after which an initial readiness probe is checked |
+| backend.startupProbe.periodSeconds | int | `30` | Wait time in seconds between readiness probes |
+| backend.startupProbe.successThreshold | int | `1` | Number of trys until a pod is marked ready |
 | backend.tolerations | list | `[]` | Constrains for tolerations |
 | frontend.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution | list | `[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app.kubernetes.io/name","operator":"DoesNotExist"}]},"topologyKey":"kubernetes.io/hostname"},"weight":100}]` | Rules for the scheduler to find a pod |
 | frontend.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions | list | `[{"key":"app.kubernetes.io/name","operator":"DoesNotExist"}]` | Matching Expressions as key and operators for the pod affinity |
@@ -148,7 +156,7 @@ dependencies:
 | frontend.autoscaling.minReplicas | int | `1` | Number of minimum replica pods for autoscaling |
 | frontend.autoscaling.targetCPUUtilizationPercentage | int | `80` | Value of CPU usage in percentage for autoscaling decisions |
 | frontend.env | object | `{}` | Extra environment variables that will be passed onto the frontend deployment pods |
-| frontend.image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
+| frontend.image.pullPolicy | string | `"IfNotPresent"` | THe policy for the image pull process |
 | frontend.image.repository | string | `"tractusx/app-puris-frontend"` | Repository of the docker image |
 | frontend.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | frontend.imagePullSecrets | list | `[]` | List of used secrets |
@@ -170,8 +178,10 @@ dependencies:
 | frontend.puris.appName | string | `"PURIS"` | The name of the app displayed in the frontend |
 | frontend.puris.baseUrl | string | `"your-backend-host-address.com"` | The base URL for the backend base URL without further endpoints |
 | frontend.puris.endpointCustomer | string | `"stockView/customer?ownMaterialNumber="` | The endpoint for the customers who buy a material identified via the own material number for the stock view |
+| frontend.puris.endpointDaysOfSupply | string | `"days-of-supply"` | The endpoint for the days of supply submodel |
 | frontend.puris.endpointDelivery | string | `"delivery"` | The endpoint for the delivery submodel |
 | frontend.puris.endpointDemand | string | `"demand"` | The endpoint for the demand submodel |
+| frontend.puris.endpointDemandAndCapacityNotification | string | `"demand-and-capacity-notification"` | The endpoint for demand and capacity notifications |
 | frontend.puris.endpointErpScheduleUpdate | string | `"erp-adapter/trigger"` | The endpoint for scheduling an update of erp data (currently only stock supported) |
 | frontend.puris.endpointMaterialStocks | string | `"stockView/material-stocks"` | The endpoint for material stocks for the stock view |
 | frontend.puris.endpointMaterials | string | `"stockView/materials"` | The endpoint for materials for the stock view |
@@ -222,6 +232,9 @@ dependencies:
 | postgresql.enabled | bool | `true` | Enable postgres by default, set to false to use existing postgres. Make sure to set backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from backend). |
 | postgresql.service | object | `{"ports":{"postgresql":5432}}` | Possibility to override the name  nameOverride: "" |
 | postgresql.service.ports.postgresql | int | `5432` | Port of postgres database. |
+
+----------------------------------------------
+Autogenerated from chart metadata using [helm-docs v1.11.3](https://github.com/norwoodj/helm-docs/releases/v1.11.3)
 
 ## NOTICE
 

@@ -1,7 +1,7 @@
 /*
-Copyright (c) 2022,2024 Volkswagen AG
-Copyright (c) 2022,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+Copyright (c) 2022 Volkswagen AG
+Copyright (c) 2022 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2022 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -25,14 +25,14 @@ import { NotFoundView } from '@views/errors/NotFoundView';
 import { CatalogView } from '@views/CatalogView';
 import { NegotiationView } from '@views/NegotiationView';
 import { TransferView } from '@views/TransferView';
-import { StockView } from '@views/StockView';
-import { DashboardView } from '@views/DashboardView';
 import { AboutLicenseView } from '@views/AboutLicenseView';
 import { UnauthorizedView } from '@views/errors/UnauthorizedView';
 import { ErrorView } from '@views/errors/ErrorView';
 import { RouteGuard } from '@components/RouteGuard';
 import { UserGuideView } from '@views/UserGuideView';
 import { DemandCapacityNotificationView } from '@views/DemandCapacityNotificationView';
+import { MaterialListView } from '@views/MaterialListView';
+import { MaterialDetailView } from '@views/MaterialDetailView';
 
 export const router = createBrowserRouter([
     {
@@ -44,16 +44,16 @@ export const router = createBrowserRouter([
                 errorElement: <ErrorView />,
                 children: [
                     {
-                        path: 'stocks',
-                        element: <StockView />,
-                    },
-                    {
-                        path: 'dashboard',
-                        element: <DashboardView />,
-                    },
-                    {
                         path: 'notifications',
                         element: <DemandCapacityNotificationView />,
+                    },
+                    {
+                        path: 'materials',
+                        element: <MaterialListView />,
+                    },
+                    {
+                        path: 'materials/:direction/:materialNumber',
+                        element: <MaterialDetailView />,
                     }
                 ],
             },
@@ -77,14 +77,14 @@ export const router = createBrowserRouter([
             },
             {
                 path: '/',
-                loader: () => redirect('/dashboard'),
+                loader: () => redirect('/materials'),
             },
             {
                 path: 'user-guide',
                 element: <UserGuideView />,
             },
             {
-                path: 'aboutLicense',
+                path: 'about-license',
                 element: <AboutLicenseView />,
             },
             {

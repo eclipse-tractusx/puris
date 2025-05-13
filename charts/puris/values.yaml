@@ -1,7 +1,7 @@
 #
-# Copyright (c) 2023,2024 Volkswagen AG
-# Copyright (c) 2023,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-# Copyright (c) 2023,2024 Contributors to the Eclipse Foundation
+# Copyright (c) 2023 Volkswagen AG
+# Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2023 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -32,7 +32,7 @@ frontend:
     # -- Repository of the docker image
     repository: tractusx/app-puris-frontend
     # -- THe policy for the image pull process
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     # -- Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -195,6 +195,10 @@ frontend:
     endpointProductionRange: production/range
     # -- The endpoint for the delivery submodel
     endpointDelivery: delivery
+    # -- The endpoint for the days of supply submodel
+    endpointDaysOfSupply: days-of-supply
+    # -- The endpoint for demand and capacity notifications
+    endpointDemandAndCapacityNotification: demand-and-capacity-notification
     keycloak:
       # -- Disable the Keycloak integration.
       disabled: true
@@ -228,7 +232,7 @@ backend:
     # -- Repository of the docker image
     repository: tractusx/app-puris-backend
     # -- THe policy for the image pull process
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     # -- Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -328,14 +332,26 @@ backend:
             # -- Topology key of the Kubernetes cluster
             topologyKey: kubernetes.io/hostname
 
+  # delay livenessProbe and readinessProbe till application is reachable
+  startupProbe:
+    # enable startup probe so that you can delay the liveness and readiness probe till the application is reachable.
+    enabled: true
+    # -- Number of failures (threshold) for a readiness probe
+    failureThreshold: 5
+    # -- Delay in seconds after which an initial readiness probe is checked
+    initialDelaySeconds: 120
+    # -- Wait time in seconds between readiness probes
+    periodSeconds: 30
+    # -- Number of trys until a pod is marked ready
+    successThreshold: 1
   # -- Checks whether a pod is alive or not
   livenessProbe:
     # -- Number of failures (threshold) for a liveness probe
-    failureThreshold: 3
+    failureThreshold: 1
     # -- Delay in seconds after which an initial liveness probe is checked
-    initialDelaySeconds: 120
+    initialDelaySeconds: 0
     # -- Wait time in seconds between liveness probes
-    periodSeconds: 25
+    periodSeconds: 5
     # -- Number of trys until a pod is marked alive
     successThreshold: 1
     # -- Timeout in seconds of the liveness probe
@@ -343,11 +359,11 @@ backend:
   # -- Checks if the pod is fully ready to operate
   readinessProbe:
     # -- Number of failures (threshold) for a readiness probe
-    failureThreshold: 3
+    failureThreshold: 1
     # -- Delay in seconds after which an initial readiness probe is checked
-    initialDelaySeconds: 120
+    initialDelaySeconds: 0
     # -- Wait time in seconds between readiness probes
-    periodSeconds: 25
+    periodSeconds: 5
     # -- Number of trys until a pod is marked ready
     successThreshold: 1
     # -- Timeout in seconds of the readiness probe
@@ -356,6 +372,8 @@ backend:
   puris:
     # -- Base url of the PURIS backend
     baseurl: *domain
+    # -- Allowed origins for the frontend
+    allowedOrigins: "https://your-frontend-url"
     # -- Secret for backend passwords. For more information look into 'backend-secrets.yaml' file.
     existingSecret: "secret-puris-backend"
     api:
@@ -411,8 +429,8 @@ backend:
       role:
     jpa:
       hibernate:
-        # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones
-        ddl-auto: create
+        # -- Initialises SQL database with Hibernate property "update" to allow Hibernate to add things to schema so that it doesn't drop tables
+        ddl-auto: update
       properties:
         hibernate:
           # -- Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction
@@ -429,12 +447,15 @@ backend:
     deliverysubmodel:
       # -- Asset ID for DeliverySubmodel API
       apiassetid: deliverysubmodel-api-asset
+    daysofsupplysubmodel:
+      # -- Asset ID for DaysOfSupplySubmodel API
+      apiassetid: daysofsupply-api-asset
     notification:
       # -- Asset ID for Notification API
       apiassetid: notification-api-asset
     frameworkagreement:
       # -- The name of the framework agreement. Starting with Uppercase and using CamelCase.
-      credential: Puris
+      credential: DataExchangeGovernance
       # -- The version of the framework agreement, NEEDS TO BE PUT AS "STRING"!
       version: "1.0"
     purpose:
@@ -443,8 +464,8 @@ backend:
       # -- The version of the purpose to use for submodel contracts. NEEDS TO BE PUT AS "STRING"!
       version: "1"
     dtr:
-      # --Endpoint for DTR
-      url: http://localhost:4243
+      # --Endpoint for DTR including api/v3 prefix
+      url: http://localhost:4243/api/v3
       idp:
         # -- enables the usage of the IDP for the DTR.
         enabled: true
@@ -483,6 +504,8 @@ backend:
       url: http://my-erpadapter:8080
       # -- The auth key to be used on your ERP adapter's request api
       authkey: x-api-key
+      # -- The auth secret to be used on your ERP adapter's request api. Reused from existing secret. Secret key "puris-erpadapter-authsecret".
+      authsecret: ""
       # -- Interval between two requests to the erp adapter for the same issue (minutes)
       refreshinterval: 720
       # -- Period since last received partner request after which no more new update requests to the

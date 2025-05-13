@@ -22,11 +22,10 @@ package org.eclipse.tractusx.puris.backend.supply.domain.repository;
 
 import java.util.List;
 import java.util.UUID;
-
 import org.eclipse.tractusx.puris.backend.supply.domain.model.ReportedSupplierSupply;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReportedSupplierSupplyRepository extends JpaRepository<ReportedSupplierSupply, UUID> {
-    List<ReportedSupplierSupply> findByPartner_BpnlAndMaterial_OwnMaterialNumber(String partnerBpnl, String ownMaterialNumber);
+        List<ReportedSupplierSupply> findByMaterial_OwnMaterialNumberAndPartner_Bpnl(String ownMaterialNumber, String bpnl);
 }
 

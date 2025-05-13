@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023 Volkswagen AG
+ * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -40,6 +40,9 @@ public class VariablesService {
 
     @Value("${puris.baseurl}")
     private String purisBaseUrl;
+
+    @Value("${puris.allowed-origins}")
+    private String[] allowedOrigins;
 
     /**
      * The puris base url as defined in the property puris.baseurl,
@@ -142,6 +145,21 @@ public class VariablesService {
      * during asset creation.
      */
     private String notificationAssetId;
+
+    /**
+     * The url under which this application's request endpoint can
+     * be reached by external machines.
+     */
+    public String getDaysOfSupplySubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "days-of-supply/request";
+    }
+
+    @Value("${puris.daysofsupplysubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the request API
+     * during asset creation.
+     */
+    private String daysOfSupplySubmodelAssetId;
 
     @Value("${puris.frameworkagreement.credential}")
     /**
@@ -283,6 +301,10 @@ public class VariablesService {
 
     public String getDeliverySubmodelApiAssetId() {
         return deliverySubmodelAssetId + "@" + ownBpnl;
+    }
+
+    public String getDaysOfSupplySubmodelApiAssetId() {
+        return daysOfSupplySubmodelAssetId + "@" + ownBpnl;
     }
 
     public String getNotificationApiAssetId() {

@@ -1,7 +1,7 @@
 /*
-Copyright (c) 2022,2024 Volkswagen AG
-Copyright (c) 2022,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+Copyright (c) 2022 Volkswagen AG
+Copyright (c) 2022 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2022 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -22,29 +22,35 @@ SPDX-License-Identifier: Apache-2.0
 import { useTransfers } from '@hooks/edc/useTransfers';
 import { Table } from '@catena-x/portal-shared-components';
 import { Box } from '@mui/material';
+import { ConfidentialBanner } from '@components/ConfidentialBanner';
+import { useTitle } from '@contexts/titleProvider';
+import { useEffect } from 'react';
 
 export const TransferView = () => {
     const { transfers } = useTransfers();
+    const { setTitle } = useTitle();
+
+    useEffect(() => {
+        setTitle('Transfers');
+    }, [setTitle])
     return (
-        <div className="flex flex-col items-center w-full h-full">
-            <h1 className="text-3xl font-semibold text-gray-700 mb-10">Transfers</h1>
-            <Box width="100%">
-                <Table
-                    title="Transfer history"
-                    columns={[
-                        { headerName: 'Transfer Id', field: '@id', width: 200 },
-                        { headerName: 'Correlation Id', field: 'correlationId', width: 200 },
-                        { headerName: 'State', field: 'state', width: 120 },
-                        { headerName: 'Type', field: 'type', width: 120 },
-                        { headerName: 'Asset Id', field: 'assetId', width: 200 },
-                        { headerName: 'Contract Id', field: 'contractId', width: 200 },
-                        { headerName: 'Connector Id', field: 'connectorId', width: 200 },
-                    ]}
-                    rows={transfers ?? []}
-                    getRowId={(row) => row['@id']}
-                    noRowsMsg='No transfers found'
-                />
-            </Box>
-        </div>
+        <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <ConfidentialBanner />
+            <Table
+                title="Transfer history"
+                columns={[
+                    { headerName: 'Transfer Id', field: '@id', flex: 1 },
+                    { headerName: 'Correlation Id', field: 'correlationId', flex: 1 },
+                    { headerName: 'State', field: 'state', flex: 0.75 },
+                    { headerName: 'Type', field: 'type', flex: 0.75 },
+                    { headerName: 'Asset Id', field: 'assetId', flex: 1 },
+                    { headerName: 'Contract Id', field: 'contractId', flex: 1 },
+                    { headerName: 'Connector Id', field: 'connectorId', flex: 1 },
+                ]}
+                rows={transfers ?? []}
+                getRowId={(row) => row['@id']}
+                noRowsMsg="No transfers found"
+            />
+        </Box>
     );
 };

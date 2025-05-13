@@ -1,7 +1,7 @@
 #
-# Copyright (c) 2023, 2024 Volkswagen AG
-# Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-# Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+# Copyright (c) 2023 Volkswagen AG
+# Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2023 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -18,12 +18,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-version: "3"
 services:
 
   puris-frontend-customer:
     image: puris-frontend:dev
     container_name: customer-frontend
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://puris-frontend-customer:3000"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:3000:8080"
     environment:
@@ -46,6 +50,8 @@ services:
       - ENDPOINT_PRODUCTION=production
       - ENDPOINT_PRODUCTION_RANGE=production/range
       - ENDPOINT_DELIVERY=delivery
+      - ENDPOINT_DAYS_OF_SUPPLY=days-of-supply
+      - ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION=demand-and-capacity-notification
       - IDP_DISABLE=true
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
@@ -60,11 +66,16 @@ services:
     container_name: customer-backend
     depends_on:
       edc-customer-control-plane:
-        condition: service_started #service_healthy
+        condition: service_healthy
       postgres-all:
         condition: service_healthy
       dtr-customer:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://puris-backend-customer:8081/catena/actuator/health"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:8081:8081" # expose port of server.port
     env_file:
@@ -73,13 +84,17 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/puris_customer
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
+      puris.dtr.idp.edc-client.id: ${KC_MANAGE_CLIENT_ID}
+      puris.dtr.idp.edc-client.secret.alias: ${CUSTOMER_KC_DTR_PURIS_CLIENT_ALIAS}
+      puris.dtr.idp.puris-client.id: ${KC_MANAGE_CLIENT_ID}
+      puris.dtr.idp.puris-client.secret: ${CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET}
     networks:
       - miw-net
     extra_hosts:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   dtr-customer:
-    image: tractusx/sldt-digital-twin-registry:0.5.0
+    image: tractusx/sldt-digital-twin-registry:0.7.0
     container_name: dtr-customer
     depends_on:
       postgres-all:
@@ -88,7 +103,7 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://dtr-customer:4243/actuator/health/readiness"]
       interval: 4s
       timeout: 3s
-      retries: 20
+      retries: 30
     ports:
       - "127.0.0.1:4243:4243"
     environment:
@@ -146,6 +161,13 @@ services:
     container_name: customer-control-plane
     env_file:
       - ./tractus-x-edc/config/customer/control-plane.properties
+    environment:
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://edc-customer-control-plane:8180/api/check/health"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:8180:8180"
       - "127.0.0.1:8181:8181"
@@ -161,11 +183,18 @@ services:
     depends_on:
       postgres-all:
         condition: service_healthy
+      edc-customer-control-plane:
+        condition: service_healthy
     restart: on-failure
     extends:
       file: ./tractus-x-edc/docker-compose.yaml
       service: data-plane
     container_name: customer-data-plane
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://edc-customer-data-plane:8280/api/check/health"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:8280:8280"
       - "127.0.0.1:8281:8281"
@@ -174,6 +203,8 @@ services:
       - "127.0.0.1:8299:8299"
     env_file:
       - ./tractus-x-edc/config/customer/data-plane.properties
+    environment:
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
     networks:
       - miw-net
     extra_hosts:
@@ -204,6 +235,8 @@ services:
       - ENDPOINT_PRODUCTION=production
       - ENDPOINT_PRODUCTION_RANGE=production/range
       - ENDPOINT_DELIVERY=delivery
+      - ENDPOINT_DAYS_OF_SUPPLY=days-of-supply
+      - ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION=demand-and-capacity-notification
       - IDP_DISABLE=true
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
@@ -218,11 +251,16 @@ services:
     container_name: supplier-backend
     depends_on:
       edc-supplier-control-plane:
-        condition: service_started #service_healthy
+        condition: service_healthy
       postgres-all:
         condition: service_healthy
       dtr-supplier:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://puris-backend-supplier:8082/catena/actuator/health"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:8082:8082"
     env_file:
@@ -231,13 +269,17 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-all:5432/puris_supplier
       SPRING_DATASOURCE_USERNAME: ${PG_USER}
       SPRING_DATASOURCE_PASSWORD: ${PG_PW}
+      puris.dtr.idp.edc-client.id: ${KC_MANAGE_CLIENT_ID}
+      puris.dtr.idp.edc-client.secret.alias: ${SUPPLIER_KC_DTR_PURIS_CLIENT_ALIAS}
+      puris.dtr.idp.puris-client.id: ${KC_MANAGE_CLIENT_ID}
+      puris.dtr.idp.puris-client.secret: ${SUPPLIER_KC_DTR_PURIS_CLIENT_SECRET}
     networks:
       - miw-net
     extra_hosts:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   dtr-supplier:
-    image: tractusx/sldt-digital-twin-registry:0.5.0
+    image: tractusx/sldt-digital-twin-registry:0.7.0
     container_name: dtr-supplier
     depends_on:
       postgres-all:
@@ -246,7 +288,7 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://dtr-supplier:4243/actuator/health/readiness"]
       interval: 4s
       timeout: 3s
-      retries: 20
+      retries: 30
     ports:
       - "127.0.0.1:4244:4243"
     environment:
@@ -276,6 +318,11 @@ services:
       file: ./tractus-x-edc/docker-compose.yaml
       service: control-plane
     container_name: supplier-control-plane
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://edc-supplier-control-plane:9180/api/check/health"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:9180:9180"
       - "127.0.0.1:9181:9181"
@@ -285,6 +332,8 @@ services:
       - "127.0.0.1:1044:1044"
     env_file:
       - ./tractus-x-edc/config/supplier/control-plane.properties
+    environment:
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
     networks:
       - miw-net
     extra_hosts:
@@ -294,11 +343,18 @@ services:
     depends_on:
       postgres-all:
         condition: service_healthy
+      edc-supplier-control-plane:
+        condition: service_healthy
     restart: on-failure
     extends:
       file: ./tractus-x-edc/docker-compose.yaml
       service: data-plane
     container_name: supplier-data-plane
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://edc-supplier-data-plane:9280/api/check/health"]
+      interval: 4s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:9280:9280"
       - "127.0.0.1:9281:9281"
@@ -307,6 +363,8 @@ services:
       - "127.0.0.1:9299:9299"
     env_file:
       - ./tractus-x-edc/config/supplier/data-plane.properties
+    environment:
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
     networks:
       - miw-net
     extra_hosts:

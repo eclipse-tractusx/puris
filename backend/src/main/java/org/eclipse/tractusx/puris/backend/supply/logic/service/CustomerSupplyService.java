@@ -23,37 +23,34 @@ package org.eclipse.tractusx.puris.backend.supply.logic.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.OwnDeliveryService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.ReportedDeliveryService;
 import org.eclipse.tractusx.puris.backend.demand.logic.services.OwnDemandService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.OwnCustomerSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.ReportedCustomerSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.repository.ReportedCustomerSupplyRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CustomerSupplyService extends SupplyService<OwnCustomerSupply> {
-    @Autowired
-    private ReportedCustomerSupplyRepository repository;
-    @Autowired
-    private PartnerService partnerService;
-    @Autowired
+public class CustomerSupplyService extends SupplyService<OwnCustomerSupply, ReportedCustomerSupply, ReportedCustomerSupplyRepository, MaterialItemStock, MaterialItemStockService> {
+    
     private OwnDeliveryService ownDeliveryService;
-    @Autowired
     private ReportedDeliveryService reportedDeliveryService;
-    @Autowired
     private OwnDemandService demandService;
-
-    protected final Function<ReportedCustomerSupply, Boolean> validator;
-
-    public CustomerSupplyService() {
-        this.validator = this::validate;
+    
+    public CustomerSupplyService(MaterialItemStockService stockService, MaterialService materialService,
+            PartnerService partnerService, ReportedCustomerSupplyRepository repository, OwnDeliveryService ownDeliveryService, ReportedDeliveryService reportedDeliveryService, OwnDemandService demandService) {
+        super(stockService, materialService, partnerService, repository);
+        this.ownDeliveryService = ownDeliveryService;
+        this.reportedDeliveryService = reportedDeliveryService;
+        this.demandService = demandService;
     }
 
     @Override
@@ -62,7 +59,7 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply> {
     }
 
     @Override
-    protected List<Double> getAddedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+    protected List<Double> getAddedValues(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         List<Double> ownDeliveries = ownDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionCharacteristic.INBOUND, numberOfDays);
         List<Double> reportedDeliveries = reportedDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionCharacteristic.INBOUND, numberOfDays);
         List<Double> deliveries = mergeDeliveries(ownDeliveries, reportedDeliveries);
@@ -70,7 +67,7 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply> {
     }
 
     @Override
-    protected List<Double> getConsumedValues(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+    protected List<Double> getConsumedValues(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         List<Double> demands = demandService.getQuantityForDays(material, partnerBpnl, siteBpns, numberOfDays);
         return demands;
     }
@@ -85,19 +82,19 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply> {
      * @param numberOfDays the number of days over which the forecast should be calculated.
      * @return a list of {@link OwnCustomerSupply} objects, each containing the calculated days of supply for a specific date.
      */
-    public final List<OwnCustomerSupply> calculateCustomerDaysOfSupply(String material, String partnerBpnl, String siteBpns, int numberOfDays) {
+    public List<OwnCustomerSupply> calculateCustomerDaysOfSupply(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
         return calculateDaysOfSupply(material, partnerBpnl, siteBpns, numberOfDays);
     }
     
-    public final List<ReportedCustomerSupply> findAll() {
-        return repository.findAll();
+    public final List<ReportedCustomerSupply> findAllByMaterialNumberAndPartnerBpnl(String ownMaterialNumber, String partnerBpnl) {
+        return repository.findByMaterial_OwnMaterialNumberAndPartner_Bpnl(ownMaterialNumber, partnerBpnl);
     }
 
     public final ReportedCustomerSupply findById(UUID id) {
         return repository.findById(id).orElse(null);
     }
 
-    public final List<ReportedCustomerSupply> findAllByFilters(Optional<String> ownMaterialNumber, Optional<String> bpnl) {
+    public final List<ReportedCustomerSupply> findAllByFilters(Optional<String> ownMaterialNumber, Optional<String> bpnl, Optional<String> siteBpns) {
         Stream<ReportedCustomerSupply> stream = repository.findAll().stream();
         if (ownMaterialNumber.isPresent()) {
             stream = stream.filter(dayOfSupply -> dayOfSupply.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
@@ -105,11 +102,10 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply> {
         if (bpnl.isPresent()) {
             stream = stream.filter(dayOfSupply -> dayOfSupply.getPartner().getBpnl().equals(bpnl.get()));
         }
+        if (siteBpns.isPresent()) {
+            stream = stream.filter(daysOfSupply -> daysOfSupply.getStockLocationBPNS().equals(siteBpns.get()));
+        }
         return stream.toList();
-    }
-
-    public final List<ReportedCustomerSupply> findByPartnerBpnlAndOwnMaterialNumber(String partnerBpnl, String ownMaterialNumber) {
-        return repository.findByPartner_BpnlAndMaterial_OwnMaterialNumber(partnerBpnl, ownMaterialNumber);
     }
 
     public boolean validate(ReportedCustomerSupply daysOfSupply) {
@@ -118,8 +114,11 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply> {
             daysOfSupply.getMaterial() != null &&
             daysOfSupply.getDate() != null &&
             daysOfSupply.getStockLocationBPNS() != null &&
+            daysOfSupply.getStockLocationBPNA() != null &&
             daysOfSupply.getPartner() != partnerService.getOwnPartnerEntity() &&
-            daysOfSupply.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(daysOfSupply.getStockLocationBPNS())) &&
-            (daysOfSupply.getStockLocationBPNA().equals(null) || daysOfSupply.getStockLocationBPNA().equals(daysOfSupply.getStockLocationBPNS()));
+            daysOfSupply.getPartner().getSites().stream().anyMatch(site -> 
+                site.getBpns().equals(daysOfSupply.getStockLocationBPNS()) && 
+                site.getAddresses().stream().anyMatch(address -> address.getBpna().equals(daysOfSupply.getStockLocationBPNA()))
+            );
     }
 }

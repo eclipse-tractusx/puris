@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Volkswagen AG
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -24,13 +24,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
+import java.util.Date;
 import java.util.Objects;
 
 /**

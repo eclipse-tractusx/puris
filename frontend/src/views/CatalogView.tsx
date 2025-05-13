@@ -1,7 +1,7 @@
 /*
-Copyright (c) 2022,2024 Volkswagen AG
-Copyright (c) 2022,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+Copyright (c) 2022 Volkswagen AG
+Copyright (c) 2022 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2022 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -19,15 +19,16 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import {LoadingButton, Table} from '@catena-x/portal-shared-components';
-import {useCatalog} from '@hooks/edc/useCatalog';
-import {useRef, useState} from 'react';
-import {CatalogOperation, CatalogPermission} from '@models/types/edc/catalog';
-import {Box, Stack} from '@mui/material';
-import {Partner} from '@models/types/edc/partner';
-import {useAllPartners} from '@hooks/useAllPartners';
-import {LabelledAutoComplete} from '@components/ui/LabelledAutoComplete';
-import {getCatalogOperator} from '@util/helpers';
+import { Input, Table } from '@catena-x/portal-shared-components';
+import { useCatalog } from '@hooks/edc/useCatalog';
+import { useEffect, useRef, useState } from 'react';
+import { CatalogOperation, CatalogPermission } from '@models/types/edc/catalog';
+import { Box, Button, Stack, Typography, Autocomplete } from '@mui/material';
+import { Partner } from '@models/types/edc/partner';
+import { useAllPartners } from '@hooks/useAllPartners';
+import { getCatalogOperator } from '@util/helpers';
+import { ConfidentialBanner } from '@components/ConfidentialBanner';
+import { useTitle } from '@contexts/titleProvider';
 
 const PermissionList = ({ permission }: { permission: CatalogPermission }) => {
     return (
@@ -35,10 +36,14 @@ const PermissionList = ({ permission }: { permission: CatalogPermission }) => {
             {permission['odrl:constraint'] &&
                 'odrl:and' in permission['odrl:constraint'] &&
                 permission['odrl:constraint']['odrl:and'].map((constraint) => {
-                    const permissionString = `${constraint['odrl:leftOperand']['@id']} ${getCatalogOperator(constraint['odrl:operator']['@id'])} ${
-                        constraint['odrl:rightOperand']
-                    }`;
-                    return <div title={permissionString}>{permissionString}</div>;
+                    const permissionString = `${constraint['odrl:leftOperand']['@id']} ${getCatalogOperator(
+                        constraint['odrl:operator']['@id']
+                    )} ${constraint['odrl:rightOperand']}`;
+                    return (
+                        <div key={constraint['@type']} title={permissionString}>
+                            {permissionString}
+                        </div>
+                    );
                 })}
         </Stack>
     );
@@ -63,18 +68,18 @@ const CatalogList = ({ catalog, title }: CatalogListProps) => {
         <Table
             title={title}
             columns={[
-                { headerName: 'Asset ID', field: 'assetId', width: 400 },
+                { headerName: 'Asset ID', field: 'assetId', flex: 2 },
                 {
                     headerName: 'Asset Type',
                     field: 'assetType',
-                    width: 150,
+                    flex: 1,
                     renderCell: (row) => <div title={row.row.assetType}>{row.row.assetType.split('#')[1]}</div>,
                 },
-                { headerName: 'Version', field: 'assetVersion', width: 70 },
+                { headerName: 'Version', field: 'assetVersion', flex: 0.5 },
                 {
                     headerName: 'Action',
                     field: 'permission.action',
-                    width: 70,
+                    flex: 0.5,
                     renderCell: (row) => {
                         const actionString = row.row.permission['odrl:action']['@id'];
                         const action = actionString.split('/')[actionString.split('/').length - 1];
@@ -84,7 +89,7 @@ const CatalogList = ({ catalog, title }: CatalogListProps) => {
                 {
                     headerName: 'Usage Policies',
                     field: 'permission',
-                    width: 500,
+                    flex: 2,
                     renderCell: (row) => <PermissionList permission={row.row.permission} />,
                 },
             ]}
@@ -99,39 +104,50 @@ export const CatalogView = () => {
     const [partner, setPartner] = useState<Partner | null>(null);
     const { catalog, catalogError, isLoadingCatalog } = useCatalog(partner);
     const partnerRef = useRef<Partner | null>(null);
+    const { setTitle } = useTitle();
+
+    useEffect(() => {
+        setTitle('Catalog');
+    }, [setTitle])
     return (
-        <div className="flex flex-col items-center gap-4 w-full h-full">
-            <h1 className="text-3xl font-semibold text-gray-700">View Partner Catalog</h1>
-            <div className="flex w-[40rem] items-end gap-5">
-                <LabelledAutoComplete
+        <Stack spacing={2}>
+            <ConfidentialBanner />
+            <Stack spacing={1} direction="row" alignItems="center" sx={{ borderRadius: 2, backgroundColor: 'white', p: '.5rem .5rem' }}>
+                <Autocomplete
                     id="partner"
                     value={partner}
                     options={partners ?? []}
                     getOptionLabel={(option) => option?.name ?? ''}
-                    label="Partner*"
-                    placeholder="Select a Partner"
+                    sx={{ width: '32rem' }}
+                    renderInput={(params) => <Input hiddenLabel {...params} placeholder="Select a Partner" />}
                     onChange={(_, newValue) => (partnerRef.current = newValue)}
                     isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
-                    className="flex-grow"
                 />
-                <div className="mb-3 flex-shrink-0">
-                    <LoadingButton
-                        label="Get Catalog"
-                        loadIndicator="Loading..."
-                        loading={isLoadingCatalog}
-                        onButtonClick={() => setPartner(partnerRef?.current)}
-                    />
-                </div>
-            </div>
-            {!isLoadingCatalog ? (catalog && catalog.length > 0 ? (
-                <Box width="100%">
-                    <CatalogList title={`Catalog for ${partner?.name}`} catalog={catalog} />
-                </Box>
-            ) : catalogError != null ? (
-                <div className="text-red-500 py-5">There was an error retrieving the Catalog from {partner?.name}</div>
+                <Button onClick={() => setPartner(partnerRef?.current)}>Get Catalog</Button>
+            </Stack>
+            {!isLoadingCatalog ? (
+                catalog && catalog.length > 0 ? (
+                    <Box width="100%">
+                        <CatalogList title={`Catalog for ${partner?.name}`} catalog={catalog} />
+                    </Box>
+                ) : catalogError != null ? (
+                    <Box display="flex" justifyContent="center" paddingTop="5rem">
+                        <Typography variant="body1" color="red">
+                            There was an error retrieving the Catalog from {partner?.name}
+                        </Typography>
+                    </Box>
+                ) : (
+                    partner != null && (
+                        <Box display="flex" justifyContent="center" paddingTop="5rem">
+                            <Typography variant="body1"> {`No Catalog available for ${partner?.name}`} </Typography>
+                        </Box>
+                    )
+                )
             ) : (
-                partner != null && <div className="py-5"> {`No Catalog available for ${partner?.name}`} </div>
-            )) : <div>Loading Catalog... </div>}
-        </div>
+                <Box display="flex" justifyContent="center" paddingTop="5rem">
+                    <Typography variant="body1"> Loading Catalog... </Typography>
+                </Box>
+            )}
+        </Stack>
     );
 };

@@ -16,6 +16,52 @@ docker compose -f docker-compose-dev-postgres.yaml down
 _NOTE: For testing purposes HyperSql is still used but excluded for spring run._
 ll
 
+## Cleaning the vault
+
+Sometimes it may be helpful to remove old transfers or edr tokens if you resetup your edc but not your vault.
+
+As per version `0.9.0` (started with a `0.5.0` or `0.4.0` version), the edc creates in the root of the vault secrets:
+
+- transfers in form of <uuid>
+- edrs for uuids in form of edr--<uuid>
+
+Download & install the vault CLI
+
+> The vault deletion process is to
+> - remove the versions. If you remove them, they remain on the system.
+> - destroy the versions. Now they're gone, too but the path still remains.
+> - remove metatdata from secret path. Now the whole secret has been removed.
+    > Note: only do this in a controlled environment
+
+```shell
+export VAULT_ADDR=TODO
+export VAULT_TOKEN=TODO
+
+export KV_PATH=your-puris-kv-path
+
+# select uuids and edr--uuid
+secrets=$(vault kv list -format=json $KV_PATH | jq -r '.[] | select(test("^(edr--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$"))')
+
+# Count the number of UUID-like secrets
+count=$(echo "$secrets" | wc -l)
+
+# Print the number of secrets found
+echo "Number of UUID-like secrets found: $count"
+
+for secret in $secrets; do
+    
+    # Remove the 'data/' prefix if it exists
+    secret_name=$(echo "$secret" | sed 's/^data\///')
+    
+    echo "Deleting secret: $secret"
+    vault kv delete "$KV_PATH/$secret"
+    echo "Destroy version 1 permanently: $secret"
+    vault kv destroy -versions=1 "$KV_PATH/$secret"
+    echo "Remove path by removing metadata: $secret"
+    vault kv metadata delete "$KV_PATH/$secret"
+done
+```
+
 ## Keeping dependencies-files up to date
 
 ### Backend
@@ -54,7 +100,7 @@ cd local/iam-mock
 cat requirements.txt | grep -v \# \
 | sed -E -e 's|([^= ]+)==([^= ]+)|pypi/pypi/-/\1/\2|' -e 's| ||g' \
 | sort | uniq \
-| eclipseDashTool -summary DEPENDENCIES -
+| eclipseDashTool -project automotive.tractusx -summary DEPENDENCIES -
 ```
 
 Note: Dash action provided by eclipse-tractusx/sig-infra does not provide to opportunity for python.

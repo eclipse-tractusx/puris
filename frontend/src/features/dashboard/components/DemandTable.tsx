@@ -113,8 +113,8 @@ export const DemandTable = ({ numberOfDays, stocks, demands, deliveries, site, r
     };
     return (
         <Stack spacing={2}>
-            <Box display="flex" justifyContent="start" width="100%" gap="0.5rem" marginBlock="0.5rem" paddingLeft=".5rem">
-                <Typography variant="caption1" component="h3" fontWeight={600}>
+            <Box display="flex" justifyContent="start" alignItems="baseline" width="100%" gap="0.5rem" marginBlock="0.5rem" paddingLeft=".5rem">
+                <Typography variant="h4" component="h3">
                     Site:
                 </Typography>
                 {site.name} ({site.bpns})
@@ -128,7 +128,7 @@ export const DemandTable = ({ numberOfDays, stocks, demands, deliveries, site, r
                     </Box>}
             </Box>
             <TableWithRowHeader
-                title=""
+                title="Demand Summary"
                 noRowsMsg="Select a Material to show the customer demand"
                 columns={createDateColumnHeaders(numberOfDays)}
                 rows={createTableRows(numberOfDays, stocks ?? [], demands ?? [], deliveries ?? [], site)}

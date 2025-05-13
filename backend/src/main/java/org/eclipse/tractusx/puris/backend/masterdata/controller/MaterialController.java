@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023 Volkswagen AG
+ * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialEntityDto;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRefreshService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,9 @@ public class MaterialController {
 
     @Autowired
     private MaterialService materialService;
+
+    @Autowired
+    private MaterialRefreshService materialRefreshService;
 
     @Autowired
     private Validator validator;
@@ -157,5 +161,16 @@ public class MaterialController {
         return new ResponseEntity<>(materialService.findAll().
             stream().map(x -> modelMapper.map(x, MaterialEntityDto.class)).collect(Collectors.toList()),
             HttpStatusCode.valueOf(200));
+    }
+
+    @GetMapping("/refresh")
+    @Operation(description = "Requests material data for the given material from all partners")
+    public ResponseEntity<String> refreshMaterialData(@RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        if (!materialPattern.matcher(ownMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        materialRefreshService.refreshPartnerData(ownMaterialNumber);
+        return new ResponseEntity<>(ownMaterialNumber, HttpStatusCode.valueOf(200));
     }
 }

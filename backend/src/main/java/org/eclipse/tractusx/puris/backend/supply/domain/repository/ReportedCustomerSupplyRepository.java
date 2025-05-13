@@ -27,5 +27,5 @@ import org.eclipse.tractusx.puris.backend.supply.domain.model.ReportedCustomerSu
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReportedCustomerSupplyRepository extends JpaRepository<ReportedCustomerSupply, UUID> {
-    List<ReportedCustomerSupply> findByPartner_BpnlAndMaterial_OwnMaterialNumber(String partnerBpnl, String ownMaterialNumber);
+    List<ReportedCustomerSupply> findByMaterial_OwnMaterialNumberAndPartner_Bpnl(String ownMaterialNumber, String bpnl);
 }

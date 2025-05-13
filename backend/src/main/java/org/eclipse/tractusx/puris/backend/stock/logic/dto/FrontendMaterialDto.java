@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023 Volkswagen AG
+ * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,6 +26,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Date;
+import java.util.Optional;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 @Getter
@@ -37,4 +40,6 @@ public class FrontendMaterialDto {
     private String ownMaterialNumber;
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String description;
+    private Date lastUpdatedOn;
+    private Optional<Double> daysOfSupply;
 }

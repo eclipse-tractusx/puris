@@ -50,8 +50,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
@@ -133,7 +135,9 @@ public class DeliveryController {
         }
 
         try {
-            return convertToDto(ownDeliveryService.create(convertToEntity(deliveryDto)));
+            var dto = convertToDto(ownDeliveryService.create(convertToEntity(deliveryDto)));
+            materialService.updateTimestamp(deliveryDto.getOwnMaterialNumber());
+            return dto;
         } catch (KeyAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Delivery already exists. Use PUT instead.");
         } catch (IllegalArgumentException e) {
@@ -156,6 +160,7 @@ public class DeliveryController {
         if (updatedDelivery == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery does not exist.");
         }
+        materialService.updateTimestamp(dto.getOwnMaterialNumber());
         return convertToDto(updatedDelivery);
     }
 
@@ -174,6 +179,7 @@ public class DeliveryController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery does not exist.");
         }
         ownDeliveryService.delete(id);
+        materialService.updateTimestamp(delivery.getMaterial().getOwnMaterialNumber());
     }
 
     @GetMapping("reported/refresh")
@@ -193,11 +199,12 @@ public class DeliveryController {
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
         }
 
-        List<Partner> partners;
+        Set<Partner> partners = new HashSet<>();
         if (materialEntity.isMaterialFlag()) {
-            partners = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
-        } else {
-            partners = mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber);
+            partners.addAll(mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber));
+        } 
+        if (materialEntity.isProductFlag()) {
+            partners.addAll(mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber));
         }
         for (Partner partner : partners) {
             executorService.submit(() ->

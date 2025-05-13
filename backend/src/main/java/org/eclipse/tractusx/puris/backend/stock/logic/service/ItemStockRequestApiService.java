@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Volkswagen AG
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -147,6 +147,8 @@ public class ItemStockRequestApiService {
                 reportedMaterialItemStockService.create(newStock);
             }
             log.info("Updated ReportedMaterialItemStocks for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+
+            materialService.updateTimestamp(material.getOwnMaterialNumber());
         } catch (Exception e) {
             log.error("Error in ReportedMaterialItemStockRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
         }
@@ -179,6 +181,8 @@ public class ItemStockRequestApiService {
                 reportedProductItemStockService.create(newStock);
             }
             log.info("Updated ReportedProductItemStocks for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+
+            materialService.updateTimestamp(material.getOwnMaterialNumber());
         } catch (Exception e) {
             log.error("Error in ReportedProductItemStockRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
         }

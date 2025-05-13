@@ -5,14 +5,13 @@ meta {
 }
 
 get {
-  url: {{CUSTOMER_DTR}}/api/v3/lookup/shells?assetIds={{DTR_QUERY_SPECIFIC_ASSET_IDS_ENCODED}}
+  url: {{CUSTOMER_DTR}}/lookup/shells?assetIds={{DTR_QUERY_SPECIFIC_ASSET_IDS_ENCODED}}
   body: none
   auth: bearer
 }
 
 params:query {
   assetIds: {{DTR_QUERY_SPECIFIC_ASSET_IDS_ENCODED}}
-  ~null: 
 }
 
 headers {

@@ -40,12 +40,14 @@ public class ErpAdapterConfiguration {
     @Value("${puris.erpadapter.url}")
     private String erpAdapterUrl;
 
-    /**
-     * The URL under which we expect responses from
-     * the ERP adapter
-     */
-    @Value("${puris.baseurl}" + "${server.servlet.context-path}" + "/erp-adapter")
-    private String erpResponseUrl;
+
+    @Value("${puris.baseurl}")
+    @Getter(AccessLevel.NONE)
+    private String purisBaseUrl;
+
+    @Value("${server.servlet.context-path}")
+    @Getter(AccessLevel.NONE)
+    private String contextPath;
 
     /**
      * The auth-key used when accessing the ERP adapter's
@@ -113,5 +115,17 @@ public class ErpAdapterConfiguration {
     public long getRefreshInterval() {
         // translate minutes to milliseconds
         return refreshInterval * 60 * 1000;
+    }
+
+    /**
+     * Provides the URL, under which we expect to receive a response from the ERP Adapter
+     *
+     * @return the response URL
+     */
+    public String getErpResponseUrl() {
+        String url = purisBaseUrl.endsWith("/") ? purisBaseUrl : purisBaseUrl + "/";
+        String context = contextPath.startsWith("/") ? contextPath.substring(1) : contextPath;
+        context = context.endsWith("/") ? context : context + "/";
+        return url + context + "erp-adapter";
     }
 }

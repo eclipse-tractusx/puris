@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (c) 2022,2024 Volkswagen AG
-    Copyright (c) 2022,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-    Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+    Copyright (c) 2022 Volkswagen AG
+    Copyright (c) 2022 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+    Copyright (c) 2022 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -28,12 +28,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.1</version>
+        <version>3.4.3</version>
         <relativePath/>
     </parent>
     <groupId>org.eclipse.tractusx.puris</groupId>
     <artifactId>puris-backend</artifactId>
-    <version>2.1.0</version>
+    <version>3.1.0</version>
     <name>puris-backend</name>
     <description>PURIS Backend</description>
     <properties>
@@ -46,10 +46,14 @@
         <okhttp.version>4.12.0</okhttp.version>
         <postgresql.version>42.7.3</postgresql.version>
         <snakeyaml.version>2.2</snakeyaml.version>
-        <springdoc.version>2.5.0</springdoc.version>
-        <edc-connector-version>0.7.0</edc-connector-version>
+        <springdoc.version>2.8.5</springdoc.version>
+        <edc-connector-version>0.11.1</edc-connector-version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -61,6 +65,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.session</groupId>

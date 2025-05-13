@@ -178,6 +178,19 @@ The following table shows the differences.
 | now +4 day         | 200 pieces | none                                                                               |
 | now +4 day +1 hour | 300 pieces | none                                                                               |
 
+### Days of Supply
+
+The initial calculation of Days Of Supply is done based on the previously inserted data for Demand and Deliveries. To test the correct changes of the Days of Supply when adding new data, the following data is added:
+
+- for Customer:
+  - Delivery of 1500 pieces arriving in 8 days
+  - Demand of 810 pieces in 11 days
+- for Supplier
+  - Delivery of 3000 pieces leaving in 7 days
+  - Production of 1200 pieces in 11 days
+
+After each piece of data is inserted the Days of Supply are requested and verified again.
+
 ## Preparations
 
 To run integration tests import the collection and the environment file to postman.

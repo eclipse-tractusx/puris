@@ -1,7 +1,7 @@
 #
-# Copyright (c) 2022,2024 Volkswagen AG
-# Copyright (c) 2022,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-# Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+# Copyright (c) 2022 Volkswagen AG
+# Copyright (c) 2022 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2022 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -92,6 +92,10 @@ spec:
               value: "{{ .Values.frontend.puris.endpointProductionRange }}"
             - name: ENDPOINT_DELIVERY
               value: "{{ .Values.frontend.puris.endpointDelivery }}"
+            - name: ENDPOINT_DAYS_OF_SUPPLY
+              value: "{{ .Values.frontend.puris.endpointDaysOfSupply }}"
+            - name: ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION
+              value: "{{ .Values.frontend.puris.endpointDemandAndCapacityNotification }}"
             - name: BACKEND_API_KEY
               value: "{{ .Values.backend.puris.api.key}}"
             - name: IDP_DISABLE

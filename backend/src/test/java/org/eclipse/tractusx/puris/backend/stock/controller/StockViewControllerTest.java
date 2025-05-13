@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Volkswagen AG
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,12 +25,15 @@ import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfigurati
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.FrontendMaterialDto;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
+import org.eclipse.tractusx.puris.backend.supply.logic.service.CustomerSupplyService;
+import org.eclipse.tractusx.puris.backend.supply.logic.service.SupplierSupplyService;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(StockViewController.class)
-@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class})
+@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class, VariablesService.class})
 class StockViewControllerTest {
 
     @Autowired
@@ -74,6 +77,12 @@ class StockViewControllerTest {
 
     @MockBean
     private ReportedProductItemStockService reportedProductItemStockService;
+
+    @MockBean
+    private CustomerSupplyService customerSupplyService;
+
+    @MockBean
+    private SupplierSupplyService supplierSupplyService;
 
     @MockBean
     private PartnerService partnerService;

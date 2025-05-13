@@ -1,8 +1,9 @@
 #!/bin/bash
 
 #
-# Copyright (c) 2022,2024 Volkswagen AG
-# Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+# Copyright (c) 2023 Volkswagen AG
+# Copyright (c) 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2023 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -20,6 +21,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# Define the output file path
+BRUNO_FILE="bruno/puris-integration-test/environments/local.bru"
+
 # generate EDC PW (used for both EDC and BDRS)
 EDC_API_PW=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
 
@@ -32,8 +36,12 @@ CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9
 SUPPLIER_KC_DTR_EDC_CLIENT_SECRET=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
 SUPPLIER_KC_DTR_PURIS_CLIENT_SECRET=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
 
-CUSTOMER_KC_MIW_CLIENT_SECRET=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
-SUPPLIER_KC_MIW_CLIENT_SECRET=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
+CUSTOMER_BACKEND_API_KEY=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
+SUPPLIER_BACKEND_API_KEY=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
+
+# for some reaseon we generated keys for MIW that leaded to failure for some time, as they are not inserted to MIW
+CUSTOMER_KC_MIW_CLIENT_SECRET=miw_private_client
+SUPPLIER_KC_MIW_CLIENT_SECRET=miw_private_client
 
 # generate .env
 echo "Creating .env"
@@ -47,24 +55,28 @@ KC_MIW_ENC=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
 
 CUSTOMER_BPNL=BPNL4444444444XX
 CUSTOMER_OAUTH_SECRET_ALIAS=customer.miw.secret
-CUSTOMER_OAUTH_CLIENT_ID=customer_private_client
+# use hard coded client for now to only have some bearer token for the mock-util-service
+CUSTOMER_OAUTH_CLIENT_ID=miw_private_client
 CUSTOMER_PRIVATE_KEY_ALIAS=customer-key
 CUSTOMER_PUBLIC_KEY_ALIAS=customer-cert
 CUSTOMER_ENCRYPTION_KEYS_ALIAS=customer-encryption-keys
-CUSTOMER_BACKEND_API_KEY=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
+CUSTOMER_BACKEND_API_KEY=$CUSTOMER_BACKEND_API_KEY
 CUSTOMER_KC_DTR_EDC_CLIENT_ALIAS=customer.dtr.edc-client.secret
 CUSTOMER_KC_DTR_PURIS_CLIENT_ALIAS=customer.dtr.puris-client.secret
+CUSTOMER_DEMONSTRATOR_ROLE=customer
 
 SUPPLIER_BPNL=BPNL1234567890ZZ
 SUPPLIER_OAUTH_SECRET_ALIAS=supplier.miw.secret
-SUPPLIER_OAUTH_CLIENT_ID=supplier_private_client
+# use hard coded client for now to only have some bearer token for the mock-util-service
+SUPPLIER_OAUTH_CLIENT_ID=miw_private_client
 SUPPLIER_PRIVATE_KEY_ALIAS=supplier-key
 SUPPLIER_PUBLIC_KEY_ALIAS=supplier-cert
 SUPPLIER_ENCRYPTION_KEYS_ALIAS=supplier-encryption-keys
-SUPPLIER_BACKEND_API_KEY=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
+SUPPLIER_BACKEND_API_KEY=$SUPPLIER_BACKEND_API_KEY
 KEYCLOAK_MIW_PUBLIC_CLIENT=miw_public
 SUPPLIER_KC_DTR_EDC_CLIENT_ALIAS=supplier.dtr.edc-client.secret
 SUPPLIER_KC_DTR_PURIS_CLIENT_ALIAS=supplier.dtr.puris-client.secret
+SUPPLIER_DEMONSTRATOR_ROLE=supplier
 
 KEYCLOAK_ADMIN=admin
 KEYCLOAK_ADMIN_PASSWORD=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
@@ -89,7 +101,7 @@ CUSTOMER_MIW_CLIENT_SECRET="./vault/secrets/customer.miw.secret"
 CUSTOMER_KC_DTR_EDC_CLIENT_SECRET_FILE_PATH="./vault/secrets/customer.dtr.edc-client.secret"
 echo -n $CUSTOMER_KC_DTR_EDC_CLIENT_SECRET >> $CUSTOMER_KC_DTR_EDC_CLIENT_SECRET_FILE_PATH
 CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET_FILE_PATH="./vault/secrets/customer.dtr.puris-client.secret"
-echo -n $CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET>> $CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET_FILE_PATH
+echo -n $CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET >> $CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET_FILE_PATH
 
 openssl req -newkey rsa:2048 -new -batch -nodes -x509 -days 3650 -text -keyout $CUSTOMER_KEY -out $CUSTOMER_CERT
 # EDC token encryption keys for edc-extensions/data-encryption
@@ -150,6 +162,16 @@ echo ""
 curl -X POST -H "x-api-key: \$KEY" -H "Content-Type: application/json" -d '{ "bpn": "BPNL000000000000", "did": "did:web:mock-util-service/trusted-issuer" }' http://localhost:8581/api/management/bpn-directory | jq
 echo ""
 EOF
+
+# Update the properties in the bruno file
+sed -i "s/^  CUSTOMER_EDC_API_KEY: .*/  CUSTOMER_EDC_API_KEY: $EDC_API_PW/" $BRUNO_FILE
+sed -i "s/^  CUSTOMER_PURIS_BACKEND_API_KEY: .*/  CUSTOMER_PURIS_BACKEND_API_KEY: $CUSTOMER_BACKEND_API_KEY/" $BRUNO_FILE
+sed -i "s/^  CUSTOMER_MANAGE_CLIENT_SECRET: .*/  CUSTOMER_MANAGE_CLIENT_SECRET: $CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET/" $BRUNO_FILE
+sed -i "s/^  SUPPLIER_EDC_API_KEY: .*/  SUPPLIER_EDC_API_KEY: $EDC_API_PW/" $BRUNO_FILE
+sed -i "s/^  SUPPLIER_PURIS_BACKEND_API_KEY: .*/  SUPPLIER_PURIS_BACKEND_API_KEY: $SUPPLIER_BACKEND_API_KEY/" $BRUNO_FILE
+sed -i "s/^  SUPPLIER_MANAGE_CLIENT_SECRET: .*/  SUPPLIER_MANAGE_CLIENT_SECRET: $SUPPLIER_KC_DTR_PURIS_CLIENT_SECRET/" $BRUNO_FILE
+
+echo "Secrets have been updated in $BRUNO_FILE"
 
 # let everyone access the files so that the non-root user in vault container can put them
 chmod -R 755 ./vault/secrets

@@ -1,7 +1,7 @@
 /*
-Copyright (c) 2023,2024 Volkswagen AG
-Copyright (c) 2023,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-Copyright (c) 2023,2024 Contributors to the Eclipse Foundation
+Copyright (c) 2023 Volkswagen AG
+Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2023 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -22,27 +22,31 @@ SPDX-License-Identifier: Apache-2.0
 import { Tab, TabPanel, Tabs } from '@catena-x/portal-shared-components';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import { Dashboard } from '@features/dashboard/components/Dashboard';
-import { Box, Stack } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 
 export const DashboardView = () => {
     const [selectedTab, setSelectedTab] = useState<number>(0);
     return (
-        <Stack spacing={2} alignItems='center' width='100%' height='100%'>
+        <Stack spacing={2} width="100%" height="100%">
             <ConfidentialBanner />
-            <h1 className="text-3xl font-semibold text-gray-700 mb-10">Dashboard</h1>
-            <Tabs value={selectedTab} onChange={(_, value: number) => setSelectedTab(value)}>
-                <Tab label="Customer"></Tab>
-                <Tab label="Supplier"></Tab>
-            </Tabs>
-            <Box width='100%' display='flex' marginTop='0 !important' paddingBottom='2rem'>
-                <TabPanel value={selectedTab} index={0}>
-                    <Dashboard type='customer'/>
-                </TabPanel>
-                <TabPanel value={selectedTab} index={1}>
-                    <Dashboard type='supplier'/>
-                </TabPanel>
-            </Box>
+            <Stack p={2} sx={{ backgroundColor: 'white', flexGrow: 1, borderRadius: '1rem' }}>
+                <Stack spacing={1} sx={{ p: 2, width: '100%' }}>
+                    <Typography variant="h1">Dashboard</Typography>
+                    <Tabs value={selectedTab} onChange={(_, value: number) => setSelectedTab(value)}>
+                        <Tab label="Customer"></Tab>
+                        <Tab label="Supplier"></Tab>
+                    </Tabs>
+                </Stack>
+                <Box width="100%" display="flex" marginTop="0 !important" paddingBottom="2rem">
+                    <TabPanel value={selectedTab} index={0}>
+                        <Dashboard type="customer" />
+                    </TabPanel>
+                    <TabPanel value={selectedTab} index={1}>
+                        <Dashboard type="supplier" />
+                    </TabPanel>
+                </Box>
+            </Stack>
         </Stack>
     );
 };

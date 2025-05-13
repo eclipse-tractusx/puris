@@ -16,6 +16,8 @@ Eclipse Tractus-X product(s) installed within the image:
 
 - DockerHub: https://hub.docker.com/_/eclipse-temurin
 - GitHub project: https://github.com/adoptium/containers
+- Eclipse Temurin project: https://projects.eclipse.org/projects/adoptium.temurin
+- Additional information about the Eclipse Temurin images: https://github.com/docker-library/repo-info/tree/master/repos/eclipse-temurin
 
 As with all Docker images, these likely also contain other software which may be under other licenses (such as Bash, etc
 from the base distribution, along with any direct or indirect dependencies of the primary software being contained).

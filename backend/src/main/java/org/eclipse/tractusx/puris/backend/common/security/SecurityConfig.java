@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2022,2024 Volkswagen AG
- * Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -30,6 +31,8 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.DispatcherType;
 import lombok.AllArgsConstructor;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationFilter;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,12 +64,16 @@ public class SecurityConfig {
 
     private DtrSecurityConfiguration dtrSecurityConfiguration;
 
+    @Autowired
+    private VariablesService variablesService;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedOrigins(List.of(variablesService.getAllowedOrigins()));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -87,7 +94,7 @@ public class SecurityConfig {
                         "/stockView/**",
                         "/partners/**",
                         "/materials/**",
-                        "/materialpartnerrelations/**", 
+                        "/materialpartnerrelations/**",
                         "/item-stock/**",
                         "/production/**",
                         "/delivery/**",
@@ -102,7 +109,8 @@ public class SecurityConfig {
                         "/parttypeinformation/**"
                     )
                     .authenticated()
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/health/**").permitAll()
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/health/**").permitAll()
+                    .requestMatchers("/ws/**").permitAll()
                     .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
             )
             .httpBasic(

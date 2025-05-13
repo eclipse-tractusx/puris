@@ -1,9 +1,10 @@
 #!/bin/bash
 
 #
-# Copyright (c) 2022,2024 Volkswagen AG
-# Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
-#
+# Copyright (c) 2023 Volkswagen AG
+# Copyright (c) 2023 Contributors to the Eclipse Foundation
+# Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
 #
@@ -22,10 +23,13 @@
 
 docker compose down -v
 docker compose -f docker-compose-infrastructure.yaml down -v
+docker compose -f docker-compose-newman.yaml down -v
 docker image rm local-vault
 docker image rm local-mock-util-service
 rm .env
 rm seed-bdrs.sh
 rm ./vault/secrets -r
 rm ./iam-mock/keys -r
-echo "Deleted .env and vault/secrets"
+rm ./postman/tmp.json
+rm ./postman/local.postman_environment.json
+echo "Deleted .env, vault/secrets, seed-bdr.sh script and postman environment."

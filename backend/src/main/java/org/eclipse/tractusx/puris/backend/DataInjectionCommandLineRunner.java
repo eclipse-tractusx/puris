@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023 Volkswagen AG
+ * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -133,9 +133,10 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             );
         }
         mySelf = partnerService.create(mySelf);
-        log.info("Successfully created own Partner Entity: " + (partnerService.findByBpnl(mySelf.getBpnl()) != null));
+        log.info("Successfully created own Partner Entity: " + (mySelf != null));
+        mySelf = partnerService.findByBpnl(variablesService.getOwnBpnl());
         if (mySelf != null) {
-            log.info(mySelf.toString());
+            log.info("Following partner has been configured for yourself (and not been changed): " + mySelf.toString());
         }
     }
 

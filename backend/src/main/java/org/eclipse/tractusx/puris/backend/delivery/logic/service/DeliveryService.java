@@ -33,6 +33,8 @@ import java.util.stream.Stream;
 
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.Delivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.repository.DeliveryRepository;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -40,6 +42,11 @@ public abstract class DeliveryService<T extends Delivery> {
     @Autowired
     protected DeliveryRepository<T> repository;
 
+    @Autowired
+    private PartnerService partnerService;
+
+    private Partner ownPartnerEntity;
+    
     public final List<T> findAll() {
         return repository.findAll();
     }
@@ -57,6 +64,16 @@ public abstract class DeliveryService<T extends Delivery> {
         Stream<T> stream = repository.findAll().stream();
         if (ownMaterialNumber.isPresent()) {
             stream = stream.filter(delivery -> delivery.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
+        }
+        if (direction.isPresent()) {
+            if (ownPartnerEntity == null) {
+                ownPartnerEntity = partnerService.getOwnPartnerEntity();
+            }
+            if (direction.get() == DirectionCharacteristic.INBOUND) {
+                stream = stream.filter(delivery -> ownPartnerEntity.getSites().stream().anyMatch(site -> delivery.getDestinationBpns().equals(site.getBpns())));
+            } else {
+                stream = stream.filter(delivery -> ownPartnerEntity.getSites().stream().anyMatch(site -> delivery.getOriginBpns().equals(site.getBpns())));
+            }
         }
         if (bpns.isPresent()) {
             stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()) || delivery.getOriginBpns().equals(bpns.get()));
@@ -78,13 +95,6 @@ public abstract class DeliveryService<T extends Delivery> {
                 return deliveryDayDate.getDayOfMonth() == localDayDate.getDayOfMonth();
             });
         }
-        if (direction.isPresent()) {
-            if (direction.get() == DirectionCharacteristic.INBOUND) {
-                stream = stream.filter(delivery -> delivery.getDestinationBpns().equals(bpns.get()));
-            } else {
-                stream = stream.filter(delivery -> delivery.getOriginBpns().equals(bpns.get()));
-            }
-        }
         return stream.toList();
     }
 
@@ -96,13 +106,13 @@ public abstract class DeliveryService<T extends Delivery> {
         return sum;
     }
 
-    public final List<Double> getQuantityForDays(String material, String partnerBpnl, String siteBpns, DirectionCharacteristic direction, int numberOfDays) {
+    public final List<Double> getQuantityForDays(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, DirectionCharacteristic direction, int numberOfDays) {
         List<Double> deliveryQtys = new ArrayList<>();
         LocalDate localDate = LocalDate.now();
 
         for (int i = 0; i < numberOfDays; i++) {
             Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            List<T> deliveries = findAllByFilters(Optional.of(material), Optional.of(siteBpns), Optional.of(partnerBpnl), Optional.of(date), Optional.of(direction));
+            List<T> deliveries = findAllByFilters(Optional.of(material), siteBpns, partnerBpnl, Optional.of(date), Optional.of(direction));
             deliveryQtys.add(getSumOfQuantities(deliveries));
 
             localDate = localDate.plusDays(1);

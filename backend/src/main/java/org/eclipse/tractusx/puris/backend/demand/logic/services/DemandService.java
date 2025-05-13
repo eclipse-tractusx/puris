@@ -70,8 +70,7 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
     public final List<TEntity> findAllByFilters(
         Optional<String> ownMaterialNumber,
         Optional<String> bpnl,
-        Optional<String> demandLocationBpns,
-        Optional<Date> day) {
+        Optional<String> demandLocationBpns) {
         var stream = repository.findAll().stream();
         if (ownMaterialNumber.isPresent()) {
             stream = stream.filter(demand -> demand.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
@@ -81,17 +80,6 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
         }
         if (demandLocationBpns.isPresent()) {
             stream = stream.filter(demand -> demand.getDemandLocationBpns().equals(demandLocationBpns.get()));
-        }
-        if (day.isPresent()) {
-            LocalDate localDayDate = Instant.ofEpochMilli(day.get().getTime())
-                .atOffset(ZoneOffset.UTC)
-                .toLocalDate();
-            stream = stream.filter(demand -> {
-                LocalDate demandDayDate = Instant.ofEpochMilli(demand.getDay().getTime())
-                    .atOffset(ZoneOffset.UTC)
-                    .toLocalDate();
-                return demandDayDate.getDayOfMonth() == localDayDate.getDayOfMonth();
-            });
         }
         return stream.toList();
     }

@@ -24,10 +24,11 @@ import { Partner } from '../edc/partner';
 import { UnitOfMeasurementKey } from './uom';
 import { OrderReference } from './order-reference';
 
-export type MaterialDetails = {
+export type Material = {
     uuid?: UUID | null;
     materialFlag: boolean;
     productFlag: boolean;
+    ownMaterialNumber: string | null;
     materialNumberCustomer: string | null;
     materialNumberSupplier: string | null;
     materialNumberCx: string | null;
@@ -36,7 +37,7 @@ export type MaterialDetails = {
 
 export type Stock = {
     uuid?: UUID | null;
-    material: MaterialDetails
+    material: Material
     quantity: number;
     measurementUnit: UnitOfMeasurementKey;
     stockLocationBpns: BPNS;

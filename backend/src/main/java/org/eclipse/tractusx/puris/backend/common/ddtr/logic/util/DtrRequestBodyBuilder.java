@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -95,11 +97,15 @@ public class DtrRequestBodyBuilder {
         href = href.endsWith("/") ? href : href + "/";
         href += materialPartnerRelation.getPartnerCXNumber() + "/";
 
-        submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, href + DirectionCharacteristic.INBOUND + "/", variablesService.getItemStockSubmodelApiAssetId()));
+        // all api definitions follow the same syntax, but some need to be direction specific
+        String directionHref = href + DirectionCharacteristic.INBOUND + "/submodel";
+        href += "submodel";
+
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, directionHref, variablesService.getItemStockSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, href, variablesService.getDemandSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, href, variablesService.getDeliverySubmodelApiAssetId()));
-        
-        log.debug("Created body for material " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, directionHref, variablesService.getDaysOfSupplySubmodelApiAssetId()));
+        log.debug("Created body for material {}\n{}", material.getOwnMaterialNumber(), body.toPrettyString());
         return body;
     }
 
@@ -131,7 +137,7 @@ public class DtrRequestBodyBuilder {
                 specificAssetIdsArray.add(customerPartIdObject);
             }
         } else {
-            log.error("Could not create request body: Missing product flag in material " + material.getOwnMaterialNumber());
+            log.error("Could not create request body: Missing product flag in material {}", material.getOwnMaterialNumber());
             return null;
         }
 
@@ -141,13 +147,18 @@ public class DtrRequestBodyBuilder {
         String href = variablesService.getEdcDataplanePublicUrl();
         href = href.endsWith("/") ? href : href + "/";
         href += material.getMaterialNumberCx() + "/";
-        
-        submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, href + DirectionCharacteristic.OUTBOUND + "/", variablesService.getItemStockSubmodelApiAssetId()));
+
+        // all api definitions follow the same syntax, but some need to be direction specific
+        String directionHref = href + DirectionCharacteristic.OUTBOUND + "/submodel";
+        href += "submodel";
+
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, directionHref, variablesService.getItemStockSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.PRODUCTION_SUBMODEL.URN_SEMANTIC_ID, href, variablesService.getProductionSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, href, variablesService.getDeliverySubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, directionHref, variablesService.getDaysOfSupplySubmodelApiAssetId()));
         submodelDescriptorsArray.add(createPartTypeSubmodelObject(material.getOwnMaterialNumber()));
 
-        log.debug("Created body for product " + material.getOwnMaterialNumber() + "\n" + body.toPrettyString());
+        log.debug("Created body for product {}\n{}", material.getOwnMaterialNumber(), body.toPrettyString());
         return body;
     }
 
@@ -164,7 +175,6 @@ public class DtrRequestBodyBuilder {
         for (var refObject : refObjects) {
             keysArray.add(refObject);
         }
-        keysArray.add(createOwnReferenceObject());
         return idObject;
     }
 
@@ -189,10 +199,6 @@ public class DtrRequestBodyBuilder {
         refObject.put("type", "GlobalReference");
         refObject.put("value", bpnl);
         return refObject;
-    }
-
-    private ObjectNode createOwnReferenceObject() {
-        return createReferenceObject(variablesService.getOwnBpnl());
     }
 
     private JsonNode createSubmodelObject(String semanticId, String href, String assetId) {
@@ -238,6 +244,7 @@ public class DtrRequestBodyBuilder {
         String href = variablesService.getEdcDataplanePublicUrl();
         href = href.endsWith("/") ? href : href + "/";
         href += Base64.getEncoder().encodeToString(materialId.getBytes(StandardCharsets.UTF_8));
+        href += "/submodel";
         return createSubmodelObject(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, href, variablesService.getPartTypeSubmodelApiAssetId());
     }
 

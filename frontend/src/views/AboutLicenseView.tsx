@@ -1,7 +1,7 @@
 /*
-Copyright (c) 2023,2024 Volkswagen AG
-Copyright (c) 2023,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-Copyright (c) 2023,2024 Contributors to the Eclipse Foundation
+Copyright (c) 2023 Volkswagen AG
+Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2023 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -19,9 +19,11 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Link } from '@mui/material';
+import { Box, Link, Stack, Typography } from '@mui/material';
 import aboutPage from '@assets/aboutPage.json';
 import { Table } from '@catena-x/portal-shared-components';
+import { useTitle } from '@contexts/titleProvider';
+import { useEffect } from 'react';
 
 const aboutPageColumns = [
     {
@@ -44,10 +46,15 @@ const aboutPageColumns = [
 ];
 
 export const AboutLicenseView = () => {
+    const { setTitle } = useTitle();
+
+    useEffect(() => {
+        setTitle('About License');
+    }, [setTitle])
     return (
-        <div className="flex flex-col items-center w-full h-full">
-            <h1 className="text-3xl font-semibold text-gray-700 mb-10">About License</h1>
-            <div className='w-[32rem]'>
+        <Stack alignItems="center" width="100%" spacing={3}>
+            <Typography variant="h1">About License</Typography>
+            <Box width="32rem">
                 <Table
                     columnHeaderHeight={0}
                     title='License Information'
@@ -56,7 +63,7 @@ export const AboutLicenseView = () => {
                     getRowId={(row) => row.header}
                     rows={aboutPage}
                 />
-            </div>
-        </div>
+            </Box>
+        </Stack>
     );
 }

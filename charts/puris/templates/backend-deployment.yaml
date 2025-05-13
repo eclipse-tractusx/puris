@@ -1,7 +1,7 @@
 #
-# Copyright (c) 2022,2024 Volkswagen AG
-# Copyright (c) 2022,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-# Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+# Copyright (c) 2022 Volkswagen AG
+# Copyright (c) 2022 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2022 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -114,7 +114,7 @@ spec:
               value: "{{ .Values.backend.puris.own.streetnumber }}"
             - name: OWN_ZIPCODEANDCITY
               value: "{{ .Values.backend.puris.own.zipcodeandcity }}"
-            - name: JPA_HIBERNATE_DDL-AUTO
+            - name: SPRING_JPA_HIBERNATE_DDL-AUTO
               value: {{ index .Values.backend "puris" "jpa" "hibernate" "ddl-auto" }} #Need to do workaround because of '-' in ddl-auto
             - name: JPA_PROPERTIES_HIBERNATE_ENABLE.LAZY.LOAD.NO.TRANS
               value: "{{ .Values.backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans }}"
@@ -133,6 +133,8 @@ spec:
                 {{- else }}
               value: "http://{{ $baseUrl }}/"
                 {{- end}}
+            - name: PURIS_ALLOWED-ORIGINS
+              value: "{{ .Values.backend.puris.allowedOrigins | default .Values.frontend.puris.baseUrl }}"
             - name: PURIS_ITEMSTOCKSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.itemstocksubmodel.apiassetid }}"
             - name: PURIS_PRODUCTIONSUBMODEL_APIASSETID
@@ -141,6 +143,8 @@ spec:
               value: "{{ .Values.backend.puris.demandsubmodel.apiassetid }}"
             - name: PURIS_DELIVERYSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.deliverysubmodel.apiassetid }}"
+            - name: PURIS_DAYSOFSUPPLYSUBMODEL_APIASSETID
+              value: "{{ .Values.backend.puris.daysofsupplysubmodel.apiassetid }}"
             - name: PURIS_NOTIFICATION_APIASSETID
               value: "{{ .Values.backend.puris.notification.apiassetid }}"
             - name: PURIS_FRAMEWORKAGREEMENT_CREDENTIAL
@@ -197,9 +201,19 @@ spec:
             - name: http
               containerPort: {{ .Values.backend.service.port }}
               protocol: TCP
+          {{- if .Values.backend.startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.backend.puris.api.rootDir }}/actuator/health
+              port: http
+            initialDelaySeconds: {{ .Values.backend.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.startupProbe.periodSeconds }}
+            successThreshold: {{ .Values.backend.startupProbe.successThreshold }}
+            failureThreshold: {{ .Values.backend.startupProbe.failureThreshold }}
+          {{- end }}
           livenessProbe:
             httpGet:
-              path: {{ .Values.backend.puris.api.rootDir }}/health/
+              path: {{ .Values.backend.puris.api.rootDir }}/actuator/health/liveness
               port: http
             initialDelaySeconds: {{ .Values.backend.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
@@ -208,7 +222,7 @@ spec:
             failureThreshold: {{ .Values.backend.livenessProbe.failureThreshold }}
           readinessProbe:
             httpGet:
-              path: {{ .Values.backend.puris.api.rootDir }}/health/
+              path: {{ .Values.backend.puris.api.rootDir }}/actuator/health/readiness
               port: http
             initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.backend.readinessProbe.periodSeconds }}

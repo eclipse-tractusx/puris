@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023, 2024 Volkswagen AG
- * Copyright (c) 2023, 2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2023 Volkswagen AG
+ * Copyright (c) 2023 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Address;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -58,6 +59,9 @@ public class PartnerController {
 
     @Autowired
     private PartnerService partnerService;
+
+    @Autowired
+    private VariablesService variablesService;
 
     @Autowired
     private Validator validator;
@@ -221,9 +225,18 @@ public class PartnerController {
     @GetMapping("/all")
     @Operation(description = "Returns a list of all Partners. ")
     public ResponseEntity<List<PartnerDto>> listPartners() {
-        return new ResponseEntity<>(partnerService.findAll().
-            stream().map(partner -> modelMapper.map(partner, PartnerDto.class)).collect(Collectors.toList()),
+        final String ownBpnl = variablesService.getOwnBpnl();
+        return new ResponseEntity<>(partnerService.findAll().stream()
+            .filter(partner -> !partner.getBpnl().equals(ownBpnl))
+            .map(partner -> modelMapper.map(partner, PartnerDto.class))
+            .collect(Collectors.toList()),
             HttpStatusCode.valueOf(200));
+    }
+
+    @GetMapping("/own")
+    @Operation(description = "Returns the own partnr entity.")
+    public ResponseEntity<Partner> getOwnPartnerEntity() {
+        return new ResponseEntity<>(partnerService.getOwnPartnerEntity(), HttpStatus.OK);
     }
 
     @GetMapping("/ownSites")

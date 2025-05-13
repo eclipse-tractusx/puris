@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
+import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
 import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ErpAdapterTriggerService;
 import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ItemStockErpAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
@@ -79,7 +80,8 @@ public class ErpAdapterController {
     ) {
         materialNumber = new String(Base64.getDecoder().decode(materialNumber));
         boolean valid = BPNL_PATTERN.matcher(bpnl).matches()
-            && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(materialNumber).matches();
+            && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(materialNumber).matches()
+            && ErpAdapterRequest.SUPPORTED_TYPES.contains(assetType);
         if (valid && mprService.find(bpnl, materialNumber) != null) {
             erpAdapterTriggerService.notifyPartnerRequest(bpnl, materialNumber, assetType, directionCharacteristic);
             return ResponseEntity.status(201).build();
@@ -127,6 +129,9 @@ public class ErpAdapterController {
         }
         Dto dto = new Dto(requestId, partnerBpnl, responseType, sammVersion, new Date(responseTimestamp), requestBody);
         AssetType assetType = Arrays.stream(AssetType.values()).filter(type -> type.ERP_KEYWORD.equals(responseType)).findFirst().orElse(null);
+        if (!ErpAdapterRequest.SUPPORTED_TYPES.contains(assetType)) {
+            return ResponseEntity.badRequest().body("Unsupported Type");
+        }
         int responseCode = 501;
         switch (assetType) {
             case ITEM_STOCK_SUBMODEL -> responseCode = itemStockErpAdapterService.receiveItemStockUpdate(dto);

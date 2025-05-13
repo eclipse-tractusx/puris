@@ -1,7 +1,7 @@
 /*
-Copyright (c) 2022,2024 Volkswagen AG
-Copyright (c) 2022,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+Copyright (c) 2022 Volkswagen AG
+Copyright (c) 2022 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2022 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -16,22 +16,90 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: Apache-2.0 
 */
 
-import { Link, NavLink } from 'react-router-dom';
-
-import HomeIcon from '@/assets/icons/home.svg';
-import CatalogIcon from '@/assets/icons/catalog.svg';
-import StockIcon from '@/assets/icons/stock.svg';
-import { Typography } from '@catena-x/portal-shared-components';
-import { Role } from '@models/types/auth/role';
-import { useAuth } from '@hooks/useAuth';
-import { Handshake, Logout, SyncAlt } from '@mui/icons-material';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import { OverridableComponent } from '@mui/material/OverridableComponent';
-import { SvgIconTypeMap } from '@mui/material';
+import * as React from 'react';
+import { styled, useTheme, Theme, CSSObject } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import MuiDrawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import AuthenticationService from '@services/authentication-service';
+import { useAuth } from '@hooks/useAuth';
+import { OverridableComponent } from '@mui/material/OverridableComponent';
+import { Button, Stack, SvgIconTypeMap, Typography } from '@mui/material';
+import { Role } from '@models/types/auth/role';
+import {
+    AutoStoriesOutlined,
+    ChevronLeftOutlined,
+    ContentCopyOutlined,
+    HandshakeOutlined,
+    HelpOutlineOutlined,
+    HomeOutlined,
+    InfoOutlined,
+    LogoutOutlined,
+    MenuOutlined,
+    NotificationsOutlined,
+    SyncAltOutlined,
+} from '@mui/icons-material';
+import { visuallyHidden } from '@mui/utils';
+import { Link, useLocation } from 'react-router-dom';
+import { useOwnPartner } from '@hooks/useOwnPartner';
+import { useNotifications } from '@contexts/notificationContext';
+
+const openedMixin = (theme: Theme): CSSObject => ({
+    width: theme.sidebarWidth,
+    transition: theme.transitions.create('width', {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.enteringScreen,
+    }),
+    overflowX: 'hidden',
+    position: 'relative',
+});
+
+const closedMixin = (theme: Theme): CSSObject => ({
+    transition: theme.transitions.create('width', {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+    }),
+    overflowX: 'hidden',
+    boxSizing: 'border-box',
+    width: `calc(${theme.spacing(7)} + 1px)`,
+    position: 'relative',
+
+    [theme.breakpoints.up('sm')]: {
+        width: `calc(${theme.spacing(8)} + 1px)`,
+    },
+});
+
+const DrawerHeader = styled('div')(({ theme }) => ({
+    display: 'flex',
+    alignItems: 'center',
+    minHeight: '0 !important',
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    ...theme.mixins.toolbar,
+}));
+
+const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
+    width: theme.sidebarWidth,
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box',
+    ...(open && {
+        ...openedMixin(theme),
+        '& .MuiDrawer-paper': openedMixin(theme),
+    }),
+    ...(!open && {
+        ...closedMixin(theme),
+        '& .MuiDrawer-paper': closedMixin(theme),
+    }),
+}));
 
 type SideBarItemProps = (
     | {
@@ -44,100 +112,121 @@ type SideBarItemProps = (
       }
 ) & {
     name: string;
-    icon: string | OverridableComponent<SvgIconTypeMap<object, "svg">>;
+    icon: React.ReactElement<OverridableComponent<SvgIconTypeMap<object, 'svg'>>>;
     requiredRoles?: Role[];
 };
 
 const sideBarItems: SideBarItemProps[] = [
-    {
-        name: 'Dashboard',
-        icon: HomeIcon,
-        path: '/dashboard',
-    },
-    {
-        name: 'Stocks',
-        icon: StockIcon,
-        path: '/stocks',
-    },
-    {
-        name: 'Catalog',
-        icon: CatalogIcon,
-        path: '/catalog',
-        requiredRoles: ['PURIS_ADMIN'],
-    },
-    {
-        name: 'Negotiations',
-        icon: Handshake,
-        path: '/negotiations',
-        requiredRoles: ['PURIS_ADMIN'],
-    },
-    {
-        name: 'Transfers',
-        icon: SyncAlt,
-        path: '/transfers',
-        requiredRoles: ['PURIS_ADMIN'],
-    },
-    {
-        name: 'Notifications',
-        icon: NotificationsIcon,
-        path: '/notifications',
-    },
-    {
-        name: 'Logout',
-        icon: Logout,
-        action: AuthenticationService.logout,
-        variant: 'button',
-    },
+    { name: 'Materials', icon: <HomeOutlined />, path: '/materials' },
+    { name: 'Notifications', icon: <NotificationsOutlined />, path: '/notifications' },
+    { name: 'Catalog', icon: <AutoStoriesOutlined />, path: '/catalog', requiredRoles: ['PURIS_ADMIN'] },
+    { name: 'Negotiations', icon: <HandshakeOutlined />, path: '/negotiations', requiredRoles: ['PURIS_ADMIN'] },
+    { name: 'Transfers', icon: <SyncAltOutlined />, path: '/transfers', requiredRoles: ['PURIS_ADMIN'] },
+    { name: 'User Guide', icon: <HelpOutlineOutlined />, path: '/user-guide' },
+    { name: 'About License', icon: <InfoOutlined/>, path: '/about-license'},
+    { name: 'Logout', icon: <LogoutOutlined />, action: AuthenticationService.logout, variant: 'button' },
 ];
 
-const calculateClassName = ({ isActive = false, isPending = false, isTransitioning = false }) => {
-    const defaultClasses = 'flex items-center px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 active:bg-gray-300 w-full';
-    return `${defaultClasses}${isActive || isPending || isTransitioning ? ' bg-gray-300' : ''}`;
-}
-
-const SideBarItem = (props: SideBarItemProps) => {
+export default function MiniDrawer() {
+    const [open, setOpen] = React.useState(() => true);
+    const { pathname } = useLocation();
+    const theme = useTheme();
     const { hasRole } = useAuth();
-    if (props.requiredRoles && !hasRole(props.requiredRoles)) {
-        return null;
-    }
-    return (
-        <li key={props.name}>
-            {props.variant === 'button' ? (
-                <button className={calculateClassName({})} onClick={props.action}>
-                    {typeof props.icon === 'string' ? <img className="mr-2" src={props.icon} alt="Icon" />  : <props.icon sx={{'marginRight': '.25rem'}} />} <span className="min-w-0 break-words">{props.name}</span>
-                </button>
-            ) : (
-                <NavLink to={props.path} className={calculateClassName}>
-                    {typeof props.icon === 'string' ? <img className="mr-2" src={props.icon} alt="Icon" />  : <props.icon sx={{'marginRight': '.25rem'}} />} <span className="min-w-0 break-words">{props.name}</span>
-                </NavLink>
-            )}
-        </li>
-    );
-}
+    const { ownPartner } = useOwnPartner();
+    const { notify } = useNotifications();
+    const handleDrawerOpen = () => {
+        setOpen(true);
+    };
 
-export const SideBar = () => {
+    const handleDrawerClose = () => {
+        setOpen(false);
+    };
+
+    const handleCopyBpnl = async () => {
+        await navigator.clipboard.writeText(ownPartner?.bpnl ?? '');
+        notify({
+            title: 'Copied to Clipboard',
+            description: 'Your company BPNL was copied to the clipboard',
+            severity: 'success'
+        });
+    };
+
     return (
-        <aside className="flex flex-col flex-shrink-0 gap-5 h-full w-64 border-r py-5 px-3 overflow-y-auto">
-            <header className="flex justify-center">
-                <Typography variant="h2" className="text-3xl font-semibold text-center text-blue-800">
-                    PURIS
+        <Drawer variant="permanent" open={open}>
+            <DrawerHeader>
+                {open ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: '.5rem' }}>
+                        <img height="30px" src="/puris-logo.svg" alt="Puris icon"></img>
+
+                        <IconButton sx={{ p: 0, borderRadius: 0 }} onClick={handleDrawerClose}>
+                            <ChevronLeftOutlined />
+                            <Typography variant="body1" sx={visuallyHidden}>Collapse Sidebar</Typography>
+                        </IconButton>
+                    </Box>
+                ) : (
+                    <IconButton sx={{ p: 0, borderRadius: 0, mx: 'auto' }} onClick={handleDrawerOpen}>
+                        <MenuOutlined />
+                        <Typography variant="body1" sx={visuallyHidden}>Expand Sidebar</Typography>
+                    </IconButton>
+                )}
+            </DrawerHeader>
+            <List>
+                {sideBarItems.map((item) => {
+                    if (item.requiredRoles && !hasRole(item.requiredRoles)) return null;
+
+                    return (
+                        <ListItem key={item.name} disablePadding sx={{ display: 'block', px: 1, py: 0.5 }}>
+                            <ListItemButton
+                                LinkComponent={({ href, ...props }) => <Link to={href} {...props} />}
+                                sx={{
+                                    gap: open ? 1 : 0,
+                                    justifyContent: open ? 'initial' : 'center',
+                                    alignItems: 'center',
+                                    px: 2.5,
+                                    py: 0.5,
+                                    borderRadius: 2,
+                                    ':hover': {
+                                        backgroundColor: theme.palette.primary.main,
+                                        color: theme.palette.primary.contrastText,
+                                    },
+                                    ...(item.variant !== 'button' && pathname.startsWith(item.path)
+                                        ? {
+                                              backgroundColor: theme.palette.primary.dark,
+                                              color: theme.palette.primary.contrastText,
+                                          }
+                                        : {}),
+                                }}
+                                onClick={item.variant === 'button' ? item.action : undefined}
+                                {...('path' in item ? { href: item.path } : {})}
+                            >
+                                <ListItemIcon
+                                    sx={{
+                                        minWidth: 0,
+                                        justifyContent: 'center',
+                                        mx: open ? 0 : 'auto',
+                                    }}
+                                >
+                                    {item.icon}
+                                </ListItemIcon>
+                                <ListItemText primary={item.name} sx={{ opacity: open ? 1 : 0 }} />
+                            </ListItemButton>
+                        </ListItem>
+                    );
+                })}
+            </List>
+            {open ? <Stack gap="0.25rem" paddingInline=".5rem" paddingBlock="1rem" marginTop="auto">
+                <Typography
+                    variant="body2"
+                    component="h3"
+                    fontWeight="600"
+                    sx={{ maxWidth: '12rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                >
+                    {ownPartner?.name}
                 </Typography>
-            </header>
-            <nav>
-                <ul className="flex flex-col gap-3">
-                    {sideBarItems.map((item) => (
-                        <SideBarItem key={item.name} {...item} />
-                    ))}
-                </ul>
-            </nav>
-            <footer className="flex flex-col items-center justify-center mt-auto">
-                <Link to="/user-guide" className="hover:text-gray-500">
-                    User Guide
-                </Link>
-                <Link to="/aboutLicense" className="hover:text-gray-500">
-                    About License
-                </Link>
-            </footer>
-        </aside>
+                <Button variant="text" sx={{ padding: 0, justifyContent: 'start', width: 'fit-content'}} onClick={handleCopyBpnl}>
+                    <Typography variant="body3">{ownPartner?.bpnl} <ContentCopyOutlined /></Typography>
+                </Button>
+            </Stack> : null}
+        </Drawer>
     );
 }

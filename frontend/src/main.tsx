@@ -1,7 +1,7 @@
 /*
-Copyright (c) 2022,2024 Volkswagen AG
-Copyright (c) 2022,2024 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
-Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+Copyright (c) 2022 Volkswagen AG
+Copyright (c) 2022 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2022 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -24,9 +24,19 @@ import './index.css';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router.tsx';
 import { AuthContextProvider } from '@contexts/authContext.tsx';
+import { NotificationContextProvider } from '@contexts/notificationContext.tsx';
+import { TitleContextProvider } from '@contexts/titleProvider.tsx';
+import { ThemeProvider } from '@mui/material';
+import theme from './theme.tsx';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <AuthContextProvider>
-        <RouterProvider router={router} />
+        <ThemeProvider theme={theme}>
+            <TitleContextProvider>
+                <NotificationContextProvider>
+                    <RouterProvider router={router} />
+                </NotificationContextProvider>
+            </TitleContextProvider>
+        </ThemeProvider>
     </AuthContextProvider>
 );
