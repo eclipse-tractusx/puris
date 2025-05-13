@@ -14,6 +14,7 @@ The **need for configuration updates** is **marked bold**.
 ### Added
 
 * One line local deployment script ([#469](https://github.com/eclipse-tractusx/puris/pull/469))
+* End-to-end tests using Cypress ()
 
 ### Changed
 

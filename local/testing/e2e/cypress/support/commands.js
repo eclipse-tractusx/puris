@@ -18,7 +18,6 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-
 Cypress.Commands.add('verifyConfidentialityBanner', () => {
   cy.get('[data-testid="confidential-banner"]').should('exist');
 })
@@ -33,6 +32,22 @@ Cypress.Commands.add('getByTestId', (testid) => {
 
 Cypress.Commands.add('getByTestIdContains', (testid) => {
   return cy.get(`[data-testid*="${testid}"]`);
+})
+
+Cypress.Commands.add('selectAutocompleteOption', (testid, option) => {
+  cy.getByTestId(testid).click()
+  cy.get('.MuiAutocomplete-popper').contains(option).click();
+  cy.getByTestId(testid).get(`input[value="${option}"]`).should('exist');
+})
+
+Cypress.Commands.add('selectRelativeDate', (testid, dateOffset) => {
+  cy.getByTestId(testid).find('[aria-label="Choose date"]').click();
+  cy.get('[role="rowgroup"] button').each((button, index, list) => {
+      const backgroundColor = window.getComputedStyle(button[0]).backgroundColor;
+      if (backgroundColor === 'rgb(147, 147, 147)') {
+          cy.wrap(list[index + dateOffset]).click();
+      }
+  });
 })
 
 Cypress.Commands.add('login', () => {

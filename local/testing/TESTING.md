@@ -50,7 +50,3 @@ The tests are conducted using the customer application, but shall be representat
 Customer and Supplier tests are run on their respective application. They are focused on testing material based views and the creation, display and deletion of demands, productions, deliveries as well as stocks.
 
 Exchange of created data is **NOT** subject of role-based tests.
-
-### Data exchange tests
-
-Data exchange tests use both the customer and supplier application to test the exchange of data using the EDC.

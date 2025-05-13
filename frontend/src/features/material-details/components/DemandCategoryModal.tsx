@@ -114,7 +114,7 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
                 renderCell: (data: { row: Demand }) => {
                     return (
                         <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
+                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)} data-testid="delete-demand">
                                 <Delete></Delete>
                             </Button>
                         </Box>
@@ -196,7 +196,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
     }, [demand]);
     return (
         <>
-            <Dialog open={open && demand !== null} onClose={handleClose}>
+            <Dialog open={open && demand !== null} onClose={handleClose} data-testid="demand-modal">
                 <DialogTitle variant="h3" textAlign="center">
                     Demand Information
                 </DialogTitle>
@@ -217,11 +217,12 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                     value={sites?.find((s) => s.bpns === temporaryDemand.demandLocationBpns) ?? null}
                                     label="Demand Site*"
                                     placeholder="Select a Site"
+                                    data-testid="demand-location-field"
                                 />
                             </Grid>
                             <Grid item xs={6}>
                                 <FormLabel sx={{ marginBottom: '.5rem', display: 'block' }}>Day*</FormLabel>
-                                <div className="date-picker">
+                                <div className="date-picker" data-testid="demand-day-field">
                                     <Datepicker
                                         id="day"
                                         label=""
@@ -254,6 +255,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                     label="Category*"
                                     placeholder="Select category"
                                     error={formError && !temporaryDemand?.demandCategoryCode}
+                                    data-testid="demand-category-field"
                                 />
                             </Grid>
                             <Grid item xs={6}>
@@ -271,6 +273,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                         )
                                     }
                                     sx={{ marginTop: '.5rem' }}
+                                    data-testid="demand-quantity-field"
                                 />
                             </Grid>
                             <Grid item xs={6}>
@@ -292,6 +295,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                     label="UOM*"
                                     placeholder="Select unit"
                                     error={formError && !temporaryDemand?.measurementUnit}
+                                    data-testid="demand-uom-field"
                                 />
                             </Grid>
                             <Grid item xs={6}>
@@ -307,6 +311,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                     label="Partner*"
                                     placeholder="Select a Partner"
                                     error={formError && !temporaryDemand?.partnerBpnl}
+                                    data-testid="demand-partner-field"
                                 />
                             </Grid>
                             <Grid item xs={6}>
@@ -326,6 +331,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                     }
                                     label="Expected Supplier Site"
                                     placeholder="Select a Site"
+                                    data-testid="demand-supplier-site-field"
                                 />
                             </Grid>
                         </Grid>
@@ -359,6 +365,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                 color="primary"
                                 sx={{ display: 'flex', gap: '.25rem' }}
                                 onClick={() => handleSaveClick(temporaryDemand)}
+                                data-testid="save-demand-button"
                             >
                                 <Save></Save> Save
                             </Button>

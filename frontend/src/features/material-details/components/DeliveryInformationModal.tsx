@@ -197,7 +197,7 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
                         {!data.row.reported && (
-                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
+                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)} data-testid="delete-delivery">
                                 <Delete></Delete>
                             </Button>
                         )}
@@ -313,7 +313,7 @@ export const DeliveryInformationModal = ({
     }, [delivery]);
     return (
         <>
-            <Dialog open={open && delivery !== null} onClose={handleClose}>
+            <Dialog open={open && delivery !== null} onClose={handleClose} data-testid="delivery-modal">
                 <DialogTitle variant="h3" textAlign="center">
                     {capitalize(mode)} Delivery Information
                 </DialogTitle>
@@ -324,7 +324,7 @@ export const DeliveryInformationModal = ({
                                 <GridItem label="Material Number" value={temporaryDelivery.ownMaterialNumber ?? ''} />
                                 <Grid item xs={6}>
                                     <LabelledAutoComplete
-                                        id="partnerBpns"
+                                        id="ownBpns"
                                         options={sites ?? []}
                                         getOptionLabel={(option) => option.name ?? ''}
                                         isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
@@ -350,6 +350,7 @@ export const DeliveryInformationModal = ({
                                             formError &&
                                             (direction === DirectionType.Outbound ? !temporaryDelivery.originBpns : !temporaryDelivery.destinationBpns)
                                         }
+                                        data-testid="delivery-own-bpns-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -387,7 +388,7 @@ export const DeliveryInformationModal = ({
                                         }
                                     ></LabelledAutoComplete>
                                 </Grid>
-                                <Grid item xs={6} display="flex" alignItems="end">
+                                <Grid item xs={6} display="flex" alignItems="end" data-testid="delivery-departure-time-field">
                                     <DateTime
                                         label="Departure Time*"
                                         placeholder="Pick Departure Date"
@@ -406,7 +407,7 @@ export const DeliveryInformationModal = ({
                                         }
                                     />
                                 </Grid>
-                                <Grid item xs={6} display="flex" alignItems="end">
+                                <Grid item xs={6} display="flex" alignItems="end" data-testid="delivery-arrival-time-field">
                                     <DateTime
                                         label="Arrival Time*"
                                         placeholder="Pick Arrival Date"
@@ -437,6 +438,7 @@ export const DeliveryInformationModal = ({
                                         }
                                         value={partners?.find((p) => p.bpnl === temporaryDelivery.partnerBpnl) ?? null}
                                         isOptionEqualToValue={(option, value) => option?.bpnl === value?.bpnl}
+                                        data-testid="delivery-partner-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -470,6 +472,7 @@ export const DeliveryInformationModal = ({
                                             formError &&
                                             (direction === DirectionType.Inbound ? !temporaryDelivery.originBpns : !temporaryDelivery.destinationBpns)
                                         }
+                                        data-testid="delivery-partner-bpns-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -486,6 +489,7 @@ export const DeliveryInformationModal = ({
                                             }))
                                         }
                                         sx={{ marginTop: '.5rem' }}
+                                        data-testid="delivery-quantity-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -506,6 +510,7 @@ export const DeliveryInformationModal = ({
                                         error={formError && !temporaryDelivery?.measurementUnit}
                                         onChange={(_, value) => setTemporaryDelivery((curr) => ({ ...curr, measurementUnit: value?.key }))}
                                         isOptionEqualToValue={(option, value) => option?.key === value?.key}
+                                        data-testid="delivery-uom-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -519,6 +524,7 @@ export const DeliveryInformationModal = ({
                                             setTemporaryDelivery({ ...temporaryDelivery, trackingNumber: event.target.value })
                                         }
                                         sx={{ marginTop: '.5rem' }}
+                                        data-testid="delivery-tracking-number-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -538,6 +544,7 @@ export const DeliveryInformationModal = ({
                                         error={formError && !temporaryDelivery?.incoterm}
                                         onChange={(_, value) => setTemporaryDelivery((curr) => ({ ...curr, incoterm: value?.key }))}
                                         isOptionEqualToValue={(option, value) => option?.key === value?.key}
+                                        data-testid="delivery-incoterm-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -550,6 +557,7 @@ export const DeliveryInformationModal = ({
                                         onChange={(event) =>
                                             setTemporaryDelivery({ ...temporaryDelivery, customerOrderNumber: event.target.value })
                                         }
+                                        data-testid="delivery-customer-order-number-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -565,6 +573,7 @@ export const DeliveryInformationModal = ({
                                                 customerOrderPositionNumber: event.target.value,
                                             })
                                         }
+                                        data-testid="delivery-customer-order-position-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -579,6 +588,7 @@ export const DeliveryInformationModal = ({
                                         onChange={(event) =>
                                             setTemporaryDelivery({ ...temporaryDelivery, supplierOrderNumber: event.target.value })
                                         }
+                                        data-testid="delivery-supplier-order-number-field"
                                     />
                                 </Grid>
                             </>
@@ -621,6 +631,7 @@ export const DeliveryInformationModal = ({
                                 color="primary"
                                 sx={{ display: 'flex', gap: '.25rem' }}
                                 onClick={() => handleSaveClick()}
+                                data-testid="save-delivery-button"
                             >
                                 <Save></Save> Save
                             </Button>
