@@ -28,6 +28,7 @@ describe('material data operations', () => {
 
     it('allows creating, displaying and deleting planned production', () => {
         cy.origin(Cypress.env('supplierUrl'), () => {
+            // define local versions of the custom commands since they aren't available within cy.origin
             const getByTestId = (testid) => cy.get(`[data-testid="${testid}"]`);
             const selectAutocompleteOption = (testid, option) => {
                 getByTestId(testid).click();

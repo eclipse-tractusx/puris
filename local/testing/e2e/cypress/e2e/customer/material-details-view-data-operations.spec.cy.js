@@ -32,20 +32,28 @@ describe('material data operations', () => {
             cy.getByTestId('add-demand-button').click();
             cy.getByTestId('demand-modal').should('be.visible');
             
+            // check fields for default values and clear them
+            cy.getByTestId('demand-category-field').find('input[value="Default"]').should('exist');
+            cy.clearAutocompleteSelection('demand-category-field');
+
             // submitting an empty form should cause errors in mandatory fields
             cy.getByTestId('save-demand-button').click();
-            cy.getByTestId('demand-location-field').get('input[aria-invalid="true"]').should('exist');
-            cy.getByTestId('demand-day-field').get('input[aria-invalid="true"]').should('exist');
-            cy.getByTestId('demand-quantity-field').get('input[aria-invalid="true"]').should('exist');
-            cy.getByTestId('demand-partner-field').get('input[aria-invalid="true"]').should('exist');
-
+            cy.getByTestId('demand-location-field').find('input[aria-invalid="true"]').should('exist');
+            cy.getByTestId('demand-day-field').find('input[aria-invalid="true"]').should('exist');
+            cy.getByTestId('demand-category-field').find('input[aria-invalid="true"]').should('exist');
+            cy.getByTestId('demand-quantity-field').find('input[aria-invalid="true"]').should('exist');
+            cy.getByTestId('demand-uom-field').find('input[aria-invalid="true"]').should('exist');
+            cy.getByTestId('demand-partner-field').find('input[aria-invalid="true"]').should('exist');
+            
             // fill out the form with the supplied test demand
             cy.selectAutocompleteOption('demand-location-field', demand.demandSite);
             cy.selectRelativeDate('demand-day-field', 0)
             cy.selectAutocompleteOption('demand-category-field', demand.demandCategory);
             cy.getByTestId('demand-quantity-field').type(demand.quantity);
             cy.selectAutocompleteOption('demand-uom-field', demand.measurementUnit);
+            cy.getByTestId('demand-supplier-site-field').find('input:disabled').should('exist');
             cy.selectAutocompleteOption('demand-partner-field', demand.partner);
+            cy.getByTestId('demand-supplier-site-field').find('input:disabled').should('not.exist');
             cy.selectAutocompleteOption('demand-supplier-site-field', demand.supplierSite);
 
             // submit the test demand
@@ -66,7 +74,7 @@ describe('material data operations', () => {
             // check that the added demand is displayed in the table and delete it
             cy.get('[role="rowgroup"] [role="row"]')
               .filter(`:contains(${demand.quantity} ${demand.measurementUnit})`)
-              .filter(`:contains(${demand.partnerBpnl})`)
+              .filter(`:contains(${Cypress.env('supplier').bpnl})`)
               .filter(`:contains(${demand.supplierSiteBpns})`)
               .filter(`:contains(${demand.demandCategory})`)
               .first()
@@ -79,20 +87,37 @@ describe('material data operations', () => {
         cy.fixture('customer-data.json').then(({delivery}) => {
             cy.visit(`/materials/inbound/${delivery.ownMaterialNumber}`);
             
+            // open delivery modal
             cy.getByTestId('add-delivery-button').click();
             cy.getByTestId('delivery-modal').should('be.visible');
+
+            // check fields for default values and clear them
+            cy.getByTestId('delivery-departure-type-field').find('input[value="Estimated"]').should('exist');
+            cy.clearAutocompleteSelection('delivery-departure-type-field');
+            cy.getByTestId('delivery-arrival-type-field').find('input[value="Estimated"]').should('exist');
+            cy.clearAutocompleteSelection('delivery-arrival-type-field');
             
+            // submitting an empty form should cause errors in mandatory fields
             cy.getByTestId('save-delivery-button').click();
             cy.getByTestId('delivery-own-bpns-field').get('input[aria-invalid="true"]').should('exist');
-            cy.getByTestId('delivery-arrival-time-field').get('input[aria-invalid="true"]').should('exist');
+            cy.getByTestId('delivery-departure-type-field').get('input[aria-invalid="true"]').should('exist');
+            cy.getByTestId('delivery-arrival-type-field').get('input[aria-invalid="true"]').should('exist');
             cy.getByTestId('delivery-departure-time-field').get('input[aria-invalid="true"]').should('exist');
+            cy.getByTestId('delivery-arrival-time-field').get('input[aria-invalid="true"]').should('exist');
             cy.getByTestId('delivery-partner-field').get('input[aria-invalid="true"]').should('exist');
             cy.getByTestId('delivery-partner-bpns-field').get('input[aria-invalid="true"]').should('exist');
             cy.getByTestId('delivery-quantity-field').get('input[aria-invalid="true"]').should('exist');
             cy.getByTestId('delivery-incoterm-field').get('input[aria-invalid="true"]').should('exist');
-
+            
+            // fill out the form with the supplied test delivery
             cy.selectAutocompleteOption('delivery-own-bpns-field', delivery.destination);
+            cy.selectAutocompleteOption('delivery-departure-type-field', 'Estimated');
+            cy.selectAutocompleteOption('delivery-arrival-type-field', 'Estimated');
+            cy.selectRelativeDate('delivery-departure-time-field', 0);
+            cy.selectRelativeDate('delivery-arrival-time-field', 2);
+            cy.getByTestId('delivery-partner-bpns-field').find('input:disabled').should('exist');
             cy.selectAutocompleteOption('delivery-partner-field', delivery.partner);
+            cy.getByTestId('delivery-partner-bpns-field').find('input:disabled').should('not.exist');
             cy.selectAutocompleteOption('delivery-partner-bpns-field', delivery.origin);
             cy.getByTestId('delivery-quantity-field').type(delivery.quantity);
             cy.selectAutocompleteOption('delivery-uom-field', delivery.measurementUnit);
@@ -102,9 +127,7 @@ describe('material data operations', () => {
             cy.getByTestId('delivery-customer-order-position-field').type(delivery.customerPositionId);
             cy.getByTestId('delivery-supplier-order-number-field').type(delivery.supplierOrderNumber);
 
-            cy.selectRelativeDate('delivery-departure-time-field', 0);
-            cy.selectRelativeDate('delivery-arrival-time-field', 2);
-
+            // submit the test delivery
             cy.getByTestId('save-delivery-button').click();
             cy.getByTestId('delivery-modal').should('not.exist');
             cy.getByTestId('toast-success').should('be.visible');
@@ -118,9 +141,10 @@ describe('material data operations', () => {
               });
             cy.getByTestIdContains('cw-summary').eq(targetWeekIndex).find(`[data-testid*="day-${(new Date().getDay() + 2) % 7}"] button`).eq(1).click();
 
+            // check that the added delivery is displayed in the table and delete it
             cy.get('[role="rowgroup"] [role="row"]')
               .filter(`:contains(${delivery.quantity} ${delivery.measurementUnit})`)
-              .filter(`:contains(${delivery.partnerBpnl})`)
+              .filter(`:contains(${Cypress.env('supplier').bpnl})`)
               .filter(`:contains(${delivery.customerOrderNumber})`)
               .filter(`:contains(${delivery.customerPositionId})`)
               .filter(`:contains(${delivery.supplierOrderNumber})`)
@@ -136,9 +160,11 @@ describe('material data operations', () => {
         cy.fixture('customer-data.json').then(({stock}) => {
             cy.visit(`/materials/inbound/${stock.ownMaterialNumber}`);
             
+            // open stock modal
             cy.getByTestId('add-stock-button').click();
             cy.getByTestId('stock-modal').should('be.visible');
             
+            // submitting an empty form should cause errors in mandatory fields
             cy.getByTestId('save-stock-button').click();
             cy.getByTestId('stock-partner-field').get('input[aria-invalid="true"]').should('exist');
             cy.getByTestId('stock-site-field').get('input[aria-invalid="true"]').should('exist');
@@ -146,8 +172,11 @@ describe('material data operations', () => {
             cy.getByTestId('stock-quantity-field').get('input[aria-invalid="true"]').should('exist');
             cy.getByTestId('stock-uom-field').get('input[aria-invalid="true"]').should('exist');
 
+            // fill out the form with the supplied test stock
             cy.selectAutocompleteOption('stock-partner-field', stock.partner);
+            cy.getByTestId('stock-address-field').find('input:disabled').should('exist');
             cy.selectAutocompleteOption('stock-site-field', stock.site);
+            cy.getByTestId('stock-address-field').find('input:disabled').should('not.exist');
             cy.selectAutocompleteOption('stock-address-field', stock.address);
             cy.getByTestId('stock-quantity-field').type(stock.quantity);
             cy.selectAutocompleteOption('stock-uom-field', stock.measurementUnit);
@@ -159,6 +188,7 @@ describe('material data operations', () => {
                 cy.getByTestId('stock-is-blocked-field').click();
             }
 
+            // submit the test stock
             cy.getByTestId('save-stock-button').click();
             cy.getByTestId('stock-modal').should('not.exist');
             cy.getByTestId('toast-success').should('be.visible');
@@ -166,7 +196,7 @@ describe('material data operations', () => {
             cy.getByTestId('actual-stock').first().click()
             cy.getByTestId('stock-modal').should('be.visible');
 
-            // check that the added demand is displayed in the table and delete it
+            // check that the added stock is displayed in the table and delete it
             cy.get('[role="rowgroup"] [role="row"]')
               .filter(`:contains(${stock.quantity} ${stock.measurementUnit})`)
               .filter(`:contains(${stock.siteBpns})`)

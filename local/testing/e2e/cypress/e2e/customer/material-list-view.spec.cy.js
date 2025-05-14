@@ -103,7 +103,6 @@ describe('material list view', () => {
 
     it('allows sorting by property', () => {
         cy.fixture('customer-data.json').then(({ materials }) => {
-            console.log(materials);
             const expectedNumberOfMaterialRows = materials.reduce(
                 (acc, { materialFlag, productFlag }) => acc + (materialFlag && productFlag ? 2 : !materialFlag && !productFlag ? 0 : 1),
                 0

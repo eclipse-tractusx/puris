@@ -40,6 +40,12 @@ Cypress.Commands.add('selectAutocompleteOption', (testid, option) => {
   cy.getByTestId(testid).get(`input[value="${option}"]`).should('exist');
 })
 
+Cypress.Commands.add('clearAutocompleteSelection', (testid) => {
+  cy.getByTestId(testid).find('input').clear();
+  // clearing the input opens the dropdown -> click to close
+  cy.getByTestId(testid).click();
+})
+
 Cypress.Commands.add('selectRelativeDate', (testid, dateOffset) => {
   cy.getByTestId(testid).find('[aria-label="Choose date"]').click();
   cy.get('[role="rowgroup"] button').each((button, index, list) => {

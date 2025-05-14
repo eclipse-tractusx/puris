@@ -16,7 +16,6 @@
     "partners": [
         {
             "name": "Semiconductor Supplier Inc.",
-            "bpnl": "BPNL1234567890ZZ",
             "sites": [
                 {
                     "name": "Semiconductor Supplier Inc. Headquarter",
@@ -36,7 +35,6 @@
     "demand": {
         "ownMaterialNumber": "MNR-7307-AU340474.002",
         "partner": "Semiconductor Supplier Inc.",
-        "partnerBpnl": "BPNL1234567890ZZ",
         "demandSite": "Control Unit Creator Production Site",
         "quantity": "123456",
         "measurementUnit": "sets",
@@ -47,7 +45,6 @@
     "delivery": {
         "ownMaterialNumber": "MNR-7307-AU340474.002",
         "partner": "Semiconductor Supplier Inc.",
-        "partnerBpnl": "BPNL1234567890ZZ",
         "quantity": "123456",
         "measurementUnit": "sets",
         "destination": "Control Unit Creator Production Site",

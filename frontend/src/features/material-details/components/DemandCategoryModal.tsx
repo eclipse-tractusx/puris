@@ -239,18 +239,15 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                             <Grid item xs={6}>
                                 <LabelledAutoComplete
                                     id="category"
-                                    clearIcon={false}
                                     options={DEMAND_CATEGORY}
                                     getOptionLabel={(option) => option?.value ?? ''}
                                     onChange={(_, value) => setTemporaryDemand((curr) => ({ ...curr, demandCategoryCode: value?.key }))}
                                     isOptionEqualToValue={(option, value) => option?.key === value?.key}
                                     value={
-                                        temporaryDemand.demandCategoryCode
-                                            ? {
-                                                  key: temporaryDemand.demandCategoryCode,
-                                                  value: DEMAND_CATEGORY.find((c) => c.key === temporaryDemand.demandCategoryCode)?.value,
-                                              }
-                                            : DEMAND_CATEGORY[0]
+                                        {
+                                            key: temporaryDemand.demandCategoryCode,
+                                            value: DEMAND_CATEGORY.find((c) => c.key === temporaryDemand.demandCategoryCode)?.value,
+                                        }
                                     }
                                     label="Category*"
                                     placeholder="Select category"
@@ -279,7 +276,6 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                             <Grid item xs={6}>
                                 <LabelledAutoComplete
                                     id="uom"
-                                    clearIcon={false}
                                     options={UNITS_OF_MEASUREMENT}
                                     getOptionLabel={(option) => option?.value ?? ''}
                                     onChange={(_, value) => setTemporaryDemand((curr) => ({ ...curr, measurementUnit: value?.key }))}

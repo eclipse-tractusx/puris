@@ -366,6 +366,7 @@ export const DeliveryInformationModal = ({
                                         label="Departure Type*"
                                         placeholder="Select the type of departure"
                                         error={formError && !temporaryDelivery?.departureType}
+                                        data-testid="delivery-departure-type-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -386,6 +387,7 @@ export const DeliveryInformationModal = ({
                                                 (temporaryDelivery?.arrivalType === 'actual-arrival' &&
                                                     temporaryDelivery?.departureType !== 'actual-departure'))
                                         }
+                                        data-testid="delivery-arrival-type-field"
                                     ></LabelledAutoComplete>
                                 </Grid>
                                 <Grid item xs={6} display="flex" alignItems="end" data-testid="delivery-departure-time-field">
