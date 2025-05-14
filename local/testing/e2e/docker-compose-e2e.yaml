@@ -28,4 +28,6 @@ services:
     command: "--browser ${BROWSER:-chrome}"
     volumes:
       - ./cypress:/testing/cypress
+      - ./cypress.config.js:/testing/cypress.config.js
+      - ./cypress.env.json:/testing/cypress.env.json
     network_mode: "host"
