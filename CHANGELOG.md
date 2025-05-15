@@ -35,6 +35,11 @@ Fixes
 * use `assetId` instead of `semanticId` and `dct:type=submodel` during catalog request for submodel
   assets ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
 
+Version Bumps
+
+* Backend Dependencies
+  * spring-boot from 3.4.3 to 3.4.5 in /backend ([#871](https://github.com/eclipse-tractusx/puris/pull/871))
+
 ### Removed
 
 N.A.
