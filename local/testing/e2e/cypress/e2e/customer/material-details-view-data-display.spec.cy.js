@@ -98,6 +98,7 @@ describe('material details view', () => {
                             cy.get('@site-button').contains(site.bpns);
 
                             // click the collapsible button and verify that the site summary is shown
+                            cy.get('@site-button').click();
                             cy.get('@site-panel').should('be.visible');
                         })
                     })

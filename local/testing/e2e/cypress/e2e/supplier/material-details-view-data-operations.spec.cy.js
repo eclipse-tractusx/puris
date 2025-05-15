@@ -57,6 +57,7 @@ describe('material data operations', () => {
                 getByTestId('production-completion-time-field').get('input[aria-invalid="true"]').should('exist');
                 getByTestId('production-partner-field').get('input[aria-invalid="true"]').should('exist');
                 getByTestId('production-quantity-field').get('input[aria-invalid="true"]').should('exist');
+                getByTestId('production-uom-field').get('input[aria-invalid="true"]').should('exist');
 
                 // fill out the form with the supplied test production
                 selectAutocompleteOption('production-site-field', production.site);

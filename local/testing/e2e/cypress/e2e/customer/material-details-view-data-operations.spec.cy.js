@@ -51,9 +51,9 @@ describe('material data operations', () => {
             cy.selectAutocompleteOption('demand-category-field', demand.demandCategory);
             cy.getByTestId('demand-quantity-field').type(demand.quantity);
             cy.selectAutocompleteOption('demand-uom-field', demand.measurementUnit);
-            cy.getByTestId('demand-supplier-site-field').find('input:disabled').should('exist');
+            cy.getByTestId('demand-supplier-site-field').find('input:disabled').should('exist'); // check if supplier site field is disabled before entering partner
             cy.selectAutocompleteOption('demand-partner-field', demand.partner);
-            cy.getByTestId('demand-supplier-site-field').find('input:disabled').should('not.exist');
+            cy.getByTestId('demand-supplier-site-field').find('input:disabled').should('not.exist'); // check if supplier site field is enabled after entering partner
             cy.selectAutocompleteOption('demand-supplier-site-field', demand.supplierSite);
 
             // submit the test demand
@@ -107,6 +107,7 @@ describe('material data operations', () => {
             cy.getByTestId('delivery-partner-field').get('input[aria-invalid="true"]').should('exist');
             cy.getByTestId('delivery-partner-bpns-field').get('input[aria-invalid="true"]').should('exist');
             cy.getByTestId('delivery-quantity-field').get('input[aria-invalid="true"]').should('exist');
+            cy.getByTestId('delivery-uom-field').get('input[aria-invalid="true"]').should('exist');
             cy.getByTestId('delivery-incoterm-field').get('input[aria-invalid="true"]').should('exist');
             
             // fill out the form with the supplied test delivery
@@ -115,9 +116,9 @@ describe('material data operations', () => {
             cy.selectAutocompleteOption('delivery-arrival-type-field', 'Estimated');
             cy.selectRelativeDate('delivery-departure-time-field', 0);
             cy.selectRelativeDate('delivery-arrival-time-field', 2);
-            cy.getByTestId('delivery-partner-bpns-field').find('input:disabled').should('exist');
+            cy.getByTestId('delivery-partner-bpns-field').find('input:disabled').should('exist'); // check if origin field is disabled before entering partner
             cy.selectAutocompleteOption('delivery-partner-field', delivery.partner);
-            cy.getByTestId('delivery-partner-bpns-field').find('input:disabled').should('not.exist');
+            cy.getByTestId('delivery-partner-bpns-field').find('input:disabled').should('not.exist'); // check if origin field is enabled after entering partner
             cy.selectAutocompleteOption('delivery-partner-bpns-field', delivery.origin);
             cy.getByTestId('delivery-quantity-field').type(delivery.quantity);
             cy.selectAutocompleteOption('delivery-uom-field', delivery.measurementUnit);
@@ -174,9 +175,9 @@ describe('material data operations', () => {
 
             // fill out the form with the supplied test stock
             cy.selectAutocompleteOption('stock-partner-field', stock.partner);
-            cy.getByTestId('stock-address-field').find('input:disabled').should('exist');
+            cy.getByTestId('stock-address-field').find('input:disabled').should('exist'); // check if address field is disabled before entering site
             cy.selectAutocompleteOption('stock-site-field', stock.site);
-            cy.getByTestId('stock-address-field').find('input:disabled').should('not.exist');
+            cy.getByTestId('stock-address-field').find('input:disabled').should('not.exist'); // check if address field is enabled after entering site
             cy.selectAutocompleteOption('stock-address-field', stock.address);
             cy.getByTestId('stock-quantity-field').type(stock.quantity);
             cy.selectAutocompleteOption('stock-uom-field', stock.measurementUnit);
