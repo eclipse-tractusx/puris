@@ -69,10 +69,11 @@ export function MaterialListView() {
                         defaultValue="All"
                         onChange={(event) => setDirection(event.target.value === 'All' ? '' : event.target.value)}
                         sx={{ minWidth: '12rem' }}
+                        data-testid="direction-selector"
                     >
-                        <MenuItem value="All">All</MenuItem>
-                        <MenuItem value="Inbound">Inbound</MenuItem>
-                        <MenuItem value="Outbound">Outbound</MenuItem>
+                        <MenuItem value="All" data-testid="direction-selector-all">All</MenuItem>
+                        <MenuItem value="Inbound" data-testid="direction-selector-inbound">Inbound</MenuItem>
+                        <MenuItem value="Outbound" data-testid="direction-selector-outbound">Outbound</MenuItem>
                     </Select>
                 </Stack>
             </Stack>

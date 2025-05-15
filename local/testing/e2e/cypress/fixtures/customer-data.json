@@ -1,0 +1,71 @@
+{
+    "materials": [
+        {
+          "ownMaterialNumber": "MNR-7307-AU340474.002",
+          "name": "Semiconductor",
+          "materialFlag": true,
+          "productFlag": false
+        },
+        {
+          "ownMaterialNumber": "MNR-4177-S",
+          "name": "Central Control Unit",
+          "materialFlag": false,
+          "productFlag": true
+        }
+    ],
+    "partners": [
+        {
+            "name": "Semiconductor Supplier Inc.",
+            "sites": [
+                {
+                    "name": "Semiconductor Supplier Inc. Headquarter",
+                    "bpns": "BPNS1234567890ZZ"
+                },
+                {
+                    "name": "Semiconductor Supplier Inc. Secondary Site",
+                    "bpns": "BPNS2222222222SS"
+                }
+            ],
+            "buys": [],
+            "supplies": [
+                "MNR-7307-AU340474.002"
+            ]
+        }
+    ],
+    "demand": {
+        "ownMaterialNumber": "MNR-7307-AU340474.002",
+        "partner": "Semiconductor Supplier Inc.",
+        "demandSite": "Control Unit Creator Production Site",
+        "quantity": "123456",
+        "measurementUnit": "sets",
+        "demandCategory": "Series",
+        "supplierSite": "Semiconductor Supplier Inc. Headquarter",
+        "supplierSiteBpns": "BPNS1234567890ZZ"
+    },
+    "delivery": {
+        "ownMaterialNumber": "MNR-7307-AU340474.002",
+        "partner": "Semiconductor Supplier Inc.",
+        "quantity": "123456",
+        "measurementUnit": "sets",
+        "destination": "Control Unit Creator Production Site",
+        "origin": "Semiconductor Supplier Inc. Headquarter",
+        "incoterm": "EX Works",
+        "trackingNumber": "TN123456",
+        "customerOrderNumber": "CNr-123456",
+        "customerPositionId": "C-position-1",
+        "supplierOrderNumber": "Snr-123456"
+    },
+    "stock": {
+        "ownMaterialNumber": "MNR-7307-AU340474.002",
+        "partner": "Semiconductor Supplier Inc.",
+        "quantity": 123456,
+        "measurementUnit": "sets",
+        "site": "Control Unit Creator Production Site",
+        "siteBpns": "BPNS4444444444XX",
+        "address": "13th Street 47",
+        "customerOrderNumber": "CNr-123456",
+        "customerPositionId": "C-position-1",
+        "supplierOrderNumber": "Snr-123456",
+        "isBlocked": true
+    }
+}

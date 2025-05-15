@@ -50,6 +50,7 @@ export const NotificationContextProvider = ({ children }: NotificationProviderPr
                         description={notification?.description}
                         autoClose={true}
                         onCloseNotification={() => setNotifications((ns) => ns.filter((_, i) => i !== index) ?? [])}
+                        data-testid={`toast-${notification?.severity}`}
                     />
                 ))}
             </PageSnackbarStack>

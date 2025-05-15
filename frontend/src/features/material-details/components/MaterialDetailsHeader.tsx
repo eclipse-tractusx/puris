@@ -40,18 +40,24 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, isSch
     return (
         <>
             <Stack direction="row" alignItems="center" spacing={1} width="100%">
-                <Link to="/materials"> <Box padding="0.25rem" display="flex" alignItems="center"> <ChevronLeftOutlined /> </Box> </Link>
+                <Link to="/materials" data-testid="back-button"> <Box padding="0.25rem" display="flex" alignItems="center"> <ChevronLeftOutlined /> </Box> </Link>
                 <Typography variant="h3" component="h1" marginRight="auto !important">
                     {direction === DirectionType.Outbound ? 'Production Information' : 'Demand Information'} for {material?.name} ({capitalize(direction.toLowerCase())})
                 </Typography>
                 <Stack gap="0.5rem" sx={{flexDirection: { xs: 'column', xl: 'row'}}}>
                     <Stack direction="row" gap="0.5rem">
                         {direction === DirectionType.Outbound ? (
-                            <Button sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => openDialog('production', {}, [], 'create')}>
+                            <Button 
+                                sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => openDialog('production', {}, [], 'create')}
+                                data-testid="add-production-button"
+                            >
                                 <Add></Add> Add Production
                             </Button>
                         ) : (
-                            <Button sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => openDialog('demand', {}, [], 'create')}>
+                            <Button 
+                                sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => openDialog('demand', {}, [], 'create')}
+                                data-testid="add-demand-button"
+                            >
                                 <Add></Add> Add Demand
                             </Button>
                         )}
@@ -67,6 +73,7 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, isSch
                                     null
                                 )
                             }
+                            data-testid="add-delivery-button"
                         >
                             <Add></Add> Add Delivery
                         </Button>
@@ -82,13 +89,28 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, isSch
                                     null
                                 )
                             }
-                            >
+                            data-testid="add-stock-button"
+                        >
                             <Add></Add> Add Stock
                         </Button>
                     </Stack>
                     <Stack direction="row" gap="0.5rem" justifyContent="end">
-                        <LoadingButton Icon={Schedule} isLoading={isSchedulingUpdate} onClick={onScheduleUpdate}> Schedule ERP Update </LoadingButton>
-                        <LoadingButton Icon={Refresh} isLoading={isRefreshing} onClick={onRefresh}> Refresh </LoadingButton>
+                        <LoadingButton 
+                            Icon={Schedule}
+                            isLoading={isSchedulingUpdate}
+                            onClick={onScheduleUpdate}
+                            data-testid="schedule-erp-button"
+                        >
+                            Schedule ERP Update
+                        </LoadingButton>
+                        <LoadingButton
+                            Icon={Refresh}
+                            isLoading={isRefreshing}
+                            onClick={onRefresh}
+                            data-testid="refresh-partner-data-button"
+                        >
+                            Refresh
+                        </LoadingButton>
                     </Stack>
                 </Stack>
             </Stack>

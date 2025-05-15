@@ -46,7 +46,7 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
     const { openDialog } = useDataModal();
     const weekDates = useMemo(() => Array.from(new Array(7).keys()).map((key) => incrementDate(cw.startDate, key)), [cw.startDate]);
     return (
-        <Stack flex={isExpanded ? 50 : 10} sx={{ borderRight: '1px solid #e5e5e5', minWidth: isExpanded ? '34rem' : '9rem' }}>
+        <Stack flex={isExpanded ? 50 : 10} sx={{ borderRight: '1px solid #e5e5e5', minWidth: isExpanded ? '34rem' : '9rem' }} aria-expanded={isExpanded} data-testid={`cw-summary-${cw.week}`}>
             {showHeader && (
                 <Stack
                     direction="row"
@@ -68,7 +68,7 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                     <>
                         {weekDates.map((date) => (
                             <Grid key={date.toLocaleDateString()} item xs={1} height="100%">
-                                <Stack height="100%">
+                                <Stack height="100%" data-testid={`cw-${cw.week}-day-${date.getDay()}`}>
                                     {showHeader && (
                                         <Stack
                                             height="2.5rem"
@@ -137,6 +137,7 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                                         'view',
                                                         summary.type === 'demand' ? DirectionType.Inbound : DirectionType.Outbound
                                                     )}
+                                                data-testid="actual-stock"
                                             >
                                                 <Typography
                                                     variant="body2"

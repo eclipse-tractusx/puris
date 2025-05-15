@@ -123,7 +123,7 @@ const createStockColumns = (handleDelete?: (row: Stock) => void) => {
                 renderCell: (data: { row: Stock }) => {
                     return (
                         <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
+                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)} data-testid="delete-stock">
                                 <Delete></Delete>
                             </Button>
                         </Box>
@@ -189,7 +189,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
     }, [stock]);
     return (
         <>
-            <Dialog open={open && stock !== null} onClose={onClose}>
+            <Dialog open={open && stock !== null} onClose={onClose} data-testid="stock-modal">
                 <DialogTitle variant="h3" textAlign="center">
                     {capitalize(mode)} {capitalize(stockType)} Stock
                 </DialogTitle>
@@ -210,6 +210,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                                         onChange={(_, value) => setTemporaryStock({ ...temporaryStock, partner: value ?? undefined })}
                                         value={temporaryStock.partner ?? null}
                                         isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
+                                        data-testid="stock-partner-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -229,6 +230,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                                         value={sites?.find((s) => s.bpns === temporaryStock.stockLocationBpns) ?? null}
                                         label="Stock Site*"
                                         placeholder="Select a Site"
+                                        data-testid="stock-site-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -248,6 +250,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                                         label="Stock Address*"
                                         placeholder="Select an address"
                                         disabled={!temporaryStock.stockLocationBpns}
+                                        data-testid="stock-address-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -265,6 +268,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                                             }))
                                         }
                                         sx={{ marginTop: '.5rem' }}
+                                        data-testid="stock-quantity-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -285,6 +289,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                                         error={formError && !temporaryStock?.measurementUnit}
                                         onChange={(_, value) => setTemporaryStock((curr) => ({ ...curr, measurementUnit: value?.key }))}
                                         isOptionEqualToValue={(option, value) => option?.key === value?.key}
+                                        data-testid="stock-uom-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -297,6 +302,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                                         onChange={(event) =>
                                             setTemporaryStock({ ...temporaryStock, customerOrderNumber: event.target.value })
                                         }
+                                        data-testid="stock-customer-order-number-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -312,6 +318,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                                                 customerOrderPositionNumber: event.target.value,
                                             })
                                         }
+                                        data-testid="stock-customer-order-position-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -326,6 +333,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                                                 supplierOrderNumber: event.target.value ?? '',
                                             })
                                         }
+                                        data-testid="stock-supplier-order-number-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6} alignContent="end">
@@ -334,6 +342,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                                             id="isBlocked"
                                             checked={temporaryStock?.isBlocked ?? false}
                                             onChange={(event) => setTemporaryStock({ ...temporaryStock, isBlocked: event.target.checked })}
+                                            data-testid="stock-is-blocked-field"
                                         />
                                         <InputLabel htmlFor="isBlocked"> is Blocked </InputLabel>
                                     </Stack>
@@ -357,7 +366,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                             <Close></Close> Close
                         </Button>
                         {mode === 'create' && (
-                            <Button variant="contained" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleSaveClick}>
+                            <Button variant="contained" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleSaveClick} data-testid="save-stock-button">
                                 <Save></Save> Save
                             </Button>
                         )}

@@ -242,9 +242,9 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                         variant="sub"
                                         renderTitle={() => (
                                             <>
-                                                <Typography variant="body2" color="#ccc">{partner.name}/</Typography>
-                                                <Typography variant="body1">{site.name}</Typography>
-                                                <Typography variant="body3" color="#ccc">({site.bpns})</Typography>
+                                                <Typography variant="body2" color="#ccc" data-testid="partner-site-owner">{partner.name}/</Typography>
+                                                <Typography variant="body1" data-testid="partner-site-name">{site.name}</Typography>
+                                                <Typography variant="body3" color="#ccc" data-testid="partner-site-bpns">({site.bpns})</Typography>
                                             </>
                                         )}
                                         includeDaysOfSupply
