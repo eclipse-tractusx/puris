@@ -161,17 +161,55 @@ public class SupplyServiceTest {
     }
 
     @Test
-    void testCalculateCustomerDaysOfSupply() {
+    void testCalculateCustomerDaysOfSupply_StandardCase() {
         List<Double> demandQuantities = List.of(40.0, 60.0, 50.0, 50.0, 60.0, 50.0);
         List<Double> inboundDeliveryQuantities = List.of(0.0, 60.0, 100.0, 0.0, 0.0, 40.0);
         List<Double> reportedInboundDeliveryQuantities = List.of(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         List<Double> expectedDaysOfSupply = List.of(1.0, 1.2, 2.0, 1.0, 0.0);
+        Double initialStockValue = 100.0;
 
+        testCalculateCustomerDaysOfSupply(6, demandQuantities, inboundDeliveryQuantities, reportedInboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+    }
+
+    @Test
+    void testCalculateCustomerDaysOfSupply_NoInitialStock() {
+        List<Double> demandQuantities = List.of(40.0, 60.0, 50.0, 50.0, 60.0, 50.0);
+        List<Double> inboundDeliveryQuantities = List.of(0.0, 60.0, 100.0, 0.0, 0.0, 40.0);
+        List<Double> reportedInboundDeliveryQuantities = List.of(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        List<Double> expectedDaysOfSupply = List.of(0.0, 0.0, 0.2, 0.0, 0.0);
+        Double initialStockValue = 0.0;
+
+        testCalculateCustomerDaysOfSupply(6, demandQuantities, inboundDeliveryQuantities, reportedInboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+    }
+
+    @Test
+    void testCalculateCustomerDaysOfSupply_CombinedDeliveries() {
+        List<Double> demandQuantities = List.of(40.0, 60.0, 50.0, 50.0, 60.0, 50.0);
+        List<Double> inboundDeliveryQuantities = List.of(0.0, 30.0, 50.0, 0.0, 0.0, 20.0);
+        List<Double> reportedInboundDeliveryQuantities = List.of(0.0, 30.0, 50.0, 0.0, 0.0, 20.0);
+        List<Double> expectedDaysOfSupply = List.of(1.0, 1.2, 2.0, 1.0, 0.0);
+        Double initialStockValue = 100.0;
+
+        testCalculateCustomerDaysOfSupply(6, demandQuantities, inboundDeliveryQuantities, reportedInboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+    }
+
+    @Test
+    void testCalcualteCustomerDaysOfSupply_InsufficientDays() {
+        List<Double> demandQuantities = List.of(40.0);
+        List<Double> inboundDeliveryQuantities = List.of(0.0);
+        List<Double> reportedInboundDeliveryQuantities = List.of(0.0);
+        List<Double> expectedDaysOfSupply = List.of();
+        Double initialStockValue = 100.0;
+
+        testCalculateCustomerDaysOfSupply(1, demandQuantities, inboundDeliveryQuantities, reportedInboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+    }
+
+    void testCalculateCustomerDaysOfSupply(int numberOfDays, List<Double> demandQuantities, List<Double> inboundDeliveryQuantities, List<Double> reportedInboundDeliveryQuantities, List<Double> expectedDaysOfSupply, Double initialStockValue) {
         when(ownDemandService.getQuantityForDays(
             TEST_MATERIAL.getOwnMaterialNumber(),
             Optional.of(BPNL_SUPPLIER),
             Optional.empty(),
-            6
+            numberOfDays
         )).thenReturn(demandQuantities);
 
         when(ownDeliveryService.getQuantityForDays(
@@ -179,7 +217,7 @@ public class SupplyServiceTest {
             Optional.of(BPNL_SUPPLIER),
             Optional.empty(),
             DirectionCharacteristic.INBOUND,
-            6
+            numberOfDays
         )).thenReturn(inboundDeliveryQuantities);
 
         when(reportedDeliveryService.getQuantityForDays(
@@ -187,33 +225,73 @@ public class SupplyServiceTest {
             Optional.of(BPNL_SUPPLIER),
             Optional.empty(),
             DirectionCharacteristic.INBOUND,
-            6
+            numberOfDays
         )).thenReturn(reportedInboundDeliveryQuantities);
 
         Optional<String> partnerBpnl = Optional.of(BPNL_SUPPLIER);
         when(partnerService.findByBpnl(partnerBpnl.get())).thenReturn(SUPPLIER_PARTNER);
 
-        when(materialItemStockService.getInitialStockQuantity(TEST_MATERIAL.getOwnMaterialNumber(), partnerBpnl, Optional.empty())).thenReturn(100.0);
+        when(materialItemStockService.getInitialStockQuantity(TEST_MATERIAL.getOwnMaterialNumber(), partnerBpnl, Optional.empty())).thenReturn(initialStockValue);
         when(materialService.findByOwnMaterialNumber(TEST_MATERIAL.getOwnMaterialNumber())).thenReturn(TEST_MATERIAL);
 
-        List<OwnCustomerSupply> customerSupplies = customerSupplyService.calculateCustomerDaysOfSupply(TEST_MATERIAL.getOwnMaterialNumber(), partnerBpnl, Optional.empty(), 6);
+        List<OwnCustomerSupply> customerSupplies = customerSupplyService.calculateCustomerDaysOfSupply(TEST_MATERIAL.getOwnMaterialNumber(), partnerBpnl, Optional.empty(), numberOfDays);
 
-        assertEquals(5, customerSupplies.size());
+        assertEquals(numberOfDays - 1, customerSupplies.size());
         assertEquals(expectedDaysOfSupply, customerSupplies.stream().map(supply -> supply.getDaysOfSupply()).toList());
+        
     }
 
     @Test
-    void testCalculateSupplierDaysOfSupply() {
+    void testCalculateSupplierDaysOfSupply_StandardCase() {
         List<Double> productionQuantities = List.of(0.0, 60.0, 100.0, 0.0, 0.0, 40.0);
         List<Double> outboundDeliveryQuantities = List.of(40.0, 60.0, 50.0, 50.0, 60.0, 50.0);
-        List<Double> outboundReportedDeliveryQuantities = List.of(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        List<Double> reportedOutboundDeliveryQuantities = List.of(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         List<Double> expectedDaysOfSupply = List.of(1.0, 1.2, 2.0, 1.0, 0.0);
+        Double initialStockValue = 100.0;
+
+        testCalculateSupplierDaysOfSupply(6, productionQuantities, outboundDeliveryQuantities, reportedOutboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+    }
+
+    @Test
+    void testCalculateSupplierDaysOfSupply_NoInitialStock() {
+        List<Double> productionQuantities = List.of(0.0, 60.0, 100.0, 0.0, 0.0, 40.0);
+        List<Double> outboundDeliveryQuantities = List.of(40.0, 60.0, 50.0, 50.0, 60.0, 50.0);
+        List<Double> reportedOutboundDeliveryQuantities = List.of(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        List<Double> expectedDaysOfSupply = List.of(0.0, 0.0, 0.2, 0.0, 0.0);
+        Double initialStockValue = 0.0;
+
+        testCalculateSupplierDaysOfSupply(6, productionQuantities, outboundDeliveryQuantities, reportedOutboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+    }
+
+    @Test
+    void testCalculateSupplierDaysOfSupply_CombinedDeliveries() {
+        List<Double> productionQuantities = List.of(0.0, 60.0, 100.0, 0.0, 0.0, 40.0);
+        List<Double> outboundDeliveryQuantities = List.of(20.0, 30.0, 25.0, 25.0, 30.0, 25.0);
+        List<Double> reportedOutboundDeliveryQuantities = List.of(20.0, 30.0, 25.0, 25.0, 30.0, 25.0);
+        List<Double> expectedDaysOfSupply = List.of(1.0, 1.2, 2.0, 1.0, 0.0);
+        Double initialStockValue = 100.0;
+
+        testCalculateSupplierDaysOfSupply(6, productionQuantities, outboundDeliveryQuantities, reportedOutboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+    }
+
+    @Test
+    void testCalculateSupplierDaysOfSupply_InsufficientDays() {
+        List<Double> productionQuantities = List.of(40.0);
+        List<Double> outboundDeliveryQuantities = List.of(0.0);
+        List<Double> reportedOutboundDeliveryQuantities = List.of(0.0);
+        List<Double> expectedDaysOfSupply = List.of();
+        Double initialStockValue = 100.0;
+
+        testCalculateSupplierDaysOfSupply(1, productionQuantities, outboundDeliveryQuantities, reportedOutboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+    }
+
+    void testCalculateSupplierDaysOfSupply(int numberOfDays, List<Double> productionQuantities, List<Double> outboundDeliveryQuantities, List<Double> reportedOutboundDeliveryQuantities, List<Double> expectedDaysOfSupply, Double initialStockValue) {
 
         when(ownProductionService.getQuantityForDays(
             TEST_PRODUCT.getOwnMaterialNumber(),
             Optional.of(BPNL_CUSTOMER),
             Optional.empty(),
-            6
+            numberOfDays
         )).thenReturn(productionQuantities);
 
         when(ownDeliveryService.getQuantityForDays(
@@ -221,7 +299,7 @@ public class SupplyServiceTest {
             Optional.of(BPNL_CUSTOMER),
             Optional.empty(),
             DirectionCharacteristic.OUTBOUND,
-            6
+            numberOfDays
         )).thenReturn(outboundDeliveryQuantities);
 
         when(reportedDeliveryService.getQuantityForDays(
@@ -229,18 +307,18 @@ public class SupplyServiceTest {
             Optional.of(BPNL_CUSTOMER),
             Optional.empty(),
             DirectionCharacteristic.OUTBOUND,
-            6
-        )).thenReturn(outboundReportedDeliveryQuantities);
+            numberOfDays
+        )).thenReturn(reportedOutboundDeliveryQuantities);
 
         Optional<String> partnerBpnl = Optional.of(BPNL_CUSTOMER);
         when(partnerService.findByBpnl(partnerBpnl.get())).thenReturn(CUSTOMER_PARTNER);
 
-        when(productItemStockService.getInitialStockQuantity(TEST_PRODUCT.getOwnMaterialNumber(), partnerBpnl, Optional.empty())).thenReturn(100.0);
+        when(productItemStockService.getInitialStockQuantity(TEST_PRODUCT.getOwnMaterialNumber(), partnerBpnl, Optional.empty())).thenReturn(initialStockValue);
         when(materialService.findByOwnMaterialNumber(TEST_PRODUCT.getOwnMaterialNumber())).thenReturn(TEST_PRODUCT);
 
-        List<OwnSupplierSupply> supplierSupplies = supplierSupplyService.calculateSupplierDaysOfSupply(TEST_PRODUCT.getOwnMaterialNumber(), partnerBpnl, Optional.empty(), 6);
+        List<OwnSupplierSupply> supplierSupplies = supplierSupplyService.calculateSupplierDaysOfSupply(TEST_PRODUCT.getOwnMaterialNumber(), partnerBpnl, Optional.empty(), numberOfDays);
 
-        assertEquals(5, supplierSupplies.size());
+        assertEquals(numberOfDays - 1, supplierSupplies.size());
         assertEquals(expectedDaysOfSupply, supplierSupplies.stream().map(supply -> supply.getDaysOfSupply()).toList());
     }
 }
