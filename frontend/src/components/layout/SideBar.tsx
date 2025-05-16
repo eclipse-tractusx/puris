@@ -40,6 +40,7 @@ import {
     HandshakeOutlined,
     HelpOutlineOutlined,
     HomeOutlined,
+    InfoOutlined,
     LogoutOutlined,
     MenuOutlined,
     NotificationsOutlined,
@@ -119,6 +120,7 @@ const sideBarItems: SideBarItemProps[] = [
     { name: 'Negotiations', icon: <HandshakeOutlined />, path: '/negotiations', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'Transfers', icon: <SyncAltOutlined />, path: '/transfers', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'User Guide', icon: <HelpOutlineOutlined />, path: '/user-guide' },
+    { name: 'About License', icon: <InfoOutlined/>, path: '/about-license'},
     { name: 'Logout', icon: <LogoutOutlined />, action: AuthenticationService.logout, variant: 'button' },
 ];
 
