@@ -134,7 +134,7 @@ describe('material data operations', () => {
             cy.getByTestId('toast-success').should('be.visible');
 
             // expand the appropriate calendar week if necessary and open the delivery modal for the day after tomorrow
-            const targetWeekIndex = new Date().getDay() + 2 > 6 ? 1 : 0;
+            const targetWeekIndex = (new Date().getDay() + 2) > 7 ? 1 : 0;
             cy.getByTestIdContains('cw-summary').eq(targetWeekIndex).then(($cw) => {
                 if (!$cw.attr('aria-expanded')) {
                   cy.wrap($cw).find('h4 + button').click();

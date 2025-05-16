@@ -42,18 +42,11 @@ describe("sidebar", () => {
 
             for (let i = 0; i < menuLinks.length; i++) {
                 cy.get('[data-testid*="sidebar-menu-item"] a')
-                    .should("have.length", 6)
+                    .should("have.length", 7)
                     .eq(i)
                     .click();
                 cy.url().should("match", new RegExp(menuLinks[i].target));
             }
-
-            cy.get('[data-testid="sidebar-item-license"]').should("exist");
-            cy.get('[data-testid="sidebar-item-license"] a').click();
-            cy.url().should("match", /\/aboutLicense$/);
-            cy.get(
-                '[data-testid*="sidebar-menu-item"][aria-selected="true"]'
-            ).should("not.exist");
         });
     });
 });
