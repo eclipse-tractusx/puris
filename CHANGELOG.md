@@ -20,6 +20,7 @@ The **need for configuration updates** is **marked bold**.
 * Switch to spring actuator helm endpoint including enhancement of health, liveness and startup probe ([#469](https://github.com/eclipse-tractusx/puris/pull/469))
 * Company name and BPNL display in the sidebar for easier distinguishing between applications ([#837](https://github.com/eclipse-tractusx/puris/pull/837))
 * Updated partner data request flow to automatically update the UI when the data is received ([#847](https://github.com/eclipse-tractusx/puris/pull/847))
+* Extended Days of Supply unit tests in the backend to include some additional edge cases ([#870](https://github.com/eclipse-tractusx/puris/pull/870))
 
 Fixes
 
