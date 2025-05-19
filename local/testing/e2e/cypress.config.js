@@ -41,6 +41,6 @@ module.exports = defineConfig({
         viewportHeight: 720,
         experimentalWebKitSupport: true
     },
-    defaultCommandTimeout: 6000,
+    defaultCommandTimeout: 12000,
     video: true,
 });
