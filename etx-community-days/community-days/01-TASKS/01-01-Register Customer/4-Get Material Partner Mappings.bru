@@ -1,0 +1,39 @@
+meta {
+  name: 4-Get Material Partner Mappings
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{OWN_PURIS_BACKEND}}/catena/stockView/materialnumbers-mapping?ownMaterialNumber={{B64_MNR_OWN}}
+  body: none
+  auth: none
+}
+
+params:query {
+  ownMaterialNumber: {{B64_MNR_OWN}}
+}
+
+headers {
+  X-Api-Key: {{OWN_PURIS_BACKEND_API_KEY}}
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+  
+  test("Customer Mapping ok", function() {
+    const customerBPNL = bru.getEnvVar("CUSTOMER_BPNL");
+    const customerMatNbr = bru.getEnvVar("PRODUCT_CUSTOMER_MATERIAL_NUMBER");
+    expect(res.getBody()[customerBPNL]).to.equal(customerMatNbr);
+  })
+  
+  test("OWN Mapping ok", function() {
+    const ownBPNL = bru.getEnvVar("OWN_BPNL");
+    const ownMatNbr = bru.getEnvVar("PRODUCT_OWN_MATERIAL_NUMBER");
+    expect(res.getBody()[ownBPNL]).to.equal(ownMatNbr);
+  })
+  
+  
+}

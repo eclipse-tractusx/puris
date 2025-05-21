@@ -1,0 +1,32 @@
+meta {
+  name: 1-Create Product
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{OWN_PURIS_BACKEND}}/catena/materials
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{OWN_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+      "materialFlag": false,
+      "productFlag": true,
+      "ownMaterialNumber": "{{PRODUCT_OWN_MATERIAL_NUMBER}}",
+      "materialNumberCx": "{{PRODUCT_CX_MATERIAL_NUMBER}}",
+      "name": "{{PRODUCT_NAME}}"
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+}
