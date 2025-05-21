@@ -1,0 +1,41 @@
+meta {
+  name: 2-Create Product Stock (not blocked)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{OWN_PURIS_BACKEND}}/catena/stockView/product-stocks
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{OWN_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+      "material": {
+          "materialNumberSupplier": "{{PRODUCT_OWN_MATERIAL_NUMBER}}"
+      },
+      "quantity": 400.0,
+      "measurementUnit": "unit:piece",
+      "stockLocationBpns": "{{OWN_BPNS}}",
+      "stockLocationBpna": "{{OWN_BPNA}}",
+      "lastUpdatedOn": "2023-12-18T14:12:48.466+00:00",
+      "isBlocked": false,
+      "customerOrderNumber": "CNbr-2",
+      "customerOrderPositionNumber": "C-Pos-2",
+      "supplierOrderNumber": "SNbr-2",
+      "partner":{
+          "bpnl": "{{CUSTOMER_BPNL}}"
+      }
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+}

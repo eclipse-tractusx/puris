@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "community-days",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
