@@ -78,7 +78,11 @@ public class ErpAdapterController {
         @RequestParam("asset-type") AssetType assetType,
         @RequestParam(required = false, value = "direction") DirectionCharacteristic directionCharacteristic
     ) {
-        materialNumber = new String(Base64.getDecoder().decode(materialNumber));
+        try {
+            materialNumber = new String(Base64.getDecoder().decode(materialNumber));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
         boolean valid = BPNL_PATTERN.matcher(bpnl).matches()
             && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(materialNumber).matches()
             && ErpAdapterRequest.SUPPORTED_TYPES.contains(assetType);
