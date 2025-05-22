@@ -81,7 +81,7 @@ public class MaterialRefreshService {
             futures.add(
                     CompletableFuture.runAsync(
                             () -> itemStockRequestApiService
-                                    .doItemStockSubmodelReportedMaterialItemStockRequest(
+                                    .doItemStockSubmodelReportedProductItemStockRequest(
                                             customer, material),
                             executorService));
             futures.add(
