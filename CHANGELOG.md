@@ -39,6 +39,9 @@ Fixes
 
 Version Bumps
 
+* Infrastructure Components
+  * Tractus-X Connector to 0.10.0-rc2 ([#872](https://github.com/eclipse-tractusx/puris/pull/872))
+  * Digital Twin Registry to 0.8.0-RC1 ([#872](https://github.com/eclipse-tractusx/puris/pull/872))
 * Backend Dependencies
   * spring-boot from 3.4.3 to 3.4.5 in /backend ([#871](https://github.com/eclipse-tractusx/puris/pull/871))
 
