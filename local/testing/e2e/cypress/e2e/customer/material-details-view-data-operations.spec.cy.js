@@ -63,11 +63,9 @@ describe('material data operations', () => {
 
             // expand the current calendar week if necessary and open the demand modal for the current day
             const targetWeekIndex = new Date().getDay() === 1 ? 1 : 0;
-            cy.getByTestIdContains('cw-summary').eq(targetWeekIndex).then(($cw) => {
-                if (!$cw.attr('aria-expanded')) {
-                  cy.wrap($cw).find('h4 + button').click();
-                }
-              });
+            if (targetWeekIndex === 1) {
+              cy.getByTestIdContains('cw-summary').eq(targetWeekIndex).find('h4 + button').click();
+            }
             cy.getByTestIdContains('cw-summary').eq(targetWeekIndex).find(`[data-testid*="day-${new Date().getDay()}"] button`).eq(0).click();
             cy.getByTestId('demand-modal').should('be.visible');
             
@@ -134,12 +132,10 @@ describe('material data operations', () => {
             cy.getByTestId('toast-success').should('be.visible');
 
             // expand the appropriate calendar week if necessary and open the delivery modal for the day after tomorrow
-            const targetWeekIndex = new Date().getDay() + 2 > 6 ? 1 : 0;
-            cy.getByTestIdContains('cw-summary').eq(targetWeekIndex).then(($cw) => {
-                if (!$cw.attr('aria-expanded')) {
-                  cy.wrap($cw).find('h4 + button').click();
-                }
-              });
+            const targetWeekIndex = (new Date().getDay() + 1) % 7 < 3 ? 1 : 0;
+            if (targetWeekIndex === 1) {
+              cy.getByTestIdContains('cw-summary').eq(targetWeekIndex).find('h4 + button').click();
+            }
             cy.getByTestIdContains('cw-summary').eq(targetWeekIndex).find(`[data-testid*="day-${(new Date().getDay() + 2) % 7}"] button`).eq(1).click();
 
             // check that the added delivery is displayed in the table and delete it

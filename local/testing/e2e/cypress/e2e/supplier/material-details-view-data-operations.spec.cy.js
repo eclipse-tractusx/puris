@@ -76,11 +76,9 @@ describe('material data operations', () => {
 
                 // expand the current calendar week if necessary and open the production modal for the current day
                 const targetWeekIndex = new Date().getDay() === 1 ? 1 : 0;
-                cy.get(`[data-testid*="cw-summary"]`).eq(targetWeekIndex).then(($cw) => {
-                    if (!$cw.attr('aria-expanded')) {
-                    cy.wrap($cw).find('h4 + button').click();
-                    }
-                });
+                if (targetWeekIndex === 1) {
+                cy.get(`[data-testid*="cw-summary"]`).eq(targetWeekIndex).find('h4 + button').click();
+                }
                 cy.get(`[data-testid*="cw-summary"]`).eq(targetWeekIndex).find(`[data-testid*="day-${new Date().getDay()}"] button`).eq(0).click();
                 getByTestId('production-modal').should('be.visible');
                 
