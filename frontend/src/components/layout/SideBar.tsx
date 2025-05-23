@@ -32,11 +32,12 @@ import ListItemText from '@mui/material/ListItemText';
 import AuthenticationService from '@services/authentication-service';
 import { useAuth } from '@hooks/useAuth';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
-import { SvgIconTypeMap, Typography } from '@mui/material';
+import { Button, Stack, SvgIconTypeMap, Typography } from '@mui/material';
 import { Role } from '@models/types/auth/role';
 import {
     AutoStoriesOutlined,
     ChevronLeftOutlined,
+    ContentCopyOutlined,
     HandshakeOutlined,
     HelpOutlineOutlined,
     HomeOutlined,
@@ -48,6 +49,8 @@ import {
 } from '@mui/icons-material';
 import { visuallyHidden } from '@mui/utils';
 import { Link, useLocation } from 'react-router-dom';
+import { useOwnPartner } from '@hooks/useOwnPartner';
+import { useNotifications } from '@contexts/notificationContext';
 
 const openedMixin = (theme: Theme): CSSObject => ({
     width: theme.sidebarWidth,
@@ -129,12 +132,23 @@ export default function MiniDrawer() {
     const { pathname } = useLocation();
     const theme = useTheme();
     const { hasRole } = useAuth();
+    const { ownPartner } = useOwnPartner();
+    const { notify } = useNotifications();
     const handleDrawerOpen = () => {
         setOpen(true);
     };
 
     const handleDrawerClose = () => {
         setOpen(false);
+    };
+
+    const handleCopyBpnl = async () => {
+        await navigator.clipboard.writeText(ownPartner?.bpnl ?? '');
+        notify({
+            title: 'Copied to Clipboard',
+            description: 'Your company BPNL was copied to the clipboard',
+            severity: 'success'
+        });
     };
 
     return (
@@ -161,7 +175,7 @@ export default function MiniDrawer() {
                     if (item.requiredRoles && !hasRole(item.requiredRoles)) return null;
 
                     return (
-                        <ListItem 
+                        <ListItem
                             key={item.name}
                             disablePadding
                             sx={{ display: 'block', px: 1, py: 0.5 }}
@@ -206,21 +220,19 @@ export default function MiniDrawer() {
                     );
                 })}
             </List>
-            <List sx={{ marginTop: 'auto', p: 0 }}>
-                <ListItem disablePadding sx={{ display: 'block' }} data-testid="sidebar-item-license">
-                    <ListItemButton
-                        LinkComponent={({ href, ...props }) => <Link to={href} {...props} />}
-                        sx={{
-                            justifyContent: 'center',
-                            textAlign: 'center',
-                            px: open ? 2.5 : 1,
-                        }}
-                        href="/aboutLicense"
-                    >
-                        <Typography variant={open ? 'body1' : 'body3'}>{open ? 'About License' : 'License'}</Typography>
-                    </ListItemButton>
-                </ListItem>
-            </List>
+            {open ? <Stack gap="0.25rem" paddingInline=".5rem" paddingBlock="1rem" marginTop="auto" data-testid="sidebar-item-license">
+                <Typography
+                    variant="body2"
+                    component="h3"
+                    fontWeight="600"
+                    sx={{ maxWidth: '12rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                >
+                    {ownPartner?.name}
+                </Typography>
+                <Button variant="text" sx={{ padding: 0, justifyContent: 'start', width: 'fit-content'}} onClick={handleCopyBpnl}>
+                    <Typography variant="body3">{ownPartner?.bpnl} <ContentCopyOutlined /></Typography>
+                </Button>
+            </Stack> : null}
         </Drawer>
     );
 }

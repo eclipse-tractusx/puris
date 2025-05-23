@@ -1,0 +1,54 @@
+meta {
+  name: 2-Get Material Stock
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{OWN_PURIS_BACKEND}}/catena/stockView/material-stocks
+  body: none
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{OWN_PURIS_BACKEND_API_KEY}}
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Verify response contains one stock", function () {
+      expect(res.getBody()).to.be.an("array").with.lengthOf(1);
+  });
+  
+  test("Verify stock composition (material number with BPNS, BPNA and Partner BPNL)", function () {
+      var stock = res.getBody()[0];
+  
+      expect(stock).to.have.property("material");
+      expect(stock.material).to.have.property("materialNumberCustomer");
+      expect(stock.material.materialNumberCustomer).to.equal(bru.getEnvVar("MATERIAL_OWN_MATERIAL_NUMBER"));
+  
+      expect(stock.material).to.have.property("materialNumberSupplier");
+      expect(stock.material.materialNumberSupplier).to.equal(bru.getEnvVar("MATERIAL_SUPPLIER_MATERIAL_NUMBER"));
+  
+      expect(stock.material).to.have.property("materialNumberCx");
+  
+      expect(stock.material).to.have.property("materialFlag");
+      expect(stock.material.materialFlag).to.be.true;
+  
+      expect(stock.material).to.have.property("productFlag");
+      expect(stock.material.productFlag).to.be.false;
+  
+      expect(stock).to.have.property("stockLocationBpns");
+      expect(stock.stockLocationBpns).to.equal(bru.getEnvVar("OWN_BPNS"));
+  
+      expect(stock).to.have.property("stockLocationBpna");
+      expect(stock.stockLocationBpna).to.equal(bru.getEnvVar("OWN_BPNA"));
+  
+      expect(stock).to.have.property("partner");
+      expect(stock.partner).to.have.property("bpnl");
+      expect(stock.partner.bpnl).to.equal(bru.getEnvVar("SUPPLIER_BPNL"));
+  });
+}

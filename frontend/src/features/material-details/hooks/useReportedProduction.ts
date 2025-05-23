@@ -25,11 +25,11 @@ export const useReportedProduction = (materialNumber: string | null) => {
   if (materialNumber != null) {
     materialNumber = btoa(materialNumber);
   }
-  const {data: reportedProductions, error: reportedProductionsError, isLoading: isLoadingReportedProductions, refresh: refreshProduction } = useFetch<Production[]>(materialNumber ? `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_PRODUCTION}/reported?ownMaterialNumber=${materialNumber}` : undefined);
+  const {data: reportedProductions, error: reportedProductionsError, isLoading: isLoadingReportedProductions, refresh: refreshReportedProduction } = useFetch<Production[]>(materialNumber ? `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_PRODUCTION}/reported?ownMaterialNumber=${materialNumber}` : undefined);
   return {
     reportedProductions,
     reportedProductionsError,
     isLoadingReportedProductions,
-    refreshProduction,
+    refreshReportedProduction,
   };
 }

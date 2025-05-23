@@ -133,9 +133,10 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             );
         }
         mySelf = partnerService.create(mySelf);
-        log.info("Successfully created own Partner Entity: " + (partnerService.findByBpnl(mySelf.getBpnl()) != null));
+        log.info("Successfully created own Partner Entity: " + (mySelf != null));
+        mySelf = partnerService.findByBpnl(variablesService.getOwnBpnl());
         if (mySelf != null) {
-            log.info(mySelf.toString());
+            log.info("Following partner has been configured for yourself (and not been changed): " + mySelf.toString());
         }
     }
 

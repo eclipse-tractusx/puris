@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2023 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -30,18 +32,19 @@ import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.Directio
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockRequestApiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.regex.Pattern;
 
-@RestController
-@RequestMapping("item-stock")
-@Slf4j
 /**
  * This class offers endpoints for the ItemStock-request and
  * -status-request api assets.
  */
+@RestController
+@RequestMapping("item-stock")
+@Slf4j
 public class ItemStockRequestApiController {
 
     @Autowired
@@ -51,6 +54,11 @@ public class ItemStockRequestApiController {
 
     private final Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
 
+    @RequestMapping(value = "/**")
+    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+    public ResponseEntity<String> handleNotImplemented() {
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    }
 
     @Operation(summary = "This endpoint receives the ItemStock Submodel 2.0.0 requests. " +
         "This endpoint is meant to be accessed by partners via EDC only. ")
@@ -60,7 +68,7 @@ public class ItemStockRequestApiController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content),
         @ApiResponse(responseCode = "501", description = "Unsupported representation", content = @Content)
     })
-    @GetMapping("request/{materialnumber}/{direction}/{representation}")
+    @GetMapping("request/{materialnumber}/{direction}/submodel/{representation}")
     public ResponseEntity<ItemStockSamm> getMappingItemStock2(@RequestHeader("edc-bpn") String bpnl,
                                                               @PathVariable String materialnumber,
                                                               @PathVariable DirectionCharacteristic direction,
@@ -74,10 +82,10 @@ public class ItemStockRequestApiController {
             if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
                 representation = "<REPLACED_INVALID_REPRESENTATION>";
             }
-            log.warn("Received " + representation + " from " + bpnl + " with direction " + direction);
+            log.warn("Received {} from {} with direction {}", representation, bpnl, direction);
             return ResponseEntity.status(501).build();
         }
-        log.info("Received request for " + materialnumber + " with " + direction + " from " + bpnl);
+        log.info("Received request for {} with {} from {}", materialnumber, direction, bpnl);
         var samm = itemStockRequestApiService.handleItemStockSubmodelRequest(bpnl, materialnumber, direction);
         if (samm == null) {
             return ResponseEntity.status(500).build();

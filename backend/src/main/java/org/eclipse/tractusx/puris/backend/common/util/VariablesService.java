@@ -41,6 +41,9 @@ public class VariablesService {
     @Value("${puris.baseurl}")
     private String purisBaseUrl;
 
+    @Value("${puris.allowed-origins}")
+    private String[] allowedOrigins;
+
     /**
      * The puris base url as defined in the property puris.baseurl,
      * ending with a slash ('/').

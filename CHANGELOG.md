@@ -19,10 +19,32 @@ The **need for configuration updates** is **marked bold**.
 ### Changed
 
 * Switch to spring actuator helm endpoint including enhancement of health, liveness and startup probe ([#469](https://github.com/eclipse-tractusx/puris/pull/469))
+* Company name and BPNL display in the sidebar for easier distinguishing between applications ([#837](https://github.com/eclipse-tractusx/puris/pull/837))
+* Updated partner data request flow to automatically update the UI when the data is received ([#847](https://github.com/eclipse-tractusx/puris/pull/847))
+* Extended Days of Supply unit tests in the backend to include some additional edge cases ([#870](https://github.com/eclipse-tractusx/puris/pull/870))
 
 Fixes
 
-* Expect dtr base url to include `api/v3` in asset ([#844](https://github.com/eclipse-tractusx/puris/pull/824)) (**updated default values and asset definition**)
+* Expect dtr base url to include `api/v3` in asset ([#824](https://github.com/eclipse-tractusx/puris/pull/824)) (**updated default values and asset definition**)
+* Creating own partner entity does not run into ([#838](https://github.com/eclipse-tractusx/puris/pull/838))
+* submodel endpoint returns 501 instead of 500 for operations not
+  implemented ([#850](https://github.com/eclipse-tractusx/puris/pull/850))
+* Creating own partner entity does not run into exception ([#838](https://github.com/eclipse-tractusx/puris/pull/838))
+* Submodels are exposed via `submodel/$value` and not `$value` including the update of
+  SubmodelDescriptors ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
+* use own bpnl as default tenant (`Edc-Bpn`) when updating own dtr and only use partner BPNL in
+  externalSubjectId ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
+* use `assetId` instead of `semanticId` and `dct:type=submodel` during catalog request for submodel
+  assets ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
+* use the correct request when refreshing material data from customers ([#879](https://github.com/eclipse-tractusx/puris/pull/879))
+
+Version Bumps
+
+* Infrastructure Components
+  * Tractus-X Connector to 0.10.0-rc2 ([#872](https://github.com/eclipse-tractusx/puris/pull/872))
+  * Digital Twin Registry to 0.8.0-RC1 ([#872](https://github.com/eclipse-tractusx/puris/pull/872))
+* Backend Dependencies
+  * spring-boot from 3.4.3 to 3.4.5 in /backend ([#871](https://github.com/eclipse-tractusx/puris/pull/871))
 
 ### Removed
 

@@ -38,14 +38,14 @@ import { Stock } from '@models/types/data/stock';
 import { useDaysOfSupply } from './useDaysOfSupply';
 import { Supply } from '@models/types/data/supply';
 
-export type DataCategory = 'production' | 'demand' | 'stock' | 'delivery' | 'supply';
+export type DataCategory = 'production' | 'demand' | 'stock' | 'delivery' | 'supply' | 'partner-data';
 
 export type DataCategoryTypeMap = {
     'production': Production;
     'demand': Demand;
     'delivery': Delivery;
     'stock': Stock;
-    'supply': Supply;
+    'supply': Supply; 
 }
 
 export function useMaterialDetails(materialNumber: string, direction: DirectionType) {
@@ -57,36 +57,38 @@ export function useMaterialDetails(materialNumber: string, direction: DirectionT
     const { supplies, isLoadingSupply, refreshSupply } = useDaysOfSupply(materialNumber, direction);
     const { partners, isLoadingPartners } = usePartners(direction === 'INBOUND' ? 'material' : 'product', materialNumber);
     const [expandablePartners, setExpandablePartners] = useState<Expandable<Partner>[]>([]);
-    const { reportedProductions, isLoadingReportedProductions } = useReportedProduction(materialNumber ?? null);
-    const { reportedDemands, isLoadingReportedDemands } = useReportedDemand(materialNumber ?? null);
-    const { reportedStocks, isLoadingReportedStocks } = useReportedStocks(
+    const { reportedProductions, isLoadingReportedProductions, refreshReportedProduction } = useReportedProduction(materialNumber ?? null);
+    const { reportedDemands, isLoadingReportedDemands, refreshReportedDemands } = useReportedDemand(materialNumber ?? null);
+    const { reportedStocks, isLoadingReportedStocks, refreshReportedStocks } = useReportedStocks(
         direction === 'INBOUND' ? 'material' : 'product',
         materialNumber ?? null
     );
 
-    const refresh = useCallback((categoriesToRefresh: DataCategory[]) => {
+    const refresh = useCallback(async (categoriesToRefresh: DataCategory[]) => {
         categoriesToRefresh.forEach(category => {
             switch(category) {
                 case 'production':
-                    refreshProduction();
-                    break;
+                    return refreshProduction();
                 case 'demand':
-                    refreshDemand();
-                    break;
+                    return refreshDemand();
                 case 'delivery':
-                    refreshDelivery();
-                    break;
+                    return refreshDelivery();
                 case 'stock':
-                    refreshStocks();
-                    break;
+                    return refreshStocks();
                 case 'supply':
-                    refreshSupply();
-                    break;
+                    return refreshSupply();
+                case 'partner-data':
+                    return Promise.all([
+                        refreshReportedDemands(),
+                        refreshReportedProduction(),
+                        refreshReportedStocks(),
+                        refreshDelivery()
+                    ])
                 default:
                     return;
             }
         })
-    }, [refreshDelivery, refreshDemand, refreshProduction, refreshStocks, refreshSupply]);
+    }, [refreshDelivery, refreshDemand, refreshProduction, refreshReportedDemands, refreshReportedProduction, refreshReportedStocks, refreshStocks, refreshSupply]);
 
     const isLoading =
         isLoadingProductions ||

@@ -52,7 +52,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @WebMvcTest(PartnerController.class)
-@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class})
+@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class, VariablesService.class})
 public class PartnerControllerTest {
 
     @Autowired
@@ -63,9 +63,6 @@ public class PartnerControllerTest {
 
     @MockBean
     private MaterialPartnerRelationService mprService;
-
-    @MockBean
-    private VariablesService variablesService;
 
     private final ModelMapper modelMapper = new ModelMapper();
     private final String bpnl = "BPNL2222222222RR";

@@ -114,7 +114,7 @@ spec:
               value: "{{ .Values.backend.puris.own.streetnumber }}"
             - name: OWN_ZIPCODEANDCITY
               value: "{{ .Values.backend.puris.own.zipcodeandcity }}"
-            - name: JPA_HIBERNATE_DDL-AUTO
+            - name: SPRING_JPA_HIBERNATE_DDL-AUTO
               value: {{ index .Values.backend "puris" "jpa" "hibernate" "ddl-auto" }} #Need to do workaround because of '-' in ddl-auto
             - name: JPA_PROPERTIES_HIBERNATE_ENABLE.LAZY.LOAD.NO.TRANS
               value: "{{ .Values.backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans }}"
@@ -133,6 +133,8 @@ spec:
                 {{- else }}
               value: "http://{{ $baseUrl }}/"
                 {{- end}}
+            - name: PURIS_ALLOWED-ORIGINS
+              value: "{{ .Values.backend.puris.allowedOrigins | default .Values.frontend.puris.baseUrl }}"
             - name: PURIS_ITEMSTOCKSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.itemstocksubmodel.apiassetid }}"
             - name: PURIS_PRODUCTIONSUBMODEL_APIASSETID

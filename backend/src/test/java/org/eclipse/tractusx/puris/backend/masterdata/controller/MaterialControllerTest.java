@@ -24,8 +24,10 @@ import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfigurati
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialEntityDto;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRefreshService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -48,7 +50,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @WebMvcTest(MaterialController.class)
-@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class})
+@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class, VariablesService.class})
 public class MaterialControllerTest {
 
     @Autowired
@@ -56,6 +58,9 @@ public class MaterialControllerTest {
 
     @MockBean
     private MaterialService materialService;
+
+    @MockBean 
+    private MaterialRefreshService materialRefreshService;
 
     private final ModelMapper modelMapper = new ModelMapper();
     private final String materialNumber = "MNR-7307-AU340474.001";

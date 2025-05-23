@@ -1,0 +1,63 @@
+meta {
+  name: 1-Create Demand today
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{OWN_PURIS_BACKEND}}/catena/demand
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{OWN_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+    "partnerBpnl": "{{SUPPLIER_BPNL}}",
+    "ownMaterialNumber": "{{MATERIAL_OWN_MATERIAL_NUMBER}}",
+    "quantity": 500.00,
+    "measurementUnit": "unit:piece",
+    "day": "{{DATE_TIME_CALCULATED}}",
+    "demandLocationBpns": "{{OWN_BPNS}}",
+    "supplierLocationBpns": "{{SUPPLIER_BPNS}}",
+    "demandCategoryCode": "0001"
+  }
+}
+
+script:pre-request {
+  // Create the formattedDate
+  const today = new Date();
+  const dateFormatted = today.toISOString().slice(0, 16);
+  
+  // Set the formattedDate in the environment variable
+  bru.setVar('DATE_TIME_CALCULATED', dateFormatted);
+  
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Verify demand composition (material number with BPNS, BPNA and Partner BPNL)", function () {
+      var responseJson = res.getBody();
+  
+      expect(responseJson).to.have.property("uuid");
+      expect(responseJson.uuid).to.not.undefined;
+  
+      expect(responseJson).to.have.property("ownMaterialNumber");
+      expect(responseJson.ownMaterialNumber).to.equal(bru.getEnvVar("MATERIAL_OWN_MATERIAL_NUMBER"));
+  
+      expect(responseJson).to.have.property("partnerBpnl");
+      expect(responseJson.partnerBpnl).to.equal(bru.getEnvVar("SUPPLIER_BPNL"));
+  
+      expect(responseJson).to.have.property("demandLocationBpns");
+      expect(responseJson.demandLocationBpns).to.equal(bru.getEnvVar("OWN_BPNS"));
+  
+      expect(responseJson).to.have.property("supplierLocationBpns");
+      expect(responseJson.supplierLocationBpns).to.equal(bru.getEnvVar("SUPPLIER_BPNS"));
+  });
+}

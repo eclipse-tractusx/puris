@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -35,6 +37,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,6 +61,12 @@ public class PartTypeInformationController {
     @Autowired
     private PartTypeInformationSammMapper sammMapper;
 
+    @RequestMapping(value = "/**")
+    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+    public ResponseEntity<String> handleNotImplemented() {
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    }
+
     @Operation(description = "Endpoint that delivers PartTypeInformation of own products to customer partners. " +
         "'materialnumber' must be set to the ownMaterialNumber of the party, that receives the request. Please note that the " +
         "SAMMs delivered by this endpoint don't provide partClassification and partSitesInformationAsPlanned data. " +
@@ -69,7 +78,7 @@ public class PartTypeInformationController {
         @ApiResponse(responseCode = "404", description = "Product not found for given parameters. ", content = @Content),
         @ApiResponse(responseCode = "501", description = "Unsupported representation requested. ", content = @Content)
     })
-    @GetMapping("/{materialnumber}/{representation}")
+    @GetMapping("/{materialnumber}/submodel/{representation}")
     public ResponseEntity<PartTypeInformationSAMM> getMapping(@RequestHeader("edc-bpn") String bpnl,
                                                               @Parameter(description = "The material number that the request receiving party uses for the material in question")
                                         @PathVariable String materialnumber,
@@ -86,7 +95,7 @@ public class PartTypeInformationController {
         if (partner == null) {
             return ResponseEntity.status(401).build();
         }
-        log.info(bpnl + " requests part type information on " + materialnumber);
+        log.info("{} requests part type information on {}", bpnl, materialnumber);
         Material material = materialService.findByOwnMaterialNumber(materialnumber);
         if (material == null || !material.isProductFlag()) {
             return ResponseEntity.status(404).build();

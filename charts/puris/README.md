@@ -52,7 +52,7 @@ dependencies:
 | backend.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey | string | `"kubernetes.io/hostname"` | Topology key of the Kubernetes cluster |
 | backend.autoscaling.enabled | bool | `false` | Enable or disable the autoscaling of pods |
 | backend.env | object | `{}` | Extra environment variables that will be passed onto the backend deployment pods |
-| backend.image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
+| backend.image.pullPolicy | string | `"IfNotPresent"` | THe policy for the image pull process |
 | backend.image.repository | string | `"tractusx/app-puris-backend"` | Repository of the docker image |
 | backend.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | backend.imagePullSecrets | list | `[]` | List of used secrets |
@@ -77,6 +77,7 @@ dependencies:
 | backend.puris.api.key | string | `"test"` | The API key of the PURIS application |
 | backend.puris.api.rootDir | string | `"/catena"` | The root directory of the API |
 | backend.puris.baseurl | string | `"your-backend-host-address.com"` | Base url of the PURIS backend |
+| backend.puris.allowedOrigins | string | `"your-frontend-host-address.com"` | Origin of the frontends that will be accessing the backend |
 | backend.puris.datasource.driverClassName | string | `"org.postgresql.Driver"` | Driver class name of the database |
 | backend.puris.datasource.password | string | `""` | Password for the database user. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.url | string | `"jdbc:postgresql://postgresql-name:5432/puris-database"` | URL of the database. Ignored if postgres.enabled is true. |
@@ -108,7 +109,7 @@ dependencies:
 | backend.puris.frameworkagreement.version | string | `"1.0"` | The version of the framework agreement, NEEDS TO BE PUT AS "STRING"! |
 | backend.puris.generatematerialcatenaxid | bool | `true` | Flag that decides whether the auto-generation feature of the puris backend is enabled. Since all Material entities are required to have a CatenaX-Id, you must enter any pre-existing CatenaX-Id via the materials-API of the backend, when you are inserting a new Material entity to the backend's database. If a CatenaX-Id was not assigned to your Material so far, then this feature can auto-generate one randomly. In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that Material entity. |
 | backend.puris.itemstocksubmodel.apiassetid | string | `"itemstocksubmodel-api-asset"` | Asset ID for ItemStockSubmodel API |
-| backend.puris.jpa.hibernate.ddl-auto | string | `"create"` | Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones |
+| backend.puris.jpa.hibernate.ddl-auto | string | `"update"` | Initialises SQL database with Hibernate property "update" to allow Hibernate to add things to schema so that it doesn't drop tables |
 | backend.puris.jpa.properties.hibernate.enable_lazy_load_no_trans | bool | `true` | Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction |
 | backend.puris.notification.apiassetid | string | `"notification-api-asset"` | Asset ID for Notification API |
 | backend.puris.own.bpna | string | `"BPNA4444444444ZZ"` | Own BPNA of the EDC |
@@ -155,7 +156,7 @@ dependencies:
 | frontend.autoscaling.minReplicas | int | `1` | Number of minimum replica pods for autoscaling |
 | frontend.autoscaling.targetCPUUtilizationPercentage | int | `80` | Value of CPU usage in percentage for autoscaling decisions |
 | frontend.env | object | `{}` | Extra environment variables that will be passed onto the frontend deployment pods |
-| frontend.image.pullPolicy | string | `"Always"` | THe policy for the image pull process |
+| frontend.image.pullPolicy | string | `"IfNotPresent"` | THe policy for the image pull process |
 | frontend.image.repository | string | `"tractusx/app-puris-frontend"` | Repository of the docker image |
 | frontend.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | frontend.imagePullSecrets | list | `[]` | List of used secrets |

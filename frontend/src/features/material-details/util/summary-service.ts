@@ -22,14 +22,15 @@ import { Delivery } from '@models/types/data/delivery';
 import { Demand } from '@models/types/data/demand';
 import { Production } from '@models/types/data/production';
 import { Stock } from '@models/types/data/stock';
-import { groupBy, Prettify } from '@util/helpers';
+import { BPNL, BPNS } from '@models/types/edc/bpn';
+import { groupBy } from '@util/helpers';
 
 type SummaryTypeMap = {
     production: Production;
     demand: Demand;
 };
 
-export type SummaryType = Prettify<keyof SummaryTypeMap>;
+export type SummaryType = keyof SummaryTypeMap;
 
 export type DailySummary<TType extends SummaryType> = {
     primaryValues: SummaryTypeMap[TType][];
@@ -47,6 +48,11 @@ export type Summary<TType extends SummaryType> = {
 
 export type ProductionSummary = Summary<'production'>;
 export type DemandSummary = Summary<'demand'>;
+
+export type PartnerSummary = Record<BPNL, {
+    summary: ProductionSummary | DemandSummary;
+    siteSummaries: Record<BPNS, DemandSummary | ProductionSummary>
+}>
 
 function getDateValue<TType extends SummaryType>(type: TType, entity: SummaryTypeMap[TType]): Date {
     return new Date(

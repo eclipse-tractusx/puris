@@ -32,7 +32,7 @@ frontend:
     # -- Repository of the docker image
     repository: tractusx/app-puris-frontend
     # -- THe policy for the image pull process
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     # -- Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -232,7 +232,7 @@ backend:
     # -- Repository of the docker image
     repository: tractusx/app-puris-backend
     # -- THe policy for the image pull process
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     # -- Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -372,6 +372,8 @@ backend:
   puris:
     # -- Base url of the PURIS backend
     baseurl: *domain
+    # -- Allowed origins for the frontend
+    allowedOrigins: "https://your-frontend-url"
     # -- Secret for backend passwords. For more information look into 'backend-secrets.yaml' file.
     existingSecret: "secret-puris-backend"
     api:
@@ -427,8 +429,8 @@ backend:
       role:
     jpa:
       hibernate:
-        # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones
-        ddl-auto: create
+        # -- Initialises SQL database with Hibernate property "update" to allow Hibernate to add things to schema so that it doesn't drop tables
+        ddl-auto: update
       properties:
         hibernate:
           # -- Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction
