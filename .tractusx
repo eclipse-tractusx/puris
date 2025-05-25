@@ -27,3 +27,4 @@ skipReleaseChecks:
   alignedBaseImage:
     - "local/vault/Dockerfile"
     - "local/iam-mock/Dockerfile"
+    - "local/testing/e2e/Dockerfile"
