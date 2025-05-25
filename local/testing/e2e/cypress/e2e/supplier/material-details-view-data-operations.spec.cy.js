@@ -61,7 +61,7 @@ describe('material data operations', () => {
 
                 // fill out the form with the supplied test production
                 selectAutocompleteOption('production-site-field', production.site);
-                selectRelativeDate('production-completion-time-field', 0)
+                selectRelativeDate('production-completion-time-field', 0);
                 getByTestId('production-quantity-field').type(production.quantity);
                 selectAutocompleteOption('production-uom-field', production.measurementUnit);
                 selectAutocompleteOption('production-partner-field', production.partner);

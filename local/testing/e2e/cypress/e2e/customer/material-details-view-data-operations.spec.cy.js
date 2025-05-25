@@ -47,7 +47,7 @@ describe('material data operations', () => {
             
             // fill out the form with the supplied test demand
             cy.selectAutocompleteOption('demand-location-field', demand.demandSite);
-            cy.selectRelativeDate('demand-day-field', 0)
+            cy.selectRelativeDate('demand-day-field', 0);
             cy.selectAutocompleteOption('demand-category-field', demand.demandCategory);
             cy.getByTestId('demand-quantity-field').type(demand.quantity);
             cy.selectAutocompleteOption('demand-uom-field', demand.measurementUnit);
@@ -190,7 +190,7 @@ describe('material data operations', () => {
             cy.getByTestId('stock-modal').should('not.exist');
             cy.getByTestId('toast-success').should('be.visible');
 
-            cy.getByTestId('actual-stock').first().click()
+            cy.getByTestId('actual-stock').first().click();
             cy.getByTestId('stock-modal').should('be.visible');
 
             // check that the added stock is displayed in the table and delete it
