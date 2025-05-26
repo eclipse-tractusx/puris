@@ -29,8 +29,7 @@ describe('material data operations', () => {
             cy.visit(`/materials/inbound/${demand.ownMaterialNumber}`);
             
             // open demand modal
-            cy.getByTestId('add-demand-button').as('add-demand-button').should('exist');
-            cy.get('@add-demand-button').click();
+            cy.getByTestId('add-demand-button').click();
             cy.getByTestId('demand-modal').should('be.visible');
             
             // check fields for default values and clear them
@@ -87,8 +86,7 @@ describe('material data operations', () => {
             cy.visit(`/materials/inbound/${delivery.ownMaterialNumber}`);
             
             // open delivery modal
-            cy.getByTestId('add-delivery-button').as('add-delivery-button').should('exist');
-            cy.get('@add-delivery-button').click();
+            cy.getByTestId('add-delivery-button').click();
             cy.getByTestId('delivery-modal').should('be.visible');
 
             // check fields for default values and clear them
@@ -160,8 +158,7 @@ describe('material data operations', () => {
             cy.visit(`/materials/inbound/${stock.ownMaterialNumber}`);
             
             // open stock modal
-            cy.getByTestId('add-stock-button').as('add-stock-button').should('exist');
-            cy.get('@add-stock-button').click();
+            cy.getByTestId('add-stock-button').click();
             cy.getByTestId('stock-modal').should('be.visible');
             
             // submitting an empty form should cause errors in mandatory fields
