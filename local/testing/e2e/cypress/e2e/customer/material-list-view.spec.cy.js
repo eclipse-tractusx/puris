@@ -65,10 +65,12 @@ describe('material list view', () => {
                 if (material.productFlag) directions.push('Outbound');
 
                 cy.get('[data-testid="search-input"] input').as('search-input').type(material.name);
+                cy.wait(100);
                 cy.get('@all-rows').should('have.length', directions.length);
                 cy.get('@search-input').clear();
                 cy.get('@all-rows').should('have.length', expectedNumberOfMaterialRows);
                 cy.get('@search-input').type(material.ownMaterialNumber);
+                cy.wait(100);
                 cy.get('@all-rows').should('have.length', directions.length);
                 cy.get('@search-input').clear();
             });
