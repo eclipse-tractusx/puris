@@ -48,7 +48,8 @@ describe('material data operations', () => {
                 cy.visit(`/materials/outbound/${production.ownMaterialNumber}`);
                 
                 // open production modal
-                getByTestId('add-production-button').click();
+                getByTestId('add-production-button').as('add-production-button').should('exist');
+                cy.get('@add-production-button').click();
                 getByTestId('production-modal').should('be.visible');
                 
                 // submitting an empty form should cause errors in mandatory fields

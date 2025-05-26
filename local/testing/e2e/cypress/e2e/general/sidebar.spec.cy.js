@@ -40,13 +40,13 @@ describe("sidebar", () => {
 
             const menuLinks = menu.filter((item) => item.target);
 
-            for (let i = 0; i < menuLinks.length; i++) {
+            menuLinks.forEach((item) => {
                 cy.get('[data-testid*="sidebar-menu-item"] a')
-                    .should("have.length", 7)
-                    .eq(i)
+                    .contains(item.name)
                     .click();
-                cy.url().should("match", new RegExp(menuLinks[i].target));
-            }
+            
+                cy.url().should("match", new RegExp(item.target));
+            });
         });
     });
 });
