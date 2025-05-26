@@ -102,7 +102,7 @@ const createProductionColumns = (handleDelete?: (row: Production) => void) => {
                 renderCell: (data: { row: Production }) => {
                     return (
                         <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)}>
+                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)} data-testid="delete-production">
                                 <Delete></Delete>
                             </Button>
                         </Box>
@@ -184,7 +184,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
     }, [production]);
     return (
         <>
-            <Dialog open={open && production !== null} onClose={onClose}>
+            <Dialog open={open && production !== null} onClose={onClose} data-testid="production-modal">
                 <DialogTitle variant="h3" textAlign="center">
                     {capitalize(mode)} Production Information
                 </DialogTitle>
@@ -206,9 +206,10 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                         value={sites?.find((s) => s.bpns === temporaryProduction.productionSiteBpns) ?? null}
                                         label="Production Site*"
                                         placeholder="Select a Site"
+                                        data-testid="production-site-field"
                                     />
                                 </Grid>
-                                <Grid item xs={6} display="flex" alignItems="end">
+                                <Grid item xs={6} display="flex" alignItems="end" data-testid="production-completion-time-field">
                                     <DateTime
                                         label="Estimated Completion Time*"
                                         placeholder="Pick Production Date"
@@ -234,6 +235,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                         }
                                         value={temporaryProduction.partner ?? null}
                                         isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
+                                        data-testid="production-partner-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -251,6 +253,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                             }))
                                         }
                                         sx={{ marginTop: '.5rem' }}
+                                        data-testid="production-quantity-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -273,6 +276,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                             setTemporaryProduction((curr) => ({ ...curr, measurementUnit: value?.key }))
                                         }
                                         isOptionEqualToValue={(option, value) => option?.key === value?.key}
+                                        data-testid="production-uom-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -285,6 +289,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                         onChange={(event) =>
                                             setTemporaryProduction({ ...temporaryProduction, customerOrderNumber: event.target.value })
                                         }
+                                        data-testid="production-customer-order-number-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -300,6 +305,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                                 customerOrderPositionNumber: event.target.value,
                                             })
                                         }
+                                        data-testid="production-customer-order-position-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -314,6 +320,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                                                 supplierOrderNumber: event.target.value ?? '',
                                             })
                                         }
+                                        data-testid="production-supplier-order-number-field"
                                     />
                                 </Grid>
                             </>
@@ -345,7 +352,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
                             <Close></Close> Close
                         </Button>
                         {mode === 'create' && (
-                            <Button variant="contained" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleSaveClick}>
+                            <Button variant="contained" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleSaveClick} data-testid="save-production-button">
                                 <Save></Save> Save
                             </Button>
                         )}

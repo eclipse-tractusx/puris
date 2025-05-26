@@ -1,5 +1,6 @@
-###############################################################
-# Copyright (c) 2022 Contributors to the Eclipse Foundation
+#
+# Copyright (c) 2025 Volkswagen AG
+# Copyright (c) 2025 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -15,16 +16,25 @@
 # under the License.
 #
 # SPDX-License-Identifier: Apache-2.0
-###############################################################
+#
 
-product: "PURIS"
-leadingRepository: "https://github.com/eclipse-tractusx/puris"
-repositories:
-- name: "puris"
-  usage: "PURIS Frontend and Backend Implementation"
-  url: "https://github.com/eclipse-tractusx/puris"
-skipReleaseChecks:
-  alignedBaseImage:
-    - "local/vault/Dockerfile"
-    - "local/iam-mock/Dockerfile"
-    - "local/testing/e2e/Dockerfile"
+FROM cypress/included:14.2.0
+
+WORKDIR /testing
+
+RUN chown -R node:node /testing
+
+# switch to node user to create files and folders as non-root and install playwright for node
+USER node
+
+COPY . .
+
+RUN npm install playwright-webkit --save-dev
+
+# switch back to root temporarily to install missing dependencies for playwright webkit
+USER root
+
+RUN npx playwright install-deps webkit
+
+# switch back to node user to run the tests
+USER node

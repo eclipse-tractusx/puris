@@ -30,6 +30,8 @@ import { Supply } from '@models/types/data/supply';
 import { useReportedDaysOfSupply } from '../hooks/useReportedDaysOfSupply';
 import { useEffect } from 'react';
 
+type DataAttributes = Record<`data-${string}`, string>;
+
 type SummaryPanelProps<TType extends SummaryType> = {
     sx?: SxProps<Theme>
     title?: string;
@@ -43,7 +45,7 @@ type SummaryPanelProps<TType extends SummaryType> = {
 
 export function OwnSummaryPanel<TType extends SummaryType>({ summary, materialNumber, site, partnerBpnl, ...props }: SummaryPanelProps<TType>) {
     const { supplies } = useDaysOfSupply(materialNumber, summary.type === 'demand' ? DirectionType.Inbound : DirectionType.Outbound, site, partnerBpnl);
-    return <SummaryPanelContent summary={summary} {...props} supplies={supplies ?? []} />
+    return <SummaryPanelContent summary={summary} {...props} supplies={supplies ?? []} data-testid="own-summary-panel" />
 }
 
 export function ReportedSummaryPanel<TType extends SummaryType>({ summary, materialNumber, site, partnerBpnl, ...props }: SummaryPanelProps<TType>) {
@@ -51,7 +53,7 @@ export function ReportedSummaryPanel<TType extends SummaryType>({ summary, mater
     useEffect(() => {
         refreshSupply()
     }, [refreshSupply, summary])
-    return <SummaryPanelContent summary={summary} {...props} supplies={supplies ?? []} />
+    return <SummaryPanelContent summary={summary} {...props} supplies={supplies ?? []} data-testid={`reported-summary-panel-${site ? site : partnerBpnl}`}/>
 }
 
 type SummaryPanelContentProps<TType extends SummaryType> = {
@@ -60,13 +62,13 @@ type SummaryPanelContentProps<TType extends SummaryType> = {
     summary: Summary<TType>;
     showHeader?: boolean;
     includeDaysOfSupply?: boolean;
-};
+} & DataAttributes;
 
-function SummaryPanelContent<TType extends SummaryType>({ sx = {}, title, summary, supplies, showHeader = false, includeDaysOfSupply = false }: SummaryPanelContentProps<TType> & { supplies: Supply[]}) {
+function SummaryPanelContent<TType extends SummaryType>({ sx = {}, title, summary, supplies, showHeader = false, includeDaysOfSupply = false, ...props}: SummaryPanelContentProps<TType> & { supplies: Supply[]}) {
     const theme = useTheme();
     const { calendarWeeks, expandWeek } = useCalendarWeeks();
     return (
-        <Stack direction="row" sx={sx}>
+        <Stack direction="row" sx={sx} {...props}>
             <Stack
                 flex={1}
                 minWidth="12rem"

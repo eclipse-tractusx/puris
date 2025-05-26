@@ -43,6 +43,7 @@ export function SearchInput({ placeholder, onSearch }: SearchInputProps) {
                 placeholder={placeholder}
                 sx={{ width: '32rem' }}
                 onChange={(event) => debounce(event.target.value)}
+                data-testid="search-input"
             />
         </Box>
     );

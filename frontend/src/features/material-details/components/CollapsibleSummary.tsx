@@ -53,6 +53,7 @@ export function CollapsibleSummary<TType extends SummaryType>({ summary, materia
                     display: 'flex',
                 }}
                 onClick={() => setIsExpanded((prev) => !prev)}
+                data-testid={`collapsible-summary-button-${site ? site : partnerBpnl}`}
             >
                 <Stack
                     direction="row"

@@ -80,7 +80,6 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
 
     const openDemandDialog = useCallback(
         (d: Partial<Demand>, mode: ModalMode, list: Demand[]) => {
-            d.measurementUnit ??= 'unit:piece';
             d.demandCategoryCode ??= DEMAND_CATEGORY[0]?.key;
             d.ownMaterialNumber = materialNumber;
             dispatch({ type: 'demand', payload: d });
@@ -101,7 +100,6 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
                 materialNumberCx: null,
                 name: material?.name ?? '',
             };
-            p.measurementUnit ??= 'unit:piece';
             dispatch({ type: 'production', payload: p });
             dispatch({ type: 'productions', payload: list });
             dispatch({ type: 'productionDialogOptions', payload: { open: true, mode } });

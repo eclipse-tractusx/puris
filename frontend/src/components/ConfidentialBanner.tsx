@@ -35,6 +35,7 @@ export const ConfidentialBanner = () => {
                 px: 3,
                 boxSizing: 'border-box'
             }}
+            data-testid="confidential-banner"
         >
             <Typography variant="body3">
                 IMPORTANT: Please note that the data shown may be <b> competitively sensitive </b> and, according to appliable antitrust

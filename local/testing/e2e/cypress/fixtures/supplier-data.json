@@ -1,0 +1,12 @@
+{
+    "production": {
+        "ownMaterialNumber": "MNR-8101-ID146955.001",
+        "site": "Semiconductor Supplier Inc. Production Site",
+        "partner": "Control Unit Creator Inc.",
+        "quantity": 123456,
+        "measurementUnit": "sets",
+        "customerOrderNumber": "CNr-123456",
+        "customerPositionId": "C-position-1",
+        "supplierOrderNumber": "Snr-123456"
+    }
+}
