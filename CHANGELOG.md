@@ -40,7 +40,7 @@ Fixes
 
 Chore
 
-* Updated User Guide ([#882](https://github.com/eclipse-tractusx/puris/pull/882))
+* Updated User Guide ([#883](https://github.com/eclipse-tractusx/puris/pull/883))
 
 Version Bumps
 
