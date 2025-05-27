@@ -38,6 +38,10 @@ Fixes
   assets ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
 * use the correct request when refreshing material data from customers ([#879](https://github.com/eclipse-tractusx/puris/pull/879))
 
+Chore
+
+* Added missing notice sections for markdown files ([#884](https://github.com/eclipse-tractusx/puris/pull/884))
+
 Version Bumps
 
 * Infrastructure Components
