@@ -77,9 +77,9 @@ Negative projected stock values inidicate a problem in the supply and will be ma
 
 The displayed data is mostly reported data from the partner. Therefore, it can become outdated.
 
-In order to request an update of the data, the user can click the "Refresh" button at the top right of the section. This will start a request for updated data in the background.
+In order to request an update of the data, the user can click the "Refresh" button at the top right of the section. This will start a request for updated data in the background indicated by a loading spinner in the "Refresh" button.
 
-After a short period of time, the user can refresh the page to be presented with the updated data.
+After a short period of time the partner data will automatically be updated with the new values. This is indicated by a toast notification in the top right corner of the screen.
 
 _**Note:** The update process can take up to a minute._
 
