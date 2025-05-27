@@ -5,7 +5,7 @@ global:
 # FRONTEND -----------
 frontend:
   image:
-    tag: "main"
+    tag: "3.1.0-rc1"
     pullPolicy: Always
     # pullPolicy: IfNotPresent
   # fullnameOverride: "supplier-frontend"
@@ -55,7 +55,7 @@ frontend:
 # BACKEND -----------
 backend:
   image:
-    tag: "main"
+    tag: "3.1.0-rc1"
     pullPolicy: Always
     # pullPolicy: IfNotPresent
   # fullnameOverride: "supplier-backend"
