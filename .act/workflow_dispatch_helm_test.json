@@ -1,7 +1,7 @@
 {
     "inputs": {
         "node_image": "kindest/node:v1.28.9",
-        "upgrade_from": "",
+        "upgrade_from": "2.8.1",
         "helm_version": "latest"
     }
 }
