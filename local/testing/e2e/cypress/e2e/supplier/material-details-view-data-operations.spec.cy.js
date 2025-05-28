@@ -23,7 +23,7 @@ describe('material data operations', () => {
         cy.origin(Cypress.env('supplierUrl'), () => {
             cy.visit('/materials');
         })
-        cy.login();
+        cy.login('supplier');
     });
 
     it('allows creating, displaying and deleting planned production', () => {

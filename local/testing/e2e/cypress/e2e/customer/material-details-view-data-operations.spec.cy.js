@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 describe('material data operations', () => {
     beforeEach(() => {
         cy.visit('/materials');
-        cy.login();
+        cy.login('customer');
     })
 
     it('allows creating, displaying and deleting material demand', () => {

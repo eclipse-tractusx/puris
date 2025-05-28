@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 describe('material details view', () => {
     beforeEach(() => {
         cy.visit('/materials');
-        cy.login();
+        cy.login('customer');
     })
 
     it('exists and contains all necessary components for all test materials', () => {
