@@ -5,13 +5,14 @@ It allows to exchange data according to puris related standards to fulfill short
 
 The following table links you to the respective documentations.
 
-| Documentation                                   | Purpose                                                         |
-|-------------------------------------------------|-----------------------------------------------------------------|
-| [Arc42](architecture/Index.md)                  | Architecture Documentation of Frontend and Backend.             |
-| [DEVELOPMENT.MD](./DEVELOPMENT.md)              | Information relevant, if you contribute in PURIS development.   |
-| [Administration Guide](admin/Admin_Guide.md)    | Information relevant, if you want to use the PURIS application. |
-| [Interface Documentation](api/Interface_Doc.md) | Information about the interfaces.                               |
-| [User Manual](user/User_Guide.md)               | Explanation of the views and how to use them.                   |
+| Documentation                                   | Purpose                                                              |
+|-------------------------------------------------|----------------------------------------------------------------------|
+| [Arc42](architecture/Index.md)                  | Architecture Documentation of Frontend and Backend.                  |
+| [DEVELOPMENT.MD](./DEVELOPMENT.md)              | Information relevant, if you contribute in PURIS development.        |
+| [Administration Guide](admin/Admin_Guide.md)    | Information relevant, if you want to use the PURIS application.      |
+| [Migration Guide](admin/Migration_Guide.md)     | Information relevant, if you want to upgrade your PURIS application. |
+| [Interface Documentation](api/Interface_Doc.md) | Information about the interfaces.                                    |
+| [User Manual](user/User_Guide.md)               | Explanation of the views and how to use them.                        |
 
 ## NOTICE
 
