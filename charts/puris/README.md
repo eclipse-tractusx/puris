@@ -1,6 +1,6 @@
 # puris
 
-![Version: 2.9.0](https://img.shields.io/badge/Version-2.9.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.1.0](https://img.shields.io/badge/AppVersion-3.1.0-informational?style=flat-square)
+![Version: 3.0.0](https://img.shields.io/badge/Version-3.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.1.0](https://img.shields.io/badge/AppVersion-3.1.0-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
@@ -74,10 +74,10 @@ dependencies:
 | backend.nodeSelector | object | `{}` | Constrains for the node selector |
 | backend.podAnnotations | object | `{}` | Annotations added to a running pod |
 | backend.podSecurityContext | object | `{}` | Added security contexts for a pod |
+| backend.puris.allowedOrigins | string | `"your-frontend-host-address.com"` | Allowed origins for the frontend. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration. |
 | backend.puris.api.key | string | `"test"` | The API key of the PURIS application |
 | backend.puris.api.rootDir | string | `"/catena"` | The root directory of the API |
-| backend.puris.baseurl | string | `"your-backend-host-address.com"` | Base url of the PURIS backend |
-| backend.puris.allowedOrigins | string | `"your-frontend-host-address.com"` | Origin of the frontends that will be accessing the backend |
+| backend.puris.baseurl | string | `"your-backend-host-address.com"` | Base url of the PURIS backend. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration. |
 | backend.puris.datasource.driverClassName | string | `"org.postgresql.Driver"` | Driver class name of the database |
 | backend.puris.datasource.password | string | `""` | Password for the database user. Ignored if postgres.enabled is true. |
 | backend.puris.datasource.url | string | `"jdbc:postgresql://postgresql-name:5432/puris-database"` | URL of the database. Ignored if postgres.enabled is true. |
@@ -91,19 +91,19 @@ dependencies:
 | backend.puris.dtr.idp.clients.puris.id | string | `"FOSS-PURIS-CLIENT"` | id of the client that has a service account with roles to manage the DTR. Used by the application to create and update digital twins. See Admin Guide. Mandatory if backend.puris.dtr.idp.enabled = true. |
 | backend.puris.dtr.idp.clients.puris.secret | string | `""` | secret of the client with write access (no vault alias). No default value will be created if empty. Mandatory if backend.puris.dtr.idp.enabled = true. |
 | backend.puris.dtr.idp.enabled | bool | `true` | enables the usage of the IDP for the DTR. |
-| backend.puris.dtr.idp.tokenurl | string | `"https://keycloak-service.com/realms/your-realm/openid-connect/token"` | token url of the idp for your specific realm. May be different to other idp token url in this config. Mandatory if backend.puris.dtr.idp.enabled = true. |
-| backend.puris.dtr.url | string | `"http://localhost:4243/api/v3"` | Endpoint for DTR including api/v3 prefix |
+| backend.puris.dtr.idp.tokenurl | string | `"https://keycloak-service.com/realms/your-realm/openid-connect/token"` | token url of the idp for your specific realm. May be different to other idp token url in this config. Must contain protocol (http/https). Mandatory if backend.puris.dtr.idp.enabled = true. |
+| backend.puris.dtr.url | string | `"https://localhost:4243/api/v3"` | Endpoint for DTR including api/v3 prefix. Must contain protocol (http/https). |
 | backend.puris.edc.controlplane.host | string | `"172.17.0.2"` |  |
 | backend.puris.edc.controlplane.key | string | `"password"` | Key for the EDC control plane |
-| backend.puris.edc.controlplane.management.url | string | `"https:/your-edc-address:8181/management"` | Url to the EDC controlplane management of the edc |
-| backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc |
-| backend.puris.edc.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api |
+| backend.puris.edc.controlplane.management.url | string | `"https://your-edc-address:8181/management"` | Url to the EDC controlplane management of the edc. Must contain protocol (http/https). |
+| backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc. Must contain protocol (http/https). |
+| backend.puris.edc.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api. Must contain protocol (http/https). |
 | backend.puris.erpadapter.authkey | string | `"x-api-key"` | The auth key to be used on your ERP adapter's request api |
 | backend.puris.erpadapter.authsecret | string | `""` | The auth secret to be used on your ERP adapter's request api. Reused from existing secret. Secret key "puris-erpadapter-authsecret". |
 | backend.puris.erpadapter.enabled | bool | `false` | Toggles usage of the ERP adapter |
 | backend.puris.erpadapter.refreshinterval | int | `720` | Interval between two requests to the erp adapter for the same issue (minutes) |
 | backend.puris.erpadapter.timelimit | int | `7` | Period since last received partner request after which no more new update requests to the erp adapter will be sent (days) |
-| backend.puris.erpadapter.url | string | `"http://my-erpadapter:8080"` | The url of your ERP adapter's request api |
+| backend.puris.erpadapter.url | string | `"https://my-erpadapter:8080"` | The url of your ERP adapter's request api. Must contain protocol (http/https). |
 | backend.puris.existingSecret | string | `"secret-puris-backend"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
 | backend.puris.frameworkagreement.credential | string | `"DataExchangeGovernance"` | The name of the framework agreement. Starting with Uppercase and using CamelCase. |
 | backend.puris.frameworkagreement.version | string | `"1.0"` | The version of the framework agreement, NEEDS TO BE PUT AS "STRING"! |
@@ -176,7 +176,7 @@ dependencies:
 | frontend.podAnnotations | object | `{}` | Annotations added to a running pod |
 | frontend.podSecurityContext | object | `{}` | Added security contexts for a pod |
 | frontend.puris.appName | string | `"PURIS"` | The name of the app displayed in the frontend |
-| frontend.puris.baseUrl | string | `"your-backend-host-address.com"` | The base URL for the backend base URL without further endpoints |
+| frontend.puris.baseUrl | string | `"your-backend-host-address.com"` | The base URL for the backend base URL without further endpoints. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration. |
 | frontend.puris.endpointCustomer | string | `"stockView/customer?ownMaterialNumber="` | The endpoint for the customers who buy a material identified via the own material number for the stock view |
 | frontend.puris.endpointDaysOfSupply | string | `"days-of-supply"` | The endpoint for the days of supply submodel |
 | frontend.puris.endpointDelivery | string | `"delivery"` | The endpoint for the delivery submodel |
@@ -198,8 +198,8 @@ dependencies:
 | frontend.puris.keycloak.clientId | string | `"appXYZ"` | Name of the client which is used for the application. |
 | frontend.puris.keycloak.disabled | bool | `true` | Disable the Keycloak integration. |
 | frontend.puris.keycloak.realm | string | `"Catena-X"` | Name of the Realm of the keycloak instance. |
-| frontend.puris.keycloak.redirectUrlFrontend | string | `"https://your-frontend-url.com"` | URL to use as keycloak redirect url. |
-| frontend.puris.keycloak.url | string | `"https://idp.com/auth"` | The URL to the IDP that should be used. |
+| frontend.puris.keycloak.redirectUrlFrontend | string | `"your-frontend-host-address.com"` | URL to use as keycloak redirect url. |
+| frontend.puris.keycloak.url | string | `"https://idp.com/auth"` | The URL to the IDP that should be used. Must contain protocol (http/https). |
 | frontend.puris.rateLimiting.burst | int | `30` | Burst rate limiting for nginx. |
 | frontend.puris.rateLimiting.limit | string | `"10m"` | Bucket zone limit for rate limiting in nginx. |
 | frontend.puris.rateLimiting.rate | string | `"10r/s"` | Allowed rates per second for nginx rate limiting. |
@@ -224,6 +224,7 @@ dependencies:
 | frontend.serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
 | frontend.tolerations | list | `[]` | Constrains for tolerations |
 | global.domain.backend.ingress | string | `"your-backend-host-address.com"` |  |
+| global.domain.frontend.ingress | string | `"your-frontend-host-address.com"` |  |
 | postgresql.auth.database | string | `"postgres"` | Name of the database. |
 | postgresql.auth.existingSecret | string | `"secret-puris-postgres-init"` | Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file. |
 | postgresql.auth.password | string | `""` | Password for the custom database user. Secret-key 'password' |

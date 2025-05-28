@@ -24,6 +24,8 @@ global:
   domain:
     backend:
       ingress: &domain your-backend-host-address.com
+    frontend:
+      ingress: &frontendDomain your-frontend-host-address.com
 # FRONTEND -----------
 frontend:
   replicaCount: 1
@@ -82,15 +84,15 @@ frontend:
     annotations: {}
     # -- Hosts for the Ingress controller
     hosts:
-      - host: "your-frontend-host-address.com"
+      - host: *frontendDomain
         paths:
           - path: /
             pathType: ImplementationSpecific
     # -- TLS certificates for the Ingress controller
     tls: []
-  #      - secretName: tls-secret
-  #        hosts:
-  #          - your-frontend-host-address.com
+#        - secretName: tls-secret
+#          hosts:
+#            - *frontendDomain
 
   resources:
     # -- Maximum resource limits of CPU und memory
@@ -161,7 +163,7 @@ frontend:
   puris:
     # -- The name of the app displayed in the frontend
     appName: PURIS
-    # -- The base URL for the backend base URL without further endpoints
+    # -- The base URL for the backend base URL without further endpoints. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration.
     baseUrl: *domain
     # -- The endpoint for materials for the stock view
     endpointMaterials: stockView/materials
@@ -202,14 +204,14 @@ frontend:
     keycloak:
       # -- Disable the Keycloak integration.
       disabled: true
-      # -- The URL to the IDP that should be used.
+      # -- The URL to the IDP that should be used. Must contain protocol (http/https).
       url: "https://idp.com/auth"
       # -- Name of the Realm of the keycloak instance.
       realm: "Catena-X"
       # -- Name of the client which is used for the application.
       clientId: "appXYZ"
       # -- URL to use as keycloak redirect url.
-      redirectUrlFrontend: "https://your-frontend-url.com"
+      redirectUrlFrontend: *frontendDomain
     rateLimiting:
       # -- Bucket zone limit for rate limiting in nginx.
       limit: 10m
@@ -370,10 +372,10 @@ backend:
     timeoutSeconds: 1
 
   puris:
-    # -- Base url of the PURIS backend
+    # -- Base url of the PURIS backend. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration.
     baseurl: *domain
-    # -- Allowed origins for the frontend
-    allowedOrigins: "https://your-frontend-url"
+    # -- Allowed origins for the frontend. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration.
+    allowedOrigins: *frontendDomain
     # -- Secret for backend passwords. For more information look into 'backend-secrets.yaml' file.
     existingSecret: "secret-puris-backend"
     api:
@@ -394,16 +396,16 @@ backend:
       controlplane:
         host: "172.17.0.2"
         management:
-          # -- Url to the EDC controlplane management of the edc
-          url: "https:/your-edc-address:8181/management"
+          # -- Url to the EDC controlplane management of the edc. Must contain protocol (http/https).
+          url: "https://your-edc-address:8181/management"
         protocol:
-          # -- Url to the EDC controlplane protocol API of the edc
+          # -- Url to the EDC controlplane protocol API of the edc. Must contain protocol (http/https).
           url: "https://your-edc-address:8184/api/v1/dsp"
         # -- Key for the EDC control plane
         key: "password"
       dataplane:
         public:
-          # -- Url of one of your data plane's public api
+          # -- Url of one of your data plane's public api. Must contain protocol (http/https).
           url: "https://your-data-plane:8285/api/public/"
     own:
       # -- Own BPNL of the EDC
@@ -464,12 +466,12 @@ backend:
       # -- The version of the purpose to use for submodel contracts. NEEDS TO BE PUT AS "STRING"!
       version: "1"
     dtr:
-      # --Endpoint for DTR including api/v3 prefix
-      url: http://localhost:4243/api/v3
+      # --Endpoint for DTR including api/v3 prefix. Must contain protocol (http/https).
+      url: https://localhost:4243/api/v3
       idp:
         # -- enables the usage of the IDP for the DTR.
         enabled: true
-        # -- token url of the idp for your specific realm. May be different to other idp token url in this config.
+        # -- token url of the idp for your specific realm. May be different to other idp token url in this config. Must contain protocol (http/https).
         # Mandatory if backend.puris.dtr.idp.enabled = true.
         tokenurl: https://keycloak-service.com/realms/your-realm/openid-connect/token
         clients:
@@ -500,8 +502,8 @@ backend:
     erpadapter:
       # -- Toggles usage of the ERP adapter
       enabled: false
-      # -- The url of your ERP adapter's request api
-      url: http://my-erpadapter:8080
+      # -- The url of your ERP adapter's request api. Must contain protocol (http/https).
+      url: https://my-erpadapter:8080
       # -- The auth key to be used on your ERP adapter's request api
       authkey: x-api-key
       # -- The auth secret to be used on your ERP adapter's request api. Reused from existing secret. Secret key "puris-erpadapter-authsecret".
