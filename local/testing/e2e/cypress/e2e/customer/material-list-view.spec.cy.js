@@ -20,8 +20,10 @@ SPDX-License-Identifier: Apache-2.0
 
 describe('material list view', () => {
     beforeEach(() => {
-        cy.visit('/materials');
         cy.login('customer');
+        cy.visit('/materials');
+        cy.url().should('include', '/materials'); // confirm page load
+        cy.wait(1000);
     });
 
     it('contains a confidentiality banner and copyright footer', () => {

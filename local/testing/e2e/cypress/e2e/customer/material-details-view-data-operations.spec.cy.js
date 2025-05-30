@@ -20,13 +20,14 @@ SPDX-License-Identifier: Apache-2.0
 
 describe('material data operations', () => {
     beforeEach(() => {
-        cy.visit('/materials');
         cy.login('customer');
     })
 
     it('allows creating, displaying and deleting material demand', () => {
         cy.fixture('customer-data.json').then(({demand}) => {
             cy.visit(`/materials/inbound/${demand.ownMaterialNumber}`);
+            cy.url().should('include', '/materials/inbound'); // confirm page load
+            cy.wait(1000);
             
             // open demand modal
             cy.getByTestId('add-demand-button').as('add-demand-button').should('exist');
@@ -85,6 +86,8 @@ describe('material data operations', () => {
     it('allows creating, displaying and deleting incoming deliveries', () => {
         cy.fixture('customer-data.json').then(({delivery}) => {
             cy.visit(`/materials/inbound/${delivery.ownMaterialNumber}`);
+            cy.url().should('include', '/materials/inbound'); // confirm page load
+            cy.wait(1000);
             
             // open delivery modal
             cy.getByTestId('add-delivery-button').as('add-delivery-button').should('exist');
@@ -158,6 +161,8 @@ describe('material data operations', () => {
     it('allows creating, displaying and deleting stocks', () => {
         cy.fixture('customer-data.json').then(({stock}) => {
             cy.visit(`/materials/inbound/${stock.ownMaterialNumber}`);
+            cy.url().should('include', '/materials/inbound'); // confirm page load
+            cy.wait(1000);
             
             // open stock modal
             cy.getByTestId('add-stock-button').as('add-stock-button').should('exist');

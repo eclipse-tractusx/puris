@@ -20,9 +20,6 @@ SPDX-License-Identifier: Apache-2.0
 
 describe('material data operations', () => {
     beforeEach(() => {
-        cy.origin(Cypress.env('supplierUrl'), () => {
-            cy.visit('/materials');
-        })
         cy.login('supplier');
     });
 
@@ -46,6 +43,8 @@ describe('material data operations', () => {
             };
             cy.fixture('supplier-data.json').then(({production}) => {
                 cy.visit(`/materials/outbound/${production.ownMaterialNumber}`);
+                cy.url().should('include', '/materials/outbound'); // confirm page load
+                cy.wait(10000);
                 
                 // open production modal
                 getByTestId('add-production-button').as('add-production-button').should('exist');
