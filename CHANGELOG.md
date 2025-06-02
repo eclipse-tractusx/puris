@@ -43,6 +43,10 @@ Chore
 
 * Updated User Guide ([#883](https://github.com/eclipse-tractusx/puris/pull/883))
 
+CI
+
+* reduce dashtool failures during test and dependency check in backend ([#890](https://github.com/eclipse-tractusx/puris/pull/890))
+
 Version Bumps
 
 * Infrastructure Components

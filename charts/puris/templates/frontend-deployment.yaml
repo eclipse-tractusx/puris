@@ -58,8 +58,7 @@ spec:
             - name: APP_NAME
               value: "{{ .Values.frontend.puris.appName }}"
             - name: BACKEND_BASE_URL
-                {{- $baseUrl := trimSuffix "/" .Values.frontend.puris.baseUrl}}
-              value: "https://{{ $baseUrl }}{{ .Values.backend.puris.api.rootDir }}/"
+              value: "{{- include "puris.backend.baseUrlWithProtocol" . -}}/{{- trimPrefix "/" .Values.backend.puris.api.rootDir }}/"
             - name: ENDPOINT_MATERIALS
               value: "{{ .Values.frontend.puris.endpointMaterials }}"
             - name: ENDPOINT_PRODUCTS

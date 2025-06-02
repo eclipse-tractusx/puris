@@ -159,3 +159,33 @@ Create a default fully qualified app name for PostgreSQL.
 {{- printf "%s-postgresql" .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
+
+
+{{/*
+Create a URL with the correct protocol prefix depending on wheter to apply TLS or not.
+If http or https is already set, this is not changed BUT added if missing.
+INPUTS:
+- tlsConfig: configuration of the ingress for tls
+- url: url to manipulate
+*/}}
+{{- define "getAsUrlWithProtocol" -}}
+{{/* Get variables from dict*/}}
+{{- $tlsConfig := .tlsConfig -}}
+{{- $url := .url -}}
+{{/* Get the correct prefix for the protocol*/}}
+{{- $protocol := ternary "https://" "http://" (gt (len $tlsConfig) 0) -}}
+{{/* Check if the URL does not include a protocol*/}}
+{{- if not (or (hasPrefix "http://" $url) (hasPrefix "https://" $url)) -}}
+{{- printf "%s%s" $protocol $url -}}
+{{- else -}}
+{{- printf "%s" $url -}} {{/* Fallback to just the url if protocl is included */}}
+{{- end -}}
+{{- end }}
+
+
+{{- define "puris.backend.baseUrlWithProtocol" -}}
+{{- $tlsConfig := .Values.backend.ingress.tls -}}
+{{- $url := .Values.frontend.puris.baseUrl -}}
+{{- $baseUrl := (include "getAsUrlWithProtocol" (dict "tlsConfig" $tlsConfig "url" $url) ) | trimSuffix "/" -}}
+{{- printf "%s" $baseUrl }}
+{{- end -}}

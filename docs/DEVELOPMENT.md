@@ -87,7 +87,7 @@ alias eclipseDashTool='java -jar ~/coding/org.eclipse.dash.licenses-1.0.2.jar'
 source ~/.bashrc
 # cd to puris-frontend
 cd frontend
-eclipseDashTool package-lock.json -project automotive.tractusx -summary ../DEPENDENCIES_FRONTEND
+eclipseDashTool package-lock.json -project automotive.tractusx -summary ../DEPENDENCIES_FRONTEND -batch 100
 ```
 
 ### mock-util-service
