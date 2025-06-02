@@ -74,7 +74,7 @@ dependencies:
 | backend.nodeSelector | object | `{}` | Constrains for the node selector |
 | backend.podAnnotations | object | `{}` | Annotations added to a running pod |
 | backend.podSecurityContext | object | `{}` | Added security contexts for a pod |
-| backend.puris.allowedOrigins | string | `"your-frontend-host-address.com"` | Allowed origins for the frontend. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration. |
+| backend.puris.allowedOrigins | list | `["your-frontend-host-address.com"]` | Allowed origins for the frontend. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration. |
 | backend.puris.api.key | string | `"test"` | The API key of the PURIS application |
 | backend.puris.api.rootDir | string | `"/catena"` | The root directory of the API |
 | backend.puris.baseurl | string | `"your-backend-host-address.com"` | Base url of the PURIS backend. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration. |

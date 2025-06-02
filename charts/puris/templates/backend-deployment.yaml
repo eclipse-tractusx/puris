@@ -129,7 +129,12 @@ spec:
                 # remove backslash if given and later ensure (must end with trailing slash)
               value: "{{- include "puris.backend.baseUrlWithProtocol" . -}}"
             - name: PURIS_ALLOWED-ORIGINS
-              value: "{{- include "getAsUrlWithProtocol" (dict "tlsConfig" .Values.frontend.ingress.tls "url" .Values.backend.puris.allowedOrigins) -}}"
+              {{- $allowedOriginUrls := list }}
+              {{- range $allowedOrigin := .Values.backend.puris.allowedOrigins }}
+                {{- $allowedOriginUrls = include "getAsUrlWithProtocol" (dict "tlsConfig" $.Values.frontend.ingress.tls "url" $allowedOrigin) | append $allowedOriginUrls }}
+              {{- end -}}
+              {{- $allowedOrigins := join "," $allowedOriginUrls }}
+              value: {{ join "," $allowedOrigins | quote }}
             - name: PURIS_ITEMSTOCKSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.itemstocksubmodel.apiassetid }}"
             - name: PURIS_PRODUCTIONSUBMODEL_APIASSETID

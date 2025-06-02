@@ -375,7 +375,8 @@ backend:
     # -- Base url of the PURIS backend. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration.
     baseurl: *domain
     # -- Allowed origins for the frontend. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration.
-    allowedOrigins: *frontendDomain
+    allowedOrigins:
+      - *frontendDomain
     # -- Secret for backend passwords. For more information look into 'backend-secrets.yaml' file.
     existingSecret: "secret-puris-backend"
     api:
