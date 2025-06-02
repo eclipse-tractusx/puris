@@ -134,7 +134,7 @@ spec:
                 {{- $allowedOriginUrls = include "getAsUrlWithProtocol" (dict "tlsConfig" $.Values.frontend.ingress.tls "url" $allowedOrigin) | append $allowedOriginUrls }}
               {{- end -}}
               {{- $allowedOrigins := join "," $allowedOriginUrls }}
-              value: {{ join "," $allowedOrigins | quote }}
+              value: {{ $allowedOrigins | quote }}
             - name: PURIS_ITEMSTOCKSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.itemstocksubmodel.apiassetid }}"
             - name: PURIS_PRODUCTIONSUBMODEL_APIASSETID
