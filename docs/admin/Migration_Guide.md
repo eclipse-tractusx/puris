@@ -28,7 +28,7 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 
 As this change is a breaking change (label selectors are immutable) during migrations version [`2.9.0`](#version-28x-to-version-290) SHOULD NOT be used.
 
-The chart in version 3.0.0 provides deletes the `Deployment` resources of the frontend and backend once pre-upgrade via hook.
+The chart in version 3.0.0 deletes the `Deployment` resources of the frontend and backend once pre-upgrade via hook.
 This means that the application has a (small downtime).
 
 Alternative ways may be possible.
@@ -64,7 +64,7 @@ We noticed issues in the conformance to digital twins, as you can see in the fol
 This results in the following changes:
 
 - the edc asset of the digital twin registry needs to have `api/v3` appended to `dataAddress.baseUrl`
-- the submodel urls have been incorrect for to reasons:
+- the submodel urls have been incorrect for two reasons:
   - all (except for `PartTypeInstance`) had a trailing `/` that must be removed in shell descriptors field `href`.
   - the path segment `submodel` is missing at the end of the shell descriptor's field `href`.
 
@@ -94,7 +94,7 @@ You can manually update all Shell and Submodel Descriptors or remove the ones ma
 If you delete them,
 
 - restart PURIS to create the assets with the correct paths and corresponding contract defintions
-- re-register (PUT with the same information) the `material partner reeelationships` (NOTE: read next task first) so that PURIS FOSS creates the Submodel Descriptors with the latest asset Ids and correct paths.
+- re-register (PUT with the same information) the `material partner relationships` (NOTE: read next task first) so that PURIS FOSS creates the Submodel Descriptors with the latest asset Ids and correct paths.
 
 Note: You can determine the technical identifiers for your twins using the following information:
 
