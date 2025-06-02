@@ -35,8 +35,8 @@ Cypress.Commands.add('getByTestIdContains', (testid) => {
 })
 
 Cypress.Commands.add('selectAutocompleteOption', (testid, option) => {
-  cy.getByTestId(testid).click()
-  cy.get('.MuiAutocomplete-popper').contains(option).click();
+  cy.getByTestId(testid).click();
+  cy.get('.MuiAutocomplete-popper').contains(option).should('exist').click();
   cy.getByTestId(testid).get(`input[value="${option}"]`).should('exist');
 })
 
@@ -57,14 +57,23 @@ Cypress.Commands.add('selectRelativeDate', (testid, dateOffset) => {
 })
 
 Cypress.Commands.add('login', (role) => {
-  if (Cypress.env('idp_enabled')) {
-    cy.origin(Cypress.env('central_idp_url'), { args: { role }}, ({ role }) => {
-      cy.contains(Cypress.env(role).company_name).click();
-    });
-    cy.origin(Cypress.env('shared_idp_url'), { args: { role }}, ({ role }) => {
-      cy.get('#username').should('exist').type(Cypress.env(role).username);
-      cy.get('#password').should('exist').type(Cypress.env(role).password);
-      cy.get('#kc-login').should('exist').click();
-    });
-  }
+  cy.session([role], () => {
+    if (Cypress.env('idp_enabled')) {
+      if (role === 'supplier') {
+        cy.origin(Cypress.env('supplierUrl'), () => {
+          cy.visit('/materials');
+        })
+      } else {
+        cy.visit('/materials');
+      }
+      cy.origin(Cypress.env('central_idp_url'), { args: { role }}, ({ role }) => {
+        cy.contains(Cypress.env(role).company_name).click();
+      });
+      cy.origin(Cypress.env('shared_idp_url'), { args: { role }}, ({ role }) => {
+        cy.get('#username').should('exist').type(Cypress.env(role).username);
+        cy.get('#password').should('exist').type(Cypress.env(role).password);
+        cy.get('#kc-login').should('exist').click();
+      });
+    }
+  });
 })
