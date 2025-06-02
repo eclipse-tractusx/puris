@@ -116,7 +116,7 @@ backend:
       bpns: BPNS1234567890ZZ
       site:
         # -- Own site name
-        name: "Semiconductor Supplier Inc. Production Si"
+        name: "Semiconductor Supplier Inc. Production Site"
       # -- Own BPNA of the EDC
       bpna: BPNA1234567890AA
       # -- Own country
