@@ -18,20 +18,22 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
   * [NOTICE](#notice)
 <!-- TOC -->
 
-## Version 2.8.x to 3.0.0
+## Version 2.8.x to 3.0.x
 
 *This migration guide covers the changes provided from [appVersion 3.0.0 to appVersion 3.1.0](https://github.com/eclipse-tractusx/puris/compare/3.0.0...3.1.0).*
 
 ### Fix of NameOverride
 
-`nameOverride` has been implemented incorrectly so that is not been considered in the templates ([pr#856](https://github.com/eclipse-tractusx/puris/pull/856)).
+`nameOverride` has been implemented incorrectly so that has not been considered in the templates ([pr#856](https://github.com/eclipse-tractusx/puris/pull/856)).
 
 As this change is a breaking change (label selectors are immutable) during migrations version [`2.9.0`](#version-28x-to-version-290) SHOULD NOT be used.
 
-The chart in version 3.0.0 deletes the `Deployment` resources of the frontend and backend once pre-upgrade via hook.
+The chart in version 3.0.x deletes the `Deployment` resources of the frontend and backend once pre-upgrade via hook.
 This means that the application has a (small downtime).
 
-Alternative ways may be possible.
+Please note that chart version `3.0.0` had a bug not considering `backend.fullnameOverride`, `frontend.fullnameOverride` and the release name (see [pr#885](https://github.com/eclipse-tractusx/puris/pull/884)).
+
+In case your chart relies on the `fullnameOverride` option, it may be that all chart upgrades, will delete your deployments first.
 
 ### Adding YAML Anchor for Frontend URL
 

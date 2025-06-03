@@ -17,14 +17,27 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-{{- if eq .Chart.Version "3.0.0"}}
-apiVersion: v1
-kind: ServiceAccount
+{{- if eq (.Chart.Version | trunc 3) "3.0" }}
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: "{{ .Release.Name }}-hook-sa"
-  namespace: "{{ .Release.Namespace }}"
+  name: "{{ .Release.Name }}-hook-post-cleanup"
+  namespace: {{ .Release.Namespace }}
   annotations:
-    "helm.sh/hook": pre-upgrade
-    "helm.sh/hook-weight": "-4"
-    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: cleanup
+          image: bitnami/kubectl:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              kubectl delete serviceaccount {{ .Release.Name }}-hook-sa || true
+              kubectl delete role {{ .Release.Name }}-hook-role || true
+              kubectl delete rolebinding {{ .Release.Name }}-hook-rolebinding || true
 {{- end }}
