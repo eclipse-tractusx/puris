@@ -38,6 +38,7 @@ Fixes
   assets ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
 * use the correct request when refreshing material data from customers ([#879](https://github.com/eclipse-tractusx/puris/pull/879))
 * add the correct role to the login commands in cypress tests and utilize sessions to optimize login logic ([#889](https://github.com/eclipse-tractusx/puris/pull/889))
+* fix bruno integration test suite ([#893](https://github.com/eclipse-tractusx/puris/pull/893))
 
 Chore
 
