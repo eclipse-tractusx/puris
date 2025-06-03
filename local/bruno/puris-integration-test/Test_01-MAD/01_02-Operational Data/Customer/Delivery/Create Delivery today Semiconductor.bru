@@ -39,6 +39,7 @@ body:json {
 script:pre-request {
   // Create the formattedDate
   const today = new Date();
+  today.setSeconds(today.getSeconds() - 30);
   const departureDateFormatted = today.toISOString();
   
   // set arrival date 2 days after departure

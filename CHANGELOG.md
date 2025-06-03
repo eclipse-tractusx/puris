@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v3.1.0](https://github.com/eclipse-tractusx/puris/releases/tag/3.1.0) _unpublished_
+## [v3.1.0](https://github.com/eclipse-tractusx/puris/releases/tag/3.1.0)
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
 
@@ -38,9 +38,11 @@ Fixes
   assets ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
 * use the correct request when refreshing material data from customers ([#879](https://github.com/eclipse-tractusx/puris/pull/879))
 * add the correct role to the login commands in cypress tests and utilize sessions to optimize login logic ([#889](https://github.com/eclipse-tractusx/puris/pull/889))
+* fix bruno integration test suite ([#893](https://github.com/eclipse-tractusx/puris/pull/893))
 
 Chore
 
+* Added missing notice sections for markdown files ([#884](https://github.com/eclipse-tractusx/puris/pull/884))
 * Updated User Guide ([#883](https://github.com/eclipse-tractusx/puris/pull/883))
 
 CI
