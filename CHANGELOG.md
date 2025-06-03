@@ -37,11 +37,16 @@ Fixes
 * use `assetId` instead of `semanticId` and `dct:type=submodel` during catalog request for submodel
   assets ([#849](https://github.com/eclipse-tractusx/puris/pull/849))
 * use the correct request when refreshing material data from customers ([#879](https://github.com/eclipse-tractusx/puris/pull/879))
+* add the correct role to the login commands in cypress tests and utilize sessions to optimize login logic ([#889](https://github.com/eclipse-tractusx/puris/pull/889))
 
 Chore
 
 * Added missing notice sections for markdown files ([#884](https://github.com/eclipse-tractusx/puris/pull/884))
 * Updated User Guide ([#883](https://github.com/eclipse-tractusx/puris/pull/883))
+
+CI
+
+* reduce dashtool failures during test and dependency check in backend ([#890](https://github.com/eclipse-tractusx/puris/pull/890))
 
 Version Bumps
 
