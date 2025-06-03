@@ -30,5 +30,5 @@ metadata:
 rules:
   - apiGroups: ["apps"]
     resources: ["deployments"]
-    verbs: ["delete"]
+    verbs: ["delete", "get"]
 {{- end }}

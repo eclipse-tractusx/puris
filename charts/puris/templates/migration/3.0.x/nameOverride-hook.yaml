@@ -43,34 +43,34 @@ spec:
               {{- if .Values.backend.fullnameOverride }}
                 {{- $oldBackendName = .Values.backend.fullnameOverride | trunc 63 | trimSuffix "-" }}
               {{- else }}
-                {{- $backendName := default .Chart.Name "backend" .Values.backend.nameOverride }}
+                {{- $backendName := "backend" }}
                 {{- if contains $backendName .Release.Name }}
                   {{- $oldBackendName = .Release.Name | trunc 63 | trimSuffix "-" }}
                 {{- else }}
                   {{- $oldBackendName = printf "%s-%s" .Release.Name $backendName | trunc 63 | trimSuffix "-" }}
                 {{- end }}
               {{- end }}
-              if kubectl get deployment "$oldBackendName" > /dev/null 2>&1; then
-                echo "Deleting old deployment with name: $oldBackendName"
-                kubectl delete deployment {{ $oldBackendName }}
+              if kubectl get deployment {{ $oldBackendName }} -n {{ .Release.Namespace }} > /dev/null 2>&1; then
+                echo "Deleting old deployment in namespace '{{ .Release.Namespace }}' with name: {{ $oldBackendName }}"
+                kubectl delete deployment {{ $oldBackendName }} -n {{ .Release.Namespace }}
               else
-                echo "Deployment $oldBackendName does not exist. Nothing to delete.
+                echo "Deployment {{ $oldBackendName }} does not exist. Nothing to delete."
               fi
               {{- $oldFrontendName := "" }}
               {{- if .Values.frontend.fullnameOverride }}
                 {{- $oldFrontendName = .Values.frontend.fullnameOverride | trunc 63 | trimSuffix "-" }}
               {{- else }}
-                {{- $frontendName := default .Chart.Name "backend" .Values.frontend.nameOverride }}
+                {{- $frontendName := "frontend" }}
                 {{- if contains $frontendName .Release.Name }}
                   {{- $oldFrontendName = .Release.Name | trunc 63 | trimSuffix "-" }}
                 {{- else }}
                   {{- $oldFrontendName = printf "%s-%s" .Release.Name $frontendName | trunc 63 | trimSuffix "-" }}
                 {{- end }}
               {{- end }}
-              if kubectl get deployment "$oldFrontendName" > /dev/null 2>&1; then
-                echo "Deleting old deployment with name: $oldFrontendName"
-                kubectl delete deployment {{ $oldFrontendName }}
+              if kubectl get deployment {{ $oldFrontendName }} -n {{ .Release.Namespace }} > /dev/null 2>&1; then
+                echo "Deleting old deployment in namespace '{{ .Release.Namespace }}' with name: {{ $oldFrontendName }}"
+                kubectl delete deployment {{ $oldFrontendName }} -n {{ .Release.Namespace }}
               else
-                echo "Deployment $oldFrontendName does not exist. Nothing to delete.
+                echo "Deployment {{ $oldFrontendName }} does not exist. Nothing to delete."
               fi
 {{- end }}
