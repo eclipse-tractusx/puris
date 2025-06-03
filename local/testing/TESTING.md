@@ -56,3 +56,11 @@ The tests are conducted using the customer application, but shall be representat
 Customer and Supplier tests are run on their respective application. They are focused on testing material based views and the creation, display and deletion of demands, productions, deliveries as well as stocks.
 
 Exchange of created data is **NOT** subject of role-based tests.
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2025 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris

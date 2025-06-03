@@ -74,3 +74,11 @@ Ignored in Mock. We always do a pass all. Normally some trusted issuer would han
 In Tractus-X Data Spaces with DIM (what this service mocks) the query is done on behalf of the holder.
 
 One needs an access token for that an the relying party may get a vp as previously granted via the STS.
+
+## NOTICE
+
+This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- SPDX-License-Identifier: Apache-2.0
+- SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- Source URL: https://github.com/eclipse-tractusx/puris
