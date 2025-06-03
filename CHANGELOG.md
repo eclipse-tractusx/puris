@@ -44,6 +44,7 @@ Chore
 
 * Added missing notice sections for markdown files ([#884](https://github.com/eclipse-tractusx/puris/pull/884))
 * Updated User Guide ([#883](https://github.com/eclipse-tractusx/puris/pull/883))
+* Updated open API ([#894](https://github.com/eclipse-tractusx/puris/pull/894))
 
 CI
 

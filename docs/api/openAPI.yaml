@@ -1,5 +1,25 @@
 components:
   schemas:
+    Address:
+      additionalProperties: false
+      properties:
+        bpna:
+          maxItems: 50
+          pattern: ^BPNA[0-9a-zA-Z]{12}$
+          type: string
+        country:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        streetAndNumber:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        zipCodeAndCity:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+      type: object
     AddressDto:
       additionalProperties: false
       properties:
@@ -809,6 +829,38 @@ components:
       - catenaXId
       - partTypeInformation
       type: object
+    Partner:
+      additionalProperties: false
+      properties:
+        addresses:
+          items:
+            $ref: '#/components/schemas/Address'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        bpnl:
+          maxItems: 50
+          pattern: ^BPNL[0-9a-zA-Z]{12}$
+          type: string
+        edcUrl:
+          maxItems: 50
+          pattern: ^http[s]?://([a-z0-9][a-z0-9\-]+[a-z0-9])(\.[a-z0-9\-]+)*(:[0-9]{1,4})?(/[a-z0-9\-]+)*[/]?$
+          type: string
+        name:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        sites:
+          items:
+            $ref: '#/components/schemas/Site'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+      type: object
     PartnerDto:
       additionalProperties: false
       properties:
@@ -1220,6 +1272,26 @@ components:
       required:
       - demandSeries
       type: object
+    Site:
+      additionalProperties: false
+      properties:
+        addresses:
+          items:
+            $ref: '#/components/schemas/Address'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        bpns:
+          maxItems: 50
+          pattern: ^BPNS[0-9a-zA-Z]{12}$
+          type: string
+        name:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+      required:
+      - bpns
+      type: object
     SiteDto:
       additionalProperties: false
       properties:
@@ -1256,8 +1328,8 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 3.0.0
-openapi: 3.0.1
+  version: 3.1.0
+openapi: 3.1.0
 paths:
   /days-of-supply/customer:
     get:
@@ -1377,7 +1449,7 @@ paths:
       summary: Refreshes all reported customer days of supply
       tags:
       - supply-controller
-  /days-of-supply/request/{materialnumbercx}/{direction}/{representation}:
+  /days-of-supply/request/{materialnumbercx}/{direction}/submodel/{representation}:
     get:
       operationId: getDaysOfSupplyMapping
       parameters:
@@ -1656,7 +1728,7 @@ paths:
       summary: Updates a delivery by its UUID
       tags:
       - delivery-controller
-  /delivery-information/request/{materialNumberCx}/{representation}:
+  /delivery-information/request/{materialNumberCx}/submodel/{representation}:
     get:
       operationId: getDeliveryMapping
       parameters:
@@ -2409,20 +2481,7 @@ paths:
           description: bad request
       tags:
       - erp-adapter-controller
-  /health/:
-    get:
-      operationId: getHealth
-      responses:
-        '200':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                type: object
-          description: OK
-      tags:
-      - health-controller
-  /item-stock/request/{materialnumber}/{direction}/{representation}:
+  /item-stock/request/{materialnumber}/{direction}/submodel/{representation}:
     get:
       operationId: getMappingItemStock2
       parameters:
@@ -2475,7 +2534,7 @@ paths:
         endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - item-stock-request-api-controller
-  /material-demand/request/{materialnumbercx}/{representation}:
+  /material-demand/request/{materialnumbercx}/submodel/{representation}:
     get:
       operationId: getDemandMapping
       parameters:
@@ -2848,6 +2907,30 @@ paths:
           description: OK
       tags:
       - material-controller
+  /materials/refresh:
+    get:
+      description: Requests material data for the given material from all partners
+      operationId: refreshMaterialData
+      parameters:
+      - description: encoded in base64
+        in: query
+        name: ownMaterialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                maxItems: 50
+                type: string
+          description: OK
+      tags:
+      - material-controller
   /partners:
     get:
       description: Returns the requested PartnerDto.
@@ -2929,6 +3012,20 @@ paths:
                   $ref: '#/components/schemas/PartnerDto'
                 maxItems: 50
                 type: array
+          description: OK
+      tags:
+      - partner-controller
+  /partners/own:
+    get:
+      description: Returns the own partnr entity.
+      operationId: getOwnPartnerEntity
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Partner'
+                additionalProperties: false
           description: OK
       tags:
       - partner-controller
@@ -3082,7 +3179,7 @@ paths:
           description: OK
       tags:
       - partner-controller
-  /parttypeinformation/{materialnumber}/{representation}:
+  /parttypeinformation/{materialnumber}/submodel/{representation}:
     get:
       description: 'Endpoint that delivers PartTypeInformation of own products to
         customer partners. ''materialnumber'' must be set to the ownMaterialNumber
@@ -3133,7 +3230,7 @@ paths:
           description: 'Unsupported representation requested. '
       tags:
       - part-type-information-controller
-  /planned-production/request/{materialnumbercx}/{representation}:
+  /planned-production/request/{materialnumbercx}/submodel/{representation}:
     get:
       operationId: getProductionMapping
       parameters:
