@@ -2,6 +2,8 @@ global:
   domain:
     backend:
       ingress: &domain <path:puris/data/customer/puris#backend-hostname>
+    frontend:
+      ingress: &frontendDomain <path:puris/data/customer/puris#frontend-hostname>
 # FRONTEND -----------
 frontend:
   # fullnameOverride: "customer-frontend"
@@ -20,7 +22,7 @@ frontend:
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
     # -- Hosts for the Ingress controller
     hosts:
-      -   host: "<path:puris/data/customer/puris#frontend-hostname>"
+      -   host: *frontendDomain
           paths:
             -   path: /
                 pathType: ImplementationSpecific
@@ -28,7 +30,7 @@ frontend:
     tls:
       -   secretName: tls-secret-puris-customer-frontend
           hosts:
-            - <path:puris/data/customer/puris#frontend-hostname>
+            - *frontendDomain
   puris:
     # -- The name of the app displayed in the frontend
     appName: PURIS customer
@@ -91,7 +93,7 @@ backend:
     existingSecret: "customer-secret-backend-puris"
     baseurl: *domain
     allowedOrigins: 
-      - "https://<path:puris/data/customer/puris#frontend-hostname>"
+      - *frontendDomain
 #    baseurl: puris-backend-customer.int.catena-x.net/
     api:
       # -- The API key of the PURIS application
