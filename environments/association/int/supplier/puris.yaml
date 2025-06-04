@@ -90,7 +90,8 @@ backend:
   puris:
     existingSecret: "supplier-secret-backend-puris"
     baseurl: *domain
-    allowedOrigins: "https://<path:puris/data/supplier/puris#frontend-hostname>"
+    allowedOrigins: 
+      - "https://<path:puris/data/supplier/puris#frontend-hostname>"
 #    baseurl: puris-backend-supplier.int.catena-x.net/
     api:
       # -- The API key of the PURIS application
