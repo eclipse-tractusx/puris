@@ -29,18 +29,11 @@ const keycloak = new Keycloak({
     clientId: config.auth.IDP_CLIENT_ID,
 });
 
-const isEnabled = config.auth.IDP_DISABLE !== true;
-
 const init = () => {
     return new Promise<void>((resolve, reject) => {
-        if (!isEnabled) {
-            console.info('Authentication via Identity Provider is disabled.');
-            return resolve();
-        }
         keycloak
             .init({
                 onLoad: 'login-required',
-                redirectUri: config.auth.IDP_REDIRECT_URL_FRONTEND,
                 enableLogging: true,
             })
             .then((authenticated) => {
@@ -59,6 +52,8 @@ const init = () => {
     });
 };
 
+let onTokenChangedCallback: (success: boolean) => void = () => undefined;
+
 keycloak.onTokenExpired = () => {
     keycloak
         .updateToken(MIN_TOKEN_VALIDITY)
@@ -69,6 +64,7 @@ keycloak.onTokenExpired = () => {
                 console.error("Auth token could not be renewed for user '%s'.", getUsername());
                 keycloak.clearToken();
             }
+            onTokenChangedCallback(updated);
         })
         .catch((error) => {
             console.error('Error during auth token renewal:', error);
@@ -76,42 +72,35 @@ keycloak.onTokenExpired = () => {
         });
 };
 
-const onAuthSuccess = (onAuth: () => void) => {
-    keycloak.onAuthSuccess = onAuth;
+const onTokenChanged = (callback: (success: boolean) => void) => {
+    onTokenChangedCallback = callback;
 }
 
-const onLogout = (onLogout: () => void) => {
-    keycloak.onAuthLogout = onLogout;
+const onAuthSuccess = (callback: () => void) => {
+    keycloak.onAuthSuccess = callback;
+}
+
+const onLogout = (callback: () => void) => {
+    keycloak.onAuthLogout = callback;
 }
 
 const isAuthenticated = () => {
-    if (!isEnabled) {
-        return true;
-    }
     return keycloak.authenticated;
 };
 
 const userHasRole = (requiredRoles: Role[]) => {
-    if (!isEnabled) {
-        return true;
-    }
     // client roles
     const rolesPerClient = keycloak.tokenParsed?.resource_access ?? {};
     const userRoles = rolesPerClient[config.auth.IDP_CLIENT_ID]?.roles ?? [];
-    console.log('User roles:', userRoles);
 
     return requiredRoles.some((role) => userRoles.includes(role));
 };
 
 const logout = () => {
-    if (!isEnabled) {
-        return;
-    }
     keycloak
-        .logout()
+        .logout({ redirectUri: config.auth.IDP_REDIRECT_URL_FRONTEND })
         .then((success) => {
             console.info("User '%s' logged out successfully: ", getUsername(), success);
-            keycloak.clearToken();
         })
         .catch((error) => {
             console.error("Logout for user '%s' failed: ", getUsername(), error);
@@ -120,14 +109,17 @@ const logout = () => {
 
 const getUsername = (): string | null => keycloak.idTokenParsed?.preferred_username;
 
+const getToken = (): string | null => keycloak.token || null;
+
 const AuthenticationService = {
-    isEnabled,
     getUsername,
+    getToken,
     init,
     logout,
     isAuthenticated,
     userHasRole,
     onAuthSuccess,
+    onTokenChanged,
     onLogout,
 };
 

@@ -29,10 +29,11 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.DispatcherType;
-import lombok.AllArgsConstructor;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationFilter;
+import org.eclipse.tractusx.puris.backend.common.security.logic.KeycloakJwtAuthenticationConverter;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,10 +52,12 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@AllArgsConstructor
 @SecurityScheme(type = SecuritySchemeType.APIKEY, name = SecurityConfig.API_KEY_HEADER_NAME, in = SecuritySchemeIn.HEADER)
 @OpenAPIDefinition(info = @Info(title = "PURIS FOSS Open API", version = "1.0.0"), security = {@SecurityRequirement(name = "X-API-KEY")})
 public class SecurityConfig {
+
+    @Value("${puris.idp.client.id}")
+    private String authorizedParty;
 
     public static final String API_KEY_HEADER_NAME = "X-API-KEY";
 
@@ -64,8 +67,18 @@ public class SecurityConfig {
 
     private DtrSecurityConfiguration dtrSecurityConfiguration;
 
-    @Autowired
     private VariablesService variablesService;
+
+    @Autowired
+    public SecurityConfig(ApiKeyAuthenticationFilter apiKeyAuthenticationFilter,
+                          ObjectMapper objectMapper,
+                          VariablesService variablesService,
+                          DtrSecurityConfiguration dtrSecurityConfiguration) {
+        this.apiKeyAuthenticationFilter = apiKeyAuthenticationFilter;
+        this.objectMapper = objectMapper;
+        this.variablesService = variablesService;
+        this.dtrSecurityConfiguration = dtrSecurityConfiguration;
+    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -119,6 +132,7 @@ public class SecurityConfig {
             .sessionManagement(
                 (sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(new KeycloakJwtAuthenticationConverter(authorizedParty))))
             .cors(Customizer.withDefaults());
 
 

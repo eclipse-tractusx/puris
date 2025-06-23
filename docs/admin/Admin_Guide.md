@@ -16,6 +16,25 @@ respective deployment scenarios for further information.
 | Local / Docker Compose (Integration) | [docker-compose.yaml](../../local/docker-compose.yaml)                            |
 | Kubernetes / Helm                    | [README.md](../../charts/puris/README.md)                                         |
 
+## Configure authentication
+
+### IDP configuration
+
+Authentication for frontend and backend uses a Keycloak IDP server. This authentication is configured with the following variables:
+
+- `idp.url` (docker `IDP_URL`) - the base url of the IDP server used to assemble all necessary urls for authentication
+- `idp.realm` (docker `IDP_REALM`) - the name of the authentication realm of the Keycloak instance
+- `idp.clientId` (docker `IDP_CLIENT_ID`) - the id of the client used for authentication
+- `idp.redirectUrlFrontend` (docker `IDP_REDIRECT_URL_FRONTEND`) - the default redirect url when logging in
+
+### API key configuration
+
+In addition to the aforementioned IDP server, requests can also be authorized using an API key.
+
+This api key must be configured in the backend via `backend.puris.api.key` (docker `PURIS_API_KEY`).
+
+_Note: The API key header is hard coded to `X-API-KEY`._
+
 ## Configure Frontend to use Backend
 
 Mainly one needs to configure the Frontend to reach the Backend. Thus, the Backend must be exposed or at least reachable
@@ -24,20 +43,13 @@ for the Frontend.
 When not using the Helm deployment, mainly the environment variables with the prefixes `BACKEND_` and `ENDPOINT_` are
 needed for configuration. Please refer to the respective local deployment for exact information.
 
-The Backend secures all APIs except for the swagger ui with a backend key.
-This api key must be configured in the backend via `backend.puris.api.key` (docker `PURIS_API_KEY`). In Helm, it's
-automatically set to the frontend.
-Additionally spring provides the context path that adds a path for the backend servlets.
-
-The Frontend therefore needs the following two variables:
+The Frontend therefore needs the following variables:
 
 - `frontend.puris.baseUrl` (docker `BACKEND_BASE_URL`) - used to assemble requests to the backend in
   format: `http://<hostname:port>/<context path>` where context path is assembled automatically via template. Is
   automatically assembled via helm.
 - `frontend.puris.endpointXYZ` (docker `ENDPOINT_XYZ`) - endpoints of the backend used. But they are hardcoded in the
   backend.
-
-_Note: The API key header is hard coded to `X-API-KEY`._
 
 ## Configure EDC in Backend
 
@@ -68,42 +80,10 @@ In practice, the DTR reference implementation allows only one user, resulting in
 
 | Helm                       | Value to set                                                              |
 |----------------------------|---------------------------------------------------------------------------|
-| `clients.puris.id `        | ID of the manage client                                                   |
+| `clients.puris.id`        | ID of the manage client                                                   |
 | `clients.puris.secret`     | Secret of the manage client                                               |
 | `clients.edc.id`           | ID of the manage client                                                   |
 | `clients.edc.secret.alias` | **Path to secret in the vault** accessed by the edc for the manage client |
-
-## Integrate Keycloak into Frontend
-
-The Frontend provides a keycloak integration:
-
-It restricts the accessible views based on the client roles:
-
-- `PURIS_USER` - Common views related to short-term information needs
-- `PURIS_ADMIN` - EDC related views (may be used for debugging)
-
-All variables with the `frontend.puris.keycloak.` (docker prefix is `IDP_`) prefix are needed for configuration.
-The `disable` property (docker `IDP_DISABLE`) can be set to `true` to not use an idp (only recommended for development
-purposes). Refer to the respective deployment specific files.
-
-Configuration and example:
-
-To host an example keycloak instance, configure the following:
-
-- `Realm` with name `Catena-X`
-- Create `Client` with name `Cl3-PURIS`
-    - `Client authentication` = false
-    - `Authentication flow `> `Standard flow` = `true` (rest `false`)
-    - `Access settings`
-        - `Valid redirect URIs` = `http:<frontend hostname with port>/*`
-        - `Valid post logout redirect URIs` = `http:<frontend hostname with port>`
-        - `Web origins` = `http://<frontend hostname with port>`
-    - `Roles`: Create `PURIS_ADMIN`, `PURIS_USER`
-- Create `users` as wanted
-    - puris_test with same password (see credentials tab)
-    - add roles in client
-
-_Note: The application does NOT make use of the `Client Authentication` (private) feature of Keycloak Clients._
 
 ## Data Sovereignty related configuration
 

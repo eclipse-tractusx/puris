@@ -21,7 +21,6 @@ SPDX-License-Identifier: Apache-2.0
 const app = {
     APP_NAME: import.meta.env.VITE_APP_NAME.trim() as string,
     BACKEND_BASE_URL: import.meta.env.VITE_BACKEND_BASE_URL.trim() as string,
-    BACKEND_API_KEY: import.meta.env.VITE_BACKEND_API_KEY.trim() as string,
     ENDPOINT_MATERIALS: import.meta.env.VITE_ENDPOINT_MATERIALS.trim() as string,
     ENDPOINT_PRODUCTS: import.meta.env.VITE_ENDPOINT_PRODUCTS.trim() as string,
     ENDPOINT_MATERIAL_STOCKS: import.meta.env.VITE_ENDPOINT_MATERIAL_STOCKS.trim() as string,
@@ -47,7 +46,6 @@ const auth = {
     IDP_REALM: import.meta.env.VITE_IDP_REALM.trim() as string,
     IDP_CLIENT_ID: import.meta.env.VITE_IDP_CLIENT_ID.trim() as string,
     IDP_REDIRECT_URL_FRONTEND: import.meta.env.VITE_IDP_REDIRECT_URL_FRONTEND.trim() as string,
-    IDP_DISABLE: import.meta.env.VITE_IDP_DISABLE === true || import.meta.env.VITE_IDP_DISABLE.trim().toLowerCase() === 'true',
 };
 
 export const config = {

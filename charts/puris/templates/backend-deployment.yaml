@@ -135,6 +135,12 @@ spec:
               {{- end -}}
               {{- $allowedOrigins := join "," $allowedOriginUrls }}
               value: {{ $allowedOrigins | quote }}
+            - name: PURIS_IDP_URI
+              value: "{{ .Values.backend.idp.uri }}"
+            - name: PURIS_IDP_REALM
+              value: "{{ .Values.backend.idp.realm }}"
+            - name: PURIS_IDP_CLIENT_ID
+              value: "{{ .Values.backend.idp.clientId }}"
             - name: PURIS_ITEMSTOCKSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.itemstocksubmodel.apiassetid }}"
             - name: PURIS_PRODUCTIONSUBMODEL_APIASSETID
