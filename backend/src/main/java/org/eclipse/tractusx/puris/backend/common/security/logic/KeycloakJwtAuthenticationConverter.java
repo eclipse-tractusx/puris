@@ -62,7 +62,7 @@ public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Abstra
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) realmAccess.get("roles");
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .map(role -> new SimpleGrantedAuthority(role))
                 .collect(Collectors.toList());
     }
 }
