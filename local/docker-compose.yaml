@@ -51,7 +51,7 @@ services:
       - ENDPOINT_DELIVERY=delivery
       - ENDPOINT_DAYS_OF_SUPPLY=days-of-supply
       - ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION=demand-and-capacity-notification
-      - IDP_URL=http://127.0.0.1:10081/
+      - IDP_URL=http://127.0.0.1:8080/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-customer
       - IDP_REDIRECT_URL_FRONTEND=http://localhost:3000
@@ -238,7 +238,7 @@ services:
       - ENDPOINT_DELIVERY=delivery
       - ENDPOINT_DAYS_OF_SUPPLY=days-of-supply
       - ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION=demand-and-capacity-notification
-      - IDP_URL=http://127.0.0.1:10081/
+      - IDP_URL=http://127.0.0.1:8080/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-supplier
       - IDP_REDIRECT_URL_FRONTEND=http://localhost:3001
@@ -373,22 +373,6 @@ services:
       - miw-net
     extra_hosts:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
-
-  puris-keycloak:
-    image: quay.io/keycloak/keycloak:23.0.1
-    container_name: puris-keycloak
-    ports:
-      - "10081:8080"
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-    volumes:
-      - ./keycloak/puris-config/:/opt/keycloak/data/import
-    networks:
-      - miw-net
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    command: start-dev --import-realm
 
 networks:
   miw-net:

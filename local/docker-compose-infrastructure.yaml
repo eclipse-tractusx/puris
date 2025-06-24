@@ -83,12 +83,15 @@ services:
       - ./keycloak/supplier/Supplier-users-0.json:/opt/keycloak/data/import/Supplier-users-0.json
       - ./keycloak/customer/Customer-realm.json:/opt/keycloak/data/import/Customer-realm.json
       - ./keycloak/customer/Customer-users-0.json:/opt/keycloak/data/import/Customer-users-0.json
+      - ./keycloak/puris-config/:/opt/keycloak/data/import
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:
       - postgres
     networks:
       - miw-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   vault:
     build: ./vault
     container_name: vault
