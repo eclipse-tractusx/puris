@@ -540,4 +540,3 @@ idp:
   clientId: "appXYZ"
   # -- URL to use as keycloak redirect url.
   redirectUrlFrontend: *frontendDomain
-

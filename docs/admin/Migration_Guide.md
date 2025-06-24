@@ -4,7 +4,7 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 
 <!-- TOC -->
 - [Migration Guide](#migration-guide)
-  - [Version 3.0.x to 3.1.x](#version-30x-to-31x)
+  - [Version 3.0.x to 4.0.x](#version-30x-to-40x)
     - [Moving IDP related configuration to its own section](#moving-idp-related-configuration-to-its-own-section)
   - [Version 2.8.x to 3.0.x](#version-28x-to-30x)
     - [Fix of NameOverride](#fix-of-nameoverride)
@@ -20,11 +20,11 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
   - [NOTICE](#notice)
 <!-- TOC -->
 
-## Version 3.0.x to 3.1.x
+## Version 3.0.x to 4.0.x
 
 ### Moving IDP related configuration to its own section
 
-With the overhaul of the authentication, the IDP values are now used by frontend and backend both. As a result all values of `frontend.puris.keycloak` were moved to the `idp` section. 
+With the overhaul of the authentication, the IDP values are now used by frontend and backend both. As a result all values of `frontend.puris.keycloak` were moved to the `idp` section.
 
 Due to the new authentication the IDP configuration is no longer optional and the `idp.disabled` property is no longer supported
 
