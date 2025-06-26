@@ -136,7 +136,7 @@ spec:
               {{- $allowedOrigins := join "," $allowedOriginUrls }}
               value: {{ $allowedOrigins | quote }}
             - name: IDP_URI
-              value: "{{ .Values.idp.uri }}"
+              value: "{{ .Values.idp.url }}"
             - name: IDP_REALM
               value: "{{ .Values.idp.realm }}"
             - name: IDP_CLIENT_ID
