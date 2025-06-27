@@ -10,6 +10,7 @@ maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/2.18.3, 
 maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/2.18.3, Apache-2.0, approved, #16625
 maven/mavencentral/com.fasterxml.jackson.module/jackson-module-parameter-names/2.18.3, Apache-2.0, approved, #17542
 maven/mavencentral/com.fasterxml/classmate/1.7.0, Apache-2.0, approved, clearlydefined
+maven/mavencentral/com.github.virtuald/curvesapi/1.08, BSD-3-Clause, approved, clearlydefined
 maven/mavencentral/com.jayway.jsonpath/json-path/2.9.0, Apache-2.0, approved, #20009
 maven/mavencentral/com.squareup.okhttp3/mockwebserver/4.12.0, Apache-2.0, approved, clearlydefined
 maven/mavencentral/com.squareup.okhttp3/okhttp/4.12.0, Apache-2.0, approved, #15227
@@ -18,6 +19,9 @@ maven/mavencentral/com.squareup.okio/okio/3.6.0, Apache-2.0, approved, #11155
 maven/mavencentral/com.sun.istack/istack-commons-runtime/4.1.2, BSD-3-Clause, approved, #15290
 maven/mavencentral/com.vaadin.external.google/android-json/0.0.20131108.vaadin1, Apache-2.0, approved, CQ21310
 maven/mavencentral/com.zaxxer/HikariCP/5.1.0, Apache-2.0, approved, clearlydefined
+maven/mavencentral/com.zaxxer/SparseBitSet/1.3, Apache-2.0, approved, #10726
+maven/mavencentral/commons-codec/commons-codec/1.17.2, Apache-2.0 AND (Apache-2.0 AND BSD-3-Clause), approved, #14583
+maven/mavencentral/commons-io/commons-io/2.18.0, Apache-2.0, approved, #17366
 maven/mavencentral/dev.failsafe/failsafe/3.3.2, Apache-2.0, approved, #9268
 maven/mavencentral/io.micrometer/micrometer-commons/1.14.6, Apache-2.0 AND (Apache-2.0 AND MIT), approved, #17272
 maven/mavencentral/io.micrometer/micrometer-core/1.14.6, Apache-2.0 AND (Apache-2.0 AND MIT), approved, #17271
@@ -43,12 +47,19 @@ maven/mavencentral/net.bytebuddy/byte-buddy/1.15.11, Apache-2.0 AND BSD-3-Clause
 maven/mavencentral/net.minidev/accessors-smart/2.5.2, Apache-2.0, approved, #19432
 maven/mavencentral/net.minidev/json-smart/2.5.2, Apache-2.0, approved, #19431
 maven/mavencentral/org.antlr/antlr4-runtime/4.13.0, BSD-3-Clause, approved, #10767
+maven/mavencentral/org.apache.commons/commons-collections4/4.4, Apache-2.0, approved, #17660
+maven/mavencentral/org.apache.commons/commons-compress/1.27.1, Apache-2.0 AND (Apache-2.0 AND BSD-3-Clause), approved, #17651
 maven/mavencentral/org.apache.commons/commons-lang3/3.17.0, Apache-2.0, approved, #16044
+maven/mavencentral/org.apache.commons/commons-math3/3.6.1, Apache-2.0 AND BSD-3-Clause AND BSD-2-Clause, approved, CQ22025
 maven/mavencentral/org.apache.logging.log4j/log4j-api/2.24.3, Apache-2.0, approved, #16095
 maven/mavencentral/org.apache.logging.log4j/log4j-to-slf4j/2.24.3, Apache-2.0, approved, #16094
+maven/mavencentral/org.apache.poi/poi-ooxml-lite/5.4.0, Apache-2.0 AND MIT AND Apache-2.0 AND W3C-19980720, approved, #18529
+maven/mavencentral/org.apache.poi/poi-ooxml/5.4.0, Apache-2.0 AND MIT AND Apache-2.0, approved, #18527
+maven/mavencentral/org.apache.poi/poi/5.4.0, Apache-2.0 AND (Apache-2.0 AND MIT), approved, #18526
 maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-core/10.1.40, Apache-2.0 AND (EPL-2.0 OR (GPL-2.0-only WITH Classpath-exception-2.0)) AND CDDL-1.0 AND (CDDL-1.1 OR (GPL-2.0-only WITH Classpath-exception-2.0)) AND EPL-2.0, approved, #15195
 maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-el/10.1.40, Apache-2.0, approved, #6997
 maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-websocket/10.1.40, Apache-2.0, approved, #7920
+maven/mavencentral/org.apache.xmlbeans/xmlbeans/5.3.0, Apache-2.0 AND W3C-19980720, approved, #17930
 maven/mavencentral/org.apiguardian/apiguardian-api/1.1.2, Apache-2.0, approved, #17641
 maven/mavencentral/org.aspectj/aspectjweaver/1.9.24, EPL-1.0, approved, tools.aspectj
 maven/mavencentral/org.assertj/assertj-core/3.26.3, Apache-2.0, approved, #14886
@@ -81,7 +92,7 @@ maven/mavencentral/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.9.25, Apache-2.0, a
 maven/mavencentral/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.9.25, Apache-2.0, approved, #14185
 maven/mavencentral/org.jetbrains.kotlin/kotlin-stdlib/1.9.25, Apache-2.0, approved, #11827
 maven/mavencentral/org.jetbrains/annotations/13.0, Apache-2.0, approved, clearlydefined
-maven/mavencentral/org.jspecify/jspecify/1.0.0, Apache-2.0, approved, clearlydefined
+maven/mavencentral/org.jspecify/jspecify/1.0.0, Apache-2.0, approved, #21897
 maven/mavencentral/org.junit.jupiter/junit-jupiter-api/5.11.4, EPL-2.0, approved, #15935
 maven/mavencentral/org.junit.jupiter/junit-jupiter-engine/5.11.4, EPL-2.0, approved, #15939
 maven/mavencentral/org.junit.jupiter/junit-jupiter-params/5.11.4, EPL-2.0, approved, #15940

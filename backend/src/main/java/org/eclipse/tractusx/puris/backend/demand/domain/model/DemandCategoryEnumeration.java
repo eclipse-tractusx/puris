@@ -41,4 +41,13 @@ public enum DemandCategoryEnumeration {
     public String getValue() {
         return value;
     }
+
+    public static DemandCategoryEnumeration fromValue(String value) {
+        for (DemandCategoryEnumeration category : DemandCategoryEnumeration.values()) {
+            if (category.getValue().equals(value)) {
+                return category;
+            }
+        }
+        throw new IllegalArgumentException("Unknown category: " + value);
+    }
 }

@@ -72,4 +72,12 @@ public enum ItemUnitEnumeration {
         return value;
     }
 
+    public static ItemUnitEnumeration fromValue(String value) {
+        for (ItemUnitEnumeration unit : ItemUnitEnumeration.values()) {
+            if (unit.getValue().equals(value)) {
+                return unit;
+            }
+        }
+        throw new IllegalArgumentException("Unknown unit: " + value);
+    }
 }

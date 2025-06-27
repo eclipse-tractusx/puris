@@ -38,4 +38,13 @@ public enum EventTypeEnumeration {
     public String getValue() {
         return value;
     }
+
+    public static EventTypeEnumeration fromValue(String value) {
+        for (EventTypeEnumeration event : EventTypeEnumeration.values()) {
+            if (event.getValue().equals(value)) {
+                return event;
+            }
+        }
+        throw new IllegalArgumentException("Unknown event: " + value);
+    }
 }

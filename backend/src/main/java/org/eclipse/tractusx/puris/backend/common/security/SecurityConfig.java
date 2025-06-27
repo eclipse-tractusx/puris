@@ -106,7 +106,8 @@ public class SecurityConfig {
                         "/days-of-supply/**",
                         "/edc/**",
                         "/erp-adapter/**",
-                        "/parttypeinformation/**"
+                        "/parttypeinformation/**",
+                        "/files/**"
                     )
                     .authenticated()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/health/**").permitAll()
