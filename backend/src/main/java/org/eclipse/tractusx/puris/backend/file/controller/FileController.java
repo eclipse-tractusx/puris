@@ -63,11 +63,11 @@ public class FileController {
                 return ResponseEntity.badRequest().body("Invalid file type");
             }
             excelService.readExcelFile(file.getInputStream());
-            return ResponseEntity.ok("File uploaded successfully: " + filename);
+            return ResponseEntity.ok("Data imported successfully.");
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body(e.getMessage());
+                                 .body("An error occurred while processing the file. Check the server logs for details");
         }
     }
 }

@@ -392,7 +392,7 @@ public class ExcelService {
                 String customerOrderNumber = getStringCellValue(row.getCell(6));
                 String customerPositionNumber = getStringCellValue(row.getCell(7));
                 String supplierOrderNumber = getStringCellValue(row.getCell(8));
-                Boolean isBlocked = row.getCell(9).getBooleanCellValue();
+                boolean isBlocked = row.getCell(9).getBooleanCellValue();
                 Date lastUpdatedOnDateTime = row.getCell(10).getDateCellValue();
                 String direction = getStringCellValue(row.getCell(11));
 
