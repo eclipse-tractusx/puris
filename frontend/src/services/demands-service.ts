@@ -21,6 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 import { config } from '@models/constants/config';
 import { Demand } from '@models/types/data/demand';
 import { UUID } from 'crypto';
+import AuthenticationService from './authentication-service';
 
 export const postDemand = async (demand: Partial<Demand>) => {
   const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_DEMAND, {
@@ -28,7 +29,7 @@ export const postDemand = async (demand: Partial<Demand>) => {
     body: JSON.stringify(demand),
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': config.app.BACKEND_API_KEY,
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
   if(res.status >= 400) {
@@ -42,7 +43,7 @@ export const deleteDemand = async (id: UUID) => {
   const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_DEMAND + `/${id}`, {
     method: 'DELETE',
     headers: {
-      'X-API-KEY': config.app.BACKEND_API_KEY,
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
   if(res.status >= 400) {
@@ -59,7 +60,7 @@ export const requestReportedDemands = async (materialNumber: string | null) => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': config.app.BACKEND_API_KEY,
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
   if(res.status >= 400) {
