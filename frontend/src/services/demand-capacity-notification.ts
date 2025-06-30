@@ -20,6 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import { config } from '@models/constants/config';
 import { DemandCapacityNotification } from '@models/types/data/demand-capacity-notification';
+import AuthenticationService from './authentication-service';
 
 export const getDemandAndCapacityNotification = async (isIncoming: boolean) => {
 
@@ -28,7 +29,7 @@ export const getDemandAndCapacityNotification = async (isIncoming: boolean) => {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'X-API-KEY': config.app.BACKEND_API_KEY,
+            'Authorization': `Bearer ${AuthenticationService.getToken()}`
         },
     });
     if (res.status >= 400) {
@@ -44,7 +45,7 @@ export const postDemandAndCapacityNotification = async (notification: Partial<De
         body: JSON.stringify(notification),
         headers: {
             'Content-Type': 'application/json',
-            'X-API-KEY': config.app.BACKEND_API_KEY,
+            'Authorization': `Bearer ${AuthenticationService.getToken()}`
         },
     });
     if (res.status >= 400) {
