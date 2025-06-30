@@ -32,6 +32,12 @@ The client roles configured in the IDP alter the frontend views visible to the u
 - `PURIS_USER` - Common views related to short-term information needs
 - `PURIS_ADMIN` - EDC related views (may be used for debugging)
 
+For the ease of development, the local deployment using docker configures 2 app instances with shared users. This enables easier testing.
+
+> NOTE:
+> 
+> This practice is not suited for productive environments
+
 ### API key configuration
 
 In addition to the aforementioned IDP server, requests can also be authorized using an API key.
