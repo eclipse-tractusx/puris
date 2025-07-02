@@ -18,6 +18,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 import { config } from "@models/constants/config";
+import AuthenticationService from "./authentication-service";
 
 export const refreshPartnerData = async (materialNumber: string | null) => {
   if (materialNumber != null) {
@@ -27,7 +28,7 @@ export const refreshPartnerData = async (materialNumber: string | null) => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': config.app.BACKEND_API_KEY,
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
   if(res.status >= 400) {

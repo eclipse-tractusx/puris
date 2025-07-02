@@ -3,20 +3,32 @@
 This migration guide is based on the `chartVersion` of the chart that also bumps the `appVersion` of the application. If you don't rely on the provided helm chart, consider the changes of the chart as mentioned below manually.
 
 <!-- TOC -->
-* [Migration Guide](#migration-guide)
-  * [Version 2.8.x to 3.0.0](#version-28x-to-300)
-    * [Fix of NameOverride](#fix-of-nameoverride)
-    * [Adding YAML Anchor for Frontend URL](#adding-yaml-anchor-for-frontend-url)
-    * [Handling of Protocols HTTP and HTTPS](#handling-of-protocols-http-and-https)
-    * [CORS allowed origins](#cors-allowed-origins)
-    * [Conformance to CX-0002 "Digital Twins in Catena-X"](#conformance-to-cx-0002-digital-twins-in-catena-x)
-      * [TASK Asset update](#task-asset-update)
-      * [TASK Shell & Submodel Descriptor Updates](#task-shell--submodel-descriptor-updates)
-    * [Further Improvements](#further-improvements)
-  * [Version 2.8.x to Version 2.9.0](#version-28x-to-version-290)
-  * [Older Versions](#older-versions)
-  * [NOTICE](#notice)
+- [Migration Guide](#migration-guide)
+  - [Version 3.0.x to 4.0.x](#version-30x-to-40x)
+    - [Moving IDP related configuration to its own section](#moving-idp-related-configuration-to-its-own-section)
+  - [Version 2.8.x to 3.0.x](#version-28x-to-30x)
+    - [Fix of NameOverride](#fix-of-nameoverride)
+    - [Adding YAML Anchor for Frontend URL](#adding-yaml-anchor-for-frontend-url)
+    - [Handling of Protocols HTTP and HTTPS](#handling-of-protocols-http-and-https)
+    - [CORS allowed origins](#cors-allowed-origins)
+    - [Conformance to CX-0002 "Digital Twins in Catena-X"](#conformance-to-cx-0002-digital-twins-in-catena-x)
+      - [TASK Asset update](#task-asset-update)
+      - [TASK Shell \& Submodel Descriptor Updates](#task-shell--submodel-descriptor-updates)
+    - [Further Improvements](#further-improvements)
+  - [Version 2.8.x to Version 2.9.0](#version-28x-to-version-290)
+  - [Older Versions](#older-versions)
+  - [NOTICE](#notice)
 <!-- TOC -->
+
+## Version 3.0.x to 4.0.x
+
+### Moving IDP related configuration to its own section
+
+With the overhaul of the authentication, the IDP values are now used by frontend and backend both. As a result all values of `frontend.puris.keycloak` were moved to the `idp` section.
+
+Due to the new authentication the IDP configuration is no longer optional and the `idp.disabled` property is no longer supported
+
+**YOUR TASK**: Move all keys except `disabled` of `frontend.puris.keycloak` to the new idp section.
 
 ## Version 2.8.x to 3.0.x
 

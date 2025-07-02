@@ -124,7 +124,7 @@ export const DemandCapacityNotificationInformationModal = ({
 }: DemandCapacityNotificationInformationModalProps) => {
     const [temporaryDemandCapacityNotification, setTemporaryDemandCapacityNotification] = useState<Partial<DemandCapacityNotification>>({});
     const { partners } = useAllPartners();
-    const { partnerMaterials } = usePartnerMaterials(temporaryDemandCapacityNotification.partnerBpnl ?? `BPNL`);
+    const { partnerMaterials } = usePartnerMaterials(temporaryDemandCapacityNotification.partnerBpnl ?? null);
 
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);

@@ -19,11 +19,10 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { useCallback, useEffect, useState } from 'react';
-import { config } from '@models/constants/config';
+import AuthenticationService from '@services/authentication-service';
 
 const defaultHeaders = {
     'Content-Type': 'application/json',
-    'X-API-KEY': config.app.BACKEND_API_KEY,
 };
 
 export const useFetch = <T = unknown>(url?: string, options?: RequestInit) => {
@@ -36,13 +35,17 @@ export const useFetch = <T = unknown>(url?: string, options?: RequestInit) => {
             setIsLoading(false);
             return;
         }
+        const headers = {
+            ...defaultHeaders,
+            'Authorization': `Bearer ${AuthenticationService.getToken()}`
+        }
         let shouldCancel = false;
         setIsLoading(true);
         setError(null);
         fetch(url, {
             method: options?.method ?? 'GET',
             body: options?.body ?? undefined,
-            headers: { ...defaultHeaders, ...options?.headers },
+            headers: { ...headers, ...options?.headers },
         })
             .then((res) => res.json())
             .then((data) => {

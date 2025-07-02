@@ -195,11 +195,6 @@ dependencies:
 | frontend.puris.endpointSupplier | string | `"stockView/supplier?ownMaterialNumber="` | The endpoint for the suppliers who buy a material identified via the own material number for the stock view |
 | frontend.puris.endpointUpdateReportedMaterialStocks | string | `"stockView/update-reported-material-stocks?ownMaterialNumber="` | The endpoint for triggering an update of your material stocks on your partners side |
 | frontend.puris.endpointUpdateReportedProductStocks | string | `"stockView/update-reported-product-stocks?ownMaterialNumber="` | The endpoint for triggering an update of your product stocks on your partners side |
-| frontend.puris.keycloak.clientId | string | `"appXYZ"` | Name of the client which is used for the application. |
-| frontend.puris.keycloak.disabled | bool | `true` | Disable the Keycloak integration. |
-| frontend.puris.keycloak.realm | string | `"Catena-X"` | Name of the Realm of the keycloak instance. |
-| frontend.puris.keycloak.redirectUrlFrontend | string | `"your-frontend-host-address.com"` | URL to use as keycloak redirect url. |
-| frontend.puris.keycloak.url | string | `"https://idp.com/auth"` | The URL to the IDP that should be used. Must contain protocol (http/https). |
 | frontend.puris.rateLimiting.burst | int | `30` | Burst rate limiting for nginx. |
 | frontend.puris.rateLimiting.limit | string | `"10m"` | Bucket zone limit for rate limiting in nginx. |
 | frontend.puris.rateLimiting.rate | string | `"10r/s"` | Allowed rates per second for nginx rate limiting. |
@@ -225,6 +220,10 @@ dependencies:
 | frontend.tolerations | list | `[]` | Constrains for tolerations |
 | global.domain.backend.ingress | string | `"your-backend-host-address.com"` |  |
 | global.domain.frontend.ingress | string | `"your-frontend-host-address.com"` |  |
+| idp.clientId | string | `"appXYZ"` | Name of the client which is used for the application. |
+| idp.realm | string | `"Catena-X"` | Name of the Realm of the keycloak instance. |
+| idp.redirectUrlFrontend | string | `"your-frontend-host-address.com"` | URL to use as keycloak redirect url. |
+| idp.url | string | `"https://idp.com/auth"` | The URL to the IDP that should be used. Must contain protocol (http/https). |
 | postgresql.auth.database | string | `"postgres"` | Name of the database. |
 | postgresql.auth.existingSecret | string | `"secret-puris-postgres-init"` | Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file. |
 | postgresql.auth.password | string | `""` | Password for the custom database user. Secret-key 'password' |

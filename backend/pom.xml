@@ -33,7 +33,7 @@
     </parent>
     <groupId>org.eclipse.tractusx.puris</groupId>
     <artifactId>puris-backend</artifactId>
-    <version>3.1.0</version>
+    <version>3.2.0</version>
     <name>puris-backend</name>
     <description>PURIS Backend</description>
     <properties>
@@ -61,6 +61,14 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-jose</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -145,6 +153,11 @@
             <groupId>org.eclipse.edc</groupId>
             <artifactId>json-ld-spi</artifactId>
             <version>${edc-connector-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-spring-boot-starter</artifactId>
+            <version>22.0.5</version>
         </dependency>
     </dependencies>
     <pluginRepositories>

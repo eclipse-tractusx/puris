@@ -20,6 +20,8 @@
 package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.eclipse.tractusx.puris.backend.common.TestConfig;
 import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
@@ -52,7 +54,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @WebMvcTest(PartnerController.class)
-@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class, VariablesService.class})
+@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class, VariablesService.class, TestConfig.class})
 public class PartnerControllerTest {
 
     @Autowired
