@@ -19,11 +19,27 @@
  */
 package org.eclipse.tractusx.puris.backend.common.security;
 
+import org.eclipse.tractusx.puris.backend.common.TestConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
+import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.eclipse.tractusx.puris.backend.stock.controller.StockViewController;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockRequestApiService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedMaterialItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedProductItemStockService;
+import org.eclipse.tractusx.puris.backend.supply.logic.service.CustomerSupplyService;
+import org.eclipse.tractusx.puris.backend.supply.logic.service.SupplierSupplyService;
 import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -31,19 +47,52 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest(StockViewController.class)
+@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class, VariablesService.class, TestConfig.class})
 public class ApiKeyTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private MaterialService materialService;
+
+    @MockitoBean
+    private ProductItemStockService productItemStockService;
+
+    @MockitoBean
+    private MaterialItemStockService materialItemStockService;
+
+    @MockitoBean
+    private ItemStockRequestApiService itemStockRequestMessageService;
+
+    @MockitoBean
+    private ReportedMaterialItemStockService reportedMaterialItemStockService;
+
+    @MockitoBean
+    private ReportedProductItemStockService reportedProductItemStockService;
+
+    @MockitoBean
+    private CustomerSupplyService customerSupplyService;
+
+    @MockitoBean
+    private SupplierSupplyService supplierSupplyService;
+
+    @MockitoBean
+    private PartnerService partnerService;
+
+    @MockitoBean
+    private MaterialPartnerRelationService mprService;
+
+    @MockitoBean
+    private ModelMapper modelMapper;
 
     @Test
     void StockViewController_MaterialsRequestWithoutAuthHeader_ShouldReturn403() throws Exception {
         this.mockMvc.perform(
             get("/stockView/materials"))
                 .andDo(print())
-            .andExpect(status().is(403));
+            .andExpect(status().is(401));
     }
 
     @Test

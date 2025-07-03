@@ -201,17 +201,6 @@ frontend:
     endpointDaysOfSupply: days-of-supply
     # -- The endpoint for demand and capacity notifications
     endpointDemandAndCapacityNotification: demand-and-capacity-notification
-    keycloak:
-      # -- Disable the Keycloak integration.
-      disabled: true
-      # -- The URL to the IDP that should be used. Must contain protocol (http/https).
-      url: "https://idp.com/auth"
-      # -- Name of the Realm of the keycloak instance.
-      realm: "Catena-X"
-      # -- Name of the client which is used for the application.
-      clientId: "appXYZ"
-      # -- URL to use as keycloak redirect url.
-      redirectUrlFrontend: *frontendDomain
     rateLimiting:
       # -- Bucket zone limit for rate limiting in nginx.
       limit: 10m
@@ -541,3 +530,13 @@ postgresql:
     password: ""
     # -- Password for the database. Secret-key 'postgres-password'.
     passwordPostgres: ""
+
+idp:
+  # -- The URL to the IDP that should be used. Must contain protocol (http/https).
+  url: "https://idp.com/auth"
+  # -- Name of the Realm of the keycloak instance.
+  realm: "Catena-X"
+  # -- Name of the client which is used for the application.
+  clientId: "appXYZ"
+  # -- URL to use as keycloak redirect url.
+  redirectUrlFrontend: *frontendDomain

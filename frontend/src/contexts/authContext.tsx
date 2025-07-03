@@ -26,6 +26,7 @@ export const AuthContext = createContext<Auth>({
     isInitialized: false,
     isAuthenticated: false,
     userName: null,
+    token: null,
     hasRole: () => false,
     logout: () => {},
 });
@@ -39,6 +40,7 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
         isInitialized: false,
         isAuthenticated: false,
         userName: '',
+        token: '',
         hasRole: () => false,
         logout: () => {},
     });
@@ -49,6 +51,7 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
                 isInitialized: true,
                 isAuthenticated: AuthenticationService.isAuthenticated() || false,
                 userName: AuthenticationService.getUsername(),
+                token: AuthenticationService.getToken(),
                 hasRole: AuthenticationService.userHasRole,
                 logout: AuthenticationService.logout,
             });
@@ -58,15 +61,29 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
                 isInitialized: true,
                 isAuthenticated: true,
                 userName: AuthenticationService.getUsername(),
+                token: AuthenticationService.getToken(),
                 hasRole: AuthenticationService.userHasRole,
                 logout: AuthenticationService.logout,
             });
+        });
+        AuthenticationService.onTokenChanged((success) => {
+            if (success) {
+                setAuth({
+                    isInitialized: true,
+                    isAuthenticated: true,
+                    userName: AuthenticationService.getUsername(),
+                    token: AuthenticationService.getToken(),
+                    hasRole: AuthenticationService.userHasRole,
+                    logout: AuthenticationService.logout,
+                });
+            }
         });
         AuthenticationService.onLogout(() => {
             setAuth({
                 isInitialized: true,
                 isAuthenticated: false,
                 userName: '',
+                token: null,
                 hasRole: () => false,
                 logout: AuthenticationService.logout,
             });

@@ -28,14 +28,20 @@ type RouteGuardProps = {
 };
 
 export const RouteGuard = ({ roles }: RouteGuardProps) => {
-    const { hasRole, isInitialized } = useAuth();
+    const { hasRole, isInitialized, token } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (isInitialized && !hasRole(roles)) {
+        if (isInitialized && token && !hasRole(roles)) {
             navigate('/unauthorized', { replace: true });
         }
-    }, [roles, hasRole, navigate, isInitialized]);
+    }, [roles, hasRole, navigate, isInitialized, token]);
 
-    return <Outlet />;
+    return <>
+                {
+                    isInitialized && token
+                        ? <Outlet />
+                        : <div> Loading... </div>
+                }
+    </>
 }

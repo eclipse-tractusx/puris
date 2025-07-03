@@ -20,6 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 import { config } from '@models/constants/config';
 import { Production } from '@models/types/data/production';
 import { UUID } from 'crypto';
+import AuthenticationService from './authentication-service';
 
 export const postProductionRange = async (range: Partial<Production>[]) => {
   const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION_RANGE, {
@@ -27,7 +28,7 @@ export const postProductionRange = async (range: Partial<Production>[]) => {
     body: JSON.stringify(range),
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': config.app.BACKEND_API_KEY,
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
   if(res.status >= 400) {
@@ -41,7 +42,7 @@ export const deleteProduction = async (id: UUID) => {
   const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION + `/${id}`, {
     method: 'DELETE',
     headers: {
-      'X-API-KEY': config.app.BACKEND_API_KEY,
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
   if(res.status >= 400) {
@@ -58,7 +59,7 @@ export const requestReportedProductions = async (materialNumber: string | null) 
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': config.app.BACKEND_API_KEY,
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
   if(res.status >= 400) {

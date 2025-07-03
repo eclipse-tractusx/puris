@@ -21,6 +21,7 @@
 import { config } from '@models/constants/config';
 import { AssetType } from '@models/types/erp/assetType';
 import { DirectionType } from '@models/types/erp/directionType';
+import AuthenticationService from './authentication-service';
 
 const PARAM_BPNL = 'partner-bpnl';
 const PARAM_MATERIAL_NUMBER = 'own-materialnumber';
@@ -40,7 +41,7 @@ export const scheduleErpUpdate = async (partnerBpnl: string | null, materialNumb
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-API-KEY': config.app.BACKEND_API_KEY,
+            'Authorization': `Bearer ${AuthenticationService.getToken()}`
         },
     });
     if(res.status >= 400) {

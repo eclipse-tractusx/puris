@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { config } from '@models/constants/config';
 import { DirectionType } from '@models/types/erp/directionType';
+import AuthenticationService from './authentication-service';
 
 export const requestReportedSupply = async (materialNumber: string | null, direction: DirectionType) => {
   if (materialNumber != null) {
@@ -29,7 +30,7 @@ export const requestReportedSupply = async (materialNumber: string | null, direc
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': config.app.BACKEND_API_KEY,
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
   if(res.status >= 400) {

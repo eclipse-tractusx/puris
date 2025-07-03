@@ -24,6 +24,7 @@ export type Auth = {
     isInitialized: boolean;
     isAuthenticated: boolean;
     userName: string | null;
+    token: string | null;
     hasRole: (roles: Role[]) => boolean;
     logout: () => void;
 };

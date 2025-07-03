@@ -125,7 +125,7 @@ npm/npmjs/@emotion/weak-memoize/0.4.0, MIT, approved, clearlydefined
 npm/npmjs/@esbuild/linux-x64/0.21.5, MIT, approved, clearlydefined
 npm/npmjs/@mui/base/5.0.0-beta.18, MIT, approved, #2992
 npm/npmjs/@mui/icons-material/5.14.12, MIT AND CC-BY-3.0, approved, #9876
-npm/npmjs/@mui/material/5.14.12, , approved, #9917
+npm/npmjs/@mui/material/5.14.12, (Apache-2.0 AND BSD-3-Clause AND BSD-2-Clause AND ISC AND MIT) AND CC-BY-3.0 AND MIT AND LicenseRef-Terms-of-use-internal-use AND OFL-1.1, approved, #9917
 npm/npmjs/@mui/private-theming/5.14.12, MIT, approved, #10973
 npm/npmjs/@mui/styled-engine/5.14.20, MIT, approved, #10971
 npm/npmjs/@mui/system/5.14.12, MIT AND CC-BY-3.0, approved, #9905

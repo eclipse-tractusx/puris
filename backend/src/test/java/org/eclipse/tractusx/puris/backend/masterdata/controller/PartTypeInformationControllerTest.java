@@ -20,6 +20,7 @@
 
 package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
+import org.eclipse.tractusx.puris.backend.common.TestConfig;
 import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
@@ -40,7 +41,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PartTypeInformationController.class)
-@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class, VariablesService.class})
+@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class, VariablesService.class, TestConfig.class})
 class PartTypeInformationControllerTest {
 
     @Autowired

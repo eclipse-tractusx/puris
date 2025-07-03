@@ -24,6 +24,7 @@ import { Stock, StockType } from '@models/types/data/stock';
 import { scheduleErpUpdate } from '@services/erp-service'
 import { AssetType } from "@models/types/erp/assetType.ts";
 import { DirectionType } from "@models/types/erp/directionType.ts";
+import AuthenticationService from './authentication-service';
 
 export const postStocks = async (type: StockType, stock: Partial<Stock>) => {
   const endpoint = type === 'product' ? config.app.ENDPOINT_PRODUCT_STOCKS : config.app.ENDPOINT_MATERIAL_STOCKS;
@@ -32,7 +33,7 @@ export const postStocks = async (type: StockType, stock: Partial<Stock>) => {
     body: JSON.stringify(stock),
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': config.app.BACKEND_API_KEY,
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
   if(res.status >= 400) {
@@ -48,7 +49,7 @@ export const putStocks = async (type: StockType, stock: Stock) => {
     body: JSON.stringify(stock),
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': config.app.BACKEND_API_KEY,
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
   if(res.status >= 400) {
@@ -63,7 +64,7 @@ export const deleteStocks = async (type: StockType, id: string) => {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': config.app.BACKEND_API_KEY,
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
   if(res.status >= 400) {
@@ -81,7 +82,7 @@ export const requestReportedStocks = async (type: StockType, materialNumber: str
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': config.app.BACKEND_API_KEY,
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
   if(res.status >= 400) {

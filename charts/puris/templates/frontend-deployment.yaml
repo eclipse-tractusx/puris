@@ -95,18 +95,14 @@ spec:
               value: "{{ .Values.frontend.puris.endpointDaysOfSupply }}"
             - name: ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION
               value: "{{ .Values.frontend.puris.endpointDemandAndCapacityNotification }}"
-            - name: BACKEND_API_KEY
-              value: "{{ .Values.backend.puris.api.key}}"
-            - name: IDP_DISABLE
-              value: "{{ .Values.frontend.puris.keycloak.disabled }}"
             - name: IDP_URL
-              value: "{{ .Values.frontend.puris.keycloak.url }}"
+              value: "{{ .Values.idp.url }}"
             - name: IDP_REALM
-              value: "{{ .Values.frontend.puris.keycloak.realm }}"
+              value: "{{ .Values.idp.realm }}"
             - name: IDP_CLIENT_ID
-              value: "{{ .Values.frontend.puris.keycloak.clientId }}"
+              value: "{{ .Values.idp.clientId }}"
             - name: IDP_REDIRECT_URL_FRONTEND
-              value: "{{ .Values.frontend.puris.keycloak.redirectUrlFrontend }}"
+              value: "{{ .Values.idp.redirectUrlFrontend }}"
             - name: NGINX_RATE_LIMIT
               value: "{{ .Values.frontend.puris.rateLimiting.limit }}"
             - name: NGINX_BURST
