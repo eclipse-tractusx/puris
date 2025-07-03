@@ -21,6 +21,8 @@ package org.eclipse.tractusx.puris.backend.file.logic.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -35,6 +37,9 @@ import org.eclipse.tractusx.puris.backend.delivery.logic.service.OwnDeliveryServ
 import org.eclipse.tractusx.puris.backend.demand.domain.model.DemandCategoryEnumeration;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.OwnDemand;
 import org.eclipse.tractusx.puris.backend.demand.logic.services.OwnDemandService;
+import org.eclipse.tractusx.puris.backend.file.domain.model.DataDocumentTypeEnumeration;
+import org.eclipse.tractusx.puris.backend.file.domain.model.DataImportError;
+import org.eclipse.tractusx.puris.backend.file.domain.model.DataImportResult;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -55,7 +60,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class ExcelService {
-
     private final List<String> demandColumns = List.of(
         "ownMaterialNumber",
         "partnerBpnl",
@@ -66,7 +70,6 @@ public class ExcelService {
         "demandCategoryCode",
         "day"
     );
-
     private final List<String> deliveryColumns = List.of(
         "ownMaterialNumber",
         "partnerBpnl",
@@ -86,7 +89,6 @@ public class ExcelService {
         "customerPositionId",
         "supplierOrderNumber"
     );
-
     private final List<String> productionColumns = List.of(
         "ownMaterialNumber",
         "partnerBpnl",
@@ -98,7 +100,6 @@ public class ExcelService {
         "customerPositionId",
         "supplierOrderNumber"
     );
-
     private final List<String> stockColumns = List.of(
         "ownMaterialNumber",
         "partnerBpnl",
@@ -131,34 +132,32 @@ public class ExcelService {
     @Autowired
     private MaterialPartnerRelationService mprService;
     
-    public void readExcelFile(InputStream is) throws IOException {
+    public DataImportResult readExcelFile(InputStream is) throws IOException {
         Workbook workbook = WorkbookFactory.create(is);
         Sheet sheet = workbook.getSheetAt(0);
-        extractAndSaveData(sheet);
+        var result = extractAndSaveData(sheet);
         workbook.close();
+        return result;
     }
 
-    private void extractAndSaveData(Sheet sheet) {
+    private DataImportResult extractAndSaveData(Sheet sheet) {
         switch(validateHeaders(sheet)) {
-            case "demand":
-                extractAndSaveDemands(sheet);
-                return;
-            case "production":
-                extractAndSaveProductions(sheet);
-                return;
-            case "delivery":
-                extractAndSaveDeliveries(sheet);
-                return;
-            case "stock":
-                extractAndSaveStocks(sheet);
-                return;
+            case DataDocumentTypeEnumeration.DEMAND:
+                return extractAndSaveDemands(sheet);
+            case DataDocumentTypeEnumeration.PRODUCTION:
+                return extractAndSaveProductions(sheet);
+            case DataDocumentTypeEnumeration.DELIVERY:
+                return extractAndSaveDeliveries(sheet);
+            case DataDocumentTypeEnumeration.STOCK:
+                return extractAndSaveStocks(sheet);
             default:
                 throw new Error("Invalid column structure");
         }
     }
 
-    private void extractAndSaveDemands(Sheet sheet) {
+    private DataImportResult extractAndSaveDemands(Sheet sheet) {
         List<OwnDemand> demands = new ArrayList<>();
+        List<DataImportError> errors = new ArrayList<>();
         Iterator<Row> rowIterator = sheet.iterator();
         int rowIndex = 0;
 
@@ -171,27 +170,26 @@ public class ExcelService {
             Row row = rowIterator.next();
             rowIndex++;
             try {
-                String materialNumber = getStringCellValue(row.getCell(0));
+                String ownMaterialNumber = getStringCellValue(row.getCell(0));
                 String partnerBpnl = getStringCellValue(row.getCell(1));
                 double quantity = Double.parseDouble(getStringCellValue(row.getCell(2)));
                 String unitOfMeasurement = getStringCellValue(row.getCell(3));
                 String expectedSupplierSiteBpns = getStringCellValue(row.getCell(4));
                 String demandSiteBpns = getStringCellValue(row.getCell(5));
                 String demandCategoryCodeStr = getStringCellValue(row.getCell(6));
-                Date day = row.getCell(7).getDateCellValue();
+                Date day = getDateCellValue(row.getCell(7));
 
                 ItemUnitEnumeration unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
                 DemandCategoryEnumeration categoryEnum = DemandCategoryEnumeration.fromValue(demandCategoryCodeStr.toUpperCase());
 
-                Material material = materialService.findByOwnMaterialNumber(materialNumber);
+                Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
 
                 Partner partner = partnerService.findByBpnl(partnerBpnl);
                 if (partner == null) throw new IllegalArgumentException("Partner not found.");
 
-                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, materialNumber);
-                if (!mpr.isPartnerBuysMaterial()) throw new IllegalArgumentException("Partner does not buy this material.");
-
+                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, ownMaterialNumber);
+                if (!mpr.isPartnerSuppliesMaterial()) throw new IllegalArgumentException("Partner does not supply this material.");
 
                 OwnDemand demand = OwnDemand.builder()
                         .material(material)
@@ -206,21 +204,37 @@ public class ExcelService {
 
                 demands.add(demand);
             } catch (Exception e) {
-                log.error("Failed to process demand row {}: {}", rowIndex, e.getMessage(), e);
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
             }
         }
 
-        ownDemandService.findAll().forEach(d -> ownDemandService.delete(d.getUuid()));
-        for (var newDemand : demands) {
-            if (ownDemandService.create(newDemand) == null) {
-                log.error("Failed to persist demand: {}", newDemand);
-                throw new IllegalStateException("Persisting demands failed. See logs for details.");
+        if (errors.isEmpty()) {
+            List<OwnDemand> addedDemands = new ArrayList<>();
+            List<OwnDemand> existingDemands = ownDemandService.findAll();
+            for (var newDemand : demands) {
+                var added = ownDemandService.create(newDemand);
+                if (added == null) {
+                    log.error("Failed to persist demand: {}", newDemand);
+                    var index = demands.indexOf(newDemand);
+                    errors.add(new DataImportError(index, List.of("Failed to persist")));
+                    addedDemands.forEach(d -> ownDemandService.delete(d.getUuid()));
+                    return new DataImportResult("Failed to persist Demands", errors);
+                }
+                addedDemands.add(added);
             }
+            existingDemands.forEach(d -> ownDemandService.delete(d.getUuid()));
+            return new DataImportResult("Successfully imported demands", errors);
+        } else {
+            log.info(errors.toString());
         }
+
+        return new DataImportResult("Failed to process Demand rows", errors);
     }
 
-    private void extractAndSaveProductions(Sheet sheet) {
+
+    private DataImportResult extractAndSaveProductions(Sheet sheet) {
         List<OwnProduction> productions = new ArrayList<>();
+        List<DataImportError> errors = new ArrayList<>();
         Iterator<Row> rowIterator = sheet.iterator();
         int rowIndex = 0;
 
@@ -233,56 +247,70 @@ public class ExcelService {
             Row row = rowIterator.next();
             rowIndex++;
             try {
-
-                String materialNumber = getStringCellValue(row.getCell(0));
+                String ownMaterialNumber = getStringCellValue(row.getCell(0));
                 String partnerBpnl = getStringCellValue(row.getCell(1));
                 double quantity = Double.parseDouble(getStringCellValue(row.getCell(2)));
                 String unitOfMeasurement = getStringCellValue(row.getCell(3));
                 String productionSiteBpns = getStringCellValue(row.getCell(4));
-                Date estimatedTimeOfCompletion = row.getCell(5).getDateCellValue();
+                Date estimatedTimeOfCompletion = getDateCellValue(row.getCell(5));
                 String customerOrderNumber = getStringCellValue(row.getCell(6));
-                String customerPositionNumber = getStringCellValue(row.getCell(6));
-                String supplierOrderNumber = getStringCellValue(row.getCell(6));
-                
+                String customerPositionNumber = getStringCellValue(row.getCell(7));
+                String supplierOrderNumber = getStringCellValue(row.getCell(8));
+
                 ItemUnitEnumeration unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
-                
-                Material material = materialService.findByOwnMaterialNumber(materialNumber);
+
+                Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
-                
+
                 Partner partner = partnerService.findByBpnl(partnerBpnl);
                 if (partner == null) throw new IllegalArgumentException("Partner not found.");
-                
-                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, materialNumber);
+
+                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, ownMaterialNumber);
                 if (!mpr.isPartnerBuysMaterial()) throw new IllegalArgumentException("Partner does not buy this material.");
-                
+
                 OwnProduction production = OwnProduction.builder()
-                .material(material)
-                .partner(partner)
-                .quantity(quantity)
-                .measurementUnit(unitEnum)
-                .productionSiteBpns(productionSiteBpns)
-                .estimatedTimeOfCompletion(estimatedTimeOfCompletion)
-                .customerOrderNumber(customerOrderNumber)
-                .customerOrderPositionNumber(customerPositionNumber)
-                .supplierOrderNumber(supplierOrderNumber)
-                .build();
-                
+                    .material(material)
+                    .partner(partner)
+                    .quantity(quantity)
+                    .measurementUnit(unitEnum)
+                    .productionSiteBpns(productionSiteBpns)
+                    .estimatedTimeOfCompletion(estimatedTimeOfCompletion)
+                    .customerOrderNumber(customerOrderNumber)
+                    .customerOrderPositionNumber(customerPositionNumber)
+                    .supplierOrderNumber(supplierOrderNumber)
+                    .build();
                 productions.add(production);
             } catch (Exception e) {
-                log.error("Failed to process production row {}: {}", rowIndex, e.getMessage(), e);
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
             }
         }
-        ownProductionService.findAll().forEach(d -> ownProductionService.delete(d.getUuid()));
-        for (var newProduction : productions) {
-            if (ownProductionService.create(newProduction) == null) {
-                log.error("Failed to persist production: {}", newProduction);
-                throw new IllegalStateException("Persisting productions failed. See logs for details.");
+
+        if (errors.isEmpty()) {
+            List<OwnProduction> addedProductions = new ArrayList<>();
+            List<OwnProduction> existingProductions = ownProductionService.findAll();
+            for (var newProduction : productions) {
+                try {
+                    var added = ownProductionService.create(newProduction);
+                    addedProductions.add(added);
+                } catch (Exception e) {
+                    log.error("Failed to persist production: {}", newProduction);
+                    var index = productions.indexOf(newProduction);
+                    errors.add(new DataImportError(index, List.of("Failed to persist")));
+                    addedProductions.forEach(p -> ownProductionService.delete(p.getUuid()));
+                    return new DataImportResult("Failed to persist Productions", errors);
+                }
             }
+            existingProductions.forEach(p -> ownProductionService.delete(p.getUuid()));
+            return new DataImportResult("Successfully imported productions", errors);
+        } else {
+            log.info(errors.toString());
         }
+        return new DataImportResult("Failed to process Production rows", errors);
     }
 
-    private void extractAndSaveDeliveries(Sheet sheet) {
+    private DataImportResult extractAndSaveDeliveries(Sheet sheet) {
         List<OwnDelivery> deliveries = new ArrayList<>();
+        List<DataImportError> errors = new ArrayList<>();
         Iterator<Row> rowIterator = sheet.iterator();
         int rowIndex = 0;
 
@@ -295,7 +323,7 @@ public class ExcelService {
             Row row = rowIterator.next();
             rowIndex++;
             try {
-                String materialNumber = getStringCellValue(row.getCell(0));
+                String ownMaterialNumber = getStringCellValue(row.getCell(0));
                 String partnerBpnl = getStringCellValue(row.getCell(1));
                 double quantity = Double.parseDouble(getStringCellValue(row.getCell(2)));
                 String unitOfMeasurement = getStringCellValue(row.getCell(3));
@@ -304,73 +332,93 @@ public class ExcelService {
                 String destinationSiteBpns = getStringCellValue(row.getCell(6));
                 String destinationAddressBpna = getStringCellValue(row.getCell(7));
                 String departureType = getStringCellValue(row.getCell(8));
-                Date departureTime = row.getCell(9).getDateCellValue();
+                Date departureTime = getDateCellValue(row.getCell(9));
                 String arrivalType = getStringCellValue(row.getCell(10));
-                Date arrivalTime = row.getCell(11).getDateCellValue();
+                Date arrivalTime = getDateCellValue(row.getCell(11));
                 String trackingNumber = getStringCellValue(row.getCell(12));
                 String incoterm = getStringCellValue(row.getCell(13));
                 String customerOrderNumber = getStringCellValue(row.getCell(14));
                 String customerPositionNumber = getStringCellValue(row.getCell(15));
                 String supplierOrderNumber = getStringCellValue(row.getCell(16));
-                
+
                 ItemUnitEnumeration unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
                 IncotermEnumeration incotermEnum = IncotermEnumeration.valueOf(incoterm.toUpperCase());
                 EventTypeEnumeration departureTypeEnum = EventTypeEnumeration.fromValue(departureType);
                 EventTypeEnumeration arrivalTypeEnum = EventTypeEnumeration.fromValue(arrivalType);
 
-                Material material = materialService.findByOwnMaterialNumber(materialNumber);
+                Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
-                
+
                 Partner partner = partnerService.findByBpnl(partnerBpnl);
                 if (partner == null) throw new IllegalArgumentException("Partner not found.");
-                
-                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, materialNumber);
-                
-                // Incoming delivery
-                if (partner.getSites().stream().anyMatch(site -> site.getBpns().equals(originSiteBpns))) {
-                    if (!mpr.isPartnerSuppliesMaterial()) throw new IllegalArgumentException("Partner does not supply this material.");
-                // outgoing shipment
-                } else {
-                    if (!mpr.isPartnerBuysMaterial()) throw new IllegalArgumentException("Partner does not buy this material.");
+
+                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, ownMaterialNumber);
+                boolean isOriginSiteOfPartner = partner.getSites().stream()
+                        .anyMatch(site -> site.getBpns().equals(originSiteBpns));
+
+                if (isOriginSiteOfPartner && !mpr.isPartnerSuppliesMaterial()) {
+                    throw new IllegalArgumentException("Partner does not supply this material.");
+                }
+                if (!isOriginSiteOfPartner && !mpr.isPartnerBuysMaterial()) {
+                    throw new IllegalArgumentException("Partner does not buy this material.");
                 }
 
                 OwnDelivery delivery = OwnDelivery.builder()
-                        .material(material)
-                        .partner(partner)
-                        .quantity(quantity)
-                        .measurementUnit(unitEnum)
-                        .originBpns(originSiteBpns)
-                        .originBpna(originAddressBpna)
-                        .destinationBpns(destinationSiteBpns)
-                        .destinationBpna(destinationAddressBpna)
-                        .departureType(departureTypeEnum)
-                        .dateOfDeparture(departureTime)
-                        .arrivalType(arrivalTypeEnum)
-                        .dateOfArrival(arrivalTime)
-                        .trackingNumber(trackingNumber)
-                        .incoterm(incotermEnum)
-                        .customerOrderNumber(customerOrderNumber)
-                        .customerOrderPositionNumber(customerPositionNumber)
-                        .supplierOrderNumber(supplierOrderNumber)
-                        .build();
-
+                    .material(material)
+                    .partner(partner)
+                    .quantity(quantity)
+                    .measurementUnit(unitEnum)
+                    .originBpns(originSiteBpns)
+                    .originBpna(originAddressBpna)
+                    .destinationBpns(destinationSiteBpns)
+                    .destinationBpna(destinationAddressBpna)
+                    .departureType(departureTypeEnum)
+                    .dateOfDeparture(departureTime)
+                    .arrivalType(arrivalTypeEnum)
+                    .dateOfArrival(arrivalTime)
+                    .trackingNumber(trackingNumber)
+                    .incoterm(incotermEnum)
+                    .customerOrderNumber(customerOrderNumber)
+                    .customerOrderPositionNumber(customerPositionNumber)
+                    .supplierOrderNumber(supplierOrderNumber)
+                    .build();
                 deliveries.add(delivery);
             } catch (Exception e) {
-                log.error("Failed to process delivery row {}: {}", rowIndex, e.getMessage(), e);
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
             }
         }
-        ownDeliveryService.findAll().forEach(d -> ownDeliveryService.delete(d.getUuid()));
-        for (var newDelivery : deliveries) {
-            if (ownDeliveryService.create(newDelivery) == null) {
-                log.error("Failed to persist delivery: {}", newDelivery);
-                throw new IllegalStateException("Persisting deliveries failed. See logs for details.");
+
+        if (errors.isEmpty()) {
+            List<OwnDelivery> addedDeliveries = new ArrayList<>();
+            List<OwnDelivery> existingDeliveries = ownDeliveryService.findAll();
+
+            for (var newDelivery : deliveries) {
+                try {
+                    var added = ownDeliveryService.create(newDelivery);
+                    addedDeliveries.add(added);
+                } catch(Exception e) {
+                    log.error("Failed to persist delivery: {}", newDelivery);
+                    int failedIndex = deliveries.indexOf(newDelivery) + 2;
+                    errors.add(new DataImportError(failedIndex, List.of(e.getMessage())));
+                    addedDeliveries.forEach(d -> ownDeliveryService.delete(d.getUuid()));
+                    return new DataImportResult("Failed to persist Deliveries", errors);
+                }
             }
+            existingDeliveries.forEach(d -> ownDeliveryService.delete(d.getUuid()));
+            return new DataImportResult("Successfully imported deliveries", errors);
+        } else {
+            log.info(errors.toString());
         }
+
+        return new DataImportResult("Failed to process Delivery rows", errors);
     }
 
-    private void extractAndSaveStocks(Sheet sheet) {
+
+
+    private DataImportResult extractAndSaveStocks(Sheet sheet) {
         List<MaterialItemStock> materialStocks = new ArrayList<>();
         List<ProductItemStock> productStocks = new ArrayList<>();
+        List<DataImportError> errors = new ArrayList<>();
         Iterator<Row> rowIterator = sheet.iterator();
         int rowIndex = 0;
 
@@ -383,7 +431,7 @@ public class ExcelService {
             Row row = rowIterator.next();
             rowIndex++;
             try {
-                String materialNumber = getStringCellValue(row.getCell(0));
+                String ownMaterialNumber = getStringCellValue(row.getCell(0));
                 String partnerBpnl = getStringCellValue(row.getCell(1));
                 double quantity = Double.parseDouble(getStringCellValue(row.getCell(2)));
                 String unitOfMeasurement = getStringCellValue(row.getCell(3));
@@ -393,20 +441,20 @@ public class ExcelService {
                 String customerPositionNumber = getStringCellValue(row.getCell(7));
                 String supplierOrderNumber = getStringCellValue(row.getCell(8));
                 boolean isBlocked = row.getCell(9).getBooleanCellValue();
-                Date lastUpdatedOnDateTime = row.getCell(10).getDateCellValue();
+                Date lastUpdatedOnDateTime = getDateCellValue(row.getCell(10));
                 String direction = getStringCellValue(row.getCell(11));
 
                 ItemUnitEnumeration unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
 
-                Material material = materialService.findByOwnMaterialNumber(materialNumber);
+                Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
-                
+
                 Partner partner = partnerService.findByBpnl(partnerBpnl);
                 if (partner == null) throw new IllegalArgumentException("Partner not found.");
-                
-                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, materialNumber);
 
-                if (direction.equals("inbound")) {
+                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, ownMaterialNumber);
+
+                if ("inbound".equalsIgnoreCase(direction)) {
                     if (!mpr.isPartnerSuppliesMaterial()) throw new IllegalArgumentException("Partner does not supply this material.");
                     MaterialItemStock stock = MaterialItemStock.builder()
                         .material(material)
@@ -422,7 +470,7 @@ public class ExcelService {
                         .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                         .build();
                     materialStocks.add(stock);
-                } else if (direction.equals("outbound")) {
+                } else if ("outbound".equalsIgnoreCase(direction)) {
                     if (!mpr.isPartnerBuysMaterial()) throw new IllegalArgumentException("Partner does not buy this material.");
                     ProductItemStock stock = ProductItemStock.builder()
                         .material(material)
@@ -439,39 +487,67 @@ public class ExcelService {
                         .build();
                     productStocks.add(stock);
                 } else {
-                    throw new Error("Invalid direction");
+                    throw new IllegalArgumentException("Invalid direction: " + direction);
                 }
+
             } catch (Exception e) {
-                log.error("Failed to process stock row {}: {}", rowIndex, e.getMessage(), e);
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
+            }
+        }
+
+        if (errors.isEmpty()) {
+            List<MaterialItemStock> addedMaterialStocks = new ArrayList<>();
+            List<ProductItemStock> addedProductStocks = new ArrayList<>();
+            List<MaterialItemStock> existingMaterialStocks = materialItemStockService.findAll();
+            List<ProductItemStock> existingProductStocks = productItemStockService.findAll();
+
+            for (var newStock : materialStocks) {
+                var added = materialItemStockService.create(newStock);
+                if (added == null) {
+                    log.error("Failed to persist material stock: {}", newStock);
+                    int idx = materialStocks.indexOf(newStock);
+                    errors.add(new DataImportError(idx + 2, List.of("Failed to persist"))); // +2 to account for header and 0-based index
+                    addedMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
+                    return new DataImportResult("Failed to persist material stocks", errors);
+                }
+                addedMaterialStocks.add(added);
             }
 
-        }
-        materialItemStockService.findAll().forEach(s -> materialItemStockService.delete(s.getUuid()));
-        for (var newMaterialStock : materialStocks) {
-            if (materialItemStockService.create(newMaterialStock) == null) {
-                log.error("Failed to persist material stock: {}", newMaterialStock);
-                throw new IllegalStateException("Persisting material stocks failed. See logs for details.");
+            for (var newStock : productStocks) {
+                var added = productItemStockService.create(newStock);
+                if (added == null) {
+                    log.error("Failed to persist product stock: {}", newStock);
+                    int idx = productStocks.indexOf(newStock);
+                    errors.add(new DataImportError(idx + 2, List.of("Failed to persist")));
+                    addedMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
+                    addedProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
+                    return new DataImportResult("Failed to persist product stocks", errors);
+                }
+                addedProductStocks.add(added);
             }
+
+            existingMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
+            existingProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
+            return new DataImportResult("Successfully imported stocks", errors);
+        } else {
+            log.info(errors.toString());
         }
-        productItemStockService.findAll().forEach(s -> productItemStockService.delete(s.getUuid()));
-        for (var newProductStock : productStocks) {
-            if (productItemStockService.create(newProductStock) == null) {
-                log.error("Failed to persist product stock: {}", newProductStock);
-                throw new IllegalStateException("Persisting product stocks failed. See logs for details.");
-            }
-        }
+
+        return new DataImportResult("Failed to process stock rows", errors);
     }
 
-    private String validateHeaders(Sheet sheet) {
+
+
+    private DataDocumentTypeEnumeration validateHeaders(Sheet sheet) {
         var headerNames = extractHeader(sheet);
         if (headerNames.containsAll(demandColumns)) {
-            return "demand";
+            return DataDocumentTypeEnumeration.DEMAND;
         } else if (headerNames.containsAll(deliveryColumns)) {
-            return "delivery";
+            return DataDocumentTypeEnumeration.DELIVERY;
         } else if (headerNames.containsAll(productionColumns)) {
-            return "production";
+            return DataDocumentTypeEnumeration.PRODUCTION;
         } else if (headerNames.containsAll(stockColumns)) {
-            return "stock";
+            return DataDocumentTypeEnumeration.STOCK;
         } else {
             return null;
         }
@@ -490,5 +566,15 @@ public class ExcelService {
         return cell == null || cell.getCellType() == CellType.BLANK ? null : cell.getCellType() == CellType.STRING
                 ? cell.getStringCellValue().trim()
                 : String.valueOf(cell.getNumericCellValue()).trim();
+    }
+
+    private Date getDateCellValue(Cell cell) {
+        try {
+            return cell == null || cell.getCellType() == CellType.BLANK ? null : cell.getCellType() == CellType.STRING
+                ? Date.from(Instant.parse(cell.getStringCellValue().trim()))
+                : cell.getDateCellValue();
+        } catch(Exception e) {
+            return null;
+        }
     }
 }
