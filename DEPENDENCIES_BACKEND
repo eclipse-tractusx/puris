@@ -10,8 +10,8 @@ maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/2.18.3, 
 maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/2.18.3, Apache-2.0, approved, #16625
 maven/mavencentral/com.fasterxml.jackson.module/jackson-module-parameter-names/2.18.3, Apache-2.0, approved, #17542
 maven/mavencentral/com.fasterxml/classmate/1.7.0, Apache-2.0, approved, clearlydefined
-maven/mavencentral/com.github.virtuald/curvesapi/1.08, BSD-3-Clause, approved, clearlydefined
 maven/mavencentral/com.github.stephenc.jcip/jcip-annotations/1.0-1, Apache-2.0, approved, CQ21949
+maven/mavencentral/com.github.virtuald/curvesapi/1.08, BSD-3-Clause, approved, clearlydefined
 maven/mavencentral/com.jayway.jsonpath/json-path/2.9.0, Apache-2.0, approved, #20009
 maven/mavencentral/com.nimbusds/nimbus-jose-jwt/9.37.3, Apache-2.0, approved, #11701
 maven/mavencentral/com.squareup.okhttp3/mockwebserver/4.12.0, Apache-2.0, approved, clearlydefined
@@ -22,8 +22,8 @@ maven/mavencentral/com.sun.istack/istack-commons-runtime/4.1.2, BSD-3-Clause, ap
 maven/mavencentral/com.vaadin.external.google/android-json/0.0.20131108.vaadin1, Apache-2.0, approved, CQ21310
 maven/mavencentral/com.zaxxer/HikariCP/5.1.0, Apache-2.0, approved, clearlydefined
 maven/mavencentral/com.zaxxer/SparseBitSet/1.3, Apache-2.0, approved, #10726
-maven/mavencentral/commons-io/commons-io/2.18.0, Apache-2.0, approved, #17366
 maven/mavencentral/commons-codec/commons-codec/1.17.2, Apache-2.0 AND (Apache-2.0 AND BSD-3-Clause), approved, #14583
+maven/mavencentral/commons-io/commons-io/2.18.0, Apache-2.0, approved, #17366
 maven/mavencentral/commons-logging/commons-logging/1.2, Apache-2.0, approved, CQ10162
 maven/mavencentral/dev.failsafe/failsafe/3.3.2, Apache-2.0, approved, #9268
 maven/mavencentral/io.micrometer/micrometer-commons/1.14.6, Apache-2.0 AND (Apache-2.0 AND MIT), approved, #17272
