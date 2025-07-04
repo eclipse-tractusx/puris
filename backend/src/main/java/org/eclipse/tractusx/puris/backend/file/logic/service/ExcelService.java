@@ -213,15 +213,19 @@ public class ExcelService {
             List<OwnDemand> addedDemands = new ArrayList<>();
             List<OwnDemand> existingDemands = ownDemandService.findAll();
             for (var newDemand : demands) {
-                var added = ownDemandService.create(newDemand);
-                if (added == null) {
-                    log.error("Failed to persist demand: {}", newDemand);
-                    var index = demands.indexOf(newDemand);
-                    errors.add(new DataImportError(index, List.of("Failed to persist")));
-                    addedDemands.forEach(d -> ownDemandService.delete(d.getUuid()));
-                    return new DataImportResult("Failed to persist Demands", errors);
+                try {
+                    var added = ownDemandService.create(newDemand);
+                    if (added == null) {
+                        log.error("Failed to persist demand: {}", newDemand);
+                        throw new IllegalArgumentException("Invalid demand");
+                    }
+                    addedDemands.add(added);
+                } catch (Exception e) {
+                    int idx = demands.indexOf(newDemand);
+                    errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
+                    addedDemands.forEach(s -> ownDemandService.delete(s.getUuid()));
+                    return new DataImportResult("Failed to persist demands", errors);
                 }
-                addedDemands.add(added);
             }
             existingDemands.forEach(d -> ownDemandService.delete(d.getUuid()));
             return new DataImportResult("Successfully imported demands", errors);
@@ -294,8 +298,8 @@ public class ExcelService {
                     addedProductions.add(added);
                 } catch (Exception e) {
                     log.error("Failed to persist production: {}", newProduction);
-                    var index = productions.indexOf(newProduction);
-                    errors.add(new DataImportError(index, List.of("Failed to persist")));
+                    var idx = productions.indexOf(newProduction);
+                    errors.add(new DataImportError(idx + 2, List.of("Failed to persist")));
                     addedProductions.forEach(p -> ownProductionService.delete(p.getUuid()));
                     return new DataImportResult("Failed to persist Productions", errors);
                 }
@@ -398,8 +402,8 @@ public class ExcelService {
                     addedDeliveries.add(added);
                 } catch(Exception e) {
                     log.error("Failed to persist delivery: {}", newDelivery);
-                    int failedIndex = deliveries.indexOf(newDelivery) + 2;
-                    errors.add(new DataImportError(failedIndex, List.of(e.getMessage())));
+                    int idx = deliveries.indexOf(newDelivery);
+                    errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
                     addedDeliveries.forEach(d -> ownDeliveryService.delete(d.getUuid()));
                     return new DataImportResult("Failed to persist Deliveries", errors);
                 }
@@ -503,28 +507,38 @@ public class ExcelService {
             List<ProductItemStock> existingProductStocks = productItemStockService.findAll();
 
             for (var newStock : materialStocks) {
-                var added = materialItemStockService.create(newStock);
-                if (added == null) {
-                    log.error("Failed to persist material stock: {}", newStock);
+                try {
+                    var added = materialItemStockService.create(newStock);
+                    if (added == null) {
+                        log.error("Failed to persist material stock: {}", newStock);
+                        throw new IllegalArgumentException("Invalid material stock");
+                    }
+                    addedMaterialStocks.add(added);
+                } catch (Exception e) {
                     int idx = allStocks.indexOf(newStock);
-                    errors.add(new DataImportError(idx + 2, List.of("Failed to persist"))); // +2 to account for header and 0-based index
+                    errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
                     addedMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
-                    return new DataImportResult("Failed to persist material stocks", errors);
+                    addedProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
+                    return new DataImportResult("Failed to persist stocks", errors);
                 }
-                addedMaterialStocks.add(added);
             }
 
             for (var newStock : productStocks) {
-                var added = productItemStockService.create(newStock);
-                if (added == null) {
-                    log.error("Failed to persist product stock: {}", newStock);
+                try {
+
+                    var added = productItemStockService.create(newStock);
+                    if (added == null) {
+                        log.error("Failed to persist product stock: {}", newStock);
+                        throw new IllegalArgumentException("Invalid product stock");
+                    }
+                    addedProductStocks.add(added);
+                } catch (Exception e) {
                     int idx = allStocks.indexOf(newStock);
-                    errors.add(new DataImportError(idx + 2, List.of("Failed to persist")));
+                    errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
                     addedMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
                     addedProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
-                    return new DataImportResult("Failed to persist product stocks", errors);
+                    return new DataImportResult("Failed to persist stocks", errors);
                 }
-                addedProductStocks.add(added);
             }
 
             existingMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
