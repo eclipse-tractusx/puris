@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2024 Volkswagen AG
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Volkswagen AG
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,34 +17,24 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
-package org.eclipse.tractusx.puris.backend.delivery.domain.model;
+package org.eclipse.tractusx.puris.backend.file.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum EventTypeEnumeration {
-    ESTIMATED_DEPARTURE("estimated-departure"),
-    ACTUAL_DEPARTURE("actual-departure"),
-    ESTIMATED_ARRIVAL("estimated-arrival"),
-    ACTUAL_ARRIVAL("actual-arrival");
+public enum DataDocumentTypeEnumeration {
+    DEMAND("demand"),
+    DELIVERY("delivery"),
+    PRODUCTION("production"),
+    STOCK("stock");
 
     private String value;
 
-    EventTypeEnumeration(String value) {
+    DataDocumentTypeEnumeration(String value) {
         this.value = value;
     }
 
     @JsonValue
     public String getValue() {
         return value;
-    }
-
-    public static EventTypeEnumeration fromValue(String value) {
-        for (EventTypeEnumeration event : EventTypeEnumeration.values()) {
-            if (event.getValue().equals(value)) {
-                return event;
-            }
-        }
-        throw new IllegalArgumentException("Unknown event: " + value);
     }
 }

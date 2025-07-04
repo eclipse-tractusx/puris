@@ -371,6 +371,16 @@ adding the master data to e.g. regularly update / overwrite the existing data.
 
 Please refer to the [Interface Documentation](../interfaceDoc) and the implementation for further information.
 
+### Import operational data from documents
+
+In order to improve the addition of data, the API offers an endpoint at `/file/upload` to import data for the standard Short Term Material Demand, Planned Production Output, Delivery Information and Item Stock. 
+
+Templates for the data upload can be found in `/frontend/src/assets`.
+
+> NOTE:
+> 
+> Importing data for a standard overwrites existing data. Make sure you do not lose any data.
+
 ## Postgres
 
 The PURIS Backend uses a postgres Database. The helm installation already has a dependency that may be installed with
