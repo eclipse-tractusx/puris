@@ -48,6 +48,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialServi
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.eclipse.tractusx.puris.backend.production.logic.service.OwnProductionService;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
@@ -231,7 +232,6 @@ public class ExcelService {
         return new DataImportResult("Failed to process Demand rows", errors);
     }
 
-
     private DataImportResult extractAndSaveProductions(Sheet sheet) {
         List<OwnProduction> productions = new ArrayList<>();
         List<DataImportError> errors = new ArrayList<>();
@@ -413,11 +413,10 @@ public class ExcelService {
         return new DataImportResult("Failed to process Delivery rows", errors);
     }
 
-
-
     private DataImportResult extractAndSaveStocks(Sheet sheet) {
         List<MaterialItemStock> materialStocks = new ArrayList<>();
         List<ProductItemStock> productStocks = new ArrayList<>();
+        List<ItemStock> allStocks = new ArrayList<>();
         List<DataImportError> errors = new ArrayList<>();
         Iterator<Row> rowIterator = sheet.iterator();
         int rowIndex = 0;
@@ -470,6 +469,7 @@ public class ExcelService {
                         .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                         .build();
                     materialStocks.add(stock);
+                    allStocks.add(stock);
                 } else if ("outbound".equalsIgnoreCase(direction)) {
                     if (!mpr.isPartnerBuysMaterial()) throw new IllegalArgumentException("Partner does not buy this material.");
                     ProductItemStock stock = ProductItemStock.builder()
@@ -486,6 +486,7 @@ public class ExcelService {
                         .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                         .build();
                     productStocks.add(stock);
+                    allStocks.add(stock);
                 } else {
                     throw new IllegalArgumentException("Invalid direction: " + direction);
                 }
@@ -505,7 +506,7 @@ public class ExcelService {
                 var added = materialItemStockService.create(newStock);
                 if (added == null) {
                     log.error("Failed to persist material stock: {}", newStock);
-                    int idx = materialStocks.indexOf(newStock);
+                    int idx = allStocks.indexOf(newStock);
                     errors.add(new DataImportError(idx + 2, List.of("Failed to persist"))); // +2 to account for header and 0-based index
                     addedMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
                     return new DataImportResult("Failed to persist material stocks", errors);
@@ -517,7 +518,7 @@ public class ExcelService {
                 var added = productItemStockService.create(newStock);
                 if (added == null) {
                     log.error("Failed to persist product stock: {}", newStock);
-                    int idx = productStocks.indexOf(newStock);
+                    int idx = allStocks.indexOf(newStock);
                     errors.add(new DataImportError(idx + 2, List.of("Failed to persist")));
                     addedMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
                     addedProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
@@ -535,8 +536,6 @@ public class ExcelService {
 
         return new DataImportResult("Failed to process stock rows", errors);
     }
-
-
 
     private DataDocumentTypeEnumeration validateHeaders(Sheet sheet) {
         var headerNames = extractHeader(sheet);
