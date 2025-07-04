@@ -29,6 +29,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ItemStockRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -139,82 +140,106 @@ public abstract class ItemStockService<T extends ItemStock> {
 
     public abstract boolean validate(T itemStock);
 
-    protected boolean basicValidation(ItemStock itemStock) {
+    protected List<String> basicValidation(ItemStock itemStock) {
+        List<String> errors = new ArrayList<>();
         try {
-            Objects.requireNonNull(itemStock.getPartner(), "Missing Partner");
-            Objects.requireNonNull(itemStock.getMaterial(), "Missing Material");
-            Objects.requireNonNull(itemStock.getLocationBpna(), "Missing locationBpna");
-            Objects.requireNonNull(itemStock.getLocationBpns(), "Missing locationBpns");
-            Objects.requireNonNull(itemStock.getMeasurementUnit(), "Missing measurementUnit");
-            Objects.requireNonNull(itemStock.getLastUpdatedOnDateTime(), "Missing lastUpdatedOnTime");
+            if (itemStock.getPartner() == null) {
+                errors.add("Missing Partner");
+            }
+            if (itemStock.getMaterial() == null) {
+                errors.add("Missing Material");
+            }
+            if (itemStock.getLocationBpna() == null) {
+                errors.add("Missing locationBpna");
+            }
+            if (itemStock.getLocationBpns() == null) {
+                errors.add("Missing locationBpns");
+            }
+            if (itemStock.getMeasurementUnit() == null) {
+                errors.add("Missing measurementUnit");
+            }
+            if (itemStock.getLastUpdatedOnDateTime() == null) {
+                errors.add("Missing lastUpdatedOnTime");
+            }
         } catch (Exception e) {
             log.error("Basic Validation failed: " + itemStock + "\n" + e.getMessage());
-            return false;
+            errors.add(e.getMessage());
         }
-        return true;
+        return errors;
     }
 
-    protected boolean validateLocalStock(ItemStock itemStock) {
+    protected List<String> validateLocalStock(ItemStock itemStock) {
         return validateLocation(itemStock, partnerService.getOwnPartnerEntity());
     }
 
-    protected boolean validateRemoteStock(ItemStock itemStock) {
+    protected List<String> validateRemoteStock(ItemStock itemStock) {
         return validateLocation(itemStock, itemStock.getPartner());
     }
 
-    protected final boolean validateMaterialItemStock(ItemStock itemStock) {
+    protected final List<String> validateMaterialItemStock(ItemStock itemStock) {
+        List<String> errors = new ArrayList<>();
         try {
             Partner partner = itemStock.getPartner();
             Material material = itemStock.getMaterial();
             MaterialPartnerRelation relation = mprService.find(material, partner);
-            Objects.requireNonNull(relation, "Missing MaterialPartnerRelation");
-            if (!material.isMaterialFlag()) {
-                throw new IllegalArgumentException("Material flag is missing");
+            if (relation == null) {
+                errors.add("Missing MaterialPartnerRelation");
             }
-            if (!relation.isPartnerSuppliesMaterial()) {
-                throw new IllegalArgumentException("Partner does not supply material");
+            if (!material.isMaterialFlag()) {
+                errors.add("Material flag is missing");
+            }
+            if (relation != null && !relation.isPartnerSuppliesMaterial()) {
+                errors.add("Partner does not supply material");
             }
         } catch (Exception e) {
             log.error("MaterialItemStock Validation failed: " + itemStock + "\n" + e.getMessage());
-            return false;
+            errors.add(e.getMessage());
         }
-        return true;
+        return errors;
     }
 
-    protected final boolean validateProductItemStock(ItemStock itemStock) {
+    protected final List<String> validateProductItemStock(ItemStock itemStock) {
+        List<String> errors = new ArrayList<>();
         try {
             Partner partner = itemStock.getPartner();
             Material material = itemStock.getMaterial();
             MaterialPartnerRelation relation = mprService.find(material, partner);
-            Objects.requireNonNull(relation, "Missing MaterialPartnerRelation");
-            if (!material.isProductFlag()) {
-                throw new IllegalArgumentException("Product flag is missing");
+            if (relation == null) {
+                errors.add("Missing MaterialPartnerRelation");
             }
-            if (!relation.isPartnerBuysMaterial()) {
-                throw new IllegalArgumentException("Partner does not buy material");
+            if (!material.isProductFlag()) {
+                errors.add("Product flag is missing");
+            }
+            if (relation != null && !relation.isPartnerBuysMaterial()) {
+                errors.add("Partner does not buy material");
             }
         } catch (Exception e) {
             log.error("ProductItemStock Validation failed: " + itemStock + "\n" + e.getMessage());
-            return false;
+            errors.add(e.getMessage());
         }
-        return true;
+        return errors;
     }
 
-    protected boolean validateLocation(ItemStock itemStock, Partner partner) {
+    protected List<String> validateLocation(ItemStock itemStock, Partner partner) {
+        List<String> errors = new ArrayList<>();
         try {
             var stockSite = partner.getSites().stream()
                     .filter(site -> site.getBpns().equals(itemStock.getLocationBpns()))
                     .findFirst().orElse(null);
-            Objects.requireNonNull(stockSite, "Site not found");
-            var stockAddress = stockSite.getAddresses().stream()
+            if (stockSite == null) {
+                errors.add("Site not found");
+            }
+            var stockAddress = stockSite != null ? stockSite.getAddresses().stream()
                     .filter(addr -> addr.getBpna().equals(itemStock.getLocationBpna()))
-                    .findFirst().orElse(null);
-            Objects.requireNonNull(stockAddress, "Address not found");
+                    .findFirst().orElse(null) : null;
+            if (stockAddress == null) {
+                errors.add("Address not found");
+            }
         } catch (Exception e) {
             log.error("Location Validation failed: " + itemStock + "\n" + e.getMessage());
-            return false;
+            errors.add(e.getMessage());
         }
-        return true;
+        return errors;
     }
 
 }

@@ -21,7 +21,6 @@ package org.eclipse.tractusx.puris.backend.file.logic.service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,7 +40,6 @@ import org.eclipse.tractusx.puris.backend.file.domain.model.DataDocumentTypeEnum
 import org.eclipse.tractusx.puris.backend.file.domain.model.DataImportError;
 import org.eclipse.tractusx.puris.backend.file.domain.model.DataImportResult;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -168,6 +166,7 @@ public class ExcelService {
         }
 
         while (rowIterator.hasNext()) {
+            List<String> rowErrors = new ArrayList<>();
             Row row = rowIterator.next();
             rowIndex++;
             try {
@@ -179,18 +178,24 @@ public class ExcelService {
                 String demandSiteBpns = getStringCellValue(row.getCell(5));
                 String demandCategoryCodeStr = getStringCellValue(row.getCell(6));
                 Date day = getDateCellValue(row.getCell(7));
-
-                ItemUnitEnumeration unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
-                DemandCategoryEnumeration categoryEnum = DemandCategoryEnumeration.fromValue(demandCategoryCodeStr.toUpperCase());
+                ItemUnitEnumeration unitEnum = null;
+                try {
+                    unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
+                } catch (Exception e) {
+                    rowErrors.add("Invalid unit of measurement: " + unitOfMeasurement);
+                }
+                DemandCategoryEnumeration categoryEnum = null;
+                try {
+                    categoryEnum = DemandCategoryEnumeration.fromValue(demandCategoryCodeStr.toUpperCase());
+                } catch (Exception e) {
+                    rowErrors.add("Invalid demand category: " + demandCategoryCodeStr);
+                }
 
                 Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
 
                 Partner partner = partnerService.findByBpnl(partnerBpnl);
                 if (partner == null) throw new IllegalArgumentException("Partner not found.");
-
-                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, ownMaterialNumber);
-                if (!mpr.isPartnerSuppliesMaterial()) throw new IllegalArgumentException("Partner does not supply this material.");
 
                 OwnDemand demand = OwnDemand.builder()
                         .material(material)
@@ -202,8 +207,12 @@ public class ExcelService {
                         .demandCategoryCode(categoryEnum)
                         .day(day)
                         .build();
-
-                demands.add(demand);
+                rowErrors.addAll(ownDemandService.validateWithDetails(demand));
+                if (rowErrors.isEmpty()) {
+                    demands.add(demand);
+                } else {
+                    errors.add(new DataImportError(rowIndex, rowErrors));
+                }
             } catch (Exception e) {
                 errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
             }
@@ -248,6 +257,7 @@ public class ExcelService {
         }
 
         while (rowIterator.hasNext()) {
+            List<String> rowErrors = new ArrayList<>();
             Row row = rowIterator.next();
             rowIndex++;
             try {
@@ -261,16 +271,18 @@ public class ExcelService {
                 String customerPositionNumber = getStringCellValue(row.getCell(7));
                 String supplierOrderNumber = getStringCellValue(row.getCell(8));
 
-                ItemUnitEnumeration unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
+                ItemUnitEnumeration unitEnum = null;
+                try {
+                    unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
+                } catch (Exception e) {
+                    rowErrors.add("Invalid unit of measurement: " + unitOfMeasurement);
+                }
 
                 Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
 
                 Partner partner = partnerService.findByBpnl(partnerBpnl);
                 if (partner == null) throw new IllegalArgumentException("Partner not found.");
-
-                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, ownMaterialNumber);
-                if (!mpr.isPartnerBuysMaterial()) throw new IllegalArgumentException("Partner does not buy this material.");
 
                 OwnProduction production = OwnProduction.builder()
                     .material(material)
@@ -283,7 +295,12 @@ public class ExcelService {
                     .customerOrderPositionNumber(customerPositionNumber)
                     .supplierOrderNumber(supplierOrderNumber)
                     .build();
-                productions.add(production);
+                rowErrors.addAll(ownProductionService.validateWithDetails(production));
+                if (rowErrors.isEmpty()) {
+                    productions.add(production);
+                } else {
+                    errors.add(new DataImportError(rowIndex, rowErrors));
+                }
             } catch (Exception e) {
                 errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
             }
@@ -324,6 +341,7 @@ public class ExcelService {
         }
 
         while (rowIterator.hasNext()) {
+            List<String> rowErrors = new ArrayList<>();
             Row row = rowIterator.next();
             rowIndex++;
             try {
@@ -345,27 +363,39 @@ public class ExcelService {
                 String customerPositionNumber = getStringCellValue(row.getCell(15));
                 String supplierOrderNumber = getStringCellValue(row.getCell(16));
 
-                ItemUnitEnumeration unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
-                IncotermEnumeration incotermEnum = IncotermEnumeration.valueOf(incoterm.toUpperCase());
-                EventTypeEnumeration departureTypeEnum = EventTypeEnumeration.fromValue(departureType);
-                EventTypeEnumeration arrivalTypeEnum = EventTypeEnumeration.fromValue(arrivalType);
+                ItemUnitEnumeration unitEnum = null;
+                try {
+                    unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
+                } catch (Exception e) {
+                    rowErrors.add("Invalid unit of measurement: " + unitOfMeasurement);
+                }
+
+                IncotermEnumeration incotermEnum = null;
+                try {
+                    incotermEnum = IncotermEnumeration.valueOf(incoterm.toUpperCase());
+                } catch (Exception e) {
+                    rowErrors.add("Invalid incoterm: " + incoterm);
+                }
+
+                EventTypeEnumeration departureTypeEnum = null;
+                try {
+                    departureTypeEnum = EventTypeEnumeration.fromValue(departureType);
+                } catch (Exception e) {
+                    rowErrors.add("Invalid departure type: " + departureType);
+                }
+
+                EventTypeEnumeration arrivalTypeEnum = null;
+                try {
+                    arrivalTypeEnum = EventTypeEnumeration.fromValue(arrivalType);
+                } catch (Exception e) {
+                    rowErrors.add("Invalid arrival type: " + arrivalType);
+                }
 
                 Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
 
                 Partner partner = partnerService.findByBpnl(partnerBpnl);
                 if (partner == null) throw new IllegalArgumentException("Partner not found.");
-
-                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, ownMaterialNumber);
-                boolean isOriginSiteOfPartner = partner.getSites().stream()
-                        .anyMatch(site -> site.getBpns().equals(originSiteBpns));
-
-                if (isOriginSiteOfPartner && !mpr.isPartnerSuppliesMaterial()) {
-                    throw new IllegalArgumentException("Partner does not supply this material.");
-                }
-                if (!isOriginSiteOfPartner && !mpr.isPartnerBuysMaterial()) {
-                    throw new IllegalArgumentException("Partner does not buy this material.");
-                }
 
                 OwnDelivery delivery = OwnDelivery.builder()
                     .material(material)
@@ -386,7 +416,12 @@ public class ExcelService {
                     .customerOrderPositionNumber(customerPositionNumber)
                     .supplierOrderNumber(supplierOrderNumber)
                     .build();
-                deliveries.add(delivery);
+                rowErrors.addAll(ownDeliveryService.validateWithDetails(delivery));
+                if (rowErrors.isEmpty()) {
+                    deliveries.add(delivery);
+                } else {
+                    errors.add(new DataImportError(rowIndex, rowErrors));
+                }
             } catch (Exception e) {
                 errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
             }
@@ -431,6 +466,7 @@ public class ExcelService {
         }
 
         while (rowIterator.hasNext()) {
+            List<String> rowErrors = new ArrayList<>();
             Row row = rowIterator.next();
             rowIndex++;
             try {
@@ -447,7 +483,12 @@ public class ExcelService {
                 Date lastUpdatedOnDateTime = getDateCellValue(row.getCell(10));
                 String direction = getStringCellValue(row.getCell(11));
 
-                ItemUnitEnumeration unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
+                ItemUnitEnumeration unitEnum = null;
+                try {
+                    unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
+                } catch (Exception e) {
+                    rowErrors.add("Invalid unit of measurement: " + unitOfMeasurement);
+                }
 
                 Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
@@ -455,10 +496,7 @@ public class ExcelService {
                 Partner partner = partnerService.findByBpnl(partnerBpnl);
                 if (partner == null) throw new IllegalArgumentException("Partner not found.");
 
-                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, ownMaterialNumber);
-
                 if ("inbound".equalsIgnoreCase(direction)) {
-                    if (!mpr.isPartnerSuppliesMaterial()) throw new IllegalArgumentException("Partner does not supply this material.");
                     MaterialItemStock stock = MaterialItemStock.builder()
                         .material(material)
                         .partner(partner)
@@ -472,10 +510,15 @@ public class ExcelService {
                         .isBlocked(isBlocked)
                         .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                         .build();
+                    rowErrors.addAll(materialItemStockService.validateWithDetails(stock));
+                    if (rowErrors.isEmpty()) {
+                        materialStocks.add(stock);
+                    } else {
+                        errors.add(new DataImportError(rowIndex, rowErrors));
+                    }
                     materialStocks.add(stock);
                     allStocks.add(stock);
                 } else if ("outbound".equalsIgnoreCase(direction)) {
-                    if (!mpr.isPartnerBuysMaterial()) throw new IllegalArgumentException("Partner does not buy this material.");
                     ProductItemStock stock = ProductItemStock.builder()
                         .material(material)
                         .partner(partner)
@@ -489,12 +532,17 @@ public class ExcelService {
                         .isBlocked(isBlocked)
                         .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                         .build();
+                    rowErrors.addAll(productItemStockService.validateWithDetails(stock));
+                    if (rowErrors.isEmpty()) {
+                        productStocks.add(stock);
+                    } else {
+                        errors.add(new DataImportError(rowIndex, rowErrors));
+                    }
                     productStocks.add(stock);
                     allStocks.add(stock);
                 } else {
                     throw new IllegalArgumentException("Invalid direction: " + direction);
                 }
-
             } catch (Exception e) {
                 errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
             }

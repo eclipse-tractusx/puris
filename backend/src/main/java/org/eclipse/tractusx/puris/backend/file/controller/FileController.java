@@ -19,10 +19,7 @@
  */
 package org.eclipse.tractusx.puris.backend.file.controller;
 
-import java.util.List;
-
 import org.eclipse.tractusx.puris.backend.file.logic.service.ExcelService;
-import org.eclipse.tractusx.puris.backend.file.domain.model.DataImportError;
 import org.eclipse.tractusx.puris.backend.file.domain.model.DataImportResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +28,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
@@ -42,34 +41,38 @@ public class FileController {
     private ExcelService excelService;
 
     @Operation(
-        summary = "Upload an Excel file",
-        description = "Accepts a multipart/form-data upload of an Excel file with `.xlsx` extension"
+        summary = "Import data via excel file",
+        description =
+            "Accepts a multipart/form-data upload of an Excel file with `.xlsx` extension. " +
+            "The import supports the standards Demand, Production, Delivery and Stock. " +
+            "The applicable standard is automatically determined by the server. \n\n" +
+            "Should any row of the data fail, no data will be saved. In this case detailed error reports are returned"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "File uploaded successfully"),
-        @ApiResponse(responseCode = "400", description = "Bad request (missing or invalid file)"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized (missing or invalid API key)"),
-        @ApiResponse(responseCode = "500", description = "Server error")
+        @ApiResponse(responseCode = "200", description = "Data imported successfully", content = @Content(schema = @Schema(implementation = DataImportResult.class))),
+        @ApiResponse(responseCode = "400", description = "Bad request (missing file or invalid file type)", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized (missing or invalid API key)", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "422", description = "Invalid data", content = @Content(schema = @Schema(implementation = DataImportResult.class))),
+        @ApiResponse(responseCode = "500", description = "Server error", content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PostMapping(value = "/upload", consumes = "multipart/form-data")
     public ResponseEntity<?> uploadExcelFile(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body(new DataImportResult("File is empty", List.of(new DataImportError(0, List.of("File is empty")))));
+            return ResponseEntity.badRequest().body("File is empty");
         }
         try {
             String filename = file.getOriginalFilename();
             if (filename != null && !(filename.endsWith(".xlsx"))) {
-                return ResponseEntity.badRequest().body(new DataImportResult("Invalid File Type", List.of(new DataImportError(0, List.of("File type is invalid")))));
+                return ResponseEntity.badRequest().body("Invalid File Type");
             }
             var result = excelService.readExcelFile(file.getInputStream());
             if (!result.getErrors().isEmpty()) {
-                return ResponseEntity.badRequest().body(result);
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(result);
             }
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("An error occurred while processing the file. Check the server logs for details");
+                .body("Internal Server Error: An error occurred while processing the file. Check the server logs for details");
         }
     }
 }
-

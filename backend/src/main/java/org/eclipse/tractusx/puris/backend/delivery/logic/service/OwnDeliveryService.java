@@ -20,6 +20,7 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
@@ -81,63 +82,126 @@ public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
     }
 
     public boolean validate(OwnDelivery delivery) {
+        return validateWithDetails(delivery).isEmpty();
+    }
+
+    public List<String> validateWithDetails(OwnDelivery delivery) {
+        List<String> errors = new ArrayList<>();
         if (ownPartnerEntity == null) {
             ownPartnerEntity = partnerService.getOwnPartnerEntity();
         }
-        return 
-            delivery.getQuantity() >= 0 && 
-            delivery.getMeasurementUnit() != null &&
-            delivery.getMaterial() != null &&
-            delivery.getPartner() != null &&
-            validateResponsibility(delivery) &&
-            validateTransitEvent(delivery) &&
-            !delivery.getPartner().equals(ownPartnerEntity) &&
-            ((
-                delivery.getCustomerOrderNumber() != null && 
-                delivery.getCustomerOrderPositionNumber() != null
-            ) || (
-                delivery.getCustomerOrderNumber() == null && 
-                delivery.getCustomerOrderPositionNumber() == null &&
-                delivery.getSupplierOrderNumber() == null
-            ));
+
+        if (delivery.getQuantity() < 0) {
+            errors.add("Quantity must be greater than or equal to 0.");
+        }
+        if (delivery.getMeasurementUnit() == null) {
+            errors.add("Missing measurement unit.");
+        }
+        if (delivery.getMaterial() == null) {
+            errors.add("Missing material.");
+        }
+        if (delivery.getPartner() == null) {
+            errors.add("Missing partner.");
+        }
+        errors.addAll(validateResponsibility(delivery));
+        errors.addAll(validateTransitEvent(delivery));
+        if (delivery.getPartner().equals(ownPartnerEntity)) {
+            errors.add("Partner cannot be the same as own partner entity.");
+        }
+        if (!((delivery.getCustomerOrderNumber() != null && delivery.getCustomerOrderPositionNumber() != null) || 
+            (delivery.getCustomerOrderNumber() == null && delivery.getCustomerOrderPositionNumber() == null && delivery.getSupplierOrderNumber() == null))) {
+            errors.add("Customer order number and position number must both be null or both be non-null, and supplier order number must be null if both are null.");
+        }
+
+        return errors;
     }
 
-    private boolean validateTransitEvent(OwnDelivery delivery) {
+    private List<String> validateTransitEvent(OwnDelivery delivery) {
+        List<String> errors = new ArrayList<>();
         var now = new Date().getTime();
-        return
-            delivery.getDepartureType() != null &&
-            (delivery.getDepartureType() == EventTypeEnumeration.ESTIMATED_DEPARTURE || delivery.getDepartureType() == EventTypeEnumeration.ACTUAL_DEPARTURE) &&
-            delivery.getArrivalType() != null &&
-            (delivery.getArrivalType() == EventTypeEnumeration.ESTIMATED_ARRIVAL || delivery.getArrivalType() == EventTypeEnumeration.ACTUAL_ARRIVAL) &&
-            !(delivery.getDepartureType() == EventTypeEnumeration.ESTIMATED_DEPARTURE && delivery.getArrivalType() == EventTypeEnumeration.ACTUAL_ARRIVAL) &&
-            delivery.getDateOfDeparture().getTime() < delivery.getDateOfArrival().getTime() && 
-            (delivery.getArrivalType() != EventTypeEnumeration.ACTUAL_ARRIVAL || delivery.getDateOfArrival().getTime() < now) &&
-            (delivery.getDepartureType() != EventTypeEnumeration.ACTUAL_DEPARTURE || delivery.getDateOfDeparture().getTime() < now);
+
+        if (delivery.getDepartureType() == null) {
+            errors.add("Missing departure type.");
+        } else if (!(delivery.getDepartureType() == EventTypeEnumeration.ESTIMATED_DEPARTURE || delivery.getDepartureType() == EventTypeEnumeration.ACTUAL_DEPARTURE)) {
+            errors.add("Invalid departure type.");
+        }
+        if (delivery.getArrivalType() == null) {
+            errors.add("Missing arrival type.");
+        } else if (!(delivery.getArrivalType() == EventTypeEnumeration.ESTIMATED_ARRIVAL || delivery.getArrivalType() == EventTypeEnumeration.ACTUAL_ARRIVAL)) {
+            errors.add("Invalid arrival type.");
+        }
+        if (delivery.getDepartureType() == EventTypeEnumeration.ESTIMATED_DEPARTURE && delivery.getArrivalType() == EventTypeEnumeration.ACTUAL_ARRIVAL) {
+            errors.add("Estimated departure cannot have actual arrival.");
+        }
+        if (delivery.getDateOfDeparture() == null) {
+            errors.add("Missing date of departure.");
+        }
+        if (delivery.getDateOfArrival() == null) {
+            errors.add("Missing date of arrival.");
+        }
+        if (delivery.getDateOfArrival() != null && delivery.getDateOfDeparture() != null &&
+            delivery.getDateOfDeparture().getTime() >= delivery.getDateOfArrival().getTime()) {
+            errors.add("Date of departure must be before date of arrival.");
+        }
+        if (delivery.getDateOfArrival() != null &&
+            delivery.getArrivalType() == EventTypeEnumeration.ACTUAL_ARRIVAL && delivery.getDateOfArrival().getTime() >= now) {
+            errors.add("Actual arrival date must be in the past.");
+        }
+        if (delivery.getDateOfDeparture() != null &&
+            delivery.getDepartureType() == EventTypeEnumeration.ACTUAL_DEPARTURE && delivery.getDateOfDeparture().getTime() >= now) {
+            errors.add("Actual departure date must be in the past.");
+        }
+
+        return errors;
     }
 
-    private boolean validateResponsibility(OwnDelivery delivery) {
+    private List<String> validateResponsibility(OwnDelivery delivery) {
+        List<String> errors = new ArrayList<>();
         if (ownPartnerEntity == null) {
             ownPartnerEntity = partnerService.getOwnPartnerEntity();
         }
-        return delivery.getIncoterm() != null && switch (delivery.getIncoterm().getResponsibility()) {
-            case SUPPLIER ->
-                delivery.getMaterial().isProductFlag() &&
-                ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
-                delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()));
-            case CUSTOMER ->
-                delivery.getMaterial().isMaterialFlag() &&
-                delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
-                ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()));
-            case PARTIAL ->
-                (
-                    delivery.getMaterial().isProductFlag() &&
-                    ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
-                    delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()))
-                ) || (
-                    delivery.getMaterial().isMaterialFlag() &&
-                    delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) &&
-                    ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()))
-                );
-        };
+
+        if (delivery.getIncoterm() == null) {
+            errors.add("Missing Incoterm.");
+        } else {
+            switch (delivery.getIncoterm().getResponsibility()) {
+                case SUPPLIER:
+                    if (!delivery.getMaterial().isProductFlag()) {
+                        errors.add("Material must have product flag for supplier responsibility.");
+                    }
+                    if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getOriginBpns()))) {
+                        errors.add("Origin BPNs must match one of the own partner entity's site BPNs for supplier responsibility.");
+                    }
+                    if (delivery.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()))) {
+                        errors.add("Destination BPNs must match one of the partner's site BPNs for supplier responsibility.");
+                    }
+                    break;
+                case CUSTOMER:
+                    if (!delivery.getMaterial().isMaterialFlag()) {
+                        errors.add("Material must have material flag for customer responsibility.");
+                    }
+                    if (delivery.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getOriginBpns()))) {
+                        errors.add("Origin BPNs must match one of the partner's site BPNs for customer responsibility.");
+                    }
+                    if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()))) {
+                        errors.add("Destination BPNs must match one of the own partner entity's site BPNs for customer responsibility.");
+                    }
+                    break;
+                case PARTIAL:
+                    if (!(delivery.getMaterial().isProductFlag() && 
+                        ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) && 
+                        delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()))) &&
+                        !(delivery.getMaterial().isMaterialFlag() && 
+                        delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) && 
+                        ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())))) {
+                        errors.add("Responsibility conditions for partial responsibility are not met.");
+                    }
+                    break;
+                default:
+                    errors.add("Invalid incoterm responsibility.");
+                    break;
+            }
+        }
+        return errors;
     }
 }
