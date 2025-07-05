@@ -110,7 +110,7 @@ public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
         }
         if (!((delivery.getCustomerOrderNumber() != null && delivery.getCustomerOrderPositionNumber() != null) || 
             (delivery.getCustomerOrderNumber() == null && delivery.getCustomerOrderPositionNumber() == null && delivery.getSupplierOrderNumber() == null))) {
-            errors.add("Customer order number and position number must both be null or both be non-null, and supplier order number must be null if both are null.");
+            errors.add("If an order position reference is given, customer order number and customer order position number must be set.");
         }
 
         return errors;
@@ -160,42 +160,75 @@ public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
         if (ownPartnerEntity == null) {
             ownPartnerEntity = partnerService.getOwnPartnerEntity();
         }
+        var ownSites = ownPartnerEntity.getSites();
+        var partnerSites = delivery.getPartner().getSites();
 
         if (delivery.getIncoterm() == null) {
             errors.add("Missing Incoterm.");
         } else {
             switch (delivery.getIncoterm().getResponsibility()) {
                 case SUPPLIER:
+                    var ownSite = ownSites.stream().filter(site -> site.getBpns().equals(delivery.getOriginBpns())).findFirst();
+                    var partnerSite = partnerSites.stream().filter(site -> site.getBpns().equals(delivery.getDestinationBpns())).findFirst();
                     if (!delivery.getMaterial().isProductFlag()) {
                         errors.add("Material must have product flag for supplier responsibility.");
                     }
-                    if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getOriginBpns()))) {
-                        errors.add("Origin BPNs must match one of the own partner entity's site BPNs for supplier responsibility.");
+                    if (!ownSite.isPresent()) {
+                        errors.add("Origin BPNS must match one of the own partner entity's site BPNS for supplier responsibility.");
+                    } else if (delivery.getOriginBpna() != null && ownSite.get().getAddresses().stream().noneMatch(address -> address.getBpna().equals(delivery.getOriginBpna()))) {
+                        errors.add("Origin BPNA must match one of the own partner entity's site' address BPNAs for supplier responsibility.");
                     }
-                    if (delivery.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()))) {
+                    if (!partnerSite.isPresent()) {
                         errors.add("Destination BPNs must match one of the partner's site BPNs for supplier responsibility.");
+                    } else if (delivery.getDestinationBpna() != null && partnerSite.get().getAddresses().stream().noneMatch(address -> address.getBpna().equals(delivery.getDestinationBpna()))) {
+                        errors.add("Destination BPNA must match one of the own partner entity's site' address BPNAs for supplier responsibility.");
                     }
                     break;
                 case CUSTOMER:
+                    ownSite = ownSites.stream().filter(site -> site.getBpns().equals(delivery.getDestinationBpns())).findFirst();
+                    partnerSite = partnerSites.stream().filter(site -> site.getBpns().equals(delivery.getOriginBpns())).findFirst();
                     if (!delivery.getMaterial().isMaterialFlag()) {
                         errors.add("Material must have material flag for customer responsibility.");
                     }
-                    if (delivery.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getOriginBpns()))) {
-                        errors.add("Origin BPNs must match one of the partner's site BPNs for customer responsibility.");
+                    if (!ownSite.isPresent()) {
+                        errors.add("Destination BPNS must match one of the own partner entity's site BPNS for customer responsibility.");
+                    } else if (delivery.getDestinationBpna() != null && ownSite.get().getAddresses().stream().noneMatch(address -> address.getBpna().equals(delivery.getDestinationBpna()))) {
+                        errors.add("Destination BPNA must match one of the own partner entity's site' address BPNAs for customer responsibility.");
                     }
-                    if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()))) {
-                        errors.add("Destination BPNs must match one of the own partner entity's site BPNs for customer responsibility.");
+                    if (!partnerSite.isPresent()) {
+                        errors.add("Origin BPNS must match one of the partner's site BPNs for customer responsibility.");
+                    } else if (delivery.getOriginBpna() != null && partnerSite.get().getAddresses().stream().noneMatch(address -> address.getBpna().equals(delivery.getOriginBpna()))) {
+                        errors.add("Origin BPNA must match one of the own partner entity's site' address BPNAs for customer responsibility.");
                     }
                     break;
                 case PARTIAL:
-                    if (!(delivery.getMaterial().isProductFlag() && 
-                        ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) && 
-                        delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns()))) &&
-                        !(delivery.getMaterial().isMaterialFlag() && 
-                        delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns())) && 
-                        ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())))) {
-                        errors.add("Responsibility conditions for partial responsibility are not met.");
+                    if (delivery.getMaterial().isProductFlag()) {
+                        ownSite = ownSites.stream().filter(site -> site.getBpns().equals(delivery.getOriginBpns())).findFirst();
+                        partnerSite = partnerSites.stream().filter(site -> site.getBpns().equals(delivery.getDestinationBpns())).findFirst();
+                        if (ownSite.isPresent() && partnerSite.isPresent() && (
+                                delivery.getOriginBpna() == null || 
+                                ownSite.get().getAddresses().stream().anyMatch(address -> address.getBpna().equals(delivery.getOriginBpna()))
+                            ) && (
+                                delivery.getDestinationBpna() == null || 
+                                partnerSite.get().getAddresses().stream().anyMatch(address -> address.getBpna().equals(delivery.getDestinationBpna())) 
+                            )) {
+                            return new ArrayList<>();
+                        }
                     }
+                    if (delivery.getMaterial().isMaterialFlag()) {
+                        ownSite = ownSites.stream().filter(site -> site.getBpns().equals(delivery.getDestinationBpns())).findFirst();
+                        partnerSite = partnerSites.stream().filter(site -> site.getBpns().equals(delivery.getOriginBpns())).findFirst();
+                        if (ownSite.isPresent() && partnerSite.isPresent() && (
+                                delivery.getDestinationBpna() == null || 
+                                ownSite.get().getAddresses().stream().anyMatch(address -> address.getBpna().equals(delivery.getDestinationBpna()))
+                            ) && (
+                                delivery.getOriginBpna() == null || 
+                                partnerSite.get().getAddresses().stream().anyMatch(address -> address.getBpna().equals(delivery.getOriginBpna())) 
+                            )) {
+                            return new ArrayList<>();
+                        }
+                    }
+                    errors.add("Responsibility conditions for partial responsibility are not met.");
                     break;
                 default:
                     errors.add("Invalid incoterm responsibility.");
