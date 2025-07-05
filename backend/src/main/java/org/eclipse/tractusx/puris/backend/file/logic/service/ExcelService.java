@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.apache.poi.ss.usermodel.*;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
@@ -208,13 +209,12 @@ public class ExcelService {
                         .day(day)
                         .build();
                 rowErrors.addAll(ownDemandService.validateWithDetails(demand));
-                if (rowErrors.isEmpty()) {
-                    demands.add(demand);
-                } else {
+                if (!rowErrors.isEmpty()) {
                     errors.add(new DataImportError(rowIndex, rowErrors));
                 }
+                demands.add(demand);
             } catch (Exception e) {
-                errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage() + " Further validations for this row are not possible.")));
             }
         }
 
@@ -296,17 +296,20 @@ public class ExcelService {
                     .supplierOrderNumber(supplierOrderNumber)
                     .build();
                 rowErrors.addAll(ownProductionService.validateWithDetails(production));
-                if (rowErrors.isEmpty()) {
-                    productions.add(production);
-                } else {
+                if (!rowErrors.isEmpty()) {
                     errors.add(new DataImportError(rowIndex, rowErrors));
                 }
+                productions.add(production);
             } catch (Exception e) {
-                errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage() + " Further validations for this row are not possible.")));
             }
         }
 
         if (errors.isEmpty()) {
+            var conflictErrors = checkConflicts(productions);
+            if (!conflictErrors.isEmpty()) {
+                return new DataImportResult("One or more conflicting rows found.", conflictErrors);
+            }
             List<OwnProduction> addedProductions = new ArrayList<>();
             List<OwnProduction> existingProductions = ownProductionService.findAll();
             for (var newProduction : productions) {
@@ -417,17 +420,20 @@ public class ExcelService {
                     .supplierOrderNumber(supplierOrderNumber)
                     .build();
                 rowErrors.addAll(ownDeliveryService.validateWithDetails(delivery));
-                if (rowErrors.isEmpty()) {
-                    deliveries.add(delivery);
-                } else {
+                if (!rowErrors.isEmpty()) {
                     errors.add(new DataImportError(rowIndex, rowErrors));
                 }
+                deliveries.add(delivery);
             } catch (Exception e) {
-                errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage() + " Further validations for this row are not possible.")));
             }
         }
 
         if (errors.isEmpty()) {
+            var conflictErrors = checkConflicts(deliveries);
+            if (!conflictErrors.isEmpty()) {
+                return new DataImportResult("One or more conflicting rows found.", conflictErrors);
+            }
             List<OwnDelivery> addedDeliveries = new ArrayList<>();
             List<OwnDelivery> existingDeliveries = ownDeliveryService.findAll();
 
@@ -505,15 +511,21 @@ public class ExcelService {
                         .locationBpns(stockSiteBpns)
                         .locationBpna(stockAddressBpna)
                         .customerOrderId(customerOrderNumber)
-                        .customerOrderPositionId(customerOrderNumber)
+                        .customerOrderPositionId(customerPositionNumber)
                         .supplierOrderId(supplierOrderNumber)
                         .isBlocked(isBlocked)
                         .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                         .build();
                     rowErrors.addAll(materialItemStockService.validateWithDetails(stock));
-                    if (rowErrors.isEmpty()) {
-                        materialStocks.add(stock);
-                    } else {
+                    var conflictedRows = IntStream.range(0, allStocks.size())
+                        .filter(i -> allStocks.get(i).equals(stock))
+                        .map(i -> i + 2)
+                        .boxed()
+                        .toList();
+                    if (!conflictedRows.isEmpty()) {
+                        rowErrors.add("The given row conflicts with the rows: " + conflictedRows.toString());
+                    }
+                    if (!rowErrors.isEmpty()) {
                         errors.add(new DataImportError(rowIndex, rowErrors));
                     }
                     materialStocks.add(stock);
@@ -533,9 +545,15 @@ public class ExcelService {
                         .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                         .build();
                     rowErrors.addAll(productItemStockService.validateWithDetails(stock));
-                    if (rowErrors.isEmpty()) {
-                        productStocks.add(stock);
-                    } else {
+                    var conflictedRows = IntStream.range(0, allStocks.size())
+                        .filter(i -> allStocks.get(i).equals(stock))
+                        .map(i -> i + 2)
+                        .boxed()
+                        .toList();
+                    if (!conflictedRows.isEmpty()) {
+                        rowErrors.add("The given row conflicts with the rows: " + conflictedRows.toString());
+                    }
+                    if (!rowErrors.isEmpty()) {
                         errors.add(new DataImportError(rowIndex, rowErrors));
                     }
                     productStocks.add(stock);
@@ -544,11 +562,20 @@ public class ExcelService {
                     throw new IllegalArgumentException("Invalid direction: " + direction);
                 }
             } catch (Exception e) {
-                errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage() + " Further validations for this row are not possible.")));
             }
         }
 
         if (errors.isEmpty()) {
+            try {
+
+                var conflictErrors = checkConflicts(allStocks);
+                if (!conflictErrors.isEmpty()) {
+                    return new DataImportResult("One or more conflicting rows found.", conflictErrors);
+                }
+            } catch(Exception e) {
+                return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
+            }
             List<MaterialItemStock> addedMaterialStocks = new ArrayList<>();
             List<ProductItemStock> addedProductStocks = new ArrayList<>();
             List<MaterialItemStock> existingMaterialStocks = materialItemStockService.findAll();
@@ -637,5 +664,24 @@ public class ExcelService {
         } catch(Exception e) {
             return null;
         }
+    }
+
+    public <T> List<DataImportError> checkConflicts(List<T> demands) {
+        List<DataImportError> errors = new ArrayList<>();
+        for (int i = 0; i < demands.size(); i++) {
+            T current = demands.get(i);
+            List<Integer> conflictingIndexes = new ArrayList<>();
+
+            for (int j = 0; j < i; j++) {
+                if (current.equals(demands.get(j))) {
+                    conflictingIndexes.add(j + 2);
+                }
+            }
+
+            if (!conflictingIndexes.isEmpty()) {
+                errors.add(new DataImportError(i, List.of("The row " + (i + 2) + " conflicts with the following rows: " + conflictingIndexes.toString())));
+            }
+        }
+        return errors;
     }
 }
