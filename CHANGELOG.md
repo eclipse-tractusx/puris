@@ -18,7 +18,7 @@ The **need for configuration updates** is **marked bold**.
 ### Changed
 
 * Use the frontend's existing keycloak authentication to authorize backend calls ([#896](https://github.com/eclipse-tractusx/puris/pull/896)) (**moved IDP configuration and IDP no longer optional**)
-* Rework validation logic to return detailed error messages ([#898](https://github.com/eclipse-tractusx/puris/pull/898))
+* Rework validation logic to return detailed error messages ([#907](https://github.com/eclipse-tractusx/puris/pull/907))
 
 ## [v3.1.0](https://github.com/eclipse-tractusx/puris/releases/tag/3.1.0)
 

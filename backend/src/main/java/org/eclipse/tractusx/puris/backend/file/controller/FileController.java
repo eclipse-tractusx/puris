@@ -44,9 +44,9 @@ public class FileController {
         summary = "Import data via excel file",
         description =
             "Accepts a multipart/form-data upload of an Excel file with `.xlsx` extension. " +
-            "The import supports the standards Demand, Production, Delivery and Stock. " +
-            "The applicable standard is automatically determined by the server. \n\n" +
-            "Should any row of the data fail, no data will be saved. In this case detailed error reports are returned"
+            "The import supports Demand, Production, Delivery and Stock information. " +
+            "The applicable type of information is automatically determined by the server. \n\n" +
+            "Should any row of the data fail, no data will be saved. In this case detailed error reports are returned."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Data imported successfully", content = @Content(schema = @Schema(implementation = DataImportResult.class))),

@@ -102,7 +102,7 @@ public class OwnProductionService extends ProductionService<OwnProduction> {
         }
         if (!((production.getCustomerOrderNumber() != null && production.getCustomerOrderPositionNumber() != null) || 
             (production.getCustomerOrderNumber() == null && production.getCustomerOrderPositionNumber() == null && production.getSupplierOrderNumber() == null))) {
-            errors.add("Customer order number and position number must both be null or both be non-null, and supplier order number must be null if both are null.");
+            errors.add("If an order position reference is given, customer order number and customer order position number must be set.");
         }
 
         return errors;
