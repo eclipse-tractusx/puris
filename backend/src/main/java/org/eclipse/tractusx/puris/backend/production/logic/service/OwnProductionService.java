@@ -20,6 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -68,23 +69,42 @@ public class OwnProductionService extends ProductionService<OwnProduction> {
     }
 
     public boolean validate(OwnProduction production) {
+        return validateWithDetails(production).isEmpty();
+    }
+
+    public List<String> validateWithDetails(OwnProduction production) {
+        List<String> errors = new ArrayList<>();
         Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
-        return 
-            production.getQuantity() > 0 && 
-            production.getMeasurementUnit() != null && 
-            production.getEstimatedTimeOfCompletion() != null && 
-            production.getMaterial() != null &&
-            production.getPartner() != null &&
-            !production.getPartner().equals(ownPartnerEntity) &&
-            production.getProductionSiteBpns() != null &&
-            ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(production.getProductionSiteBpns())) &&
-            ((
-                production.getCustomerOrderNumber() != null && 
-                production.getCustomerOrderPositionNumber() != null
-            ) || (
-                production.getCustomerOrderNumber() == null && 
-                production.getCustomerOrderPositionNumber() == null && 
-                production.getSupplierOrderNumber() == null
-            ));
+
+        if (production.getQuantity() <= 0) {
+            errors.add("Quantity must be greater than 0.");
+        }
+        if (production.getMeasurementUnit() == null) {
+            errors.add("Missing measurement unit.");
+        }
+        if (production.getEstimatedTimeOfCompletion() == null) {
+            errors.add("Missing estimated time of completion.");
+        }
+        if (production.getMaterial() == null) {
+            errors.add("Missing material.");
+        }
+        if (production.getPartner() == null) {
+            errors.add("Missing partner.");
+        }
+        if (production.getPartner().equals(ownPartnerEntity)) {
+            errors.add("Partner cannot be the same as own partner entity.");
+        }
+        if (production.getProductionSiteBpns() == null) {
+            errors.add("Missing production site BPNS.");
+        }
+        if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(production.getProductionSiteBpns()))) {
+            errors.add("Production site BPNS must match one of the own partner entity's site BPNS.");
+        }
+        if (!((production.getCustomerOrderNumber() != null && production.getCustomerOrderPositionNumber() != null) || 
+            (production.getCustomerOrderNumber() == null && production.getCustomerOrderPositionNumber() == null && production.getSupplierOrderNumber() == null))) {
+            errors.add("If an order position reference is given, customer order number and customer order position number must be set.");
+        }
+
+        return errors;
     }
 }

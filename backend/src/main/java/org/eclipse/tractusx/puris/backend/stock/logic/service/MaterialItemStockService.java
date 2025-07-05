@@ -21,6 +21,10 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
@@ -41,7 +45,15 @@ public class MaterialItemStockService extends ItemStockService<MaterialItemStock
 
     @Override
     public boolean validate(MaterialItemStock materialItemStock) {
-        return basicValidation(materialItemStock) && validateLocalStock(materialItemStock)
-            && validateMaterialItemStock(materialItemStock);
+        return basicValidation(materialItemStock).isEmpty() && validateLocalStock(materialItemStock).isEmpty()
+            && validateMaterialItemStock(materialItemStock).isEmpty();
+    }
+
+    public List<String> validateWithDetails(MaterialItemStock materialItemStock) {
+        List<String> errors = new ArrayList<>();
+        errors.addAll(basicValidation(materialItemStock));
+        errors.addAll(validateLocalStock(materialItemStock));
+        errors.addAll(validateMaterialItemStock(materialItemStock));
+        return errors;
     }
 }

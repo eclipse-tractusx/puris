@@ -111,9 +111,9 @@ public abstract class Delivery {
             Objects.equals(this.getTrackingNumber(), that.getTrackingNumber()) &&
             this.getIncoterm().equals(that.getIncoterm()) &&
             this.getDestinationBpns().equals(that.getDestinationBpns()) &&
-            this.getDestinationBpna().equals(that.getDestinationBpna()) &&
+            Objects.equals(this.getDestinationBpna(), that.getDestinationBpna()) &&
             this.getOriginBpns().equals(that.getOriginBpns()) &&
-            this.getOriginBpna().equals(that.getOriginBpna()) &&
+            Objects.equals(this.getOriginBpna(), that.getOriginBpna()) &&
             this.getDateOfDeparture().equals(that.getDateOfDeparture()) &&
             this.getDateOfArrival().equals(that.getDateOfArrival()) &&
             this.getDepartureType().equals(that.getDepartureType()) &&
@@ -121,8 +121,8 @@ public abstract class Delivery {
             this.getIncoterm().equals(that.getIncoterm()) &&
             (
                 Objects.equals(this.getCustomerOrderNumber(), that.getCustomerOrderNumber()) &&
-                    Objects.equals(this.getCustomerOrderPositionNumber(), that.getCustomerOrderPositionNumber()) &&
-                    Objects.equals(this.getSupplierOrderNumber(), that.getSupplierOrderNumber())
+                Objects.equals(this.getCustomerOrderPositionNumber(), that.getCustomerOrderPositionNumber()) &&
+                Objects.equals(this.getSupplierOrderNumber(), that.getSupplierOrderNumber())
             );
     }
 

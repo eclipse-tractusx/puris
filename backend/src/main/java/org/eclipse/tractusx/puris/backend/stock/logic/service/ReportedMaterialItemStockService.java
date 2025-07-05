@@ -40,6 +40,6 @@ public class ReportedMaterialItemStockService extends ItemStockService<ReportedM
 
     @Override
     public boolean validate(ReportedMaterialItemStock itemStock) {
-        return basicValidation(itemStock) && validateMaterialItemStock(itemStock) && validateRemoteStock(itemStock);
+        return basicValidation(itemStock).isEmpty() && validateMaterialItemStock(itemStock).isEmpty() && validateRemoteStock(itemStock).isEmpty();
     }
 }

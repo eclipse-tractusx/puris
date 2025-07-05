@@ -65,19 +65,48 @@ public class OwnDemandService extends DemandService<OwnDemand, OwnDemandReposito
 
     @Override
     public boolean validate(OwnDemand demand) {
+        return validateWithDetails(demand).isEmpty();
+    }
+
+    public List<String> validateWithDetails(OwnDemand demand) {
+        List<String> errors = new ArrayList<>();
         Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
-        return 
-            demand.getMaterial() != null &&
-            demand.getPartner() != null &&
-            mprService.partnerSuppliesMaterial(demand.getMaterial(), demand.getPartner()) &&
-            demand.getQuantity() > 0 && 
-            demand.getMeasurementUnit() != null && 
-            demand.getDay() != null && 
-            demand.getDemandCategoryCode() != null &&
-            demand.getDemandLocationBpns() != null &&
-            !demand.getPartner().equals(ownPartnerEntity) &&
-            ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns())) &&
-            (demand.getSupplierLocationBpns() == null || demand.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns())));
+
+        if (demand.getMaterial() == null) {
+            errors.add("Missing Material.");
+        }
+        if (demand.getPartner() == null) {
+            errors.add("Missing Partner.");
+        }
+        if (!mprService.partnerSuppliesMaterial(demand.getMaterial(), demand.getPartner())) {
+            errors.add("Partner does not supply the specified material.");
+        }
+        if (demand.getQuantity() <= 0) {
+            errors.add("Quantity must be greater than 0.");
+        }
+        if (demand.getMeasurementUnit() == null) {
+            errors.add("Missing measurement unit.");
+        }
+        if (demand.getDay() == null) {
+            errors.add("Missing day.");
+        }
+        if (demand.getDemandCategoryCode() == null) {
+            errors.add("Missing demand category code.");
+        }
+        if (demand.getDemandLocationBpns() == null) {
+            errors.add("Missing demand location BPNS.");
+        }
+        if (demand.getPartner().equals(ownPartnerEntity)) {
+            errors.add("Partner cannot be the same as own partner entity.");
+        }
+        if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns()))) {
+            errors.add("Demand location BPNS must match one of the own partner entity's site BPNS.");
+        }
+        if (demand.getSupplierLocationBpns() != null && 
+            demand.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns()))) {
+            errors.add("Supplier location BPNS must match one of the partner's site BPNS.");
+        }
+        return errors;
     }
 
     private final double getSumOfQuantities(List<OwnDemand> demands) {
