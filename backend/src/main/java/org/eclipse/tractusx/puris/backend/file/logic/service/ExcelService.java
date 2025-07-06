@@ -665,6 +665,14 @@ public class ExcelService {
         }
     }
 
+    /**
+     * Checks a given List of imported rows for duplicates by comparing
+     * each current object with the previous one using Object.equals. This method works
+     * for all types of imported data (demand, production, delivery and stock).
+     * @param <T> the type of imported data
+     * @param importEntries the list of imported data rows
+     * @return list of errors for each row that conflicts with one or more previous rows 
+     */
     public <T> List<DataImportError> checkConflicts(List<T> importEntries) {
         List<DataImportError> errors = new ArrayList<>();
         for (int i = 0; i < importEntries.size(); i++) {
