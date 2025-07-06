@@ -219,6 +219,14 @@ public class ExcelService {
         }
 
         if (errors.isEmpty()) {
+            try {
+                var conflictErrors = checkConflicts(demands);
+                if (!conflictErrors.isEmpty()) {
+                    return new DataImportResult("One or more conflicting rows found.", conflictErrors);
+                }
+            } catch(Exception e) {
+                return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
+            }
             List<OwnDemand> addedDemands = new ArrayList<>();
             List<OwnDemand> existingDemands = ownDemandService.findAll();
             for (var newDemand : demands) {
@@ -306,9 +314,13 @@ public class ExcelService {
         }
 
         if (errors.isEmpty()) {
-            var conflictErrors = checkConflicts(productions);
-            if (!conflictErrors.isEmpty()) {
-                return new DataImportResult("One or more conflicting rows found.", conflictErrors);
+            try {
+                var conflictErrors = checkConflicts(productions);
+                if (!conflictErrors.isEmpty()) {
+                    return new DataImportResult("One or more conflicting rows found.", conflictErrors);
+                }
+            } catch(Exception e) {
+                return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
             }
             List<OwnProduction> addedProductions = new ArrayList<>();
             List<OwnProduction> existingProductions = ownProductionService.findAll();
@@ -430,9 +442,13 @@ public class ExcelService {
         }
 
         if (errors.isEmpty()) {
-            var conflictErrors = checkConflicts(deliveries);
-            if (!conflictErrors.isEmpty()) {
-                return new DataImportResult("One or more conflicting rows found.", conflictErrors);
+            try {
+                var conflictErrors = checkConflicts(deliveries);
+                if (!conflictErrors.isEmpty()) {
+                    return new DataImportResult("One or more conflicting rows found.", conflictErrors);
+                }
+            } catch(Exception e) {
+                return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
             }
             List<OwnDelivery> addedDeliveries = new ArrayList<>();
             List<OwnDelivery> existingDeliveries = ownDeliveryService.findAll();
@@ -517,14 +533,6 @@ public class ExcelService {
                         .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                         .build();
                     rowErrors.addAll(materialItemStockService.validateWithDetails(stock));
-                    var conflictedRows = IntStream.range(0, allStocks.size())
-                        .filter(i -> allStocks.get(i).equals(stock))
-                        .map(i -> i + 2)
-                        .boxed()
-                        .toList();
-                    if (!conflictedRows.isEmpty()) {
-                        rowErrors.add("The given row conflicts with the rows: " + conflictedRows.toString());
-                    }
                     if (!rowErrors.isEmpty()) {
                         errors.add(new DataImportError(rowIndex, rowErrors));
                     }
@@ -545,14 +553,6 @@ public class ExcelService {
                         .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                         .build();
                     rowErrors.addAll(productItemStockService.validateWithDetails(stock));
-                    var conflictedRows = IntStream.range(0, allStocks.size())
-                        .filter(i -> allStocks.get(i).equals(stock))
-                        .map(i -> i + 2)
-                        .boxed()
-                        .toList();
-                    if (!conflictedRows.isEmpty()) {
-                        rowErrors.add("The given row conflicts with the rows: " + conflictedRows.toString());
-                    }
                     if (!rowErrors.isEmpty()) {
                         errors.add(new DataImportError(rowIndex, rowErrors));
                     }
@@ -568,7 +568,6 @@ public class ExcelService {
 
         if (errors.isEmpty()) {
             try {
-
                 var conflictErrors = checkConflicts(allStocks);
                 if (!conflictErrors.isEmpty()) {
                     return new DataImportResult("One or more conflicting rows found.", conflictErrors);
@@ -666,14 +665,14 @@ public class ExcelService {
         }
     }
 
-    public <T> List<DataImportError> checkConflicts(List<T> demands) {
+    public <T> List<DataImportError> checkConflicts(List<T> importEntries) {
         List<DataImportError> errors = new ArrayList<>();
-        for (int i = 0; i < demands.size(); i++) {
-            T current = demands.get(i);
+        for (int i = 0; i < importEntries.size(); i++) {
+            T current = importEntries.get(i);
             List<Integer> conflictingIndexes = new ArrayList<>();
 
             for (int j = 0; j < i; j++) {
-                if (current.equals(demands.get(j))) {
+                if (current.equals(importEntries.get(j))) {
                     conflictingIndexes.add(j + 2);
                 }
             }

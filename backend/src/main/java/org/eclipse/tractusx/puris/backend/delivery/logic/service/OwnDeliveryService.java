@@ -179,7 +179,7 @@ public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
                         errors.add("Origin BPNA must match one of the own partner entity's site' address BPNAs for supplier responsibility.");
                     }
                     if (!partnerSite.isPresent()) {
-                        errors.add("Destination BPNs must match one of the partner's site BPNs for supplier responsibility.");
+                        errors.add("Destination BPNS must match one of the partner's site BPNS for supplier responsibility.");
                     } else if (delivery.getDestinationBpna() != null && partnerSite.get().getAddresses().stream().noneMatch(address -> address.getBpna().equals(delivery.getDestinationBpna()))) {
                         errors.add("Destination BPNA must match one of the own partner entity's site' address BPNAs for supplier responsibility.");
                     }
@@ -196,7 +196,7 @@ public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
                         errors.add("Destination BPNA must match one of the own partner entity's site' address BPNAs for customer responsibility.");
                     }
                     if (!partnerSite.isPresent()) {
-                        errors.add("Origin BPNS must match one of the partner's site BPNs for customer responsibility.");
+                        errors.add("Origin BPNS must match one of the partner's site BPNS for customer responsibility.");
                     } else if (delivery.getOriginBpna() != null && partnerSite.get().getAddresses().stream().noneMatch(address -> address.getBpna().equals(delivery.getOriginBpna()))) {
                         errors.add("Origin BPNA must match one of the own partner entity's site' address BPNAs for customer responsibility.");
                     }
