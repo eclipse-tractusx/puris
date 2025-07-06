@@ -21,12 +21,12 @@ package org.eclipse.tractusx.puris.backend.file.logic.service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.apache.poi.ss.usermodel.*;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
@@ -41,7 +41,6 @@ import org.eclipse.tractusx.puris.backend.file.domain.model.DataDocumentTypeEnum
 import org.eclipse.tractusx.puris.backend.file.domain.model.DataImportError;
 import org.eclipse.tractusx.puris.backend.file.domain.model.DataImportResult;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -168,6 +167,7 @@ public class ExcelService {
         }
 
         while (rowIterator.hasNext()) {
+            List<String> rowErrors = new ArrayList<>();
             Row row = rowIterator.next();
             rowIndex++;
             try {
@@ -179,18 +179,24 @@ public class ExcelService {
                 String demandSiteBpns = getStringCellValue(row.getCell(5));
                 String demandCategoryCodeStr = getStringCellValue(row.getCell(6));
                 Date day = getDateCellValue(row.getCell(7));
-
-                ItemUnitEnumeration unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
-                DemandCategoryEnumeration categoryEnum = DemandCategoryEnumeration.fromValue(demandCategoryCodeStr.toUpperCase());
+                ItemUnitEnumeration unitEnum = null;
+                try {
+                    unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
+                } catch (Exception e) {
+                    rowErrors.add("Invalid unit of measurement: " + unitOfMeasurement);
+                }
+                DemandCategoryEnumeration categoryEnum = null;
+                try {
+                    categoryEnum = DemandCategoryEnumeration.fromValue(demandCategoryCodeStr.toUpperCase());
+                } catch (Exception e) {
+                    rowErrors.add("Invalid demand category: " + demandCategoryCodeStr);
+                }
 
                 Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
 
                 Partner partner = partnerService.findByBpnl(partnerBpnl);
                 if (partner == null) throw new IllegalArgumentException("Partner not found.");
-
-                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, ownMaterialNumber);
-                if (!mpr.isPartnerSuppliesMaterial()) throw new IllegalArgumentException("Partner does not supply this material.");
 
                 OwnDemand demand = OwnDemand.builder()
                         .material(material)
@@ -202,14 +208,25 @@ public class ExcelService {
                         .demandCategoryCode(categoryEnum)
                         .day(day)
                         .build();
-
+                rowErrors.addAll(ownDemandService.validateWithDetails(demand));
+                if (!rowErrors.isEmpty()) {
+                    errors.add(new DataImportError(rowIndex, rowErrors));
+                }
                 demands.add(demand);
             } catch (Exception e) {
-                errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage() + " Further validations for this row are not possible.")));
             }
         }
 
         if (errors.isEmpty()) {
+            try {
+                var conflictErrors = checkConflicts(demands);
+                if (!conflictErrors.isEmpty()) {
+                    return new DataImportResult("One or more conflicting rows found.", conflictErrors);
+                }
+            } catch(Exception e) {
+                return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
+            }
             List<OwnDemand> addedDemands = new ArrayList<>();
             List<OwnDemand> existingDemands = ownDemandService.findAll();
             for (var newDemand : demands) {
@@ -248,6 +265,7 @@ public class ExcelService {
         }
 
         while (rowIterator.hasNext()) {
+            List<String> rowErrors = new ArrayList<>();
             Row row = rowIterator.next();
             rowIndex++;
             try {
@@ -261,16 +279,18 @@ public class ExcelService {
                 String customerPositionNumber = getStringCellValue(row.getCell(7));
                 String supplierOrderNumber = getStringCellValue(row.getCell(8));
 
-                ItemUnitEnumeration unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
+                ItemUnitEnumeration unitEnum = null;
+                try {
+                    unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
+                } catch (Exception e) {
+                    rowErrors.add("Invalid unit of measurement: " + unitOfMeasurement);
+                }
 
                 Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
 
                 Partner partner = partnerService.findByBpnl(partnerBpnl);
                 if (partner == null) throw new IllegalArgumentException("Partner not found.");
-
-                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, ownMaterialNumber);
-                if (!mpr.isPartnerBuysMaterial()) throw new IllegalArgumentException("Partner does not buy this material.");
 
                 OwnProduction production = OwnProduction.builder()
                     .material(material)
@@ -283,13 +303,25 @@ public class ExcelService {
                     .customerOrderPositionNumber(customerPositionNumber)
                     .supplierOrderNumber(supplierOrderNumber)
                     .build();
+                rowErrors.addAll(ownProductionService.validateWithDetails(production));
+                if (!rowErrors.isEmpty()) {
+                    errors.add(new DataImportError(rowIndex, rowErrors));
+                }
                 productions.add(production);
             } catch (Exception e) {
-                errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage() + " Further validations for this row are not possible.")));
             }
         }
 
         if (errors.isEmpty()) {
+            try {
+                var conflictErrors = checkConflicts(productions);
+                if (!conflictErrors.isEmpty()) {
+                    return new DataImportResult("One or more conflicting rows found.", conflictErrors);
+                }
+            } catch(Exception e) {
+                return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
+            }
             List<OwnProduction> addedProductions = new ArrayList<>();
             List<OwnProduction> existingProductions = ownProductionService.findAll();
             for (var newProduction : productions) {
@@ -324,6 +356,7 @@ public class ExcelService {
         }
 
         while (rowIterator.hasNext()) {
+            List<String> rowErrors = new ArrayList<>();
             Row row = rowIterator.next();
             rowIndex++;
             try {
@@ -345,27 +378,39 @@ public class ExcelService {
                 String customerPositionNumber = getStringCellValue(row.getCell(15));
                 String supplierOrderNumber = getStringCellValue(row.getCell(16));
 
-                ItemUnitEnumeration unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
-                IncotermEnumeration incotermEnum = IncotermEnumeration.valueOf(incoterm.toUpperCase());
-                EventTypeEnumeration departureTypeEnum = EventTypeEnumeration.fromValue(departureType);
-                EventTypeEnumeration arrivalTypeEnum = EventTypeEnumeration.fromValue(arrivalType);
+                ItemUnitEnumeration unitEnum = null;
+                try {
+                    unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
+                } catch (Exception e) {
+                    rowErrors.add("Invalid unit of measurement: " + unitOfMeasurement);
+                }
+
+                IncotermEnumeration incotermEnum = null;
+                try {
+                    incotermEnum = IncotermEnumeration.valueOf(incoterm.toUpperCase());
+                } catch (Exception e) {
+                    rowErrors.add("Invalid incoterm: " + incoterm);
+                }
+
+                EventTypeEnumeration departureTypeEnum = null;
+                try {
+                    departureTypeEnum = EventTypeEnumeration.fromValue(departureType);
+                } catch (Exception e) {
+                    rowErrors.add("Invalid departure type: " + departureType);
+                }
+
+                EventTypeEnumeration arrivalTypeEnum = null;
+                try {
+                    arrivalTypeEnum = EventTypeEnumeration.fromValue(arrivalType);
+                } catch (Exception e) {
+                    rowErrors.add("Invalid arrival type: " + arrivalType);
+                }
 
                 Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
 
                 Partner partner = partnerService.findByBpnl(partnerBpnl);
                 if (partner == null) throw new IllegalArgumentException("Partner not found.");
-
-                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, ownMaterialNumber);
-                boolean isOriginSiteOfPartner = partner.getSites().stream()
-                        .anyMatch(site -> site.getBpns().equals(originSiteBpns));
-
-                if (isOriginSiteOfPartner && !mpr.isPartnerSuppliesMaterial()) {
-                    throw new IllegalArgumentException("Partner does not supply this material.");
-                }
-                if (!isOriginSiteOfPartner && !mpr.isPartnerBuysMaterial()) {
-                    throw new IllegalArgumentException("Partner does not buy this material.");
-                }
 
                 OwnDelivery delivery = OwnDelivery.builder()
                     .material(material)
@@ -386,13 +431,25 @@ public class ExcelService {
                     .customerOrderPositionNumber(customerPositionNumber)
                     .supplierOrderNumber(supplierOrderNumber)
                     .build();
+                rowErrors.addAll(ownDeliveryService.validateWithDetails(delivery));
+                if (!rowErrors.isEmpty()) {
+                    errors.add(new DataImportError(rowIndex, rowErrors));
+                }
                 deliveries.add(delivery);
             } catch (Exception e) {
-                errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage() + " Further validations for this row are not possible.")));
             }
         }
 
         if (errors.isEmpty()) {
+            try {
+                var conflictErrors = checkConflicts(deliveries);
+                if (!conflictErrors.isEmpty()) {
+                    return new DataImportResult("One or more conflicting rows found.", conflictErrors);
+                }
+            } catch(Exception e) {
+                return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
+            }
             List<OwnDelivery> addedDeliveries = new ArrayList<>();
             List<OwnDelivery> existingDeliveries = ownDeliveryService.findAll();
 
@@ -431,6 +488,7 @@ public class ExcelService {
         }
 
         while (rowIterator.hasNext()) {
+            List<String> rowErrors = new ArrayList<>();
             Row row = rowIterator.next();
             rowIndex++;
             try {
@@ -447,7 +505,12 @@ public class ExcelService {
                 Date lastUpdatedOnDateTime = getDateCellValue(row.getCell(10));
                 String direction = getStringCellValue(row.getCell(11));
 
-                ItemUnitEnumeration unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
+                ItemUnitEnumeration unitEnum = null;
+                try {
+                    unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
+                } catch (Exception e) {
+                    rowErrors.add("Invalid unit of measurement: " + unitOfMeasurement);
+                }
 
                 Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
@@ -455,10 +518,7 @@ public class ExcelService {
                 Partner partner = partnerService.findByBpnl(partnerBpnl);
                 if (partner == null) throw new IllegalArgumentException("Partner not found.");
 
-                MaterialPartnerRelation mpr = mprService.find(partnerBpnl, ownMaterialNumber);
-
                 if ("inbound".equalsIgnoreCase(direction)) {
-                    if (!mpr.isPartnerSuppliesMaterial()) throw new IllegalArgumentException("Partner does not supply this material.");
                     MaterialItemStock stock = MaterialItemStock.builder()
                         .material(material)
                         .partner(partner)
@@ -467,15 +527,18 @@ public class ExcelService {
                         .locationBpns(stockSiteBpns)
                         .locationBpna(stockAddressBpna)
                         .customerOrderId(customerOrderNumber)
-                        .customerOrderPositionId(customerOrderNumber)
+                        .customerOrderPositionId(customerPositionNumber)
                         .supplierOrderId(supplierOrderNumber)
                         .isBlocked(isBlocked)
                         .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                         .build();
+                    rowErrors.addAll(materialItemStockService.validateWithDetails(stock));
+                    if (!rowErrors.isEmpty()) {
+                        errors.add(new DataImportError(rowIndex, rowErrors));
+                    }
                     materialStocks.add(stock);
                     allStocks.add(stock);
                 } else if ("outbound".equalsIgnoreCase(direction)) {
-                    if (!mpr.isPartnerBuysMaterial()) throw new IllegalArgumentException("Partner does not buy this material.");
                     ProductItemStock stock = ProductItemStock.builder()
                         .material(material)
                         .partner(partner)
@@ -489,18 +552,29 @@ public class ExcelService {
                         .isBlocked(isBlocked)
                         .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                         .build();
+                    rowErrors.addAll(productItemStockService.validateWithDetails(stock));
+                    if (!rowErrors.isEmpty()) {
+                        errors.add(new DataImportError(rowIndex, rowErrors));
+                    }
                     productStocks.add(stock);
                     allStocks.add(stock);
                 } else {
                     throw new IllegalArgumentException("Invalid direction: " + direction);
                 }
-
             } catch (Exception e) {
-                errors.add(new DataImportError(rowIndex, List.of(e.getMessage())));
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage() + " Further validations for this row are not possible.")));
             }
         }
 
         if (errors.isEmpty()) {
+            try {
+                var conflictErrors = checkConflicts(allStocks);
+                if (!conflictErrors.isEmpty()) {
+                    return new DataImportResult("One or more conflicting rows found.", conflictErrors);
+                }
+            } catch(Exception e) {
+                return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
+            }
             List<MaterialItemStock> addedMaterialStocks = new ArrayList<>();
             List<ProductItemStock> addedProductStocks = new ArrayList<>();
             List<MaterialItemStock> existingMaterialStocks = materialItemStockService.findAll();
@@ -589,5 +663,32 @@ public class ExcelService {
         } catch(Exception e) {
             return null;
         }
+    }
+
+    /**
+     * Checks a given List of imported rows for duplicates by comparing
+     * each current object with the previous one using Object.equals. This method works
+     * for all types of imported data (demand, production, delivery and stock).
+     * @param <T> the type of imported data
+     * @param importEntries the list of imported data rows
+     * @return list of errors for each row that conflicts with one or more previous rows 
+     */
+    public <T> List<DataImportError> checkConflicts(List<T> importEntries) {
+        List<DataImportError> errors = new ArrayList<>();
+        for (int i = 0; i < importEntries.size(); i++) {
+            T current = importEntries.get(i);
+            List<Integer> conflictingIndexes = new ArrayList<>();
+
+            for (int j = 0; j < i; j++) {
+                if (current.equals(importEntries.get(j))) {
+                    conflictingIndexes.add(j + 2);
+                }
+            }
+
+            if (!conflictingIndexes.isEmpty()) {
+                errors.add(new DataImportError(i, List.of("The row " + (i + 2) + " conflicts with the following rows: " + conflictingIndexes.toString())));
+            }
+        }
+        return errors;
     }
 }
