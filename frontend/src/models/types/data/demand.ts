@@ -33,4 +33,5 @@ export type Demand = {
   measurementUnit: UnitOfMeasurementKey;
   day: Date;
   demandCategoryCode: DemandCategoryCode;
+  lastUpdatedOnDateTime: Date;
 }

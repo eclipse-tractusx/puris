@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,7 +64,6 @@ public class PlannedProductionSammMapper {
 
         var posList = new HashSet<Position>();
         samm.setPositions(posList);
-        var currentDate = new Date();
         for (var mappingHelperListEntry : groupedByPositionAttributes.entrySet()) {
             var key = mappingHelperListEntry.getKey();
             var prod = mappingHelperListEntry.getValue().get(0);
@@ -84,7 +82,7 @@ public class PlannedProductionSammMapper {
             for (var v : mappingHelperListEntry.getValue()) {
                 ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(v.getQuantity(), v.getMeasurementUnit());
                 AllocatedPlannedProductionOutput allocatedProduction = new AllocatedPlannedProductionOutput(
-                        itemQuantityEntity, v.getProductionSiteBpns(), v.getEstimatedTimeOfCompletion(), currentDate);
+                        itemQuantityEntity, v.getProductionSiteBpns(), v.getEstimatedTimeOfCompletion(), v.getLastUpdatedOnDateTime());
                 allocatedProductionList.add(allocatedProduction);
             }
         }
@@ -126,6 +124,7 @@ public class PlannedProductionSammMapper {
                         .customerOrderPositionNumber(customerOrderPositionNumber)
                         .measurementUnit(allocatedProduction.getPlannedProductionQuantity().getUnit())
                         .quantity(allocatedProduction.getPlannedProductionQuantity().getValue())
+                        .lastUpdatedOnDateTime(allocatedProduction.getLastUpdatedOnDateTime())
                         .build();
                 outputList.add(production);
             }

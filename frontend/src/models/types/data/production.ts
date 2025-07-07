@@ -32,4 +32,5 @@ export type Production = {
   measurementUnit: UnitOfMeasurementKey;
   productionSiteBpns: BPNS;
   estimatedTimeOfCompletion: Date;
+  lastUpdatedOnDateTime: Date;
 } & OrderReference;

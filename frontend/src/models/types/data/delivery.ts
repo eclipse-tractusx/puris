@@ -42,5 +42,6 @@ export type Delivery = {
   dateOfArrival: Date;
   departureType: DepartureType;
   arrivalType: ArrivalType;
+  lastUpdatedOnDateTime: Date;
   reported: boolean;
 } & OrderReference;

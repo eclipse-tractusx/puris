@@ -99,6 +99,17 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
                 );
             },
         },
+        {
+            field: 'lastUpdatedOnDateTime',
+            headerName: 'Updated',
+            headerAlign: 'center',
+            flex: 1.5,
+            renderCell: (data: { row: Demand }) => (
+                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                    {new Date(data.row.lastUpdatedOnDateTime).toLocaleString('en-GB')}
+                </Box>
+            ),
+        },
     ] as const;
     if (handleDelete) {
         return [

@@ -48,6 +48,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -98,7 +99,8 @@ public class DemandController {
 
     @PostMapping()
     @ResponseBody
-    @Operation(summary = "Creates a new demand")
+    @Operation(summary = "Creates a new demand", description = "Creates a new demand. \n" +
+                " **Note:** If the backend should automatically set `lastUpdatedOnDateTime` please set it to null.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Demand was created."),
             @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
@@ -121,6 +123,10 @@ public class DemandController {
                     "Demand Information misses partner identification.");
         }
 
+        if (demandDto.getLastUpdatedOnDateTime() == null) {
+            demandDto.setLastUpdatedOnDateTime(new Date());
+        }
+
         try {
             var dto = convertToDto(ownDemandService.create(convertToEntity(demandDto)));
             materialService.updateTimestamp(demandDto.getOwnMaterialNumber());
@@ -133,7 +139,8 @@ public class DemandController {
     }
 
     @PutMapping()
-    @Operation(summary = "Updates a demand by its UUID")
+    @Operation(summary = "Updates a demand by its UUID", description = "Updates an existing demand.  \n" +
+                " **Note:** If the backend should automatically set `lastUpdatedOnDateTime` please set it to null.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Demand was updated."),
             @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
@@ -142,6 +149,9 @@ public class DemandController {
     })
     @ResponseStatus(HttpStatus.OK)
     public DemandDto updateDemand(@RequestBody DemandDto dto) {
+        if (dto.getLastUpdatedOnDateTime() == null) {
+            dto.setLastUpdatedOnDateTime(new Date());
+        }
         OwnDemand updatedDemand = ownDemandService.update(convertToEntity(dto));
         if (updatedDemand == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Demand does not exist.");

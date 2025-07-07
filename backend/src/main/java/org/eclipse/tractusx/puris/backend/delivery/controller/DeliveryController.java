@@ -50,6 +50,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 import java.util.Base64;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -111,7 +112,8 @@ public class DeliveryController {
 
     @PostMapping()
     @ResponseBody
-    @Operation(summary = "Creates a new delivery")
+    @Operation(summary = "Creates a new delivery", description = "Creates a new delivery.  \n" +
+                " **Note:** If the backend should automatically set `lastUpdatedOnDateTime` please set it to null.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Delivery was created."),
             @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
@@ -134,6 +136,10 @@ public class DeliveryController {
                     "Delivery Information misses partner identification.");
         }
 
+        if (deliveryDto.getLastUpdatedOnDateTime() == null) {
+            deliveryDto.setLastUpdatedOnDateTime(new Date());
+        }
+
         try {
             var dto = convertToDto(ownDeliveryService.create(convertToEntity(deliveryDto)));
             materialService.updateTimestamp(deliveryDto.getOwnMaterialNumber());
@@ -147,7 +153,8 @@ public class DeliveryController {
     }
 
     @PutMapping()
-    @Operation(summary = "Updates a delivery by its UUID")
+    @Operation(summary = "Updates a delivery by its UUID", description = "Updates an existing delivery.  \n" +
+                " **Note:** If the backend should automatically set `lastUpdatedOnDateTime` please set it to null.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202", description = "Delivery was updated."),
             @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
@@ -156,6 +163,9 @@ public class DeliveryController {
     })
     @ResponseStatus(HttpStatus.ACCEPTED)
     public DeliveryDto updateDelivery(@RequestBody DeliveryDto dto) {
+        if (dto.getLastUpdatedOnDateTime() == null) {
+            dto.setLastUpdatedOnDateTime(new Date());
+        }
         OwnDelivery updatedDelivery = ownDeliveryService.update(convertToEntity(dto));
         if (updatedDelivery == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery does not exist.");

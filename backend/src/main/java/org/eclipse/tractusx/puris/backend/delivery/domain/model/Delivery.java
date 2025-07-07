@@ -91,6 +91,9 @@ public abstract class Delivery {
     private EventTypeEnumeration departureType;
     private EventTypeEnumeration arrivalType;
 
+    @NotNull
+    private Date lastUpdatedOnDateTime;
+
     @ToString.Include
     private String material_ownMaterialNumber() {
         return material.getOwnMaterialNumber();

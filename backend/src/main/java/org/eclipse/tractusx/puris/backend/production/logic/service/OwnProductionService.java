@@ -82,6 +82,9 @@ public class OwnProductionService extends ProductionService<OwnProduction> {
         if (production.getMeasurementUnit() == null) {
             errors.add("Missing measurement unit.");
         }
+        if (production.getLastUpdatedOnDateTime() == null) {
+            errors.add("Missing lastUpdatedOnTime.");
+        }
         if (production.getEstimatedTimeOfCompletion() == null) {
             errors.add("Missing estimated time of completion.");
         }

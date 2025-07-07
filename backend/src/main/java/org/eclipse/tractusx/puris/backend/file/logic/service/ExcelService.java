@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import org.apache.poi.ss.usermodel.*;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
@@ -42,7 +41,6 @@ import org.eclipse.tractusx.puris.backend.file.domain.model.DataImportError;
 import org.eclipse.tractusx.puris.backend.file.domain.model.DataImportResult;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
@@ -68,7 +66,8 @@ public class ExcelService {
         "expectedSupplierSiteBpns",
         "demandSiteBpns",
         "demandCategoryCode",
-        "day"
+        "day",
+        "lastUpdatedOnDateTime"
     );
     private final List<String> deliveryColumns = List.of(
         "ownMaterialNumber",
@@ -87,7 +86,8 @@ public class ExcelService {
         "Incoterm",
         "customerOrderNumber",
         "customerPositionId",
-        "supplierOrderNumber"
+        "supplierOrderNumber",
+        "lastUpdatedOnDateTime"
     );
     private final List<String> productionColumns = List.of(
         "ownMaterialNumber",
@@ -98,7 +98,8 @@ public class ExcelService {
         "estimatedCompletionTime",
         "customerOrderNumber",
         "customerPositionId",
-        "supplierOrderNumber"
+        "supplierOrderNumber",
+        "lastUpdatedOnDateTime"
     );
     private final List<String> stockColumns = List.of(
         "ownMaterialNumber",
@@ -129,8 +130,6 @@ public class ExcelService {
     private MaterialItemStockService materialItemStockService;
     @Autowired
     private ProductItemStockService productItemStockService;
-    @Autowired
-    private MaterialPartnerRelationService mprService;
     
     public DataImportResult readExcelFile(InputStream is) throws IOException {
         Workbook workbook = WorkbookFactory.create(is);
@@ -179,6 +178,7 @@ public class ExcelService {
                 String demandSiteBpns = getStringCellValue(row.getCell(5));
                 String demandCategoryCodeStr = getStringCellValue(row.getCell(6));
                 Date day = getDateCellValue(row.getCell(7));
+                Date lastUpdatedOnDateTime = getDateCellValue(row.getCell(8));
                 ItemUnitEnumeration unitEnum = null;
                 try {
                     unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
@@ -190,6 +190,10 @@ public class ExcelService {
                     categoryEnum = DemandCategoryEnumeration.fromValue(demandCategoryCodeStr.toUpperCase());
                 } catch (Exception e) {
                     rowErrors.add("Invalid demand category: " + demandCategoryCodeStr);
+                }
+
+                if (lastUpdatedOnDateTime == null) {
+                    lastUpdatedOnDateTime = new Date();
                 }
 
                 Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
@@ -207,6 +211,7 @@ public class ExcelService {
                         .demandLocationBpns(demandSiteBpns)
                         .demandCategoryCode(categoryEnum)
                         .day(day)
+                        .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                         .build();
                 rowErrors.addAll(ownDemandService.validateWithDetails(demand));
                 if (!rowErrors.isEmpty()) {
@@ -278,12 +283,17 @@ public class ExcelService {
                 String customerOrderNumber = getStringCellValue(row.getCell(6));
                 String customerPositionNumber = getStringCellValue(row.getCell(7));
                 String supplierOrderNumber = getStringCellValue(row.getCell(8));
+                Date lastUpdatedOnDateTime = getDateCellValue(row.getCell(9));
 
                 ItemUnitEnumeration unitEnum = null;
                 try {
                     unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
                 } catch (Exception e) {
                     rowErrors.add("Invalid unit of measurement: " + unitOfMeasurement);
+                }
+
+                if (lastUpdatedOnDateTime == null) {
+                    lastUpdatedOnDateTime = new Date();
                 }
 
                 Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
@@ -302,6 +312,7 @@ public class ExcelService {
                     .customerOrderNumber(customerOrderNumber)
                     .customerOrderPositionNumber(customerPositionNumber)
                     .supplierOrderNumber(supplierOrderNumber)
+                    .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                     .build();
                 rowErrors.addAll(ownProductionService.validateWithDetails(production));
                 if (!rowErrors.isEmpty()) {
@@ -377,6 +388,7 @@ public class ExcelService {
                 String customerOrderNumber = getStringCellValue(row.getCell(14));
                 String customerPositionNumber = getStringCellValue(row.getCell(15));
                 String supplierOrderNumber = getStringCellValue(row.getCell(16));
+                Date lastUpdatedOnDateTime = getDateCellValue(row.getCell(17));
 
                 ItemUnitEnumeration unitEnum = null;
                 try {
@@ -406,6 +418,10 @@ public class ExcelService {
                     rowErrors.add("Invalid arrival type: " + arrivalType);
                 }
 
+                if (lastUpdatedOnDateTime == null) {
+                    lastUpdatedOnDateTime = new Date();
+                }
+
                 Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
                 if (material == null) throw new IllegalArgumentException("Material not found.");
 
@@ -430,6 +446,7 @@ public class ExcelService {
                     .customerOrderNumber(customerOrderNumber)
                     .customerOrderPositionNumber(customerPositionNumber)
                     .supplierOrderNumber(supplierOrderNumber)
+                    .lastUpdatedOnDateTime(lastUpdatedOnDateTime)
                     .build();
                 rowErrors.addAll(ownDeliveryService.validateWithDetails(delivery));
                 if (!rowErrors.isEmpty()) {
@@ -510,6 +527,10 @@ public class ExcelService {
                     unitEnum = ItemUnitEnumeration.fromValue(unitOfMeasurement);
                 } catch (Exception e) {
                     rowErrors.add("Invalid unit of measurement: " + unitOfMeasurement);
+                }
+
+                if (lastUpdatedOnDateTime == null) {
+                    lastUpdatedOnDateTime = new Date();
                 }
 
                 Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);

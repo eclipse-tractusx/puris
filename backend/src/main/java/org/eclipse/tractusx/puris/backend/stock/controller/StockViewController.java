@@ -177,7 +177,8 @@ public class StockViewController {
 
     @PostMapping("product-stocks")
     @ResponseBody
-    @Operation(description = "Creates a new product-stock")
+    @Operation(description = "Creates a new product-stock. \n" + 
+                "**Note:** If the backend should automatically set `lastUpdatedOn` please set it to null.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Product Stock was created."),
         @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
@@ -201,7 +202,9 @@ public class StockViewController {
 
         ProductItemStock productStockToCreate = convertToEntity(productStockDto);
 
-        productStockToCreate.setLastUpdatedOnDateTime(new Date());
+        if (productStockToCreate.getLastUpdatedOnDateTime() == null) {
+            productStockToCreate.setLastUpdatedOnDateTime(new Date());
+        }
 
         if (!productItemStockService.validate(productStockToCreate)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock is invalid.");
@@ -236,7 +239,8 @@ public class StockViewController {
 
     @PutMapping("product-stocks")
     @ResponseBody
-    @Operation(description = "Updates an existing productstock")
+    @Operation(description = "Updates an existing product-stock. \n" + 
+                "**Note:** If the backend should automatically set `lastUpdatedOn` please set it to null.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Product Stock was updated."),
         @ApiResponse(responseCode = "400", description = "Malformed request body.", content = @Content),
@@ -259,7 +263,11 @@ public class StockViewController {
 
         existingProductStock.setQuantity(productStockDto.getQuantity());
         existingProductStock.setMeasurementUnit(productStockDto.getMeasurementUnit());
-        existingProductStock.setLastUpdatedOnDateTime(new Date());
+        if (productStockDto.getLastUpdatedOn() == null) {
+            existingProductStock.setLastUpdatedOnDateTime(new Date());
+        } else {
+            existingProductStock.setLastUpdatedOnDateTime(productStockDto.getLastUpdatedOn());
+        }
 
         existingProductStock = productItemStockService.update(existingProductStock);
         log.info("Updated product-stock: " + existingProductStock);
@@ -344,7 +352,8 @@ public class StockViewController {
 
     @PostMapping("material-stocks")
     @ResponseBody
-    @Operation(description = "Creates a new material-stock")
+    @Operation(description = "Creates a new material-stock. \n" + 
+                "**Note:** If the backend should automatically set `lastUpdatedOn` please set it to null.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Material Stock was created."),
         @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
@@ -367,7 +376,9 @@ public class StockViewController {
         }
 
         MaterialItemStock materialStockToCreate = convertToEntity(materialStockDto);
-        materialStockToCreate.setLastUpdatedOnDateTime(new Date());
+        if (materialStockToCreate.getLastUpdatedOnDateTime() == null) {
+            materialStockToCreate.setLastUpdatedOnDateTime(new Date());
+        }
 
         if (!materialItemStockService.validate(materialStockToCreate)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material Stock is invalid.");
@@ -399,7 +410,8 @@ public class StockViewController {
 
     @PutMapping("material-stocks")
     @ResponseBody
-    @Operation(description = "Updates an existing material-stock")
+    @Operation(description = "Updates an existing material-stock. \n" + 
+                "**Note:** If the backend should automatically set `lastUpdatedOn` please set it to null.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Material Stock was updated."),
         @ApiResponse(responseCode = "400", description = "Malformed request body.", content = @Content),
@@ -420,7 +432,11 @@ public class StockViewController {
 
         existingMaterialStock.setQuantity(materialStockDto.getQuantity());
         existingMaterialStock.setMeasurementUnit(materialStockDto.getMeasurementUnit());
-        existingMaterialStock.setLastUpdatedOnDateTime(new Date());
+        if (materialStockDto.getLastUpdatedOn() == null) {
+            existingMaterialStock.setLastUpdatedOnDateTime(new Date());
+        } else {
+            existingMaterialStock.setLastUpdatedOnDateTime(materialStockDto.getLastUpdatedOn());
+        }
 
         existingMaterialStock = materialItemStockService.update(existingMaterialStock);
 
