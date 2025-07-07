@@ -93,9 +93,10 @@ const createProductionColumns = (handleDelete?: (row: Production) => void) => {
             headerAlign: 'center',
             flex: 1.5,
             renderCell: (data: { row: Production }) => (
-                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    {new Date(data.row.lastUpdatedOnDateTime).toLocaleString('en-GB')}
-                </Box>
+                <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                    <Box>{new Date(data.row.lastUpdatedOnDateTime).toLocaleDateString('en-GB')}</Box>
+                    <Box>{new Date(data.row.lastUpdatedOnDateTime).toLocaleTimeString('en-GB')}</Box>
+                </Stack>
             ),
         },
     ] as const;
