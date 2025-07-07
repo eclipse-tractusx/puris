@@ -102,7 +102,8 @@ public class ProductionController {
 
     @PostMapping()
     @ResponseBody
-    @Operation(summary = "Creates a new planned production")
+    @Operation(summary = "Creates a new planned production", description = "Creates a new production. \n" +
+                " **Note:** If the backend should automatically set `lastUpdatedOnDateTime` please set it to null.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Planned Production was created."),
             @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
@@ -143,7 +144,7 @@ public class ProductionController {
 
     @PostMapping("/range")
     @ResponseBody
-    @Operation(summary = "Creates a range of planned productions", description = "Creates a new production. \n" +
+    @Operation(summary = "Creates a range of planned productions", description = "Creates a range of new production. \n" +
                 " **Note:** If the backend should automatically set `lastUpdatedOnDateTime` please set it to null.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Planned Productions were created."),
@@ -165,6 +166,9 @@ public class ProductionController {
             if (dto.getPartner().getBpnl() == null || dto.getPartner().getBpnl().isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Production Information misses partner identification.");
+            }
+            if (dto.getLastUpdatedOnDateTime() == null) {
+                dto.setLastUpdatedOnDateTime(new Date());
             }
             return convertToEntity(dto);
         }).collect(Collectors.toList());
