@@ -30,6 +30,21 @@ Due to the new authentication the IDP configuration is no longer optional and th
 
 **YOUR TASK**: Move all keys except `disabled` of `frontend.puris.keycloak` to the new idp section.
 
+### Adding Liquibase Database Migrations
+
+With chart version 4.0.0 you can use the automatic migrations provided
+via [backend](../../backend/src/main/resources/db/changelog).
+
+To do so, set `backend.puris.jpa.hibernate.ddl-auto` to `validate`.
+
+With this release the field `last_updated_on_date_time` is added to following relations
+
+- `own_delivery`
+- `own_demand`
+- `own_production`
+
+Further for `appVersion = 3.1.0` the database schema has been used as baseline.
+
 ## Version 2.8.x to 3.0.x
 
 *This migration guide covers the changes provided from [appVersion 3.0.0 to appVersion 3.1.0](https://github.com/eclipse-tractusx/puris/compare/3.0.0...3.1.0).*

@@ -314,6 +314,8 @@ If you have a new major release,
 - add a folder `changelog-MAJOR.x`.
 - include the folder in `../backend/src/main/resources/db/changelog/db.changelog-master.yaml`
 
+Note: when using this approach, make sure to validate the `changeSets` and adding suitable `preConditions`.
+
 # Notes on the release
 
 ## Run helm test locally for n kubernetes versions

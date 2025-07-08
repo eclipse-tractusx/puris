@@ -421,8 +421,8 @@ backend:
       role:
     jpa:
       hibernate:
-        # -- Initialises SQL database with Hibernate property "update" to allow Hibernate to add things to schema so that it doesn't drop tables
-        ddl-auto: update
+        # -- Initialises SQL database with Hibernate property "update" to allow Hibernate to add things to schema so that it doesn't drop tables. Since 3.2.0 migrations are provided via liquibase; if you want to use that feature, set to validate or none.
+        ddl-auto: validate
       properties:
         hibernate:
           # -- Enables "Lazy load no trans" property to fetch of each lazy entity to open a temporary session and run inside a separate transaction
