@@ -27,6 +27,7 @@ import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUn
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.DemandCategoryEnumeration;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -56,4 +57,6 @@ public class DemandDto implements Serializable {
     private String supplierLocationBpns;
 
     private DemandCategoryEnumeration demandCategoryCode;
+
+    private Date lastUpdatedOnDateTime;
 }

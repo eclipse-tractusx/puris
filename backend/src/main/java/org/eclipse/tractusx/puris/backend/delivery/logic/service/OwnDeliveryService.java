@@ -97,6 +97,11 @@ public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
         if (delivery.getMeasurementUnit() == null) {
             errors.add("Missing measurement unit.");
         }
+        if (delivery.getLastUpdatedOnDateTime() == null) {
+            errors.add("Missing lastUpdatedOnTime.");
+        } else if (delivery.getLastUpdatedOnDateTime().after(new Date())) {
+            errors.add("lastUpdatedOnDateTime cannot be in the future.");
+        }
         if (delivery.getMaterial() == null) {
             errors.add("Missing material.");
         }

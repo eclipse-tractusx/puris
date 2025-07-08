@@ -49,6 +49,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -101,7 +102,8 @@ public class ProductionController {
 
     @PostMapping()
     @ResponseBody
-    @Operation(summary = "Creates a new planned production")
+    @Operation(summary = "Creates a new planned production", description = "Creates a new production. \n" +
+                " **Note:** If the backend should automatically set `lastUpdatedOnDateTime` please set it to null.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Planned Production was created."),
             @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
@@ -125,6 +127,10 @@ public class ProductionController {
                     "Production Information misses partner identification.");
         }
 
+        if (productionDto.getLastUpdatedOnDateTime() == null) {
+            productionDto.setLastUpdatedOnDateTime(new Date());
+        }
+
         try {
             var dto =  convertToDto(ownProductionService.create(convertToEntity(productionDto)));
             materialService.updateTimestamp(productionDto.getMaterial().getMaterialNumberSupplier());
@@ -138,7 +144,8 @@ public class ProductionController {
 
     @PostMapping("/range")
     @ResponseBody
-    @Operation(summary = "Creates a range of planned productions")
+    @Operation(summary = "Creates a range of planned productions", description = "Creates a range of new production. \n" +
+                " **Note:** If the backend should automatically set `lastUpdatedOnDateTime` please set it to null.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Planned Productions were created."),
             @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
@@ -160,6 +167,9 @@ public class ProductionController {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Production Information misses partner identification.");
             }
+            if (dto.getLastUpdatedOnDateTime() == null) {
+                dto.setLastUpdatedOnDateTime(new Date());
+            }
             return convertToEntity(dto);
         }).collect(Collectors.toList());
         try {
@@ -175,7 +185,8 @@ public class ProductionController {
     }
 
     @PutMapping()
-    @Operation(summary = "Updates a planned production by its UUID")
+    @Operation(summary = "Updates a planned production by its UUID", description = "Updates an existing production.  \n" +
+                " **Note:** If the backend should automatically set `lastUpdatedOnDateTime` please set it to null.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Planned Productions was updated."),
             @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
@@ -184,6 +195,9 @@ public class ProductionController {
     })
     @ResponseStatus(HttpStatus.OK)
     public ProductionDto updateProduction(@RequestBody ProductionDto dto) {
+        if (dto.getLastUpdatedOnDateTime() == null) {
+            dto.setLastUpdatedOnDateTime(new Date());
+        }
         OwnProduction updatedProduction = ownProductionService.update(convertToEntity(dto));
         if (updatedProduction == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Production does not exist.");

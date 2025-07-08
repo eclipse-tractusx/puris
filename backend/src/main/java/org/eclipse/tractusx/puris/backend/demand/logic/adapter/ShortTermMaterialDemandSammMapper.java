@@ -78,8 +78,13 @@ public class ShortTermMaterialDemandSammMapper {
         for (var mappingHelperListEntry : groupedByCategory.entrySet()) {
             var key = mappingHelperListEntry.getKey();
             DemandSeries demandSeries = new DemandSeries();
+            List<OwnDemand> demandsByCategory = mappingHelperListEntry.getValue();
             demandSeriesList.add(demandSeries);
-            demandSeries.setLastUpdatedOnDateTime(new Date());
+            var latestUpdate = demandsByCategory.stream()
+                .map(OwnDemand::getLastUpdatedOnDateTime)
+                .max(Date::compareTo)
+                .orElse(new Date());
+            demandSeries.setLastUpdatedOnDateTime(latestUpdate);
             demandSeries.setDemandCategory(mapDemandCategory(key.category()));
             demandSeries.setCustomerLocationBpns(key.customerLocationBpns());
             demandSeries.setExpectedSupplierLocationBpns(key.expectedSupplierLocationBpns());
@@ -116,6 +121,7 @@ public class ShortTermMaterialDemandSammMapper {
                         .quantity(demand.getDemand().getValue())
                         .measurementUnit(demand.getDemand().getUnit())
                         .day(demand.getDay())
+                        .lastUpdatedOnDateTime(demandSeries.getLastUpdatedOnDateTime())
                         .build();
                 outputList.add(reportedDemand);
             }

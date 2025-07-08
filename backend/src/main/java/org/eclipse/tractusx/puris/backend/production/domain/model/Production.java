@@ -68,6 +68,9 @@ public abstract class Production {
 
     private Date estimatedTimeOfCompletion;
 
+    @NotNull
+    private Date lastUpdatedOnDateTime;
+
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String customerOrderNumber;
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)

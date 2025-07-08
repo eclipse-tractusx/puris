@@ -87,6 +87,11 @@ public class OwnDemandService extends DemandService<OwnDemand, OwnDemandReposito
         if (demand.getMeasurementUnit() == null) {
             errors.add("Missing measurement unit.");
         }
+        if (demand.getLastUpdatedOnDateTime() == null) {
+            errors.add("Missing lastUpdatedOnTime.");
+        } else if (demand.getLastUpdatedOnDateTime().after(new Date())) {
+            errors.add("lastUpdatedOnDateTime cannot be in the future.");
+        }
         if (demand.getDay() == null) {
             errors.add("Missing day.");
         }

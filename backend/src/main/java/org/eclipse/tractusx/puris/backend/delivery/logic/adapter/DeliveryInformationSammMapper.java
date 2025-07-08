@@ -99,7 +99,7 @@ public class DeliveryInformationSammMapper {
                 events.add(new TransitEvent(v.getDateOfArrival(), v.getArrivalType()));
                 TransitLocations locations = new TransitLocations(new Location(v.getOriginBpna(), v.getOriginBpns()), new Location(v.getDestinationBpna(), v.getDestinationBpns()));
                 Delivery newDelivery = new Delivery(
-                        itemQuantityEntity, new Date(), events, locations, v.getTrackingNumber(), v.getIncoterm());
+                        itemQuantityEntity, v.getLastUpdatedOnDateTime(), events, locations, v.getTrackingNumber(), v.getIncoterm());
                 deliveries.add(newDelivery);
             }
         }
@@ -152,6 +152,7 @@ public class DeliveryInformationSammMapper {
                     .destinationBpna(delivery.getTransitLocations().getDestination().getBpnaProperty())
                     .trackingNumber(delivery.getTrackingNumber())
                     .incoterm(delivery.getIncoterm())
+                    .lastUpdatedOnDateTime(delivery.getLastUpdatedOnDateTime())
                     .build();
                 outputList.add(newDelivery);
             }

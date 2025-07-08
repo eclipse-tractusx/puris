@@ -186,6 +186,18 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void) => {
             },
         },
         {
+            field: 'lastUpdatedOnDateTime',
+            headerName: 'Updated',
+            headerAlign: 'center',
+            flex: 1.5,
+            renderCell: (data: { row: Delivery }) => (
+                <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                    <Box>{new Date(data.row.lastUpdatedOnDateTime).toLocaleDateString('en-GB')}</Box>
+                    <Box>{new Date(data.row.lastUpdatedOnDateTime).toLocaleTimeString('en-GB')}</Box>
+                </Stack>
+            ),
+        },
+        {
             field: 'delete',
             headerName: '',
             sortable: false,

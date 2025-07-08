@@ -76,6 +76,9 @@ public abstract class Demand {
 
     private DemandCategoryEnumeration demandCategoryCode;
 
+    @NotNull
+    private Date lastUpdatedOnDateTime;
+
     @ToString.Include
     private String material_ownMaterialNumber() {
         return material.getOwnMaterialNumber();

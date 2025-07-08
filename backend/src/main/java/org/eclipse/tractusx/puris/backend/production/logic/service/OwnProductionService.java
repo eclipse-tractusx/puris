@@ -21,6 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 
@@ -81,6 +82,11 @@ public class OwnProductionService extends ProductionService<OwnProduction> {
         }
         if (production.getMeasurementUnit() == null) {
             errors.add("Missing measurement unit.");
+        }
+        if (production.getLastUpdatedOnDateTime() == null) {
+            errors.add("Missing lastUpdatedOnTime.");
+        } else if (production.getLastUpdatedOnDateTime().after(new Date())) {
+            errors.add("lastUpdatedOnDateTime cannot be in the future.");
         }
         if (production.getEstimatedTimeOfCompletion() == null) {
             errors.add("Missing estimated time of completion.");

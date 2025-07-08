@@ -74,9 +74,10 @@ const createStockColumns = (handleDelete?: (row: Stock) => void) => {
             headerAlign: 'center',
             flex: 1.5,
             renderCell: (data: { row: Stock }) => (
-                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    {new Date(data.row.lastUpdatedOn).toLocaleTimeString('en-GB')}
-                </Box>
+                <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                    <Box>{new Date(data.row.lastUpdatedOn).toLocaleDateString('en-GB')}</Box>
+                    <Box>{new Date(data.row.lastUpdatedOn).toLocaleTimeString('en-GB')}</Box>
+                </Stack>
             ),
         },
         {

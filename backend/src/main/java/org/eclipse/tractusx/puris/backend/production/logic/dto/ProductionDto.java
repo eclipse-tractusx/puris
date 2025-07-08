@@ -59,4 +59,6 @@ public class ProductionDto implements Serializable {
     private String customerOrderPositionNumber;
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String supplierOrderNumber;
+
+    private Date lastUpdatedOnDateTime;
 }

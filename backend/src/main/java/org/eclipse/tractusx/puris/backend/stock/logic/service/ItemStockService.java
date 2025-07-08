@@ -30,8 +30,8 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ItemStockRepository;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -160,6 +160,8 @@ public abstract class ItemStockService<T extends ItemStock> {
             }
             if (itemStock.getLastUpdatedOnDateTime() == null) {
                 errors.add("Missing lastUpdatedOnTime.");
+            } else if (itemStock.getLastUpdatedOnDateTime().after(new Date())) {
+                errors.add("lastUpdatedOnDateTime cannot be in the future.");
             }
             if (!((itemStock.getCustomerOrderId() != null && itemStock.getCustomerOrderPositionId() != null) || 
                 (itemStock.getCustomerOrderId() == null && itemStock.getCustomerOrderPositionId() == null && itemStock.getSupplierOrderId() == null))) {
