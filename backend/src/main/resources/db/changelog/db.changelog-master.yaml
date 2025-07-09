@@ -19,10 +19,5 @@
 #
 
 databaseChangeLog:
-  - preConditions:
-      - sqlCheck:
-          expectedResult: '1'
-          sql: "SELECT 1"
-          comments: "Check that the database is reachable before proceeding with migrations."
   - includeAll:
       path: db/changelog/changelog-3.x
