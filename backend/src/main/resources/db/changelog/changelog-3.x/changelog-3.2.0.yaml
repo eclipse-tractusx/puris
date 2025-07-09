@@ -80,3 +80,60 @@ databaseChangeLog:
                   defaultValueComputed: CURRENT_TIMESTAMP
                   constraints:
                     nullable: false
+  - changeSet:
+      id: 4
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: reported_delivery
+                columnName: last_updated_on_date_time
+      changes:
+        - addColumn:
+            tableName: reported_delivery
+            columns:
+              - column:
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 5
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: reported_demand
+                columnName: last_updated_on_date_time
+      changes:
+        - addColumn:
+            tableName: reported_demand
+            columns:
+              - column:
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 6
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: reported_production
+                columnName: last_updated_on_date_time
+      changes:
+        - addColumn:
+            tableName: reported_production
+            columns:
+              - column:
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
