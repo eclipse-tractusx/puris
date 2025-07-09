@@ -242,13 +242,6 @@
             <!-- add basic application properties -->
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
-                <!--                <includes>-->
-                <!--                    <include>application.properties</include>-->
-                <!--                    &lt;!&ndash; add json-ld data&ndash;&gt;-->
-                <!--                    <include>json-ld/*</include>-->
-                <!--                    <include>db/changelog/*</include>-->
-                <!--                    <include>banner.txt</include>-->
-                <!--                </includes>-->
                 <targetPath>BOOT-INF/classes/</targetPath>
             </resource>
             <!-- add legal information to META-INF -->

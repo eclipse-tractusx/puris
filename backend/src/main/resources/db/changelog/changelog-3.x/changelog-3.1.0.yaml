@@ -1559,6 +1559,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: reported_customer_supply
@@ -1587,6 +1588,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: own_production
@@ -1615,6 +1617,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: own_demand
@@ -1643,6 +1646,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: reported_delivery
@@ -1671,6 +1675,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: notification_affected_sites_recipient
@@ -1699,6 +1704,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: own_supplier_supply
@@ -1727,6 +1733,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: reported_production
@@ -1755,6 +1762,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: material_item_stock
@@ -1783,6 +1791,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: product_item_stock
@@ -1811,6 +1820,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: own_delivery
@@ -1839,6 +1849,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: reported_demand
@@ -1867,6 +1878,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: partner_sites
@@ -1895,6 +1907,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: own_demand_and_capacity_notification
@@ -1923,6 +1936,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: own_delivery
@@ -1951,6 +1965,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: site_addresses
@@ -1979,6 +1994,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: notification_affected_sites_sender
@@ -2007,6 +2023,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: reported_production
@@ -2035,6 +2052,7 @@ databaseChangeLog:
         - onFail: MARK_RAN
         - not:
             - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
                 - param:
                     name: tableName
                     value: product_item_stock
@@ -2221,7 +2239,7 @@ databaseChangeLog:
         - addForeignKeyConstraint:
             baseColumnNames: partner_uuid
             baseTableName: partner_addresses
-            constraintName: fkds4fr1ks6tyr59hhhat3vhi28
+            constraintName: fk_partner_addresses_to_partner
             deferrable: false
             initiallyDeferred: false
             onDelete: NO ACTION
