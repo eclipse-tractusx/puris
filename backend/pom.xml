@@ -48,6 +48,7 @@
         <snakeyaml.version>2.2</snakeyaml.version>
         <springdoc.version>2.8.5</springdoc.version>
         <edc-connector-version>0.11.1</edc-connector-version>
+        <liquibase.version>4.32.0</liquibase.version>
     </properties>
     <dependencies>
         <dependency>
@@ -164,6 +165,12 @@
             <artifactId>keycloak-spring-boot-starter</artifactId>
             <version>22.0.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <!-- Springboot already provides a tested Liquibase version, but you can override it to use your preffered version -->
+            <version>${liquibase.version}</version>
+        </dependency>
     </dependencies>
     <pluginRepositories>
         <pluginRepository>
@@ -235,12 +242,6 @@
             <!-- add basic application properties -->
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
-                <includes>
-                    <include>application.properties</include>
-                    <!-- add json-ld data-->
-                    <include>json-ld/*</include>
-                    <include>banner.txt</include>
-                </includes>
                 <targetPath>BOOT-INF/classes/</targetPath>
             </resource>
             <!-- add legal information to META-INF -->

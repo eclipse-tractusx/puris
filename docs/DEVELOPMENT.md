@@ -289,6 +289,33 @@ act --list
 act --job lint-test -e .act/pr_event.json
 ```
 
+## Writing and Testing Database Migrations
+
+We use [liquibase](https://docs.liquibase.com/start/home.html)) for database migrations.
+
+You can use the following commands to dump a changelog.
+
+```shell
+cd local 
+
+# ensure there is a folder to mount
+mkdir liquibase
+chmod 777 liquibase
+# needs to be removed manually via sudo as created with different user by liquibase
+sudo rm liquibase/changelog.yaml
+
+docker compose -f docker-compose-liquibase.yaml up liquibase-supplier
+```
+
+You can create a new migration by placing a yaml containing a `ChangeSet` into `../backend/src/resources/db/changelog/`.
+
+If you have a new major release,
+
+- add a folder `changelog-MAJOR.x`.
+- include the folder in `../backend/src/main/resources/db/changelog/db.changelog-master.yaml`
+
+Note: when using this approach, make sure to validate the `changeSets` and adding suitable `preConditions`.
+
 # Notes on the release
 
 ## Run helm test locally for n kubernetes versions

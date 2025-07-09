@@ -1,0 +1,2686 @@
+#
+# Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2025 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+databaseChangeLog:
+
+  - changeSet:
+      id: 1
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: erp_adapter_request
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  name: direction_characteristic
+                  type: SMALLINT
+              - column:
+                  name: request_type
+                  type: SMALLINT
+              - column:
+                  name: response_code
+                  type: INTEGER
+              - column:
+                  constraints:
+                    nullable: false
+                  name: request_date
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: response_received_date
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: erp_adapter_request_pkey
+                  name: id
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: samm_version
+                  type: VARCHAR(255)
+            tableName: erp_adapter_request
+  - changeSet:
+      id: 2
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: erp_adapter_trigger_dataset
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: erp_adapter_trigger_dataset_pkey
+                  name: asset_type
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: last_partner_request
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: next_erp_request_scheduled
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: erp_adapter_trigger_dataset_pkey
+                  name: direction_characteristic
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: erp_adapter_trigger_dataset_pkey
+                  name: own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: erp_adapter_trigger_dataset_pkey
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+            tableName: erp_adapter_trigger_dataset
+  - changeSet:
+      id: 3
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: material_item_stock
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: is_blocked
+                  type: BOOLEAN
+              - column:
+                  constraints:
+                    nullable: false
+                  name: measurement_unit
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: quantity
+                  type: FLOAT8
+              - column:
+                  constraints:
+                    nullable: false
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: material_item_stock_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: customer_order_id
+                  type: VARCHAR(255)
+              - column:
+                  name: customer_order_position_id
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: location_bpna
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: location_bpns
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: supplier_order_id
+                  type: VARCHAR(255)
+            tableName: material_item_stock
+  - changeSet:
+      id: 4
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: own_delivery
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  name: arrival_type
+                  type: SMALLINT
+              - column:
+                  name: departure_type
+                  type: SMALLINT
+              - column:
+                  name: incoterm
+                  type: SMALLINT
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: quantity
+                  type: FLOAT8
+              - column:
+                  name: date_of_arrival
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: date_of_departure
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: own_delivery_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: customer_order_number
+                  type: VARCHAR(255)
+              - column:
+                  name: customer_order_position_number
+                  type: VARCHAR(255)
+              - column:
+                  name: destination_bpna
+                  type: VARCHAR(255)
+              - column:
+                  name: destination_bpns
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: origin_bpna
+                  type: VARCHAR(255)
+              - column:
+                  name: origin_bpns
+                  type: VARCHAR(255)
+              - column:
+                  name: supplier_order_number
+                  type: VARCHAR(255)
+              - column:
+                  name: tracking_number
+                  type: VARCHAR(255)
+            tableName: own_delivery
+  - changeSet:
+      id: 5
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: own_demand_and_capacity_notification
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: effect
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: leading_root_cause
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: status
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: content_changed_at
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: expected_end_date_of_effect
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: start_date_of_effect
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: notification_id
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  name: related_notification_id
+                  type: UUID
+              - column:
+                  name: source_notification_id
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: own_demand_and_capacity_notification_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: text
+                  type: VARCHAR(255)
+            tableName: own_demand_and_capacity_notification
+  - changeSet:
+      id: 6
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: own_demand
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  name: demand_category_code
+                  type: SMALLINT
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: quantity
+                  type: FLOAT8
+              - column:
+                  name: day
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: own_demand_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: demand_location_bpns
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: supplier_location_bpns
+                  type: VARCHAR(255)
+            tableName: own_demand
+  - changeSet:
+      id: 7
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: own_production
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: quantity
+                  type: FLOAT8
+              - column:
+                  name: estimated_time_of_completion
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: own_production_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: customer_order_number
+                  type: VARCHAR(255)
+              - column:
+                  name: customer_order_position_number
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: production_site_bpns
+                  type: VARCHAR(255)
+              - column:
+                  name: supplier_order_number
+                  type: VARCHAR(255)
+            tableName: own_production
+  - changeSet:
+      id: 8
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: product_item_stock
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: is_blocked
+                  type: BOOLEAN
+              - column:
+                  constraints:
+                    nullable: false
+                  name: measurement_unit
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: quantity
+                  type: FLOAT8
+              - column:
+                  constraints:
+                    nullable: false
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: product_item_stock_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: customer_order_id
+                  type: VARCHAR(255)
+              - column:
+                  name: customer_order_position_id
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: location_bpna
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: location_bpns
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: supplier_order_id
+                  type: VARCHAR(255)
+            tableName: product_item_stock
+  - changeSet:
+      id: 9
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: reported_delivery
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  name: arrival_type
+                  type: SMALLINT
+              - column:
+                  name: departure_type
+                  type: SMALLINT
+              - column:
+                  name: incoterm
+                  type: SMALLINT
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: quantity
+                  type: FLOAT8
+              - column:
+                  name: date_of_arrival
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: date_of_departure
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_delivery_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: customer_order_number
+                  type: VARCHAR(255)
+              - column:
+                  name: customer_order_position_number
+                  type: VARCHAR(255)
+              - column:
+                  name: destination_bpna
+                  type: VARCHAR(255)
+              - column:
+                  name: destination_bpns
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: origin_bpna
+                  type: VARCHAR(255)
+              - column:
+                  name: origin_bpns
+                  type: VARCHAR(255)
+              - column:
+                  name: supplier_order_number
+                  type: VARCHAR(255)
+              - column:
+                  name: tracking_number
+                  type: VARCHAR(255)
+            tableName: reported_delivery
+  - changeSet:
+      id: 10
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: reported_demand_and_capacity_notification
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: effect
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: leading_root_cause
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: status
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: content_changed_at
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: expected_end_date_of_effect
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: start_date_of_effect
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: notification_id
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  name: related_notification_id
+                  type: UUID
+              - column:
+                  name: source_notification_id
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_demand_and_capacity_notification_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: text
+                  type: VARCHAR(255)
+            tableName: reported_demand_and_capacity_notification
+  - changeSet:
+      id: 11
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: reported_demand
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  name: demand_category_code
+                  type: SMALLINT
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: quantity
+                  type: FLOAT8
+              - column:
+                  name: day
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_demand_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: demand_location_bpns
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: supplier_location_bpns
+                  type: VARCHAR(255)
+            tableName: reported_demand
+  - changeSet:
+      id: 12
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: reported_material_item_stock
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: is_blocked
+                  type: BOOLEAN
+              - column:
+                  constraints:
+                    nullable: false
+                  name: measurement_unit
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: quantity
+                  type: FLOAT8
+              - column:
+                  constraints:
+                    nullable: false
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_material_item_stock_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: customer_order_id
+                  type: VARCHAR(255)
+              - column:
+                  name: customer_order_position_id
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: location_bpna
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: location_bpns
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: supplier_order_id
+                  type: VARCHAR(255)
+            tableName: reported_material_item_stock
+  - changeSet:
+      id: 13
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: reported_product_item_stock
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: is_blocked
+                  type: BOOLEAN
+              - column:
+                  constraints:
+                    nullable: false
+                  name: measurement_unit
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: quantity
+                  type: FLOAT8
+              - column:
+                  constraints:
+                    nullable: false
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_product_item_stock_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: customer_order_id
+                  type: VARCHAR(255)
+              - column:
+                  name: customer_order_position_id
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: location_bpna
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: location_bpns
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: supplier_order_id
+                  type: VARCHAR(255)
+            tableName: reported_product_item_stock
+  - changeSet:
+      id: 14
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: reported_production
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: quantity
+                  type: FLOAT8
+              - column:
+                  name: estimated_time_of_completion
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_production_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: customer_order_number
+                  type: VARCHAR(255)
+              - column:
+                  name: customer_order_position_number
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: production_site_bpns
+                  type: VARCHAR(255)
+              - column:
+                  name: supplier_order_number
+                  type: VARCHAR(255)
+            tableName: reported_production
+  - changeSet:
+      id: 15
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: partner_sites
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: partner_sites_pkey
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: partner_sites_pkey
+                  name: sites_bpns
+                  type: VARCHAR(255)
+            tableName: partner_sites
+  - changeSet:
+      id: 16
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - uniqueConstraintExists:
+                columnNames: sites_bpns
+                constraintName: partner_sites_sites_bpns_key
+                tableName: partner_sites
+      changes:
+        - addUniqueConstraint:
+            columnNames: sites_bpns
+            constraintName: partner_sites_sites_bpns_key
+            tableName: partner_sites
+  - changeSet:
+      id: 17
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: contract_mapping_asset_to_contract_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  name: asset_to_contract_mapping
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: contract_mapping_asset_to_contract_mapping_pkey
+                  name: asset_to_contract_mapping_key
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: contract_mapping_asset_to_contract_mapping_pkey
+                  name: contract_mapping_partner_bpnl
+                  type: VARCHAR(255)
+            tableName: contract_mapping_asset_to_contract_mapping
+  - changeSet:
+      id: 18
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: days_of_supply_contract_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: days_of_supply_contract_mapping_pkey
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+            tableName: days_of_supply_contract_mapping
+  - changeSet:
+      id: 19
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: delivery_contract_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: delivery_contract_mapping_pkey
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+            tableName: delivery_contract_mapping
+  - changeSet:
+      id: 20
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: demand_and_capacity_notification_contract_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: demand_and_capacity_notification_contract_mapping_pkey
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+            tableName: demand_and_capacity_notification_contract_mapping
+  - changeSet:
+      id: 21
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: demand_contract_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: demand_contract_mapping_pkey
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+            tableName: demand_contract_mapping
+  - changeSet:
+      id: 22
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: digital_twin_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: digital_twin_mapping_pkey
+                  name: own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: product_twin_id
+                  type: VARCHAR(255)
+            tableName: digital_twin_mapping
+  - changeSet:
+      id: 23
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: dtr_contract_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: dtr_contract_mapping_pkey
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+            tableName: dtr_contract_mapping
+  - changeSet:
+      id: 24
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: item_stock_contract_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: item_stock_contract_mapping_pkey
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+            tableName: item_stock_contract_mapping
+  - changeSet:
+      id: 25
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: material
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_flag
+                  type: BOOLEAN
+              - column:
+                  constraints:
+                    nullable: false
+                  name: product_flag
+                  type: BOOLEAN
+              - column:
+                  name: last_updated_on
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: material_number_cx
+                  type: VARCHAR(255)
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: material_pkey
+                  name: own_material_number
+                  type: VARCHAR(255)
+            tableName: material
+  - changeSet:
+      id: 26
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: material_partner_relation
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_buys_material
+                  type: BOOLEAN
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_supplies_material
+                  type: BOOLEAN
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: material_partner_relation_pkey
+                  name: key_uuid
+                  type: UUID
+              - column:
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: material_partner_relation_pkey
+                  name: key_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: name_at_manufacturer
+                  type: VARCHAR(255)
+              - column:
+                  name: partner_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: partnercxnumber
+                  type: VARCHAR(255)
+            tableName: material_partner_relation
+  - changeSet:
+      id: 27
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: notification_affected_sites_recipient
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: notification_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: site_bpns
+                  type: VARCHAR(255)
+            tableName: notification_affected_sites_recipient
+  - changeSet:
+      id: 28
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: notification_affected_sites_sender
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: notification_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: site_bpns
+                  type: VARCHAR(255)
+            tableName: notification_affected_sites_sender
+  - changeSet:
+      id: 29
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: notification_material
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: notification_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+            tableName: notification_material
+  - changeSet:
+      id: 30
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: own_customer_supply
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: days_of_supply
+                  type: FLOAT8
+              - column:
+                  name: date
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: own_customer_supply_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: stock_locationbpna
+                  type: VARCHAR(255)
+              - column:
+                  name: stock_locationbpns
+                  type: VARCHAR(255)
+            tableName: own_customer_supply
+  - changeSet:
+      id: 31
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: own_supplier_supply
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: days_of_supply
+                  type: FLOAT8
+              - column:
+                  name: date
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: own_supplier_supply_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: stock_locationbpna
+                  type: VARCHAR(255)
+              - column:
+                  name: stock_locationbpns
+                  type: VARCHAR(255)
+            tableName: own_supplier_supply
+  - changeSet:
+      id: 32
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: part_type_contract_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: part_type_contract_mapping_pkey
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+            tableName: part_type_contract_mapping
+  - changeSet:
+      id: 33
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: partner
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: partner_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  name: bpnl
+                  type: VARCHAR(255)
+              - column:
+                  name: edc_url
+                  type: VARCHAR(255)
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+            tableName: partner
+  - changeSet:
+      id: 34
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: partner_addresses
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  name: bpna
+                  type: VARCHAR(255)
+              - column:
+                  name: country
+                  type: VARCHAR(255)
+              - column:
+                  name: street_and_number
+                  type: VARCHAR(255)
+              - column:
+                  name: zip_code_and_city
+                  type: VARCHAR(255)
+            tableName: partner_addresses
+  - changeSet:
+      id: 35
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: production_contract_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: production_contract_mapping_pkey
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+            tableName: production_contract_mapping
+  - changeSet:
+      id: 36
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: reported_customer_supply
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: days_of_supply
+                  type: FLOAT8
+              - column:
+                  name: date
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_customer_supply_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: stock_locationbpna
+                  type: VARCHAR(255)
+              - column:
+                  name: stock_locationbpns
+                  type: VARCHAR(255)
+            tableName: reported_customer_supply
+  - changeSet:
+      id: 37
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: reported_supplier_supply
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: days_of_supply
+                  type: FLOAT8
+              - column:
+                  name: date
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: partner_uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_supplier_supply_pkey
+                  name: uuid
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+              - column:
+                  name: stock_locationbpna
+                  type: VARCHAR(255)
+              - column:
+                  name: stock_locationbpns
+                  type: VARCHAR(255)
+            tableName: reported_supplier_supply
+  - changeSet:
+      id: 38
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: site
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: site_pkey
+                  name: bpns
+                  type: VARCHAR(255)
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+            tableName: site
+  - changeSet:
+      id: 39
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: site_addresses
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  name: bpna
+                  type: VARCHAR(255)
+              - column:
+                  name: country
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: site_bpns
+                  type: VARCHAR(255)
+              - column:
+                  name: street_and_number
+                  type: VARCHAR(255)
+              - column:
+                  name: zip_code_and_city
+                  type: VARCHAR(255)
+            tableName: site_addresses
+  - changeSet:
+      id: 40
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_customer_supply
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: reported_customer_supply
+            constraintName: fk_reported_customer_supply_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 41
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: own_production
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: own_production
+            constraintName: fk_own_production_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 42
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: own_demand
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: own_demand
+            constraintName: fk_own_demand_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 43
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_delivery
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: reported_delivery
+            constraintName: fk_reported_delivery_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 44
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: notification_affected_sites_recipient
+                - param:
+                    name: columnName
+                    value: site_bpns
+                - param:
+                    name: foreignTableName
+                    value: site
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: site_bpns
+            baseTableName: notification_affected_sites_recipient
+            constraintName: fk_notifications_affected_sites_recipient_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: bpns
+            referencedTableName: site
+            validate: true
+  - changeSet:
+      id: 45
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: own_supplier_supply
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: own_supplier_supply
+            constraintName: fk_own_supplier_supply_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 46
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_production
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: reported_production
+            constraintName: fk_reported_production_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 47
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: material_item_stock
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: material_item_stock
+            constraintName: fk_material_item_stock_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 48
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: product_item_stock
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: product_item_stock
+            constraintName: fk_product_item_stock_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 49
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: own_delivery
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: own_delivery
+            constraintName: fk_own_delivery_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 50
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_demand
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: reported_demand
+            constraintName: fk_reported_demand_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 51
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: partner_sites
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: partner_sites
+            constraintName: fk_partner_sites_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 52
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: own_demand_and_capacity_notification
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: own_demand_and_capacity_notification
+            constraintName: fk_own_demand_and_capacity_notification_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 53
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: own_delivery
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: own_delivery
+            constraintName: fk_own_delivery_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 54
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: site_addresses
+                - param:
+                    name: columnName
+                    value: site_bpns
+                - param:
+                    name: foreignTableName
+                    value: site
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: site_bpns
+            baseTableName: site_addresses
+            constraintName: fk_site_addresses_to_site
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: bpns
+            referencedTableName: site
+            validate: true
+  - changeSet:
+      id: 55
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: notification_affected_sites_sender
+                - param:
+                    name: columnName
+                    value: site_bpns
+                - param:
+                    name: foreignTableName
+                    value: site
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: site_bpns
+            baseTableName: notification_affected_sites_sender
+            constraintName: fk_notifications_affected_sites_sender_to_site
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: bpns
+            referencedTableName: site
+            validate: true
+  - changeSet:
+      id: 56
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_production
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: reported_production
+            constraintName: fk_reported_production_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 57
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: product_item_stock
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: product_item_stock
+            constraintName: fk_product_item_stock_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 58
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: own_customer_supply
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: own_customer_supply
+            constraintName: fk_own_customer_supply_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 59
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - customPrecondition:
+            - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+            - param:
+                name: tableName
+                value: material_item_stock
+            - param:
+                name: columnName
+                value: partner_uuid
+            - param:
+                name: foreignTableName
+                value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: material_item_stock
+            constraintName: fk_material_item_stock_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 60
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: own_demand
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: own_demand
+            constraintName: fk_own_demand_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 61
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_customer_supply
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: reported_customer_supply
+            constraintName: fk_reported_customer_supply_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 62
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: own_customer_supply
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: own_customer_supply
+            constraintName: fk_own_customer_supply_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 63
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: partner_addresses
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: partner_addresses
+            constraintName: fk_partner_addresses_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 64
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: material_partner_relation
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: material_partner_relation
+            constraintName: fk_material_partner_relation_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 65
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_supplier_supply
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: reported_supplier_supply
+            constraintName: fk_reported_supplier_supply_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 66
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: material_partner_relation
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: material_partner_relation
+            constraintName: fk_material_partner_relation_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 67
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_supplier_supply
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: reported_supplier_supply
+            constraintName: fk_reported_supplier_supply_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 68
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_product_item_stock
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: reported_product_item_stock
+            constraintName: fk_reported_product_item_stock_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 69
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_material_item_stock
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: reported_material_item_stock
+            constraintName: fk_reported_material_item_stock_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 70
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_delivery
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: reported_delivery
+            constraintName: fk_reported_delivery_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 71
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_product_item_stock
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: reported_product_item_stock
+            constraintName: fk_reported_product_item_stock_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 72
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: notification_material
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: notification_material
+            constraintName: fk_notification_material_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 73
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_demand
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: reported_demand
+            constraintName: fk_reported_demand_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 74
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_demand_and_capacity_notification
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: reported_demand_and_capacity_notification
+            constraintName: fk_reported_demand_and_capacity_notification_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 75
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: material_own_material_number
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: own_supplier_supply
+            constraintName: fk_own_supplier_supply_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 76
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: own_production
+                - param:
+                    name: columnName
+                    value: material_own_material_number
+                - param:
+                    name: foreignTableName
+                    value: material
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: own_production
+            constraintName: fk_own_production_to_material
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: own_material_number
+            referencedTableName: material
+            validate: true
+  - changeSet:
+      id: 77
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: reported_material_item_stock
+                - param:
+                    name: columnName
+                    value: partner_uuid
+                - param:
+                    name: foreignTableName
+                    value: partner
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: partner_uuid
+            baseTableName: reported_material_item_stock
+            constraintName: fk_reported_product_item_stock_to_partner
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: uuid
+            referencedTableName: partner
+            validate: true
+  - changeSet:
+      id: 78
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: partner_sites
+                - param:
+                    name: columnName
+                    value: sites_bpns
+                - param:
+                    name: foreignTableName
+                    value: site
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: sites_bpns
+            baseTableName: partner_sites
+            constraintName: fk_partner_sites_to_site
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: bpns
+            referencedTableName: site
+            validate: true
+
