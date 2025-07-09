@@ -8,7 +8,7 @@ global:
 frontend:
   # fullnameOverride: "customer-frontend"
   image:
-    tag: "3.1.0-rc1"
+    tag: "3.2.0-rc1"
     # pullPolicy: Always
     pullPolicy: IfNotPresent
   ingress:
@@ -37,17 +37,6 @@ frontend:
     # # -- The base URL for the backend base URL without further endpoints
     baseUrl: *domain
     # endpointPartner: partners
-    keycloak: # TODO, should be fine
-      # -- Disable the Keycloak integration. #TODO
-      disabled: false
-      # -- The URL to the IDP that should be used.
-      url: <path:puris/data/environment#central-idp-url>
-      # -- Name of the Realm of the keycloak instance.
-      realm: <path:puris/data/environment#central-idp-realm>
-      # -- Name of the client which is used for the application.
-      clientId: <path:puris/data/customer/puris/idp#client-id>
-      # -- URL to use as keycloak redirect url.
-      redirectUrlFrontend: ""
   resources:
     requests:
       cpu: "5m"
@@ -58,9 +47,9 @@ frontend:
 backend:
   # fullnameOverride: "customer-backend"
   image:
-    tag: "3.1.0-rc1"
-    pullPolicy: Always
-    # pullPolicy: IfNotPresent
+    tag: "3.2.0-rc1"
+    # pullPolicy: Always
+    pullPolicy: IfNotPresent
   env:
     LOGGING_LEVEL_ORG_ECLIPSE_TRACTUSX_PURIS_BACKEND: DEBUG
   ingress:
@@ -133,7 +122,7 @@ backend:
     jpa:
       hibernate:
         # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones
-        ddl-auto: update
+        ddl-auto: validate
     dtr:
       url: https://<path:puris/data/customer/dtr#hostname>/api/v3
       idp:
@@ -220,3 +209,12 @@ postgresql:
     limits:
       cpu: "200m"
       memory: "256Mi"
+
+idp:
+  url: <path:puris/data/environment#central-idp-url>
+  # -- Name of the Realm of the keycloak instance.
+  realm: <path:puris/data/environment#central-idp-realm>
+  # -- Name of the client which is used for the application.
+  clientId: <path:puris/data/customer/puris/idp#client-id>
+  # -- URL to use as keycloak redirect url.
+  redirectUrlFrontend: ""

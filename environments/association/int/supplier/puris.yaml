@@ -7,9 +7,9 @@ global:
 # FRONTEND -----------
 frontend:
   image:
-    tag: "3.1.0-rc1"
-    pullPolicy: Always
-    # pullPolicy: IfNotPresent
+    tag: "3.2.0-rc1"
+    # pullPolicy: Always
+    pullPolicy: IfNotPresent
   # fullnameOverride: "supplier-frontend"
   ingress:
     # -- Enable the Ingress
@@ -57,9 +57,9 @@ frontend:
 # BACKEND -----------
 backend:
   image:
-    tag: "3.1.0-rc1"
-    pullPolicy: Always
-    # pullPolicy: IfNotPresent
+    tag: "3.2.0-rc1"
+    # pullPolicy: Always
+    pullPolicy: IfNotPresent
   # fullnameOverride: "supplier-backend"
   env:
     LOGGING_LEVEL_ORG_ECLIPSE_TRACTUSX_PURIS_BACKEND: DEBUG
@@ -133,7 +133,7 @@ backend:
     jpa:
       hibernate:
         # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones
-        ddl-auto: update
+        ddl-auto: validate
     dtr:
       url: https://<path:puris/data/supplier/dtr#hostname>/api/v3
       idp:
@@ -220,3 +220,12 @@ postgresql:
     limits:
       cpu: "200m"
       memory: "256Mi"
+
+idp:
+  url: <path:puris/data/environment#central-idp-url>
+  # -- Name of the Realm of the keycloak instance.
+  realm: <path:puris/data/environment#central-idp-realm>
+  # -- Name of the client which is used for the application.
+  clientId: <path:puris/data/supplier/puris/idp#client-id>
+  # -- URL to use as keycloak redirect url.
+  redirectUrlFrontend: ""
