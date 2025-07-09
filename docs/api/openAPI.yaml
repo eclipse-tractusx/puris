@@ -108,6 +108,31 @@ components:
       - classificationID
       - classificationStandard
       type: object
+    DataImportError:
+      additionalProperties: false
+      properties:
+        errors:
+          items:
+            maxItems: 50
+            type: string
+          maxItems: 50
+          type: array
+        row:
+          format: int32
+          type: integer
+      type: object
+    DataImportResult:
+      additionalProperties: false
+      properties:
+        errors:
+          items:
+            $ref: '#/components/schemas/DataImportError'
+          maxItems: 50
+          type: array
+        message:
+          maxItems: 50
+          type: string
+      type: object
     DaysOfSupply:
       additionalProperties: false
       properties:
@@ -1328,7 +1353,7 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 3.1.0
+  version: 3.2.0
 openapi: 3.1.0
 paths:
   /days-of-supply/customer:
@@ -2481,6 +2506,69 @@ paths:
           description: bad request
       tags:
       - erp-adapter-controller
+  /files/upload:
+    post:
+      description: "Accepts a multipart/form-data upload of an Excel file with `.xlsx`\
+        \ extension. The import supports Demand, Production, Delivery and Stock information.\
+        \ The applicable type of information is automatically determined by the server.\
+        \ \n\nShould any row of the data fail, no data will be saved. In this case\
+        \ detailed error reports are returned."
+      operationId: uploadExcelFile
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              additionalProperties: false
+              properties:
+                file:
+                  format: binary
+                  maxItems: 50
+                  type: string
+              required:
+                - file
+              type: object
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DataImportResult'
+                additionalProperties: false
+          description: Data imported successfully
+        '400':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                maxItems: 50
+                type: string
+          description: Bad request (missing file or invalid file type)
+        '401':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                maxItems: 50
+                type: string
+          description: Unauthorized (missing or invalid API key)
+        '422':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DataImportResult'
+                additionalProperties: false
+          description: Invalid data
+        '500':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                maxItems: 50
+                type: string
+          description: Server error
+      summary: Import data via excel file
+      tags:
+        - file-controller
   /item-stock/request/{materialnumber}/{direction}/submodel/{representation}:
     get:
       operationId: getMappingItemStock2
@@ -3927,3 +4015,6 @@ paths:
       - stock-view-controller
 security:
 - X-API-KEY: []
+servers:
+  - description: Generated server url
+    url: http://localhost:8081/catena
