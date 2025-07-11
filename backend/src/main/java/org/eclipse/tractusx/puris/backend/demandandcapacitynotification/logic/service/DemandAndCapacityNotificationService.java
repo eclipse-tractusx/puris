@@ -74,8 +74,8 @@ public abstract class DemandAndCapacityNotificationService<TEntity extends Deman
         if (notification.getNotificationId() == null) {
             notification.setNotificationId(UUID.randomUUID());
         }
-        if (notification.getSourceNotificationId() == null) {
-            notification.setSourceNotificationId(notification.getNotificationId());
+        if (notification.getSourceDisruptionId() == null) {
+            notification.setSourceDisruptionId(notification.getNotificationId());
         }
         notification.setContentChangedAt(new Date());
         return repository.save(notification);

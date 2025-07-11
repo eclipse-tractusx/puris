@@ -86,7 +86,7 @@ public class DemandAndCapacityNotificationRequestApiController {
     final static String sample = "{\n" +
         "  \"header\": {\n" +
         "    \"senderBpn\": \"BPNL7588787849VQ\",\n" +
-        "    \"context\": \"CX-DemandAndCapacityNotification:2.0\",\n" +
+        "    \"context\": \"CX-DemandAndCapacityNotificationAPI-Receive:2.0\",\n" +
         "    \"messageId\": \"3b4edc05-e214-47a1-b0c2-1d831cdd9ba9\",\n" +
         "    \"receiverBpn\": \"BPNL6666787765VQ\",\n" +
         "    \"sentDateTime\": \"2023-06-19T21:24:00+07:00\",\n" +
@@ -105,7 +105,9 @@ public class DemandAndCapacityNotificationRequestApiController {
         "      ],\n" +
         "      \"contentChangedAt\": \"2023-12-13T15:00:00+01:00\",\n" +
         "      \"startDateOfEffect\": \"2023-12-13T15:00:00+01:00\",\n" +
-        "      \"relatedNotificationId\": \"urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04\",\n" +
+        "      \"relatedNotificationIds\": [\n" +
+        "        \"urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04\"\n" +
+        "      ],\n" +
         "      \"materialNumberCustomer\": [\n" +
         "        \"MNR-7307-AU340474.002\"\n" +
         "      ],\n" +
@@ -117,7 +119,7 @@ public class DemandAndCapacityNotificationRequestApiController {
         "      \"notificationId\": \"urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362\",\n" +
         "      \"text\": \"Capacity reduction due to ongoing strike.\",\n" +
         "      \"expectedEndDateOfEffect\": \"2023-12-17T08:00:00+01:00\",\n" +
-        "      \"sourceNotificationId\": \"urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e\",\n" +
+        "      \"sourceDisruptionId\": \"urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e\",\n" +
         "      \"status\": \"resolved\"\n" +
         "    }\n" +
         "  }\n" +
