@@ -373,13 +373,16 @@ components:
           maxItems: 50
           pattern: ^BPNL[0-9a-zA-Z]{12}$
           type: string
-        relatedNotificationId:
-          format: uuid
+        relatedNotificationIds:
+          items:
+            format: uuid
+            maxItems: 50
+            type: string
           maxItems: 50
-          type: string
+          type: array
         reported:
           type: boolean
-        sourceNotificationId:
+        sourceDisruptionId:
           format: uuid
           maxItems: 50
           type: string
@@ -2072,8 +2075,9 @@ paths:
                   materialNumberSupplier:
                   - MNR-8101-ID146955.001
                   notificationId: urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362
-                  relatedNotificationId: urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04
-                  sourceNotificationId: urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e
+                  relatedNotificationIds: 
+                  - urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04
+                  sourceDisruptionId: urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e
                   startDateOfEffect: '2023-12-13T15:00:00+01:00'
                   status: resolved
                   text: Capacity reduction due to ongoing strike.

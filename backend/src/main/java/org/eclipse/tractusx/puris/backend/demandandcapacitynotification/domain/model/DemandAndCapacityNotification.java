@@ -53,9 +53,9 @@ public abstract class DemandAndCapacityNotification {
     protected UUID uuid;
     protected UUID notificationId;
 
-    protected UUID relatedNotificationId;
+    protected List<UUID> relatedNotificationIds;
 
-    protected UUID sourceNotificationId;
+    protected UUID sourceDisruptionId;
 
     @ManyToOne()
     @JoinColumn(name = "partner_uuid")

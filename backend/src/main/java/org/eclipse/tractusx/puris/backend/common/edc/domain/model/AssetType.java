@@ -28,7 +28,7 @@ public enum AssetType {
     PRODUCTION_SUBMODEL("urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput", "$value", "PlannedProductionOutput", "2.0"),
     DEMAND_SUBMODEL("urn:samm:io.catenax.short_term_material_demand:1.0.0#ShortTermMaterialDemand", "$value", "ShortTermMaterialDemand", "1.0"),
     DELIVERY_SUBMODEL("urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation", "$value", "DeliveryInformation", "2.0"),
-    NOTIFICATION("urn:samm:io.catenax.demand_and_capacity_notification:2.0.0#DemandAndCapacityNotification", "none", "none", "2.0"),
+    NOTIFICATION("urn:samm:io.catenax.demand_and_capacity_notification:3.0.0#DemandAndCapacityNotification", "none", "none", "3.0"),
     DAYS_OF_SUPPLY("urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply", "$value", "DaysOfSupply", "2.0"),
     PART_TYPE_INFORMATION_SUBMODEL("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value", "none", "1.0");
 
@@ -45,7 +45,7 @@ public enum AssetType {
             case "urn:samm:io.catenax.short_term_material_demand:1.0.0#ShortTermMaterialDemand" ->
                 AssetType.DEMAND_SUBMODEL;
             case "urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation" -> AssetType.DELIVERY_SUBMODEL;
-            case "urn:samm:io.catenax.demand_and_capacity_notification:2.0.0#DemandAndCapacityNotification" ->
+            case "urn:samm:io.catenax.demand_and_capacity_notification:3.0.0#DemandAndCapacityNotification" ->
                 AssetType.NOTIFICATION;
             case "urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply" -> AssetType.DAYS_OF_SUPPLY;
             case "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation" ->

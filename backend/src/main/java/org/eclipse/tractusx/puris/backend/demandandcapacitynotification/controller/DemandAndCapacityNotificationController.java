@@ -180,7 +180,6 @@ public class DemandAndCapacityNotificationController {
             dto.setAffectedSitesBpnsSender(entity.getAffectedSitesSender().stream().map(Site::getBpns).toList());
         }
         dto.setPartnerBpnl(entity.getPartner().getBpnl());
-        dto.setPartnerBpnl(entity.getPartner().getBpnl());
         dto.setReported(false);
         return dto;
     }
@@ -197,6 +196,7 @@ public class DemandAndCapacityNotificationController {
             dto.setAffectedSitesBpnsSender(entity.getAffectedSitesSender().stream().map(Site::getBpns).toList());
         }
         dto.setPartnerBpnl(entity.getPartner().getBpnl());
+        dto.setReported(true);
         return dto;
     }
     private OwnDemandAndCapacityNotification convertToEntity(DemandAndCapacityNotificationDto dto) {
@@ -257,12 +257,14 @@ public class DemandAndCapacityNotificationController {
         }
         entity.setAffectedSitesSender(affectedSitesSender);
 
-        if (dto.getRelatedNotificationId() != null) {
-            OwnDemandAndCapacityNotification relatedNotification = ownNotificationService.findById(dto.getRelatedNotificationId());
-            if (relatedNotification == null) {
-                throw new IllegalStateException(String.format(
-                        "Related notification for UUID %s could not be found",
-                        dto.getRelatedNotificationId()));
+        if (dto.getRelatedNotificationIds() != null) {
+            for (var relatedNotificationId : dto.getRelatedNotificationIds()) {
+                OwnDemandAndCapacityNotification relatedNotification = ownNotificationService.findById(relatedNotificationId);
+                if (relatedNotification == null) {
+                    throw new IllegalStateException(String.format(
+                            "Related notification for UUID %s could not be found",
+                            relatedNotificationId));
+                }
             }
         }
 

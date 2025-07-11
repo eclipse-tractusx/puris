@@ -51,7 +51,7 @@ public class DemandAndCapacityNotifcationRequestApiService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public static final String DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT = "CX-DemandAndCapacityNotification:2.0";
+    public static final String DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT = "CX-DemandAndCapacityNotificationAPI-Receive:2.0.0";
     public static final String MESSAGE_HEADER_VERSION = "3.0.0";
 
     public ReportedDemandAndCapacityNotification handleIncomingNotification(String bpnl, DemandAndCapacityNotificationSamm samm) {

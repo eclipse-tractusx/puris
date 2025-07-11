@@ -26,6 +26,8 @@ export type StatusType = "resolved" | "open";
 
 export type DemandCapacityNotification = {
     uuid: string,
+    notificationId: string,
+    sourceDisruptionId: string,
     text: string,
     partnerBpnl: BPNL,
     affectedMaterialNumbers: string[],

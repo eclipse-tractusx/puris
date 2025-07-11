@@ -21,6 +21,7 @@
 
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.adapter;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.*;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.demandandcapacitynotficationsamm.DemandAndCapacityNotificationSamm;
@@ -134,8 +135,8 @@ public class DemandAndCapacityNotificationSammMapperTest {
 
         OwnDemandAndCapacityNotification notification = OwnDemandAndCapacityNotification.builder()
             .notificationId(UUID.randomUUID())
-            .relatedNotificationId(null)
-            .sourceNotificationId(null)
+            .relatedNotificationIds(null)
+            .sourceDisruptionId(null)
             .text("We are in big trouble!")
             .materials(List.of(semiconductorMaterial))
             .partner(externalPartner)
@@ -162,20 +163,15 @@ public class DemandAndCapacityNotificationSammMapperTest {
         Assertions.assertTrue(jsonNode.get("startDateOfEffect").asLong() < jsonNode.get("expectedEndDateOfEffect").asLong());
         Assertions.assertEquals(jsonNode.get("status").asText(), StatusEnumeration.OPEN.getValue());
 
-        Assertions.assertTrue(jsonNode.get("materialGlobalAssetId").isArray());
-        for (var field: jsonNode.get("materialGlobalAssetId")) {
-            Assertions.assertEquals(CX_MAT_NUMBER, field.asText());
-        }
+        Assertions.assertTrue(jsonNode.get("materialsAffected").isArray());
+        JsonNode materialsAffected = jsonNode.get("materialsAffected");
+        Assertions.assertTrue(materialsAffected.size() == 1, "materialsAffected array should contain exactly one material");
 
-        Assertions.assertTrue(jsonNode.get("materialNumberSupplier").isArray());
-        for (var field: jsonNode.get("materialNumberSupplier")) {
-            Assertions.assertEquals(SUPPLIER_MAT_NUMBER, field.asText());
-        }
+        JsonNode material = materialsAffected.get(0);
 
-        Assertions.assertTrue(jsonNode.get("materialNumberCustomer").isArray());
-        for (var field: jsonNode.get("materialNumberCustomer")) {
-            Assertions.assertEquals(CUSTOMER_MAT_NUMBER, field.asText());
-        }
+        Assertions.assertEquals(CX_MAT_NUMBER, material.get("materialGlobalAssetId").asText());
+        Assertions.assertEquals(CUSTOMER_MAT_NUMBER, material.get("materialNumberCustomer").asText());
+        Assertions.assertEquals(SUPPLIER_MAT_NUMBER, material.get("materialNumberSupplier").asText());
     }
 
     @ParameterizedTest
@@ -215,16 +211,18 @@ public class DemandAndCapacityNotificationSammMapperTest {
         "  \"leadingRootCause\" : \"logistics-disruption\",\n" +
         "  \"effect\" : \"capacity-reduction\",\n" +
         "  \"text\" : \"We are in big trouble!\",\n" +
-        "  \"materialGlobalAssetId\" : [ \"" + CX_MAT_NUMBER + "\" ],\n" +
+        "  \"materialsAffected\" : [ { \n" +
+        "       \"materialGlobalAssetId\" : \"" + CX_MAT_NUMBER + "\",\n" +
+        "       \"materialNumberCustomer\" : \"" + CUSTOMER_MAT_NUMBER + "\",\n" +
+        "       \"materialNumberSupplier\" : \"" + SUPPLIER_MAT_NUMBER + "\"\n" +
+        "   } ],\n" +
         "  \"startDateOfEffect\" : 1723888800000,\n" +
         "  \"expectedEndDateOfEffect\" : 1724450400000,\n" +
         "  \"status\" : \"open\",\n" +
         "  \"contentChangedAt\" : null,\n" +
-        "  \"sourceNotificationId\" : null,\n" +
-        "  \"materialNumberSupplier\" : [ \"MNR-8101-ID146955.001\" ],\n" +
-        "  \"materialNumberCustomer\" : [ \"MNR-7307-AU340474.002\" ],\n" +
+        "  \"sourceDisruptionId\" : null,\n" +
         "  \"notificationId\" : \"5203284f-b510-437c-9545-b9128d4be4c4\",\n" +
-        "  \"relatedNotificationId\" : null\n" +
+        "  \"relatedNotificationIds\" : null\n" +
         "}\n";
 
     static final String sammWithoutCXIdFromSupplier = "{\n" +
@@ -233,16 +231,18 @@ public class DemandAndCapacityNotificationSammMapperTest {
         "  \"leadingRootCause\" : \"logistics-disruption\",\n" +
         "  \"effect\" : \"capacity-reduction\",\n" +
         "  \"text\" : \"We are in big trouble!\",\n" +
-        "  \"materialGlobalAssetId\" : [],\n" +
+        "  \"materialsAffected\" : [ { \n" +
+        "       \"materialGlobalAssetId\" : null,\n" +
+        "       \"materialNumberCustomer\" : \"" + CUSTOMER_MAT_NUMBER + "\",\n" +
+        "       \"materialNumberSupplier\" : \"" + SUPPLIER_MAT_NUMBER + "\"\n" +
+        "   } ],\n" +
         "  \"startDateOfEffect\" : 1723888800000,\n" +
         "  \"expectedEndDateOfEffect\" : 1724450400000,\n" +
         "  \"status\" : \"open\",\n" +
         "  \"contentChangedAt\" : null,\n" +
-        "  \"sourceNotificationId\" : null,\n" +
-        "  \"materialNumberSupplier\" : [ \"MNR-8101-ID146955.001\" ],\n" +
-        "  \"materialNumberCustomer\" : [ \"MNR-7307-AU340474.002\" ],\n" +
+        "  \"sourceDisruptionId\" : null,\n" +
         "  \"notificationId\" : \"5203284f-b510-437c-9545-b9128d4be4c4\",\n" +
-        "  \"relatedNotificationId\" : null\n" +
+        "  \"relatedNotificationIds\" : null\n" +
         "}\n";
 
     static final String sammWithoutCXIdAndSupplierMnrFromSupplier = "{\n" +
@@ -251,16 +251,18 @@ public class DemandAndCapacityNotificationSammMapperTest {
         "  \"leadingRootCause\" : \"logistics-disruption\",\n" +
         "  \"effect\" : \"capacity-reduction\",\n" +
         "  \"text\" : \"We are in big trouble!\",\n" +
-        "  \"materialGlobalAssetId\" : [],\n" +
+        "  \"materialsAffected\" : [ { \n" +
+        "       \"materialGlobalAssetId\" : null,\n" +
+        "       \"materialNumberCustomer\" : \"" + CUSTOMER_MAT_NUMBER + "\",\n" +
+        "       \"materialNumberSupplier\" : null\n" +
+        "   } ],\n" +
         "  \"startDateOfEffect\" : 1723888800000,\n" +
         "  \"expectedEndDateOfEffect\" : 1724450400000,\n" +
         "  \"status\" : \"open\",\n" +
         "  \"contentChangedAt\" : null,\n" +
-        "  \"sourceNotificationId\" : null,\n" +
-        "  \"materialNumberSupplier\" : [],\n" +
-        "  \"materialNumberCustomer\" : [ \"MNR-7307-AU340474.002\" ],\n" +
+        "  \"sourceDisruptionId\" : null,\n" +
         "  \"notificationId\" : \"5203284f-b510-437c-9545-b9128d4be4c4\",\n" +
-        "  \"relatedNotificationId\" : null\n" +
+        "  \"relatedNotificationIds\" : null\n" +
         "}\n";
 
 
@@ -281,8 +283,8 @@ public class DemandAndCapacityNotificationSammMapperTest {
 
         OwnDemandAndCapacityNotification notification = OwnDemandAndCapacityNotification.builder()
             .notificationId(UUID.randomUUID())
-            .relatedNotificationId(null)
-            .sourceNotificationId(null)
+            .relatedNotificationIds(null)
+            .sourceDisruptionId(null)
             .text("We are in big trouble!")
             .materials(List.of(semiconductorMaterial))
             .partner(externalPartner)
@@ -310,20 +312,15 @@ public class DemandAndCapacityNotificationSammMapperTest {
         Assertions.assertTrue(jsonNode.get("affectedSitesSender").toString().contains(mySelf.getSites().getFirst().getBpns()));
         Assertions.assertTrue(jsonNode.get("affectedSitesRecipient").toString().contains(externalPartner.getSites().getFirst().getBpns()));
 
-        Assertions.assertTrue(jsonNode.get("materialNumberSupplier").isArray());
-        for (var field: jsonNode.get("materialNumberSupplier")) {
-            Assertions.assertEquals(SUPPLIER_MAT_NUMBER, field.asText());
-        }
+        Assertions.assertTrue(jsonNode.get("materialsAffected").isArray());
+        JsonNode materialsAffected = jsonNode.get("materialsAffected");
+        Assertions.assertTrue(materialsAffected.size() == 1, "materialsAffected array should contain exactly one material");
 
-        Assertions.assertTrue(jsonNode.get("materialNumberCustomer").isArray());
-        for (var field: jsonNode.get("materialNumberCustomer")) {
-            Assertions.assertEquals(CUSTOMER_MAT_NUMBER, field.asText());
-        }
+        JsonNode material = materialsAffected.get(0);
 
-        Assertions.assertTrue(jsonNode.get("materialGlobalAssetId").isArray());
-        for (var field: jsonNode.get("materialGlobalAssetId")) {
-            Assertions.assertEquals(CX_MAT_NUMBER, field.asText());
-        }
+        Assertions.assertEquals(CX_MAT_NUMBER, material.get("materialGlobalAssetId").asText());
+        Assertions.assertEquals(CUSTOMER_MAT_NUMBER, material.get("materialNumberCustomer").asText());
+        Assertions.assertEquals(SUPPLIER_MAT_NUMBER, material.get("materialNumberSupplier").asText());
     }
 
     @ParameterizedTest
@@ -364,16 +361,18 @@ public class DemandAndCapacityNotificationSammMapperTest {
         "  \"leadingRootCause\" : \"production-incident\",\n" +
         "  \"effect\" : \"demand-increase\",\n" +
         "  \"text\" : \"We are in big trouble!\",\n" +
-        "  \"materialGlobalAssetId\" : [ \"" + CX_MAT_NUMBER + "\" ],\n" +
+        "  \"materialsAffected\" : [ { \n" +
+        "       \"materialGlobalAssetId\" : \"" + CX_MAT_NUMBER + "\",\n" +
+        "       \"materialNumberCustomer\" : \"" + CUSTOMER_MAT_NUMBER + "\",\n" +
+        "       \"materialNumberSupplier\" : \"" + SUPPLIER_MAT_NUMBER + "\"\n" +
+        "   } ],\n" +
         "  \"startDateOfEffect\" : 1724594400000,\n" +
         "  \"expectedEndDateOfEffect\" : 1724860800000,\n" +
         "  \"status\" : \"open\",\n" +
         "  \"contentChangedAt\" : null,\n" +
-        "  \"sourceNotificationId\" : null,\n" +
-        "  \"materialNumberSupplier\" : [ \"MNR-8101-ID146955.001\" ],\n" +
-        "  \"materialNumberCustomer\" : [ \"MNR-7307-AU340474.002\" ],\n" +
+        "  \"sourceDisruptionId\" : null,\n" +
         "  \"notificationId\" : \"6a544e5e-7e30-44eb-bd14-dfc431473898\",\n" +
-        "  \"relatedNotificationId\" : null\n" +
+        "  \"relatedNotificationIds\" : null\n" +
         "}";
 
     static final String sammWithoutCXIdFromCustomer = "{\n" +
@@ -382,16 +381,18 @@ public class DemandAndCapacityNotificationSammMapperTest {
         "  \"leadingRootCause\" : \"production-incident\",\n" +
         "  \"effect\" : \"demand-increase\",\n" +
         "  \"text\" : \"We are in big trouble!\",\n" +
-        "  \"materialGlobalAssetId\" : [],\n" +
+        "  \"materialsAffected\" : [ { \n" +
+        "       \"materialGlobalAssetId\" : null,\n" +
+        "       \"materialNumberCustomer\" : \"" + CUSTOMER_MAT_NUMBER + "\",\n" +
+        "       \"materialNumberSupplier\" : \"" + SUPPLIER_MAT_NUMBER + "\"\n" +
+        "   } ],\n" +
         "  \"startDateOfEffect\" : 1724594400000,\n" +
         "  \"expectedEndDateOfEffect\" : 1724860800000,\n" +
         "  \"status\" : \"open\",\n" +
         "  \"contentChangedAt\" : null,\n" +
-        "  \"sourceNotificationId\" : null,\n" +
-        "  \"materialNumberSupplier\" : [ \"MNR-8101-ID146955.001\" ],\n" +
-        "  \"materialNumberCustomer\" : [ \"MNR-7307-AU340474.002\" ],\n" +
+        "  \"sourceDisruptionId\" : null,\n" +
         "  \"notificationId\" : \"6a544e5e-7e30-44eb-bd14-dfc431473898\",\n" +
-        "  \"relatedNotificationId\" : null\n" +
+        "  \"relatedNotificationIds\" : null\n" +
         "}";
 
     static final String sammWithoutCXIdAndCustomerMnrFromCustomer = "{\n" +
@@ -400,16 +401,18 @@ public class DemandAndCapacityNotificationSammMapperTest {
         "  \"leadingRootCause\" : \"production-incident\",\n" +
         "  \"effect\" : \"demand-increase\",\n" +
         "  \"text\" : \"We are in big trouble!\",\n" +
-        "  \"materialGlobalAssetId\" : [],\n" +
+        "  \"materialsAffected\" : [ { \n" +
+        "       \"materialGlobalAssetId\" : null,\n" +
+        "       \"materialNumberCustomer\" : null,\n" +
+        "       \"materialNumberSupplier\" : \"" + SUPPLIER_MAT_NUMBER + "\"\n" +
+        "   } ],\n" +
         "  \"startDateOfEffect\" : 1724594400000,\n" +
         "  \"expectedEndDateOfEffect\" : 1724860800000,\n" +
         "  \"status\" : \"open\",\n" +
         "  \"contentChangedAt\" : null,\n" +
-        "  \"sourceNotificationId\" : null,\n" +
-        "  \"materialNumberSupplier\" : [ \"MNR-8101-ID146955.001\" ],\n" +
-        "  \"materialNumberCustomer\" : [],\n" +
+        "  \"sourceDisruptionId\" : null,\n" +
         "  \"notificationId\" : \"6a544e5e-7e30-44eb-bd14-dfc431473898\",\n" +
-        "  \"relatedNotificationId\" : null\n" +
+        "  \"relatedNotificationIds\" : null\n" +
         "}";
 
 
@@ -438,8 +441,8 @@ public class DemandAndCapacityNotificationSammMapperTest {
 
         OwnDemandAndCapacityNotification notification = OwnDemandAndCapacityNotification.builder()
             .notificationId(UUID.randomUUID())
-            .relatedNotificationId(null)
-            .sourceNotificationId(null)
+            .relatedNotificationIds(null)
+            .sourceDisruptionId(null)
             .text("We are in big trouble!")
             .materials(List.of(semiconductorMaterial, dummyMaterial))
             .partner(externalPartner)
@@ -469,17 +472,21 @@ public class DemandAndCapacityNotificationSammMapperTest {
         Assertions.assertTrue(jsonNode.get("affectedSitesSender").toString().contains(mySelf.getSites().getFirst().getBpns()));
         Assertions.assertTrue(jsonNode.get("affectedSitesRecipient").toString().contains(externalPartner.getSites().getFirst().getBpns()));
 
-        Assertions.assertTrue(jsonNode.get("materialGlobalAssetId").isArray());
-        Assertions.assertTrue(jsonNode.get("materialGlobalAssetId").toString().contains(CX_MAT_NUMBER));
-        Assertions.assertTrue(jsonNode.get("materialGlobalAssetId").toString().contains(DUMMY_MATERIAL_CX));
+        Assertions.assertTrue(jsonNode.get("materialsAffected").isArray());
+        JsonNode materialsAffected = jsonNode.get("materialsAffected");
+        Assertions.assertTrue(materialsAffected.size() == 2, "materialsAffected array should contain exactly two materials");
 
-        Assertions.assertTrue(jsonNode.get("materialNumberSupplier").isArray());
-        Assertions.assertTrue(jsonNode.get("materialNumberSupplier").toString().contains(SUPPLIER_MAT_NUMBER));
-        Assertions.assertTrue(jsonNode.get("materialNumberSupplier").toString().contains(DUMMY_MATERIAL_SUPPLIER_MNR));
+        JsonNode material = materialsAffected.get(0);
 
-        Assertions.assertTrue(jsonNode.get("materialNumberCustomer").isArray());
-        Assertions.assertTrue(jsonNode.get("materialNumberCustomer").toString().contains(CUSTOMER_MAT_NUMBER));
-        Assertions.assertTrue(jsonNode.get("materialNumberCustomer").toString().contains(DUMMY_MATERIAL_CUSTOMER_MNR));
+        Assertions.assertEquals(CX_MAT_NUMBER, material.get("materialGlobalAssetId").asText());
+        Assertions.assertEquals(CUSTOMER_MAT_NUMBER, material.get("materialNumberCustomer").asText());
+        Assertions.assertEquals(SUPPLIER_MAT_NUMBER, material.get("materialNumberSupplier").asText());
+
+        JsonNode material2 = materialsAffected.get(1);
+
+        Assertions.assertEquals(DUMMY_MATERIAL_CX, material2.get("materialGlobalAssetId").asText());
+        Assertions.assertEquals(DUMMY_MATERIAL_CUSTOMER_MNR, material2.get("materialNumberCustomer").asText());
+        Assertions.assertEquals(DUMMY_MATERIAL_SUPPLIER_MNR, material2.get("materialNumberSupplier").asText());
     }
 
     @Test
@@ -492,16 +499,23 @@ public class DemandAndCapacityNotificationSammMapperTest {
             "  \"leadingRootCause\" : \"logistics-disruption\",\n" +
             "  \"effect\" : \"capacity-reduction\",\n" +
             "  \"text\" : \"We are in big trouble!\",\n" +
-            "  \"materialGlobalAssetId\" : [ \"caf4a1df-6b97-46c9-8492-d137e911e611\", \"dbf4a1df-6b97-46c9-8492-d137e911e722\" ],\n" +
+            "  \"materialsAffected\" : [ { \n" +
+            "       \"materialGlobalAssetId\" : \"caf4a1df-6b97-46c9-8492-d137e911e611\",\n" +
+            "       \"materialNumberCustomer\" : \"MNR-7307-AU340474.002\",\n" +
+            "       \"materialNumberSupplier\" : \"MNR-8101-ID146955.001\"\n" +
+            "   }, \n" +
+            "   {\n" +
+            "       \"materialGlobalAssetId\" : \"dbf4a1df-6b97-46c9-8492-d137e911e722\",\n" +
+            "       \"materialNumberCustomer\" : \"customer-mnr-456\",\n" +
+            "       \"materialNumberSupplier\" : \"supplier-mnr-123\"\n" +
+            "   } ],\n" +
             "  \"startDateOfEffect\" : 1723888800000,\n" +
             "  \"expectedEndDateOfEffect\" : 1724450400000,\n" +
             "  \"status\" : \"open\",\n" +
             "  \"contentChangedAt\" : null,\n" +
-            "  \"sourceNotificationId\" : null,\n" +
-            "  \"materialNumberSupplier\" : [ \"MNR-8101-ID146955.001\", \"supplier-mnr-123\" ],\n" +
-            "  \"materialNumberCustomer\" : [ \"MNR-7307-AU340474.002\", \"customer-mnr-456\" ],\n" +
+            "  \"sourceDisruptionId\" : null,\n" +
             "  \"notificationId\" : \"32352c4c-cb1b-4b95-99a9-e61c80462f2c\",\n" +
-            "  \"relatedNotificationId\" : null\n" +
+            "  \"relatedNotificationIds\" : null\n" +
             "}\n";
 
         DemandAndCapacityNotificationSamm samm = objectMapper.readValue(receivedSammString, DemandAndCapacityNotificationSamm.class);

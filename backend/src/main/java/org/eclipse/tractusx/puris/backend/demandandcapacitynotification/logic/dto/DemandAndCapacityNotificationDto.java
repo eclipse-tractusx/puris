@@ -44,9 +44,9 @@ public class DemandAndCapacityNotificationDto implements Serializable {
     private UUID uuid;
     private UUID notificationId;
 
-    private UUID relatedNotificationId;
+    private List<UUID> relatedNotificationIds;
 
-    private UUID sourceNotificationId;
+    private UUID sourceDisruptionId;
 
     @Pattern(regexp = PatternStore.BPNL_STRING)
     private String partnerBpnl;
