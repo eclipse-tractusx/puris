@@ -56,6 +56,9 @@ public class DemandAndCapacityNotificationDto implements Serializable {
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String text;
 
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    private String resolvingMeasureDescription;
+
     private LeadingRootCauseEnumeration leadingRootCause;
     private EffectEnumeration effect;
 

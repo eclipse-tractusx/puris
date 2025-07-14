@@ -80,6 +80,9 @@ public abstract class DemandAndCapacityNotification {
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     protected String text;
 
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    protected String resolvingMeasureDescription;
+
     @NotNull
     protected LeadingRootCauseEnumeration leadingRootCause;
 

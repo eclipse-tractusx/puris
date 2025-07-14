@@ -23,6 +23,7 @@ package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.s
 import java.util.List;
 
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.OwnDemandAndCapacityNotificationRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -45,6 +46,7 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
                 notification.getLeadingRootCause() != null &&
                 notification.getEffect() != null &&
                 notification.getStatus() != null &&
+                (notification.getStatus() == StatusEnumeration.OPEN || notification.getResolvingMeasureDescription() != null) &&
                 notification.getStartDateOfEffect() != null &&
                 validateMaterials(notification) &&
                 validateSites(notification);

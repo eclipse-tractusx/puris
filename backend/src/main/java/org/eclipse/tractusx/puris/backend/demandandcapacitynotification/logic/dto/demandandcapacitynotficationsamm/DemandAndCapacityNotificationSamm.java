@@ -50,6 +50,7 @@ public class DemandAndCapacityNotificationSamm {
     private String sourceDisruptionId;
 
     private String text;
+    private String resolvingMeasureDescription;
     @NotNull
     private LeadingRootCauseEnumeration leadingRootCause;
     @NotNull
@@ -75,6 +76,7 @@ public class DemandAndCapacityNotificationSamm {
             @JsonProperty(value = "leadingRootCause") LeadingRootCauseEnumeration leadingRootCause,
             @JsonProperty(value = "effect") EffectEnumeration effect,
             @JsonProperty(value = "text") String text,
+            @JsonProperty(value = "resolvingMeasureDescription") String resolvingMeasureDescription,
             @JsonProperty(value = "materialsAffected") List<MaterialSamm> materialsAffected,
             @JsonProperty(value = "startDateOfEffect") Date startDateOfEffect,
             @JsonProperty(value = "expectedEndDateOfEffect") Date expectedEndDateOfEffect,
@@ -88,6 +90,7 @@ public class DemandAndCapacityNotificationSamm {
         this.leadingRootCause = leadingRootCause;
         this.effect = effect;
         this.text = text;
+        this.resolvingMeasureDescription = resolvingMeasureDescription;
         this.materialsAffected = materialsAffected;
         this.startDateOfEffect = startDateOfEffect;
         this.expectedEndDateOfEffect = expectedEndDateOfEffect;
@@ -112,6 +115,7 @@ public class DemandAndCapacityNotificationSamm {
                 && Objects.equals(leadingRootCause, that.leadingRootCause) && Objects.equals(effect, that.effect)
                 && Objects.equals(materialsAffected, that.materialsAffected)
                 && Objects.equals(text, that.text)
+                && Objects.equals(resolvingMeasureDescription, that.resolvingMeasureDescription)
                 && Objects.equals(startDateOfEffect, that.startDateOfEffect)
                 && Objects.equals(expectedEndDateOfEffect, that.expectedEndDateOfEffect)
                 && Objects.equals(status, that.status) && Objects.equals(contentChangedAt, that.contentChangedAt)
@@ -123,7 +127,7 @@ public class DemandAndCapacityNotificationSamm {
     @Override
     public int hashCode() {
         return Objects.hash(affectedSitesSender, affectedSitesRecipient, leadingRootCause, effect, text,
-                startDateOfEffect, expectedEndDateOfEffect, status, contentChangedAt,
-                sourceDisruptionId, notificationId, relatedNotificationIds, materialsAffected);
+                resolvingMeasureDescription, startDateOfEffect, expectedEndDateOfEffect, status,
+                contentChangedAt, sourceDisruptionId, notificationId, relatedNotificationIds, materialsAffected);
     }
 }
