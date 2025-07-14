@@ -53,6 +53,12 @@ public abstract class DemandAndCapacityNotification {
     protected UUID uuid;
     protected UUID notificationId;
 
+    @ElementCollection
+    @CollectionTable(
+        name = "notification_related_notification_ids",
+        joinColumns = @JoinColumn(name = "notification_uuid")
+    )
+    @Column(name = "related_notification_id")
     protected List<UUID> relatedNotificationIds;
 
     protected UUID sourceDisruptionId;
