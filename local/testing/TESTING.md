@@ -11,7 +11,7 @@ End-to-end testing for the PURIS FOSS application is done using Cypress. The Cyp
 
 Before running the tests make sure to configure the `baseUrl` in `cypress.config.json` and `supplierUrl` in `cypress.env.json`. `baseUrl` is expected to match the customer frontend url.
 
-In order to run the tests with login, the environment file `cypress.env.json` needs to be configured with the appropriate information. Set `idp_enabled` to true and fill in your login information for the IDP. Make sure that the company names match the configured names in the IDP.
+In order to run the tests with login, the environment file `cypress.env.json` needs to be configured with the appropriate information. Set `environment` to `int` if you plan to test in the integration environment. Otherwise leave the default value `local`. Fill in your login information for the IDP. Make sure that the company names match the configured names in the IDP.
 
 ## Running the tests
 
