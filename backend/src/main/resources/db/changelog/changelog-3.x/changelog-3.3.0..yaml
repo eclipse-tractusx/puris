@@ -25,6 +25,9 @@ databaseChangeLog:
         - dropColumn:
             columnName: related_notification_id
             tableName: own_demand_and_capacity_notification
+        - dropColumn:
+            columnName: related_notification_id
+            tableName: reported_demand_and_capacity_notification
         - createTable:
             tableName: notification_related_notification_ids
             columns:
@@ -42,14 +45,19 @@ databaseChangeLog:
             tableName: own_demand_and_capacity_notification
             oldColumnName: source_notification_id
             newColumnName: source_disruption_id
-  - changeSet:
-      id: "2"
-      author: ReneSchroederLJ
-      changes:
-        - dropColumn:
-            columnName: related_notification_id
-            tableName: reported_demand_and_capacity_notification
         - renameColumn:
             tableName: reported_demand_and_capacity_notification
             oldColumnName: source_notification_id
             newColumnName: source_disruption_id
+        - addColumn:
+            tableName: own_demand_and_capacity_notification
+            columns:
+              - column:
+                  name: resolving_measure_description
+                  type: VARCHAR(255)
+        - addColumn:
+            tableName: reported_demand_and_capacity_notification
+            columns:
+              - column:
+                  name: resolving_measure_description
+                  type: VARCHAR(255)
