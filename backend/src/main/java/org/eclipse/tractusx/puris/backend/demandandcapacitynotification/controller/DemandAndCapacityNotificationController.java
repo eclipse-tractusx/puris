@@ -132,12 +132,18 @@ public class DemandAndCapacityNotificationController {
     })
     @ResponseStatus(HttpStatus.OK)
     public DemandAndCapacityNotificationDto updateNotification(@RequestBody DemandAndCapacityNotificationDto dto) {
-        OwnDemandAndCapacityNotification updatedNotification = ownNotificationService.update(convertToEntity(dto));
-        if (updatedNotification == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification does not exist.");
+        try {
+            OwnDemandAndCapacityNotification updatedNotification = ownNotificationService.update(convertToEntity(dto));
+            if (updatedNotification == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification does not exist.");
+            }
+            executorService.submit(() -> demandAndCapacityNotifcationRequestApiService.sendDemandAndCapacityNotification(updatedNotification));
+            return convertToDto(updatedNotification);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Notification is invalid.");
+        } catch (IllegalStateException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
-        executorService.submit(() -> demandAndCapacityNotifcationRequestApiService.sendDemandAndCapacityNotification(updatedNotification));
-        return convertToDto(updatedNotification);
     }
 
     @DeleteMapping("{id}")
@@ -180,7 +186,6 @@ public class DemandAndCapacityNotificationController {
             dto.setAffectedSitesBpnsSender(entity.getAffectedSitesSender().stream().map(Site::getBpns).toList());
         }
         dto.setPartnerBpnl(entity.getPartner().getBpnl());
-        dto.setPartnerBpnl(entity.getPartner().getBpnl());
         dto.setReported(false);
         return dto;
     }
@@ -197,6 +202,7 @@ public class DemandAndCapacityNotificationController {
             dto.setAffectedSitesBpnsSender(entity.getAffectedSitesSender().stream().map(Site::getBpns).toList());
         }
         dto.setPartnerBpnl(entity.getPartner().getBpnl());
+        dto.setReported(true);
         return dto;
     }
     private OwnDemandAndCapacityNotification convertToEntity(DemandAndCapacityNotificationDto dto) {
@@ -256,15 +262,6 @@ public class DemandAndCapacityNotificationController {
             affectedSitesSender.add(site);
         }
         entity.setAffectedSitesSender(affectedSitesSender);
-
-        if (dto.getRelatedNotificationId() != null) {
-            OwnDemandAndCapacityNotification relatedNotification = ownNotificationService.findById(dto.getRelatedNotificationId());
-            if (relatedNotification == null) {
-                throw new IllegalStateException(String.format(
-                        "Related notification for UUID %s could not be found",
-                        dto.getRelatedNotificationId()));
-            }
-        }
 
         return entity;
     }

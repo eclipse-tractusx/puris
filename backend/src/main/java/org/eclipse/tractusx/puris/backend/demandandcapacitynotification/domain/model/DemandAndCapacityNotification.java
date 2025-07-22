@@ -53,9 +53,15 @@ public abstract class DemandAndCapacityNotification {
     protected UUID uuid;
     protected UUID notificationId;
 
-    protected UUID relatedNotificationId;
+    @ElementCollection
+    @CollectionTable(
+        name = "notification_related_notification_ids",
+        joinColumns = @JoinColumn(name = "notification_uuid")
+    )
+    @Column(name = "related_notification_id")
+    protected List<UUID> relatedNotificationIds;
 
-    protected UUID sourceNotificationId;
+    protected UUID sourceDisruptionId;
 
     @ManyToOne()
     @JoinColumn(name = "partner_uuid")
@@ -73,6 +79,9 @@ public abstract class DemandAndCapacityNotification {
 
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     protected String text;
+
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    protected String resolvingMeasureDescription;
 
     @NotNull
     protected LeadingRootCauseEnumeration leadingRootCause;

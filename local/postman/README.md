@@ -191,6 +191,19 @@ The initial calculation of Days Of Supply is done based on the previously insert
 
 After each piece of data is inserted the Days of Supply are requested and verified again.
 
+### Notifications
+
+For the purpose of testing Notification forwarding, without the need of additional application instances, the test suite adds the following data:
+
+- 2 addional supplier partners for Supplier:
+  - Disruption Source Partner
+  - Disruption Forwarding Partner
+- 2 incoming notifications for the supplier
+  - root notification from Source Disruption Partner
+  - forwarded notification from Source Forwarding Partner
+
+
+
 ## Preparations
 
 To run integration tests import the collection and the environment file to postman.

@@ -23,13 +23,18 @@ package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.s
 import java.util.List;
 
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.OwnDemandAndCapacityNotificationRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNotificationService<OwnDemandAndCapacityNotification, OwnDemandAndCapacityNotificationRepository>{
+    @Autowired
+    private ReportedDemandAndCapacityNotificationService reportedNotificationService;
 
     public OwnDemandAndCapacityNotificationService(OwnDemandAndCapacityNotificationRepository ownNotificationRepository, PartnerService partnerService, MaterialPartnerRelationService mpr) {
         super(ownNotificationRepository, partnerService, mpr);
@@ -45,9 +50,39 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
                 notification.getLeadingRootCause() != null &&
                 notification.getEffect() != null &&
                 notification.getStatus() != null &&
+                (
+                    (notification.getStatus() == StatusEnumeration.OPEN && notification.getResolvingMeasureDescription() == null) ||
+                    (notification.getStatus() == StatusEnumeration.RESOLVED && notification.getResolvingMeasureDescription() != null)
+                ) &&
                 notification.getStartDateOfEffect() != null &&
+                validateRelatedNotifications(notification) &&
                 validateMaterials(notification) &&
                 validateSites(notification);
+    }
+
+    public boolean validateRelatedNotifications(OwnDemandAndCapacityNotification notification) {
+        if (notification.getRelatedNotificationIds() == null || notification.getRelatedNotificationIds().isEmpty()) {
+            return true;
+        }
+        for (var relatedNotificationId : notification.getRelatedNotificationIds()) {
+            ReportedDemandAndCapacityNotification relatedNotification = reportedNotificationService.findByNotificationId(relatedNotificationId);
+            if (relatedNotification == null) {
+                return false;
+            }
+            if (relatedNotification.getPartner().equals(notification.getPartner())) {
+                return false;
+            }
+            if (!relatedNotification.getEffect().equals(notification.getEffect())) {
+                return false;
+            }
+            if (!relatedNotification.getLeadingRootCause().equals(notification.getLeadingRootCause())) {
+                return false;
+            }
+            if (!relatedNotification.getSourceDisruptionId().equals(notification.getSourceDisruptionId())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public boolean validateMaterials(OwnDemandAndCapacityNotification notification) {
