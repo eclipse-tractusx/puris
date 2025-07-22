@@ -45,6 +45,7 @@ type DateTimeProps = {
 
 export const DateTime = ({ error, value, onValueChange, ...props }: DateTimeProps) => {
     const [date, setDate] = useState<Date | null>(value ? new Date(value) : null);
+    const [key, setKey] = useState(0);
     const timeRef = useRef<HTMLInputElement>(null);
     const handleTimeChange = () => {
         const time = timeRef.current?.value;
@@ -58,9 +59,16 @@ export const DateTime = ({ error, value, onValueChange, ...props }: DateTimeProp
             onValueChange(null);
         }
     };
+
     const handleDateChange = (newDate: DateType) => {
         setDate(newDate);
-        if (newDate && timeRef.current) {
+        if (newDate && timeRef.current?.value) {
+            const [hours, minutes] = timeRef.current.value.split(':');
+            const combinedDate = new Date(newDate);
+            combinedDate.setHours(parseInt(hours));
+            combinedDate.setMinutes(parseInt(minutes));
+            onValueChange(combinedDate);
+        } else if (newDate) {
             onValueChange(new Date(newDate));
         } else {
             onValueChange(null);
@@ -73,8 +81,17 @@ export const DateTime = ({ error, value, onValueChange, ...props }: DateTimeProp
             setDate(d);
             const hours = d.getHours().toString().padStart(2, '0');
             const minutes = d.getMinutes().toString().padStart(2, '0');
-            timeRef.current!.value = `${hours}:${minutes}`;
+            if (timeRef.current) {
+                timeRef.current.value = `${hours}:${minutes}`;
+            }
+        } else {
+            setDate(null);
+            if (timeRef.current) {
+                timeRef.current.value = '';
+            }
         }
+        // Force re-mount of Datepicker with new defaultValue
+        setKey(prev => prev + 1);
     }, [value]);
     return (
         <Stack width="100%">
@@ -83,9 +100,10 @@ export const DateTime = ({ error, value, onValueChange, ...props }: DateTimeProp
                 <Box display="flex" gap=".25rem" width="100%" marginTop="auto">
                     <Box display="flex" flexGrow="1" sx={{ '& .MuiFormControl-root, & .MuiBox-root': { minWidth: '100% !important' } }}>
                         <Datepicker
+                            key={key}
                             {...props}
                             error={error}
-                            value={date?.toISOString().split('T')[0]}
+                            defaultValue={date}
                             readOnly={false}
                             onChangeItem={(event) => handleDateChange(event)}
                         />

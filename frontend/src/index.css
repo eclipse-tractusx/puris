@@ -45,6 +45,14 @@ body {
     display: none;
 }
 
+.hide-title .MuiDataGrid-root > .MuiBox-root {
+  display: none !important;
+}
+
+.hide-title .MuiDataGrid-root {
+  border-radius: 0 0 0.75rem 0.75rem !important;
+}
+
 .MuiDataGrid-root > .MuiBox-root {
     background-color: #081f4b;
     color: white;
@@ -147,6 +155,10 @@ label:has(+* input[aria-invalid=true]) {
     color: #f44336bb;
 }
 
+.resolved-status {
+    color: #C1C1C1 !important;
+}
+
 /* Date & Time Input styles */
 
 .date-time-picker,
@@ -227,6 +239,12 @@ textarea:focus {
     outline: 2px solid #2563eb;
     border-color: #2563eb;
 }
+
+textarea.error-textarea {
+    outline: 2px solid #f44336;
+    border-color: #f44336;
+}
+
 
 /* Search Input styles */
 

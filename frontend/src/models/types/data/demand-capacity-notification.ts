@@ -23,6 +23,7 @@ import { BPNL } from "../edc/bpn";
 export type LeadingRootCauseType = "strike" | "natural-disaster" | "production-incident" | "pandemic-or-epidemic" | "logistics-disruption" | "war" | "other";
 export type EffectType = "demand-reduction" | "demand-increase" | "capacity-reduction" | "capacity-increase";
 export type StatusType = "resolved" | "open";
+export type Direction = "incoming" | "outgoing";
 
 export type DemandCapacityNotification = {
     uuid: string,
@@ -38,4 +39,8 @@ export type DemandCapacityNotification = {
     expectedEndDateOfEffect: Date,
     affectedSitesBpnsSender: string[], // own sites
     affectedSitesBpnsRecipient: string[], // partners sites
+    direction: Direction,
+    resolvingMeasureDescription: string,
+    relatedNotificationIds: string[],
+    contentChangedAt: Date
 };
