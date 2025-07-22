@@ -70,5 +70,7 @@ public class DemandAndCapacityNotificationDto implements Serializable {
     private List<@Pattern(regexp = PatternStore.BPNS_STRING) String> affectedSitesBpnsSender;
     private List<@Pattern(regexp = PatternStore.BPNS_STRING) String> affectedSitesBpnsRecipient;
 
+    private Date contentChangedAt;
+
     private boolean isReported;
 }
