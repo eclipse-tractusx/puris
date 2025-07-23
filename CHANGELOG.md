@@ -16,6 +16,7 @@ The **need for configuration updates** is **marked bold**.
 * Implement Excel imports through
   API ([#897](https://github.com/eclipse-tractusx/puris/pull/897/), [#907](https://github.com/eclipse-tractusx/puris/pull/907))
 * Added liquibase for database migrations ([#913](https://github.com/eclipse-tractusx/puris/pull/913))
+* Added unit tests Excel imports ([#922](https://github.com/eclipse-tractusx/puris/pull/922))
 
 ### Changed
 
