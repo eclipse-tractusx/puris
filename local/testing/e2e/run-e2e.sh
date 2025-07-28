@@ -20,7 +20,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-browser="chrome"
+browser="electron"
 valid_browsers="chrome webkit firefox edge electron"
 
 
