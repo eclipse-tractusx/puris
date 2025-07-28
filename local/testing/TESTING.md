@@ -26,16 +26,14 @@ This will run the tests in the cli using a headless browser.
 
 ## Available browsers
 
-By default tests are run in Google Chrome. In addition tests can also be run using Edge, Firefox, Electron and WebKit to cover the majority of possible users.
+By default tests are run in Electron. In addition tests can also be run using Edge, Firefox and Chrome to cover the majority of possible users.
 
 To run the tests using a specific browser you can use the `--browser` command line argument. For example if you want to run WebKit:
 
 ```shell
 cd local/testing/e2e
-sh run-e2e.sh --browser webkit
+sh run-e2e.sh --browser chrome
 ```
-
-**Note:** Webkit is used to test the underlying browser engine of Safari since Safari itself is only available on MacOS. It is installed using Playwright.
 
 ## Developing tests
 

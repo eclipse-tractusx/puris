@@ -21,7 +21,7 @@
 #
 
 browser="electron"
-valid_browsers="chrome webkit firefox edge electron"
+valid_browsers="chrome firefox edge electron"
 
 
 while [ "$1" != "" ]; do
@@ -31,14 +31,14 @@ while [ "$1" != "" ]; do
       browser=$1
       if ! echo "$valid_browsers" | grep -wq "$browser"; then
         echo "Invalid browser: $browser"
-        echo "Valid options are: chrome, webkit, firefox, edge, electron."
+        echo "Valid options are: chrome, firefox, edge, electron."
         exit 1
       fi
       ;;
     -h)
       echo "If no option is provided, the tests will be run headless in chrome."
       echo "You can use options to alter behavior:"
-      echo "--browser <browser>: specifies the browser to use (chrome, webkit, firefox, edge, electron)."
+      echo "--browser <browser>: specifies the browser to use (chrome, firefox, edge, electron)."
       echo "\nExiting..."
       exit 1
       ;;
