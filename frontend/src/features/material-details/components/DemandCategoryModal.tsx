@@ -145,12 +145,13 @@ type DemandCategoryModalProps = {
     mode: ModalMode;
     onClose: () => void;
     onSave: () => void;
+    onRemove?: (deletedUuid: string) => void;
 };
 
 const isValidDemand = (demand: Partial<Demand>) =>
     demand?.day && demand?.demandLocationBpns && demand?.quantity && demand.demandCategoryCode && demand?.measurementUnit && demand?.partnerBpnl;
 
-export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, demands }: DemandCategoryModalProps) => {
+export const DemandCategoryModal = ({ open, mode, onClose, onSave, onRemove, demand, demands }: DemandCategoryModalProps) => {
     const [temporaryDemand, setTemporaryDemand] = useState<Partial<Demand>>(demand ?? {});
     const { partners } = usePartners('material', temporaryDemand?.ownMaterialNumber ?? null);
     const { sites } = useSites();
@@ -197,8 +198,19 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
         onClose();
     };
 
-    const handleDelete = (row: Demand) => {
-        if (row.uuid) deleteDemand(row.uuid).then(onSave);
+    const handleDelete = async (row: Demand) => {
+        if (row.uuid) {
+            try {
+                await deleteDemand(row.uuid);
+                onRemove?.(row.uuid);
+            } catch (error) {
+                notify({
+                    title: 'Error deleting demand',
+                    description: 'Failed to delete the demand',
+                    severity: 'error',
+                });
+            }
+        }
     };
 
     useEffect(() => {

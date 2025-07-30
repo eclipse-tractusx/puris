@@ -244,6 +244,7 @@ type DeliveryInformationModalProps = {
     site: Site | null;
     onClose: () => void;
     onSave: () => void;
+    onRemove?: (deletedUuid: string) => void;
     delivery: Delivery | null;
     deliveries: Delivery[];
 };
@@ -255,6 +256,7 @@ export const DeliveryInformationModal = ({
     site,
     onClose,
     onSave,
+    onRemove,
     delivery,
     deliveries,
 }: DeliveryInformationModalProps) => {
@@ -314,8 +316,19 @@ export const DeliveryInformationModal = ({
         onClose();
     };
 
-    const handleDelete = (row: Delivery) => {
-        if (row.uuid) deleteDelivery(row.uuid).then(onSave);
+    const handleDelete = async (row: Delivery) => {
+        if (row.uuid) {
+            try {
+                await deleteDelivery(row.uuid);
+                onRemove?.(row.uuid);
+            } catch (error) {
+                notify({
+                    title: 'Error deleting delivery',
+                    description: 'Failed to delete the delivery',
+                    severity: 'error',
+                });
+            }
+        }
     };
 
     useEffect(() => {
