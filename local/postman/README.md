@@ -202,8 +202,6 @@ For the purpose of testing Notification forwarding, without the need of addition
   - root notification from Source Disruption Partner
   - forwarded notification from Source Forwarding Partner
 
-
-
 ## Preparations
 
 To run integration tests import the collection and the environment file to postman.

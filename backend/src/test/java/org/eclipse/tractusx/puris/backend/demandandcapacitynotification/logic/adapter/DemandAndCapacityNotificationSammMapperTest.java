@@ -136,7 +136,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         OwnDemandAndCapacityNotification notification = OwnDemandAndCapacityNotification.builder()
             .notificationId(UUID.randomUUID())
             .relatedNotificationIds(null)
-            .sourceDisruptionId(null)
+            .sourceDisruptionId(UUID.randomUUID())
             .text("We are in big trouble!")
             .materials(List.of(semiconductorMaterial))
             .partner(externalPartner)
@@ -220,7 +220,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         "  \"expectedEndDateOfEffect\" : 1724450400000,\n" +
         "  \"status\" : \"open\",\n" +
         "  \"contentChangedAt\" : null,\n" +
-        "  \"sourceDisruptionId\" : null,\n" +
+        "  \"sourceDisruptionId\" : 9f1cfa90-6338-40b5-83bf-e2170f2314b0,\n" +
         "  \"notificationId\" : \"5203284f-b510-437c-9545-b9128d4be4c4\",\n" +
         "  \"relatedNotificationIds\" : null\n" +
         "}\n";
@@ -240,7 +240,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         "  \"expectedEndDateOfEffect\" : 1724450400000,\n" +
         "  \"status\" : \"open\",\n" +
         "  \"contentChangedAt\" : null,\n" +
-        "  \"sourceDisruptionId\" : null,\n" +
+        "  \"sourceDisruptionId\" : 9f1cfa90-6338-40b5-83bf-e2170f2314b0,\n" +
         "  \"notificationId\" : \"5203284f-b510-437c-9545-b9128d4be4c4\",\n" +
         "  \"relatedNotificationIds\" : null\n" +
         "}\n";
@@ -260,7 +260,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         "  \"expectedEndDateOfEffect\" : 1724450400000,\n" +
         "  \"status\" : \"open\",\n" +
         "  \"contentChangedAt\" : null,\n" +
-        "  \"sourceDisruptionId\" : null,\n" +
+        "  \"sourceDisruptionId\" : 9f1cfa90-6338-40b5-83bf-e2170f2314b0,\n" +
         "  \"notificationId\" : \"5203284f-b510-437c-9545-b9128d4be4c4\",\n" +
         "  \"relatedNotificationIds\" : null\n" +
         "}\n";
@@ -284,7 +284,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         OwnDemandAndCapacityNotification notification = OwnDemandAndCapacityNotification.builder()
             .notificationId(UUID.randomUUID())
             .relatedNotificationIds(null)
-            .sourceDisruptionId(null)
+            .sourceDisruptionId(UUID.randomUUID())
             .text("We are in big trouble!")
             .materials(List.of(semiconductorMaterial))
             .partner(externalPartner)
@@ -370,7 +370,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         "  \"expectedEndDateOfEffect\" : 1724860800000,\n" +
         "  \"status\" : \"open\",\n" +
         "  \"contentChangedAt\" : null,\n" +
-        "  \"sourceDisruptionId\" : null,\n" +
+        "  \"sourceDisruptionId\" : 9f1cfa90-6338-40b5-83bf-e2170f2314b0,\n" +
         "  \"notificationId\" : \"6a544e5e-7e30-44eb-bd14-dfc431473898\",\n" +
         "  \"relatedNotificationIds\" : null\n" +
         "}";
@@ -390,7 +390,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         "  \"expectedEndDateOfEffect\" : 1724860800000,\n" +
         "  \"status\" : \"open\",\n" +
         "  \"contentChangedAt\" : null,\n" +
-        "  \"sourceDisruptionId\" : null,\n" +
+        "  \"sourceDisruptionId\" : 9f1cfa90-6338-40b5-83bf-e2170f2314b0,\n" +
         "  \"notificationId\" : \"6a544e5e-7e30-44eb-bd14-dfc431473898\",\n" +
         "  \"relatedNotificationIds\" : null\n" +
         "}";
@@ -410,7 +410,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         "  \"expectedEndDateOfEffect\" : 1724860800000,\n" +
         "  \"status\" : \"open\",\n" +
         "  \"contentChangedAt\" : null,\n" +
-        "  \"sourceDisruptionId\" : null,\n" +
+        "  \"sourceDisruptionId\" : 9f1cfa90-6338-40b5-83bf-e2170f2314b0,\n" +
         "  \"notificationId\" : \"6a544e5e-7e30-44eb-bd14-dfc431473898\",\n" +
         "  \"relatedNotificationIds\" : null\n" +
         "}";
@@ -442,7 +442,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
         OwnDemandAndCapacityNotification notification = OwnDemandAndCapacityNotification.builder()
             .notificationId(UUID.randomUUID())
             .relatedNotificationIds(null)
-            .sourceDisruptionId(null)
+            .sourceDisruptionId(UUID.randomUUID())
             .text("We are in big trouble!")
             .materials(List.of(semiconductorMaterial, dummyMaterial))
             .partner(externalPartner)
@@ -513,7 +513,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
             "  \"expectedEndDateOfEffect\" : 1724450400000,\n" +
             "  \"status\" : \"open\",\n" +
             "  \"contentChangedAt\" : null,\n" +
-            "  \"sourceDisruptionId\" : null,\n" +
+            "  \"sourceDisruptionId\" : 9f1cfa90-6338-40b5-83bf-e2170f2314b0,\n" +
             "  \"notificationId\" : \"32352c4c-cb1b-4b95-99a9-e61c80462f2c\",\n" +
             "  \"relatedNotificationIds\" : null\n" +
             "}\n";

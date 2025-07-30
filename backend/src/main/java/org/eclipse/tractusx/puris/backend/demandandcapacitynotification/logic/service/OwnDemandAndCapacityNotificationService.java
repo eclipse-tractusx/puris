@@ -50,9 +50,28 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
                 notification.getLeadingRootCause() != null &&
                 notification.getEffect() != null &&
                 notification.getStatus() != null &&
+                (notification.getUuid() == null || notification.getSourceDisruptionId() != null) &&
                 (
-                    (notification.getStatus() == StatusEnumeration.OPEN && notification.getResolvingMeasureDescription() == null) ||
-                    (notification.getStatus() == StatusEnumeration.RESOLVED && notification.getResolvingMeasureDescription() != null)
+                    (
+                        notification.getStatus() == StatusEnumeration.OPEN &&
+                        notification.getResolvingMeasureDescription() == null
+                     ) || 
+                    (
+                        notification.getStatus() == StatusEnumeration.RESOLVED &&
+                        notification.getResolvingMeasureDescription() != null &&
+                        (
+                            notification.getAffectedSitesRecipient() == null ||
+                            notification.getAffectedSitesRecipient().isEmpty()
+                        ) &&
+                        (
+                            notification.getAffectedSitesSender() == null ||
+                            notification.getAffectedSitesSender().isEmpty()
+                        ) &&
+                        (
+                            notification.getMaterials() == null ||
+                            notification.getMaterials().isEmpty()
+                        )
+                    )
                 ) &&
                 notification.getStartDateOfEffect() != null &&
                 validateRelatedNotifications(notification) &&

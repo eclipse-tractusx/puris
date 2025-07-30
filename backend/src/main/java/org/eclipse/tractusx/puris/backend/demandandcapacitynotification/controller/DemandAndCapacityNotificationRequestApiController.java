@@ -94,33 +94,22 @@ public class DemandAndCapacityNotificationRequestApiController {
         "  },\n" +
         "  \"content\": {\n" +
         "    \"demandAndCapacityNotification\": {\n" +
-        "      \"affectedSitesSender\": [\n" +
-        "        \"BPNS7588787849VQ\"\n" +
-        "      ],\n" +
-        "      \"affectedSitesRecipient\": [\n" +
-        "        \"BPNS6666787765VQ\"\n" +
-        "      ],\n" +
-        "      \"materialNumberSupplier\": [\n" +
-        "        \"MNR-8101-ID146955.001\"\n" +
-        "      ],\n" +
+        "      \"affectedSitesSender\": [],\n" +
+        "      \"affectedSitesRecipient\": [],\n" +
+        "      \"materialsAffected\": [],\n" +
         "      \"contentChangedAt\": \"2023-12-13T15:00:00+01:00\",\n" +
         "      \"startDateOfEffect\": \"2023-12-13T15:00:00+01:00\",\n" +
         "      \"relatedNotificationIds\": [\n" +
         "        \"urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04\"\n" +
         "      ],\n" +
-        "      \"materialNumberCustomer\": [\n" +
-        "        \"MNR-7307-AU340474.002\"\n" +
-        "      ],\n" +
         "      \"leadingRootCause\": \"strike\",\n" +
-        "      \"materialGlobalAssetId\": [\n" +
-        "        \"urn:uuid:48878d48-6f1d-47f5-8ded-a441d0d879df\"\n" +
-        "      ],\n" +
         "      \"effect\": \"demand-reduction\",\n" +
         "      \"notificationId\": \"urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362\",\n" +
         "      \"text\": \"Capacity reduction due to ongoing strike.\",\n" +
         "      \"expectedEndDateOfEffect\": \"2023-12-17T08:00:00+01:00\",\n" +
         "      \"sourceDisruptionId\": \"urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e\",\n" +
         "      \"status\": \"resolved\"\n" +
+        "      \"resolvingMeasureDescription\": \"An agreement was found and the strike was ended.\"\n" +
         "    }\n" +
         "  }\n" +
         "}";
