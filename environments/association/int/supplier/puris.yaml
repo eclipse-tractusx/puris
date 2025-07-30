@@ -51,8 +51,10 @@ frontend:
   resources:
     requests:
       cpu: "5m"
+      memory: 128Mi
     limits:
-      cpu: "200m"  
+      cpu: "200m"
+      memory: 128Mi
 
 # BACKEND -----------
 backend:
@@ -167,8 +169,10 @@ backend:
   resources:
     requests:
       cpu: "50m"
+      memory: 512Mi
     limits:
       cpu: "200m"
+      memory: 512Mi
   livenessProbe:
     # -- Number of failures (threshold) for a liveness probe
     failureThreshold: 5
@@ -207,6 +211,13 @@ postgresql:
       persistence:
         enabled: true
         size: 2Gi
+      resources:
+        requests:
+          cpu: "5m"
+          memory: "128Mi"
+        limits:
+          cpu: "200m"
+          memory: "128Mi"   
   auth:
     existingSecret: "supplier-secret-postgres-init"
     database: <path:puris/data/supplier/puris/postgres#database>
@@ -216,10 +227,10 @@ postgresql:
   resources:
     requests:
       cpu: "20m"
-      memory: "256Mi"
+      memory: "128Mi"
     limits:
       cpu: "200m"
-      memory: "256Mi"
+      memory: "128Mi"
 
 idp:
   url: <path:puris/data/environment#central-idp-url>

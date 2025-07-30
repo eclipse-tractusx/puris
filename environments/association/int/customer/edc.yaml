@@ -21,7 +21,13 @@ controlplane:
   policy:
     validation:
       enabled: false
-
+  resources:
+    requests:
+      cpu: "20m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
   ## Ingress declaration to expose the network service.
   ingresses:
     ## Public / Internet facing Ingress
@@ -97,7 +103,13 @@ dataplane:
       privatekey_alias: DATAPLANE_PROXY_PRIVATE_KEY
     verifier:
       publickey_alias: DATAPLANE_PROXY_PUBLIC_KEY
-
+  resources:
+    requests:
+      cpu: "20m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
   # "valueFrom" environment variable references that will be added to deployment pods. Name is templated.
   # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#envvarsource-v1-core
   ## Ingress declaration to expose the network service.
@@ -135,6 +147,13 @@ postgresql:
     persistence:
       enabled: true
       size: 2Gi
+    resources:
+      requests:
+        cpu: "5m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "128Mi"     
   readReplicas:
     persistence:
       enabled: true
@@ -142,13 +161,7 @@ postgresql:
     database: <path:puris/data/customer/edc/postgres#database>
     username: <path:puris/data/customer/edc/postgres#user>
     password: <path:puris/data/customer/edc/postgres#password>
-  resources:
-    requests:
-      cpu: "20m"
-      memory: "256Mi"
-    limits:
-      cpu: "200m"
-      memory: "256Mi"
+
 vault:
   hashicorp:
     enabled: true

@@ -63,10 +63,10 @@ registry:
   resources:
     limits:
       cpu: 750m
-      memory: 1024Mi
+      memory: 512Mi
     requests:
       cpu: 10m
-      memory: 1024Mi
+      memory: 512Mi
   podSecurityContext:
     runAsUser: 100
   securityContext:
@@ -77,6 +77,13 @@ postgresql:
     persistence:
       enabled: true
       size: 2Gi
+    resources:
+      requests:
+        cpu: "5m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "128Mi" 
   service:
     ports:
       postgresql: 5432
@@ -87,13 +94,6 @@ postgresql:
     database: <path:puris/data/customer/dtr/postgres#database>
     # -- Secret contains passwords for username postgres.
     existingSecret: secret-dtr-postgres-init-customer
-  resources:
-    requests:
-      cpu: "5m"
-      memory: "256Mi"
-    limits:
-      cpu: "200m"
-      memory: "256Mi"  
 keycloak:
   type: NodePort
   postgresql:
@@ -106,6 +106,13 @@ keycloak:
       persistence:
         enabled: true
         size: 2Gi
+      resources:
+        requests:
+          cpu: "5m"
+          memory: "128Mi"
+        limits:
+          cpu: "200m"
+          memory: "128Mi" 
     auth:
       username: <path:puris/data/customer/dtr/keycloak/postgres#user>
       password: <path:puris/data/customer/dtr/keycloak/postgres#password>
