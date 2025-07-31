@@ -27,11 +27,6 @@ Authentication for frontend and backend uses a Keycloak IDP server. This authent
 - `idp.clientId` (docker `IDP_CLIENT_ID`) - the id of the client used for authentication
 - `idp.redirectUrlFrontend` (docker `IDP_REDIRECT_URL_FRONTEND`) - the default redirect url when logging in
 
-The client roles configured in the IDP alter the frontend views visible to the user:
-
-- `PURIS_USER` - Common views related to short-term information needs
-- `PURIS_ADMIN` - EDC related views (may be used for debugging)
-
 For the ease of development, the local deployment using docker configures 2 app instances with shared users. This enables easier testing.
 
 > NOTE:
@@ -45,6 +40,21 @@ In addition to the aforementioned IDP server, requests can also be authorized us
 This api key must be configured in the backend via `backend.puris.api.key` (docker `PURIS_API_KEY`).
 
 _Note: The API key header is hard coded to `X-API-KEY`._
+
+### Role-based permissions
+
+The IDP defines the following roles and permissions:
+
+- `PURIS_USER`
+  - Common views related to short-term information needs
+  - only read access to master data
+  - no access to EDC views and controller
+- `PURIS_ADMIN`
+  - EDC related views (may be used for debugging)
+  - read and write access to master data
+  - access to data import endpoints
+
+Requests authorized via API key always use the role `PURIS_ADMIN`.
 
 ## Configure Frontend to use Backend
 

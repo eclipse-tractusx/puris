@@ -28,9 +28,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-
 import lombok.extern.slf4j.Slf4j;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -74,7 +72,7 @@ public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Abstra
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                 .collect(Collectors.toList());
         } catch(Exception e) {
-            log.error("Failed to parse roles", e.getMessage());
+            log.error("Failed to parse roles: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
