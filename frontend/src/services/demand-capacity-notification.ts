@@ -55,3 +55,19 @@ export const postDemandAndCapacityNotification = async (notification: Partial<De
     return res.json();
 }
 
+export const putDemandAndCapacityNotification = async (notification: Partial<DemandCapacityNotification>) => {
+    const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION, {
+        method: 'PUT',
+        body: JSON.stringify(notification),
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AuthenticationService.getToken()}`
+        },
+    });
+    if (res.status >= 400) {
+        const error = await res.json();
+        throw error;
+    }
+    return res.json();
+}
+
