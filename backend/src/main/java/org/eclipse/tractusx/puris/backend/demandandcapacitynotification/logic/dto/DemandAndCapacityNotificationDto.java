@@ -44,9 +44,9 @@ public class DemandAndCapacityNotificationDto implements Serializable {
     private UUID uuid;
     private UUID notificationId;
 
-    private UUID relatedNotificationId;
+    private List<UUID> relatedNotificationIds;
 
-    private UUID sourceNotificationId;
+    private UUID sourceDisruptionId;
 
     @Pattern(regexp = PatternStore.BPNL_STRING)
     private String partnerBpnl;
@@ -55,6 +55,9 @@ public class DemandAndCapacityNotificationDto implements Serializable {
 
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     private String text;
+
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    private String resolvingMeasureDescription;
 
     private LeadingRootCauseEnumeration leadingRootCause;
     private EffectEnumeration effect;
@@ -66,6 +69,8 @@ public class DemandAndCapacityNotificationDto implements Serializable {
 
     private List<@Pattern(regexp = PatternStore.BPNS_STRING) String> affectedSitesBpnsSender;
     private List<@Pattern(regexp = PatternStore.BPNS_STRING) String> affectedSitesBpnsRecipient;
+
+    private Date contentChangedAt;
 
     private boolean isReported;
 }

@@ -1,0 +1,45 @@
+meta {
+  name: Register Disruption Forwarding Partner
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/partners
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+    "name": "Disruption Forwarding Partner",
+    "edcUrl": "https://disruption-forwarding-partner.de/{{PROTOCOL_PATH}}",
+    "bpnl": "BPNL9999999999YY",
+    "addresses": [],
+    "sites": [
+      {
+        "bpns": "BPNS9999999999YY",
+        "name": "Production Site",
+        "addresses": [
+          {
+            "bpna": "BPNA9999999999YY",
+            "streetAndNumber": "13th Street 47",
+            "zipCodeAndCity": "10011 New York",
+            "country": "USA"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+}
