@@ -165,7 +165,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_MaterialNotFound_ReturnsError() throws IOException {
+    void testReadExcelFile_Demand_MaterialNotFound_ReturnsError() throws IOException {
         ByteArrayInputStream inputStream = createDemandExcelFile();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(null);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -179,7 +179,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_PartnerNotFound_ReturnsError() throws IOException {
+    void testReadExcelFile_Demand_PartnerNotFound_ReturnsError() throws IOException {
         ByteArrayInputStream inputStream = createDemandExcelFile();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(null);
@@ -193,7 +193,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_ValidationErrors_ReturnsErrors() throws IOException {
+    void testReadExcelFile_Demand_ValidationErrors_ReturnsErrors() throws IOException {
         ByteArrayInputStream inputStream = createDemandExcelFile();
         List<String> validationErrors = List.of("Validation error 1", "Validation error 2");
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
@@ -230,7 +230,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_ValidDemandData_CallsServices() throws IOException {
+    void testReadExcelFile_Demand_ValidData_CallsServices() throws IOException {
         ByteArrayInputStream inputStream = createDemandExcelFile();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -250,7 +250,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_ConflictingDemandData_ReturnsErrors() throws IOException {
+    void testReadExcelFile_Demand_ConflictingData_ReturnsErrors() throws IOException {
         ByteArrayInputStream inputStream = createConflictingDemandExcelFile();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -268,7 +268,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_ValidProductionData_CallsServices() throws IOException {
+    void testReadExcelFile_Production_ValidData_CallsServices() throws IOException {
         ByteArrayInputStream inputStream = createProductionExcelFile();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -288,7 +288,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_ConflictingProductionData_ReturnsErrors() throws IOException {
+    void testReadExcelFile_Production_ConflictingData_ReturnsErrors() throws IOException {
         ByteArrayInputStream inputStream = createConflictingProductionExcelFile();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -306,7 +306,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_ValidDeliveryData_CallsServices() throws IOException {
+    void testReadExcelFile_Delivery_ValidData_CallsServices() throws IOException {
         ByteArrayInputStream inputStream = createDeliveryExcelFile();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -326,7 +326,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_ConflictingDeliveryData_ReturnsErrors() throws IOException {
+    void testReadExcelFile_Delivery_ConflictingData_ReturnsErrors() throws IOException {
         ByteArrayInputStream inputStream = createConflictingDeliveryExcelFile();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -344,7 +344,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_ValidStockData_CallsServices() throws IOException {
+    void testReadExcelFile_Stock_ValidData_CallsServices() throws IOException {
         ByteArrayInputStream inputStream = createStockExcelFile();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -365,7 +365,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_ConflictingStockData_ReturnsErrors() throws IOException {
+    void testReadExcelFile_Stock_ConflictingData_ReturnsErrors() throws IOException {
         ByteArrayInputStream inputStream = createConflictingStockExcelFile();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -383,7 +383,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_InvalidUnitOfMeasurement_ReturnsError() throws IOException {
+    void testReadExcelFile_Demand_InvalidUnitOfMeasurement_ReturnsError() throws IOException {
         ByteArrayInputStream inputStream = createDemandExcelFileWithInvalidUnit();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -398,7 +398,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_InvalidDemandCategory_ReturnsError() throws IOException {
+    void testReadExcelFile_Demand_InvalidDemandCategory_ReturnsError() throws IOException {
         ByteArrayInputStream inputStream = createDemandExcelFileWithInvalidCategory();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -413,7 +413,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_InvalidIncoterm_ReturnsError() throws IOException {
+    void testReadExcelFile_Delivery_InvalidIncoterm_ReturnsError() throws IOException {
         ByteArrayInputStream inputStream = createDeliveryExcelFileWithInvalidIncoterm();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -428,7 +428,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_InvalidDepartureType_ReturnsError() throws IOException {
+    void testReadExcelFile_Delivery_InvalidDepartureType_ReturnsError() throws IOException {
         ByteArrayInputStream inputStream = createDeliveryExcelFileWithInvalidDepartureType();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -443,7 +443,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_InvalidArrivalType_ReturnsError() throws IOException {
+    void testReadExcelFile_Delivery_InvalidArrivalType_ReturnsError() throws IOException {
         ByteArrayInputStream inputStream = createDeliveryExcelFileWithInvalidArrivalType();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
@@ -458,7 +458,7 @@ public class ExcelServiceTest {
     }
 
     @Test
-    void testReadExcelFile_InvalidStockDirection_ReturnsError() throws IOException {
+    void testReadExcelFile_Stock_InvalidDirection_ReturnsError() throws IOException {
         ByteArrayInputStream inputStream = createStockExcelFileWithInvalidDirection();
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
