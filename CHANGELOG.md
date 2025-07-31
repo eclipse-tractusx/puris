@@ -13,6 +13,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Changed
 
+* Updated End-to-End tests to support local authentication ([#920](https://github.com/eclipse-tractusx/puris/pull/920))
 * Update DemandAndCapacityNotification API to implement standard version 2.0 ([#921](https://github.com/eclipse-tractusx/puris/pull/921))
 
 ## v3.2.0

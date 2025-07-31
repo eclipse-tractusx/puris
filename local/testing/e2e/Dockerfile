@@ -28,13 +28,3 @@ RUN chown -R node:node /testing
 USER node
 
 COPY . .
-
-RUN npm install playwright-webkit --save-dev
-
-# switch back to root temporarily to install missing dependencies for playwright webkit
-USER root
-
-RUN npx playwright install-deps webkit
-
-# switch back to node user to run the tests
-USER node
