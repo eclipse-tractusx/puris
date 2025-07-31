@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -72,8 +73,10 @@ public class PartnerController {
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @PostMapping
-    @Operation(description = "Creates a new Partner entity with the data given in the request body. Please note that no " +
+    @Operation(summary = "Creates a new Partner -- ADMIN ONLY", description =
+        "Creates a new Partner entity with the data given in the request body. Please note that no " +
         "UUID can be assigned to a Partner that wasn't created before. So the request body must not contain a UUID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Partner created successfully."),
@@ -113,8 +116,10 @@ public class PartnerController {
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }
 
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @PutMapping("putAddress")
-    @Operation(description = "Updates an existing Partner by adding a new Address. If that Partner already has " +
+    @Operation(summary = "Adds a new Address to a Partner -- ADMIN ONLY", description =
+        "Updates an existing Partner by adding a new Address. If that Partner already has " +
         "an Address with the BPNA given in the request body, that existing Address will be overwritten. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Update accepted."),
@@ -154,8 +159,10 @@ public class PartnerController {
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }
 
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @PutMapping("putSite")
-    @Operation(description = "Updates an existing Partner by adding a new Site. If that Partner already has " +
+    @Operation(summary = "Adds a new Site to a Partner -- ADMIN ONLY", description =
+        "Updates an existing Partner by adding a new Site. If that Partner already has " +
         "a Site with the BPNS given in the request body, that existing Site will be overwritten. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Update accepted."),
@@ -197,7 +204,7 @@ public class PartnerController {
     }
 
     @GetMapping
-    @Operation(description = "Returns the requested PartnerDto.")
+    @Operation(summary = "Gets a specific Partner -- ADMIN ONLY", description = "Returns the requested PartnerDto.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Found Partner, returning it in response body."),
         @ApiResponse(responseCode = "400", description = "Invalid parameter.", content = @Content),
@@ -223,7 +230,7 @@ public class PartnerController {
     }
 
     @GetMapping("/all")
-    @Operation(description = "Returns a list of all Partners. ")
+    @Operation(summary = "Gets all Partners", description = "Returns a list of all Partners. ")
     public ResponseEntity<List<PartnerDto>> listPartners() {
         final String ownBpnl = variablesService.getOwnBpnl();
         return new ResponseEntity<>(partnerService.findAll().stream()
@@ -234,13 +241,13 @@ public class PartnerController {
     }
 
     @GetMapping("/own")
-    @Operation(description = "Returns the own partnr entity.")
+    @Operation(summary = "Gets the own Partner entity", description = "Returns the own partnr entity.")
     public ResponseEntity<Partner> getOwnPartnerEntity() {
         return new ResponseEntity<>(partnerService.getOwnPartnerEntity(), HttpStatus.OK);
     }
 
     @GetMapping("/ownSites")
-    @Operation(description = "Returns all sites of the puris partner using the puris system.")
+    @Operation(summary = "Gets the own sites", description = "Returns all sites of the puris partner using the puris system.")
     public ResponseEntity<List<SiteDto>> getOwnSites() {
         Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
 
@@ -256,7 +263,8 @@ public class PartnerController {
     }
 
     @GetMapping("{partnerBpnl}/materials")
-    @Operation(description = "Returns all materials the specified partner is associated with.")
+    @Operation(summary = "Gets all associated materials for Partner", description =
+        "Returns all materials the specified partner is associated with.")
     public ResponseEntity<List<Material>> getMaterials(@PathVariable String partnerBpnl) {
     if (!bpnlPattern.matcher(partnerBpnl).matches()) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

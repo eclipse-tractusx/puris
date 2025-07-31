@@ -24,6 +24,7 @@ import org.eclipse.tractusx.puris.backend.file.domain.model.DataImportResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,8 +41,9 @@ public class FileController {
     @Autowired
     private ExcelService excelService;
 
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @Operation(
-        summary = "Import data via excel file",
+        summary = "Import data via excel file -- ADMIN ONLY",
         description =
             "Accepts a multipart/form-data upload of an Excel file with `.xlsx` extension. " +
             "The import supports Demand, Production, Delivery and Stock information. " +

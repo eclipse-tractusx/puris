@@ -37,6 +37,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Base64;
@@ -60,8 +61,9 @@ public class MaterialController {
     private final ModelMapper modelMapper = new ModelMapper();
     private final Pattern materialPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
 
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @PostMapping
-    @Operation(description = "Creates a new Material entity with the data given in the request body. As a bare minimum, " +
+    @Operation(summary = "Creates a Material -- ADMIN ONLY", description = "Creates a new Material entity with the data given in the request body. As a bare minimum, " +
         "it must contain a new, unique ownMaterialNumber.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully created a new Material entity."),
@@ -96,8 +98,9 @@ public class MaterialController {
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }
 
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @PutMapping
-    @Operation(description = "Updates an existing Material entity with the data given in the request body.")
+    @Operation(summary = "Updates a Material -- ADMIN ONLY", description = "Updates an existing Material entity with the data given in the request body.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Update was accepted."),
         @ApiResponse(responseCode = "400", description = "Malformed request body."),
@@ -133,7 +136,7 @@ public class MaterialController {
     }
 
     @GetMapping
-    @Operation(description = "Returns the requested Material dto, specified by the given ownMaterialNumber.")
+    @Operation(summary = "Gets a Material by ownMaterialNumber", description = "Returns the requested Material dto, specified by the given ownMaterialNumber.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Returns the requested Material."),
         @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content),
@@ -156,7 +159,7 @@ public class MaterialController {
     }
 
     @GetMapping("/all")
-    @Operation(description = "Returns a list of all Materials and Products.")
+    @Operation(summary = "Gets all materials", description = "Returns a list of all Materials and Products.")
     public ResponseEntity<List<MaterialEntityDto>> listMaterials() {
         return new ResponseEntity<>(materialService.findAll().
             stream().map(x -> modelMapper.map(x, MaterialEntityDto.class)).collect(Collectors.toList()),
@@ -164,7 +167,7 @@ public class MaterialController {
     }
 
     @GetMapping("/refresh")
-    @Operation(description = "Requests material data for the given material from all partners")
+    @Operation(summary = "Refreshes partner data for specified material", description = "Requests material data for the given material from all partners")
     public ResponseEntity<String> refreshMaterialData(@RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
         ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         if (!materialPattern.matcher(ownMaterialNumber).matches()) {

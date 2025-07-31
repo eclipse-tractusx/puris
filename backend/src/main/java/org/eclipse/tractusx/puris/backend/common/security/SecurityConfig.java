@@ -38,6 +38,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -52,6 +53,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @SecurityScheme(type = SecuritySchemeType.APIKEY, name = SecurityConfig.API_KEY_HEADER_NAME, in = SecuritySchemeIn.HEADER)
 @OpenAPIDefinition(info = @Info(title = "PURIS FOSS Open API", version = "1.0.0"), security = {@SecurityRequirement(name = "X-API-KEY")})
 public class SecurityConfig {

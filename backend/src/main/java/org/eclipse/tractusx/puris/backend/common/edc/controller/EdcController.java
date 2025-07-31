@@ -23,12 +23,14 @@ package org.eclipse.tractusx.puris.backend.common.edc.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -63,7 +65,9 @@ public class EdcController {
      * @param partnerBpnl bpnl of the partner to get the catalog from.
      * @return catalog of the requested edc.
      */
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @GetMapping(CATALOG)
+    @Operation(summary = "Gets the catalog for a specific partner -- ADMIN ONLY", description = "Gets the catalog for a specified partner by BPNL and DSP Url.")
     public ResponseEntity<String> getCatalog(@RequestParam String dspUrl, @RequestParam String partnerBpnl) {
         try {
             if (!PatternStore.URL_PATTERN.matcher(dspUrl).matches()) {
@@ -97,7 +101,9 @@ public class EdcController {
      * @param assetId optional parameter if only a specific asset should be retrieved.
      * @return response from own EDC.
      */
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @GetMapping(ASSETS)
+    @Operation(summary = "Gets an asset by id -- ADMIN ONLY", description = "Gets a specific EDC asset by its asset id.")
     public ResponseEntity<String> getAssets(@RequestParam String assetId) {
         try {
             if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.matches(assetId)) {
@@ -131,7 +137,9 @@ public class EdcController {
      *
      * @return contract negotiation data
      */
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @GetMapping(CONTRACTNEGOTIATIONS)
+    @Operation(summary = "Gets all contract negotiations -- ADMIN ONLY", description = "Gets all contract negotiations as a string.")
     public ResponseEntity<String> getContractNegotiations() {
         try {
             Response negotiationsResponse = edcAdapter.getAllNegotiations();
@@ -163,7 +171,9 @@ public class EdcController {
      *
      * @return transfer data
      */
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @GetMapping(TRANSFERS)
+    @Operation(summary = "Gets all transfers -- ADMIN ONLY", description = "Gets all transfers as JSON.")
     public ResponseEntity<JsonNode> getTransfers() {
         try {
             Response transfersResponse = edcAdapter.getAllTransfers();

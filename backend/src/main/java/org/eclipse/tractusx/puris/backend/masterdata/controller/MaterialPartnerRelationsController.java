@@ -36,6 +36,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Base64;
@@ -60,8 +61,10 @@ public class MaterialPartnerRelationsController {
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @PostMapping
-    @Operation(description = "Creates a new MaterialPartnerRelation with the given parameter data. " +
+    @Operation(summary = "Creates a Material Partner Relation -- ADMIN ONLY", description =
+        "Creates a new MaterialPartnerRelation with the given parameter data. " +
         "Please note that this is only possible, if the designated Material " +
         "and Partner entities have already been created before this request. ")
     @ApiResponses(value = {
@@ -126,8 +129,10 @@ public class MaterialPartnerRelationsController {
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }
 
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @PutMapping
-    @Operation(description = "Updates an existing MaterialPartnerRelation. You have to specify the ownMaterialNumber and " +
+    @Operation(summary = "Updates a Material Partner Relation -- ADMIN ONLY", description =
+        "Updates an existing MaterialPartnerRelation. You have to specify the ownMaterialNumber and " +
         "the partnerBpnl. The other three parameters are genuinely optional. Provide them only if you want to change their values. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Update was accepted."),
