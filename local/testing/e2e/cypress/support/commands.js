@@ -58,22 +58,22 @@ Cypress.Commands.add('selectRelativeDate', (testid, dateOffset) => {
 
 Cypress.Commands.add('login', (role) => {
   cy.session([role], () => {
-    if (Cypress.env('idp_enabled')) {
-      if (role === 'supplier') {
-        cy.origin(Cypress.env('supplierUrl'), () => {
-          cy.visit('/materials');
-        })
-      } else {
+    if (role === 'supplier') {
+      cy.origin(Cypress.env('supplierUrl'), () => {
         cy.visit('/materials');
-      }
+      })
+    } else {
+      cy.visit('/materials');
+    }
+    if (Cypress.env('environment') === 'int') {
       cy.origin(Cypress.env('central_idp_url'), { args: { role }}, ({ role }) => {
         cy.contains(Cypress.env(role).company_name).click();
       });
-      cy.origin(Cypress.env('shared_idp_url'), { args: { role }}, ({ role }) => {
-        cy.get('#username').should('exist').type(Cypress.env(role).username);
-        cy.get('#password').should('exist').type(Cypress.env(role).password);
-        cy.get('#kc-login').should('exist').click();
-      });
     }
+    cy.origin(Cypress.env('shared_idp_url'), { args: { role }}, ({ role }) => {
+      cy.get('#username').should('exist').type(Cypress.env(role).username);
+      cy.get('#password').should('exist').type(Cypress.env(role).password);
+      cy.get('#kc-login').should('exist').click();
+    });
   });
 })

@@ -15,6 +15,11 @@ The **need for configuration updates** is **marked bold**.
 
 * Added unit tests Excel imports ([#922](https://github.com/eclipse-tractusx/puris/pull/922))
 
+### Changed
+
+* Updated End-to-End tests to support local authentication ([#920](https://github.com/eclipse-tractusx/puris/pull/920))
+* Update DemandAndCapacityNotification API to implement standard version 2.0 ([#921](https://github.com/eclipse-tractusx/puris/pull/921))
+
 ## v3.2.0
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.

@@ -38,9 +38,8 @@ module.exports = defineConfig({
         },
         baseUrl: 'http://localhost:3000',
         viewportWidth: 1280,
-        viewportHeight: 720,
-        experimentalWebKitSupport: true
+        viewportHeight: 720
     },
-    defaultCommandTimeout: 12000,
+    defaultCommandTimeout: 60000,
     video: true,
 });
