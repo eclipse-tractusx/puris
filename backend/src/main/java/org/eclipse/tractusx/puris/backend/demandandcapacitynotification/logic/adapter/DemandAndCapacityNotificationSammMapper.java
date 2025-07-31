@@ -22,8 +22,8 @@ package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.a
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.demandandcapacitynotficationsamm.DemandAndCapacityNotificationSamm;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.demandandcapacitynotficationsamm.MaterialSamm;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -47,22 +47,28 @@ public class DemandAndCapacityNotificationSammMapper {
     private PartnerService partnerService;
 
     public DemandAndCapacityNotificationSamm ownNotificationToSamm(OwnDemandAndCapacityNotification notification) {
-        List<String> affectedMaterialGlobalAssetIds = new ArrayList<>();
-        List<String> affectedCustomerMaterialIds = new ArrayList<>();
-        List<String> affectedSupplierMaterialIds = new ArrayList<>();
         var mprs = notification.getMaterials().stream().map(material -> mprService.find(material, notification.getPartner())).toList();
+        List<MaterialSamm> materials = new ArrayList<>();
         switch (notification.getEffect()) {
             case DEMAND_INCREASE, DEMAND_REDUCTION -> {
                 // we are customer, recipient is supplier
-                affectedMaterialGlobalAssetIds.addAll(mprs.stream().map(MaterialPartnerRelation::getPartnerCXNumber).toList());
-                affectedCustomerMaterialIds.addAll(mprs.stream().map(mpr -> mpr.getMaterial().getOwnMaterialNumber()).toList());
-                affectedSupplierMaterialIds.addAll(mprs.stream().map(MaterialPartnerRelation::getPartnerMaterialNumber).toList());
+                for (var mpr : mprs) {
+                    materials.add(new MaterialSamm(
+                        mpr.getPartnerCXNumber(),
+                        mpr.getMaterial().getOwnMaterialNumber(),
+                        mpr.getPartnerMaterialNumber()
+                    ));
+                }
             }
             case CAPACITY_INCREASE, CAPACITY_REDUCTION -> {
                 // we are supplier, recipient is customer
-                affectedMaterialGlobalAssetIds.addAll(mprs.stream().map(mpr -> mpr.getMaterial().getMaterialNumberCx()).toList());
-                affectedSupplierMaterialIds.addAll(mprs.stream().map(mpr -> mpr.getMaterial().getOwnMaterialNumber()).toList());
-                affectedCustomerMaterialIds.addAll(mprs.stream().map(MaterialPartnerRelation::getPartnerMaterialNumber).toList());
+                for (var mpr : mprs) {
+                    materials.add(new MaterialSamm(
+                        mpr.getMaterial().getMaterialNumberCx(),
+                        mpr.getPartnerMaterialNumber(),
+                        mpr.getMaterial().getOwnMaterialNumber()
+                    ));
+                }
             }
             default -> throw new IllegalStateException("Unexpected value: " + notification.getEffect());
         }
@@ -72,15 +78,14 @@ public class DemandAndCapacityNotificationSammMapper {
         var builder = DemandAndCapacityNotificationSamm.builder();
         var samm = builder
                 .notificationId(notification.getNotificationId().toString())
-                .relatedNotificationId(notification.getRelatedNotificationId() != null ? notification.getRelatedNotificationId().toString() : null)
-                .sourceNotificationId(notification.getSourceNotificationId() != null ? notification.getSourceNotificationId().toString() : null)
+                .relatedNotificationIds(notification.getRelatedNotificationIds() != null ? notification.getRelatedNotificationIds().stream().map(uuid -> uuid.toString()).toList() : null)
+                .sourceDisruptionId(notification.getSourceDisruptionId() != null ? notification.getSourceDisruptionId().toString() : null)
                 .text(notification.getText())
+                .resolvingMeasureDescription(notification.getResolvingMeasureDescription())
                 .leadingRootCause(notification.getLeadingRootCause())
                 .effect(notification.getEffect())
                 .status(notification.getStatus())
-                .materialGlobalAssetId(affectedMaterialGlobalAssetIds)
-                .materialNumberCustomer(affectedCustomerMaterialIds)
-                .materialNumberSupplier(affectedSupplierMaterialIds)
+                .materialsAffected(materials)
                 .affectedSitesSender(affectedSitesBpnsSender)
                 .affectedSitesRecipient(affectedSitesBpnsRecipient)
                 .startDateOfEffect(notification.getStartDateOfEffect())
@@ -93,29 +98,31 @@ public class DemandAndCapacityNotificationSammMapper {
 
     public ReportedDemandAndCapacityNotification sammToReportedDemandAndCapacityNotification(DemandAndCapacityNotificationSamm samm, Partner partner) {
         var builder = ReportedDemandAndCapacityNotification.builder();
-        HashSet<Material> materialsSet = new HashSet<>();
+        HashSet<Material> materialsSet = new HashSet<Material>();
         switch (samm.getEffect()) {
             case DEMAND_INCREASE, DEMAND_REDUCTION -> {
                 // sender of Samm is customer, we are supplier
-                samm.getMaterialGlobalAssetId().forEach(assetId -> materialsSet.add(materialService.findByMaterialNumberCx(assetId)));
-                samm.getMaterialNumberSupplier().forEach(matNbr -> materialsSet.add(materialService.findByOwnMaterialNumber(matNbr)));
-                samm.getMaterialNumberCustomer()
-                    .stream()
-                    .flatMap(matNbr -> mprService.findAllByPartnerMaterialNumber(matNbr).stream())
-                    .map(material -> mprService.find(material, partner))
-                    .filter(mpr -> mpr.getPartner().equals(partner))
-                    .forEach(mpr -> materialsSet.add(mpr.getMaterial()));
+                for (var material: samm.getMaterialsAffected()) {
+                    if (material.getMaterialGlobalAssetId() != null) {
+                        materialsSet.add(materialService.findByMaterialNumberCx(material.getMaterialGlobalAssetId()));
+                    } else if (material.getMaterialNumberSupplier() != null) {
+                        materialsSet.add(materialService.findByOwnMaterialNumber(material.getMaterialNumberSupplier()));
+                    } else if (material.getMaterialNumberCustomer() != null) {
+                        materialsSet.add(mprService.findAllByCustomerPartnerAndPartnerMaterialNumber(partner, material.getMaterialNumberCustomer()).getFirst().getMaterial());
+                    } 
+                }
             }
             case CAPACITY_INCREASE, CAPACITY_REDUCTION -> {
                 // sender of Samm is supplier, we are customer
-                samm.getMaterialGlobalAssetId().forEach(assetId -> materialsSet.add(mprService.findByPartnerAndPartnerCXNumber(partner, assetId).getMaterial()));
-                samm.getMaterialNumberCustomer().forEach(matNbr -> materialsSet.add(materialService.findByOwnMaterialNumber(matNbr)));
-                samm.getMaterialNumberSupplier()
-                    .stream()
-                    .flatMap(matNbr -> mprService.findAllByPartnerMaterialNumber(matNbr).stream())
-                    .map(material -> mprService.find(material, partner))
-                    .filter(mpr -> mpr.getPartner().equals(partner))
-                    .forEach(mpr -> materialsSet.add(mpr.getMaterial()));
+                for (var material: samm.getMaterialsAffected()) {
+                    if (material.getMaterialGlobalAssetId() != null) {
+                        materialsSet.add(mprService.findByPartnerAndPartnerCXNumber(partner, material.getMaterialGlobalAssetId()).getMaterial());
+                    } else if (material.getMaterialNumberCustomer() != null) {
+                        materialsSet.add(materialService.findByOwnMaterialNumber(material.getMaterialNumberCustomer()));
+                    } else if (material.getMaterialNumberSupplier() != null) {
+                        materialsSet.add(mprService.findAllBySupplierPartnerAndPartnerMaterialNumber(partner, material.getMaterialNumberSupplier()).getFirst().getMaterial());
+                    } 
+                }
             }
             default -> throw new IllegalStateException("Unexpected value: " + samm.getEffect());
         }
@@ -128,9 +135,10 @@ public class DemandAndCapacityNotificationSammMapper {
             .collect(Collectors.toList());
         var notification = builder
                 .notificationId(UUID.fromString(samm.getNotificationId()))
-                .relatedNotificationId(samm.getRelatedNotificationId() != null ? UUID.fromString(samm.getRelatedNotificationId()) : null)
-                .sourceNotificationId(samm.getSourceNotificationId() != null ? UUID.fromString(samm.getSourceNotificationId()) : null)
+                .relatedNotificationIds(samm.getRelatedNotificationIds() != null ? samm.getRelatedNotificationIds().stream().map(id ->  UUID.fromString(id)).toList() : null)
+                .sourceDisruptionId(samm.getSourceDisruptionId() != null ? UUID.fromString(samm.getSourceDisruptionId()) : null)
                 .text(samm.getText())
+                .resolvingMeasureDescription(samm.getResolvingMeasureDescription())
                 .leadingRootCause(samm.getLeadingRootCause())
                 .effect(samm.getEffect())
                 .status(samm.getStatus())

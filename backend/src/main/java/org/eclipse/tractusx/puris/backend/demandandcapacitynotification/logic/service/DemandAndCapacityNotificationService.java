@@ -68,20 +68,23 @@ public abstract class DemandAndCapacityNotificationService<TEntity extends Deman
         if (!validator.apply(notification)) {
             throw new IllegalArgumentException("Invalid notification");
         }
-        if (repository.findAll().stream().anyMatch(d -> d.equals(notification))) {
+        if (repository.findAll().stream().anyMatch(d -> d.getNotificationId().equals(notification.getNotificationId()))) {
             throw new KeyAlreadyExistsException("Notification already exists");
         }
         if (notification.getNotificationId() == null) {
             notification.setNotificationId(UUID.randomUUID());
         }
-        if (notification.getSourceNotificationId() == null) {
-            notification.setSourceNotificationId(notification.getNotificationId());
+        if (notification.getSourceDisruptionId() == null) {
+            notification.setSourceDisruptionId(UUID.randomUUID());
         }
         notification.setContentChangedAt(new Date());
         return repository.save(notification);
     }
 
     public final TEntity update(TEntity notification) {
+        if (!validator.apply(notification)) {
+            throw new IllegalArgumentException("Invalid notification");
+        }
         if (notification.getUuid() == null || repository.findById(notification.getUuid()).isEmpty()) {
             return null;
         }
