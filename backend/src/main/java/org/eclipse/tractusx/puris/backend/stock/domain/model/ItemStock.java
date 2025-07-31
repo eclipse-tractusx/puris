@@ -31,6 +31,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -100,6 +101,33 @@ public abstract class ItemStock {
 
     public String getNonNullCustomerOrderPositionId() {
         return customerOrderPositionId == null ? "" : customerOrderPositionId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final ItemStock that = (ItemStock) o;
+        return this.getMaterial().getOwnMaterialNumber().equals(that.getMaterial().getOwnMaterialNumber()) &&
+                this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
+                this.getLocationBpns().equals(that.getLocationBpns()) &&
+                this.getLocationBpna().equals(that.getLocationBpna()) &&
+                Objects.equals(this.getNonNullSupplierOrderId(), that.getNonNullSupplierOrderId()) &&
+                Objects.equals(this.getNonNullCustomerOrderId(), that.getNonNullCustomerOrderId()) &&
+                Objects.equals(this.getNonNullCustomerOrderPositionId(), that.getNonNullCustomerOrderPositionId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+            partner, material, quantity, measurementUnit, locationBpna, locationBpns,
+            lastUpdatedOnDateTime, isBlocked, supplierOrderId, customerOrderId, customerOrderPositionId
+        );
     }
 
 }

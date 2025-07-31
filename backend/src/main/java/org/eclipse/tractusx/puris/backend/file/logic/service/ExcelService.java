@@ -140,7 +140,12 @@ public class ExcelService {
     }
 
     private DataImportResult extractAndSaveData(Sheet sheet) {
-        switch(validateHeaders(sheet)) {
+        DataDocumentTypeEnumeration documentType = validateHeaders(sheet);
+        if (documentType == null) {
+            throw new IllegalArgumentException("Unsupported Excel file format: column structure does not match any supported data type (Demand, Production, Delivery, or Stock)");
+        }
+        
+        switch(documentType) {
             case DataDocumentTypeEnumeration.DEMAND:
                 return extractAndSaveDemands(sheet);
             case DataDocumentTypeEnumeration.PRODUCTION:
@@ -150,7 +155,7 @@ public class ExcelService {
             case DataDocumentTypeEnumeration.STOCK:
                 return extractAndSaveStocks(sheet);
             default:
-                throw new Error("Invalid column structure");
+                throw new IllegalArgumentException("Unsupported Excel file format: column structure does not match any supported data type (Demand, Production, Delivery, or Stock)");
         }
     }
 
@@ -707,7 +712,7 @@ public class ExcelService {
             }
 
             if (!conflictingIndexes.isEmpty()) {
-                errors.add(new DataImportError(i, List.of("The row " + (i + 2) + " conflicts with the following rows: " + conflictingIndexes.toString())));
+                errors.add(new DataImportError(i + 2, List.of("The row " + (i + 2) + " conflicts with the following rows: " + conflictingIndexes.toString())));
             }
         }
         return errors;

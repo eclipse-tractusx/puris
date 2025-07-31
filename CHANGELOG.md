@@ -11,6 +11,10 @@ The following Changelog lists the changes. Please refer to the [documentation](d
 
 The **need for configuration updates** is **marked bold**.
 
+### Added
+
+* Added unit tests Excel imports ([#922](https://github.com/eclipse-tractusx/puris/pull/922))
+
 ### Changed
 
 * Updated End-to-End tests to support local authentication ([#920](https://github.com/eclipse-tractusx/puris/pull/920))
