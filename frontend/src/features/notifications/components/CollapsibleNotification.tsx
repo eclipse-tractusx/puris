@@ -18,7 +18,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 import { useState } from 'react';
-import { Box, Button, IconButton, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, IconButton, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import { Check, ChevronRightOutlined, Edit } from '@mui/icons-material';
 import { DemandCapacityNotification } from '@models/types/data/demand-capacity-notification';
 import { Partner } from '@models/types/edc/partner';
@@ -192,34 +192,38 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                         </Stack>
                         ),
                     },
-                    { headerName: '', field: 'actions', renderCell: (params) => {
+                    { headerName: 'Action', field: 'actions', renderCell: (params) => {
                         if (params.row.status === 'resolved' || params.row.reported === true) {
                             return null;
                         }
                         return (
                             <Box display="flex" gap={1} justifyContent="end" width="100%" >
-                                <IconButton
-                                    color="primary"
-                                    size="small"
-                                    aria-label="edit"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onEditClicked?.(params.row);
-                                    }}
-                                >
-                                    <Edit></Edit>
-                                </IconButton>
-                                <IconButton
-                                    color="primary"
-                                    size="small"
-                                    aria-label="confirm"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onCheckClicked?.(params.row);
-                                    }}
-                                >
-                                    <Check ></Check >
-                                </IconButton>
+                                <Tooltip title="Edit Notification">
+                                    <IconButton
+                                        color="primary"
+                                        size="small"
+                                        aria-label="edit"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onEditClicked?.(params.row);
+                                        }}
+                                    >
+                                        <Edit></Edit>
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Resolve Notification">
+                                    <IconButton
+                                        color="primary"
+                                        size="small"
+                                        aria-label="confirm"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onCheckClicked?.(params.row);
+                                        }}
+                                    >
+                                        <Check ></Check >
+                                    </IconButton>
+                                </Tooltip>
                             </Box>
                         )
                     }}

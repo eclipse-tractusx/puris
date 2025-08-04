@@ -39,6 +39,7 @@ const isValidDemandCapacityNotification = (notification: Partial<DemandCapacityN
     notification.effect &&
     notification.status &&
     notification.startDateOfEffect &&
+    notification.text &&
     (!notification.expectedEndDateOfEffect || notification.startDateOfEffect < notification.expectedEndDateOfEffect);
 
 type DemandCapacityNotificationInformationModalProps = {
@@ -436,6 +437,7 @@ export const DemandCapacityNotificationInformationModal = ({
                                             })
                                         }
                                         error={formError && !temporaryDemandCapacityNotification?.text}
+                                        className={formError && !temporaryDemandCapacityNotification?.text ? 'error-textarea' : ''}
                                     />
                                 </Grid>
                                 <Typography  variant="body3" sx={{color: theme.palette.warning.main, py: 1}} ><ReportProblem></ReportProblem> These notes will be shared with the selected partner. Please do not include sensitive data of third parties.</Typography>

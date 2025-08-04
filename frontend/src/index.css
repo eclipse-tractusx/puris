@@ -241,7 +241,7 @@ textarea:focus {
 }
 
 textarea.error-textarea {
-    outline: 2px solid #f44336;
+    outline: 1px solid #f44336;
     border-color: #f44336;
 }
 
