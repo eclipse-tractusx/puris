@@ -22,10 +22,15 @@ package org.eclipse.tractusx.puris.backend.common.security.domain;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+
+import org.springframework.data.domain.Limit;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Authentication holding apiKey as principal and authenticated flag. No authorities given as the key is set per config.
@@ -37,9 +42,13 @@ public class ApiKeyAuthentication implements Authentication {
 
     private final String apiKey;
     private final boolean authenticatedFlag;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        List<String> roles = List.of("PURIS_ADMIN");
+        return roles.stream()
+                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                    .collect(Collectors.toList());
     }
 
     @Override

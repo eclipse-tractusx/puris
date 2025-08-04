@@ -28,10 +28,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-
+import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     private final String expectedAuthorizedParty;
@@ -55,14 +56,24 @@ public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Abstra
     }
 
     private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-        Map<String, Object> realmAccess = jwt.getClaimAsMap("realm_access");
-        if (realmAccess == null) {
+        try {
+            Map<String, Object> resourceAccess = jwt.getClaimAsMap("resource_access");
+            if (resourceAccess == null) {
+                return Collections.emptyList();
+            }
+            @SuppressWarnings("unchecked")
+            Map<String, Object> clientAccess = (Map<String, Object>) resourceAccess.get(expectedAuthorizedParty);
+            if (clientAccess == null) {
+                return Collections.emptyList();
+            }
+            @SuppressWarnings("unchecked")
+            List<String> roles = (List<String>) clientAccess.get("roles");
+            return roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .collect(Collectors.toList());
+        } catch(Exception e) {
+            log.error("Failed to parse roles: {}", e.getMessage());
             return Collections.emptyList();
         }
-        @SuppressWarnings("unchecked")
-        List<String> roles = (List<String>) realmAccess.get("roles");
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role))
-                .collect(Collectors.toList());
     }
 }
