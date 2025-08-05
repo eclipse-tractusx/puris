@@ -1,0 +1,119 @@
+@startuml 06-notification-forwarding
+autonumber
+skinparam sequenceMessageAlign center
+
+box "OEM"
+participant "OEM Application" as app_oem
+end box
+
+box "Tier 1"
+participant "Tier 1.1" as app_t1_1
+participant "Tier 1.2" as app_t1_2
+end box
+
+box "Tier 2"
+participant "Tier 2.1" as app_t2_1
+participant "Tier 2.2" as app_t2_2
+participant "Tier 2.3" as app_t2_3
+end box
+
+box "Tier 3"
+participant "Disruption Source" as app_t3
+end box
+
+activate app_t3
+note over app_t3
+Source disruption occurs at tier 3 supplier.
+Disruption notifications are sent to tier 2 partners.
+All notifications share the same source disruption ID.
+end note
+app_t3 -> app_t2_1: send initial disruption notification
+activate app_t2_1
+app_t3 -> app_t2_2: send initial disruption notification
+activate app_t2_2
+app_t3 -> app_t2_3: send initial disruption notification
+activate app_t2_3
+note over app_t2_1, app_t2_3
+Tier 2 suppliers receive disruption notifications
+from tier 3 supplier.
+They should also forward the notification to their
+tier 1 suppliers.
+end note
+app_t2_1 -> app_t1_1: forward disruption notification
+deactivate app_t2_1
+activate app_t1_1
+app_t2_2 -> app_t1_1: forward disruption notification
+app_t2_2 -> app_t1_2: forward disruption notification
+deactivate app_t2_2
+activate app_t1_2
+app_t2_3 -> app_t1_2: forward disruption notification
+deactivate app_t2_3
+app_t1_1 -> app_oem: forward disruption notification
+deactivate app_t1_1
+activate app_oem
+app_t1_2 -> app_oem: forward disruption notification
+
+note over app_oem
+OEM receives 2 disruption notifications
+from Tier 1 suppliers.
+end note
+note over app_t1_1
+Tier 1.2 supplier resolves the disruption on their end
+and resolves the notification for the OEM.
+end note
+app_t1_2 -> app_oem: resolve disruption notification
+deactivate app_t1_2
+
+note over app_oem
+OEM receives resolution notification
+from Tier 1.1 supplier.
+The disruption is partially resolved
+as Tier 1.2 supplier is still affected.
+end note
+
+note over app_t3
+The disruption at tier 3 supplier is resolved.
+Tier 2 suppliers are notified about the resolution.
+end note
+app_t3 -> app_t2_1: send resolution notification
+activate app_t2_1
+app_t3 -> app_t2_2: send resolution notification
+activate app_t2_2
+app_t3 -> app_t2_3: send resolution notification
+deactivate app_t3
+activate app_t2_3
+note over app_t2_1, app_t2_3
+Tier 2 suppliers receive resolution notifications
+from tier 3 supplier.
+They should also forward the resolution notification to their
+tier 1 suppliers.
+end note
+app_t2_1 -> app_t1_1: forward resolution notification
+deactivate app_t2_1
+activate app_t1_1
+app_t2_2 -> app_t1_1: forward resolution notification
+app_t1_1 -> app_oem: forward resolution notification
+deactivate app_t1_1
+deactivate app_oem
+
+note over app_oem
+OEM receives resolution notification
+from Tier 1.1 supplier.
+The disruption is fully resolved
+as all tier 1 suppliers have resolved their notifications.
+end note
+
+app_t2_2 -> app_t1_2: forward resolution notification
+deactivate app_t2_2
+activate app_t1_2
+app_t2_3 -> app_t1_2: forward resolution notification
+
+deactivate app_t2_3
+deactivate app_t1_2
+
+note over app_t1_2
+No further action is needed
+as Tier 1.2 supplier has already resolved the disruption.
+end note
+
+@enduml

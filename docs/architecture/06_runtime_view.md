@@ -74,11 +74,18 @@ The notification feature allows users to inform partners about demand and capaci
 The endpoint will decide the common scenarios to handle a message containing the notification:
 
 - Create a new notification
-- Update an existing notification previously received including closing it
+- Update an existing notification previously received
+- Resolve a previously received notification after which updates will no longer be possible
 
-The following diagram illustrates the exchange (create and update) process for notifications sent to a partner.
+The following diagram illustrates the technical overview of the exchange (create and update) process for notifications sent to a partner.
 
 ![Overview of Notification Exchange](img/06-notification-api-flow-detailed.svg)
+
+This process for single notifications is used when sending, updating and resolving disruption notifications along the supply chain. Received notifications for a `sourceDisruptionId` can be forwarded to further partners by using the same `sourceDisruptionId` and adding the incoming notifications as `relatedNotificationIds`. This way suppliers along the supply chain can quickly communicate information about possible disruptions.
+
+The following diagram illustrates an example flow for notification forwarding and resolving.
+
+![Overview of Notification forwarding flow](img/06-notification-forwarding.svg)
 
 ## Scenario: Interact with Data in the Web-UI
 
