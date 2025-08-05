@@ -425,7 +425,7 @@ export const DemandCapacityNotificationInformationModal = ({
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
-                                    <FormLabel>Text</FormLabel>
+                                    <FormLabel>Text*</FormLabel>
                                     <Textarea
                                         minRows="5"
                                         id="text"
