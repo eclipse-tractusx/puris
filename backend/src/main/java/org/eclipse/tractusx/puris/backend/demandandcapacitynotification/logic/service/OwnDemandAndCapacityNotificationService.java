@@ -50,6 +50,7 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
                 notification.getLeadingRootCause() != null &&
                 notification.getEffect() != null &&
                 notification.getStatus() != null &&
+                notification.getText() != null && !notification.getText().isBlank() &&
                 (notification.getUuid() == null || notification.getSourceDisruptionId() != null) &&
                 (
                     (

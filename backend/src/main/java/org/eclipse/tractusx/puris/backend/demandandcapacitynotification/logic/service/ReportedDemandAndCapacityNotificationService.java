@@ -48,6 +48,7 @@ public class ReportedDemandAndCapacityNotificationService extends DemandAndCapac
                 notification.getLeadingRootCause() != null &&
                 notification.getEffect() != null &&
                 notification.getStatus() != null &&
+                notification.getText() != null && !notification.getText().isBlank() &&
                 notification.getSourceDisruptionId() != null &&
                 (
                     (
