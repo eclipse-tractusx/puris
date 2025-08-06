@@ -19,16 +19,15 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { Input, Textarea } from '@catena-x/portal-shared-components';
 import { DateTime } from '@components/ui/DateTime';
-import { Close, Send } from '@mui/icons-material';
-import { Autocomplete, Box, Button, Dialog, DialogTitle, FormLabel, Grid, InputLabel, Stack, Typography } from '@mui/material';
+import { Close, Send, ReportProblem } from '@mui/icons-material';
+import { Autocomplete, Box, Button, Dialog, DialogTitle, FormLabel, Grid, InputLabel, Stack, Typography, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
-import { postDemandAndCapacityNotification } from '@services/demand-capacity-notification';
+import { postDemandAndCapacityNotification, putDemandAndCapacityNotification } from '@services/demand-capacity-notification';
 import { EFFECTS } from '@models/constants/effects';
-import { useAllPartners } from '@hooks/useAllPartners';
 import { LEADING_ROOT_CAUSE } from '@models/constants/leading-root-causes';
 import { STATUS } from '@models/constants/status';
-import { DemandCapacityNotification } from '@models/types/data/demand-capacity-notification';
+import { DemandCapacityNotification, EffectType, LeadingRootCauseType, StatusType } from '@models/types/data/demand-capacity-notification';
 import { Site } from '@models/types/edc/site';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { usePartnerMaterials } from '@hooks/usePartnerMaterials';
@@ -40,11 +39,20 @@ const isValidDemandCapacityNotification = (notification: Partial<DemandCapacityN
     notification.effect &&
     notification.status &&
     notification.startDateOfEffect &&
+    notification.text &&
     (!notification.expectedEndDateOfEffect || notification.startDateOfEffect < notification.expectedEndDateOfEffect);
 
 type DemandCapacityNotificationInformationModalProps = {
     open: boolean;
     demandCapacityNotification: DemandCapacityNotification | null;
+    partners: Partner[] | null;
+    isEditMode: boolean;
+    forwardData?: {
+        relatedNotificationIds?: string[];
+        sourceDisruptionId: string;
+        effect: EffectType,
+        leadingRootCause: LeadingRootCauseType,
+    };
     onClose: () => void;
     onSave: () => void;
 };
@@ -81,7 +89,11 @@ const DemandCapacityNotificationView = ({ demandCapacityNotification, partners }
             </Grid>
             <Grid display="grid" item xs={6}>
                 <FormLabel>Expected End Date of Effect</FormLabel>
-                <Typography variant="body2">{new Date(demandCapacityNotification.expectedEndDateOfEffect).toLocaleString()}</Typography>
+                <Typography variant="body2">{demandCapacityNotification.expectedEndDateOfEffect ? new Date(demandCapacityNotification.expectedEndDateOfEffect).toLocaleString() : ''}</Typography>
+            </Grid>
+            <Grid display="grid" item xs={6}>
+                <FormLabel>Last Updated</FormLabel>
+                <Typography variant="body2">{demandCapacityNotification.contentChangedAt ? new Date(demandCapacityNotification.contentChangedAt).toLocaleString() : ''}</Typography>
             </Grid>
             <Grid display="grid" item xs={12}>
                 <FormLabel>Affected Sites Sender</FormLabel>
@@ -112,6 +124,12 @@ const DemandCapacityNotificationView = ({ demandCapacityNotification, partners }
                 <FormLabel>Text</FormLabel>
                 <Typography variant="body2">{demandCapacityNotification.text}</Typography>
             </Grid>
+            {demandCapacityNotification.resolvingMeasureDescription && (
+                <Grid display="grid" item xs={12}>
+                    <FormLabel>Resolution message</FormLabel>
+                    <Typography variant="body2">{demandCapacityNotification.resolvingMeasureDescription}</Typography>
+                </Grid>
+            )}
         </Grid>
     );
 };
@@ -119,25 +137,46 @@ const DemandCapacityNotificationView = ({ demandCapacityNotification, partners }
 export const DemandCapacityNotificationInformationModal = ({
     open,
     demandCapacityNotification,
+    partners,
+    isEditMode,
+    forwardData,
     onClose,
     onSave,
 }: DemandCapacityNotificationInformationModalProps) => {
     const [temporaryDemandCapacityNotification, setTemporaryDemandCapacityNotification] = useState<Partial<DemandCapacityNotification>>({});
-    const { partners } = useAllPartners();
     const { partnerMaterials } = usePartnerMaterials(temporaryDemandCapacityNotification.partnerBpnl ?? null);
 
+    const theme = useTheme();
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
 
     const { sites } = useSites();
 
     useEffect(() => {
-        setTemporaryDemandCapacityNotification((prevState) => ({
-            ...prevState,
-            affectedMaterialNumbers: [],
-            affectedSitesBpnsRecipient: [],
-        }));
-    }, [temporaryDemandCapacityNotification.partnerBpnl]);
+        if (open) {
+            if (demandCapacityNotification) {
+                setTemporaryDemandCapacityNotification(demandCapacityNotification);
+            } else {
+                const initialData: Partial<DemandCapacityNotification> = {
+                    affectedMaterialNumbers: [],
+                    affectedSitesBpnsRecipient: [],
+                    status: 'open' as StatusType
+                };
+
+                if (forwardData) {
+                    initialData.sourceDisruptionId = forwardData.sourceDisruptionId;
+                    initialData.effect = forwardData.effect;
+                    initialData.leadingRootCause = forwardData.leadingRootCause;
+
+                    if (forwardData.relatedNotificationIds) {
+                        initialData.relatedNotificationIds = forwardData.relatedNotificationIds;
+                    }
+                }
+
+                setTemporaryDemandCapacityNotification(initialData);
+            }
+        }
+    }, [open, demandCapacityNotification, forwardData]);
 
     const handleSaveClick = () => {
         if (!isValidDemandCapacityNotification(temporaryDemandCapacityNotification)) {
@@ -145,23 +184,25 @@ export const DemandCapacityNotificationInformationModal = ({
             return;
         }
         setFormError(false);
-        postDemandAndCapacityNotification(temporaryDemandCapacityNotification)
+        const request = isEditMode && demandCapacityNotification?.uuid
+            ? putDemandAndCapacityNotification(temporaryDemandCapacityNotification)
+            : postDemandAndCapacityNotification(temporaryDemandCapacityNotification);
+
+        request
             .then(() => {
                 onSave();
                 notify({
-                        title: 'Notification Added',
-                        description: 'Notification has been added',
-                        severity: 'success',
-                    },
-                );
+                    title: isEditMode ? 'Notification Updated' : 'Notification Added',
+                    description: `Notification has been ${isEditMode ? 'updated' : 'added'}`,
+                    severity: 'success',
+                });
             })
             .catch((error) => {
                 notify({
-                        title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                        description: error.status === 409 ? 'DemandCapacityNotification conflicting with an existing one' : error.error,
-                        severity: 'error',
-                    },
-                );
+                    title: error.status === 409 ? 'Conflict' : 'Error requesting update',
+                    description: error.status === 409 ? 'DemandCapacityNotification conflicting with an existing one' : error.error,
+                    severity: 'error',
+                });
             })
             .finally(handleClose);
     };
@@ -178,7 +219,7 @@ export const DemandCapacityNotificationInformationModal = ({
                     Demand Capacity Notification Information
                 </DialogTitle>
                 <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
-                    {!demandCapacityNotification ? (
+                    {!demandCapacityNotification || isEditMode ? (
                         <Grid container spacing={1} padding=".25rem">
                             <>
                                 <Grid item xs={6}>
@@ -198,6 +239,7 @@ export const DemandCapacityNotificationInformationModal = ({
                                         }
                                         value={partners?.find((p) => p.bpnl === temporaryDemandCapacityNotification.partnerBpnl) ?? null}
                                         isOptionEqualToValue={(option, value) => option?.bpnl === value?.bpnl}
+                                        disabled={isEditMode && demandCapacityNotification !== null}
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -220,6 +262,7 @@ export const DemandCapacityNotificationInformationModal = ({
                                         label="Leading cause*"
                                         placeholder="Select the leading cause"
                                         error={formError && !temporaryDemandCapacityNotification?.leadingRootCause}
+                                        disabled={ isEditMode && (demandCapacityNotification !== null || !!forwardData?.sourceDisruptionId) }
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -238,6 +281,7 @@ export const DemandCapacityNotificationInformationModal = ({
                                         label="Status*"
                                         placeholder="Select the status"
                                         error={formError && !temporaryDemandCapacityNotification?.status}
+                                        disabled={true}
                                     ></LabelledAutoComplete>
                                 </Grid>
                                 <Grid item xs={6}>
@@ -256,6 +300,7 @@ export const DemandCapacityNotificationInformationModal = ({
                                         label="Effect*"
                                         placeholder="Select the effect"
                                         error={formError && !temporaryDemandCapacityNotification?.effect}
+                                        disabled={ isEditMode && (demandCapacityNotification !== null || !!forwardData?.sourceDisruptionId) }
                                     />
                                 </Grid>
                                 <Grid item xs={6} display="flex" alignItems="end">
@@ -287,11 +332,12 @@ export const DemandCapacityNotificationInformationModal = ({
                                         locale="de"
                                         error={
                                             formError &&
-                                            (!temporaryDemandCapacityNotification?.expectedEndDateOfEffect ||
-                                                temporaryDemandCapacityNotification?.expectedEndDateOfEffect < new Date() ||
+                                            !!temporaryDemandCapacityNotification?.expectedEndDateOfEffect && (
+                                                temporaryDemandCapacityNotification.expectedEndDateOfEffect < new Date() ||
                                                 (!!temporaryDemandCapacityNotification.startDateOfEffect &&
-                                                    temporaryDemandCapacityNotification?.expectedEndDateOfEffect <
-                                                        temporaryDemandCapacityNotification.startDateOfEffect))
+                                                    temporaryDemandCapacityNotification.expectedEndDateOfEffect <
+                                                        temporaryDemandCapacityNotification.startDateOfEffect)
+                                            )
                                         }
                                         value={temporaryDemandCapacityNotification?.expectedEndDateOfEffect ?? null}
                                         onValueChange={(date) =>
@@ -379,7 +425,7 @@ export const DemandCapacityNotificationInformationModal = ({
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
-                                    <FormLabel>Text</FormLabel>
+                                    <FormLabel>Text*</FormLabel>
                                     <Textarea
                                         minRows="5"
                                         id="text"
@@ -391,8 +437,10 @@ export const DemandCapacityNotificationInformationModal = ({
                                             })
                                         }
                                         error={formError && !temporaryDemandCapacityNotification?.text}
+                                        className={formError && !temporaryDemandCapacityNotification?.text ? 'error-textarea' : ''}
                                     />
                                 </Grid>
+                                <Typography  variant="body3" sx={{color: theme.palette.warning.main, py: 1}} ><ReportProblem></ReportProblem> These notes will be shared with the selected partner. Please do not include sensitive data of third parties.</Typography>
                             </>
                         </Grid>
                     ) : (
@@ -405,13 +453,13 @@ export const DemandCapacityNotificationInformationModal = ({
                         <Button variant="outlined" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleClose}>
                             <Close></Close> Close
                         </Button>
-                        {!demandCapacityNotification ? (
+                        {isEditMode || !demandCapacityNotification ? (
                             <Button
                                 variant="contained"
                                 sx={{ display: 'flex', gap: '.25rem' }}
-                                onClick={() => handleSaveClick()}
+                                onClick={handleSaveClick}
                             >
-                                <Send></Send> Send
+                                <Send /> Save
                             </Button>
                         ) : null}
                     </Box>

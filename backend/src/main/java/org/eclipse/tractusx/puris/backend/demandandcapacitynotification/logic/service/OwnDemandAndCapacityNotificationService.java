@@ -54,7 +54,8 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
                 (
                     (
                         notification.getStatus() == StatusEnumeration.OPEN &&
-                        notification.getResolvingMeasureDescription() == null
+                        notification.getResolvingMeasureDescription() == null &&
+                        notification.getText() != null && !notification.getText().isBlank()
                      ) || 
                     (
                         notification.getStatus() == StatusEnumeration.RESOLVED &&
