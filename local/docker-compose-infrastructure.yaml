@@ -128,7 +128,7 @@ services:
       APPLICATION_PORT: 80
       BASE_WALLET_BPN: BPNL000000000000
       SEED_WALLETS_BPN: BPNL000000000000,BPNL4444444444XX,BPNL1234567890ZZ
-      STUB_HOST: http://mock-util-service:80
+      STUB_URL: http://mock-util-service:80
       STATUS_LIST_VC_ID: 8a6c7486-1e1f-4555-bdd2-1a178182651e
       DID_HOST: mock-util-service
     ports:
