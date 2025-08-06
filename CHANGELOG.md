@@ -15,6 +15,7 @@ The **need for configuration updates** is **marked bold**.
 
 * Added unit tests Excel imports ([#922](https://github.com/eclipse-tractusx/puris/pull/922))
 * Added role based permission handling for endpoints ([#925](https://github.com/eclipse-tractusx/puris/pull/925))
+* Added Excel import page with template files download ([#930](https://github.com/eclipse-tractusx/puris/pull/930))
 
 ### Changed
 

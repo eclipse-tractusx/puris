@@ -33,6 +33,7 @@ import { UserGuideView } from '@views/UserGuideView';
 import { DemandCapacityNotificationView } from '@views/DemandCapacityNotificationView';
 import { MaterialListView } from '@views/MaterialListView';
 import { MaterialDetailView } from '@views/MaterialDetailView';
+import { ImportExportView } from '@views/ImportExportView';
 
 export const router = createBrowserRouter([
     {
@@ -72,6 +73,10 @@ export const router = createBrowserRouter([
                     {
                         path: 'transfers',
                         element: <TransferView />,
+                    },
+                    {
+                        path: 'import',
+                        element: <ImportExportView />,
                     },
                 ],
             },
