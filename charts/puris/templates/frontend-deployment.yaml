@@ -96,7 +96,7 @@ spec:
             - name: ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION
               value: "{{ .Values.frontend.puris.endpointDemandAndCapacityNotification }}"
             - name: ENDPOINT_IMPORT_FILES
-              value: "{{ .Values.frontend.puris.endpointImportFiles | default 'files'}}"
+              value: "{{ .Values.frontend.puris.endpointImportFiles | default \"files\" }}"
             - name: IDP_URL
               value: "{{ .Values.idp.url }}"
             - name: IDP_REALM

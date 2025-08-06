@@ -121,7 +121,7 @@ export const ImportExportView = () => {
 
     useEffect(() => {
         setTitle('Import');
-    }, [setTitle])
+    }, [setTitle]);
     return (
         <Box width="100%" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <ConfidentialBanner />
