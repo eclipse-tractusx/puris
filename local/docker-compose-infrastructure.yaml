@@ -84,7 +84,7 @@ services:
       - ./keycloak/customer/Customer-realm.json:/opt/keycloak/data/import/Customer-realm.json
       - ./keycloak/customer/Customer-users-0.json:/opt/keycloak/data/import/Customer-users-0.json
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:80:8080"
     depends_on:
       - postgres
     networks:
@@ -112,9 +112,25 @@ services:
     networks:
       - miw-net
 
+#  mock-util-service:
+#    build: ./iam-mock
+#    container_name: mock-util-service
+#    ports:
+#      - "127.0.0.1:8888:80"
+#    networks:
+#      - miw-net
+#      -
   mock-util-service:
-    build: ./iam-mock
+    image: tractusx/ssi-dim-wallet-stub:0.0.6
     container_name: mock-util-service
+    environment:
+#      STUB_ENV: default
+      APPLICATION_PORT: 80
+      BASE_WALLET_BPN: BPNL000000000000
+      SEED_WALLETS_BPN: BPNL000000000000,BPNL4444444444XX,BPNL1234567890ZZ
+      STUB_HOST: http://mock-util-service:80
+      STATUS_LIST_VC_ID: 8a6c7486-1e1f-4555-bdd2-1a178182651e
+      DID_HOST: mock-util-service
     ports:
       - "127.0.0.1:8888:80"
     networks:
@@ -133,7 +149,7 @@ services:
     environment:
       WEB_HTTP_PORT: 8580
       WEB_HTTP_PATH: /api
-      edc.iam.trusted-issuer.issuer.id: did:web:mock-util-service/trusted-issuer
+      edc.iam.trusted-issuer.issuer.id: did:web:mock-util-service:BPNL000000000000
     ports:
       - "127.0.0.1:8580:8580"
       - "127.0.0.1:8581:8581"

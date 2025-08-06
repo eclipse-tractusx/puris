@@ -170,7 +170,7 @@ services:
     env_file:
       - ./tractus-x-edc/config/customer/control-plane.properties
     environment:
-      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service:BPNL000000000000
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://edc-customer-control-plane:8180/api/check/health"]
       interval: 4s
@@ -212,7 +212,7 @@ services:
     env_file:
       - ./tractus-x-edc/config/customer/data-plane.properties
     environment:
-      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service:BPNL000000000000
     networks:
       - miw-net
     extra_hosts:
@@ -349,7 +349,7 @@ services:
     env_file:
       - ./tractus-x-edc/config/supplier/control-plane.properties
     environment:
-      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service:BPNL000000000000
     networks:
       - miw-net
     extra_hosts:
@@ -380,7 +380,7 @@ services:
     env_file:
       - ./tractus-x-edc/config/supplier/data-plane.properties
     environment:
-      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
+      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service:BPNL000000000000
     networks:
       - miw-net
     extra_hosts:
