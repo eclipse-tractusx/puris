@@ -215,6 +215,10 @@ components:
           - DDP
           maxItems: 50
           type: string
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
         measurementUnit:
           enum:
           - unit:piece
@@ -342,6 +346,10 @@ components:
             type: string
           maxItems: 50
           type: array
+        contentChangedAt:
+          format: date-time
+          maxItems: 50
+          type: string
         effect:
           enum:
           - demand-reduction
@@ -382,6 +390,10 @@ components:
           type: array
         reported:
           type: boolean
+        resolvingMeasureDescription:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
         sourceDisruptionId:
           format: uuid
           maxItems: 50
@@ -427,6 +439,10 @@ components:
         demandLocationBpns:
           maxItems: 50
           pattern: ^BPNS[0-9a-zA-Z]{12}$
+          type: string
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
           type: string
         measurementUnit:
           enum:
@@ -1052,6 +1068,10 @@ components:
           format: date-time
           maxItems: 50
           type: string
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
         material:
           $ref: '#/components/schemas/MaterialDto'
         measurementUnit:
@@ -1356,7 +1376,7 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 3.2.0
+  version: 3.3.0
 openapi: 3.1.0
 paths:
   /days-of-supply/customer:
@@ -1705,6 +1725,8 @@ paths:
       tags:
       - delivery-controller
     post:
+      description: "Creates a new delivery.  \n **Note:** If the backend should automatically\
+        \ set `lastUpdatedOnDateTime` please set it to null."
       operationId: createDelivery
       requestBody:
         content:
@@ -1731,6 +1753,8 @@ paths:
       tags:
       - delivery-controller
     put:
+      description: "Updates an existing delivery.  \n **Note:** If the backend should\
+        \ automatically set `lastUpdatedOnDateTime` please set it to null."
       operationId: updateDelivery
       requestBody:
         content:
@@ -1886,6 +1910,8 @@ paths:
       tags:
       - demand-controller
     post:
+      description: "Creates a new demand. \n **Note:** If the backend should automatically\
+        \ set `lastUpdatedOnDateTime` please set it to null."
       operationId: createDemand
       requestBody:
         content:
@@ -1912,6 +1938,8 @@ paths:
       tags:
       - demand-controller
     put:
+      description: "Updates an existing demand.  \n **Note:** If the backend should\
+        \ automatically set `lastUpdatedOnDateTime` please set it to null."
       operationId: updateDemand
       requestBody:
         content:
@@ -2060,20 +2088,13 @@ paths:
             example:
               content:
                 demandAndCapacityNotification:
-                  affectedSitesRecipient:
-                  - BPNS6666787765VQ
-                  affectedSitesSender:
-                  - BPNS7588787849VQ
+                  affectedSitesRecipient: []
+                  affectedSitesSender: []
                   contentChangedAt: '2023-12-13T15:00:00+01:00'
                   effect: demand-reduction
                   expectedEndDateOfEffect: '2023-12-17T08:00:00+01:00'
                   leadingRootCause: strike
-                  materialGlobalAssetId:
-                  - urn:uuid:48878d48-6f1d-47f5-8ded-a441d0d879df
-                  materialNumberCustomer:
-                  - MNR-7307-AU340474.002
-                  materialNumberSupplier:
-                  - MNR-8101-ID146955.001
+                  materialsAffected: []
                   notificationId: urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362
                   relatedNotificationIds: 
                   - urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04
@@ -2081,8 +2102,9 @@ paths:
                   startDateOfEffect: '2023-12-13T15:00:00+01:00'
                   status: resolved
                   text: Capacity reduction due to ongoing strike.
+                  resolvingMeasureDescription: An agreement was found and the strike was ended.
               header:
-                context: CX-DemandAndCapacityNotification:2.0
+                context: CX-DemandAndCapacityNotificationAPI-Receive:2.0
                 messageId: 3b4edc05-e214-47a1-b0c2-1d831cdd9ba9
                 receiverBpn: BPNL6666787765VQ
                 senderBpn: BPNL7588787849VQ
@@ -2223,6 +2245,7 @@ paths:
       - demand-controller
   /edc/assets:
     get:
+      description: Gets a specific EDC asset by its asset id.
       operationId: getAssets
       parameters:
       - in: query
@@ -2241,10 +2264,12 @@ paths:
                 maxItems: 50
                 type: string
           description: OK
+      summary: Gets an asset by id -- ADMIN ONLY
       tags:
       - edc-controller
   /edc/catalog:
     get:
+      description: Gets the catalog for a specified partner by BPNL and DSP Url.
       operationId: getCatalog
       parameters:
       - in: query
@@ -2270,10 +2295,12 @@ paths:
                 maxItems: 50
                 type: string
           description: OK
+      summary: Gets the catalog for a specific partner -- ADMIN ONLY
       tags:
       - edc-controller
   /edc/contractnegotiations:
     get:
+      description: Gets all contract negotiations as a string.
       operationId: getContractNegotiations
       responses:
         '200':
@@ -2284,10 +2311,12 @@ paths:
                 maxItems: 50
                 type: string
           description: OK
+      summary: Gets all contract negotiations -- ADMIN ONLY
       tags:
       - edc-controller
   /edc/transfers:
     get:
+      description: Gets all transfers as JSON.
       operationId: getTransfers
       responses:
         '200':
@@ -2297,6 +2326,7 @@ paths:
                 $ref: '#/components/schemas/JsonNode'
                 additionalProperties: false
           description: OK
+      summary: Gets all transfers -- ADMIN ONLY
       tags:
       - edc-controller
   /erp-adapter:
@@ -2529,7 +2559,7 @@ paths:
                   maxItems: 50
                   type: string
               required:
-                - file
+              - file
               type: object
       responses:
         '200':
@@ -2570,9 +2600,9 @@ paths:
                 maxItems: 50
                 type: string
           description: Server error
-      summary: Import data via excel file
+      summary: Import data via excel file -- ADMIN ONLY
       tags:
-        - file-controller
+      - file-controller
   /item-stock/request/{materialnumber}/{direction}/submodel/{representation}:
     get:
       operationId: getMappingItemStock2
@@ -2768,6 +2798,7 @@ paths:
                 additionalProperties: false
                 type: object
           description: Internal Server Error.
+      summary: Creates a Material Partner Relation -- ADMIN ONLY
       tags:
       - material-partner-relations-controller
     put:
@@ -2868,6 +2899,7 @@ paths:
                 additionalProperties: false
                 type: object
           description: Internal Server Error.
+      summary: Updates a Material Partner Relation -- ADMIN ONLY
       tags:
       - material-partner-relations-controller
   /materials:
@@ -2896,6 +2928,7 @@ paths:
           description: Invalid parameter
         '404':
           description: Requested Material was not found.
+      summary: Gets a Material by ownMaterialNumber
       tags:
       - material-controller
     post:
@@ -2938,6 +2971,7 @@ paths:
                 additionalProperties: false
                 type: object
           description: Internal Server error.
+      summary: Creates a Material -- ADMIN ONLY
       tags:
       - material-controller
     put:
@@ -2980,6 +3014,7 @@ paths:
                 additionalProperties: false
                 type: object
           description: Internal Server Error.
+      summary: Updates a Material -- ADMIN ONLY
       tags:
       - material-controller
   /materials/all:
@@ -2997,6 +3032,7 @@ paths:
                 maxItems: 50
                 type: array
           description: OK
+      summary: Gets all materials
       tags:
       - material-controller
   /materials/refresh:
@@ -3021,6 +3057,7 @@ paths:
                 maxItems: 50
                 type: string
           description: OK
+      summary: Refreshes partner data for specified material
       tags:
       - material-controller
   /partners:
@@ -3051,6 +3088,7 @@ paths:
           description: Requested Partner not found.
         '500':
           description: Internal Server Error.
+      summary: Gets a specific Partner -- ADMIN ONLY
       tags:
       - partner-controller
     post:
@@ -3088,6 +3126,7 @@ paths:
                 additionalProperties: false
                 type: object
           description: 'The BPNL specified in the request body is already assigned. '
+      summary: Creates a new Partner -- ADMIN ONLY
       tags:
       - partner-controller
   /partners/all:
@@ -3105,6 +3144,7 @@ paths:
                 maxItems: 50
                 type: array
           description: OK
+      summary: Gets all Partners
       tags:
       - partner-controller
   /partners/own:
@@ -3119,6 +3159,7 @@ paths:
                 $ref: '#/components/schemas/Partner'
                 additionalProperties: false
           description: OK
+      summary: Gets the own Partner entity
       tags:
       - partner-controller
   /partners/ownSites:
@@ -3136,6 +3177,7 @@ paths:
                 maxItems: 50
                 type: array
           description: OK
+      summary: Gets the own sites
       tags:
       - partner-controller
   /partners/putAddress:
@@ -3190,6 +3232,7 @@ paths:
                 additionalProperties: false
                 type: object
           description: Internal Server Error.
+      summary: Adds a new Address to a Partner -- ADMIN ONLY
       tags:
       - partner-controller
   /partners/putSite:
@@ -3244,6 +3287,7 @@ paths:
                 additionalProperties: false
                 type: object
           description: Internal Server Error.
+      summary: Adds a new Site to a Partner -- ADMIN ONLY
       tags:
       - partner-controller
   /partners/{partnerBpnl}/materials:
@@ -3269,6 +3313,7 @@ paths:
                 maxItems: 50
                 type: array
           description: OK
+      summary: Gets all associated materials for Partner
       tags:
       - partner-controller
   /parttypeinformation/{materialnumber}/submodel/{representation}:
@@ -3401,6 +3446,8 @@ paths:
       tags:
       - production-controller
     post:
+      description: "Creates a new production. \n **Note:** If the backend should automatically\
+        \ set `lastUpdatedOnDateTime` please set it to null."
       operationId: createProduction
       requestBody:
         content:
@@ -3427,6 +3474,8 @@ paths:
       tags:
       - production-controller
     put:
+      description: "Updates an existing production.  \n **Note:** If the backend should\
+        \ automatically set `lastUpdatedOnDateTime` please set it to null."
       operationId: updateProduction
       requestBody:
         content:
@@ -3454,6 +3503,8 @@ paths:
       - production-controller
   /production/range:
     post:
+      description: "Creates a range of new production. \n **Note:** If the backend\
+        \ should automatically set `lastUpdatedOnDateTime` please set it to null."
       operationId: createProductionRange
       requestBody:
         content:
@@ -3626,7 +3677,8 @@ paths:
       tags:
       - stock-view-controller
     post:
-      description: Creates a new material-stock
+      description: "Creates a new material-stock. \n**Note:** If the backend should\
+        \ automatically set `lastUpdatedOn` please set it to null."
       operationId: createMaterialStocks
       requestBody:
         content:
@@ -3652,7 +3704,8 @@ paths:
       tags:
       - stock-view-controller
     put:
-      description: Updates an existing material-stock
+      description: "Updates an existing material-stock. \n**Note:** If the backend\
+        \ should automatically set `lastUpdatedOn` please set it to null."
       operationId: updateMaterialStocks
       requestBody:
         content:
@@ -3768,7 +3821,8 @@ paths:
       tags:
       - stock-view-controller
     post:
-      description: Creates a new product-stock
+      description: "Creates a new product-stock. \n**Note:** If the backend should\
+        \ automatically set `lastUpdatedOn` please set it to null."
       operationId: createProductStocks
       requestBody:
         content:
@@ -3794,7 +3848,8 @@ paths:
       tags:
       - stock-view-controller
     put:
-      description: Updates an existing productstock
+      description: "Updates an existing product-stock. \n**Note:** If the backend\
+        \ should automatically set `lastUpdatedOn` please set it to null."
       operationId: updateProductStocks
       requestBody:
         content:
@@ -4020,5 +4075,5 @@ paths:
 security:
 - X-API-KEY: []
 servers:
-  - description: Generated server url
-    url: http://localhost:8081/catena
+- description: Generated server url
+  url: http://localhost:8081/catena
