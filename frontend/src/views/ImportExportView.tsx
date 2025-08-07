@@ -144,7 +144,7 @@ export const ImportExportView = () => {
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 3 }}>
                     <Typography variant="body2">
-                        Drag and drop files to import. If any error occur, you will be notified. 
+                        Drag and drop files to import. If any error occurs, you will be notified. 
                     </Typography>
                     <Typography variant="body2" component="div">
                         {templateFiles.map((file, idx) => {
