@@ -7,3 +7,5 @@
 seed-bdrs.sh
 local.postman_environment.json
 tmp.json
+
+node_modules/
