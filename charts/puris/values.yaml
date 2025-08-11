@@ -201,6 +201,8 @@ frontend:
     endpointDaysOfSupply: days-of-supply
     # -- The endpoint for demand and capacity notifications
     endpointDemandAndCapacityNotification: demand-and-capacity-notification
+    # -- The endpoint for importing excel files
+    endpointImportFiles: files
     rateLimiting:
       # -- Bucket zone limit for rate limiting in nginx.
       limit: 10m

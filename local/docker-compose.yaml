@@ -51,6 +51,7 @@ services:
       - ENDPOINT_DELIVERY=delivery
       - ENDPOINT_DAYS_OF_SUPPLY=days-of-supply
       - ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION=demand-and-capacity-notification
+      - ENDPOINT_IMPORT_FILES=files
       - IDP_URL=http://127.0.0.1:10081/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-customer
@@ -238,6 +239,7 @@ services:
       - ENDPOINT_DELIVERY=delivery
       - ENDPOINT_DAYS_OF_SUPPLY=days-of-supply
       - ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION=demand-and-capacity-notification
+      - ENDPOINT_IMPORT_FILES=files
       - IDP_URL=http://127.0.0.1:10081/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-supplier

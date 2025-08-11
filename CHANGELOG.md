@@ -15,6 +15,7 @@ The **need for configuration updates** is **marked bold**.
 
 * Added unit tests Excel imports ([#922](https://github.com/eclipse-tractusx/puris/pull/922))
 * Added role based permission handling for endpoints ([#925](https://github.com/eclipse-tractusx/puris/pull/925))
+* Added Excel import page with template files download ([#930](https://github.com/eclipse-tractusx/puris/pull/930))
 
 ### Changed
 
@@ -22,9 +23,10 @@ The **need for configuration updates** is **marked bold**.
 * Update DemandAndCapacityNotification API to implement standard version 2.0 ([#921](https://github.com/eclipse-tractusx/puris/pull/921))
 * Update Frontend Notification View with grouping based on disruptionId and seperating by status, forwarding connected notifications, editing and resolving notifications ([#926](https://github.com/eclipse-tractusx/puris/pull/926))
 
-Chore
+### Chore
 
 * Updated open API ([#929](https://github.com/eclipse-tractusx/puris/pull/929))
+* Updated dependencies to resolve high and critical security vulnerabilities ([#932](https://github.com/eclipse-tractusx/puris/pull/932))
 * Updated User guide with the updated notification view and the new import page ([#933](https://github.com/eclipse-tractusx/puris/pull/933))
 
 ## v3.2.0
