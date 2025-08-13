@@ -55,11 +55,25 @@ frontend:
   podAnnotations: {}
 
   # -- Added security contexts for a pod
-  podSecurityContext: {}
-  # fsGroup: 2000
+  podSecurityContext:
+    seccompProfile:
+      # -- Restrict a Container's Syscalls with seccomp
+      type: RuntimeDefault
+    # -- Runs all processes within a pod with a special uid
+    runAsUser: 8877
+    # -- Processes within a pod will belong to this guid
+    runAsGroup: 3000
+    # -- The owner for volumes and any files created within volumes will belong to this guid
+    fsGroup: 3000
 
   # -- Security configurations
   securityContext:
+    capabilities:
+      # -- Specifies which capabilities to drop to reduce syscall attack surface
+      drop:
+        - ALL
+      # -- Specifies which capabilities to add to issue specialized syscalls
+      add: [ ]
     # -- Get more privileges than the parent process
     allowPrivilegeEscalation: false
     # -- Configures the non-root privileges for a run
@@ -246,11 +260,25 @@ backend:
   podAnnotations: {}
 
   # -- Added security contexts for a pod
-  podSecurityContext: {}
-  # fsGroup: 2000
+  podSecurityContext:
+    seccompProfile:
+      # -- Restrict a Container's Syscalls with seccomp
+      type: RuntimeDefault
+    # -- Runs all processes within a pod with a special uid
+    runAsUser: 8877
+    # -- Processes within a pod will belong to this guid
+    runAsGroup: 3000
+    # -- The owner for volumes and any files created within volumes will belong to this guid
+    fsGroup: 3000
 
   # -- Security configurations
   securityContext:
+    capabilities:
+      # -- Specifies which capabilities to drop to reduce syscall attack surface
+      drop:
+        - ALL
+      # -- Specifies which capabilities to add to issue specialized syscalls
+      add: [ ]
     # -- Get more privileges than the parent process
     allowPrivilegeEscalation: false
     # -- Configures the non-root privileges for a run
