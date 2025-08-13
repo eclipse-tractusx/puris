@@ -31,6 +31,7 @@ The **need for configuration updates** is **marked bold**.
 
 * Updated open API ([#929](https://github.com/eclipse-tractusx/puris/pull/929))
 * Updated dependencies to resolve high and critical security vulnerabilities ([#932](https://github.com/eclipse-tractusx/puris/pull/932))
+* Bump helm test workfow to new kubernetes version and latest q-gates puris version ([#937](https://github.com/eclipse-tractusx/puris/pull/937))
 
 ## v3.2.0
 
