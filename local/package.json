@@ -12,6 +12,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@usebruno/cli": "^1.22.0"
+    "@usebruno/cli": "^1.40.0"
   }
 }
