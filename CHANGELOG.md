@@ -27,6 +27,7 @@ The **need for configuration updates** is **marked bold**.
 
 * Updated open API ([#929](https://github.com/eclipse-tractusx/puris/pull/929))
 * Updated dependencies to resolve high and critical security vulnerabilities ([#932](https://github.com/eclipse-tractusx/puris/pull/932))
+* Updated User guide with the updated notification view and the new import page ([#933](https://github.com/eclipse-tractusx/puris/pull/933))
 
 ## v3.2.0
 
