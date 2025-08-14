@@ -38,7 +38,7 @@
     <description>PURIS Backend</description>
     <properties>
         <dash-tool.version>1.1.0</dash-tool.version>
-        <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
+        <hibernate-validator.version>9.0.1.Final</hibernate-validator.version>
         <hsqldb.version>2.7.3</hsqldb.version>
         <java.version>21</java.version>
         <license-maven-plugin.version>4.5</license-maven-plugin.version>
