@@ -73,7 +73,7 @@ frontend:
       drop:
         - ALL
       # -- Specifies which capabilities to add to issue specialized syscalls
-      add: [ ]
+      add: []
     # -- Get more privileges than the parent process
     allowPrivilegeEscalation: false
     # -- Configures the non-root privileges for a run
@@ -278,7 +278,7 @@ backend:
       drop:
         - ALL
       # -- Specifies which capabilities to add to issue specialized syscalls
-      add: [ ]
+      add: []
     # -- Get more privileges than the parent process
     allowPrivilegeEscalation: false
     # -- Configures the non-root privileges for a run

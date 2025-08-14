@@ -25,13 +25,13 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-* Drop further security capabilities and apply default seccomp in chart's deployments ([#937](https://github.com/eclipse-tractusx/puris/pull/937))
+* Drop further security capabilities and apply default seccomp in chart's deployments ([#938](https://github.com/eclipse-tractusx/puris/pull/938))
 
 ### Chore
 
 * Updated open API ([#929](https://github.com/eclipse-tractusx/puris/pull/929))
 * Updated dependencies to resolve high and critical security vulnerabilities ([#932](https://github.com/eclipse-tractusx/puris/pull/932))
-* Bump helm test workfow to new kubernetes version and latest q-gates puris version ([#937](https://github.com/eclipse-tractusx/puris/pull/937))
+* Bump helm test workfow to new kubernetes version and latest q-gates puris version ([#938](https://github.com/eclipse-tractusx/puris/pull/938))
 
 ## v3.2.0
 
