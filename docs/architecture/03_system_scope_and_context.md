@@ -1,34 +1,37 @@
 # System Scope and Context
 
-The first draft of this application only targets to provide a possibility to enter and exchange stock information
-related to partners. This application scope follows the following information.
+The application's scope is to enable the creation, update and exchange of demand, production, delivery, stock and days of supply information related to the partners. In addition the application enbles sending, updating, forwarding and resolving of supply chain disruption notifications. This application scope follows the following information.
 
 ## Business Context
 
 PURIS FOSS may be operated in any supply network, but currently will likely be operated in the
 automotive supply network. Different functions within a company operate supply chain functions. They can either work on
 long-term functions (such as demand and capacity management - not handled by this application) or short-term functions
-(like supply reliability - supported by this application). 
+(like supply reliability - supported by this application).
 
 ![Business Context](img/03-business-context.svg)
 
-**Disposition**
+### Disposition
+
 The disposition has a major information need to keep a material flow into and out of the production. The disposition
 steers the allocation of material within the production. PURIS supports the disposition to identify shortages by
 providing relevant information regarding the material flow.
 
-**Production (Process)**
+### Production (Process)
+
 Production is the actually value-adding process of a manufacturer. Its demand is derived by outer factors such as
 orders. A lack of material in supply chains leads to shortages. The production process has to be seen as a consumer of
 data provided by PURIS (Catena-X data consumer) and as a provider of data to PURIS (Catena-X data provider). In that way
 PURIS is able to fulfill the disposition's information need.
 
-**Logistics**
+### Logistics
+
 For a production process it is necessary to fulfill its logistics requirements. That means that the material in demand
 is given in the necessary quantity at the right time at the right place (see seven Rs above). PURIS targets to support
 the information flow to overview this problem task.
 
-**(Automotive) Supply Chain**
+### (Automotive) Supply Chain
+
 Supply chains synchronize demands with the supply. They are networks and not linear, as each customer commonly has more
 than 1 supplier of services or physical goods. Supply chains are commonly supported by three flows: material flow,
 finance flow and information flow. For PURIS the information flow is the relevant one.
@@ -49,23 +52,23 @@ The Technical Context has been derived from the architecture constraints:
 
 ![Technical Context](img/03-technical-context.svg)
 
-**PURIS FOSS**
+### PURIS FOSS
 
 The PURIS FOSS is a system consuming short-term supply information supporting identification and mitigating shortages.
 
-**SAMM**
+### SAMM
 
 SAMM is a technology used to define submodel information for the Asset Administration Shell (AAS). SAMM is used to
 define the actual payload of the APIs used in PURIS FOSS.
 
-**Tractus-X Connector**
+### Tractus-X Connector
 
 The [Tractus-X Connector](https://github.com/eclipse-tractusx/tractusx-edc) (abbreviated and simplified as EDC) is a
 Catena-X specific implementation of
 the [Eclipse Dataspace Components Connector (EDC)](https://github.com/eclipse-edc/Connector) is an open-source framework
 which can be used to participate within an International Data Space (IDS).
 
-*Sovereign Data Exchange*
+### Sovereign Data Exchange
 
 To ensure data sovereignty, access and usage policies (prohibitions, permissions, obligations) may be attached as a
 machine readable defintion by data owners before sharing their data. The data consumer has to accept the policies before
@@ -76,7 +79,8 @@ compliant to the usage policies, since the policies define data processing rules
 Within Catena-X an odrl policy profile has been defined. The implementation of sovereign data exchange is explained in
 the [concepts section](./08_concepts.md).
 
-**Digital Twins & Industry Core**
+### Digital Twins & Industry Core
+
 The Industry Core defines a layer on top of the combination of IDS and Digital Twin platform capabilities. It defines
 the Part Type Twin as a "catalog item" representing a material that has not yet been built (serialized) but sourced. The
 [Digital Twin KIT](https://eclipse-tractusx.github.io/docs-kits/kits/Digital%20Twin%20Kit/Adoption%20View%20Digital%20Twin%20Kit)

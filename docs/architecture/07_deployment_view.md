@@ -10,21 +10,16 @@ graphic.
 The local deployment includes a mock of the dim service acting as a Central Wallet following IATP flow. Please refer to
 [Mock IAM documentation](../../local/iam-mock/README.md) for further information.
 
-It uses one `Keycloak` (IDP) for everything except the PURIS Frontend (needs an external keycloak, not included in local
-deployment). It has three realms (Customer, Supplier, MIW).
+It uses two `Keycloak` (IDP) instances. One Keycloak handles the authentication for the `DTR` and `EDC`. It has three realms (Customer, Supplier, MIW). The other Keycloak instance handles the authentication for the PURIS frontend and backend applications.
 
-_Note: MIW is currently commented out and the mock iam is used instead. With R24.08 hopefully the MIW can be used again.
-_
+_Note: MIW is currently commented out and the mock iam is used instead._
 
 It uses one DBMS (`Postgres DB MIW`) for the MIW and one for the rest (`Postgresql DB` for both `DTR`, `EDC`,
 `PURIS Backend`) with each a separate Database.
 
-**Helm / Kubernetes**
+### Helm / Kubernetes
 
-One can configure the two local helm environments using the product helm chart and
-the [mxd tutorial](https://github.com/eclipse-tractusx/tutorial-resources/tree/main/mxd).
-
-_Note: For Release R24.05 currently not possible._
+Local helm deployments are currently limited to the PURIS application core and don't include the EDC or IDP components. For instructions see [DEVELOPMENT.md](../../DEVELOPMENT.md)
 
 ## ArgoCD Deployment (e.g. INT)
 

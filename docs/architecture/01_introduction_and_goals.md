@@ -1,14 +1,14 @@
 # Introduction and Goals
 
 Supply networks are complex. Supply or demand shortages affect multiple partners along the
-supply network. In case a shortage occurs, partners need to collect and exchange manually
+supply network. In case a shortage occurs, partners need to collect and exchange data manually
 while discussing the potential actions to take.
 
 PURIS FOSS tries to address this manual collection of data. The application tries to facilitate
 this information exchange by implementing the respective information exchange.
 
 PURIS FOSS tries to solve short-term information needs within a given business relationship.
-The information are production and supply chain related. The full-fledged vision is a dashboard
+The information is production and supply chain related. The full-fledged vision is a dashboard
 allowing partners to make their situation transparent exchanging production-related demands,
 planned production quantities and stocks. This information is visualized and exchanged
 on a day granularity and shall be enhanced by delivery information.
@@ -24,6 +24,7 @@ providing data sovereignty.
 ## Requirements Overview
 
 The following requirements shall be fulfilled:
+
 - Exchange material flow related data (demand, production outputs, stocks and delivery information)
 - Visualize the exchanged information.
 
@@ -32,7 +33,7 @@ The following requirements shall be fulfilled:
 | Quality Goal              | Motivation and Description                                                                  |
 |---------------------------|---------------------------------------------------------------------------------------------|
 | Compatibility to Catena-X | PURIS FOSS follows similar patterns as use cases in resiliency topics and overall Catena-X. |
-| Fast usage                | PURIS FOSS allows partners to exchange data with as less onboarding effort as needed        |
+| Fast usage                | PURIS FOSS allows partners to exchange data with as little onboarding effort as needed      |
 | Data sovereignty          | PURIS FOSS follows Catena-X and GAIA-X requirements for data sovereignty                    |
 
 ## Stakeholders

@@ -3,49 +3,45 @@ skinparam linetype polyline
 skinparam nodesep 20
 skinparam ranksep 50
 
-() erp_frontend_interface as "Frontend Trigger Interface"
-() edc_interface as "EDC Interface"
-() mad_interface as "MAD Interface"
-() edc_interface as "EDC Interface"
-() notifications_interface as "Notification Interface"
-
 package "<<system>> PURIS FOSS Frontend"{
+  [Authentication Service] as auth_service
 
-  [ERP Service] as erp_service
-  together {
-    [Stock View] as stock_view
+  package "User Views" as user_views {
+    [Material List View] as material_list_view
+    [Material Details View] as material_details_view
     [Notification View] as notifications_view
-    [Dashboard] as dashboard
-    [Authentication Service] as auth_service
   }
-  together {
+  package "Admin Views" as admin_views {
+    [Import View] as import_view
     [Catalog View] as catalog_view
     [Negotiations View] as negotiations_view
     [Transfer View] as transfer_view
   }
 }
-"Interfaces for\n- Planned Production Output\n- Short-Term Material Demand\n- Delivery Information" -- dashboard
 [Keycloak] as idp
 
-idp - auth_service
+idp -down- auth_service
 
-stock_view ---( "Stock Interface"
-stock_view ---( mad_interface
+auth_service -down--> user_views
+auth_service -down--> admin_views
 
-dashboard ---( "Stock Interface"
-dashboard ---( mad_interface
-notifications_view ---( mad_interface
-notifications_interface )-- notifications_view
 
-catalog_view ---( edc_interface
-catalog_view ---( mad_interface
-negotiations_view ---( edc_interface
-transfer_view ---( edc_interface
+() edc_interface as "EDC Interface"
+() mad_interface as "MAD Interface"
+() information_interface as "PURIS Information Interface"
 
-erp_service - dashboard
-erp_frontend_interface -up- erp_service
-dashboard -[hidden]right- stock_view
+material_list_view <--- information_interface
+material_details_view <--- information_interface
+notifications_view <--- information_interface
+material_list_view <--- mad_interface
+material_details_view <--- mad_interface
+notifications_view <--- mad_interface
+import_view <--- mad_interface
+import_view <--- information_interface
 
-auth_service -[hidden]down- erp_service
+catalog_view <--- edc_interface
+catalog_view <--- mad_interface
+negotiations_view <--- edc_interface
+transfer_view <--- edc_interface
 
 @enduml
