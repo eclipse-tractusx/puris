@@ -26,14 +26,14 @@ on:
         inputs:
             node_image:
                 description: 'kindest/node image for k8s kind cluster'
-                # k8s version from 25.03 release as default
-                default: 'kindest/node:v1.32.2'
+                # k8s version from 25.09 release as default
+                default: 'kindest/node:v1.33.2'
                 required: false
                 type: string
             upgrade_from:
                 description: 'chart version to upgrade from'
-                # chart version from 2.7.0 (R24.08) release as default
-                default: '2.8.1'
+                # chart version from R25.06 release as default
+                default: '3.0.1'
                 required: false
                 type: string
             helm_version:
@@ -63,7 +63,7 @@ jobs:
                     # upgrade version, default (v0.17.0) uses node image v1.21.1 and doesn't work with more recent node image versions
                     version: v0.20.0
                     # default value for event_name != workflow_dispatch
-                    node_image: ${{ github.event.inputs.node_image || 'kindest/node:v1.32.2' }}
+                    node_image: ${{ github.event.inputs.node_image || 'kindest/node:v1.33.2' }}
 
             -   name: Build Frontend image
                 uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0

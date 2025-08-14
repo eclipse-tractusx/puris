@@ -23,10 +23,15 @@ The **need for configuration updates** is **marked bold**.
 * Update DemandAndCapacityNotification API to implement standard version 2.0 ([#921](https://github.com/eclipse-tractusx/puris/pull/921))
 * Update Frontend Notification View with grouping based on disruptionId and seperating by status, forwarding connected notifications, editing and resolving notifications ([#926](https://github.com/eclipse-tractusx/puris/pull/926))
 
+### Fixes
+
+* Drop further security capabilities and apply default seccomp in chart's deployments ([#938](https://github.com/eclipse-tractusx/puris/pull/938))
+
 ### Chore
 
 * Updated open API ([#929](https://github.com/eclipse-tractusx/puris/pull/929))
 * Updated dependencies to resolve high and critical security vulnerabilities ([#932](https://github.com/eclipse-tractusx/puris/pull/932))
+* Bump helm test workfow to new kubernetes version and latest q-gates puris version ([#938](https://github.com/eclipse-tractusx/puris/pull/938))
 
 ## v3.2.0
 
