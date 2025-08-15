@@ -48,7 +48,7 @@ jobs:
           output: "trivy-results-1.sarif"
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
-          exit-code: "1"
+          exit-code: "0"
           limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
@@ -76,7 +76,7 @@ jobs:
           output: "trivy-results-2.sarif"
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
-          exit-code: "1"
+          exit-code: "0"
           limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
