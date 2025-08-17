@@ -244,7 +244,7 @@ If there is an outgoing open notification a user can resolve it by triggering th
 
 ![Forward notification modal](img/notification_forward.png)
 
-A user can also create a notification related to one the existing open groups by triggering the "FORWARD" button. This opens the creation modal.
+A user can also create a notification related to one of the existing open groups by triggering the "FORWARD" button. This opens the creation modal.
 The following fields are pre-selected and read only:
 
 - Leading cause (same as the related notifications)
