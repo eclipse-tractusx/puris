@@ -187,35 +187,90 @@ A notification in the top right of the user's screen will inform them, if saving
 
 ## Demand and Capacity Notifications
 
-_DISCLAIMER: This feature has not yet been finished. Currently, users neither can't react to notifications nor can close notifications._
+A user may use the page to send notifications to partners or read received notifications.
 
-A user may use the page to send notifications to partners or read received notifications. One may choose the direction:
+- `OPEN` for grouped messages that have at least one message open
+- `RESOLVED` for grouped messages that have all been resolved
 
-- `OUTGOING` for messages sent to a partner
-- `INCOMING` for messages received from a partner
+The notifications are grouped into collapsible sections based on their source disruption. Each collapsible displays the cause as well as effect of the disruption and can be expanded to display the list of notifications in table form.
+The table displays `Outgoing` if the message was sent to a partner and `Incoming` if it was received from a partner.
+If the notification has been resolved, the row will be grayed out and the text column will additionally display the Resolution Message.
+
+### Notification View
 
 ![Overview of the notification view](img/notification_view.png)
 
 One may get further information by clicking on a notification in the list.
 
-![Detailed notification after double clicking the entry](img/notification_detail.png)
+### Notification Detail Modal
 
-When triggering the button "SEND NOTIFICATION", a modal dialog is opened allowing a user to compose the demand and capacity notification.
+![Detailed notification after clicking the entry](img/notification_detail.png)
+
+When triggering the button "NEW NOTIFICATION", a modal dialog is opened allowing a user to compose the demand and capacity notification. This creates a grouped section with the notification visible in the table.
+
+### Send Notification Modal
 
 ![Send notification modal](img/notification_send.png)
 
 After filling the mandatory data (see `*`), the user can send the notification:
 
 - Partner (supplier or customer relationship)
-- Leading Root Cause (one as defined by CX-0146 for demand and capacity notification)
-- Status (either `Open` or `Closed`, use close to close disruptions)
+- Leading Cause (one as defined by CX-0146 for demand and capacity notification)
+- Status (this field is automatically pre-selected with the `Open` option)
 - Effect (either `Increase` or `Decrease` of `Production` or `Demand`)
 - Start Date of Effect
 - (optional) End Date of Effect
 - (optional) Affected Sites Senders
 - (optional) Affected Material Numbers (only those applicable to the partner)
 - (optional) Affected Sites Recipient
-- (optional) Text
+- Text
+
+If an outgoing notification has the status `Open` the user can interact with it by either editing it or resolving it.
+When triggering the edit button the same modal is opened as for the new notification, the fields pre-populated with existing data.
+
+### Edit Notification Modal
+
+![Edit notification modal](img/notification_edit.png)
+
+When the resolve button is triggered a modal dialog is opened allowing a user to write a resolution message and when saving will automatically change the status of the notification to `Resolved`.
+
+### Resolve Notification Modal
+
+![Resolve notification modal](img/notification_resolution.png)
+
+If there is an outgoing open notification a user can resolve it by triggering the "Resolve" inline button (checkmark icon). This opens the resolution modal with a mandatory resolution message. Once submitted the status of the ticket is changed to resolved and cannot be edited. The text column is updated to contain the resolution message as well.
+
+### Forward Notification Modal
+
+![Forward notification modal](img/notification_forward.png)
+
+A user can also create a notification related to one of the existing open groups by triggering the "FORWARD" button. This opens the creation modal.
+The following fields are pre-selected and read only:
+
+- Leading cause (same as the related notifications)
+- Effect (same as the related notifications)
+- Status (this field is automatically pre-selected with the `Open` option)
+
+The Partner field only provides options for partners that aren't linked to any of the related or any of the existing outgoing notifications. This creates another entry in the existing table.
+
+## Import
+
+An Admin can upload data in this page. Once the file is uploaded, all existing data for that type will be replaced by the newly uploaded data. This action only takes place if the file does NOT contain any invalid information. All infvalid rows are listed to the user with the respective validation error messages. Users can click and download one of pre-existing template files listed on the page:
+
+- delivery-template.xlsx
+- demand-template.xlsx
+- production-template.xlsx
+- stock-template.xlsx
+
+Right now, only files of type xlsx are supported.
+
+### Import view
+
+![Overview of the Import view](img/import_view.png)
+
+After each file has been uploaded, the user is notified on whether the upload was successful and if not, what the potential issues could be.
+
+![Import file results example](img/import_result.png)
 
 ## Catalog
 

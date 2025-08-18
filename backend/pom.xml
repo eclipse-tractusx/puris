@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.5</version>
+        <version>3.5.4</version>
         <relativePath/>
     </parent>
     <groupId>org.eclipse.tractusx.puris</groupId>
@@ -37,6 +37,7 @@
     <name>puris-backend</name>
     <description>PURIS Backend</description>
     <properties>
+        <spring-boot.version>3.5.4</spring-boot.version>
         <dash-tool.version>1.1.0</dash-tool.version>
         <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
         <hsqldb.version>2.7.3</hsqldb.version>
@@ -50,8 +51,41 @@
         <edc-connector-version>0.11.1</edc-connector-version>
         <liquibase.version>4.32.0</liquibase.version>
         <spring-security.version>6.4.6</spring-security.version>
-        <tomcat.version>10.1.42</tomcat.version>
+        <tomcat.version>10.1.43</tomcat.version>
+        <keycloak-core.version>26.3.2</keycloak-core.version>
+        <keycloak-server-spi-private.version>26.3.2</keycloak-server-spi-private.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <bcprov-jdk18on.version>1.78</bcprov-jdk18on.version>
     </properties>
+    <!-- override versions manually due to security reasons -->
+    <dependencyManagement>
+        <dependencies>       
+            <!-- comes from keycloak-spring-boot-starter -->
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-core</artifactId>
+                <version>${keycloak-core.version}</version>
+            </dependency>
+            <!-- comes from keycloak-spring-boot-starter -->
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-server-spi-private</artifactId>
+                <version>${keycloak-server-spi-private.version}</version>
+            </dependency>
+            <!-- comes from keycloak-spring-boot-starter -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>${bcprov-jdk18on.version}</version>
+            </dependency>
+            <!-- comes from liquibase-core -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -165,14 +199,13 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-spring-boot-starter</artifactId>
-            <version>24.0.5</version>
+            <version>25.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
-            <!-- Springboot already provides a tested Liquibase version, but you can override it to use your preffered version -->
             <version>${liquibase.version}</version>
-        </dependency>
+        </dependency> 
     </dependencies>
     <pluginRepositories>
         <pluginRepository>
