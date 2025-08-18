@@ -5,14 +5,14 @@ been omitted for readability.
 
 ![Level 0 - Blackbox View](img/05-level-0.svg)
 
-| Component / system                 | Descriptions                                                                             |
-|------------------------------------|------------------------------------------------------------------------------------------|
-| Data Provisioning & Transformation | The Data Provisioning & Transformation Building Block handles the upload of data from internal systems into PURIS and provides capabilities for data transformation. **This component is not part of this repository**.|
-| PURIS FOSS Backend                 | This system represents the PURIS FOSS application's logic. It handles the data exchange. |
-| PURIS FOSS Frontend                | This system represents the PURIS FOSS user interface. It handles the data visualization. |
-| EDC                                | The Eclipse Dataspace Components Connector (EDC) is the component allowing PURIS FOSS to participate in the IDS. It is used to provide and consume data assets following policy information. Any data transfer is routed through the EDC.|
-| Keycloak                           | Keycloak is an identity provider that can manage multiple clients (applications). Catena-X allows the usage of a shared identity provider. Also the DTR can use a keycloak that allows manage access to the PURIS backend and Read access through the EDC |
-| Postgresql DB                      | Database used by Backend to persist                                                      |
+| Component / system                 | Descriptions                                                                                                                                                                                                                                                                                        |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Data Provisioning & Transformation | The Data Provisioning & Transformation Building Block handles the upload of data from internal systems into PURIS and provides capabilities for data transformation. **This component is not part of this repository**.                                                                             |
+| PURIS FOSS Backend                 | This system represents the PURIS FOSS application's logic. It handles the data exchange.                                                                                                                                                                                                            |
+| PURIS FOSS Frontend                | This system represents the PURIS FOSS user interface. It handles the data visualization.                                                                                                                                                                                                            |
+| EDC                                | The Eclipse Dataspace Components Connector (EDC) is the component allowing PURIS FOSS to participate in the IDS. It is used to provide and consume data assets following policy information. Any data transfer is routed through the EDC.                                                           |
+| Keycloak                           | Keycloak is an identity provider that can manage multiple clients (applications). Catena-X allows the usage of a shared identity provider. Also the DTR can use a keycloak that allows manage access to the PURIS backend and Read access through the EDC                                           |
+| Postgresql DB                      | Database used by Backend to persist                                                                                                                                                                                                                                                                 |
 | Digital Twin Registry              | Software Service that implements the AAS Discovery and Registry Interfaces. PURIS FOSS registers materials as ShellDescriptors with the respective information as Submodels. These SubmodelDescriptors do have a DSP endpoint linking to the EDC to contract the usage and how to get the submodel. |
 
 ## Level 1 White Boxes
@@ -25,16 +25,16 @@ For readability reasons, the building block view shows summarized interfaces.
 
 The Frontend only handles visualization logic. The remaining logic is handled in the backend.
 
-| Component / system     | Descriptions                                                                                                                                                 |
-|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Material List View     | Displays a filterable list of all materials in table form                                                                                                    |
+| Component / system     | Descriptions                                                                                                                                                                                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Material List View     | Displays a filterable list of all materials in table form                                                                                                                                                                                                                            |
 | Material Details View  | The Material Details View allows to create, view and delete own material demands, productions, stocks and deliveries for a given Material. It also shows the Days of Supply for the given material. In addition it allows requesting and displaying corresponding data from partners |
-| Notification View      | Allows to read, send, update, forward and resolve notifications.                                                                                             |
-| Import View            | Allows an ADMIN to import demand, production, delivery or stock data using `.xlsx` files. Imported data overwrites existing data                             |
-| Catalog View           | Allows an ADMIN to lookup a catalog of a registered partner.                                                                                                 |
-| Negotiation View       | Allows an ADMIN to check past negotiations.                                                                                                                  |
-| Transfer View          | Allows an ADMIN to check past transfers.                                                                                                                     |
-| Authentication Service | Encapsulates keycloak authentication and session management to be used by the main app.                                                                      |
+| Notification View      | Allows to read, send, update, forward and resolve notifications.                                                                                                                                                                                                                     |
+| Import View            | Allows an ADMIN to import demand, production, delivery or stock data using `.xlsx` files. Imported data overwrites existing data                                                                                                                                                     |
+| Catalog View           | Allows an ADMIN to lookup a catalog of a registered partner.                                                                                                                                                                                                                         |
+| Negotiation View       | Allows an ADMIN to check past negotiations.                                                                                                                                                                                                                                          |
+| Transfer View          | Allows an ADMIN to check past transfers.                                                                                                                                                                                                                                             |
+| Authentication Service | Encapsulates keycloak authentication and session management to be used by the main app.                                                                                                                                                                                              |
 
 ### PURIS FOSS Backend
 
@@ -51,7 +51,7 @@ The building block view describes only the responsibilities of the components/ p
 ![Level 1 - Whitebox View - PURIS FOSS Backend](img/05-level-1-backend.svg)
 
 | Component / system | Descriptions                                                                                                                                                     |
-|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | EDC                | The EDC component provides the EDC implementations to create assets, negotiate contracts and intialize transfers. query partners' DTR and consume Submodel data. |
 | MAD                | Stores the partner and material related information. They may only be added via REST interfaces.                                                                 |
 | Stock              | Stores and handles stock related data. It provides interfaces to create and read stock data. Also it allows to exchange stock information via the EDC.           |

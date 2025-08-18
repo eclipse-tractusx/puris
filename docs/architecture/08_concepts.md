@@ -58,40 +58,40 @@ Example Access Policy creation request used:
 
 ```json
 {
-    "@context": [
-        "http://www.w3.org/ns/odrl.jsonld",
-        {
-            "edc": "https://w3id.org/edc/v0.0.1/ns/",
-            "cx-policy": "https://w3id.org/catenax/policy/"
-        }
-    ],
-    "@type": "PolicyDefinitionRequestDto",
-    "@id": "BPNL1234567890ZZ_policy",
-    "edc:policy": {
-        "@type": "Set",
-        "permission": [
-            {
-                "action": "use",
-                "constraint": {
-                    "@type": "LogicalConstraint",
-                    "and": [
-                        {
-                            "@type": "LogicalConstraint",
-                            "leftOperand": "BusinessPartnerNumber",
-                            "operator": "eq",
-                            "rightOperand": "BPNL1234567890ZZ"
-                        },
-                        {
-                            "@type": "LogicalConstraint",
-                            "leftOperand": "Membership",
-                            "operator": "eq",
-                            "rightOperand": "active"
-                        }
-                    ]
-                }
-            }
-        ]
+  "@context": [
+    "http://www.w3.org/ns/odrl.jsonld",
+    {
+      "edc": "https://w3id.org/edc/v0.0.1/ns/",
+      "cx-policy": "https://w3id.org/catenax/policy/"
     }
+  ],
+  "@type": "PolicyDefinitionRequestDto",
+  "@id": "BPNL1234567890ZZ_policy",
+  "edc:policy": {
+    "@type": "Set",
+    "permission": [
+      {
+        "action": "use",
+        "constraint": {
+          "@type": "LogicalConstraint",
+          "and": [
+            {
+              "@type": "LogicalConstraint",
+              "leftOperand": "BusinessPartnerNumber",
+              "operator": "eq",
+              "rightOperand": "BPNL1234567890ZZ"
+            },
+            {
+              "@type": "LogicalConstraint",
+              "leftOperand": "Membership",
+              "operator": "eq",
+              "rightOperand": "active"
+            }
+          ]
+        }
+      }
+    ]
+  }
 }
 ```
 
@@ -119,7 +119,7 @@ The Constraints used for the Submodel Contract Policies are the following:
 Example for Submodels based on following configurations:
 
 | Property (helm)                             | Value         |
-|---------------------------------------------|---------------|
+| ------------------------------------------- | ------------- |
 | backend.puris.frameworkagreement.credential | Puris         |
 | backend.puris.frameworkagreement.version    | 1.0           |
 | backend.puris.purpose.name                  | cx.puris.base |
@@ -127,41 +127,41 @@ Example for Submodels based on following configurations:
 
 ```json
 {
-    "@context": [
-        "http://www.w3.org/ns/odrl.jsonld",
-        {
-            "edc": "https://w3id.org/edc/v0.0.1/ns/",
-            "cx-policy": "https://w3id.org/catenax/policy/"
-        }
-    ],
-    "@type": "PolicyDefinitionRequestDto",
-    "@id": "Contract_Policy",
-    "edc:policy": {
-        "@type": "Set",
-        "profile": "cx-policy:profile2405",
-        "permission": [
-            {
-                "action": "use",
-                "constraint": {
-                    "@type": "LogicalConstraint",
-                    "and": [
-                        {
-                            "@type": "LogicalConstraint",
-                            "leftOperand": "https://w3id.org/catenax/policy/FrameworkAgreement",
-                            "operator": "eq",
-                            "rightOperand": "Puris:1.0"
-                        },
-                        {
-                            "@type": "LogicalConstraint",
-                            "leftOperand": "https://w3id.org/catenax/policy/UsagePurpose",
-                            "operator": "eq",
-                            "rightOperand": "cx.puris.base:1"
-                        }
-                    ]
-                }
-            }
-        ]
+  "@context": [
+    "http://www.w3.org/ns/odrl.jsonld",
+    {
+      "edc": "https://w3id.org/edc/v0.0.1/ns/",
+      "cx-policy": "https://w3id.org/catenax/policy/"
     }
+  ],
+  "@type": "PolicyDefinitionRequestDto",
+  "@id": "Contract_Policy",
+  "edc:policy": {
+    "@type": "Set",
+    "profile": "cx-policy:profile2405",
+    "permission": [
+      {
+        "action": "use",
+        "constraint": {
+          "@type": "LogicalConstraint",
+          "and": [
+            {
+              "@type": "LogicalConstraint",
+              "leftOperand": "https://w3id.org/catenax/policy/FrameworkAgreement",
+              "operator": "eq",
+              "rightOperand": "Puris:1.0"
+            },
+            {
+              "@type": "LogicalConstraint",
+              "leftOperand": "https://w3id.org/catenax/policy/UsagePurpose",
+              "operator": "eq",
+              "rightOperand": "cx.puris.base:1"
+            }
+          ]
+        }
+      }
+    ]
+  }
 }
 ```
 

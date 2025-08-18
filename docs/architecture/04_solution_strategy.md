@@ -23,14 +23,14 @@
 
 Thus, the application follows the following Catena-X standards (business-wise) to the following degree:
 
-| Standard                                                                                                                                           | Level of implementation                   |
-|----------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|
-| [CX-0118 Delivery Information Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0118-ActualDeliveryInformationExchange)          | Compliant.                                |
-| [CX-0120 Short-Term Material Demand Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0120-ShortTermMaterialDemandExchange)      | Compliant.                                |
-| [CX-0121 Planned Production Output Exchange 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0121-PlannedProductionOutputExchange)       | Compliant.                                |
-| [CX-0122 Item Stock Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0122-ItemStockExchange)                                    | Compliant.                                |
-| [CX-0145 Days of Supply Exchange 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0145-DaysofsupplyExchange)                             | Compliant.                                |
-| [CX-0146 Supply Chain Disruption Notifications 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0146-SupplyChainDisruptionNotifications) | Compliant.                                |
+| Standard                                                                                                                                           | Level of implementation |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| [CX-0118 Delivery Information Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0118-ActualDeliveryInformationExchange)          | Compliant.              |
+| [CX-0120 Short-Term Material Demand Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0120-ShortTermMaterialDemandExchange)      | Compliant.              |
+| [CX-0121 Planned Production Output Exchange 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0121-PlannedProductionOutputExchange)       | Compliant.              |
+| [CX-0122 Item Stock Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0122-ItemStockExchange)                                    | Compliant.              |
+| [CX-0145 Days of Supply Exchange 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0145-DaysofsupplyExchange)                             | Compliant.              |
+| [CX-0146 Supply Chain Disruption Notifications 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0146-SupplyChainDisruptionNotifications) | Compliant.              |
 
 ### Management of EDC and Digital Twins
 

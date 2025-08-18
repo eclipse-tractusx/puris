@@ -31,7 +31,7 @@ The following requirements shall be fulfilled:
 ## Quality Goals
 
 | Quality Goal              | Motivation and Description                                                                  |
-|---------------------------|---------------------------------------------------------------------------------------------|
+| ------------------------- | ------------------------------------------------------------------------------------------- |
 | Compatibility to Catena-X | PURIS FOSS follows similar patterns as use cases in resiliency topics and overall Catena-X. |
 | Fast usage                | PURIS FOSS allows partners to exchange data with as little onboarding effort as needed      |
 | Data sovereignty          | PURIS FOSS follows Catena-X and GAIA-X requirements for data sovereignty                    |
@@ -41,7 +41,7 @@ The following requirements shall be fulfilled:
 Key stakehoders for puris are:
 
 | Stakeholder            | Goal or Interest                            |
-|------------------------|---------------------------------------------|
+| ---------------------- | ------------------------------------------- |
 | Catena-X Ecosystem     | Integration of the Ecosystem concepts       |
 | Politics and Companies | more resilient supply networks              |
 | SME                    | less efforts for integration                |
