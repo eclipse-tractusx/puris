@@ -14,11 +14,11 @@ In the backend materials are commonly handled by the own material number. The pa
 the respective material number of a partner leading to the following constellations:
 
 - puris user acts as customer:
-    - own material number = material number customer
-    - material number partner = material number supplier
+  - own material number = material number customer
+  - material number partner = material number supplier
 - puris user acts as supplier:
-    - own material number = material number supplier
-    - material number partner = material number customer
+  - own material number = material number supplier
+  - material number partner = material number customer
 
 Furthermore, as of ItemStockSAMM v2.0.0 the supplier CX ID is the sole identifier for a material of a respective
 partner.
@@ -33,8 +33,8 @@ Within PURIS this results in the following steps:
 - when creating a material (independent of the role) a global asset id (Catena-X ID) is defined on the material, which
   is used for the supplier twin.
 - when creating a mpr, the global asset id (Catena-X ID), initially left null
-    - is usually not set (acting as supplier)
-    - is set to the supplier's material's catena-X id (acting as customer)
+  - is usually not set (acting as supplier)
+  - is set to the supplier's material's catena-X id (acting as customer)
 
 ## Data Sovereignty
 
@@ -56,46 +56,46 @@ is created using the following constraints:
 
 Example Access Policy creation request used:
 
-```json 
+```json
 {
-    "@context": [
-        "http://www.w3.org/ns/odrl.jsonld",
-        {
-            "edc": "https://w3id.org/edc/v0.0.1/ns/",
-            "cx-policy": "https://w3id.org/catenax/policy/"
-        }
-    ],
-    "@type": "PolicyDefinitionRequestDto",
-    "@id": "BPNL1234567890ZZ_policy",
-    "edc:policy": {
-        "@type": "Set",
-        "permission": [
-            {
-                "action": "use",
-                "constraint": {
-                    "@type": "LogicalConstraint",
-                    "and": [
-                        {
-                            "@type": "LogicalConstraint",
-                            "leftOperand": "BusinessPartnerNumber",
-                            "operator": "eq",
-                            "rightOperand": "BPNL1234567890ZZ"
-                        },
-                        {
-                            "@type": "LogicalConstraint",
-                            "leftOperand": "Membership",
-                            "operator": "eq",
-                            "rightOperand": "active"
-                        }
-                    ]
-                }
-            }
-        ]
+  "@context": [
+    "http://www.w3.org/ns/odrl.jsonld",
+    {
+      "edc": "https://w3id.org/edc/v0.0.1/ns/",
+      "cx-policy": "https://w3id.org/catenax/policy/"
     }
+  ],
+  "@type": "PolicyDefinitionRequestDto",
+  "@id": "BPNL1234567890ZZ_policy",
+  "edc:policy": {
+    "@type": "Set",
+    "permission": [
+      {
+        "action": "use",
+        "constraint": {
+          "@type": "LogicalConstraint",
+          "and": [
+            {
+              "@type": "LogicalConstraint",
+              "leftOperand": "BusinessPartnerNumber",
+              "operator": "eq",
+              "rightOperand": "BPNL1234567890ZZ"
+            },
+            {
+              "@type": "LogicalConstraint",
+              "leftOperand": "Membership",
+              "operator": "eq",
+              "rightOperand": "active"
+            }
+          ]
+        }
+      }
+    ]
+  }
 }
 ```
 
-**Digital Twin Registry Configuration**
+### Digital Twin Registry Configuration
 
 Additionally, when creating the Digital Twins in the Digital Twin Registry, the `ShellDescriptors` are restricted in
 access using
@@ -119,7 +119,7 @@ The Constraints used for the Submodel Contract Policies are the following:
 Example for Submodels based on following configurations:
 
 | Property (helm)                             | Value         |
-|---------------------------------------------|---------------|
+| ------------------------------------------- | ------------- |
 | backend.puris.frameworkagreement.credential | Puris         |
 | backend.puris.frameworkagreement.version    | 1.0           |
 | backend.puris.purpose.name                  | cx.puris.base |
@@ -127,41 +127,41 @@ Example for Submodels based on following configurations:
 
 ```json
 {
-    "@context": [
-        "http://www.w3.org/ns/odrl.jsonld",
-        {
-            "edc": "https://w3id.org/edc/v0.0.1/ns/",
-            "cx-policy": "https://w3id.org/catenax/policy/"
-        }
-    ],
-    "@type": "PolicyDefinitionRequestDto",
-    "@id": "Contract_Policy",
-    "edc:policy": {
-        "@type": "Set",
-        "profile": "cx-policy:profile2405",
-        "permission": [
-            {
-                "action": "use",
-                "constraint": {
-                    "@type": "LogicalConstraint",
-                    "and": [
-                        {
-                            "@type": "LogicalConstraint",
-                            "leftOperand": "https://w3id.org/catenax/policy/FrameworkAgreement",
-                            "operator": "eq",
-                            "rightOperand": "Puris:1.0"
-                        },
-                        {
-                            "@type": "LogicalConstraint",
-                            "leftOperand": "https://w3id.org/catenax/policy/UsagePurpose",
-                            "operator": "eq",
-                            "rightOperand": "cx.puris.base:1"
-                        }
-                    ]
-                }
-            }
-        ]
+  "@context": [
+    "http://www.w3.org/ns/odrl.jsonld",
+    {
+      "edc": "https://w3id.org/edc/v0.0.1/ns/",
+      "cx-policy": "https://w3id.org/catenax/policy/"
     }
+  ],
+  "@type": "PolicyDefinitionRequestDto",
+  "@id": "Contract_Policy",
+  "edc:policy": {
+    "@type": "Set",
+    "profile": "cx-policy:profile2405",
+    "permission": [
+      {
+        "action": "use",
+        "constraint": {
+          "@type": "LogicalConstraint",
+          "and": [
+            {
+              "@type": "LogicalConstraint",
+              "leftOperand": "https://w3id.org/catenax/policy/FrameworkAgreement",
+              "operator": "eq",
+              "rightOperand": "Puris:1.0"
+            },
+            {
+              "@type": "LogicalConstraint",
+              "leftOperand": "https://w3id.org/catenax/policy/UsagePurpose",
+              "operator": "eq",
+              "rightOperand": "cx.puris.base:1"
+            }
+          ]
+        }
+      }
+    ]
+  }
 }
 ```
 
@@ -170,7 +170,7 @@ _Note: see configuration of usage policies in [AdminGuide](../admin/Admin_Guide.
 ### Consumer Side Validation
 
 Following
-the [Digital Twin KIT R24.05](https://eclipse-tractusx.github.io/docs-kits/kits/Digital%20Twin%20Kit/Software%20Development%20View/dt-kit-software-development-view#usage-policies)
+the [Digital Twin KIT](https://eclipse-tractusx.github.io/docs-kits/kits/Digital%20Twin%20Kit/Software%20Development%20View/dt-kit-software-development-view#usage-policies)
 an empty contract policy shall be used for the DRR. This application does **NOT** check the contract policy of the
 Digital Twin Registry, and uses an Access Policy on its own.
 
@@ -187,8 +187,8 @@ The Contract Policy definition can be found above.
 Following the Digital Twin KIT, assets in the EDC can be cut as follows:
 
 1. one asset per material and submodel
-1. one asset per submodel (implicitly emphasized by R24.05 standards)
-1. one asset per material (excluded by R24.05 standards)
+2. one asset per submodel (implicitly emphasized by standards)
+3. one asset per material (excluded by standards)
 
 **NOTE: the PURIS FOSS assumes the second and can only optimize and cache the information for the second case.**
 
@@ -206,44 +206,16 @@ When contracting, the following information (`ContractMapping`) is stored per pa
 When a new transfer is needed, the system checks if a `ContractMapping` for the resource in question exists.
 
 - If yes,
-    - use this information to get the data directly via the EDC by initializing a transfer.
-    - if anything fails, go the whole way to get the data (contract DTR, contract submodel, save ContractMapping)
+  - use this information to get the data directly via the EDC by initializing a transfer.
+  - if anything fails, go the whole way to get the data (contract DTR, contract submodel, save ContractMapping)
 - if no,
-    - go the whole way to get the data (contract DTR, contract submodel, save ContractMapping)
+  - go the whole way to get the data (contract DTR, contract submodel, save ContractMapping)
 
 Sidenote: Edc information and hrefs for submodels are always taken from the `ShellDescriptor`. That means that whenever
 a submodel is requested, the DTR of a partner is queried.
 
 Whenever a partner is created, all exchanged information APIs that comply to a Catena-X standard are registered as
 contract offer for the partner's BPNL.
-
-## ERP Integration
-
-A first version of the erp integration for item stock is in preparation. It allows the application to schedule a
-periodic update of the specific information. It uses an asynchronous request & response flow in which the request should
-look like the semantic model of interest in which the `materialGlobalAssetId` is ignored.
-
-Currently, the following SAMM information is allowed:
-
-| response-type | samm-version |
-|---------------|--------------|
-| ItemStock     | 2.0          |
-
-The update is always triggered for the following information:
-
-- partner
-- material
-- SAMM / response type
-- direction (sometimes needed)
-
-An update is scheduled whenever:
-
-- a partner requested the data
-- the user requested the data in the dashboard
-
-In case no update has been scheduled, the information is not updated. The update will then be performed periodically
-until it has not been updated for a defined time. Please refer to the Admin Guide for more information to configure the
-erp adapter.
 
 ## Security
 
