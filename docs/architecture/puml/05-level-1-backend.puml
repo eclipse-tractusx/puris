@@ -6,39 +6,32 @@ skinparam ranksep 50
 () mad_interface as "MAD Interface"
 () dtr_interface as "Registry & Discovery Interfaces"
 () oauth as "OAuth2"
-() erp_interface as "ERP SAMM\nAdapter Interface"
 () edc_interface as "EDC Management API"
 () not_interface as "Notification Interface"
-() erp_frontend_interface as "Frontend Trigger Interface"
-() data_interface as "Submodel \n& internal interface"
+() data_interface as "Submodel & internal interface"
 
 package "<<system>> PURIS FOSS Backend"{
 
   [DTR] as dtr
-  [ERP Adapter] as erp
   [Stock, Production, Demand,\nDelivery, Days of Supply\nInformation] as stock
   [EDC] as edc
   [Notifications] as not
   [MAD] as mad
 }
 
-erp -left- erp_interface
-erp -left- erp_frontend_interface
 dtr_interface -down- dtr
-oauth )-down-  "use for authentication of DTR" dtr
+oauth )-down- dtr
 
 not -up- "use edc for communication" edc
 
 dtr -down- "Register and discover twins\n& submodels" stock
 data_interface -down- stock
-stock -left- erp
 stock -right- "query catalog &\nget data (via edc)" edc
 stock -down- mad
 edc -right-( edc_interface
 
 mad -- mad_interface
 mad -right- not
-erp -- mad
 
 not -right- not_interface
 

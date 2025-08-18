@@ -20,27 +20,27 @@ Following the PURIS standards, currently one asset per Submodel Type is wanted.
 Roughly said the following steps need to be achieved to lookup a Submodel Y for a Material X of a Partner Z:
 
 1. Contract `Digital Twin Registry (DTR)` of Partner Z at `EDC`
-    1. Query Catalog of `EDC` of Partner Z (filter by `dcat:type` and `cx-common:version`)
-    2. Contract usage of `DTR` of Partner Z (no consumer-side check of policy)
-    3. Initialize Transfer to query `DTR`
-    4. Get Endpoint Data Reference (EDR, auth token for Data Plane request for `DTR` of Partner Z)
+   1. Query Catalog of `EDC` of Partner Z (filter by `dcat:type` and `cx-common:version`)
+   2. Contract usage of `DTR` of Partner Z (no consumer-side check of policy)
+   3. Initialize Transfer to query `DTR`
+   4. Get Endpoint Data Reference (EDR, auth token for Data Plane request for `DTR` of Partner Z)
 2. Determine Twin of Partner Z for Material X via proxy call through `EDC`:
-    1. Lookup Material Twin by specificAssetIds (`manufacturerId`, `manufacturerPartId`, `digialTwinType`) which returns
-       ShellDescriptor ID
-    2. Get ShellDescriptor by ID (base 64 encoded ID)
-    3. Terminate Transfer for `DTR`
+   1. Lookup Material Twin by specificAssetIds (`manufacturerId`, `manufacturerPartId`, `digialTwinType`) which returns
+      ShellDescriptor ID
+   2. Get ShellDescriptor by ID (base 64 encoded ID)
+   3. Terminate Transfer for `DTR`
 3. From result, extract needed information to get `Submodel Y`
-    1. Determine the `SubmodelDescriptor` by Semantic ID of the Submodel Type in question.
-    2. Determine the endpoint of that `SubmodelDescriptor` of type `DSP`
-    3. Extract href, assetId (`Submodel Asset`), dspUrl
-7. Contract `Submodel Asset` same as `DTR` but with following differences
-    1. For communication, use the dspUrl extracted from `SubmodelDescriptor`
-    2. Catalog query filters by `assetId` extracted from `SubmodelDescriptor`
-    3. Prior to usage the catalog offers are filtered for an offer your application supports:
-       PURIS FOSS only allows policies with Exactly one `FrameworkAgreement` and one `UsagePurpose`. It only accepts the
-       same Policy it offers (see [Admin Guide](../admin/Admin_Guide.md))
-4. Query `Submodel Y` trough `EDC`
-5. Terminate Transfer for `Submodel Y`
+   1. Determine the `SubmodelDescriptor` by Semantic ID of the Submodel Type in question.
+   2. Determine the endpoint of that `SubmodelDescriptor` of type `DSP`
+   3. Extract href, assetId (`Submodel Asset`), dspUrl
+4. Contract `Submodel Asset` same as `DTR` but with following differences
+   1. For communication, use the dspUrl extracted from `SubmodelDescriptor`
+   2. Catalog query filters by `assetId` extracted from `SubmodelDescriptor`
+   3. Prior to usage the catalog offers are filtered for an offer your application supports:
+      PURIS FOSS only allows policies with Exactly one `FrameworkAgreement` and one `UsagePurpose`. It only accepts the
+      same Policy it offers (see [Admin Guide](../admin/Admin_Guide.md))
+5. Query `Submodel Y` trough `EDC`
+6. Terminate Transfer for `Submodel Y`
 
 The workflow with simplified EDC and DTR communication may be seen in the following sequence diagram.
 Central Services, such as the `Credential Service` and `Secure Token Service` are ommitted as these are handled by the
@@ -65,8 +65,7 @@ as soon as a MaterialPartnerRelation is changed. The Digital Twin is always recr
 
 ## Scenario: Exchange Notifications
 
-The notification feature allows users to inform partners about demand and capacity disruptions. The terms 
-`Data Provider` and `Data Consumer` are in this scenario somewhat misleading because:
+The notification feature allows users to inform partners about demand and capacity disruptions. The terms `Data Provider` and `Data Consumer` are in this scenario somewhat misleading because:
 
 - The Data Consumer is the message sending party
 - The Data Provider is the message receiving party (providing the endpoint consuming the data)
