@@ -24,12 +24,17 @@ The **need for configuration updates** is **marked bold**.
 * Update Frontend Notification View with grouping based on disruptionId and seperating by status, forwarding connected notifications, editing and resolving notifications ([#926](https://github.com/eclipse-tractusx/puris/pull/926))
 * CI: Trivy workflow should not fail if critical or high vulnerabilities are found ([#948](https://github.com/eclipse-tractusx/puris/pull/948)).
 
+### Fixes
+
+* Drop further security capabilities and apply default seccomp in chart's deployments ([#938](https://github.com/eclipse-tractusx/puris/pull/938))
+
 ### Chore
 
 * Updated open API ([#929](https://github.com/eclipse-tractusx/puris/pull/929))
 * Updated dependencies to resolve high and critical security vulnerabilities ([#932](https://github.com/eclipse-tractusx/puris/pull/932))
 * Updated User guide with the updated notification view and the new import page ([#933](https://github.com/eclipse-tractusx/puris/pull/933))
 * Updated Arc42 documentation ([#937](https://github.com/eclipse-tractusx/puris/pull/937))
+* Bump helm test workfow to new kubernetes version and latest q-gates puris version ([#938](https://github.com/eclipse-tractusx/puris/pull/938))>>>>>>> main
 
 ## v3.2.0
 
