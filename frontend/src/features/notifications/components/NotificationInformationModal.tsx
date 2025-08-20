@@ -179,7 +179,8 @@ export const DemandCapacityNotificationInformationModal = ({
     }, [open, demandCapacityNotification, forwardData]);
 
     const handleSaveClick = () => {
-        if (!isValidDemandCapacityNotification(temporaryDemandCapacityNotification)) {
+        if (!isValidDemandCapacityNotification(temporaryDemandCapacityNotification) ||
+        !temporaryDemandCapacityNotification.text?.trim()) {
             setFormError(true);
             return;
         }
@@ -436,8 +437,8 @@ export const DemandCapacityNotificationInformationModal = ({
                                                 text: event.target.value,
                                             })
                                         }
-                                        error={formError && !temporaryDemandCapacityNotification?.text}
-                                        className={formError && !temporaryDemandCapacityNotification?.text ? 'error-textarea' : ''}
+                                        error={formError && !temporaryDemandCapacityNotification?.text?.trim()}
+                                        className={formError && !temporaryDemandCapacityNotification?.text?.trim() ? 'error-textarea' : ''}
                                     />
                                 </Grid>
                                 <Typography  variant="body3" sx={{color: theme.palette.warning.main, py: 1}} ><ReportProblem></ReportProblem> These notes will be shared with the selected partner. Please do not include sensitive data of third parties.</Typography>
