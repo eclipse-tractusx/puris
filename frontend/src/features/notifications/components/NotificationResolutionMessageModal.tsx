@@ -55,7 +55,7 @@ export const DemandCapacityNotificationResolutionModal = ({
     }, [open]);
 
     const handleSaveClick = () => {
-        if (resolutionMessage === '') {
+        if (resolutionMessage === '' || !resolutionMessage?.trim()) {
             setFormError(true);
             return;
         }
@@ -69,7 +69,7 @@ export const DemandCapacityNotificationResolutionModal = ({
             affectedSitesBpnsRecipient: [],
             affectedSitesBpnsSender: [],
             affectedMaterialNumbers: [],
-            text: ''
+            text: null
         };
 
         putDemandAndCapacityNotification(updatedNotification)
@@ -115,8 +115,8 @@ export const DemandCapacityNotificationResolutionModal = ({
                                         id="resolvingMeasureDescription"
                                         value={resolutionMessage}
                                         onChange={(event) => setResolutionMessage(event.target.value)}
-                                        error={formError && !resolutionMessage}
-                                        className={formError && !resolutionMessage ? 'error-textarea' : ''}
+                                        error={formError && !resolutionMessage?.trim()}
+                                        className={formError && !resolutionMessage?.trim() ? 'error-textarea' : ''}
                                         placeholder="Your message"
                                     />
                                 </Grid>

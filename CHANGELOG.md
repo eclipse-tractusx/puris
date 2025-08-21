@@ -36,6 +36,10 @@ The **need for configuration updates** is **marked bold**.
 * Updated Arc42 documentation ([#937](https://github.com/eclipse-tractusx/puris/pull/937))
 * Bump helm test workfow to new kubernetes version and latest q-gates puris version ([#938](https://github.com/eclipse-tractusx/puris/pull/938))>>>>>>> main
 
+### Fixes
+
+* Fixed notification resolution validation issue ([#952](https://github.com/eclipse-tractusx/puris/pull/952))
+
 ## v3.2.0
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.

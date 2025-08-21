@@ -28,7 +28,7 @@ export type DemandCapacityNotification = {
     uuid: string,
     notificationId: string,
     sourceDisruptionId: string,
-    text: string,
+    text: string | null,
     partnerBpnl: BPNL,
     affectedMaterialNumbers: string[],
     leadingRootCause: LeadingRootCauseType,
