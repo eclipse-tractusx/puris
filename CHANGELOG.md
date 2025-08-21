@@ -31,6 +31,7 @@ The **need for configuration updates** is **marked bold**.
 ### Fixes
 
 * Fixed notification resolution validation issue ([#952](https://github.com/eclipse-tractusx/puris/pull/952))
+* Fixed notification resolution start date validation ([#954](https://github.com/eclipse-tractusx/puris/pull/954))
 
 ## v3.2.0
 
