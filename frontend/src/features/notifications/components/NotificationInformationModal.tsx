@@ -312,7 +312,6 @@ export const DemandCapacityNotificationInformationModal = ({
                                         error={
                                             formError &&
                                             (!temporaryDemandCapacityNotification.startDateOfEffect ||
-                                                temporaryDemandCapacityNotification.startDateOfEffect > new Date() ||
                                                 (!!temporaryDemandCapacityNotification.expectedEndDateOfEffect &&
                                                     temporaryDemandCapacityNotification.startDateOfEffect >
                                                         temporaryDemandCapacityNotification.expectedEndDateOfEffect))
