@@ -187,6 +187,9 @@ backend:
     timeoutSeconds: 1
 
 postgresql:
+  image:
+    repository: bitnamilegacy/postgresql
+    tag: 15.4.0-debian-11-r45
   # -- Enable postgres by default, set to false to use existing postgres. Make sure to set
   # backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from
   # backend).

@@ -202,6 +202,9 @@ postgresql:
   # backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from
   # backend).
   enabled: true
+  image:
+    repository: bitnamilegacy/postgresql
+    tag: 15.4.0-debian-11-r45
   fullnameOverride: "supplier-backend-postgresql"
   service:
     ports:

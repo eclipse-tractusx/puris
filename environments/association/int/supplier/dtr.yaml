@@ -72,6 +72,9 @@ registry:
     runAsUser: 100
     allowPrivilegeEscalation: false
 postgresql:
+  image:
+    repository: bitnamilegacy/postgresql
+    tag: 15.4.0-debian-11-r45
   primary:
     persistence:
       enabled: true
@@ -95,8 +98,14 @@ postgresql:
     existingSecret: secret-dtr-postgres-init-supplier
 
 keycloak:
+  image:
+    repository: bitnamilegacy/keycloak
+    tag: 22.0.3-debian-11-r14
   type: NodePort
   postgresql:
+    image:
+      repository: bitnamilegacy/postgresql
+      tag: 15.4.0-debian-11-r45
     # if not overridden you run into template issues due to 2nd postgres
     # will be completed to <release-name>-keycloak-postgres
     nameOverride: keycloak-postgres
