@@ -20,6 +20,35 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
   - [NOTICE](#notice)
 <!-- TOC -->
 
+> [!WARNING]
+> Bitnami does change their update and versioning policy starting with 2025-08-28. To install the existing charts with its bitnami dependencies, please consider to manually specify the properties `image.repository` and `image.tag` specifying for the following dependencies:
+> 
+> - postgresql (image: bitnamilegacy/postgresql:15.4.0-debian-11-r45)
+> 
+> You have the following options to specify the container image:
+> 
+> 1. Specify in `values.yaml` below `postgresql`.
+> 
+> ```yaml
+> postgresql: 
+>   image: 
+>     repository: bitnamilegacy/postgresql
+>     tag: 15.4.0-debian-11-r45
+> ```
+> 
+> 2. Set during installation.
+> 
+> ```bash
+> helm install puris -n tractusx-dev/puris \
+>   --set postgresql.image.repository=bitnamilegacy/postgresql
+>   --set postgresql.image.tag=15.4.0-debian-11-r45
+> ```
+> 
+> Notes:
+> 
+> - Deploying an older version of the software may have used an older postgresql version. This is NOT applicable for the PURIS charts.
+> - The community is working out on how to resolve the issue.
+
 ## Version 3.0.x to 4.0.x
 
 ### Moving IDP related configuration to its own section
