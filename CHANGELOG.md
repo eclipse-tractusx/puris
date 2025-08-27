@@ -27,6 +27,8 @@ The **need for configuration updates** is **marked bold**.
 ### Fixes
 
 * Drop further security capabilities and apply default seccomp in chart's deployments ([#938](https://github.com/eclipse-tractusx/puris/pull/938))
+* Fixed notification resolution validation issue ([#952](https://github.com/eclipse-tractusx/puris/pull/952))
+* Fixed notification resolution start date validation ([#954](https://github.com/eclipse-tractusx/puris/pull/954))
 
 ### Chore
 
@@ -36,14 +38,9 @@ The **need for configuration updates** is **marked bold**.
 * Updated Arc42 documentation ([#937](https://github.com/eclipse-tractusx/puris/pull/937))
 * Bump helm test workfow to new kubernetes version and latest q-gates puris version ([#938](https://github.com/eclipse-tractusx/puris/pull/938))>>>>>>> main
 
-### Fixes
+### Version Bumps
 
-* Fixed notification resolution validation issue ([#952](https://github.com/eclipse-tractusx/puris/pull/952))
-
-### Fixes
-
-* Fixed notification resolution validation issue ([#952](https://github.com/eclipse-tractusx/puris/pull/952))
-* Fixed notification resolution start date validation ([#954](https://github.com/eclipse-tractusx/puris/pull/954))
+* Digital Twin Registry to 0.9.0-RC1 ([#957](https://github.com/eclipse-tractusx/puris/pull/957))
 
 ## v3.2.0
 
