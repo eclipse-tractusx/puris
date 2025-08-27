@@ -36,7 +36,7 @@ The **need for configuration updates** is **marked bold**.
 * Updated dependencies to resolve high and critical security vulnerabilities ([#932](https://github.com/eclipse-tractusx/puris/pull/932))
 * Updated User guide with the updated notification view and the new import page ([#933](https://github.com/eclipse-tractusx/puris/pull/933))
 * Updated Arc42 documentation ([#937](https://github.com/eclipse-tractusx/puris/pull/937))
-* Bump helm test workfow to new kubernetes version and latest q-gates puris version ([#938](https://github.com/eclipse-tractusx/puris/pull/938))>>>>>>> main
+* Bump helm test workfow to new kubernetes version and latest q-gates puris version ([#938](https://github.com/eclipse-tractusx/puris/pull/938))
 
 ### Version Bumps
 
