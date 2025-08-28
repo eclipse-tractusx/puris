@@ -29,6 +29,7 @@ The **need for configuration updates** is **marked bold**.
 * Drop further security capabilities and apply default seccomp in chart's deployments ([#938](https://github.com/eclipse-tractusx/puris/pull/938))
 * Fixed notification resolution validation issue ([#952](https://github.com/eclipse-tractusx/puris/pull/952))
 * Fixed notification resolution start date validation ([#954](https://github.com/eclipse-tractusx/puris/pull/954))
+* Fixed E2E test for sidebar ([#958](https://github.com/eclipse-tractusx/puris/pull/958))
 
 ### Chore
 
