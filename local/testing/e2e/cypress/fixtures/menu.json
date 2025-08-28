@@ -10,6 +10,11 @@
     "iconid": "NotificationsOutlinedIcon"
   },
   {
+    "target": "/import",
+    "name": "Import",
+    "iconid": "ExitToAppOutlinedIcon"
+  },
+  {
     "target": "/catalog",
     "name": "Catalog",
     "iconid": "AutoStoriesOutlinedIcon"
