@@ -7,7 +7,7 @@ global:
 # FRONTEND -----------
 frontend:
   image:
-    tag: "3.3.0-rc1"
+    tag: "3.3.0-rc2"
     # pullPolicy: Always
     pullPolicy: IfNotPresent
   # fullnameOverride: "supplier-frontend"
@@ -59,7 +59,7 @@ frontend:
 # BACKEND -----------
 backend:
   image:
-    tag: "3.3.0-rc1"
+    tag: "3.3.0-rc2"
     # pullPolicy: Always
     pullPolicy: IfNotPresent
   # fullnameOverride: "supplier-backend"
@@ -202,9 +202,6 @@ postgresql:
   # backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from
   # backend).
   enabled: true
-  image:
-    repository: bitnamilegacy/postgresql
-    tag: 15.4.0-debian-11-r45
   fullnameOverride: "supplier-backend-postgresql"
   service:
     ports:
