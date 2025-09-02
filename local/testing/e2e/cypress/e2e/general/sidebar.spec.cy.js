@@ -26,7 +26,7 @@ describe("sidebar", () => {
         cy.wait(1000);
     });
 
-    it("shows 7 menu items and one is selected", () => {
+    it("shows 9 menu items and one is selected", () => {
         cy.fixture("menu.json").then((menu) => {
             cy.getByTestId("sidebar").should("exist");
             cy.getByTestIdContains("sidebar-menu-item").should(
