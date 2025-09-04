@@ -117,6 +117,7 @@ public abstract class ItemStock {
                 this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
                 this.getLocationBpns().equals(that.getLocationBpns()) &&
                 this.getLocationBpna().equals(that.getLocationBpna()) &&
+                this.isBlocked == that.isBlocked &&
                 Objects.equals(this.getNonNullSupplierOrderId(), that.getNonNullSupplierOrderId()) &&
                 Objects.equals(this.getNonNullCustomerOrderId(), that.getNonNullCustomerOrderId()) &&
                 Objects.equals(this.getNonNullCustomerOrderPositionId(), that.getNonNullCustomerOrderPositionId());

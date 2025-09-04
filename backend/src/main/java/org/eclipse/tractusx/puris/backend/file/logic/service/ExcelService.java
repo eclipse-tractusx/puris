@@ -174,6 +174,9 @@ public class ExcelService {
             List<String> rowErrors = new ArrayList<>();
             Row row = rowIterator.next();
             rowIndex++;
+            if (isRowEmpty(row)) {
+                continue;
+            }
             try {
                 String ownMaterialNumber = getStringCellValue(row.getCell(0));
                 String partnerBpnl = getStringCellValue(row.getCell(1));
@@ -278,6 +281,9 @@ public class ExcelService {
             List<String> rowErrors = new ArrayList<>();
             Row row = rowIterator.next();
             rowIndex++;
+            if (isRowEmpty(row)) {
+                continue;
+            }
             try {
                 String ownMaterialNumber = getStringCellValue(row.getCell(0));
                 String partnerBpnl = getStringCellValue(row.getCell(1));
@@ -375,6 +381,9 @@ public class ExcelService {
             List<String> rowErrors = new ArrayList<>();
             Row row = rowIterator.next();
             rowIndex++;
+            if (isRowEmpty(row)) {
+                continue;
+            }
             try {
                 String ownMaterialNumber = getStringCellValue(row.getCell(0));
                 String partnerBpnl = getStringCellValue(row.getCell(1));
@@ -513,6 +522,9 @@ public class ExcelService {
             List<String> rowErrors = new ArrayList<>();
             Row row = rowIterator.next();
             rowIndex++;
+            if (isRowEmpty(row)) {
+                continue;
+            }
             try {
                 String ownMaterialNumber = getStringCellValue(row.getCell(0));
                 String partnerBpnl = getStringCellValue(row.getCell(1));
@@ -716,5 +728,23 @@ public class ExcelService {
             }
         }
         return errors;
+    }
+
+    /**
+     * Checks if a given row is empty (i.e. all cells are blank or null).
+     * @param row the row to check
+     * @return true if the row is empty, false otherwise
+     */
+    private boolean isRowEmpty(Row row) {
+        if (row == null) return true;
+        for (Cell cell : row) {
+            if (cell != null && cell.getCellType() != CellType.BLANK) {
+                String value = getStringCellValue(cell);
+                if (value != null && !value.trim().isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
