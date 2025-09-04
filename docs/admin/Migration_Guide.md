@@ -4,8 +4,11 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 
 <!-- TOC -->
 - [Migration Guide](#migration-guide)
+  - [Version 4.0.x to 4.1.x](#version-40x-to-41x)
+    - [Database changes to support new notification functionality](#database-changes-to-support-new-notification-functionality)
   - [Version 3.0.x to 4.0.x](#version-30x-to-40x)
     - [Moving IDP related configuration to its own section](#moving-idp-related-configuration-to-its-own-section)
+    - [Adding Liquibase Database Migrations](#adding-liquibase-database-migrations)
   - [Version 2.8.x to 3.0.x](#version-28x-to-30x)
     - [Fix of NameOverride](#fix-of-nameoverride)
     - [Adding YAML Anchor for Frontend URL](#adding-yaml-anchor-for-frontend-url)
@@ -48,6 +51,23 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 > 
 > - Deploying an older version of the software may have used an older postgresql version. This is NOT applicable for the PURIS charts.
 > - The community is working out on how to resolve the issue.
+
+## Version 4.0.x to 4.1.x
+
+### Database changes to support new notification functionality
+
+To enable the new forwarding and resolving functionality of notifications as well as align with the standard the following database changes are made:
+
+- new field `resolving_measure_description` added
+- `source_notification_id` renamed to `source_disruption_id`
+- `related_notification_id` removed
+- new table `notification_related_notification_ids`
+
+All field changes apply to the tables `own_demand_and_capacity_notification` as well as `reported_demand_and_capacity_notification`.
+
+The changes will automatically be applied by Liquibase if you've followed the instructions of the previous migration.
+
+**YOUR TASK**: Due to the incomplete implementation of notifications in the old release it is not guaranteed that previously received or sent notifications are valid. If you have already used notifications verify that they are valid.
 
 ## Version 3.0.x to 4.0.x
 
