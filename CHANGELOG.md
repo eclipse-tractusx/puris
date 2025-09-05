@@ -5,17 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v3.3.1
+## v3.4.0
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
 
 The **need for configuration updates** is **marked bold**.
+
+### Added
+
+- Added possibility to suppress asset and contract creation for DTR if already covered by another application ([#963](https://github.com/eclipse-tractusx/puris/pull/963))
+
+### Changed
+
+- /
 
 ### Fixes
 
 * Fixed import bugs for empty rows and duplicate stocks ([#961](https://github.com/eclipse-tractusx/puris/pull/961))
 
 ### Known Knowns
+
+#### Running With Shared DTR and EDC
+
+PURIS FOSS may not be run on a shared DTR and EDC with full scope. See [Admin Guide](docs/admin/Admin_Guide.md#running-the-puris-foss-application-on-shared-enablement-services) for more information of possible scenarios.
 
 #### Upgradeability
 

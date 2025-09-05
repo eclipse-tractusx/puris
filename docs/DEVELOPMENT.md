@@ -343,6 +343,17 @@ cd scripts
 python3 license-check.py
 ```
 
+## Automation With Bruno
+
+Bruno allows to specify tags in the meta information per request. In the [integration test suite](../local/bruno/puris-integration-test) uses the following tags:
+
+| TAG                       | Usage                                                                                                                                                         |
+|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| share-enablement-services | Use this tag in requests that create DTR entries and EDC Assets, Contracts and Transfers to simulate deployment scenarios of a shared environment.            |
+| admin                     | Use this tag in requests you use for debugging. This way we can include common requests in the bruno collection without running those during test automation. |
+
+All other requests are considered as common test to run during test automation (see [integration test documentation](../local/postman/README.md)).
+
 ## NOTICE
 
 This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).

@@ -1,0 +1,49 @@
+meta {
+  name: 03-Create Membership Access Policy (EQ)
+  type: http
+  seq: 3
+  tags: [
+    share-enablement-services
+  ]
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/policydefinitions
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+    "@context" : [ "http://www.w3.org/ns/odrl.jsonld", {
+      "edc" : "https://w3id.org/edc/v0.0.1/ns/",
+      "cx-policy" : "https://w3id.org/catenax/policy/"
+    } ],
+    "@type" : "PolicyDefinitionRequestDto",
+    "@id" : "{{DTR_ACCESS_POLICY_ID}}",
+    "edc:policy" : {
+      "@type" : "Set",
+      "permission" : [ {
+        "action" : "use",
+        "constraint" : {
+          "@type" : "LogicalConstraint",
+            "leftOperand" : "cx-policy:Membership",
+            "operator" : "eq",
+            "rightOperand" : "active"
+        }
+      } ]
+    }
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

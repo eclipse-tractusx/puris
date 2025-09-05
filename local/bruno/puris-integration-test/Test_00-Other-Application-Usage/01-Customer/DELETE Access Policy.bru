@@ -1,0 +1,20 @@
+meta {
+  name: DELETE Access Policy
+  type: http
+  seq: 2
+  tags: [
+    admin
+  ]
+}
+
+delete {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/policydefinitions/{{DTR_ACCESS_POLICY_ID}}
+  body: none
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}

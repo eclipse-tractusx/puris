@@ -12,6 +12,17 @@ It creates a setup of a partner and customer that refer to the same material fro
 - Both partners know each other and each other's EDC
 - The setup is ready to trigger the update from customer to supplier
 
+## Automation With Bruno
+
+Please refer to the tag conventions mentioned in the [developer documentation](../../docs/DEVELOPMENT.md).
+
+We provide the following test scenarios as mentioned in package.json:
+
+- EDC and DTR are shared (currently only shared DTR asset) -> `npm run <env>-test-prepare-existing-asset`
+- Common integration test to setup test including assertions -> `npm run <env>-test`
+
+`<test>` supports the INT (bru environment file not included) and local test (environment created via deployment script, see [INSTALL.md](../INSTALL.md)).
+
 ## Test Data
 
 The following lists give an overview about the test data in use. When setting up the data, please consider that the

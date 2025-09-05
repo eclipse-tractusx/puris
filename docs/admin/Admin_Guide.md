@@ -82,12 +82,11 @@ information.
 
 ## Configure DTR in Backend
 
-Configuration of the DTR , see
-e.g. [Digital Twin Registry repository](https://github.com/eclipse-tractusx/sldt-digital-twin-registry). Refer to the
-[local deployment with docker compose](../../local/docker-compose.yaml) for an example configuration.
+Configuration of the DTR , see e.g. [Digital Twin Registry repository](https://github.com/eclipse-tractusx/sldt-digital-twin-registry). Refer to the [local deployment with docker compose](../../local/docker-compose.yaml) for an example configuration.
 
-Configure teh dtr url in the Backend via prefix `backend.puris.dtr.url`. Refer to the respective deployments for more
-information.
+Configure the dtr url in the Backend via prefix `backend.puris.dtr.url`. Refer to the respective deployments for more information.
+
+For running the PURIS FOSS application with a DTR that is used by other deployments, please refer to the section for [shared enablement services](#running-the-puris-foss-application-on-shared-enablement-services).
 
 ### DTR - IDP configuration
 
@@ -105,6 +104,35 @@ In practice, the DTR reference implementation allows only one user, resulting in
 | `clients.puris.secret`     | Secret of the manage client                                               |
 | `clients.edc.id`           | ID of the manage client                                                   |
 | `clients.edc.secret.alias` | **Path to secret in the vault** accessed by the edc for the manage client |
+
+## Running the PURIS FOSS Application on Shared Enablement Services
+
+PURIS FOSS still has limited capability to be operated on shared enablement services.
+
+Shared enablement services are:
+
+1. The Connector (EDC)
+2. The Digital Twin Registry (DTR)
+
+The following issues are known:
+
+1. DTR: The PURIS FOSS can't be operated with overlapping material definitions. If another application creates submodels for the same material. PURIS FOSS overwrites the Digital Twins ignoring other access rights and submodels (see [chapter runtime view of arc42](../architecture/06_runtime_view.md)).
+2. EDC: 
+   - PURIS FOSS can't naturally reuse EDC assets. It provides own asset and contract definitions (see chapters [runtime view](../architecture/06_runtime_view.md) and [data sovereignty concepts](../architecture/08_concepts.md#data-sovereignty) of arc42).
+   - PURIS FOSS **CAN** be operated with DTRs that are accessible to all members but are differentiated on lower digital twin level by [BPNL based access control](https://github.com/eclipse-tractusx/sldt-digital-twin-registry/blob/v0.9.0/docs/architecture/6-crosscutting-concepts.md#access-control-to-digital-twins-based-on-the-bpn-business-partner-number-tenantid). To do so you can set the helm chart property `puris.backend.dtr.edc.asset.register` to `false`.
+
+### Supported Shared DTR Asset and Policy
+
+If the helm chart property `puris.backend.dtr.edc.asset.register` is set to `false`. Then the following constraints need to hold:
+
+The DTR Asset is configured to 
+
+1. be the same DTR configured in `puris.backend.dtr.url`.
+2. is accessible by all Partners (e.g. access policy = only CX membership is active and purpose = dtr or PURIS)
+
+Please note: these conditions are not evaluated by PURIS FOSS and must be assessed by the administrator / operator.
+
+PURIS FOSS will still create and maintain digital twins as if the DTR would only be used by PURIS FOSS.
 
 ## Data Sovereignty related configuration
 

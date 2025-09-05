@@ -56,6 +56,7 @@ sh deploy.sh -c
 sh deploy.sh -a
 
 # removes role definition in puris backends and seeds INT test data from scratch with a cleanup upfront
+# the customer puris does not seed its own DTR asset and contract. It reuses one added via bruno
 sh deploy.sh -i
 
 # redeploy puris but keep infrastructure and show logs of EDC, DTR, PURIS

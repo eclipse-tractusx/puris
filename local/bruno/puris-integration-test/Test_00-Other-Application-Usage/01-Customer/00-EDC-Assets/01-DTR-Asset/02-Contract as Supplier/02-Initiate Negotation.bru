@@ -1,0 +1,45 @@
+meta {
+  name: 02-Initiate Negotation
+  type: http
+  seq: 2
+  tags: [
+    share-enablement-services
+  ]
+}
+
+post {
+  url: {{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v3/contractnegotiations
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{SUPPLIER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+    "@context": {
+          "@vocab": "https://w3id.org/edc/v0.0.1/ns/",
+      "odrl": "http://www.w3.org/ns/odrl/2/",
+          "cx-policy": "https://w3id.org/catenax/policy/"
+    },
+    "@type": "ContractRequest",
+    "counterPartyAddress": "{{CUSTOMER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+    "protocol": "dataspace-protocol-http",
+    "policy": {{DTR_CATALOG_OFFER}}
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Body matches string", function () {
+      var jsonData = res.getBody();
+      bru.setVar("DTR_NEGOTIATION_ID", jsonData["@id"]);
+  });
+}

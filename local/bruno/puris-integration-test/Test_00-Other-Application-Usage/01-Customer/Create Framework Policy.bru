@@ -1,0 +1,59 @@
+meta {
+  name: Create Framework Policy
+  type: http
+  seq: 5
+  tags: [
+    admin
+  ]
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/policydefinitions
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+      "@context": [
+          "https://w3id.org/tractusx/edc/v0.0.1",
+          "http://www.w3.org/ns/odrl.jsonld", //remote context
+          {
+              "edc": "https://w3id.org/edc/v0.0.1/ns/",
+  
+              "cx-policy": "https://w3id.org/catenax/policy/"
+          }
+      ],
+      "@type": "PolicyDefinition",
+      "@id": "{{CONTRACT_POLICY_ID}}",
+      "edc:policy": {
+          "@type": "Set",
+          "profile": "cx-policy:profile2405",
+          "permission": [
+              {
+                  "action": "use",
+                  "constraint": {
+                      "and": [
+                          {
+                              "leftOperand": "cx-policy:FrameworkAgreement",
+                              "operator": "eq",
+                              "rightOperand": "DataExchangeGovernance:1.0"
+                          },
+                          {
+                              "leftOperand": "cx-policy:UsagePurpose",
+                              "operator": "eq",
+                              "rightOperand": "cx.puris.base:1"
+                          }
+                      ]
+                  }
+              }
+          ]
+      }
+  }
+}

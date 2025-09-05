@@ -197,6 +197,15 @@ public class VariablesService {
      */
     private String dtrUrl;
 
+    @Value("${puris.dtr.edc.asset.register}")
+    /**
+     * Flag to circumpass scenario in which a digital twin registry has been registered for all partners by another
+     * product.
+     * If true, don't register the DTR asset and don't create contract definitions during partner registration.
+     * If false, register the DTR asset and create contract defintions during partner registration.
+     */
+    private boolean registerDtrAssetFlag;
+
     /**
      * The url under which this application's part type request endpoint can
      * be reached by external machines.

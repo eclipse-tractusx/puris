@@ -1,0 +1,44 @@
+meta {
+  name: 04-Create Contract Definitiion
+  type: http
+  seq: 4
+  tags: [
+    share-enablement-services
+  ]
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/contractdefinitions
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+      "@context": {
+          "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+      },
+      "@id": "{{DTR_CONTRACT_DEFINITION_ID}}",
+      "@type": "ContractDefinition",
+      "accessPolicyId": "{{DTR_ACCESS_POLICY_ID}}",
+      "contractPolicyId": "{{DTR_CONTRACT_POLICY_ID}}",
+      "assetsSelector" : {
+          "@type" : "CriterionDto",
+          "operandLeft": "{{EDC_NAMESPACE}}id",
+          "operator": "=",
+          "operandRight": "{{DTR_ASSET_ID}}"
+      }
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

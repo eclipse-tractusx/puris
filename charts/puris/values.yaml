@@ -488,6 +488,14 @@ backend:
     dtr:
       # --Endpoint for DTR including api/v3 prefix. Must contain protocol (http/https).
       url: https://localhost:4243/api/v3
+      edc:
+        asset:
+          # -- Flag allows to skip asset and contract definition for digital twin registry in the edc. To be used if
+          # another product provides access to the digital twin registry that includes the puris users
+          # (allow access to all CX Members).
+          # if true, PURIS FOSS creates a digitalTwinRegistry by convention and allows access on partner level
+          # if false, see above.
+          register: true
       idp:
         # -- enables the usage of the IDP for the DTR.
         enabled: true

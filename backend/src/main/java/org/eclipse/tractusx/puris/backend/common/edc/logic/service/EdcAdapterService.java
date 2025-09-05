@@ -144,8 +144,23 @@ public class EdcAdapterService {
         boolean result;
         log.info("Registration of framework agreement policy successful {}", (result = createContractPolicy()));
         boolean assetRegistration;
-        log.info("Registration of DTR Asset successful {}", (assetRegistration = registerDtrAsset()));
-        result &= assetRegistration;
+
+        // In future one may detect DTR Asset
+        // Two Scenarios:
+        // 1. Migrate from old version => migrate assets
+        // 2. Detect other definition => if we understand them, migrate our assets if needed
+        // - Terminate Contract Definition
+        // - Detect Contract Definition
+        // - Migrate old Contract Definition
+        if (variablesService.isRegisterDtrAssetFlag()){
+            // Consider to  instead identify the the DTR Asset and Contract Definitions manually. Then consider the following:
+            // DTR asset needs same oauth2 config (except clientSecretKey), url), dct:type, cx-common:version
+            // Contract und Access Policy as expected
+            log.info("Registration of DTR Asset successful {}", (assetRegistration = registerDtrAsset()));
+            result &= assetRegistration;
+        }else {
+            log.info("Registration of DTR Asset has been disabled. The application does not create the DTR Asset and Contract Definitions.");
+        }
         log.info("Registration of ItemStock 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getItemStockSubmodelApiAssetId(),
             variablesService.getItemStockSubmodelEndpoint(),
@@ -194,13 +209,16 @@ public class EdcAdapterService {
      */
     public boolean createPolicyAndContractDefForPartner(Partner partner) {
         boolean result = createBpnlAndMembershipPolicyDefinitionForPartner(partner);
+        if (variablesService.isRegisterDtrAssetFlag()){
+            // To consider: Asset migration -> Create a MembershipPolicyDefitionForPartner only
+            result &= createDtrContractDefinitionForPartner(partner);
+        }
         result &= createSubmodelContractDefinitionForPartner(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, variablesService.getItemStockSubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.PRODUCTION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getProductionSubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDemandSubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDeliverySubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.NOTIFICATION.URN_SEMANTIC_ID, variablesService.getNotificationApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
-        result &= createDtrContractDefinitionForPartner(partner);
         return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
     }
 
