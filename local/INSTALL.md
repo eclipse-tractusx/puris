@@ -20,6 +20,15 @@ Also see this [additional information about using Docker in combination with WSL
 
 This script allows easier startup for testing and demonstration.
 
+As a prerequisite, please install the [bruno cli](https://www.npmjs.com/package/@usebruno/cli) locally via npm:
+
+```bash
+npm install
+```
+
+> [!NOTE]
+> Bruno is an API client alternative to postman. See benefits e.g. in [eclipse-tractusx.github.io](https://eclipse-tractusx.github.io/docs/oss/tooling#bruno--a-git-friendly-open-source-api-client).
+
 ### Build PURIS
 
 Same as for the extended run build PURIS manually.
