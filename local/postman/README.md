@@ -18,7 +18,7 @@ Please refer to the tag conventions mentioned in the [developer documentation](.
 
 We provide the following test scenarios as mentioned in package.json:
 
-- EDC and DTR are shared (currently only shared DTR asset) -> `npm run <env>-test-prepare-existing-asset`
+- EDC and DTR are shared (currently only shared DTR asset) -> `npm run <env>-test-prepare-existing-assets`
 - Common integration test to setup test including assertions -> `npm run <env>-test`
 
 `<test>` supports the INT (bru environment file not included) and local test (environment created via deployment script, see [INSTALL.md](../INSTALL.md)).

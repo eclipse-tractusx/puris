@@ -137,7 +137,7 @@ if [ $int_seed -eq 1 ]; then
   printf '.'
   sleep 5
   done
-  npm run local-test-prepare-existing-asset
+  npm run local-test-prepare-existing-assets
   echo "...seeded existing EDC Assets."
 fi
 
