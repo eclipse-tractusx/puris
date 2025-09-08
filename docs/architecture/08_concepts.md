@@ -97,10 +97,16 @@ Example Access Policy creation request used:
 
 ### Digital Twin Registry Configuration
 
-Additionally, when creating the Digital Twins in the Digital Twin Registry, the `ShellDescriptors` are restricted in
-access using
-the [classic Access Control](https://github.com/eclipse-tractusx/sldt-digital-twin-registry/tree/main/docs#classic-implementation)
-which restricts the `specificAssetIds` based on BPNLs.
+Additionally, when creating the Digital Twins in the Digital Twin Registry, the `ShellDescriptors` are restricted in access using the [classic Access Control](https://github.com/eclipse-tractusx/sldt-digital-twin-registry/tree/main/docs#classic-implementation) which restricts the `specificAssetIds` based on BPNLs.
+
+PURIS FOSS by default creates the DTR Asset on startup by convention (`id` = `DigitalTwinRegistry@<own bpml>`). When onboarding a partner to PURIS FOSS (creating a partner), PURIS FOSS
+
+- Creates an access policy for the partner (Membership active & BPNL)
+- Creates a contract definition using the access policy as access and contract policy.
+
+The application does similarly provide access to submodels but with other policies (see below).
+
+One can steer the application to surpass the asset and contract definition for the DTR in PURIS FOSS via the helm chart parameter `puris.backend.dtr.edc.asset.register` set to `false`. This allows PURIS FOSS to be operated with shared enablement services (see [Admin Guide](../admin/Admin_Guide.md)).
 
 ### Contract Policies
 
@@ -119,7 +125,7 @@ The Constraints used for the Submodel Contract Policies are the following:
 Example for Submodels based on following configurations:
 
 | Property (helm)                             | Value         |
-| ------------------------------------------- | ------------- |
+|---------------------------------------------|---------------|
 | backend.puris.frameworkagreement.credential | Puris         |
 | backend.puris.frameworkagreement.version    | 1.0           |
 | backend.puris.purpose.name                  | cx.puris.base |

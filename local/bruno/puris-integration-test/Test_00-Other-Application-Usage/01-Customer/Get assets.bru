@@ -1,0 +1,44 @@
+meta {
+  name: Get assets
+  type: http
+  seq: 3
+  tags: [
+    admin
+  ]
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/assets/request
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+    "@context": {
+      "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+    },
+  //   "@id": "{{ASSET_ID}}",
+      "querySpec": {
+          "offset": 0,
+          "limit": 100,
+          "filter": "",
+          "range": {
+              "from": 0,
+              "to": 100
+          }
+      }
+  }
+}
+
+tests {
+  test("Status code is 201", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

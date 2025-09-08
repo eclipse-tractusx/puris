@@ -110,12 +110,35 @@ docker compose down -v
 
 if [ $int_seed -eq 1 ]; then
   # overwrite role to enable the local integration test
+  # don't register customer dtr asset as we simulate the sceanrio in which another application has been onboarded before
   echo "Starting PURIS demonstrator containers without demonstration role..."
-  CUSTOMER_DEMONSTRATOR_ROLE="" SUPPLIER_DEMONSTRATOR_ROLE="" docker compose up -d
+  CUSTOMER_DEMONSTRATOR_ROLE="" SUPPLIER_DEMONSTRATOR_ROLE="" CUSTOMER_PURIS_DTR_EDC_ASSET_REGISTER="false" docker compose up -d
 else
   # Start the PURIS demonstrator containers
   echo "Starting PURIS demonstrator containers..."
   docker compose up -d
+fi
+
+# Prepare the following asset data:
+# 1. DTR
+#   - Access Policy: Membership
+#   - Usage Policy: Membership & Purpose DTR
+#   - Contract Definition via assetSelector on ID
+#   - Supplier creates Agreement and Transfer
+# Note: due to transfer control and data plane are needed
+if [ $int_seed -eq 1 ]; then
+  echo "Seeding Int Data (1/2)..."
+  echo "...waiting for edcs to be healthy..."
+  until [ "$(docker inspect --format='{{.State.Health.Status}}' customer-control-plane)" = "healthy" -a \
+    "$(docker inspect --format='{{.State.Health.Status}}' customer-data-plane)" = "healthy" -a \
+    "$(docker inspect --format='{{.State.Health.Status}}' supplier-control-plane)" = "healthy" -a \
+    "$(docker inspect --format='{{.State.Health.Status}}' supplier-data-plane)" = "healthy" ]
+  do
+  printf '.'
+  sleep 5
+  done
+  npm run local-test-prepare-existing-assets
+  echo "...seeded existing EDC Assets."
 fi
 
 # Wait for puris services to be fully up and running
@@ -131,7 +154,7 @@ echo "Infrastructure services are up and running."
 echo "All services started successfully."
 
 if [ $int_seed -eq 1 ]; then
-  echo "Seeding Int Data..."
+  echo "Seeding Int Data (2/2)..."
   npm run local-test
   echo "...seeded data. PLEASE CHECK RESULTS ON YOUR OWN."
 fi

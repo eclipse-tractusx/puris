@@ -1,0 +1,69 @@
+meta {
+  name: 05-Get Contract Policy by ID
+  type: http
+  seq: 5
+  tags: [
+    admin
+  ]
+}
+
+get {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/policydefinitions/{{DTR_CATALOG_OFFER_CONTRACT_POLICY_ID}}
+  body: none
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+    "@context": {
+      "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+    },
+    "@type": "CatalogRequest",
+    "protocol": "dataspace-protocol-http",
+    "counterPartyAddress": "{{CUSTOMER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+    "counterPartyId": "{{CUSTOMER_BPNL}}",
+    "querySpec": {
+      "offset": 0,
+      "limit": 100,
+      "filter": "",
+      "range": {
+        "from": 0,
+        "to": 100
+      },
+      "filterExpression": [
+        {
+          "@type": "CriterionDto",
+          "operandLeft": "https://w3id.org/catenax/ontology/common#version",
+          "operator": "=",
+          "operandRight": "3.0"
+        },
+        {
+          "@type": "CriterionDto",
+          "operandLeft": "'http://purl.org/dc/terms/type'.'@id'",
+          "operator": "=",
+          "operandRight": "https://w3id.org/catenax/taxonomy#DigitalTwinRegistry"
+        }
+      ]
+    }
+  }
+}
+
+tests {
+  const contractDefintion = res.getBody();
+  
+  // const accessPolicyId = contractDefintion.accessPolicyId
+  // const contractPolicyId = contractDefintion.contractPolicyId
+    
+  // // TODO evaluate if assetSelector is different than ID
+  
+  // bru.setVar("DTR_CATALOG_OFFER_ACCESS_POLICY_ID", accessPolicyId)
+  // bru.setVar("DTT_CATALOG_OFFER_CONTRACT_POLICY_ID", contractPolicyId)
+  
+  // TODO: checks
+}

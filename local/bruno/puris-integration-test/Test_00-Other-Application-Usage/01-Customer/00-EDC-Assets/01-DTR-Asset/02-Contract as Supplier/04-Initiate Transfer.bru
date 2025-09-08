@@ -1,0 +1,46 @@
+meta {
+  name: 04-Initiate Transfer
+  type: http
+  seq: 6
+  tags: [
+    share-enablement-services
+  ]
+}
+
+post {
+  url: {{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v3/transferprocesses
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{SUPPLIER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+      "@context": {
+          "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+      },
+      "assetId": "{{DTR_ASSET_ID}}",
+      "counterPartyAddress": "{{CUSTOMER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+      "connectorId": "{{CUSTOMER_BPNL}}",
+      "contractId": "{{DTR_CONTRACT_AGREEMENT_ID}}",
+      "transferType": "HttpData-PULL",
+      "dataDestination": {
+          "type": "HttpProxy"
+      },
+      "protocol": "dataspace-protocol-http"
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  var jsonData = res.getBody();
+  bru.setVar("DTR_TRANSFER_PROCESS_ID", jsonData["@id"]);
+}

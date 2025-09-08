@@ -52,6 +52,12 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 > - Deploying an older version of the software may have used an older postgresql version. This is NOT applicable for the PURIS charts.
 > - The community is working out on how to resolve the issue.
 
+## Version 4.1.x to 4.2.x
+
+### Suppress Contract Creation for Digital Twin Registry (DTR)
+
+The property `puris.backend.dtr.edc.asset.register` steers the creation of a DTR asset created during startup and the contract definition during partner onboarding. If set to false, these steps are suppressed. This allows adopters to run the application on enablement services used by other applications. 
+
 ## Version 4.0.x to 4.1.x
 
 ### Database changes to support new notification functionality

@@ -1,0 +1,35 @@
+meta {
+  name: 07-GET Proxy Pull
+  type: http
+  seq: 9
+  tags: [
+    share-enablement-services
+    admin
+  ]
+}
+
+get {
+  url: http://localhost:8285/api/public/api/v3.0/shell-descriptors
+  body: none
+  auth: apikey
+}
+
+headers {
+  Authorization: {{EDR_AUTH}}
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{SUPPLIER_EDC_API_KEY}}
+  placement: header
+}
+
+script:pre-request {
+  bru.setVar("TRANSFER_ID", Math.random());
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

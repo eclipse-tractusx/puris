@@ -163,6 +163,8 @@ spec:
               value: "{{ .Values.backend.puris.purpose.version }}"
             - name: PURIS_DTR_URL
               value: "{{ .Values.backend.puris.dtr.url }}"
+            - name: PURIS_DTR_EDC_ASSET_REGISTER
+              value: "{{ .Values.backend.puris.dtr.edc.asset.register }}"
             - name: PURIS_DTR_IDP_ENABLED
               value: "{{ .Values.backend.puris.dtr.idp.enabled }}"
             - name: PURIS_DTR_IDP_TOKENURL

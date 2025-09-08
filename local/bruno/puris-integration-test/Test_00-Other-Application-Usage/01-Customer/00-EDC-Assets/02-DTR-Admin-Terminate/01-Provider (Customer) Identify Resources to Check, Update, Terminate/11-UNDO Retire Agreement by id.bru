@@ -1,0 +1,37 @@
+meta {
+  name: 11-UNDO Retire Agreement by id
+  type: http
+  seq: 11
+  tags: [
+    admin
+  ]
+}
+
+delete {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/contractagreements/retirements/1da63d7f-920e-452b-ba4f-4d021857fc26
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+    "@context": {
+      "tx": "https://w3id.org/tractusx/v0.0.1/ns/",
+      "edc": "https://w3id.org/edc/v0.0.1/ns/"
+    },
+    "edc:agreementId": "1da63d7f-920e-452b-ba4f-4d021857fc26",//"{{DTR_CONTRACT_AGREEMENT_ID}}",
+    "tx:reason": "This contract has been retired by PURIS FOSS due to switching to another less restrictive policy scheme."
+  }
+}
+
+tests {
+  test("Status code is 204", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+}

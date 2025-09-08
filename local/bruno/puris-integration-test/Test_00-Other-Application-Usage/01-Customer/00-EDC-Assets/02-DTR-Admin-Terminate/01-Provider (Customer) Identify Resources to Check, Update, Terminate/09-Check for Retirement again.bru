@@ -1,0 +1,46 @@
+meta {
+  name: 09-Check for Retirement again
+  type: http
+  seq: 9
+  tags: [
+    admin
+  ]
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/contractagreements/retirements/request
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+    "@context": {
+      "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+    },
+    "@type": "QuerySpec",
+    "offset": 0,
+    "limit": 10,
+  
+    "filterExpression": [
+  //       {
+  //         "@type": "CriterionDto",
+  //         "operandLeft": "https://w3id.org/catenax/ontology/common#version",
+  //         "operator": "=",
+  //         "operandRight": "3.0"
+  //       },
+  //       {
+  //         "@type": "CriterionDto",
+  //         "operandLeft": "'http://purl.org/dc/terms/type'.'@id'",
+  //         "operator": "=",
+  //         "operandRight": "https://w3id.org/catenax/taxonomy#DigitalTwinRegistry"
+  //       }
+      ]
+  }
+}

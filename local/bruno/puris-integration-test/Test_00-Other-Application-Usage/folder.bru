@@ -1,0 +1,20 @@
+meta {
+  name: Test_00-Other-Application-Usage
+  seq: 2
+}
+
+auth {
+  mode: inherit
+}
+
+vars:pre-request {
+  DTR_ASSET_ID: DigitalTwinRegistry-someHash
+  DTR_ACCESS_POLICY_ID: DigitalTwinRegistry-membershipAccess
+  DTR_CONTRACT_POLICY_ID: DigitalTwinRegistry-membershipDtrPurposeContract
+  DTR_CONTRACT_DEFINITION_ID: DTR-CD
+  EDC_NAMESPACE: https://w3id.org/edc/v0.0.1/ns/
+}
+
+docs {
+  This folder adds "noise" and agreements to the EDC or DTR to simulate better the applicability with other applications.
+}

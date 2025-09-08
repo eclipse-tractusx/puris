@@ -5,13 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "local-test": " cd bruno/puris-integration-test && bru run --env local",
-    "int-test": " cd bruno/puris-integration-test && bru run --env INT"
+    "local-test-prepare-existing-assets": "cd bruno/puris-integration-test && bru run --tags share-enablement-services --exclude-tags admin --env local",
+    "local-test": " cd bruno/puris-integration-test && bru run --exclude-tags admin,share-enablement-services --env local",
+    "int-test-prepare-existing-assets": "cd bruno/puris-integration-test && bru run --tags share-enablement-services --exclude-tags admin --env INT",
+    "int-test": " cd bruno/puris-integration-test && bru run --exclude-tags admin,share-enablement-services --env INT"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@usebruno/cli": "^1.22.0"
+    "@usebruno/cli": "^2.10.1"
   }
 }

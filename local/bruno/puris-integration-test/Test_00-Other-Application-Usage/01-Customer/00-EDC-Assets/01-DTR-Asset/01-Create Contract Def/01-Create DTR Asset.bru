@@ -1,0 +1,55 @@
+meta {
+  name: 01-Create DTR Asset
+  type: http
+  seq: 1
+  tags: [
+    share-enablement-services
+  ]
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/assets
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+    "@context": {
+      "edc": "https://w3id.org/edc/v0.0.1/ns/", // alternative can use @vocab
+      "cx-taxo": "https://w3id.org/catenax/taxonomy#",
+      "cx-common": "https://w3id.org/catenax/ontology/common#",
+      "dct": "http://purl.org/dc/terms/"
+      // did not put the aas-semantics as I imply bundling per partner and material
+    },
+    "@id": "{{DTR_ASSET_ID}}",
+    "edc:properties": {
+      "dct:type": {
+        "@id": "cx-taxo:DigitalTwinRegistry"
+      },
+      "cx-common:version": "3.0"
+    },
+    "edc:dataAddress": {
+      "edc:proxyPath": "true",
+      "edc:proxyMethod": "false",
+      "edc:type": "HttpData",
+      "edc:proxyQueryParams": "true",
+      "edc:baseUrl": "{{CUSTOMER_DTR_EXT_HOSTNAME}}",
+      "oauth2:clientId": "{{CUSTOMER_MANAGE_CLIENT_ID}}",
+      "oauth2:tokenUrl": "{{CUSTOMER_IDP_EXT_HOSTNAME}}/realms/{{CUSTOMER_IDP_REALM}}/protocol/openid-connect/token",
+      "oauth2:clientSecretKey": "{{CUSTOMER_MANAGE_CLIENT_SECRET_ALIAS}}"
+    }
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,47 +1,46 @@
 meta {
-  name: Query catalog for Submodel Assets
+  name: Query catalog for DTR and Submodel Assets
   type: http
   seq: 1
 }
 
 post {
-  url: {{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v3/catalog/request
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/catalog/request
   body: json
   auth: none
 }
 
 headers {
-  X-Api-Key: {{SUPPLIER_EDC_API_KEY}}
+  X-Api-Key: {{CUSTOMER_EDC_API_KEY}}
 }
 
 body:json {
   {
-      "@context": {
-          "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+    "@context": {
+      "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+    },
+    "@type": "CatalogRequest",
+    "protocol": "dataspace-protocol-http",
+    "counterPartyAddress": "{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+    "counterPartyId": "{{SUPPLIER_BPNL}}",
+    "querySpec": {
+      "offset": 0,
+      "limit": 100,
+      "filter": "",
+      "range": {
+        "from": 0,
+        "to": 100
       },
-      "@type": "CatalogRequest",
-      "protocol": "dataspace-protocol-http",
-      "counterPartyAddress": "{{CUSTOMER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
-      "counterPartyId": "{{CUSTOMER_BPNL}}",
-      "querySpec": {
-          "offset": 0,
-          "limit": 100,
-          "filter": "",
-          "range": {
-              "from": 0,
-              "to": 100
-          },
-          "filterExpression": [
-              {
-                  "@type" : "CriterionDto",
-                  "operandLeft": "https://w3id.org/catenax/ontology/common#version",
-                  "operator": "=",
-                  "operandRight": "3.0"
-              }
-          ]
-      }
+      "filterExpression": [
+        {
+          "@type": "CriterionDto",
+          "operandLeft": "https://w3id.org/catenax/ontology/common#version",
+          "operator": "=",
+          "operandRight": "3.0"
+        }
+      ]
+    }
   }
-  
 }
 
 tests {
