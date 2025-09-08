@@ -8,7 +8,7 @@ global:
 frontend:
   # fullnameOverride: "customer-frontend"
   image:
-    tag: "3.3.0-rc2"
+    # tag: "3.3.0-rc2"
     # pullPolicy: Always
     pullPolicy: IfNotPresent
   ingress:
@@ -49,7 +49,7 @@ frontend:
 backend:
   # fullnameOverride: "customer-backend"
   image:
-    tag: "3.3.0-rc2"
+    # tag: "3.3.0-rc2"
     # pullPolicy: Always
     pullPolicy: IfNotPresent
   env:
@@ -127,6 +127,10 @@ backend:
         ddl-auto: validate
     dtr:
       url: https://<path:puris/data/customer/dtr#hostname>/api/v3
+      edc:
+        asset:
+          # simulate DTR by other company
+          register: false
       idp:
         enabled: true
         # -- token url of the idp for your specific realm. May be different to other idp token url in this config.
@@ -141,7 +145,8 @@ backend:
             secret:
               # -- alias for the vault used by the EDC in which the secret is stored. Mandatory if
               # backend.puris.dtr.idp.enabled = true.
-              alias: "customer/dtr/keycloak/client-secret-edc"
+              #alias: "customer/dtr/keycloak/client-secret-edc"
+              alias: ""
           puris:
             # -- id of the client that has a service account with roles to manage the DTR. Used by the application to
             # create and update digital twins. See Admin Guide. Mandatory if backend.puris.dtr.idp.enabled = true.
