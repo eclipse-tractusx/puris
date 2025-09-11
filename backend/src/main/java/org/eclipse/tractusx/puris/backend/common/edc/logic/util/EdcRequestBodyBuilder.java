@@ -167,13 +167,13 @@ public class EdcRequestBodyBuilder {
         List<PolicyConstraint> constraints = new ArrayList<>();
 
         constraints.add(new PolicyConstraint(
-            "BusinessPartnerNumber",
+            TX_NAMESPACE + "BusinessPartnerNumber",
             "eq",
             partner.getBpnl()
         ));
 
         constraints.add(new PolicyConstraint(
-            "Membership",
+            CX_POLICY_NAMESPACE + "Membership",
             "eq",
             "active"
         ));
