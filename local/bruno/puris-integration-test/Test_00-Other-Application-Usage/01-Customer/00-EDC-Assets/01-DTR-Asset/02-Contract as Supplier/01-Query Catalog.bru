@@ -59,14 +59,14 @@ tests {
       expect(res.getStatus()).to.equal(200);
   });
   
-  var jsonData = res.getBody();
+  let jsonData = res.getBody();
   
-  var catalog = jsonData['dcat:dataset'];
-  var itemStockOffer = '';
+  let catalog = jsonData['dcat:dataset'];
+  let itemStockOffer = '';
   
-  offer = catalog["odrl:hasPolicy"]
-  offerId = offer["@id"]
-  assetId = catalog['id']
+  let offer = catalog["odrl:hasPolicy"]
+  const offerId = offer["@id"]
+  const assetId = catalog['id']
   
   offer["offerId"] = offerId
   delete offer["@id"]
