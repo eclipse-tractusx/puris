@@ -21,7 +21,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- fixed invalid framwork policy in the bruno DTR setup and added missing namespaces for access policies ([#967](https://github.com/eclipse-tractusx/puris/pull/967))
+- fixed invalid framwork policy in the bruno DTR setup ([#967](https://github.com/eclipse-tractusx/puris/pull/967))
 
 ## v3.4.0
 
