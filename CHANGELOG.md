@@ -165,6 +165,10 @@ For productive use the following enhancements are encouraged
 
 * Add filters for transparency (bpnl, state)
 
+### Fixes
+
+* Fixed Modal dialogs not updating when deleting entries for materials ([#952](https://github.com/eclipse-tractusx/puris/pull/976))
+
 ## v3.2.0
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
