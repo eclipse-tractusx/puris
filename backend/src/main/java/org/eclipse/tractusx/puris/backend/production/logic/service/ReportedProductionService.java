@@ -21,6 +21,8 @@ SPDX-License-Identifier: Apache-2.0
 
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 
@@ -61,21 +63,43 @@ public class ReportedProductionService extends ProductionService<ReportedProduct
     }
 
     public boolean validate(ReportedProduction production) {
-        return 
-            production.getQuantity() >= 0 &&
-            production.getMeasurementUnit() != null && 
-            production.getEstimatedTimeOfCompletion() != null && 
-            production.getMaterial() != null &&
-            production.getPartner() != null &&
-            production.getProductionSiteBpns() != null &&
-            production.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(production.getProductionSiteBpns())) &&
-            ((
-                production.getCustomerOrderNumber() != null && 
-                production.getCustomerOrderPositionNumber() != null
-            ) || (
-                production.getCustomerOrderNumber() == null && 
-                production.getCustomerOrderPositionNumber() == null && 
-                production.getSupplierOrderNumber() == null
-            ));
+        return validateWithDetails(production).isEmpty();
+    }
+
+    public List<String> validateWithDetails(ReportedProduction production) {
+        List<String> errors = new ArrayList<>();
+
+        if (production.getQuantity() <= 0) {
+            errors.add("Quantity must be greater than 0.");
+        }
+        if (production.getMeasurementUnit() == null) {
+            errors.add("Missing measurement unit.");
+        }
+        if (production.getLastUpdatedOnDateTime() == null) {
+            errors.add("Missing lastUpdatedOnTime.");
+        } else if (production.getLastUpdatedOnDateTime().after(new Date())) {
+            errors.add("lastUpdatedOnDateTime cannot be in the future.");
+        }
+        if (production.getEstimatedTimeOfCompletion() == null) {
+            errors.add("Missing estimated time of completion.");
+        }
+        if (production.getMaterial() == null) {
+            errors.add("Missing material.");
+        }
+        if (production.getPartner() == null) {
+            errors.add("Missing partner.");
+        }
+        if (production.getProductionSiteBpns() == null) {
+            errors.add("Missing production site BPNS.");
+        }
+        if (production.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(production.getProductionSiteBpns()))) {
+            errors.add("Production site BPNS must match.");
+        }
+        if (!((production.getCustomerOrderNumber() != null && production.getCustomerOrderPositionNumber() != null) || 
+            (production.getCustomerOrderNumber() == null && production.getCustomerOrderPositionNumber() == null && production.getSupplierOrderNumber() == null))) {
+            errors.add("If an order position reference is given, customer order number and customer order position number must be set.");
+        }
+
+        return errors;
     }
 }
