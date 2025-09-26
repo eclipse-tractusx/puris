@@ -59,14 +59,14 @@ tests {
       expect(res.getStatus()).to.equal(200);
   });
   
-  var jsonData = res.getBody();
+  let jsonData = res.getBody();
   
-  var catalog = jsonData['dcat:dataset'];
-  var itemStockOffer = '';
+  let catalog = jsonData['dcat:dataset'];
+  let itemStockOffer = '';
   
-  offer = catalog["odrl:hasPolicy"]
-  offerId = offer["@id"]
-  assetId = catalog['id']
+  let offer = catalog["odrl:hasPolicy"]
+  const offerId = offer["@id"]
+  const assetId = catalog['id']
   
   offer["offerId"] = offerId
   delete offer["@id"]
@@ -80,9 +80,7 @@ tests {
       "assigner": jsonData["dspace:participantId"],
       "odrl:permission": {
           "odrl:target": assetId,
-          "odrl:action": {
-              "odrl:type": "http://www.w3.org/ns/odrl/2/use"
-          },
+          "odrl:action": catalog["odrl:hasPolicy"]["odrl:permission"]["odrl:action"],
           "odrl:constraint": catalog["odrl:hasPolicy"]["odrl:permission"]["odrl:constraint"]
       },
       "odrl:prohibition": [],

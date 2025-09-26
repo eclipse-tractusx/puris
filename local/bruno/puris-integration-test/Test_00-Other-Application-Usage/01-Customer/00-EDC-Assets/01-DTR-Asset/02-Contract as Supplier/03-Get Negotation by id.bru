@@ -21,7 +21,7 @@ auth:apikey {
 
 script:pre-request {
   console.log("Waiting 5 seconds to let negotiation terminate");
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  await (new Promise(resolve => setTimeout(resolve, 5000)));
 }
 
 tests {

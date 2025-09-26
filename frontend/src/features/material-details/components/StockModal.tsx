@@ -141,6 +141,7 @@ type StockModalProps = {
     mode: ModalMode;
     onClose: () => void;
     onSave: () => void;
+    onRemove?: (deletedUuid: string) => void;
     stock: Partial<Stock> | null;
     stocks: Stock[];
     stockType: StockType;
@@ -148,7 +149,7 @@ type StockModalProps = {
 const isValidStock = (stock: Partial<Stock>) =>
     stock && stock.quantity && stock.measurementUnit && stock.partner && stock.stockLocationBpns && stock.stockLocationBpna && isValidOrderReference(stock);
 
-export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockType }: StockModalProps) => {
+export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stocks, stockType }: StockModalProps) => {
     const [temporaryStock, setTemporaryStock] = useState<Partial<Stock>>(stock ?? {});
     const { partners } = usePartners(stockType, temporaryStock?.material?.ownMaterialNumber ?? null);
     const { sites } = useSites();
@@ -182,8 +183,19 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
             })
             .finally(onClose);
     };
-    const handleDelete = (row: Stock) => {
-        if (row.uuid) deleteStocks(stockType, row.uuid).then(onSave);
+    const handleDelete = async (row: Stock) => {
+        if (row.uuid) {
+            try {
+                await deleteStocks(stockType, row.uuid);
+                onRemove?.(row.uuid);
+            } catch (error) {
+                notify({
+                    title: 'Error deleting stock',
+                    description: 'Failed to delete the stock',
+                    severity: 'error',
+                });
+            }
+        }
     };
     useEffect(() => {
         if (stock) setTemporaryStock(stock);

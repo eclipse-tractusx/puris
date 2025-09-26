@@ -161,6 +161,11 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
                 {...state.demandDialogOptions}
                 onClose={() => dispatch({ type: 'demandDialogOptions', payload: { open: false, mode: state.demandDialogOptions.mode } })}
                 onSave={() => onSave('demand')}
+                onRemove={(deletedUuid: string) => {
+                    const updatedDemands = state.demands.filter(p => p.uuid !== deletedUuid);
+                    dispatch({ type: 'demands', payload: updatedDemands });
+                    onSave('demand');
+                }}
                 demand={state.demand}
                 demands={state.demands}
             />
@@ -168,6 +173,11 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
                 {...state.productionDialogOptions}
                 onClose={() => dispatch({ type: 'productionDialogOptions', payload: { open: false, mode: state.productionDialogOptions.mode } })}
                 onSave={() => onSave('production')}
+                onRemove={(deletedUuid: string) => {
+                    const updatedProductions = state.productions.filter(p => p.uuid !== deletedUuid);
+                    dispatch({ type: 'productions', payload: updatedProductions });
+                    onSave('production');
+                }}
                 production={state.production}
                 productions={state.productions}
             />
@@ -175,6 +185,11 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
                 {...state.deliveryDialogOptions}
                 onClose={() => dispatch({ type: 'deliveryDialogOptions', payload: { ...state.deliveryDialogOptions, open: false } })}
                 onSave={() => onSave('delivery')}
+                onRemove={(deletedUuid: string) => {
+                    const updatedDeliveries = state.deliveries.filter(p => p.uuid !== deletedUuid);
+                    dispatch({ type: 'deliveries', payload: updatedDeliveries });
+                    onSave('delivery');
+                }}
                 delivery={state.delivery}
                 deliveries={state.deliveries}
             />
@@ -182,6 +197,11 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
                 {...state.stockDialogOptions}
                 onClose={() => dispatch({ type: 'stockDialogOptions', payload: {...state.stockDialogOptions, open: false } })}
                 onSave={() => onSave('stock')}
+                onRemove={(deletedUuid: string) => {
+                    const updatedStocks = state.stocks.filter(p => p.uuid !== deletedUuid);
+                    dispatch({ type: 'stocks', payload: updatedStocks });
+                    onSave('stock');
+                }}
                 stock={state.stock}
                 stocks={state.stocks}
             />

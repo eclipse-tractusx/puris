@@ -25,6 +25,7 @@ import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUn
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -74,7 +75,8 @@ public class ItemStockSammMapperTest {
         SUPPLIER_BPNA,
         "Heinrich-Supplier-Straße 1",
         "77785 Dudelsdorf",
-        "Germany"
+        "Germany",
+        PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
     );
 
     final static Partner customerPartner = new Partner(
@@ -86,7 +88,8 @@ public class ItemStockSammMapperTest {
         "BPNA4444444444ZZ",
         "Musterstraße 35b",
         "77777 Musterhausen",
-        "Germany"
+        "Germany",
+        PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
     );
 
     @Mock
