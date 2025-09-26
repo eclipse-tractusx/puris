@@ -67,6 +67,9 @@ public class EdcAdapterServiceTest {
         Field field = EdcAdapterService.class.getDeclaredField("variablesService");
         field.setAccessible(true);
         field.set(edcAdapterService, variablesService);
+        Field field2 = EdcAdapterService.class.getDeclaredField("edcRequestBodyBuilder");
+        field2.setAccessible(true);
+        field2.set(edcAdapterService, edcRequestBodyBuilder);
     }
 
     /**
@@ -127,6 +130,7 @@ public class EdcAdapterServiceTest {
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
         when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
@@ -160,7 +164,7 @@ public class EdcAdapterServiceTest {
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
-            "            \"odrl:rightOperand\" : \"Puris:0.1\"\n" +
+            "            \"odrl:rightOperand\" : \"DataExchangeGovernance:0.1\"\n" +
             "          }, {\n" +
             "            \"odrl:leftOperand\" : {\n" +
             "              \"@id\" : \"cx-policy:UsagePurpose\"\n" +
@@ -194,6 +198,7 @@ public class EdcAdapterServiceTest {
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
         when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
@@ -226,7 +231,7 @@ public class EdcAdapterServiceTest {
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
-            "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
+            "            \"odrl:rightOperand\" : \"DataExchangeGovernance:1.0\"\n" +
             "          }\n" +
             "        }\n" +
             "      },\n" +
@@ -252,6 +257,7 @@ public class EdcAdapterServiceTest {
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
         when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
@@ -273,8 +279,9 @@ public class EdcAdapterServiceTest {
         System.out.println(invalidJsonNode.toPrettyString());
 
         // when
-        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
+        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
         when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);

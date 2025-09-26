@@ -30,7 +30,6 @@ import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfigurati
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -46,8 +45,6 @@ public class EdcRequestBodyBuilder {
     private final DtrSecurityConfiguration dtrSecurityConfig;
     private final VariablesService variablesService;
     private final ObjectMapper MAPPER;
-
-    private final PolicyProfileVersionEnumeration CURRENT_POLICY_PROFILE;
 
     public final String EDC_NAMESPACE;
     public final String VOCAB_KEY;
@@ -73,23 +70,22 @@ public class EdcRequestBodyBuilder {
         this.dtrSecurityConfig = dtrSecurityConfig;
         this.variablesService = variablesService;
         this.MAPPER = MAPPER;
-        this.CURRENT_POLICY_PROFILE = variablesService.getEdcProfileVersion();
 
-        this.EDC_NAMESPACE = CURRENT_POLICY_PROFILE.getConstants().EDC_NAMESPACE;
-        this.VOCAB_KEY = CURRENT_POLICY_PROFILE.getConstants().VOCAB_KEY;
-        this.ODRL_NAMESPACE = CURRENT_POLICY_PROFILE.getConstants().ODRL_NAMESPACE;
-        this.ODRL_REMOTE_CONTEXT = CURRENT_POLICY_PROFILE.getConstants().ODRL_REMOTE_CONTEXT;
-        this.CX_TAXO_NAMESPACE = CURRENT_POLICY_PROFILE.getConstants().CX_TAXO_NAMESPACE;
-        this.CX_COMMON_NAMESPACE = CURRENT_POLICY_PROFILE.getConstants().CX_COMMON_NAMESPACE;
-        this.CX_POLICY_NAMESPACE = CURRENT_POLICY_PROFILE.getConstants().CX_POLICY_NAMESPACE;
-        this.DCT_NAMESPACE = CURRENT_POLICY_PROFILE.getConstants().DCT_NAMESPACE;
-        this.AAS_SEMANTICS_NAMESPACE = CURRENT_POLICY_PROFILE.getConstants().AAS_SEMANTICS_NAMESPACE;
-        this.CONTRACT_POLICY_ID = CURRENT_POLICY_PROFILE.getConstants().CONTRACT_POLICY_ID;
-        this.TX_NAMESPACE = CURRENT_POLICY_PROFILE.getConstants().TX_NAMESPACE;
-        this.TX_AUTH_NAMESPACE = CURRENT_POLICY_PROFILE.getConstants().TX_AUTH_NAMESPACE;
-        this.DCAT_NAMESPACE = CURRENT_POLICY_PROFILE.getConstants().DCAT_NAMESPACE;
-        this.DSPACE_NAMESPACE = CURRENT_POLICY_PROFILE.getConstants().DSPACE_NAMESPACE;
-        this.CX_POLICY_CONTEXT = CURRENT_POLICY_PROFILE.getConstants().CX_POLICY_CONTEXT;
+        this.EDC_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().EDC_NAMESPACE;
+        this.VOCAB_KEY = variablesService.getEdcProfileVersion().getConstants().VOCAB_KEY;
+        this.ODRL_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().ODRL_NAMESPACE;
+        this.ODRL_REMOTE_CONTEXT = variablesService.getEdcProfileVersion().getConstants().ODRL_REMOTE_CONTEXT;
+        this.CX_TAXO_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().CX_TAXO_NAMESPACE;
+        this.CX_COMMON_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().CX_COMMON_NAMESPACE;
+        this.CX_POLICY_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().CX_POLICY_NAMESPACE;
+        this.DCT_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().DCT_NAMESPACE;
+        this.AAS_SEMANTICS_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().AAS_SEMANTICS_NAMESPACE;
+        this.CONTRACT_POLICY_ID = variablesService.getEdcProfileVersion().getConstants().CONTRACT_POLICY_ID;
+        this.TX_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().TX_NAMESPACE;
+        this.TX_AUTH_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().TX_AUTH_NAMESPACE;
+        this.DCAT_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().DCAT_NAMESPACE;
+        this.DSPACE_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().DSPACE_NAMESPACE;
+        this.CX_POLICY_CONTEXT = variablesService.getEdcProfileVersion().getConstants().CX_POLICY_CONTEXT;
     }
 
     /**
@@ -212,7 +208,7 @@ public class EdcRequestBodyBuilder {
 
         List<PolicyConstraint> constraints = new ArrayList<>();
 
-        if (CURRENT_POLICY_PROFILE == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
+        if (variablesService.getEdcProfileVersion() == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
             constraints.add(new PolicyConstraint(
                 TX_NAMESPACE + "BusinessPartnerNumber",
                 "eq",
@@ -235,7 +231,7 @@ public class EdcRequestBodyBuilder {
         JsonNode body = buildPolicy(
             getBpnPolicyId(partner),
             constraints,
-            CURRENT_POLICY_PROFILE.equals(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509) ? CX_POLICY_NAMESPACE + "access" : ODRL_NAMESPACE + "use",
+            variablesService.getEdcProfileVersion().equals(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509) ? CX_POLICY_NAMESPACE + "access" : ODRL_NAMESPACE + "use",
             null
         );
         log.debug("Built bpn and membership access policy:\n{}", body.toPrettyString());

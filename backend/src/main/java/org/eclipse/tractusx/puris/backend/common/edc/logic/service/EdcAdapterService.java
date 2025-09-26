@@ -745,7 +745,7 @@ public class EdcAdapterService {
                 edcRequestBodyBuilder.CX_TAXO_NAMESPACE + "DigitalTwinRegistry"
             );
             var responseNode = getCatalog(partner.getEdcUrl(), partner.getBpnl(), equalFilters);
-            responseNode = jsonLdUtils.expand(responseNode);
+            responseNode = jsonLdUtils.expand(responseNode, partner.getPolicyProfileVersion());
 
             var catalogArray = responseNode.get(edcRequestBodyBuilder.DCAT_NAMESPACE + "dataset");
             // If there is exactly one asset, the catalogContent will be a JSON object.
@@ -1086,7 +1086,7 @@ public class EdcAdapterService {
     public boolean negotiateContract(Partner partner, String assetId, AssetType type, String dspUrl, Map<String, String> equalFilters) {
         try {
             var responseNode = getCatalog(dspUrl, partner.getBpnl(), equalFilters);
-            responseNode = jsonLdUtils.expand(responseNode);
+            responseNode = jsonLdUtils.expand(responseNode, partner.getPolicyProfileVersion());
             var catalogArray = responseNode.get(edcRequestBodyBuilder.DCAT_NAMESPACE + "dataset");
             // If there is exactly one asset, the catalogContent will be a JSON object.
             // In all other cases catalogContent will be a JSON array.
@@ -1264,7 +1264,7 @@ public class EdcAdapterService {
 
         JsonNode con = constraintToTest.get();
 
-        JsonNode leftOperandNode = con.get(edcRequestBodyBuilder.ODRL_NAMESPACE + "leftOperand");
+        JsonNode leftOperandNode = con.get(variablesService.getEdcProfileVersion().getConstants().ODRL_NAMESPACE + "leftOperand");
         leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get(0);
         leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get("@id");
         if (leftOperandNode == null || !targetLeftOperand.equals(leftOperandNode.asText())) {
@@ -1273,7 +1273,7 @@ public class EdcAdapterService {
             return false;
         }
 
-        JsonNode operatorNode = con.get(edcRequestBodyBuilder.ODRL_NAMESPACE + "operator");
+        JsonNode operatorNode = con.get(variablesService.getEdcProfileVersion().getConstants().ODRL_NAMESPACE + "operator");
         operatorNode = operatorNode == null ? null : operatorNode.get(0);
         operatorNode = operatorNode == null ? null : operatorNode.get("@id");
         if (operatorNode == null || !targetOperator.equals(operatorNode.asText())) {
@@ -1282,7 +1282,7 @@ public class EdcAdapterService {
             return false;
         }
 
-        JsonNode rightOperandNode = con.get(edcRequestBodyBuilder.ODRL_NAMESPACE + "rightOperand");
+        JsonNode rightOperandNode = con.get(variablesService.getEdcProfileVersion().getConstants().ODRL_NAMESPACE + "rightOperand");
         rightOperandNode = rightOperandNode == null ? null : rightOperandNode.get(0);
         rightOperandNode = rightOperandNode == null ? null : rightOperandNode.get("@value");
         if (rightOperandNode == null || !targetRightOperand.equals(rightOperandNode.asText())) {

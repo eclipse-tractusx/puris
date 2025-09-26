@@ -28,6 +28,7 @@ import jakarta.json.JsonReader;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.edc.jsonld.TitaniumJsonLd;
 import org.eclipse.edc.spi.monitor.Monitor;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -44,27 +45,33 @@ import java.util.function.Supplier;
 public class JsonLdUtils {
 
     private final ObjectMapper MAPPER = new ObjectMapper();
-    private final TitaniumJsonLd TITANIUM_JSON_LD = new TitaniumJsonLd(new MonitorAdapter() {
-    });
+    private final VariablesService variablesService = new VariablesService();
+    private final TitaniumJsonLd TITANIUM_JSON_LD = new TitaniumJsonLd(new MonitorAdapter());
+    private final TitaniumJsonLd TITANIUM_JSON_LD_2405 = new TitaniumJsonLd(new MonitorAdapter());
 
    {
         var profile2405 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.getConstants();
         var profile2509 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2509.getConstants();
-        // register contexts for profile 24.05
-        TITANIUM_JSON_LD.registerContext(profile2405.CX_POLICY_CONTEXT);
         // register contexts for profile 25.09
         TITANIUM_JSON_LD.registerContext(profile2509.CX_POLICY_CONTEXT);
-        // register common contexts
         TITANIUM_JSON_LD.registerContext(profile2509.ODRL_REMOTE_CONTEXT);
         TITANIUM_JSON_LD.registerContext(profile2509.DCAT_NAMESPACE);
         TITANIUM_JSON_LD.registerContext(profile2509.DSPACE_NAMESPACE);
         TITANIUM_JSON_LD.registerContext(profile2509.EDC_NAMESPACE);
         TITANIUM_JSON_LD.registerContext(profile2509.TX_AUTH_NAMESPACE);
         TITANIUM_JSON_LD.registerContext(profile2509.TX_NAMESPACE);
+        // register contexts for profile 24.05
+        TITANIUM_JSON_LD_2405.registerContext(profile2405.CX_POLICY_CONTEXT);
+        TITANIUM_JSON_LD_2405.registerContext(profile2405.CX_POLICY_CONTEXT);
+        TITANIUM_JSON_LD_2405.registerContext(profile2405.ODRL_REMOTE_CONTEXT);
+        TITANIUM_JSON_LD_2405.registerContext(profile2405.DCAT_NAMESPACE);
+        TITANIUM_JSON_LD_2405.registerContext(profile2405.DSPACE_NAMESPACE);
+        TITANIUM_JSON_LD_2405.registerContext(profile2405.EDC_NAMESPACE);
+        TITANIUM_JSON_LD_2405.registerContext(profile2405.TX_AUTH_NAMESPACE);
+        TITANIUM_JSON_LD_2405.registerContext(profile2405.TX_NAMESPACE);
 
         final String prefix = "json-ld" + File.separator;
         Map<String, String> filesMap = Map.of(
-            profile2405.CX_POLICY_CONTEXT, prefix + "cx-policy-2405.jsonld",
             profile2509.CX_POLICY_CONTEXT, prefix + "cx-policy-2509.jsonld",
             profile2509.ODRL_REMOTE_CONTEXT, prefix + "odrl.jsonld",
             profile2509.DCAT_NAMESPACE, prefix + "dcat.jsonld",
@@ -72,6 +79,15 @@ public class JsonLdUtils {
             profile2509.EDC_NAMESPACE, prefix + "edc-v1.jsonld",
             profile2509.TX_AUTH_NAMESPACE, prefix + "tx-auth-v1.jsonld",
             profile2509.TX_NAMESPACE, prefix + "tx-v1.jsonld"
+        );
+        Map<String, String> filesMap2405 = Map.of(
+            profile2405.CX_POLICY_CONTEXT, prefix + "cx-policy-2405.jsonld",
+            profile2405.ODRL_REMOTE_CONTEXT, prefix + "odrl.jsonld",
+            profile2405.DCAT_NAMESPACE, prefix + "dcat.jsonld",
+            profile2405.DSPACE_NAMESPACE, prefix + "dspace.jsonld",
+            profile2405.EDC_NAMESPACE, prefix + "edc-v1.jsonld",
+            profile2405.TX_AUTH_NAMESPACE, prefix + "tx-auth-v1.jsonld",
+            profile2405.TX_NAMESPACE, prefix + "tx-v1.jsonld"
         );
 
         Function<String, URI> uriFunction = fileName -> {
@@ -86,12 +102,23 @@ public class JsonLdUtils {
         for (var entry : filesMap.entrySet()) {
             TITANIUM_JSON_LD.registerCachedDocument(entry.getKey(), uriFunction.apply(entry.getValue()));
         }
+        for (var entry : filesMap2405.entrySet()) {
+            TITANIUM_JSON_LD_2405.registerCachedDocument(entry.getKey(), uriFunction.apply(entry.getValue()));
+        }
     }
 
     public ObjectNode expand(JsonNode node) {
+        return expand(node, variablesService.getEdcProfileVersion());
+    }
+
+    public ObjectNode expand(JsonNode node, PolicyProfileVersionEnumeration profile) {
+        var JSON_LD = switch (profile) {
+            case POLICY_PROFILE_2405 -> TITANIUM_JSON_LD_2405;
+            case POLICY_PROFILE_2509 -> TITANIUM_JSON_LD;
+        };
         JsonReader jsonReader = Json.createReader(new StringReader(node.toString()));
         var jakartaJson = jsonReader.readObject();
-        var expandedJakartaJson = TITANIUM_JSON_LD.expand(jakartaJson).getContent();
+        var expandedJakartaJson = JSON_LD.expand(jakartaJson).getContent();
         try {
             return (ObjectNode) MAPPER.readTree(expandedJakartaJson.toString());
         } catch (Exception e) {
@@ -101,9 +128,17 @@ public class JsonLdUtils {
     }
 
     public ObjectNode compact(JsonNode node) {
+        return compact(node, variablesService.getEdcProfileVersion());
+    }
+
+    public ObjectNode compact(JsonNode node, PolicyProfileVersionEnumeration profile) {
+        var JSON_LD = switch (profile) {
+            case POLICY_PROFILE_2405 -> TITANIUM_JSON_LD_2405;
+            case POLICY_PROFILE_2509 -> TITANIUM_JSON_LD;
+        };
         JsonReader jsonReader = Json.createReader(new StringReader(node.toString()));
         var jakartaJson = jsonReader.readObject();
-        var expandedJakartaJson = TITANIUM_JSON_LD.compact(jakartaJson).getContent();
+        var expandedJakartaJson = JSON_LD.compact(jakartaJson).getContent();
         try {
             return (ObjectNode) MAPPER.readTree(expandedJakartaJson.toString());
         } catch (Exception e) {

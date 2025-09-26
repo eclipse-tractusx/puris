@@ -77,14 +77,14 @@ public class JsonLdUtilsTest {
         "                \"odrl:constraint\": {\n" +
         "                    \"odrl:and\": [\n" +
         "                        {\n" +
-        "                            \"odrl:leftOperand\": \"BusinessPartnerNumber\",\n" +
+        "                            \"odrl:leftOperand\": \"cx-policy:BusinessPartnerNumber\",\n" +
         "                            \"odrl:operator\": {\n" +
         "                                \"@id\": \"odrl:eq\"\n" +
         "                            },\n" +
         "                            \"odrl:rightOperand\": \"BPNL4444444444XX\"\n" +
         "                        },\n" +
         "                        {\n" +
-        "                            \"odrl:leftOperand\": \"Membership\",\n" +
+        "                            \"odrl:leftOperand\": \"cx-policy:Membership\",\n" +
         "                            \"odrl:operator\": {\n" +
         "                                \"@id\": \"odrl:eq\"\n" +
         "                            },\n" +
