@@ -29,6 +29,7 @@ import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthentica
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Address;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.AddressDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
@@ -72,8 +73,8 @@ public class PartnerControllerTest {
     private final String partnerBpnl = "BPNL3333333333RR";
     private final String bpna = "BPNA1234567890AA";
     private final String bpns = "BPNS1234567890SS";
-    private final PartnerDto partnerDto = new PartnerDto(UUID.randomUUID(), "TestPartner", edcUrl, bpnl, null, null);
-    private final Partner existingPartner = new Partner("TestPartner", edcUrl, bpnl, bpns, "TestSite", bpna, "Test Street", "Test City", "DE");
+    private final PartnerDto partnerDto = new PartnerDto(UUID.randomUUID(), "TestPartner", edcUrl, bpnl, null, null, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
+    private final Partner existingPartner = new Partner("TestPartner", edcUrl, bpnl, bpns, "TestSite", bpna, "Test Street", "Test City", "DE", PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
     @Test
     @WithMockApiKey

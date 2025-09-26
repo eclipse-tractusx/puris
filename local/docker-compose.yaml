@@ -104,7 +104,7 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://dtr-customer:4243/actuator/health/readiness"]
-      interval: 4s
+      interval: 6s
       timeout: 3s
       retries: 30
     ports:
@@ -168,9 +168,9 @@ services:
       edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://edc-customer-control-plane:8180/api/check/health"]
-      interval: 4s
+      interval: 6s
       timeout: 3s
-      retries: 20
+      retries: 30
     ports:
       - "127.0.0.1:8180:8180"
       - "127.0.0.1:8181:8181"
@@ -195,9 +195,9 @@ services:
     container_name: customer-data-plane
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://edc-customer-data-plane:8280/api/check/health"]
-      interval: 4s
+      interval: 6s
       timeout: 3s
-      retries: 20
+      retries: 30
     ports:
       - "127.0.0.1:8280:8280"
       - "127.0.0.1:8281:8281"
@@ -292,7 +292,7 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://dtr-supplier:4243/actuator/health/readiness"]
-      interval: 4s
+      interval: 6s
       timeout: 3s
       retries: 30
     ports:
@@ -326,9 +326,9 @@ services:
     container_name: supplier-control-plane
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://edc-supplier-control-plane:9180/api/check/health"]
-      interval: 4s
+      interval: 6s
       timeout: 3s
-      retries: 20
+      retries: 30
     ports:
       - "127.0.0.1:9180:9180"
       - "127.0.0.1:9181:9181"
@@ -358,9 +358,9 @@ services:
     container_name: supplier-data-plane
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://edc-supplier-data-plane:9280/api/check/health"]
-      interval: 4s
+      interval: 6s
       timeout: 3s
-      retries: 20
+      retries: 30
     ports:
       - "127.0.0.1:9280:9280"
       - "127.0.0.1:9281:9281"

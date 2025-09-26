@@ -485,6 +485,11 @@ backend:
       name: "cx.puris.base"
       # -- The version of the purpose to use for submodel contracts. NEEDS TO BE PUT AS "STRING"!
       version: "1"
+    policyprofile:
+      # -- The default policy profile to use for policy definitions and contract definitions. 
+      # If you intend to use an EDC before Tractus-x EDC version 0.11.0 or equivalent this needs to be "profile2405".
+      # For newer EDC versions (>=0.11.0) you can choose to use the newest version profile2509 or the legacy version profile2405.
+      version: profile2509
     dtr:
       # --Endpoint for DTR including api/v3 prefix. Must contain protocol (http/https).
       url: https://localhost:4243/api/v3
