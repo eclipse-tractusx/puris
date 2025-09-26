@@ -131,6 +131,7 @@ type PlannedProductionModalProps = {
     mode: ModalMode;
     onClose: () => void;
     onSave: () => void;
+    onRemove?: (deletedUuid: string) => void;
     production: Partial<Production> | null;
     productions: Production[];
 };
@@ -143,7 +144,7 @@ const isValidProduction = (production: Partial<Production>) =>
     production.partner &&
     isValidOrderReference(production);
 
-export const PlannedProductionModal = ({ open, mode, onClose, onSave, production, productions }: PlannedProductionModalProps) => {
+export const PlannedProductionModal = ({ open, mode, onClose, onSave, onRemove, production, productions }: PlannedProductionModalProps) => {
     const [temporaryProduction, setTemporaryProduction] = useState<Partial<Production>>(production ?? {});
     const { partners } = usePartners('product', temporaryProduction?.material?.materialNumberSupplier ?? null);
     const { sites } = useSites();
@@ -188,8 +189,19 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, production
             })
             .finally(onClose);
     };
-    const handleDelete = (row: Production) => {
-        if (row.uuid) deleteProduction(row.uuid).then(onSave);
+    const handleDelete = async (row: Production) => {
+        if (row.uuid) {
+            try {
+                await deleteProduction(row.uuid);
+                onRemove?.(row.uuid);
+            } catch (error) {
+                notify({
+                    title: 'Error deleting production',
+                    description: 'Failed to delete the production',
+                    severity: 'error',
+                });
+            }
+        }
     };
     useEffect(() => {
         if (production) setTemporaryProduction(production);
