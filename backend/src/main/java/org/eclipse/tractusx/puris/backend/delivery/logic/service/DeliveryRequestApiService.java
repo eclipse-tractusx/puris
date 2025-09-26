@@ -26,11 +26,14 @@ import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.DeliveryResponsibilityEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
+import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.logic.adapter.DeliveryInformationSammMapper;
 import org.eclipse.tractusx.puris.backend.delivery.logic.dto.deliverysamm.DeliveryInformation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshError;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -38,6 +41,7 @@ import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.Directio
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -144,7 +148,9 @@ public class DeliveryRequestApiService {
         return sammMapper.ownDeliveryToSamm(currentDeliveries, partner, material);
     }
 
-    public void doReportedDeliveryRequest(Partner partner, Material material) {
+    public RefreshResult doReportedDeliveryRequest(Partner partner, Material material) {
+        List<RefreshError> errors = new ArrayList<>();
+        List<ReportedDelivery> validDeliveries = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
             if (mpr.getPartnerCXNumber() == null) {
@@ -159,23 +165,40 @@ public class DeliveryRequestApiService {
                 var deliveryPartner = delivery.getPartner();
                 var deliveryMaterial = delivery.getMaterial();
                 if (!partner.equals(deliveryPartner) || !material.equals(deliveryMaterial)) {
-                    log.warn("Received inconsistent data from " + partner.getBpnl() + "\n" + deliveries);
-                    return;
+                    errors.add(new RefreshError(List.of("Received inconsistent data from " + partner.getBpnl())));
+                    continue;
+                }
+
+                List<String> validationErrors = reportedDeliveryService.validateWithDetails(delivery);
+                if (!validationErrors.isEmpty()) {
+                    errors.add(new RefreshError(validationErrors));
+                } else {
+                    validDeliveries.add(delivery);
                 }
             }
+
+            if (!errors.isEmpty()) {
+                log.warn("Validation errors found for ReportedDelivery request from partner {} for material {}: {}", 
+                        partner.getBpnl(), material.getOwnMaterialNumber(), errors);
+                return new RefreshResult("Validation failed for reported deliveries", errors);
+            }
+   
             // delete older data:
             var oldDeliveries = reportedDeliveryService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.empty(), Optional.of(partner.getBpnl()), Optional.empty(), Optional.empty());
             for (var oldDelivery : oldDeliveries) {
                 reportedDeliveryService.delete(oldDelivery.getUuid());
             }
-            for (var newDelivery : deliveries) {
+            for (var newDelivery : validDeliveries) {
                 reportedDeliveryService.create(newDelivery);
             }
-            log.info("Updated Reported Deliveries for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
-
+            log.info("Successfully updated ReportedDelivery for {} and partner {}", 
+                        material.getOwnMaterialNumber(), partner.getBpnl());
             materialService.updateTimestamp(material.getOwnMaterialNumber());
+            return new RefreshResult("Successfully processed all reported deliveries", errors);
         } catch (Exception e) {
             log.error("Error in Reported Deliveries Request for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
+            errors.add(new RefreshError(List.of("System error: " + e.getMessage())));
+            return new RefreshResult("System error occurred during processing", errors);
         }
     }
 
