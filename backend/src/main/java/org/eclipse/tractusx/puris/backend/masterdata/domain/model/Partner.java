@@ -65,6 +65,10 @@ public class Partner {
     @Pattern(regexp = PatternStore.URL_STRING)
     private String edcUrl;
     /**
+     * The Policy Profile version used by this partner.
+     */
+    private PolicyProfileVersionEnumeration policyProfileVersion = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405;
+    /**
      * The BPNL of the partner.
      */
     @Pattern(regexp = PatternStore.BPNL_STRING)
@@ -100,10 +104,11 @@ public class Partner {
      * @param country         country of this BPNA
      */
     public Partner(String name, String edcUrl, String bpnl, String siteBpns, String siteName, String siteBpna, String streetAndNumber,
-                   String zipCodeAndCity, String country) {
+                   String zipCodeAndCity, String country, PolicyProfileVersionEnumeration policyProfileVersion) {
         this.name = name;
         this.edcUrl = edcUrl;
         this.bpnl = bpnl;
+        this.policyProfileVersion = policyProfileVersion;
         Site site = new Site(siteBpns, siteName, siteBpna, streetAndNumber, zipCodeAndCity, country);
         sites.add(site);
     }

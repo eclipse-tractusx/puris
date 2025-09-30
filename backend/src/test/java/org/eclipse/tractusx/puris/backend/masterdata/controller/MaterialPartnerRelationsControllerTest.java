@@ -30,6 +30,7 @@ import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -73,7 +74,7 @@ public class MaterialPartnerRelationsControllerTest {
     private final String edcUrl = "https://example.com";
     private final String bpna = "BPNA1234567890AA";
     private final String bpns = "BPNS1234567890SS";
-    private final Partner partner = new Partner("TestPartner", edcUrl, bpnl, bpns, "TestSite", bpna, "Test Street", "Test City", "DE");
+    private final Partner partner = new Partner("TestPartner", edcUrl, bpnl, bpns, "TestSite", bpna, "Test Street", "Test City", "DE", PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
     private final Material material = Material.builder()
         .ownMaterialNumber(materialNumber)
         .materialFlag(true)

@@ -80,9 +80,7 @@ tests {
       "assigner": jsonData["dspace:participantId"],
       "odrl:permission": {
           "odrl:target": assetId,
-          "odrl:action": {
-              "odrl:type": "http://www.w3.org/ns/odrl/2/use"
-          },
+          "odrl:action": catalog["odrl:hasPolicy"]["odrl:permission"]["odrl:action"],
           "odrl:constraint": catalog["odrl:hasPolicy"]["odrl:permission"]["odrl:constraint"]
       },
       "odrl:prohibition": [],

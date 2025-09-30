@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- /
+- Implemented logic for handling multiple policy profiles to enhance backwards compatibility ([#988](https://github.com/eclipse-tractusx/puris/pull/988))
 
 ### Changed
 

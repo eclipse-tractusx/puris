@@ -23,6 +23,7 @@ import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingSe
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
@@ -250,7 +251,8 @@ public class MaterialServiceTest {
             "BPNA4444444444AA",
             "13th Street 47",
             "10011 New York",
-            "USA"
+            "USA",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
         );
         return customerPartnerEntity;
     }
@@ -265,7 +267,8 @@ public class MaterialServiceTest {
             "BPNA1234567890AA",
             "Wall Street 101",
             "10001 New York",
-            "USA"
+            "USA",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
         );
         Site secondSite = new Site(
             "BPNS2222222222SS",
