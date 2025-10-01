@@ -33,7 +33,7 @@
     </parent>
     <groupId>org.eclipse.tractusx.puris</groupId>
     <artifactId>puris-backend</artifactId>
-    <version>3.4.0</version>
+    <version>3.4.1</version>
     <name>puris-backend</name>
     <description>PURIS Backend</description>
     <properties>

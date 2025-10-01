@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2025 Volkswagen AG
 Copyright (c) 2025 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -147,7 +148,13 @@ type StockModalProps = {
     stockType: StockType;
 };
 const isValidStock = (stock: Partial<Stock>) =>
-    stock && stock.quantity && stock.measurementUnit && stock.partner && stock.stockLocationBpns && stock.stockLocationBpna && isValidOrderReference(stock);
+    stock &&
+    typeof stock.quantity === 'number' && stock.quantity >= 0 &&
+    stock.measurementUnit &&
+    stock.partner &&
+    stock.stockLocationBpns &&
+    stock.stockLocationBpna &&
+    isValidOrderReference(stock);
 
 export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stocks, stockType }: StockModalProps) => {
     const [temporaryStock, setTemporaryStock] = useState<Partial<Stock>>(stock ?? {});

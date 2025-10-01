@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2024 Volkswagen AG
 Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -77,8 +78,8 @@ public class OwnProductionService extends ProductionService<OwnProduction> {
         List<String> errors = new ArrayList<>();
         Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
 
-        if (production.getQuantity() <= 0) {
-            errors.add("Quantity must be greater than 0.");
+        if (production.getQuantity() < 0) {
+            errors.add("Quantity must be greater than or equal to 0.");
         }
         if (production.getMeasurementUnit() == null) {
             errors.add("Missing measurement unit.");

@@ -155,6 +155,9 @@ public abstract class ItemStockService<T extends ItemStock> {
             if (itemStock.getLocationBpns() == null) {
                 errors.add("Missing locationBpns.");
             }
+            if (itemStock.getQuantity() < 0){
+                errors.add("Quantity must be greater than or equal to 0.");
+            }
             if (itemStock.getMeasurementUnit() == null) {
                 errors.add("Missing measurementUnit.");
             }

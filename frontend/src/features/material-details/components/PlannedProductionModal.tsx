@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2024 Volkswagen AG
 Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -139,7 +140,7 @@ const isValidProduction = (production: Partial<Production>) =>
     production &&
     production.productionSiteBpns &&
     production.estimatedTimeOfCompletion &&
-    production.quantity &&
+    typeof production.quantity === 'number' && production.quantity >= 0 &&
     production.measurementUnit &&
     production.partner &&
     isValidOrderReference(production);
