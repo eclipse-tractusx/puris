@@ -270,7 +270,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, onRemove, 
                                         type="number"
                                         placeholder="Enter quantity"
                                         value={temporaryProduction.quantity ?? ''}
-                                        error={formError && (temporaryProduction?.quantity === null || temporaryProduction.quantity < 0)}
+                                        error={formError && (temporaryProduction?.quantity == null || temporaryProduction.quantity < 0)}
                                         onChange={(e) =>
                                             setTemporaryProduction((curr) => ({
                                                 ...curr,
