@@ -4,6 +4,10 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 
 <!-- TOC -->
 - [Migration Guide](#migration-guide)
+  - [Version 4.2.x to 5.0.x](#version-42x-to-50x)
+    - [StockView Controller Needs Mandatory Parameter for Routes material-stocks and product-stocks](#stockview-controller-needs-mandatory-parameter-for-routes-material-stocks-and-product-stocks)
+  - [Version 4.1.x to 4.2.x](#version-41x-to-42x)
+    - [Suppress Contract Creation for Digital Twin Registry (DTR)](#suppress-contract-creation-for-digital-twin-registry-dtr)
   - [Version 4.0.x to 4.1.x](#version-40x-to-41x)
     - [Database changes to support new notification functionality](#database-changes-to-support-new-notification-functionality)
   - [Version 3.0.x to 4.0.x](#version-30x-to-40x)
@@ -51,6 +55,16 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 > 
 > - Deploying an older version of the software may have used an older postgresql version. This is NOT applicable for the PURIS charts.
 > - The community is working out on how to resolve the issue.
+
+## Version 4.2.x to 5.0.x
+
+### StockView Controller Needs Mandatory Parameter for Routes material-stocks and product-stocks
+
+In case you made use of the backend routes `stockView/material-stocks` or `stockView/product-stocks`, both now need a mandatory parameter `ownMaterialNumber` accepting the base64 encoded material number (same as for production, demand and delivery). This is done to harmonize the API and fix [issue#979](https://github.com/eclipse-tractusx/puris/issues/979).
+
+Due to low usage volumes, we decided to not keep this part downward compatible.
+
+Please refer to the swagger-ui hosted at `your-backend-address/catena/swagger-ui/index.html` or the [latest version hosted at the api hub.](https://eclipse-tractusx.github.io/api-hub/puris/)
 
 ## Version 4.1.x to 4.2.x
 

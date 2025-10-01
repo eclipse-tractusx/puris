@@ -168,9 +168,10 @@ public class StockViewController {
 
     @GetMapping("product-stocks")
     @ResponseBody
-    @Operation(description = "Returns a list of all product-stocks")
-    public List<ProductStockDto> getProductStocks() {
-        return productItemStockService.findAll().stream()
+    @Operation(summary = "Get all material stocks for the given Material", description = "Get all material stocks for the given material number.")
+    public List<ProductStockDto> getProductStocks(@Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        return productItemStockService.findByOwnMaterialNumber(ownMaterialNumber).stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
     }
@@ -342,9 +343,10 @@ public class StockViewController {
 
     @GetMapping("material-stocks")
     @ResponseBody
-    @Operation(description = "Returns a list of all material-stocks")
-    public List<MaterialStockDto> getMaterialStocks() {
-        List<MaterialStockDto> allMaterialStocks = materialItemStockService.findAll().stream()
+    @Operation(summary = "Get all material stocks for the given Material", description = "Get all material stocks for the given material number.")
+    public List<MaterialStockDto> getMaterialStocks(@Parameter(description = "encoded in base64") String ownMaterialNumber) {
+        ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        List<MaterialStockDto> allMaterialStocks = materialItemStockService.findByOwnMaterialNumber(ownMaterialNumber).stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
         return allMaterialStocks;

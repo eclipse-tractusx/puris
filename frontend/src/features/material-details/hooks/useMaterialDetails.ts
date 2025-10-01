@@ -53,7 +53,7 @@ export function useMaterialDetails(materialNumber: string, direction: DirectionT
     const { productions, isLoadingProductions, refreshProduction } = useProduction(materialNumber ?? null, null);
     const { demands, isLoadingDemands, refreshDemand } = useDemand(materialNumber ?? null, null);
     const { deliveries, isLoadingDeliveries, refreshDelivery } = useDelivery(materialNumber ?? null, null);
-    const { stocks, isLoadingStocks, refreshStocks } = useStocks(direction === 'INBOUND' ? 'material' : 'product');
+    const { stocks, isLoadingStocks, refreshStocks } = useStocks(direction === 'INBOUND' ? 'material' : 'product', materialNumber);
     const { supplies, isLoadingSupply, refreshSupply } = useDaysOfSupply(materialNumber, direction);
     const { partners, isLoadingPartners } = usePartners(direction === 'INBOUND' ? 'material' : 'product', materialNumber);
     const [expandablePartners, setExpandablePartners] = useState<Expandable<Partner>[]>([]);

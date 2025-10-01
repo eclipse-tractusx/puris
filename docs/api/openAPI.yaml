@@ -1376,7 +1376,7 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 3.3.0
+  version: 4.0.0
 openapi: 3.1.0
 paths:
   /days-of-supply/customer:
@@ -3661,8 +3661,17 @@ paths:
       - stock-view-controller
   /stockView/material-stocks:
     get:
-      description: Returns a list of all material-stocks
+      description: Get all material stocks for the given material number.
       operationId: getMaterialStocks
+      parameters:
+      - description: encoded in base64
+        in: query
+        name: ownMaterialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
       responses:
         '200':
           content:
@@ -3674,6 +3683,7 @@ paths:
                 maxItems: 50
                 type: array
           description: OK
+      summary: Get all material stocks for the given Material
       tags:
       - stock-view-controller
     post:
@@ -3805,8 +3815,17 @@ paths:
       - stock-view-controller
   /stockView/product-stocks:
     get:
-      description: Returns a list of all product-stocks
+      description: Get all material stocks for the given material number.
       operationId: getProductStocks
+      parameters:
+      - description: encoded in base64
+        in: query
+        name: ownMaterialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
       responses:
         '200':
           content:
@@ -3818,6 +3837,7 @@ paths:
                 maxItems: 50
                 type: array
           description: OK
+      summary: Get all material stocks for the given Material
       tags:
       - stock-view-controller
     post:
