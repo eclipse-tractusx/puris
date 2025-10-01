@@ -292,7 +292,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, onRemove, dem
                                     type="number"
                                     placeholder="Enter quantity"
                                     value={temporaryDemand.quantity ?? ''}
-                                    error={formError && (temporaryDemand?.quantity === null || temporaryDemand?.quantity === undefined)}
+                                    error={formError && (temporaryDemand?.quantity === null || temporaryDemand.quantity < 0)}
                                     onChange={(e) =>
                                         setTemporaryDemand((curr) =>
                                             parseFloat(e.target.value) >= 0

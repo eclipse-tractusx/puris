@@ -510,7 +510,7 @@ export const DeliveryInformationModal = ({
                                         hiddenLabel
                                         type="number"
                                         value={temporaryDelivery.quantity ?? ''}
-                                        error={formError && !temporaryDelivery?.quantity}
+                                        error={formError && (temporaryDelivery?.quantity == null || temporaryDelivery.quantity <= 0)}
                                         onChange={(e) =>
                                             setTemporaryDelivery((curr) => ({
                                                 ...curr,
