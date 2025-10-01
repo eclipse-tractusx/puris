@@ -5,13 +5,24 @@ meta {
 }
 
 get {
-  url: {{CUSTOMER_PURIS_BACKEND}}/catena/stockView/material-stocks
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/stockView/material-stocks?ownMaterialNumber={{B64_MNR_CUSTOMER}}
   body: none
   auth: none
 }
 
+params:query {
+  ownMaterialNumber: {{B64_MNR_CUSTOMER}}
+}
+
 headers {
   X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+}
+
+script:pre-request {
+  var plain = bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER")
+  var encoded = Buffer.from(plain).toString("base64")
+  bru.setVar("B64_MNR_CUSTOMER", encoded)
+  
 }
 
 tests {

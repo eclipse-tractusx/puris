@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v3.4.1
+## v3.5.0
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
 
@@ -24,6 +24,7 @@ The **need for configuration updates** is **marked bold**.
 - Fixed invalid framework policy in the bruno DTR setup ([#967](https://github.com/eclipse-tractusx/puris/pull/967))
 - Fixed Modal dialogs not updating when deleting entries for materials ([#984](https://github.com/eclipse-tractusx/puris/pull/984))
 - Allow 0 values in all reported and most own data to improve application resiliency ([#991](https://github.com/eclipse-tractusx/puris/pull/991))
+- Fixed product and material stocks always including values for all materials ([#994](https://github.com/eclipse-tractusx/puris/pull/994))
 
 ## v3.4.0
 
