@@ -280,7 +280,7 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
                                         type="number"
                                         placeholder="Enter quantity"
                                         value={temporaryStock.quantity ?? ''}
-                                        error={formError && !temporaryStock?.quantity}
+                                        error={formError && (temporaryStock?.quantity === null || temporaryStock?.quantity === undefined)}
                                         onChange={(e) =>
                                             setTemporaryStock((curr) => ({
                                                 ...curr,
