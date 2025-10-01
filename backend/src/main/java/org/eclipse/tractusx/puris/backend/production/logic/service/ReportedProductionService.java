@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2024 Volkswagen AG
 Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -61,7 +62,7 @@ public class ReportedProductionService extends ProductionService<ReportedProduct
 
     public boolean validate(ReportedProduction production) {
         return 
-            production.getQuantity() > 0 && 
+            production.getQuantity() >= 0 &&
             production.getMeasurementUnit() != null && 
             production.getEstimatedTimeOfCompletion() != null && 
             production.getMaterial() != null &&

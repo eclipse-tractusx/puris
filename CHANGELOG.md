@@ -21,8 +21,9 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- fixed invalid framwork policy in the bruno DTR setup ([#967](https://github.com/eclipse-tractusx/puris/pull/967))
+- Fixed invalid framework policy in the bruno DTR setup ([#967](https://github.com/eclipse-tractusx/puris/pull/967))
 - Fixed Modal dialogs not updating when deleting entries for materials ([#984](https://github.com/eclipse-tractusx/puris/pull/984))
+- Allow 0 values in all reported and most own data to improve application resiliency ([#991](https://github.com/eclipse-tractusx/puris/pull/991))
 
 ## v3.4.0
 

@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2024 Volkswagen AG
 Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -149,7 +150,13 @@ type DemandCategoryModalProps = {
 };
 
 const isValidDemand = (demand: Partial<Demand>) =>
-    demand?.day && demand?.demandLocationBpns && demand?.quantity && demand.demandCategoryCode && demand?.measurementUnit && demand?.partnerBpnl;
+    demand &&
+    demand.day &&
+    demand.demandLocationBpns &&
+    typeof demand.quantity === 'number' && demand?.quantity >= 0 &&
+    demand.demandCategoryCode &&
+    demand.measurementUnit &&
+    demand.partnerBpnl;
 
 export const DemandCategoryModal = ({ open, mode, onClose, onSave, onRemove, demand, demands }: DemandCategoryModalProps) => {
     const [temporaryDemand, setTemporaryDemand] = useState<Partial<Demand>>(demand ?? {});
@@ -285,7 +292,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, onRemove, dem
                                     type="number"
                                     placeholder="Enter quantity"
                                     value={temporaryDemand.quantity ?? ''}
-                                    error={formError && !temporaryDemand?.quantity}
+                                    error={formError && (temporaryDemand?.quantity == null || temporaryDemand.quantity < 0)}
                                     onChange={(e) =>
                                         setTemporaryDemand((curr) =>
                                             parseFloat(e.target.value) >= 0

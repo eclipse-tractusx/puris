@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2024 Volkswagen AG
 Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -40,7 +41,7 @@ public class ReportedDemandService extends DemandService<ReportedDemand, Reporte
             demand.getMaterial() != null &&
             demand.getPartner() != null &&
             mprService.partnerOrdersProduct(demand.getMaterial(), demand.getPartner()) &&
-            demand.getQuantity() > 0 && 
+            demand.getQuantity() >= 0 &&
             demand.getMeasurementUnit() != null && 
             demand.getDay() != null && 
             demand.getDemandCategoryCode() != null &&

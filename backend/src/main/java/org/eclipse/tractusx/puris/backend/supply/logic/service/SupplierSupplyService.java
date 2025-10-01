@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -114,6 +115,7 @@ public class SupplierSupplyService extends SupplyService<OwnSupplierSupply, Repo
             daysOfSupply.getPartner() != null &&
             daysOfSupply.getMaterial() != null &&
             daysOfSupply.getDate() != null &&
+            daysOfSupply.getDaysOfSupply() >= 0 &&
             daysOfSupply.getStockLocationBPNS() != null &&
             daysOfSupply.getStockLocationBPNA() != null &&
             daysOfSupply.getPartner() != partnerService.getOwnPartnerEntity() &&

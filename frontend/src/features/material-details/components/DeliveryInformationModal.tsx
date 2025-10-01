@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2024 Volkswagen AG
 Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -221,11 +222,12 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void) => {
 };
 
 const isValidDelivery = (delivery: Partial<Delivery>) =>
+    delivery &&
     delivery.ownMaterialNumber &&
     delivery.originBpns &&
     delivery.partnerBpnl &&
     delivery.destinationBpns &&
-    delivery.quantity &&
+    typeof delivery.quantity === 'number' && delivery.quantity > 0 &&
     delivery.measurementUnit &&
     delivery.incoterm &&
     delivery.dateOfDeparture &&
@@ -508,7 +510,7 @@ export const DeliveryInformationModal = ({
                                         hiddenLabel
                                         type="number"
                                         value={temporaryDelivery.quantity ?? ''}
-                                        error={formError && !temporaryDelivery?.quantity}
+                                        error={formError && (temporaryDelivery?.quantity == null || temporaryDelivery.quantity <= 0)}
                                         onChange={(e) =>
                                             setTemporaryDelivery((curr) => ({
                                                 ...curr,

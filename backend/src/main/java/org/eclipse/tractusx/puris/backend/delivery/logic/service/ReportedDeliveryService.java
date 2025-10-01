@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -76,7 +77,7 @@ public class ReportedDeliveryService extends DeliveryService<ReportedDelivery> {
 
     public boolean validate(ReportedDelivery delivery) {
         return 
-            delivery.getQuantity() > 0 && 
+            delivery.getQuantity() >= 0 &&
             delivery.getMeasurementUnit() != null &&
             delivery.getMaterial() != null &&
             delivery.getPartner() != null &&
