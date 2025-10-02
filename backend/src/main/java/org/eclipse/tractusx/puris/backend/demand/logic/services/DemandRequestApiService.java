@@ -113,8 +113,6 @@ public class DemandRequestApiService {
             var data = edcAdapterService.doSubmodelRequest(AssetType.DEMAND_SUBMODEL, mpr, DirectionCharacteristic.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ShortTermMaterialDemand.class);
             var demands = sammMapper.sammToReportedDemand(samm, partner);
-
-            demands.get(demands.size() - 1).setQuantity(-20.0);
             
             for (var demand : demands) {
                 var demandPartner = demand.getPartner();
