@@ -36,7 +36,7 @@ import { scheduleErpUpdateStocks } from '@services/stocks-service';
 import { NotFoundView } from '@views/errors/NotFoundView';
 import { Material } from '@models/types/data/stock';
 import { BPNS } from '@models/types/edc/bpn';
-import { useSubscription } from 'react-stomp-hooks';
+import { IMessage, useSubscription } from 'react-stomp-hooks';
 import { refreshPartnerData } from '@services/refresh-service';
 
 type SummaryContainerProps = {
@@ -56,6 +56,45 @@ function SummaryContainer({ children }: SummaryContainerProps) {
             <Stack sx={{ overflowX: 'auto', position: 'relative' }}>{children}</Stack>
         </Box>
     );
+}
+
+function makeErrorDownload(payloadText: string, materialNo: string) {
+  let contents: string;
+  try {
+    contents = JSON.stringify(JSON.parse(payloadText), null, 2);
+  } catch {
+    contents = JSON.stringify(
+      { material: materialNo, errors: [payloadText] },
+      null,
+      2
+    );
+  }
+
+  const blob = new Blob([contents], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const ts = new Date().toISOString().replace(/[:.]/g, '-');
+  const filename = `material-${materialNo}-refresh-errors-${ts}.json`;
+
+  return { url, filename };
+}
+
+function parseRefreshWsMessage(msg?: string): { ok: boolean; errors: string[] } {
+  const text = (msg ?? '').trim();
+  if (!text || text === 'SUCCESS') return { ok: true, errors: [] };
+
+  try {
+    const arr = JSON.parse(text) as unknown;
+    if (Array.isArray(arr)) {
+      const errors = (arr as { errors?: string[] }[])
+        .flatMap(e => Array.isArray(e?.errors) ? e.errors! : [])
+        .filter(s => typeof s === 'string' && s.length > 0);
+      return { ok: errors.length === 0, errors: errors.length ? errors : [text] };
+    }
+    return { ok: false, errors: [text] };
+  } catch {
+    return { ok: false, errors: [text] };
+  }
 }
 
 type MaterialDetailsProps = {
@@ -131,25 +170,44 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
         };
     }, {}), [createSummaryByPartnerAndDirection, direction, expandablePartners]);
 
-    const handleRefresh = async () => {
-        refresh(['partner-data'])
-            .then(() => {
+    const handleRefreshMessage = async (message?: string) => {
+        const raw = (message ?? '').trim();
+        const { ok, errors } = parseRefreshWsMessage(raw);
+        try {
+            await refresh(['partner-data']);
+
+            if (ok) {
                 notify({
                     title: 'Partner data updated',
-                    description: `The partner data for ${material.name} was updated as requested`,
-                    severity: 'success'
-                })
-            })
-            .catch(() => {
+                    description: `The partner data for ${material.name} was updated as requested.`,
+                    severity: 'success',
+                });
+            } else {
+                const { url, filename } = makeErrorDownload(raw, material.ownMaterialNumber || '');
                 notify({
-                    title: 'Partner data refresh error',
-                    description: `There was an error refreshing the requested partner data. Please try manually reloading the page`,
-                    severity: 'error'
-                })
-            });
-        setIsRefreshing(false);
+                    title: 'Partner data updated with errors',
+                   description: (
+                        <span>
+                        Found {errors.length} issue{errors.length === 1 ? '' : 's'}.{' '}
+                        <a
+                            href={url}
+                            download={filename}
+                            onClick={() => {
+                                setTimeout(() => URL.revokeObjectURL(url), 3000);
+                            }}
+                        >
+                            Download error details
+                        </a>
+                        </span>
+                    ) as unknown as string,
+                    severity: 'error',
+                });
+            }
+        } finally {
+            setIsRefreshing(false);
+        }
     };
-    useSubscription('/topic/material/' + material.ownMaterialNumber, handleRefresh);
+    useSubscription('/topic/material/' + material.ownMaterialNumber, (msg: IMessage) => handleRefreshMessage(msg?.body));
     
     useEffect(() => {
         const callback = (category: DataCategory) => refresh([category]);

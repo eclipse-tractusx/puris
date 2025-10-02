@@ -21,6 +21,7 @@
 
 package org.eclipse.tractusx.puris.backend.supply.logic.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,6 +29,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.OwnDeliveryService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.ReportedDeliveryService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.production.logic.service.OwnProductionService;
@@ -109,19 +111,39 @@ public class SupplierSupplyService extends SupplyService<OwnSupplierSupply, Repo
         return stream.toList();
     }
 
-
     public boolean validate(ReportedSupplierSupply daysOfSupply) {
-        return 
-            daysOfSupply.getPartner() != null &&
-            daysOfSupply.getMaterial() != null &&
-            daysOfSupply.getDate() != null &&
-            daysOfSupply.getDaysOfSupply() >= 0 &&
-            daysOfSupply.getStockLocationBPNS() != null &&
-            daysOfSupply.getStockLocationBPNA() != null &&
-            daysOfSupply.getPartner() != partnerService.getOwnPartnerEntity() &&
-            daysOfSupply.getPartner().getSites().stream().anyMatch(site -> 
-                site.getBpns().equals(daysOfSupply.getStockLocationBPNS()) &&
-                site.getAddresses().stream().anyMatch(address -> address.getBpna().equals(daysOfSupply.getStockLocationBPNA()))
-            );
+        return validateWithDetails(daysOfSupply).isEmpty();
+    }
+
+    public List<String> validateWithDetails(ReportedSupplierSupply daysOfSupply) {
+        List<String> errors = new ArrayList<>();
+        Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
+
+        if (daysOfSupply.getMaterial() == null) {
+            errors.add("Missing Material.");
+        }
+        if (daysOfSupply.getPartner() == null) {
+            errors.add("Missing Partner.");
+        }
+        if (daysOfSupply.getDate() == null) {
+            errors.add("Missing date.");
+        }
+        if (daysOfSupply.getStockLocationBPNS() == null) {
+            errors.add("Missing stock location BPNS.");
+        }
+        if (daysOfSupply.getStockLocationBPNA() == null) {
+            errors.add("Missing stock location BPNA.");
+        }
+        if (daysOfSupply.getPartner().equals(ownPartnerEntity)) {
+            errors.add("Partner cannot be the same entity.");
+        }
+       if (daysOfSupply.getPartner().getSites().stream().noneMatch(site -> 
+                site.getBpns().equals(daysOfSupply.getStockLocationBPNS()) || 
+                site.getAddresses().stream().noneMatch(address -> address.getBpna().equals(daysOfSupply.getStockLocationBPNA()))
+            )) {
+            errors.add("Invalid days of supply: stock location is not valid.");
+        }
+
+        return errors;
     }
 }
