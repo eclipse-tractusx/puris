@@ -150,7 +150,6 @@ public class DeliveryRequestApiService {
 
     public RefreshResult doReportedDeliveryRequest(Partner partner, Material material) {
         List<RefreshError> errors = new ArrayList<>();
-        List<ReportedDelivery> validDeliveries = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
             if (mpr.getPartnerCXNumber() == null) {
@@ -172,8 +171,6 @@ public class DeliveryRequestApiService {
                 List<String> validationErrors = reportedDeliveryService.validateWithDetails(delivery);
                 if (!validationErrors.isEmpty()) {
                     errors.add(new RefreshError(validationErrors));
-                } else {
-                    validDeliveries.add(delivery);
                 }
             }
 
@@ -188,7 +185,7 @@ public class DeliveryRequestApiService {
             for (var oldDelivery : oldDeliveries) {
                 reportedDeliveryService.delete(oldDelivery.getUuid());
             }
-            for (var newDelivery : validDeliveries) {
+            for (var newDelivery : deliveries) {
                 reportedDeliveryService.create(newDelivery);
             }
             log.info("Successfully updated ReportedDelivery for {} and partner {}", 

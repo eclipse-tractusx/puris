@@ -22,8 +22,12 @@ package org.eclipse.tractusx.puris.backend.demand.logic.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.demand.domain.model.DemandCategoryEnumeration;
+import org.eclipse.tractusx.puris.backend.demand.domain.model.OwnDemand;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.ReportedDemand;
 import org.eclipse.tractusx.puris.backend.demand.logic.adapter.ShortTermMaterialDemandSammMapper;
 import org.eclipse.tractusx.puris.backend.demand.logic.dto.demandsamm.ShortTermMaterialDemand;
@@ -100,7 +104,6 @@ public class DemandRequestApiService {
 
     public RefreshResult doReportedDemandRequest(Partner partner, Material material) {
         List<RefreshError> errors = new ArrayList<>();
-        List<ReportedDemand> validDemands = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
             if (mpr.getPartnerCXNumber() == null) {
@@ -110,6 +113,9 @@ public class DemandRequestApiService {
             var data = edcAdapterService.doSubmodelRequest(AssetType.DEMAND_SUBMODEL, mpr, DirectionCharacteristic.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ShortTermMaterialDemand.class);
             var demands = sammMapper.sammToReportedDemand(samm, partner);
+
+            demands.get(demands.size() - 1).setQuantity(-20.0);
+            
             for (var demand : demands) {
                 var demandPartner = demand.getPartner();
                 var demandMaterial = demand.getMaterial();
@@ -121,8 +127,6 @@ public class DemandRequestApiService {
                 List<String> validationErrors = reportedDemandService.validateWithDetails(demand);
                 if (!validationErrors.isEmpty()) {
                     errors.add(new RefreshError(validationErrors));
-                } else {
-                    validDemands.add(demand);
                 }
             }
 
@@ -137,7 +141,7 @@ public class DemandRequestApiService {
             for (var oldDemand : oldDemands) {
                 reportedDemandService.delete(oldDemand.getUuid());
             }
-            for (var newDemand : validDemands) {
+            for (var newDemand : demands) {
                 reportedDemandService.create(newDemand);
             }
             log.info("Successfully updated ReportedDemand for {} and partner {}", 

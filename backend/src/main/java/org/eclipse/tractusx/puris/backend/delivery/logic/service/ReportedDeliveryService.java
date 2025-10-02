@@ -172,8 +172,8 @@ public class ReportedDeliveryService extends DeliveryService<ReportedDelivery> {
 
                     break;
                 case CUSTOMER:
-                    if (!delivery.getMaterial().isMaterialFlag()) {
-                        errors.add("Material must have material flag for customer responsibility.");
+                    if (!delivery.getMaterial().isProductFlag()) {
+                        errors.add("Material must have product flag for customer responsibility.");
                     }
                     if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getOriginBpns()))) {
                         errors.add("Site BPNS must match one of the own partner entity's site BPNS for customer responsibility.");
@@ -185,15 +185,15 @@ public class ReportedDeliveryService extends DeliveryService<ReportedDelivery> {
                     break;
                 case PARTIAL:
                     if (delivery.getMaterial().isProductFlag()) {
-                        if (delivery.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())) &&
-                            ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getOriginBpns()))
+                        if (delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())) &&
+                            ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns()))
                         ) {
                             return new ArrayList<>();
                         }
                     }
                     if (delivery.getMaterial().isMaterialFlag()) {
-                        if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())) &&
-                            delivery.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(delivery.getOriginBpns()))) {
+                        if (ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getDestinationBpns())) &&
+                            delivery.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(delivery.getOriginBpns()))) {
                             return new ArrayList<>();
                         }
                     }

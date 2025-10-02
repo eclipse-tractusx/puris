@@ -114,8 +114,6 @@ public class DaysOfSupplyRequestApiService {
 
     public RefreshResult doReportedDaysOfSupplyRequest(Partner partner, Material material, DirectionCharacteristic direction) {
         List<RefreshError> errors = new ArrayList<>();
-        List<ReportedSupplierSupply> validSupplierSupply = new ArrayList<>();
-        List<ReportedCustomerSupply> validCustomerSupply = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
             if (mpr.getPartnerCXNumber() == null) {
@@ -137,8 +135,6 @@ public class DaysOfSupplyRequestApiService {
                     List<String> validationErrors = customerSupplyService.validateWithDetails(reportedCustomerSupply);
                     if (!validationErrors.isEmpty()) {
                         errors.add(new RefreshError(validationErrors));
-                    } else {
-                        validCustomerSupply.add(reportedCustomerSupply);
                     }
                 }
                 if (!errors.isEmpty()) {
@@ -150,7 +146,7 @@ public class DaysOfSupplyRequestApiService {
                 for (var oldSupply : oldSupplies) {
                 customerSupplyService.deleteReportedSupply(oldSupply);
                 }
-                for (var newSupply : validCustomerSupply) {
+                for (var newSupply : reportedCustomerSupplies) {
                     customerSupplyService.createReportedSupply(modelMapper.map(newSupply, ReportedCustomerSupply.class));
                 }
             } else {
@@ -166,15 +162,13 @@ public class DaysOfSupplyRequestApiService {
                     List<String> validationErrors = supplierSupplyService.validateWithDetails(reportedSupplierSupply);
                     if (!validationErrors.isEmpty()) {
                         errors.add(new RefreshError(validationErrors));
-                    } else {
-                        validSupplierSupply.add(reportedSupplierSupply);
                     }
                 }
                 var oldSupplies = supplierSupplyService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
                 for (var oldSupply : oldSupplies) {
                 supplierSupplyService.deleteReportedSupply(oldSupply);
                 }
-                for (var newSupply : validSupplierSupply) {
+                for (var newSupply : reportedSupplierSupplies) {
                     supplierSupplyService.createReportedSupply(modelMapper.map(newSupply, ReportedSupplierSupply.class));
                 }
             }

@@ -84,7 +84,6 @@ public class ProductionRequestApiService {
 
     public RefreshResult doReportedProductionRequest(Partner partner, Material material) {
         List<RefreshError> errors = new ArrayList<>();
-        List<ReportedProduction> validProductions = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
             var data = edcAdapterService.doSubmodelRequest(AssetType.PRODUCTION_SUBMODEL, mpr, DirectionCharacteristic.OUTBOUND, 1);
@@ -101,8 +100,6 @@ public class ProductionRequestApiService {
                 List<String> validationErrors = reportedProductionService.validateWithDetails(production);
                 if (!validationErrors.isEmpty()) {
                     errors.add(new RefreshError(validationErrors));
-                } else {
-                    validProductions.add(production);
                 }
             }
 
@@ -117,7 +114,7 @@ public class ProductionRequestApiService {
             for (var oldProduction : oldProductions) {
                 reportedProductionService.delete(oldProduction.getUuid());
             }
-            for (var newProduction : validProductions) {
+            for (var newProduction : productions) {
                 reportedProductionService.create(newProduction);
             }
             log.info("Successfully updated ReportedProduction for {} and partner {}", 

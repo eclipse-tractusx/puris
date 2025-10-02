@@ -135,7 +135,6 @@ public class ItemStockRequestApiService {
 
     public RefreshResult doItemStockSubmodelReportedMaterialItemStockRequest(Partner partner, Material material) {
         List<RefreshError> errors = new ArrayList<>();
-        List<ReportedMaterialItemStock> validStocks = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
             var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL, mpr, DirectionCharacteristic.OUTBOUND, 1);
@@ -152,8 +151,6 @@ public class ItemStockRequestApiService {
                 List<String> validationErrors = reportedMaterialItemStockService.validateWithDetails(stock);
                 if (!validationErrors.isEmpty()) {
                     errors.add(new RefreshError(validationErrors));
-                } else {
-                    validStocks.add(stock);
                 }
             }
             if (!errors.isEmpty()) {
@@ -182,7 +179,6 @@ public class ItemStockRequestApiService {
 
     public RefreshResult doItemStockSubmodelReportedProductItemStockRequest(Partner partner, Material material) {
         List<RefreshError> errors = new ArrayList<>();
-        List<ReportedProductItemStock> validStocks = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
             if (mpr.getPartnerCXNumber() == null) {
@@ -203,8 +199,6 @@ public class ItemStockRequestApiService {
                 List<String> validationErrors = reportedProductItemStockService.validateWithDetails(stock);
                 if (!validationErrors.isEmpty()) {
                     errors.add(new RefreshError(validationErrors));
-                } else {
-                    validStocks.add(stock);
                 }
             }
 

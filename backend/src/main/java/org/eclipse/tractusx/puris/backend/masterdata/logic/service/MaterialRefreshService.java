@@ -22,9 +22,11 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.DeliveryRequestApiService;
 import org.eclipse.tractusx.puris.backend.demand.logic.services.DemandRequestApiService;
@@ -65,6 +67,9 @@ public class MaterialRefreshService {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public void refreshPartnerData(String ownMaterialNumber) {
         var material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
@@ -124,15 +129,27 @@ public class MaterialRefreshService {
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
             .thenApply(v -> futures.stream().map(CompletableFuture::join).toList())
             .thenAccept(results -> {
-                boolean hasErrors = results.stream().anyMatch(r -> !r.getErrors().isEmpty());
+                var allErrors = results.stream()
+                        .filter(Objects::nonNull)
+                        .flatMap(r -> r.getErrors().stream())
+                        .toList();
 
                 var topic = "/topic/material/" + material.getOwnMaterialNumber();
-                if (hasErrors) {
-                    messagingTemplate.convertAndSend(topic, "ERROR");
-                    log.warn("Refresh completed with errors for material {}", material.getOwnMaterialNumber());
-                } else {
+                if (allErrors.isEmpty()) {
                     messagingTemplate.convertAndSend(topic, "SUCCESS");
                     log.info("Successfully refreshed material {}", material.getOwnMaterialNumber());
+                } else {
+                        try {
+                                var json = objectMapper.writeValueAsString(allErrors);
+                                messagingTemplate.convertAndSend(topic, json);
+                                log.warn("Refresh completed with errors for material {}: {}",
+                                        material.getOwnMaterialNumber(), json);
+                        } catch (Exception e) {
+                                messagingTemplate.convertAndSend(topic, "[{\"errors\":[\"Serialization error: "
+                                        + e.getMessage().replace("\"","\\\"") + "\"]}]");
+                                log.error("Failed to serialize error payload for material {}", 
+                                        material.getOwnMaterialNumber(), e);
+                        }
                 }
             });
 
