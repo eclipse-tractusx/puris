@@ -25,6 +25,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcContractMappingService;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.PartnerRepository;
@@ -61,9 +62,9 @@ public class PartnerServiceImpl implements PartnerService {
     @Autowired
     private EdcContractMappingService edcContractMappingService;
 
-    private final Pattern bpnlPattern = Pattern.compile("^BPNL[0-9a-zA-Z]{12}$");
-    private final Pattern bpnsPattern = Pattern.compile("^BPNS[0-9a-zA-Z]{12}$");
-    private final Pattern bpnaPattern = Pattern.compile("^BPNA[0-9a-zA-Z]{12}$");
+    private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
+    private final Pattern bpnsPattern = PatternStore.BPNS_PATTERN;
+    private final Pattern bpnaPattern = PatternStore.BPNA_PATTERN;
 
     @Override
     public Partner create(Partner partner) {
