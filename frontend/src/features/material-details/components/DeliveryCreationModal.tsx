@@ -37,7 +37,7 @@ import { useNotifications } from '@contexts/notificationContext';
 import { DirectionType } from '@models/types/erp/directionType';
 import { DeliveryInformationModalProps } from './DeliveryInformationModal';
 
-const isValidDelivery = (delivery: Partial<Delivery>) =>
+const isValidDelivery = (delivery: Partial<Delivery>, previousDeliveryState: Delivery | null) =>
     delivery &&
     delivery.ownMaterialNumber &&
     delivery.originBpns &&
@@ -52,8 +52,8 @@ const isValidDelivery = (delivery: Partial<Delivery>) =>
     delivery.departureType &&
     delivery.arrivalType &&
     delivery.dateOfArrival >= delivery.dateOfDeparture &&
-    (delivery.departureType !== 'actual-departure' || delivery.dateOfDeparture <= new Date()) &&
-    (delivery.arrivalType !== 'actual-arrival' || delivery.dateOfArrival <= new Date()) &&
+    (delivery.departureType !== 'actual-departure' || (previousDeliveryState?.departureType === 'actual-departure' || delivery.dateOfDeparture <= new Date())) &&
+    (delivery.arrivalType !== 'actual-arrival' || (previousDeliveryState?.arrivalType === 'actual-arrival' || delivery.dateOfArrival <= new Date())) &&
     isValidOrderReference(delivery);
 
 export const DeliveryCreationModal = ({
@@ -76,7 +76,7 @@ export const DeliveryCreationModal = ({
         temporaryDelivery.customerOrderNumber ||= undefined;
         temporaryDelivery.customerOrderPositionNumber ||= undefined;
         temporaryDelivery.supplierOrderNumber ||= undefined;
-        if (!isValidDelivery(temporaryDelivery)) {
+        if (!isValidDelivery(temporaryDelivery, delivery)) {
             setFormError(true);
             return;
         }
@@ -208,6 +208,7 @@ export const DeliveryCreationModal = ({
                                 }
                                 value={temporaryDelivery?.dateOfDeparture ?? null}
                                 onValueChange={(date) => setTemporaryDelivery({ ...temporaryDelivery, dateOfDeparture: date ?? undefined })}
+                                disabled={mode === 'edit' && delivery?.departureType === 'actual-departure'}
                             />
                         </Grid>
                         <Grid item xs={6} display="flex" alignItems="end" data-testid="delivery-arrival-time-field">

@@ -201,7 +201,6 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
                 onSave={(delivery) => {
                     const updatedDeliveries = state.deliveries.map(d => d.uuid === delivery?.uuid ? delivery! : d);
                     dispatch({ type: 'deliveries', payload: updatedDeliveries });
-                    dispatch({ type: 'delivery', payload: delivery ?? null });
                     onSave('delivery');
                 }}
                 delivery={state.delivery}

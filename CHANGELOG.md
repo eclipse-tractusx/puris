@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- /
+- Implemented update logic for delivery information ([#1004](https://github.com/eclipse-tractusx/puris/pull/1004))
 
 ### Changed
 
