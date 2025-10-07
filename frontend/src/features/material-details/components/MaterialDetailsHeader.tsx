@@ -42,7 +42,7 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, isSch
             <Stack direction="row" alignItems="center" spacing={1} width="100%">
                 <Link to="/materials" data-testid="back-button"> <Box padding="0.25rem" display="flex" alignItems="center"> <ChevronLeftOutlined /> </Box> </Link>
                 <Typography variant="h3" component="h1" marginRight="auto !important">
-                    {direction === DirectionType.Outbound ? 'Production Information' : 'Demand Information'} for {material?.name} ({capitalize(direction.toLowerCase())})
+                    {direction === DirectionType.Outbound ? 'Production Information' : 'Demand Information'} for {material?.name} ({material?.ownMaterialNumber})
                 </Typography>
                 <Stack gap="0.5rem" sx={{flexDirection: { xs: 'column', xl: 'row'}}}>
                     <Stack direction="row" gap="0.5rem">
