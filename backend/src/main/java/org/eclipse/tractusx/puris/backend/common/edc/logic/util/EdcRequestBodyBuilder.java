@@ -210,7 +210,7 @@ public class EdcRequestBodyBuilder {
 
         if (variablesService.getEdcProfileVersion() == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
             constraints.add(new PolicyConstraint(
-                TX_NAMESPACE + "BusinessPartnerNumber",
+                CX_POLICY_NAMESPACE + "BusinessPartnerNumber",
                 "eq",
                 partner.getBpnl()
             ));

@@ -22,7 +22,6 @@
 package org.eclipse.tractusx.puris.backend.common.util;
 
 import lombok.Getter;
-
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

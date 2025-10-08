@@ -25,7 +25,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.poi.ss.formula.functions.MultiOperandNumericFunction.Policy;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
@@ -125,7 +124,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 variablesService.getOwnDefaultStreetAndNumber(),
                 variablesService.getOwnDefaultZipCodeAndCity(),
                 variablesService.getOwnDefaultCountry(),
-                PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
+                variablesService.getEdcProfileVersion());
         } else {
             mySelf = new Partner(variablesService.getOwnName(),
                 variablesService.getEdcProtocolUrl(),
@@ -375,7 +374,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             "13th Street 47",
             "10011 New York",
             "USA",
-            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
+            variablesService.getEdcProfileVersion()
         );
         customerPartnerEntity = partnerService.create(customerPartnerEntity);
         log.info(String.format("Created customer partner: %s", customerPartnerEntity));
