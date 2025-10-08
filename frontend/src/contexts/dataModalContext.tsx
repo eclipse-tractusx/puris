@@ -31,7 +31,7 @@ import { Demand } from '@models/types/data/demand';
 import { Production } from '@models/types/data/production';
 import { Material, Stock, StockType } from '@models/types/data/stock';
 import { DirectionType } from '@models/types/erp/directionType';
-import { DeliveryCreationModal } from '@features/material-details/components/DeliveryCreationModal';
+import { DeliveryCreationModal } from '@features/material-details/components/DeliveryInformationCreationModal';
 
 export type DataCategory = 'production' | 'demand' | 'stock' | 'delivery';
 

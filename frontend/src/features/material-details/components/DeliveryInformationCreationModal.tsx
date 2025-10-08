@@ -166,7 +166,14 @@ export const DeliveryCreationModal = ({
                                 value={DEPARTURE_TYPES.find((dt) => dt.key === temporaryDelivery.departureType) ?? null}
                                 label="Departure Type*"
                                 placeholder="Select the type of departure"
-                                error={formError && !temporaryDelivery?.departureType}
+                                error={formError && 
+                                    (!temporaryDelivery?.departureType || 
+                                        (
+                                            temporaryDelivery?.departureType === 'actual-departure' && 
+                                            (temporaryDelivery?.dateOfDeparture && new Date(temporaryDelivery.dateOfDeparture) > new Date())
+                                        )
+                                    )
+                                }
                                 data-testid="delivery-departure-type-field"
                                 disabled={mode === 'edit' && delivery?.departureType === 'actual-departure'}
                             />
@@ -187,7 +194,9 @@ export const DeliveryCreationModal = ({
                                     formError &&
                                     (!temporaryDelivery?.arrivalType ||
                                         (temporaryDelivery?.arrivalType === 'actual-arrival' &&
-                                            temporaryDelivery?.departureType !== 'actual-departure'))
+                                            temporaryDelivery?.departureType !== 'actual-departure') && 
+                                            (temporaryDelivery?.dateOfArrival && new Date(temporaryDelivery.dateOfArrival) > new Date())
+                                        )
                                 }
                                 data-testid="delivery-arrival-type-field"
                                 disabled={mode === 'edit' && delivery?.arrivalType === 'actual-arrival'}
@@ -202,9 +211,9 @@ export const DeliveryCreationModal = ({
                                     formError &&
                                     (!temporaryDelivery.dateOfDeparture ||
                                         (temporaryDelivery.departureType === 'actual-departure' &&
-                                            temporaryDelivery.dateOfDeparture > new Date()) ||
+                                            new Date(temporaryDelivery.dateOfDeparture) > new Date()) ||
                                         (!!temporaryDelivery.dateOfArrival &&
-                                            temporaryDelivery.dateOfArrival < temporaryDelivery.dateOfDeparture))
+                                            new Date(temporaryDelivery.dateOfArrival) < new Date(temporaryDelivery.dateOfDeparture)))
                                 }
                                 value={temporaryDelivery?.dateOfDeparture ?? null}
                                 onValueChange={(date) => setTemporaryDelivery({ ...temporaryDelivery, dateOfDeparture: date ?? undefined })}
@@ -220,7 +229,7 @@ export const DeliveryCreationModal = ({
                                     formError &&
                                     (!temporaryDelivery?.dateOfArrival ||
                                         (temporaryDelivery?.arrivalType === 'actual-arrival' &&
-                                            temporaryDelivery?.dateOfArrival > new Date()))
+                                            new Date(temporaryDelivery.dateOfArrival) > new Date()))
                                 }
                                 value={temporaryDelivery?.dateOfArrival ?? null}
                                 onValueChange={(date) => setTemporaryDelivery({ ...temporaryDelivery, dateOfArrival: date ?? undefined })}
@@ -295,6 +304,7 @@ export const DeliveryCreationModal = ({
                                 }
                                 sx={{ marginTop: '.5rem' }}
                                 data-testid="delivery-quantity-field"
+                                disabled={delivery?.arrivalType === 'actual-arrival'}
                             />
                         </Grid>
                         <Grid item xs={6}>

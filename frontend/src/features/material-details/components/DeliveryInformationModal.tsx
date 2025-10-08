@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 import { Table } from '@catena-x/portal-shared-components';
 import { Delivery } from '@models/types/data/delivery';
 import { Close, Edit,  Delete } from '@mui/icons-material';
-import { Box, Button, Dialog, DialogTitle, Grid, Stack } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, Grid, Stack, Tooltip } from '@mui/material';
 import { deleteDelivery } from '@services/delivery-service';
 import { getUnitOfMeasurement } from '@util/helpers';
 import { useEffect, useMemo, useState } from 'react';
@@ -84,7 +84,7 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void, handleEdit
                             hour: '2-digit',
                             minute: '2-digit',
                         })}
-                        <Box fontSize=".9em">({data.row.departureType.split('-')[0]})</Box>
+                        <Box fontSize=".9em">({data.row.arrivalType.split('-')[0]})</Box>
                     </Box>
                 );
             },
@@ -203,9 +203,13 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void, handleEdit
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
                         {!data.row.reported && (
-                            <Button variant="text" onClick={() => handleEdit(data.row)} data-testid="edit-delivery">
-                                <Edit></Edit>
-                            </Button>
+                            <Tooltip title="Deliveries with actual arrival cannot be edited." disableFocusListener disableTouchListener disableHoverListener={data.row.arrivalType !== 'actual-arrival'}>
+                                <span>
+                                    <Button variant="text" onClick={() => handleEdit(data.row)} data-testid="edit-delivery" disabled={data.row.arrivalType === 'actual-arrival'}>
+                                        <Edit></Edit>
+                                    </Button>
+                                </span>
+                            </Tooltip>
                         )}
                     </Box>
                 );
@@ -328,6 +332,7 @@ export const DeliveryInformationModal = ({
                             columns={createDeliveryColumns(handleDelete, handleEdit)}
                             rows={dailyDeliveries}
                             hideFooter
+                            disableRowSelectionOnClick
                         />
                     </Grid>
                     <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="2rem">
