@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- /
+- Added improved error messages for refresh materials ([#995](https://github.com/eclipse-tractusx/puris/pull/995))
 
 ### Changed
 
@@ -76,7 +76,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- Added improved error messages for refresh materials ([#995](https://github.com/eclipse-tractusx/puris/pull/995))
+- /
 
 ### Changed
 
