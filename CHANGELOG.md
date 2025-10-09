@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- /
+- Added Material Number in material details view ([#982](https://github.com/eclipse-tractusx/puris/issues/982))
 
 ### Changed
 
