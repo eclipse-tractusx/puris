@@ -36,8 +36,6 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ItemStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
@@ -144,7 +142,12 @@ public class ItemStockRequestApiService {
                 var stockPartner = stock.getPartner();
                 var stockMaterial = stock.getMaterial();
                 if (!partner.equals(stockPartner) || !material.equals(stockMaterial)) {
-                    errors.add(new RefreshError(List.of("Received inconsistent data from " + partner.getBpnl() + "\n" + stocks)));
+                    errors.add(new RefreshError(List.of("Received inconsistent data: partner or material mismatch (expected bpnl=%s, ownMaterialNumber=%s; received bpnl=%s, ownMaterialNumber=%s)".formatted(
+                        partner.getBpnl(),
+                        material.getOwnMaterialNumber(),
+                        stockPartner.getBpnl(),
+                        stockMaterial.getOwnMaterialNumber()
+                    ))));
                     continue;
                 }
 

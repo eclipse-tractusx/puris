@@ -22,6 +22,7 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -130,8 +131,11 @@ public class MaterialRefreshService {
             .thenApply(v -> futures.stream().map(CompletableFuture::join).toList())
             .thenAccept(results -> {
                 var allErrors = results.stream()
-                        .filter(Objects::nonNull)
-                        .flatMap(r -> r.getErrors().stream())
+                        .filter(r -> r.getErrors() != null && !r.getErrors().isEmpty())
+                        .map(r -> Map.of(
+                        "message", r.getMessage(),
+                        "errors", r.getErrors()
+                        ))
                         .toList();
 
                 var topic = "/topic/material/" + material.getOwnMaterialNumber();

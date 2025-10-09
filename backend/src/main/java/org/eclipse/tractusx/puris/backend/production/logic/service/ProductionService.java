@@ -19,6 +19,7 @@
  */
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.production.domain.model.Production;
 import org.eclipse.tractusx.puris.backend.production.domain.repository.ProductionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +95,60 @@ public abstract class ProductionService<T extends Production>  {
             localDate = localDate.plusDays(1);
         }
         return quantities;
+    }
+
+    protected List<String> basicValidation(Production production) {
+        List<String> errors = new ArrayList<>();
+
+        if (production.getQuantity() < 0) {
+            errors.add("Quantity must be greater than or equal to 0.");
+        }
+        if (production.getMeasurementUnit() == null) {
+            errors.add("Missing measurement unit.");
+        }
+        if (production.getLastUpdatedOnDateTime() == null) {
+            errors.add("Missing lastUpdatedOnTime.");
+        } else if (production.getLastUpdatedOnDateTime().after(new Date())) {
+            errors.add("lastUpdatedOnDateTime cannot be in the future.");
+        }
+        if (production.getEstimatedTimeOfCompletion() == null) {
+            errors.add("Missing estimated time of completion.");
+        }
+        if (production.getMaterial() == null) {
+            errors.add("Missing material.");
+        }
+        if (production.getPartner() == null) {
+            errors.add("Missing partner.");
+        }
+        if (production.getProductionSiteBpns() == null) {
+            errors.add("Missing production site BPNS.");
+        }
+        if (!((production.getCustomerOrderNumber() != null && production.getCustomerOrderPositionNumber() != null) || 
+            (production.getCustomerOrderNumber() == null && production.getCustomerOrderPositionNumber() == null && production.getSupplierOrderNumber() == null))) {
+            errors.add("If an order position reference is given, customer order number and customer order position number must be set.");
+        }
+
+        return errors;
+    }
+
+    protected List<String> validateOwnProduction(Production production, Partner ownPartnerEntity) {
+        List<String> errors = new ArrayList<>();
+        
+        if (production.getPartner().equals(ownPartnerEntity)) {
+            errors.add("Partner cannot be the same as own partner entity.");
+        }
+        if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(production.getProductionSiteBpns()))) {
+            errors.add("Production site BPNS must match one of the own partner entity's site BPNS.");
+        }
+        return errors;
+    }
+
+    protected List<String> validateReportedProduction(Production production) {
+        List<String> errors = new ArrayList<>();
+        if (production.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(production.getProductionSiteBpns()))) {
+            errors.add("Production site BPNS must match.");
+        }
+        return errors;
     }
 
     public final T update(T production) {

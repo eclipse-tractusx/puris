@@ -93,7 +93,12 @@ public class ProductionRequestApiService {
                 var productionPartner = production.getPartner();
                 var productionMaterial = production.getMaterial();
                 if (!partner.equals(productionPartner) || !material.equals(productionMaterial)) {
-                    errors.add(new RefreshError(List.of("Received inconsistent data: partner or material mismatch")));
+                    errors.add(new RefreshError(List.of("Received inconsistent data: partner or material mismatch (expected bpnl=%s, ownMaterialNumber=%s; received bpnl=%s, ownMaterialNumber=%s)".formatted(
+                        partner.getBpnl(),
+                        material.getOwnMaterialNumber(),
+                        productionPartner.getBpnl(),
+                        productionMaterial.getOwnMaterialNumber()
+                    ))));
                     continue;
                 }
 

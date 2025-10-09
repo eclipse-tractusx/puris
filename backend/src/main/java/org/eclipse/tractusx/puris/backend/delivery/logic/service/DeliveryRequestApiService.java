@@ -164,7 +164,12 @@ public class DeliveryRequestApiService {
                 var deliveryPartner = delivery.getPartner();
                 var deliveryMaterial = delivery.getMaterial();
                 if (!partner.equals(deliveryPartner) || !material.equals(deliveryMaterial)) {
-                    errors.add(new RefreshError(List.of("Received inconsistent data from " + partner.getBpnl())));
+                    errors.add(new RefreshError(List.of("Received inconsistent data: partner or material mismatch (expected bpnl=%s, ownMaterialNumber=%s; received bpnl=%s, ownMaterialNumber=%s)".formatted(
+                        partner.getBpnl(),
+                        material.getOwnMaterialNumber(),
+                        deliveryPartner.getBpnl(),
+                        deliveryMaterial.getOwnMaterialNumber()
+                    ))));
                     continue;
                 }
 

@@ -21,7 +21,6 @@
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import lombok.extern.slf4j.Slf4j;
-
 import java.util.ArrayList;
 import java.util.List;
 

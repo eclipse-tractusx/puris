@@ -22,13 +22,8 @@ package org.eclipse.tractusx.puris.backend.demand.logic.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-
-import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
-import org.eclipse.tractusx.puris.backend.demand.domain.model.DemandCategoryEnumeration;
-import org.eclipse.tractusx.puris.backend.demand.domain.model.OwnDemand;
-import org.eclipse.tractusx.puris.backend.demand.domain.model.ReportedDemand;
 import org.eclipse.tractusx.puris.backend.demand.logic.adapter.ShortTermMaterialDemandSammMapper;
 import org.eclipse.tractusx.puris.backend.demand.logic.dto.demandsamm.ShortTermMaterialDemand;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
@@ -118,7 +113,12 @@ public class DemandRequestApiService {
                 var demandPartner = demand.getPartner();
                 var demandMaterial = demand.getMaterial();
                 if (!partner.equals(demandPartner) || !material.equals(demandMaterial)) {
-                    errors.add(new RefreshError(List.of("Received inconsistent data: partner or material mismatch")));
+                    errors.add(new RefreshError(List.of("Received inconsistent data: partner or material mismatch (expected bpnl=%s, ownMaterialNumber=%s; received bpnl=%s, ownMaterialNumber=%s)".formatted(
+                        partner.getBpnl(),
+                        material.getOwnMaterialNumber(),
+                        demandPartner.getBpnl(),
+                        demandMaterial.getOwnMaterialNumber()
+                    ))));
                     continue;
                 }
 

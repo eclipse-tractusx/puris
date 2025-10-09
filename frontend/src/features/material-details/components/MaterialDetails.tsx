@@ -86,9 +86,25 @@ function parseRefreshWsMessage(msg?: string): { ok: boolean; errors: string[] } 
   try {
     const arr = JSON.parse(text) as unknown;
     if (Array.isArray(arr)) {
-      const errors = (arr as { errors?: string[] }[])
-        .flatMap(e => Array.isArray(e?.errors) ? e.errors! : [])
-        .filter(s => typeof s === 'string' && s.length > 0);
+      const a = arr as any[];
+
+      const hasMessage = a.some(e => e && typeof e === 'object' && 'message' in e);
+      const errors = hasMessage
+        ? a.flatMap(entry => {
+            const msg = typeof entry?.message === 'string' ? entry.message.trim() : '';
+            const prefix = msg ? `${msg}: ` : '';
+            const errs = Array.isArray(entry?.errors) ? entry.errors : [];
+            return errs.flatMap((e: any) => {
+              if (Array.isArray(e?.errors)) {
+                return e.errors.filter((s: any) => typeof s === 'string' && s.length > 0)
+                               .map((s: string) => prefix + s);
+              }
+              return typeof e === 'string' && e.length > 0 ? [prefix + e] : [];
+            });
+          })
+        : (a as { errors?: string[] }[])
+            .flatMap(e => Array.isArray(e?.errors) ? e.errors! : [])
+            .filter(s => typeof s === 'string' && s.length > 0);
       return { ok: errors.length === 0, errors: errors.length ? errors : [text] };
     }
     return { ok: false, errors: [text] };
