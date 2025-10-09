@@ -23,11 +23,11 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.OkHttpClient;
+
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
-import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,7 +37,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
-import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,7 +44,6 @@ import static org.mockito.Mockito.when;
 
 public class EdcAdapterServiceTest {
 
-    private static final OkHttpClient CLIENT = new OkHttpClient();
     @Mock
     private VariablesService variablesService;
 
@@ -59,8 +57,6 @@ public class EdcAdapterServiceTest {
     @InjectMocks
     private EdcAdapterService edcAdapterService;
 
-    private final Pattern urlPattern = PatternStore.URL_PATTERN;
-
     private final JsonLdUtils jsonLdUtils = new JsonLdUtils();
 
     @BeforeEach
@@ -71,6 +67,9 @@ public class EdcAdapterServiceTest {
         Field field = EdcAdapterService.class.getDeclaredField("variablesService");
         field.setAccessible(true);
         field.set(edcAdapterService, variablesService);
+        Field field2 = EdcAdapterService.class.getDeclaredField("edcRequestBodyBuilder");
+        field2.setAccessible(true);
+        field2.set(edcAdapterService, edcRequestBodyBuilder);
     }
 
     /**
@@ -97,11 +96,11 @@ public class EdcAdapterServiceTest {
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
-            "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
+            "            \"odrl:rightOperand\" : \"DataExchangeGovernance:1.0\"\n" +
             "          }, {\n" +
             "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:UsagePurpose\"},\n" +
             "            \"odrl:operator\" : {\n" +
-            "              \"@id\" : \"odrl:eq\"\n" +
+            "              \"@id\" : \"odrl:isAnyOf\"\n" +
             "            },\n" +
             "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
             "          } ]\n" +
@@ -115,7 +114,7 @@ public class EdcAdapterServiceTest {
             "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
             "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
             "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
-            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
             "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
             "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
             "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
@@ -129,11 +128,12 @@ public class EdcAdapterServiceTest {
 
 
         // when
-        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
+        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
         when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         assertTrue(result);
     }
@@ -164,7 +164,7 @@ public class EdcAdapterServiceTest {
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
-            "            \"odrl:rightOperand\" : \"Puris:0.1\"\n" +
+            "            \"odrl:rightOperand\" : \"DataExchangeGovernance:0.1\"\n" +
             "          }, {\n" +
             "            \"odrl:leftOperand\" : {\n" +
             "              \"@id\" : \"cx-policy:UsagePurpose\"\n" +
@@ -184,7 +184,7 @@ public class EdcAdapterServiceTest {
             "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
             "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
             "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
-            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
             "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
             "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
             "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
@@ -198,9 +198,10 @@ public class EdcAdapterServiceTest {
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
         when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         assertFalse(result);
     }
@@ -230,7 +231,7 @@ public class EdcAdapterServiceTest {
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
-            "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
+            "            \"odrl:rightOperand\" : \"DataExchangeGovernance:1.0\"\n" +
             "          }\n" +
             "        }\n" +
             "      },\n" +
@@ -242,7 +243,7 @@ public class EdcAdapterServiceTest {
             "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
             "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
             "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
-            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
             "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
             "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
             "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
@@ -256,9 +257,10 @@ public class EdcAdapterServiceTest {
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
         when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         assertFalse(result);
     }
@@ -277,11 +279,12 @@ public class EdcAdapterServiceTest {
         System.out.println(invalidJsonNode.toPrettyString());
 
         // when
-        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
+        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
         when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         assertFalse(result);
     }
 
@@ -320,7 +323,7 @@ public class EdcAdapterServiceTest {
         "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
         "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
         "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
-        "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+        "        \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
         "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
         "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
         "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
@@ -362,7 +365,7 @@ public class EdcAdapterServiceTest {
         "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
         "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
         "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
-        "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+        "        \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
         "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
         "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
         "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +

@@ -20,6 +20,7 @@
 package org.eclipse.tractusx.puris.backend.masterdata.domain.repository;
 
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,8 @@ public class PartnerRepositoryTest {
             "BPNA1234567890AA",
             "Heinrich-Supplier-Straße 1",
             "77785 Dudelsdorf",
-            "Germany"
+            "Germany",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
         );
 
         Partner createdSupplierPartner = partnerRepository.save(supplierPartnerEntity);

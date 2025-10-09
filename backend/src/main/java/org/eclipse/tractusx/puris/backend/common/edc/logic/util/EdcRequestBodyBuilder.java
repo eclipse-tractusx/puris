@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -42,33 +42,67 @@ import java.util.Map;
 @Component
 @Slf4j
 public class EdcRequestBodyBuilder {
+    private final DtrSecurityConfiguration dtrSecurityConfig;
+    private final VariablesService variablesService;
+    private final ObjectMapper MAPPER;
 
-    @Autowired
-    private DtrSecurityConfiguration dtrSecurityConfig;
-    @Autowired
-    private VariablesService variablesService;
-    @Autowired
-    private ObjectMapper MAPPER;
-    public static final String EDC_NAMESPACE = "https://w3id.org/edc/v0.0.1/ns/";
-    public static final String VOCAB_KEY = "@vocab";
-    public static final String ODRL_NAMESPACE = "http://www.w3.org/ns/odrl/2/";
-    public static final String ODRL_REMOTE_CONTEXT = "http://www.w3.org/ns/odrl.jsonld";
-    public static final String CX_TAXO_NAMESPACE = "https://w3id.org/catenax/taxonomy#";
-    public static final String CX_COMMON_NAMESPACE = "https://w3id.org/catenax/ontology/common#";
-    public static final String CX_POLICY_NAMESPACE = "https://w3id.org/catenax/policy/";
-    public static final String DCT_NAMESPACE = "http://purl.org/dc/terms/";
-    public static final String AAS_SEMANTICS_NAMESPACE = "https://admin-shell.io/aas/3/0/HasSemantics/";
-    public static final String CONTRACT_POLICY_ID = "Contract_Policy";
-    public static final String TX_NAMESPACE = "https://w3id.org/tractusx/v0.0.1/ns/";
-    public static final String TX_AUTH_NAMESPACE = "https://w3id.org/tractusx/auth/";
-    public static final String DCAT_NAMESPACE = "http://www.w3.org/ns/dcat#";
-    public static final String DSPACE_NAMESPACE = "https://w3id.org/dspace/v0.8/";
-    public static final String CX_POLICY_CONTEXT = "https://w3id.org/tractusx/policy/v1.0.0";
+    public final String EDC_NAMESPACE;
+    public final String VOCAB_KEY;
+    public final String ODRL_NAMESPACE;
+    public final String ODRL_REMOTE_CONTEXT;
+    public final String CX_TAXO_NAMESPACE;
+    public final String CX_COMMON_NAMESPACE;
+    public final String CX_POLICY_NAMESPACE;
+    public final String DCT_NAMESPACE;
+    public final String AAS_SEMANTICS_NAMESPACE;
+    public final String CONTRACT_POLICY_ID;
+    public final String TX_NAMESPACE;
+    public final String TX_AUTH_NAMESPACE;
+    public final String DCAT_NAMESPACE;
+    public final String DSPACE_NAMESPACE;
+    public final String CX_POLICY_CONTEXT;
+
+    public EdcRequestBodyBuilder(
+            DtrSecurityConfiguration dtrSecurityConfig,
+            VariablesService variablesService,
+            ObjectMapper MAPPER
+    ) {
+        this.dtrSecurityConfig = dtrSecurityConfig;
+        this.variablesService = variablesService;
+        this.MAPPER = MAPPER;
+
+        this.EDC_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().EDC_NAMESPACE;
+        this.VOCAB_KEY = variablesService.getEdcProfileVersion().getConstants().VOCAB_KEY;
+        this.ODRL_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().ODRL_NAMESPACE;
+        this.ODRL_REMOTE_CONTEXT = variablesService.getEdcProfileVersion().getConstants().ODRL_REMOTE_CONTEXT;
+        this.CX_TAXO_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().CX_TAXO_NAMESPACE;
+        this.CX_COMMON_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().CX_COMMON_NAMESPACE;
+        this.CX_POLICY_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().CX_POLICY_NAMESPACE;
+        this.DCT_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().DCT_NAMESPACE;
+        this.AAS_SEMANTICS_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().AAS_SEMANTICS_NAMESPACE;
+        this.CONTRACT_POLICY_ID = variablesService.getEdcProfileVersion().getConstants().CONTRACT_POLICY_ID;
+        this.TX_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().TX_NAMESPACE;
+        this.TX_AUTH_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().TX_AUTH_NAMESPACE;
+        this.DCAT_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().DCAT_NAMESPACE;
+        this.DSPACE_NAMESPACE = variablesService.getEdcProfileVersion().getConstants().DSPACE_NAMESPACE;
+        this.CX_POLICY_CONTEXT = variablesService.getEdcProfileVersion().getConstants().CX_POLICY_CONTEXT;
+    }
 
     /**
      * helper class to encapsulate PolicyConstraint
      **/
-    private record PolicyConstraint(String leftOperand, String operator, String rightOperand) {
+    private record PolicyConstraint(String leftOperand, String operator, String rightOperand, List<String> rightOperandArray) {
+        public PolicyConstraint(String leftOperand, String operator, String rightOperand) {
+            this(leftOperand, operator, rightOperand, null);
+        }
+
+        public PolicyConstraint(String leftOperand, String operator, List<String> rightOperandArray) {
+            this(leftOperand, operator, null, rightOperandArray);
+        }
+    }
+
+    private boolean isArrayConstraint(PolicyConstraint pc) {
+        return pc.rightOperandArray != null && !pc.rightOperandArray.isEmpty();
     }
 
     /**
@@ -113,7 +147,7 @@ public class EdcRequestBodyBuilder {
      * @param policyProfile profile to use for odrl:policy, may be null (should only be used for contract policies)
      * @return body to use for policy request
      */
-    private JsonNode buildPolicy(String policyId, List<PolicyConstraint> constraints, String policyProfile) {
+    private JsonNode buildPolicy(String policyId, List<PolicyConstraint> constraints, String action, String policyProfile) {
         ObjectNode body = getPolicyContextObject();
         body.put("@type", "PolicyDefinitionRequestDto");
         body.put("@id", policyId);
@@ -131,7 +165,7 @@ public class EdcRequestBodyBuilder {
 
         var permissionsObject = MAPPER.createObjectNode();
         permissionsArray.add(permissionsObject);
-        permissionsObject.put("action", "use");
+        permissionsObject.put("action", action);
 
         var constraintObject = MAPPER.createObjectNode();
         permissionsObject.set("constraint", constraintObject);
@@ -147,7 +181,15 @@ public class EdcRequestBodyBuilder {
 
             constraint.put("operator", policyConstraint.operator);
 
-            constraint.put("rightOperand", policyConstraint.rightOperand);
+            if (isArrayConstraint(policyConstraint)) {
+                var rightOperandArray = MAPPER.createArrayNode();
+                for (String val : policyConstraint.rightOperandArray) {
+                    rightOperandArray.add(val);
+                }
+                constraint.set("rightOperand", rightOperandArray);
+            } else {
+                constraint.put("rightOperand", policyConstraint.rightOperand);
+            }            
             andArray.add(constraint);
         }
 
@@ -166,14 +208,22 @@ public class EdcRequestBodyBuilder {
 
         List<PolicyConstraint> constraints = new ArrayList<>();
 
-        constraints.add(new PolicyConstraint(
-            "BusinessPartnerNumber",
-            "eq",
-            partner.getBpnl()
-        ));
+        if (variablesService.getEdcProfileVersion() == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
+            constraints.add(new PolicyConstraint(
+                CX_POLICY_NAMESPACE + "BusinessPartnerNumber",
+                "eq",
+                partner.getBpnl()
+            ));
+        } else {
+            constraints.add(new PolicyConstraint(
+                CX_POLICY_NAMESPACE + "BusinessPartnerNumber",
+                "isAnyOf",
+                List.of(partner.getBpnl())
+            ));
+        }
 
         constraints.add(new PolicyConstraint(
-            "Membership",
+            CX_POLICY_NAMESPACE + "Membership",
             "eq",
             "active"
         ));
@@ -181,6 +231,7 @@ public class EdcRequestBodyBuilder {
         JsonNode body = buildPolicy(
             getBpnPolicyId(partner),
             constraints,
+            variablesService.getEdcProfileVersion().equals(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509) ? CX_POLICY_NAMESPACE + "access" : ODRL_NAMESPACE + "use",
             null
         );
         log.debug("Built bpn and membership access policy:\n{}", body.toPrettyString());
@@ -194,26 +245,33 @@ public class EdcRequestBodyBuilder {
      *
      * @return the request body
      */
-    public JsonNode buildFrameworkPolicy() {
-
+    public JsonNode buildFrameworkPolicy(PolicyProfileVersionEnumeration policyProfileVersion) {
         List<PolicyConstraint> constraints = new ArrayList<>();
 
         constraints.add(new PolicyConstraint(
-            CX_POLICY_NAMESPACE + "FrameworkAgreement",
+            policyProfileVersion.getConstants().CX_POLICY_NAMESPACE + "FrameworkAgreement",
             "eq",
             variablesService.getPurisFrameworkAgreementWithVersion()
         ));
 
-        constraints.add(new PolicyConstraint(
-            CX_POLICY_NAMESPACE + "UsagePurpose",
-            "eq",
-            variablesService.getPurisPurposeWithVersion()
-        ));
+        switch (policyProfileVersion) {
+            case POLICY_PROFILE_2405 -> constraints.add(new PolicyConstraint(
+                policyProfileVersion.getConstants().CX_POLICY_NAMESPACE + "UsagePurpose",
+                "eq",
+                variablesService.getPurisPurposeWithVersion()
+            ));
+            case POLICY_PROFILE_2509 -> constraints.add(new PolicyConstraint(
+                CX_POLICY_NAMESPACE + "UsagePurpose",
+                "isAnyOf",
+                List.of(variablesService.getPurisPurposeWithVersion())
+            ));
+        }
 
         JsonNode body = buildPolicy(
-            CONTRACT_POLICY_ID,
+            policyProfileVersion.getConstants().CONTRACT_POLICY_ID,
             constraints,
-            "cx-policy:profile2405"
+            ODRL_NAMESPACE + "use",
+            "cx-policy:" + policyProfileVersion.getValue()
         );
         log.debug("Built framework agreement contract policy:\n{}", body.toPrettyString());
 
@@ -224,7 +282,7 @@ public class EdcRequestBodyBuilder {
         var body = getEdcContextObject();
         body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + assetId);
         body.put("accessPolicyId", getBpnPolicyId(partner));
-        body.put("contractPolicyId", CONTRACT_POLICY_ID);
+        body.put("contractPolicyId", partner.getPolicyProfileVersion().getConstants().CONTRACT_POLICY_ID);
         var assetsSelector = MAPPER.createObjectNode();
         body.set("assetsSelector", assetsSelector);
         assetsSelector.put("@type", "CriterionDto");
@@ -252,7 +310,7 @@ public class EdcRequestBodyBuilder {
         var body = getEdcContextObject();
         body.put("@id", partner.getBpnl() + "_contractdefinition_for_PartTypeInfoAsset");
         body.put("accessPolicyId", getBpnPolicyId(partner));
-        body.put("contractPolicyId", CONTRACT_POLICY_ID);
+        body.put("contractPolicyId", partner.getPolicyProfileVersion().getConstants().CONTRACT_POLICY_ID);
         var assetsSelector = MAPPER.createObjectNode();
         body.set("assetsSelector", assetsSelector);
         assetsSelector.put("@type", "CriterionDto");
@@ -552,4 +610,5 @@ public class EdcRequestBodyBuilder {
 
         return body;
     }
+
 }

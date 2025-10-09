@@ -24,11 +24,13 @@ package org.eclipse.tractusx.puris.backend;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -121,7 +123,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 variablesService.getOwnDefaultBpna(),
                 variablesService.getOwnDefaultStreetAndNumber(),
                 variablesService.getOwnDefaultZipCodeAndCity(),
-                variablesService.getOwnDefaultCountry());
+                variablesService.getOwnDefaultCountry(),
+                variablesService.getEdcProfileVersion());
         } else {
             mySelf = new Partner(variablesService.getOwnName(),
                 variablesService.getEdcProtocolUrl(),
@@ -370,7 +373,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             "BPNA4444444444AA",
             "13th Street 47",
             "10011 New York",
-            "USA"
+            "USA",
+            variablesService.getEdcProfileVersion()
         );
         customerPartnerEntity = partnerService.create(customerPartnerEntity);
         log.info(String.format("Created customer partner: %s", customerPartnerEntity));
@@ -395,7 +399,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             "BPNA1234567890AA",
             "Wall Street 101",
             "10001 New York",
-            "USA"
+            "USA",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
         );
         supplierPartnerEntity = partnerService.create(supplierPartnerEntity);
         log.info(String.format("Created supplier partner: %s", supplierPartnerEntity));
@@ -434,7 +439,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             "BPNA2222222222XZ",
             "Fichtenweg 23",
             "65432 Waldhausen",
-            "Germany"
+            "Germany",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
         );
         nonScenarioCustomer = partnerService.create(nonScenarioCustomer);
         log.info(String.format("Created non-scenario customer partner: %s", nonScenarioCustomer));

@@ -23,13 +23,13 @@ body:json {
   {
     "@context" : [ "http://www.w3.org/ns/odrl.jsonld", {
       "edc" : "https://w3id.org/edc/v0.0.1/ns/",
-      "cx-policy" : "https://w3id.org/catenax/policy/"
+      "cx-policy" : "{{CUSTOMER_POLICY_NAMESPACE}}"
     } ],
     "@type" : "PolicyDefinitionRequestDto",
     "@id" : "{{DTR_CONTRACT_POLICY_ID}}",
     "edc:policy" : {
       "@type" : "Set",
-      "profile" : "cx-policy:profile2405",
+      "profile" : "cx-policy:{{CUSTOMER_POLICY_PROFILE_VERSION}}",
       "permission" : [ {
         "action" : "use",
         "constraint" : {
@@ -42,7 +42,7 @@ body:json {
           }, {
             "@type" : "LogicalConstraint",
             "leftOperand" : "cx-policy:UsagePurpose",
-            "operator" : "eq",
+            "operator" : "{{CUSTOMER_POLICY_OPERATOR}}",
             "rightOperand" : "cx.core.digitalTwinRegistry:1"
           } ]
         }

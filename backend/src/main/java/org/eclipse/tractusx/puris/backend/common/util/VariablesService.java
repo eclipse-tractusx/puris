@@ -22,6 +22,7 @@
 package org.eclipse.tractusx.puris.backend.common.util;
 
 import lombok.Getter;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -191,6 +192,13 @@ public class VariablesService {
      */
     private String apiKey;
 
+    @Value("${puris.edc.profile-version}")
+    /**
+     * The EDC profile version to be used. Valid values are profile2405, profile2509.
+     * Defaults to the latest supported profile of the application.
+     */
+    private String edcProfileVersion;
+
     @Value("${puris.dtr.url}")
     /**
      * The url of your decentralized DTR
@@ -330,5 +338,14 @@ public class VariablesService {
 
     public String getPurisPurposeWithVersion() {
         return getPurisPurposeName() + ":" + getPurisPurposeVersion();
+    }
+
+    public PolicyProfileVersionEnumeration getEdcProfileVersion() {
+        if (edcProfileVersion != null && edcProfileVersion.equals(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.getValue())) {
+            return PolicyProfileVersionEnumeration.POLICY_PROFILE_2405;
+        } else {
+            // default to latest supported profile
+            return PolicyProfileVersionEnumeration.POLICY_PROFILE_2509;
+        }
     }
 }
