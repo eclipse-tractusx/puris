@@ -51,9 +51,9 @@ const isValidDelivery = (delivery: Partial<Delivery>, previousDeliveryState: Del
     delivery.dateOfArrival &&
     delivery.departureType &&
     delivery.arrivalType &&
-    delivery.dateOfArrival >= delivery.dateOfDeparture &&
-    (delivery.departureType !== 'actual-departure' || (previousDeliveryState?.departureType === 'actual-departure' || delivery.dateOfDeparture <= new Date())) &&
-    (delivery.arrivalType !== 'actual-arrival' || (previousDeliveryState?.arrivalType === 'actual-arrival' || delivery.dateOfArrival <= new Date())) &&
+    new Date(delivery.dateOfArrival) >= new Date(delivery.dateOfDeparture) &&
+    (delivery.departureType !== 'actual-departure' || (previousDeliveryState?.departureType === 'actual-departure' || new Date(delivery.dateOfDeparture) <= new Date())) &&
+    (delivery.arrivalType !== 'actual-arrival' || (previousDeliveryState?.arrivalType === 'actual-arrival' || new Date(delivery.dateOfArrival) <= new Date())) &&
     isValidOrderReference(delivery);
 
 export const DeliveryCreationModal = ({
@@ -167,10 +167,14 @@ export const DeliveryCreationModal = ({
                                 label="Departure Type*"
                                 placeholder="Select the type of departure"
                                 error={formError && 
-                                    (!temporaryDelivery?.departureType || 
+                                    (
+                                        !temporaryDelivery?.departureType || 
                                         (
-                                            temporaryDelivery?.departureType === 'actual-departure' && 
-                                            (temporaryDelivery?.dateOfDeparture && new Date(temporaryDelivery.dateOfDeparture) > new Date())
+                                            temporaryDelivery?.departureType === 'actual-departure' &&
+                                            (
+                                                !temporaryDelivery.dateOfDeparture ||
+                                                new Date(temporaryDelivery.dateOfDeparture) > new Date()
+                                            )
                                         )
                                     )
                                 }
@@ -192,11 +196,17 @@ export const DeliveryCreationModal = ({
                                 placeholder="Select the type of departure"
                                 error={
                                     formError &&
-                                    (!temporaryDelivery?.arrivalType ||
-                                        (temporaryDelivery?.arrivalType === 'actual-arrival' &&
-                                            temporaryDelivery?.departureType !== 'actual-departure') && 
-                                            (temporaryDelivery?.dateOfArrival && new Date(temporaryDelivery.dateOfArrival) > new Date())
+                                    (
+                                        !temporaryDelivery?.arrivalType ||
+                                        (
+                                            temporaryDelivery?.arrivalType === 'actual-arrival' && 
+                                            (
+                                                temporaryDelivery?.departureType !== 'actual-departure' || 
+                                                !temporaryDelivery.dateOfArrival ||
+                                                new Date(temporaryDelivery.dateOfArrival) > new Date()
+                                            )
                                         )
+                                    )
                                 }
                                 data-testid="delivery-arrival-type-field"
                                 disabled={mode === 'edit' && delivery?.arrivalType === 'actual-arrival'}
