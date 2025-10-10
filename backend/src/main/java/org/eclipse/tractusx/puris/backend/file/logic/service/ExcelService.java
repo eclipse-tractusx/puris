@@ -134,6 +134,8 @@ public class ExcelService {
     public DataImportResult readExcelFile(InputStream is) throws IOException {
         Workbook workbook = WorkbookFactory.create(is);
         Sheet sheet = workbook.getSheetAt(0);
+        FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+        evaluator.evaluateAll();
         var result = extractAndSaveData(sheet);
         workbook.close();
         return result;
