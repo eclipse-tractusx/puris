@@ -62,7 +62,7 @@ public class ReportedProductionService extends ProductionService<ReportedProduct
     }
 
     public boolean validate(ReportedProduction production) {
-        return basicValidation(production).isEmpty() && validateReportedProduction(production).isEmpty();
+        return validateWithDetails(production).isEmpty();
     }
 
     public List<String> validateWithDetails(ReportedProduction production) {

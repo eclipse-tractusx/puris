@@ -111,7 +111,7 @@ public class SupplierSupplyService extends SupplyService<OwnSupplierSupply, Repo
     }
 
     public boolean validate(ReportedSupplierSupply daysOfSupply) {
-        return basicValidation(daysOfSupply).isEmpty();
+        return validateWithDetails(daysOfSupply).isEmpty();
     }
 
     public List<String> validateWithDetails(ReportedSupplierSupply daysOfSupply) {

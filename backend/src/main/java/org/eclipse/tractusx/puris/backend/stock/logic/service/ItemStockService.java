@@ -156,7 +156,7 @@ public abstract class ItemStockService<T extends ItemStock> {
                 errors.add("Missing locationBpns.");
             }
             if (itemStock.getQuantity() < 0){
-                errors.add("Quantity must be greater than or equal to 0.");
+                errors.add(String.format("Quantity '%s' must be greater than or equal to 0.", itemStock.getQuantity()));
             }
             if (itemStock.getMeasurementUnit() == null) {
                 errors.add("Missing measurementUnit.");
@@ -164,11 +164,14 @@ public abstract class ItemStockService<T extends ItemStock> {
             if (itemStock.getLastUpdatedOnDateTime() == null) {
                 errors.add("Missing lastUpdatedOnTime.");
             } else if (itemStock.getLastUpdatedOnDateTime().after(new Date())) {
-                errors.add("lastUpdatedOnDateTime cannot be in the future.");
+                errors.add(String.format("lastUpdatedOnDateTime '%s' must be in the past must be in the past (system time: '%s').", itemStock.getLastUpdatedOnDateTime().toInstant().toString(), (new Date()).toInstant().toString()));
             }
             if (!((itemStock.getCustomerOrderId() != null && itemStock.getCustomerOrderPositionId() != null) || 
                 (itemStock.getCustomerOrderId() == null && itemStock.getCustomerOrderPositionId() == null && itemStock.getSupplierOrderId() == null))) {
-                errors.add("If an order position reference is given, customer order number and customer order position number must be set.");
+                errors.add(String.format(
+                    "Invalid order reference configuration for item stock: customerOrderId='%s', customerOrderPositionId='%s', supplierOrderId='%s'. If a customer order reference is provided, both customerOrderId and customerOrderPositionId must be set, if none are provided then they must be null. ",
+                    itemStock.getCustomerOrderId(), itemStock.getCustomerOrderPositionId(), itemStock.getSupplierOrderId()
+                ));
             }
         } catch (Exception e) {
             log.error("Basic Validation failed: " + itemStock + "\n" + e.getMessage());
@@ -195,10 +198,10 @@ public abstract class ItemStockService<T extends ItemStock> {
                 errors.add("Missing MaterialPartnerRelation.");
             }
             if (!material.isMaterialFlag()) {
-                errors.add("Material flag is missing.");
+                errors.add(String.format("Material flag is missing for Material '%s'.", material.getOwnMaterialNumber()));
             }
             if (relation != null && !relation.isPartnerSuppliesMaterial()) {
-                errors.add("Partner does not supply material.");
+                errors.add(String.format("Partner '%s' does not supply material '%s'. ", partner.getBpnl(), material.getOwnMaterialNumber()));
             }
         } catch (Exception e) {
             log.error("MaterialItemStock Validation failed: " + itemStock + "\n" + e.getMessage());
@@ -217,10 +220,10 @@ public abstract class ItemStockService<T extends ItemStock> {
                 errors.add("Missing MaterialPartnerRelation.");
             }
             if (!material.isProductFlag()) {
-                errors.add("Product flag is missing.");
+                errors.add(String.format("Product flag is missing for Material '%s'.", material.getOwnMaterialNumber()));
             }
             if (relation != null && !relation.isPartnerBuysMaterial()) {
-                errors.add("Partner does not buy material.");
+                errors.add(String.format("Partner '%s' does not supply material '%s'. ", partner.getBpnl(), material.getOwnMaterialNumber()));
             }
         } catch (Exception e) {
             log.error("ProductItemStock Validation failed: " + itemStock + "\n" + e.getMessage());

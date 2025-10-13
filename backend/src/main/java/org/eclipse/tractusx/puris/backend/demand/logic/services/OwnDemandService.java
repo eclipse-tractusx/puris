@@ -64,7 +64,7 @@ public class OwnDemandService extends DemandService<OwnDemand, OwnDemandReposito
 
     @Override
     public boolean validate(OwnDemand demand) {
-        return true;
+        return validateWithDetails(demand).isEmpty();
     }
 
     public List<String> validateWithDetails(OwnDemand demand) {

@@ -72,7 +72,7 @@ public class ReportedDeliveryService extends DeliveryService<ReportedDelivery> {
     }
 
     public boolean validate(ReportedDelivery delivery) {
-        return basicValidation(delivery).isEmpty() && validateReportedResponsibility(delivery).isEmpty();
+        return validateWithDetails(delivery).isEmpty();
     }
 
     public List<String> validateWithDetails(ReportedDelivery delivery) {

@@ -101,7 +101,7 @@ public abstract class ProductionService<T extends Production>  {
         List<String> errors = new ArrayList<>();
 
         if (production.getQuantity() < 0) {
-            errors.add("Quantity must be greater than or equal to 0.");
+            errors.add(String.format("Quantity '%s' must be greater than or equal to 0.", production.getQuantity()));
         }
         if (production.getMeasurementUnit() == null) {
             errors.add("Missing measurement unit.");
@@ -109,7 +109,7 @@ public abstract class ProductionService<T extends Production>  {
         if (production.getLastUpdatedOnDateTime() == null) {
             errors.add("Missing lastUpdatedOnTime.");
         } else if (production.getLastUpdatedOnDateTime().after(new Date())) {
-            errors.add("lastUpdatedOnDateTime cannot be in the future.");
+            errors.add(String.format("lastUpdatedOnDateTime '%s' must be in the past must be in the past (system time: '%s').", production.getLastUpdatedOnDateTime().toInstant().toString(), (new Date()).toInstant().toString()));
         }
         if (production.getEstimatedTimeOfCompletion() == null) {
             errors.add("Missing estimated time of completion.");
@@ -125,7 +125,7 @@ public abstract class ProductionService<T extends Production>  {
         }
         if (!((production.getCustomerOrderNumber() != null && production.getCustomerOrderPositionNumber() != null) || 
             (production.getCustomerOrderNumber() == null && production.getCustomerOrderPositionNumber() == null && production.getSupplierOrderNumber() == null))) {
-            errors.add("If an order position reference is given, customer order number and customer order position number must be set.");
+            errors.add(String.format("If an order position reference is given, customer order number '%s' and customer order position number '%s' must be set. Supplier order number '%' then can be set, too", production.getCustomerOrderNumber(), production.getCustomerOrderPositionNumber(), production.getSupplierOrderNumber()));
         }
 
         return errors;
@@ -135,10 +135,10 @@ public abstract class ProductionService<T extends Production>  {
         List<String> errors = new ArrayList<>();
         
         if (production.getPartner().equals(ownPartnerEntity)) {
-            errors.add("Partner cannot be the same as own partner entity.");
+            errors.add(String.format("Partner cannot be the same as own partner entity '%s'.", production.getPartner().getBpnl()));
         }
         if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(production.getProductionSiteBpns()))) {
-            errors.add("Production site BPNS must match one of the own partner entity's site BPNS.");
+            errors.add(String.format("Production site BPNS '%s' must match to one site of the partner '%s' .", production.getProductionSiteBpns(), production.getPartner().getBpnl()));
         }
         return errors;
     }
@@ -146,7 +146,7 @@ public abstract class ProductionService<T extends Production>  {
     protected List<String> validateReportedProduction(Production production) {
         List<String> errors = new ArrayList<>();
         if (production.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(production.getProductionSiteBpns()))) {
-            errors.add("Production site BPNS must match.");
+            errors.add(String.format("Production site BPNS '%s' must match to one site of the partner '%s' .", production.getProductionSiteBpns(), production.getPartner().getBpnl()));
         }
         return errors;
     }

@@ -37,7 +37,7 @@ public class ReportedDemandService extends DemandService<ReportedDemand, Reporte
 
     @Override
     public boolean validate(ReportedDemand demand) {
-        return basicValidation(demand).isEmpty() && validateReportedDemand(demand).isEmpty();
+        return validateWithDetails(demand).isEmpty();
     }
 
     public List<String> validateWithDetails(ReportedDemand demand) {

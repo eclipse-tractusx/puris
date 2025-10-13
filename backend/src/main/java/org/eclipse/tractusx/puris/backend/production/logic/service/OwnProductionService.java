@@ -68,7 +68,7 @@ public class OwnProductionService extends ProductionService<OwnProduction> {
     }
 
     public boolean validate(OwnProduction production) {
-        return basicValidation(production).isEmpty() && validateOwnProduction(production, partnerService.getOwnPartnerEntity()).isEmpty();
+        return validateWithDetails(production).isEmpty();
     }
 
     public List<String> validateWithDetails(OwnProduction production) {

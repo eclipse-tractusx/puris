@@ -94,7 +94,7 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
             errors.add("Missing Partner.");
         }
         if (demand.getQuantity() < 0) {
-            errors.add("Quantity must be greater than or equal to 0.");
+            errors.add(String.format("Quantity '%s' must be greater than or equal to 0.", demand.getQuantity()));
         }
         if (demand.getMeasurementUnit() == null) {
             errors.add("Missing measurement unit.");
@@ -102,7 +102,7 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
         if (demand.getLastUpdatedOnDateTime() == null) {
             errors.add("Missing lastUpdatedOnTime.");
         } else if (demand.getLastUpdatedOnDateTime().after(new Date())) {
-            errors.add("lastUpdatedOnDateTime cannot be in the future.");
+            errors.add(String.format("lastUpdatedOnDateTime '%s' must be in the past must be in the past (system time: '%s').", demand.getLastUpdatedOnDateTime().toInstant().toString(), (new Date()).toInstant().toString()));
         }
         if (demand.getDay() == null) {
             errors.add("Missing day.");
@@ -114,7 +114,7 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
             errors.add("Missing demand location BPNS.");
         }
         if (demand.getPartner().equals(ownPartnerEntity)) {
-            errors.add("Partner cannot be the same as own partner entity.");
+            errors.add(String.format("Partner cannot be the same as own partner entity '%s'.", demand.getPartner().getBpnl()));
         }
         return errors;
     }
@@ -123,12 +123,12 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
         List<String> errors = new ArrayList<>();
         Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
         if (!mprService.partnerOrdersProduct(demand.getMaterial(), demand.getPartner())) {
-            errors.add("Cannot order specified material from Partner.");
+            errors.add(String.format("Partner '%s' is not configured to buy your material '%s'.", demand.getPartner().getBpnl(), demand.getMaterial().getOwnMaterialNumber()));
         }
         if ((demand.getSupplierLocationBpns() != null  && 
             ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns())))
             || demand.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns()))) {
-            errors.add("Invalid demand: supplier or demand location is not valid.");
+            errors.add("Supplier or demand location is not valid.");
         }
         return errors;
     }
@@ -137,14 +137,14 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
         List<String> errors = new ArrayList<>();
         Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
         if (!mprService.partnerSuppliesMaterial(demand.getMaterial(), demand.getPartner())) {
-            errors.add("Partner does not supply the specified material.");
+            errors.add(String.format("Partner '%s' is not configured to supply you the specified material '%s'.", demand.getPartner().getBpnl(), demand.getMaterial().getOwnMaterialNumber()));
         }
         if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns()))) {
-            errors.add("Demand location BPNS must match one of the own partner entity's site BPNS.");
+            errors.add(String.format("Demand location BPNS '%s' must match to one site configured for your own partner '%s' .", demand.getDemandLocationBpns(), ownPartnerEntity.getBpnl()));
         }
         if (demand.getSupplierLocationBpns() != null && 
             demand.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns()))) {
-            errors.add("Supplier location BPNS must match one of the partner's site BPNS.");
+            errors.add(String.format("Expected supplier location BPNS '%s' must match to one site of the partner '%s' .", demand.getSupplierLocationBpns(), demand.getPartner().getBpnl()));
         }
         return errors;
     }

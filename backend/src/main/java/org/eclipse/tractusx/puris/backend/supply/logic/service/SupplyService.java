@@ -196,13 +196,13 @@ public abstract class SupplyService<T extends Supply, TReported extends Supply, 
             errors.add("Missing stock location BPNA.");
         }
         if (supply.getPartner().equals(ownPartnerEntity)) {
-            errors.add("Partner cannot be the same as own partner entity.");
+            errors.add(String.format("Partner cannot be the same as own partner entity '%s'.", supply.getPartner().getBpnl()));
         }
         if (supply.getPartner().getSites().stream().noneMatch(site ->
                 site.getBpns().equals(supply.getStockLocationBPNS()) ||
                 site.getAddresses().stream().noneMatch(address -> address.getBpna().equals(supply.getStockLocationBPNA()))
             )) {
-            errors.add(String.format("Invalid days of supply: stock location '%s' and or stock address '%s' don't belong to each other or partner '%s'.", supply.getStockLocationBPNS(), supply.getStockLocationBPNA(), supply.getPartner().getBpnl()));
+            errors.add(String.format("Stock location '%s' and or stock address '%s' don't belong to each other or partner '%s'.", supply.getStockLocationBPNS(), supply.getStockLocationBPNA(), supply.getPartner().getBpnl()));
         }
         return errors;
     }

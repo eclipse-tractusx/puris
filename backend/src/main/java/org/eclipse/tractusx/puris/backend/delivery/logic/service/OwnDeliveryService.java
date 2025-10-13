@@ -77,8 +77,7 @@ public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
     }
 
     public boolean validate(OwnDelivery delivery) {
-        return basicValidation(delivery).isEmpty() && validateOwnPartner(delivery).isEmpty()
-            && validateOwnResponsibility(delivery).isEmpty();
+        return validateWithDetails(delivery).isEmpty();
     }
 
     public List<String> validateWithDetails(OwnDelivery delivery) {
