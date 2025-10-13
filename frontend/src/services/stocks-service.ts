@@ -26,10 +26,10 @@ import { AssetType } from "@models/types/erp/assetType.ts";
 import { DirectionType } from "@models/types/erp/directionType.ts";
 import AuthenticationService from './authentication-service';
 
-export const postStocks = async (type: StockType, stock: Partial<Stock>) => {
+export const postStocks = async (type: StockType, stock: Partial<Stock>, mode: string) => {
   const endpoint = type === 'product' ? config.app.ENDPOINT_PRODUCT_STOCKS : config.app.ENDPOINT_MATERIAL_STOCKS;
   const res = await fetch(config.app.BACKEND_BASE_URL + endpoint, {
-    method: 'POST',
+     method: mode == 'create' ? 'POST' : 'PUT',
     body: JSON.stringify(stock),
     headers: {
       'Content-Type': 'application/json',
