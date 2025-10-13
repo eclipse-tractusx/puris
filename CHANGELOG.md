@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- /
+- Implemented Edit functionality logic for Stock Modal ([#1022](https://github.com/eclipse-tractusx/puris/pull/1022/))
 
 ### Changed
 
