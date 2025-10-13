@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v4.0.0
+## v4.0.1
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
 
@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- Added Material Number in material details view ([#982](https://github.com/eclipse-tractusx/puris/issues/982))
+- Added Material Number in material details view ([#1005](https://github.com/eclipse-tractusx/puris/pull/1005))
 
 ### Changed
 
