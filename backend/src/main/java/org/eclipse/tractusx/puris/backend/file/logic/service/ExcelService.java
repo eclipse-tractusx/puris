@@ -470,7 +470,7 @@ public class ExcelService {
                 }
                 deliveries.add(delivery);
             } catch (Exception e) {
-                errors.add(new DataImportError(rowIndex, List.of(e.getMessage() + " Further validations for this row are not possible.")));
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage() + " Further validations for this row are not possible.", row.toString())));
             }
         }
 
@@ -690,7 +690,7 @@ public class ExcelService {
     }
 
     private String getStringCellValue(Cell cell) {
-        return cell == null || cell.getCellType() == CellType.BLANK ? null : cell.getCellType() == CellType.STRING
+        return cell == null || cell.getCellType() == CellType.BLANK ? null : (cell.getCellType() == CellType.STRING || cell.getCellType() == CellType.FORMULA)
                 ? cell.getStringCellValue().trim()
                 : String.valueOf(cell.getNumericCellValue()).trim();
     }
