@@ -470,7 +470,7 @@ public class ExcelService {
                 }
                 deliveries.add(delivery);
             } catch (Exception e) {
-                errors.add(new DataImportError(rowIndex, List.of(e.getMessage() + " Further validations for this row are not possible.", row.toString())));
+                errors.add(new DataImportError(rowIndex, List.of(e.getMessage() + " Further validations for this row are not possible.")));
             }
         }
 
@@ -690,9 +690,23 @@ public class ExcelService {
     }
 
     private String getStringCellValue(Cell cell) {
-        return cell == null || cell.getCellType() == CellType.BLANK ? null : (cell.getCellType() == CellType.STRING || cell.getCellType() == CellType.FORMULA)
-                ? cell.getStringCellValue().trim()
-                : String.valueOf(cell.getNumericCellValue()).trim();
+        if (cell == null || cell.getCellType() == CellType.BLANK) {
+            return null;
+        }
+        CellType type = cell.getCellType();
+        if (type == CellType.FORMULA) {
+            type = cell.getCachedFormulaResultType();
+        }
+        switch (type) {
+            case STRING:
+                return cell.getStringCellValue() == null ? null : cell.getStringCellValue().trim();
+            case NUMERIC:
+                return String.valueOf(cell.getNumericCellValue()).trim();
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return null;
+        }
     }
 
     private Date getDateCellValue(Cell cell) {
