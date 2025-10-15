@@ -5,7 +5,7 @@
     "version": "4.0.1",
     "type": "module",
     "scripts": {
-        "dev": "vite --host --mode customer --port 5173",
+        "dev": "npm run customer & npm run supplier",
         "customer": "vite --host --mode customer --port 5173",
         "supplier": "vite --host --mode supplier --port 5174",
         "dockerbuild": "vite build --mode dockerbuild",

@@ -23,9 +23,14 @@ FROM node:lts-alpine AS build
 ARG NPM_BUILD_MODE=dockerbuild
 
 WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install 
+
 COPY . .
 
-RUN npm install && npm run ${NPM_BUILD_MODE}
+RUN npm run ${NPM_BUILD_MODE}
 
 RUN chmod -R 777 /app/dist
 
