@@ -2,7 +2,7 @@
     "name": "puris-frontend",
     "description": "Puris frontend",
     "license": "Apache-2.0",
-    "version": "4.0.1",
+    "version": "4.1.0",
     "type": "module",
     "scripts": {
         "dev": "vite --host --mode customer --port 5173",
