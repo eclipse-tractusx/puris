@@ -245,7 +245,7 @@ type ModalState = {
     demandDialogOptions: { open: boolean; mode: ModalMode };
     productionDialogOptions: { open: boolean; mode: ModalMode };
     viewStockDialogOptions: { open: boolean; stockType: StockType };
-    editStockDialogOptions: { open: boolean; stockType: StockType; mode: ModalMode };
+    editStockDialogOptions: { open: boolean; stockType: StockType};
     delivery: Delivery | null;
     demand: Partial<Demand> | null;
     production: Partial<Production> | null;
@@ -271,7 +271,7 @@ const initialState: ModalState = {
     demandDialogOptions: { open: false, mode: 'edit' },
     productionDialogOptions: { open: false, mode: 'edit' },
     viewStockDialogOptions: { open: false, stockType: 'material' },
-    editStockDialogOptions: { open: false, stockType: 'material', mode: 'edit' },
+    editStockDialogOptions: { open: false, stockType: 'material' },
     delivery: null,
     demand: null,
     production: null,
