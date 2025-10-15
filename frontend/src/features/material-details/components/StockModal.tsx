@@ -27,6 +27,7 @@ import { deleteStocks } from '@services/stocks-service';
 import { useNotifications } from '@contexts/notificationContext';
 import { useDataModal } from '@contexts/dataModalContext';
 import { getUnitOfMeasurement } from '@util/helpers';
+import { DirectionType } from '@models/types/erp/directionType';
 
 export type StockModalProps = {
     open: boolean;
@@ -164,13 +165,12 @@ export const StockModal = ({
     stockType,
 }: StockModalProps) => {
     const { notify } = useNotifications();
-
     const { openDialog } = useDataModal();
+    const direction = stockType == 'material' ? DirectionType.Inbound : DirectionType.Outbound
 
     const handleEdit = (row: Stock) => {
-        openDialog('stock', { ...row }, stocks, 'edit');
+        openDialog('stock', { ...row }, stocks, 'edit', direction);
     };
-
     const handleDelete = async (row: Stock) => {
         if (row.uuid) {
             try {
@@ -192,25 +192,27 @@ export const StockModal = ({
     };
 
     return (
-        <Dialog open={open && stock !== null} onClose={onClose} data-testid="stock-modal">
-            <DialogTitle variant="h3" textAlign="center">
-                {capitalize('view')} {capitalize(stockType)} Stock
-            </DialogTitle>
-            <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
-                <Table
-                    title={`Current ${stockType} stock`}
-                    getRowId={(row) => row.uuid}
-                    columns={createStockColumns(handleDelete, handleEdit)}
-                    rows={stocks}
-                    density="standard"
-                    hideFooter
-                />
-                <Box display="flex" justifyContent="flex-end" marginTop="2rem">
-                    <Button variant="outlined" onClick={onClose}>
-                        <Close /> Close
-                    </Button>
-                </Box>
-            </Stack>
-        </Dialog>
+        <>
+            <Dialog open={open && stock !== null} onClose={onClose} data-testid="stock-modal">
+                <DialogTitle variant="h3" textAlign="center">
+                    {capitalize('view')} {capitalize(stockType)} Stock
+                </DialogTitle>
+                <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
+                    <Table
+                        title={`Current ${stockType} stock`}
+                        getRowId={(row) => row.uuid}
+                        columns={createStockColumns(handleDelete, handleEdit)}
+                        rows={stocks}
+                        density="standard"
+                        hideFooter
+                    />
+                    <Box display="flex" justifyContent="flex-end" marginTop="2rem">
+                        <Button variant="outlined" onClick={onClose}>
+                            <Close /> Close
+                        </Button>
+                    </Box>
+                </Stack>
+            </Dialog>
+        </>
     );
 };

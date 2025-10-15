@@ -43,19 +43,16 @@ import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { useSites } from '@features/stock-view/hooks/useSites';
-import { postStocks } from '@services/stocks-service';
+import { postStocks, updateStocks } from '@services/stocks-service';
 import { useNotifications } from '@contexts/notificationContext';
-import { ModalMode } from '@models/types/data/modal-mode';
 
-type StockEditModalProps = {
+type StockCreationModalProps = {
   open: boolean;
   stock: Partial<Stock> | null;
   stockType: StockType;
   onClose: () => void;
-  onSave: (updated: Stock) => void;
-  mode: ModalMode;
+  onSave: (updated: Stock) => void
 };
-
 const isValidStock = (stock: Partial<Stock>) =>
   stock &&
   stock.quantity &&
@@ -65,64 +62,62 @@ const isValidStock = (stock: Partial<Stock>) =>
   stock.stockLocationBpna &&
   isValidOrderReference(stock);
 
-export const StockEditModal = ({
+export const StockCreationModal = ({
   open,
   onClose,
   onSave,
   stock,
-  stockType,
-  mode
-}: StockEditModalProps) => {
-  const { notify } = useNotifications();
-  const { sites } = useSites();
+  stockType
+}: StockCreationModalProps) => {
+  const [temporaryStock, setTemporaryStock] = useState<Partial<Stock>>(stock ?? {});
   const { partners } = usePartners(stockType, stock?.material?.ownMaterialNumber ?? null);
-
-  const [formData, setFormData] = useState<Partial<Stock>>(stock ?? {});
-  const [originalData, setOriginalData] = useState<Partial<Stock>>(stock ?? {});
+  const { sites } = useSites();
+  const { notify } = useNotifications();
   const [formError, setFormError] = useState(false);
+  const [originalData, setOriginalData] = useState<Partial<Stock>>(stock ?? {});
+  const mode = temporaryStock?.uuid ? 'edit' : 'create';
+  const isFormChanged = JSON.stringify(temporaryStock) !== JSON.stringify(originalData);
 
   useEffect(() => {
-    setFormData(stock ?? {});
+    setTemporaryStock(stock ?? {});
     setOriginalData(stock ?? {});
   }, [stock]);
 
-  const isFormChanged = JSON.stringify(formData) !== JSON.stringify(originalData);
 
-  const handleChange = <T extends keyof Stock>(field: T, value: Stock[T] | undefined) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSave = () => {
-    formData.customerOrderNumber ||= undefined;
-    formData.customerOrderPositionNumber ||= undefined;
-    formData.supplierOrderNumber ||= undefined;
-    if (!isValidStock(formData)) {
+  const handleSaveClick = () => {
+    temporaryStock.customerOrderNumber ||= undefined;
+    temporaryStock.customerOrderPositionNumber ||= undefined;
+    temporaryStock.supplierOrderNumber ||= undefined;
+    if (!isValidStock(temporaryStock)) {
       setFormError(true);
       return;
     }
     setFormError(false);
-    postStocks(stockType, {
-      ...formData,
+
+    const method = mode === 'create' ? postStocks : updateStocks;
+    const successLabel = mode === 'create' ? 'Stock Added' : 'Stock Updated';
+    const successDescription = mode === 'create' ? 'The Stock has been added' : 'The Stock has been successfully updated';
+
+
+    method(stockType, {
+      ...temporaryStock,
       lastUpdatedOn: new Date().toISOString()
-    },
-      mode)
-      .then(() => {
+    })
+      .then((d) => {
+        onSave(d);
         notify({
-          title: 'Stock Updated',
-          description: 'Stock has been saved',
+          title: successLabel,
+          description: successDescription,
           severity: 'success'
         });
-        onSave(formData as Stock);
-        handleClose();
       })
       .catch((error) => {
         notify({
           title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-          description: error.status === 409 ? 'Date conflicting with another Stock' : error.error,
-          severity: 'error',
+          description: error.status === 409 ? 'Stock conflicting with an existing one' : error.error,
+          severity: 'error'
         });
-        handleClose();
-      });
+      }).finally(() => handleClose());
   };
 
   const handleClose = () => {
@@ -146,9 +141,9 @@ export const StockEditModal = ({
               getOptionLabel={(option) => option?.name ?? ''}
               label="Partner*"
               placeholder="Select a Partner"
-              error={formError && !formData.partner}
-              onChange={(_, value) => handleChange('partner', value ?? undefined)}
-              value={formData.partner ?? null}
+              error={formError && !temporaryStock?.partner}
+              onChange={(_, value) => setTemporaryStock({ ...temporaryStock, partner: value ?? undefined })}
+              value={temporaryStock.partner ?? null}
               isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
               data-testid="stock-partner-field"
               disabled={mode === 'edit'}
@@ -163,13 +158,9 @@ export const StockEditModal = ({
               error={formError}
               isOptionEqualToValue={(option, value) => option?.bpns === value?.bpns}
               onChange={(_, value) =>
-                setFormData({
-                  ...formData,
-                  stockLocationBpns: value?.bpns ?? undefined,
-                  stockLocationBpna: undefined
-                })
+                setTemporaryStock({ ...temporaryStock, stockLocationBpns: value?.bpns ?? undefined })
               }
-              value={sites?.find((s) => s.bpns === formData.stockLocationBpns) ?? null}
+              value={sites?.find((s) => s.bpns === temporaryStock.stockLocationBpns) ?? null}
               label="Stock Site*"
               placeholder="Select a Site"
               data-testid="stock-site-field"
@@ -181,22 +172,22 @@ export const StockEditModal = ({
             <LabelledAutoComplete
               id="stockLocationBpna"
               options={
-                sites?.find((site) => site.bpns === formData.stockLocationBpns)?.addresses ?? []
+                sites?.find((site) => site.bpns === temporaryStock.stockLocationBpns)?.addresses ?? []
               }
               getOptionLabel={(option) => option.streetAndNumber ?? ''}
               error={formError}
               isOptionEqualToValue={(option, value) => option?.bpna === value?.bpna}
               onChange={(_, value) =>
-                handleChange('stockLocationBpna', value?.bpna)
+                setTemporaryStock({ ...temporaryStock, stockLocationBpna: value?.bpna ?? undefined })
               }
               value={
                 sites
-                  ?.find((site) => site.bpns === formData.stockLocationBpns)
-                  ?.addresses?.find((a) => a.bpna === formData.stockLocationBpna) ?? null
+                  ?.find((site) => site.bpns === temporaryStock.stockLocationBpns)
+                  ?.addresses?.find((a) => a.bpna === temporaryStock.stockLocationBpna) ?? null
               }
               label="Stock Address*"
               placeholder="Select an address"
-              disabled={!formData.stockLocationBpns || mode === 'edit'}
+              disabled={!temporaryStock.stockLocationBpns || mode === 'edit'}
               data-testid="stock-address-field"
             />
           </Grid>
@@ -207,9 +198,9 @@ export const StockEditModal = ({
               id="quantity"
               type="number"
               placeholder="Enter quantity"
-              value={formData.quantity ?? ''}
-              error={formError && !formData.quantity}
-              onChange={(e) => handleChange('quantity', parseFloat(e.target.value))}
+              value={temporaryStock.quantity ?? ''}
+              error={formError && !temporaryStock.quantity}
+              onChange={(e) => setTemporaryStock({ ...temporaryStock, quantity: parseFloat(e.target.value) })}
               sx={{ marginTop: '.5rem' }}
               data-testid="stock-quantity-field"
             />
@@ -219,10 +210,10 @@ export const StockEditModal = ({
             <LabelledAutoComplete
               id="uom"
               value={
-                formData.measurementUnit
+                temporaryStock.measurementUnit
                   ? {
-                    key: formData.measurementUnit,
-                    value: getUnitOfMeasurement(formData.measurementUnit)
+                    key: temporaryStock.measurementUnit,
+                    value: getUnitOfMeasurement(temporaryStock.measurementUnit)
                   }
                   : null
               }
@@ -230,8 +221,8 @@ export const StockEditModal = ({
               getOptionLabel={(option) => option?.value ?? ''}
               label="UOM*"
               placeholder="Select unit"
-              error={formError && !formData.measurementUnit}
-              onChange={(_, value) => handleChange('measurementUnit', value?.key)}
+              error={formError && !temporaryStock.measurementUnit}
+              onChange={(_, value) => setTemporaryStock((curr) => ({ ...curr, measurementUnit: value?.key }))}
               isOptionEqualToValue={(option, value) => option?.key === value?.key}
               data-testid="stock-uom-field"
               disabled={mode === 'edit'}
@@ -243,10 +234,10 @@ export const StockEditModal = ({
             <Input
               id="customer-order-number"
               type="text"
-              error={formError && !isValidOrderReference(formData)}
-              value={formData?.customerOrderNumber ?? ''}
+              error={formError && !isValidOrderReference(temporaryStock)}
+              value={temporaryStock?.customerOrderNumber ?? ''}
               onChange={(event) =>
-                handleChange('customerOrderNumber', event.target.value ?? '')
+                setTemporaryStock({ ...temporaryStock, customerOrderNumber: event.target.value })
               }
               data-testid="stock-customer-order-number-field"
             />
@@ -257,10 +248,13 @@ export const StockEditModal = ({
             <Input
               id="customer-order-position-number"
               type="text"
-              error={formError && !isValidOrderReference(formData)}
-              value={formData?.customerOrderPositionNumber ?? ''}
+              error={formError && !isValidOrderReference(temporaryStock)}
+              value={temporaryStock?.customerOrderPositionNumber ?? ''}
               onChange={(event) =>
-                handleChange('customerOrderPositionNumber', event.target.value ?? '')
+                setTemporaryStock({
+                  ...temporaryStock,
+                  customerOrderPositionNumber: event.target.value,
+                })
               }
               data-testid="stock-customer-order-position-field"
             />
@@ -271,9 +265,9 @@ export const StockEditModal = ({
             <Input
               id="supplier-order-number"
               type="text"
-              value={formData?.supplierOrderNumber ?? ''}
+              value={temporaryStock?.supplierOrderNumber ?? ''}
               onChange={(event) =>
-                handleChange('supplierOrderNumber', event.target.value ?? '')
+                setTemporaryStock({ ...temporaryStock, supplierOrderNumber: event.target.value })
               }
               data-testid="stock-supplier-order-number-field"
             />
@@ -283,8 +277,10 @@ export const StockEditModal = ({
           <Grid item xs={6} alignContent="end">
             <Stack direction="row" alignItems="center">
               <Checkbox
-                checked={formData?.isBlocked ?? false}
-                onChange={(event) => handleChange('isBlocked', event.target.checked)}
+                checked={temporaryStock?.isBlocked ?? false}
+                onChange={(event) =>
+                  setTemporaryStock({ ...temporaryStock, isBlocked: event.target.checked })
+                }
                 data-testid="stock-blocked-field"
               />
               <InputLabel htmlFor="isBlocked"> is Blocked </InputLabel>
@@ -298,7 +294,7 @@ export const StockEditModal = ({
           </Button>
           <Button
             sx={{ display: 'flex', gap: '.25rem' }}
-            onClick={handleSave}
+            onClick={handleSaveClick}
             data-testid="save-delivery-button"
             disabled={mode == 'edit' && !isFormChanged}
           >
