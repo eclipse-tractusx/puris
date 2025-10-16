@@ -33,6 +33,7 @@ import { GridItem } from '@components/ui/GridItem';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
 import { deleteStocks, postStocks } from '@services/stocks-service';
+import { TextToClipboard } from '@components/ui/TextToClipboard';
 
 const createStockColumns = (handleDelete?: (row: Stock) => void) => {
     const columns = [
@@ -48,16 +49,16 @@ const createStockColumns = (handleDelete?: (row: Stock) => void) => {
             ),
         },
         {
-          field: 'stockLocationBpns',
-          headerName: 'Site',
-          headerAlign: 'center',
-          flex: 2,
-          renderCell: (data: { row: Stock }) => (
-              <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                  {data.row.stockLocationBpns}
-              </Box>
-          ),
-      },
+            field: 'stockLocationBpns',
+            headerName: 'Site',
+            headerAlign: 'center',
+            flex: 2,
+            renderCell: (data: { row: Stock }) => (
+                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                    <TextToClipboard text={data.row.stockLocationBpns} />
+                </Box>
+            ),
+        },
         {
             field: 'partner',
             headerName: 'Partner',
@@ -83,21 +84,81 @@ const createStockColumns = (handleDelete?: (row: Stock) => void) => {
         },
         {
             field: 'customerOrderNumber',
-            headerName: 'Order Reference',
+            headerName: 'Customer Order Number',
+            sortable: false,
             headerAlign: 'center',
             flex: 2,
-            renderCell: (data: { row: Stock }) => (
-                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    {data.row.customerOrderNumber ? (
-                        <Stack>
-                            <Box>{`${data.row.customerOrderNumber} / ${data.row.customerOrderPositionNumber}  `}</Box>
-                            <Box>{data.row.supplierOrderNumber || '-'}</Box>
-                        </Stack>
-                    ) : (
-                        '-'
-                    )}
-                </Box>
-            ),
+            renderCell: (data: { row: Stock }) => {
+                return (
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        textAlign="center"
+                        alignItems="center"
+                        justifyContent="center"
+                        width="100%"
+                        height="100%"
+                    >
+                        {data.row.customerOrderNumber ? (
+                            <TextToClipboard text={data.row.customerOrderNumber} />
+                        ) : (
+                            '-'
+                        )}
+                    </Box>
+                );
+            },
+        },
+        {
+            field: 'customerOrderPositionNumber',
+            headerName: 'Customer Order Position',
+            sortable: false,
+            headerAlign: 'center',
+            flex: 2,
+            renderCell: (data: { row: Stock }) => {
+                return (
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        textAlign="center"
+                        alignItems="center"
+                        justifyContent="center"
+                        width="100%"
+                        height="100%"
+                    >
+                        {data.row.customerOrderPositionNumber ? (
+                            <TextToClipboard text={data.row.customerOrderPositionNumber} />
+                        ) : (
+                            '-'
+                        )}
+                    </Box>
+                );
+            },
+        },
+        {
+            field: 'supplierOrderNumber',
+            headerName: 'Supplier Order Number',
+            sortable: false,
+            headerAlign: 'center',
+            flex: 2,
+            renderCell: (data: { row: Stock }) => {
+                return (
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        textAlign="center"
+                        alignItems="center"
+                        justifyContent="center"
+                        width="100%"
+                        height="100%"
+                    >
+                        {data.row.supplierOrderNumber ? (
+                            <TextToClipboard text={data.row.supplierOrderNumber} />
+                        ) : (
+                            '-'
+                        )}
+                    </Box>
+                );
+            },
         },
         {
             field: 'isBlocked',
@@ -213,7 +274,7 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
                 <DialogTitle variant="h3" textAlign="center">
                     {capitalize(mode)} {capitalize(stockType)} Stock
                 </DialogTitle>
-                <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
+                <Stack padding="0 2rem 2rem" sx={{ width: '95vw' }}>
                     <Grid container spacing={2} padding=".25rem">
                         {mode === 'create' ? (
                             <>

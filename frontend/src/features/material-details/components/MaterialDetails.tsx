@@ -38,6 +38,7 @@ import { Material } from '@models/types/data/stock';
 import { BPNS } from '@models/types/edc/bpn';
 import { IMessage, useSubscription } from 'react-stomp-hooks';
 import { refreshPartnerData } from '@services/refresh-service';
+import { TextToClipboard } from '@components/ui/TextToClipboard';
 
 type SummaryContainerProps = {
     children: ReactNode;
@@ -320,7 +321,9 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                 renderTitle={() => (
                                     <>
                                         <Typography variant="body1">{partner.name}</Typography>
-                                        <Typography variant="body3" color="#ccc">({partner.bpnl})</Typography>
+                                        <Typography variant="body3" color="#ccc">
+                                            ({<TextToClipboard text={partner.bpnl} color="#ccc"/>})
+                                        </Typography>
                                     </>
                                 )}
                             >
@@ -336,7 +339,9 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                             <>
                                                 <Typography variant="body2" color="#ccc" data-testid="partner-site-owner">{partner.name}/</Typography>
                                                 <Typography variant="body1" data-testid="partner-site-name">{site.name}</Typography>
-                                                <Typography variant="body3" color="#ccc" data-testid="partner-site-bpns">({site.bpns})</Typography>
+                                                <Typography variant="body3" color="#ccc" data-testid="partner-site-bpns">
+                                                    ({<TextToClipboard text={site.bpns} color="#ccc"/>})
+                                                </Typography>
                                             </>
                                         )}
                                         includeDaysOfSupply
@@ -380,7 +385,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                         <>
                                             <Typography variant="body1">{partner.name}</Typography>
                                             <Typography variant="body3" color="#ccc">
-                                                ({partner.bpnl})
+                                                ({<TextToClipboard text={partner.bpnl} color="#ccc"/>})
                                             </Typography>
                                         </>
                                     )}
@@ -400,7 +405,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                                     </Typography>
                                                     <Typography variant="body1">{partnerSite.name}</Typography>
                                                     <Typography variant="body3" color="#ccc">
-                                                        ({partnerSite.bpns})
+                                                        ({<TextToClipboard text={partnerSite.bpns} color="#ccc"/>})
                                                     </Typography>
                                                 </>
                                             )}

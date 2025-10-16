@@ -33,6 +33,7 @@ import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
+import { TextToClipboard } from '@components/ui/TextToClipboard';
 
 const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
     const columns = [
@@ -63,7 +64,7 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
             renderCell: (data: { row: Demand }) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                        {data.row.partnerBpnl}
+                        <TextToClipboard text={data.row.partnerBpnl} />
                     </Box>
                 );
             },
@@ -79,7 +80,7 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
             renderCell: (data: { row: Demand }) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                        {data.row.supplierLocationBpns}
+                        <TextToClipboard text={data.row.supplierLocationBpns} />
                     </Box>
                 );
             },
@@ -231,7 +232,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, onRemove, dem
                 <DialogTitle variant="h3" textAlign="center">
                     Demand Information
                 </DialogTitle>
-                <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
+                <Stack padding="0 2rem 2rem" sx={{ width: '95vw' }}>
                     {mode === 'create' ? (
                         <Grid container spacing={2} padding=".25rem">
                             <GridItem label="Material Number" value={temporaryDemand.ownMaterialNumber ?? ''} />
