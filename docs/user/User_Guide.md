@@ -264,6 +264,10 @@ An Admin can upload data in this page. Once the file is uploaded, all existing d
 
 Right now, only files of type xlsx are supported.
 
+### Formula support
+
+The import feature evaluates formulas to dynamically calculate values. Due to technical limitations of the underlying Java library Apache POI not all functions are supported. You can find a list of supported functions int the [Apache POI documentation](https://poi.apache.org/components/spreadsheet/eval-devguide.html#appendixA).
+
 ### Import view
 
 ![Overview of the Import view](img/import_view.png)
