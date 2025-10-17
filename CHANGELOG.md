@@ -15,6 +15,7 @@ The **need for configuration updates** is **marked bold**.
 
 - Added Material Number in material details view ([#1005](https://github.com/eclipse-tractusx/puris/pull/1005))
 - added formula support for excel imports ([#1020](https://github.com/eclipse-tractusx/puris/pull/1020))
+- Implemented update logic for Demand Modal ([#1028](https://github.com/eclipse-tractusx/puris/pull/1028))
 
 ### Changed
 
