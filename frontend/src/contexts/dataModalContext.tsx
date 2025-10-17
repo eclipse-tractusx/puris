@@ -31,6 +31,7 @@ import { Demand } from '@models/types/data/demand';
 import { Production } from '@models/types/data/production';
 import { Material, Stock, StockType } from '@models/types/data/stock';
 import { DirectionType } from '@models/types/erp/directionType';
+import { DemandCategoryCreationModal } from '@features/material-details/components/DemandCategoryCreationModal'
 
 export type DataCategory = 'production' | 'demand' | 'stock' | 'delivery';
 
@@ -51,7 +52,7 @@ type DataModalContext = {
         site?: Site | null
     ) => void;
     addOnSaveListener: (callback: (category: DataCategory) => void) => void;
-    removeOnSaveListener: (callback: (category: DataCategory) => void) => void; 
+    removeOnSaveListener: (callback: (category: DataCategory) => void) => void;
 };
 
 const dataModalContext = createContext<DataModalContext | null>(null);
@@ -80,11 +81,12 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
 
     const openDemandDialog = useCallback(
         (d: Partial<Demand>, mode: ModalMode, list: Demand[]) => {
+            const optionName = mode === 'view' ? 'viewDemandDialogOptions' : 'editDemandDialogOptions';
             d.demandCategoryCode ??= DEMAND_CATEGORY[0]?.key;
             d.ownMaterialNumber = materialNumber;
             dispatch({ type: 'demand', payload: d });
             dispatch({ type: 'demands', payload: list });
-            dispatch({ type: 'demandDialogOptions', payload: { open: true, mode } });
+            dispatch({ type: optionName, payload: { open: true, mode } });
         },
         [materialNumber]
     );
@@ -158,8 +160,8 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
         <>
             <dataModalContext.Provider value={{ openDialog, addOnSaveListener, removeOnSaveListener }}>{children}</dataModalContext.Provider>
             <DemandCategoryModal
-                {...state.demandDialogOptions}
-                onClose={() => dispatch({ type: 'demandDialogOptions', payload: { open: false, mode: state.demandDialogOptions.mode } })}
+                {...state.viewDemandDialogOptions}
+                onClose={() => dispatch({ type: 'viewDemandDialogOptions', payload: { ...state.viewDemandDialogOptions, open: false } })}
                 onSave={() => onSave('demand')}
                 onRemove={(deletedUuid: string) => {
                     const updatedDemands = state.demands.filter(p => p.uuid !== deletedUuid);
@@ -168,6 +170,12 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
                 }}
                 demand={state.demand}
                 demands={state.demands}
+            />
+            <DemandCategoryCreationModal
+                {...state.editDemandDialogOptions}
+                onClose={() => dispatch({ type: 'editDemandDialogOptions', payload: { ...state.editDemandDialogOptions, open: false } })}
+                onSave={() => onSave('demand')}
+                demand={state.demand}
             />
             <PlannedProductionModal
                 {...state.productionDialogOptions}
@@ -220,7 +228,8 @@ export function useDataModal() {
 
 type ModalState = {
     deliveryDialogOptions: { open: boolean; mode: ModalMode; direction: DirectionType; site: Site | null };
-    demandDialogOptions: { open: boolean; mode: ModalMode };
+    viewDemandDialogOptions: { open: boolean };
+    editDemandDialogOptions: { open: boolean };
     productionDialogOptions: { open: boolean; mode: ModalMode };
     stockDialogOptions: { open: boolean; mode: ModalMode, stockType: StockType };
     delivery: Delivery | null;
@@ -244,7 +253,8 @@ const reducer = (state: ModalState, action: ModalAction): ModalState => {
 
 const initialState: ModalState = {
     deliveryDialogOptions: { open: false, mode: 'edit', direction: DirectionType.Inbound, site: null },
-    demandDialogOptions: { open: false, mode: 'edit' },
+    viewDemandDialogOptions: { open: false },
+    editDemandDialogOptions: { open: false },
     productionDialogOptions: { open: false, mode: 'edit' },
     stockDialogOptions: { open: false, mode: 'edit', stockType: 'material' },
     delivery: null,
