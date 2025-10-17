@@ -142,7 +142,7 @@ export const DemandCategoryCreationModal = ({
                     <Grid item xs={6}>
                         <FormLabel sx={{ marginBottom: '.5rem', display: 'block' }}>Day*</FormLabel>
                         <div className="date-picker" data-testid="demand-day-field">
-                            {temporaryDemand?.day && <Datepicker
+                            <Datepicker
                                 id="day"
                                 label=""
                                 hiddenLabel
@@ -150,10 +150,9 @@ export const DemandCategoryCreationModal = ({
                                 locale="de"
                                 error={formError && !temporaryDemand?.day}
                                 readOnly={false}
-                                value={new Date(temporaryDemand?.day).toISOString().split("T")[0]}
+                                value={temporaryDemand?.day}
                                 onChangeItem={(value) => setTemporaryDemand((curr) => ({ ...curr, day: value ?? undefined }))}
                             />
-                            }
                         </div>
                     </Grid>
 
