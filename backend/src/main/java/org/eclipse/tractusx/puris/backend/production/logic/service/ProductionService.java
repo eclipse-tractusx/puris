@@ -109,7 +109,7 @@ public abstract class ProductionService<T extends Production>  {
         if (production.getLastUpdatedOnDateTime() == null) {
             errors.add("Missing lastUpdatedOnTime.");
         } else if (production.getLastUpdatedOnDateTime().after(new Date())) {
-            errors.add(String.format("lastUpdatedOnDateTime '%s' must be in the past must be in the past (system time: '%s').", production.getLastUpdatedOnDateTime().toInstant().toString(), (new Date()).toInstant().toString()));
+            errors.add(String.format("lastUpdatedOnDateTime '%s' must be in the past (system time: '%s').", production.getLastUpdatedOnDateTime().toInstant().toString(), (new Date()).toInstant().toString()));
         }
         if (production.getEstimatedTimeOfCompletion() == null) {
             errors.add("Missing estimated time of completion.");

@@ -102,7 +102,7 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
         if (demand.getLastUpdatedOnDateTime() == null) {
             errors.add("Missing lastUpdatedOnTime.");
         } else if (demand.getLastUpdatedOnDateTime().after(new Date())) {
-            errors.add(String.format("lastUpdatedOnDateTime '%s' must be in the past must be in the past (system time: '%s').", demand.getLastUpdatedOnDateTime().toInstant().toString(), (new Date()).toInstant().toString()));
+            errors.add(String.format("lastUpdatedOnDateTime '%s' must be in the past (system time: '%s').", demand.getLastUpdatedOnDateTime().toInstant().toString(), (new Date()).toInstant().toString()));
         }
         if (demand.getDay() == null) {
             errors.add("Missing day.");
@@ -128,7 +128,7 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
         if ((demand.getSupplierLocationBpns() != null  && 
             ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns())))
             || demand.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns()))) {
-            errors.add("Supplier or demand location is not valid.");
+            errors.add(String.format("Either supplier location '%s' is not configured as your site or demand location '%s' is not configured as site for customer partner '%s'.", demand.getSupplierLocationBpns(), demand.getDemandLocationBpns(), demand.getPartner().getBpnl()));
         }
         return errors;
     }

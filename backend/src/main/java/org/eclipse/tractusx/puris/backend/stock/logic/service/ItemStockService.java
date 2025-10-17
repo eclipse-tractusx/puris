@@ -164,7 +164,7 @@ public abstract class ItemStockService<T extends ItemStock> {
             if (itemStock.getLastUpdatedOnDateTime() == null) {
                 errors.add("Missing lastUpdatedOnTime.");
             } else if (itemStock.getLastUpdatedOnDateTime().after(new Date())) {
-                errors.add(String.format("lastUpdatedOnDateTime '%s' must be in the past must be in the past (system time: '%s').", itemStock.getLastUpdatedOnDateTime().toInstant().toString(), (new Date()).toInstant().toString()));
+                errors.add(String.format("lastUpdatedOnDateTime '%s' must be in the past (system time: '%s').", itemStock.getLastUpdatedOnDateTime().toInstant().toString(), (new Date()).toInstant().toString()));
             }
             if (!((itemStock.getCustomerOrderId() != null && itemStock.getCustomerOrderPositionId() != null) || 
                 (itemStock.getCustomerOrderId() == null && itemStock.getCustomerOrderPositionId() == null && itemStock.getSupplierOrderId() == null))) {
