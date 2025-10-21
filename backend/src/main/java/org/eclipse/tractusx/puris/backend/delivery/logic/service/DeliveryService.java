@@ -230,13 +230,13 @@ public abstract class DeliveryService<T extends Delivery> {
                     if (!delivery.getMaterial().isProductFlag()) {
                         errors.add(String.format("Material '%s' must be configured as product via flag (incoterm '%s' with supplier responsibility).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue()));
                     }
-                    errors.addAll(validateLocationsAsSupplier(delivery, "supplier", ownSites, partnerSites));
+                    errors.addAll(validateLocationsAsSupplier(delivery, ownSites, partnerSites));
                     break;
                 case CUSTOMER:
                     if (!delivery.getMaterial().isMaterialFlag()) {
-                        errors.add(String.format("Material '%s' must be configured as material via flag (incoterm '%s' with supplier responsibility).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue()));
+                        errors.add(String.format("Material '%s' must be configured as material via flag (incoterm '%s' with customer responsibility).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue()));
                     }
-                    errors.addAll(validateLocationsAsCustomer(delivery, "customer", ownSites, partnerSites));
+                    errors.addAll(validateLocationsAsCustomer(delivery, ownSites, partnerSites));
                     break;
                 case PARTIAL:
                     boolean valid = false;
@@ -244,25 +244,21 @@ public abstract class DeliveryService<T extends Delivery> {
                     List<String> customerPathErrors = Collections.emptyList();
 
                     if (delivery.getMaterial().isProductFlag()) {
-                        supplierPathErrors = validateLocationsAsSupplier(delivery, "supplier", ownSites, partnerSites);
+                        supplierPathErrors = validateLocationsAsSupplier(delivery, ownSites, partnerSites);
                         if (supplierPathErrors.isEmpty()) {
                             valid = true;
                         }
                     }
                     if (delivery.getMaterial().isMaterialFlag()) {
-                        customerPathErrors = validateLocationsAsCustomer(delivery, "customer", ownSites, partnerSites);
+                        customerPathErrors = validateLocationsAsCustomer(delivery, ownSites, partnerSites);
                         if (customerPathErrors.isEmpty()) {
                             valid = true;
                         }
                     }
                     if (!valid) {
-                        errors.add(String.format("Responsibility conditions for material '%s' for partial responsibility (incoterm '%s') are not met. Either origin site bpns '%s' does not match to own configured sites or destination site bpns '%s' does not match to configured sites for partner '%s'. Additionally this behavior might not be applicable to the material configuration as product (%b) or material (%b).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue(), delivery.getOriginBpns(), delivery.getDestinationBpns(), delivery.getPartner().getBpnl(), delivery.getMaterial().isProductFlag(), delivery.getMaterial().isMaterialFlag()));
-                        if (delivery.getMaterial().isProductFlag() && !supplierPathErrors.isEmpty()) {
-                            errors.addAll(supplierPathErrors);
-                        }
-                        if (delivery.getMaterial().isMaterialFlag() && !customerPathErrors.isEmpty()) {
-                            errors.addAll(customerPathErrors);
-                        }
+                        errors.add(String.format("Responsibility conditions for material '%s' for partial responsibility (incoterm '%s') are not met. Either origin site '%s' does not match to own configured sites or destination site '%s' does not match to configured sites for partner '%s'. Additionally this behavior might not be applicable to the material configuration as product (%b) or material (%b).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue(), delivery.getOriginBpns(), delivery.getDestinationBpns(), delivery.getPartner().getBpnl(), delivery.getMaterial().isProductFlag(), delivery.getMaterial().isMaterialFlag()));
+                        errors.addAll(supplierPathErrors);
+                        errors.addAll(customerPathErrors);
                     }
                     break;
                 default:
@@ -289,38 +285,34 @@ public abstract class DeliveryService<T extends Delivery> {
                     if (!delivery.getMaterial().isMaterialFlag()) {
                         errors.add(String.format("Material '%s' must be configured as material via flag (incoterm '%s' with supplier responsibility).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue()));
                     }
-                    errors.addAll(validateLocationsAsCustomer(delivery, "supplier", ownSites, partnerSites));
+                    errors.addAll(validateLocationsAsCustomer(delivery, ownSites, partnerSites));
                     break;
                 case CUSTOMER:
                     if (!delivery.getMaterial().isProductFlag()) {
-                        errors.add(String.format("Material '%s' must be configured as product via flag (incoterm '%s' with supplier responsibility).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue()));
+                        errors.add(String.format("Material '%s' must be configured as product via flag (incoterm '%s' with customer responsibility).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue()));
                     }
-                    errors.addAll(validateLocationsAsSupplier(delivery, "customer", ownSites, partnerSites));
+                    errors.addAll(validateLocationsAsSupplier(delivery, ownSites, partnerSites));
                     break;
                 case PARTIAL:
                     boolean valid = false;
                     List<String> supplierPathErrors = Collections.emptyList();
                     List<String> customerPathErrors = Collections.emptyList();
                     if (delivery.getMaterial().isProductFlag()) {
-                        customerPathErrors = validateLocationsAsSupplier(delivery, "customer", ownSites, partnerSites);
-                        if (customerPathErrors.isEmpty()) {
-                            valid = true;
-                        }
-                    }
-                    if (delivery.getMaterial().isMaterialFlag()) {
-                        supplierPathErrors = validateLocationsAsCustomer(delivery, "supplier", ownSites, partnerSites);
+                        supplierPathErrors  = validateLocationsAsSupplier(delivery, ownSites, partnerSites);
                         if (supplierPathErrors.isEmpty()) {
                             valid = true;
                         }
                     }
+                    if (delivery.getMaterial().isMaterialFlag()) {
+                        customerPathErrors = validateLocationsAsCustomer(delivery, ownSites, partnerSites);
+                        if (customerPathErrors.isEmpty()) {
+                            valid = true;
+                        }
+                    }
                     if (!valid) {
-                        errors.add(String.format("Responsibility conditions for material '%s' for partial responsibility (incoterm '%s') are not met. Either origin site bpns '%s' does not match to own configured sites or destination site bpns '%s' does not match to configured sites for partner '%s'. Additionally this behavior might not be applicable to the material configuration as product (%b) or material (%b).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue(), delivery.getOriginBpns(), delivery.getDestinationBpns(), delivery.getPartner().getBpnl(), delivery.getMaterial().isProductFlag(), delivery.getMaterial().isMaterialFlag()));
-                        if (delivery.getMaterial().isProductFlag() && !supplierPathErrors.isEmpty()) {
-                            errors.addAll(supplierPathErrors);
-                        }
-                        if (delivery.getMaterial().isMaterialFlag() && !customerPathErrors.isEmpty()) {
-                            errors.addAll(customerPathErrors);
-                        }
+                        errors.add(String.format("Responsibility conditions for material '%s' for partial responsibility (incoterm '%s') are not met. Either origin site '%s' does not match to own configured sites or destination site '%s' does not match to configured sites for partner '%s'. Additionally this behavior might not be applicable to the material configuration as product (%b) or material (%b).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue(), delivery.getOriginBpns(), delivery.getDestinationBpns(), delivery.getPartner().getBpnl(), delivery.getMaterial().isProductFlag(), delivery.getMaterial().isMaterialFlag()));
+                        errors.addAll(supplierPathErrors);
+                        errors.addAll(customerPathErrors);
                     }
                     break;
                 default:
@@ -331,41 +323,57 @@ public abstract class DeliveryService<T extends Delivery> {
         return errors;
     }
 
-    protected List<String> validateLocationsAsSupplier(Delivery delivery, String responsibility, SortedSet<Site> ownSites, SortedSet<Site> partnerSites) {
+    /**
+     * Validates the location consistency for the supplier path of a Delivery.
+     *
+     * @param delivery     The Delivery being validated
+     * @param ownSites     The set of sites configured for the own partner entity
+     * @param partnerSites The set of sites configured for delivery partner entity
+     * @return A list of validation error messages, an empty list means valid
+     */
+    protected List<String> validateLocationsAsSupplier(Delivery delivery, SortedSet<Site> ownSites, SortedSet<Site> partnerSites) {
         List<String> errors = new ArrayList<>();
 
         var ownSite = ownSites.stream().filter(site -> site.getBpns().equals(delivery.getOriginBpns())).findFirst();
         var partnerSite = partnerSites.stream().filter(site -> site.getBpns().equals(delivery.getDestinationBpns())).findFirst();
         
         if (!ownSite.isPresent()) {
-            errors.add(String.format("Origin site '%s' must match one of the own partner entity's sites (incoterm '%s' with '%s' responsibility).", delivery.getOriginBpns(), delivery.getIncoterm().getValue(), responsibility));
+            errors.add(String.format("Origin site '%s' must match one of the own partner entity's sites (incoterm '%s' with '%s' responsibility).", delivery.getOriginBpns(), delivery.getIncoterm().getValue(), delivery.getIncoterm().getResponsibility()));
         } else if (delivery.getOriginBpna() != null && ownSite.get().getAddresses().stream().noneMatch(address -> address.getBpna().equals(delivery.getOriginBpna()))) {
-            errors.add(String.format("Origin address '%s' is not configured for own site '%s' (incoterm '%s' with '%s' responsibility).", delivery.getOriginBpna(), delivery.getOriginBpns(), delivery.getIncoterm().getValue(), responsibility));
+            errors.add(String.format("Origin address '%s' is not configured for own site '%s' (incoterm '%s' with '%s' responsibility).", delivery.getOriginBpna(), delivery.getOriginBpns(), delivery.getIncoterm().getValue(), delivery.getIncoterm().getResponsibility()));
         }
         if (!partnerSite.isPresent()) {
-            errors.add(String.format("Destination site '%s' must match one site of partner '%s' (incoterm '%s' with '%s' responsibility).", delivery.getDestinationBpns(), delivery.getPartner().getBpnl(), delivery.getIncoterm().getValue(), responsibility));
+            errors.add(String.format("Destination site '%s' must match one site of partner '%s' (incoterm '%s' with '%s' responsibility).", delivery.getDestinationBpns(), delivery.getPartner().getBpnl(), delivery.getIncoterm().getValue(), delivery.getIncoterm().getResponsibility()));
         } else if (delivery.getDestinationBpna() != null && partnerSite.get().getAddresses().stream().noneMatch(address -> address.getBpna().equals(delivery.getDestinationBpna()))) {
-            errors.add(String.format("Destination address '%s' is not configured for site '%s' of partner '%s' (incoterm '%s' with '%s' responsibility).", delivery.getDestinationBpna(), delivery.getDestinationBpns(), delivery.getPartner().getBpnl(), delivery.getIncoterm().getValue(), responsibility));
+            errors.add(String.format("Destination address '%s' is not configured for site '%s' of partner '%s' (incoterm '%s' with '%s' responsibility).", delivery.getDestinationBpna(), delivery.getDestinationBpns(), delivery.getPartner().getBpnl(), delivery.getIncoterm().getValue(), delivery.getIncoterm().getResponsibility()));
         }
 
         return errors;
     }
 
-    protected List<String> validateLocationsAsCustomer(Delivery delivery, String responsibility, SortedSet<Site> ownSites, SortedSet<Site> partnerSites) {
+    /**
+     * Validates the location consistency for the customer path of a Delivery.
+     *
+     * @param delivery     The Delivery being validated
+     * @param ownSites     The set of sites configured for the own partner entity
+     * @param partnerSites The set of sites configured for delivery partner entity
+     * @return A list of validation error messages, an empty list means valid
+     */
+    protected List<String> validateLocationsAsCustomer(Delivery delivery, SortedSet<Site> ownSites, SortedSet<Site> partnerSites) {
         List<String> errors = new ArrayList<>();
 
         var ownSite = ownSites.stream().filter(site -> site.getBpns().equals(delivery.getDestinationBpns())).findFirst();
         var partnerSite = partnerSites.stream().filter(site -> site.getBpns().equals(delivery.getOriginBpns())).findFirst();
 
         if (!ownSite.isPresent()) {
-            errors.add(String.format("Destination site '%s' must match one of the own partner entity's sites (incoterm '%s' with '%s' responsibility).", delivery.getDestinationBpns(), delivery.getIncoterm().getValue(), responsibility));
+            errors.add(String.format("Destination site '%s' must match one of the own partner entity's sites (incoterm '%s' with '%s' responsibility).", delivery.getDestinationBpns(), delivery.getIncoterm().getValue(), delivery.getIncoterm().getResponsibility()));
         } else if (delivery.getDestinationBpna() != null && ownSite.get().getAddresses().stream().noneMatch(address -> address.getBpna().equals(delivery.getDestinationBpna()))) {
-            errors.add(String.format("Destination address '%s' is not configured for own site '%s' (incoterm '%s' with '%s' responsibility).", delivery.getDestinationBpna(), delivery.getDestinationBpns(), delivery.getIncoterm().getValue(), responsibility));
+            errors.add(String.format("Destination address '%s' is not configured for own site '%s' (incoterm '%s' with '%s' responsibility).", delivery.getDestinationBpna(), delivery.getDestinationBpns(), delivery.getIncoterm().getValue(), delivery.getIncoterm().getResponsibility()));
         }
         if (!partnerSite.isPresent()) {
-            errors.add(String.format("Origin site '%s' must match one site of partner '%s' (incoterm '%s' with '%s' responsibility).", delivery.getOriginBpns(), delivery.getPartner().getBpnl(), delivery.getIncoterm().getValue(), responsibility));
+            errors.add(String.format("Origin site '%s' must match one site of partner '%s' (incoterm '%s' with '%s' responsibility).", delivery.getOriginBpns(), delivery.getPartner().getBpnl(), delivery.getIncoterm().getValue(), delivery.getIncoterm().getResponsibility()));
         } else if (delivery.getOriginBpna() != null && partnerSite.get().getAddresses().stream().noneMatch(address -> address.getBpna().equals(delivery.getOriginBpna()))) {
-            errors.add(String.format("Origin address '%s' is not configured for site '%s' of partner '%s' (incoterm '%s' with '%s' responsibility).", delivery.getOriginBpna(), delivery.getOriginBpns(), delivery.getPartner().getBpnl(), delivery.getIncoterm().getValue(), responsibility));
+            errors.add(String.format("Origin address '%s' is not configured for site '%s' of partner '%s' (incoterm '%s' with '%s' responsibility).", delivery.getOriginBpna(), delivery.getOriginBpns(), delivery.getPartner().getBpnl(), delivery.getIncoterm().getValue(), delivery.getIncoterm().getResponsibility()));
         }
 
         return errors;
