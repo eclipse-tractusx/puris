@@ -13,6 +13,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
+- Added improved error messages for refresh materials ([#995](https://github.com/eclipse-tractusx/puris/pull/995))
 - Added Material Number in material details view ([#1005](https://github.com/eclipse-tractusx/puris/pull/1005))
 - added formula support for excel imports ([#1020](https://github.com/eclipse-tractusx/puris/pull/1020))
 

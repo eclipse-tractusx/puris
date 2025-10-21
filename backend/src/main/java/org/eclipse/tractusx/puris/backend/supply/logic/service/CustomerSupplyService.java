@@ -21,6 +21,7 @@
 
 package org.eclipse.tractusx.puris.backend.supply.logic.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -110,17 +111,12 @@ public class CustomerSupplyService extends SupplyService<OwnCustomerSupply, Repo
     }
 
     public boolean validate(ReportedCustomerSupply daysOfSupply) {
-        return 
-            daysOfSupply.getPartner() != null &&
-            daysOfSupply.getMaterial() != null &&
-            daysOfSupply.getDate() != null &&
-            daysOfSupply.getDaysOfSupply() >= 0 &&
-            daysOfSupply.getStockLocationBPNS() != null &&
-            daysOfSupply.getStockLocationBPNA() != null &&
-            daysOfSupply.getPartner() != partnerService.getOwnPartnerEntity() &&
-            daysOfSupply.getPartner().getSites().stream().anyMatch(site -> 
-                site.getBpns().equals(daysOfSupply.getStockLocationBPNS()) && 
-                site.getAddresses().stream().anyMatch(address -> address.getBpna().equals(daysOfSupply.getStockLocationBPNA()))
-            );
+        return validateWithDetails(daysOfSupply).isEmpty();
+    }
+
+    public List<String> validateWithDetails(ReportedCustomerSupply daysOfSupply) {
+        List<String> validationErrors = new ArrayList<>();
+        validationErrors.addAll(basicValidation(daysOfSupply));
+        return validationErrors;
     }
 }
