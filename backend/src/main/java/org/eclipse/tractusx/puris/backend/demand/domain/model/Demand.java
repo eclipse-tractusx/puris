@@ -19,6 +19,8 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.demand.domain.model;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
@@ -28,7 +30,13 @@ import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -96,7 +104,7 @@ public abstract class Demand {
         final Demand that = (Demand) o;
         return this.getMaterial().getOwnMaterialNumber().equals(that.getMaterial().getOwnMaterialNumber()) &&
                 this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
-                this.getDay().equals(that.getDay()) &&
+                Objects.equals(toLocalDate(this.getDay()), toLocalDate(that.getDay())) &&
                 this.getDemandCategoryCode().getValue().equals(that.getDemandCategoryCode().getValue()) &&
                 this.getDemandLocationBpns().equals(that.getDemandLocationBpns()) &&
                 this.getSupplierLocationBpns().equals(that.getSupplierLocationBpns());
@@ -107,5 +115,9 @@ public abstract class Demand {
         return Objects.hash(
                 partner, material, quantity, measurementUnit, demandLocationBpns, supplierLocationBpns, day,
                 demandCategoryCode);
+    }
+
+    private static LocalDate toLocalDate(Date d) {
+        return d == null ? null : d.toInstant().atZone(ZoneOffset.UTC).toLocalDate();
     }
 }

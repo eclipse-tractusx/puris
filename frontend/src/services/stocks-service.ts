@@ -42,7 +42,7 @@ export const postStocks = async (type: StockType, stock: Partial<Stock>) => {
   return res.json();
 }
 
-export const putStocks = async (type: StockType, stock: Stock) => {
+export const putStocks = async (type: StockType, stock: Partial<Stock>) => {
   const endpoint = type === 'product' ? config.app.ENDPOINT_PRODUCT_STOCKS : config.app.ENDPOINT_MATERIAL_STOCKS;
   const res = await fetch(config.app.BACKEND_BASE_URL + endpoint, {
     method: 'PUT',

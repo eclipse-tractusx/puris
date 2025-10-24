@@ -20,19 +20,30 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.domain.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import java.util.Date;
+import java.util.Objects;
+import java.util.UUID;
+
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 
-import java.util.Date;
-import java.util.Objects;
-import java.util.UUID;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -112,7 +123,6 @@ public abstract class Delivery {
         return this.getMaterial().getOwnMaterialNumber().equals(that.getMaterial().getOwnMaterialNumber()) &&
             this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
             Objects.equals(this.getTrackingNumber(), that.getTrackingNumber()) &&
-            this.getIncoterm().equals(that.getIncoterm()) &&
             this.getDestinationBpns().equals(that.getDestinationBpns()) &&
             Objects.equals(this.getDestinationBpna(), that.getDestinationBpna()) &&
             this.getOriginBpns().equals(that.getOriginBpns()) &&

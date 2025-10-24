@@ -25,9 +25,9 @@ import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Delivery } from '@models/types/data/delivery';
 import { Close, Delete, Save } from '@mui/icons-material';
 import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, capitalize } from '@mui/material';
-import { deleteDelivery, postDelivery } from '@services/delivery-service';
+import { deleteDelivery, postDelivery, putDelivery } from '@services/delivery-service';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { INCOTERMS } from '@models/constants/incoterms';
 import { ARRIVAL_TYPES, DEPARTURE_TYPES } from '@models/constants/event-type';
 import { ModalMode } from '@models/types/data/modal-mode';
@@ -37,6 +37,8 @@ import { GridItem } from '@components/ui/GridItem';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
 import { DirectionType } from '@models/types/erp/directionType';
+import { ConfirmUpdateDialog, ConfirmUpdateHandle } from './UpdateModal';
+import { UUID } from 'crypto';
 
 const createDeliveryColumns = (handleDelete: (row: Delivery) => void) => {
     return [
@@ -267,6 +269,7 @@ export const DeliveryInformationModal = ({
     const { sites } = useSites();
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
+    const confirmRef = useRef<ConfirmUpdateHandle>(null);
     const dailyDeliveries = useMemo(
         () =>
             deliveries?.filter(
@@ -295,21 +298,56 @@ export const DeliveryInformationModal = ({
             .then(() => {
                 onSave();
                 notify({
-                        title: 'Delivery Added',
-                        description: 'The Delivery has been added',
-                        severity: 'success',
-                    },
+                    title: 'Delivery Added',
+                    description: 'The Delivery has been added',
+                    severity: 'success',
+                },
                 );
+                onClose();
             })
-            .catch((error) => {
-                notify({
-                        title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                        description: error.status === 409 ? 'Delivery conflicting with an existing one' : error.error,
+            .catch(async (error) => {
+                if (error?.status === 409) {
+                    const existing: UUID | undefined = error?.existingId ?? undefined;
+                    if (!existing) {
+                        notify({
+                            title: 'Conflict',
+                            description: 'Delivery conflicting with an existing one',
+                            severity: 'error',
+                        });
+                        return;
+                    }
+                    const message =
+                        `There is already a delivery matching your criteria with a quantity ` +
+                        `${error?.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === error?.measurementUnit)?.value ?? error?.measurementUnit}. ` +
+                        `Do you want to update to ${temporaryDelivery.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === temporaryDelivery.measurementUnit)?.value ?? temporaryDelivery.measurementUnit}?`;
+                    const confirmed = await confirmRef.current?.open({ message });
+                    if (confirmed) {
+                        try {
+                            await putDelivery({ ...temporaryDelivery, uuid: existing });
+                            onSave();
+                            notify({
+                                title: 'Delivery Updated',
+                                description: 'The delivery has been updated successfully',
+                                severity: 'success'
+                            });
+                            onClose();
+                        }
+                        catch (e: any) {
+                            notify({
+                                title: 'Error updating',
+                                description: e?.error ?? 'Unexpected error', severity: 'error'
+                            });
+                        }
+                    }
+                } else {
+                    notify({
+                        title: 'Error requesting update',
+                        description: error.error,
                         severity: 'error',
-                    },
-                );
-            })
-            .finally(() => onClose());
+                    });
+                }
+
+            });
     };
 
     const handleClose = () => {
@@ -365,11 +403,11 @@ export const DeliveryInformationModal = ({
                                         }
                                         value={
                                             sites?.find(
-                                                    (s) =>
-                                                        (direction === DirectionType.Outbound
-                                                            ? s.bpns === temporaryDelivery.originBpns
-                                                            : s.bpns === temporaryDelivery.destinationBpns)
-                                                ) ?? null
+                                                (s) =>
+                                                (direction === DirectionType.Outbound
+                                                    ? s.bpns === temporaryDelivery.originBpns
+                                                    : s.bpns === temporaryDelivery.destinationBpns)
+                                            ) ?? null
                                         }
                                         label={`${direction === DirectionType.Outbound ? 'Origin' : 'Destination'}*`}
                                         placeholder={`Select a ${direction === DirectionType.Outbound ? 'Origin' : 'Destination'} Site`}
@@ -490,9 +528,9 @@ export const DeliveryInformationModal = ({
                                                 ?.find((s) => s.bpnl === temporaryDelivery?.partnerBpnl)
                                                 ?.sites.find(
                                                     (s) =>
-                                                        (direction === DirectionType.Inbound
-                                                            ? s.bpns === temporaryDelivery.originBpns
-                                                            : s.bpns === temporaryDelivery.destinationBpns)
+                                                    (direction === DirectionType.Inbound
+                                                        ? s.bpns === temporaryDelivery.originBpns
+                                                        : s.bpns === temporaryDelivery.destinationBpns)
                                                 ) ?? null
                                         }
                                         label={`${direction === DirectionType.Inbound ? 'Origin' : 'Destination'}*`}
@@ -527,9 +565,9 @@ export const DeliveryInformationModal = ({
                                         value={
                                             temporaryDelivery.measurementUnit
                                                 ? {
-                                                      key: temporaryDelivery.measurementUnit,
-                                                      value: getUnitOfMeasurement(temporaryDelivery.measurementUnit),
-                                                  }
+                                                    key: temporaryDelivery.measurementUnit,
+                                                    value: getUnitOfMeasurement(temporaryDelivery.measurementUnit),
+                                                }
                                                 : null
                                         }
                                         options={UNITS_OF_MEASUREMENT}
@@ -625,21 +663,20 @@ export const DeliveryInformationModal = ({
                             <Grid item xs={12}>
                                 {
                                     <Table
-                                        title={`${direction === DirectionType.Outbound ? 'Outgoing Shipments' : 'Incoming Deliveries'} on ${
-                                            direction === DirectionType.Outbound
+                                        title={`${direction === DirectionType.Outbound ? 'Outgoing Shipments' : 'Incoming Deliveries'} on ${direction === DirectionType.Outbound
                                                 ? new Date(temporaryDelivery.dateOfDeparture!).toLocaleDateString('en-UK', {
-                                                      weekday: 'long',
-                                                      day: '2-digit',
-                                                      month: '2-digit',
-                                                      year: 'numeric',
-                                                  })
+                                                    weekday: 'long',
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric',
+                                                })
                                                 : new Date(temporaryDelivery.dateOfArrival!).toLocaleDateString('en-UK', {
                                                     weekday: 'long',
                                                     day: '2-digit',
                                                     month: '2-digit',
                                                     year: 'numeric',
                                                 })
-                                        }`}
+                                            }`}
                                         density="standard"
                                         getRowId={(row) => row.uuid}
                                         columns={createDeliveryColumns(handleDelete)}
@@ -668,6 +705,7 @@ export const DeliveryInformationModal = ({
                     </Box>
                 </Stack>
             </Dialog>
+            <ConfirmUpdateDialog ref={confirmRef} />
         </>
     );
 };

@@ -18,14 +18,14 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Datepicker, Input, Table } from '@catena-x/portal-shared-components';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Demand } from '@models/types/data/demand';
 import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack } from '@mui/material';
 import { getUnitOfMeasurement } from '@util/helpers';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
-import { deleteDemand, postDemand } from '@services/demands-service';
+import { deleteDemand, postDemand, putDemand } from '@services/demands-service';
 import { DEMAND_CATEGORY } from '@models/constants/demand-category';
 import { Close, Delete, Save } from '@mui/icons-material';
 import { ModalMode } from '@models/types/data/modal-mode';
@@ -33,6 +33,8 @@ import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
+import { ConfirmUpdateDialog, ConfirmUpdateHandle } from './UpdateModal';
+import { UUID } from 'crypto';
 
 const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
     const columns = [
@@ -164,6 +166,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, onRemove, dem
     const { sites } = useSites();
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
+    const confirmRef = useRef<ConfirmUpdateHandle>(null);
     const dailyDemands = useMemo(
         () =>
             demands?.filter(
@@ -188,15 +191,51 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, onRemove, dem
                     description: 'The Demand has been saved successfully',
                     severity: 'success',
                 });
+                onClose();
             })
-            .catch((error) => {
-                notify({
-                    title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                    description: error.status === 409 ? 'Date conflicting with another Demand' : error.error,
-                    severity: 'error',
-                });
-            })
-            .finally(onClose);
+            .catch(async (error) => {
+                if (error?.status === 409) {
+                    const existing: UUID | undefined = error?.existingId ?? undefined;
+                    if (!existing) {
+                        notify({
+                            title: 'Conflict',
+                            description: 'Date conflicting with another Demand',
+                            severity: 'error',
+                        });
+                        return;
+                    }
+                    const message =
+                        `There is already a demand matching your criteria with a quantity ` +
+                        `${error.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === error?.measurementUnit)?.value ?? error?.measurementUnit}. ` +
+                        `Do you want to update to ${demand.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === demand.measurementUnit)?.value ?? demand.measurementUnit}?`;
+                    const confirmed = await confirmRef.current?.open({message});
+                    if (confirmed) {
+                        try {
+                            await putDemand({ ...demand, uuid: existing });
+                            onSave();
+                            notify({ 
+                                title: 'Demand Updated', 
+                                description: 'The Demand has been updated successfully', 
+                                severity: 'success' 
+                            });
+                            onClose();
+                        } 
+                        catch (e: any) {
+                            notify({ 
+                                title: 'Error updating',
+                                description: e?.error ?? 'Unexpected error', severity: 'error' 
+                            });
+                        }
+                    }
+                } else {
+                    notify({
+                        title: 'Error requesting update',
+                        description: error.error,
+                        severity: 'error',
+                    });
+                }
+                            
+            });
     };
 
     const handleClose = () => {
@@ -400,6 +439,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, onRemove, dem
                     </Box>
                 </Stack>
             </Dialog>
+            <ConfirmUpdateDialog ref={confirmRef} />
         </>
     );
 };
