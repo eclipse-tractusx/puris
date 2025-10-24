@@ -80,7 +80,11 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
             renderCell: (data: { row: Demand }) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                        <TextToClipboard text={data.row.supplierLocationBpns} />
+                        {
+                            data.row.supplierLocationBpns
+                                ? <TextToClipboard text={data.row.supplierLocationBpns}></TextToClipboard>
+                                : "-"
+                        }
                     </Box>
                 );
             },

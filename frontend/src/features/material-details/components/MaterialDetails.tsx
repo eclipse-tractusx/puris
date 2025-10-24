@@ -322,7 +322,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                     <>
                                         <Typography variant="body1">{partner.name}</Typography>
                                         <Typography variant="body3" color="#ccc">
-                                            ({<TextToClipboard text={partner.bpnl} color="#ccc"/>})
+                                            ({<TextToClipboard text={partner.bpnl} variant="light"/>})
                                         </Typography>
                                     </>
                                 )}
@@ -340,7 +340,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                                 <Typography variant="body2" color="#ccc" data-testid="partner-site-owner">{partner.name}/</Typography>
                                                 <Typography variant="body1" data-testid="partner-site-name">{site.name}</Typography>
                                                 <Typography variant="body3" color="#ccc" data-testid="partner-site-bpns">
-                                                    ({<TextToClipboard text={site.bpns} color="#ccc"/>})
+                                                    ({<TextToClipboard text={site.bpns} variant="light"/>})
                                                 </Typography>
                                             </>
                                         )}
@@ -385,7 +385,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                         <>
                                             <Typography variant="body1">{partner.name}</Typography>
                                             <Typography variant="body3" color="#ccc">
-                                                ({<TextToClipboard text={partner.bpnl} color="#ccc"/>})
+                                                ({<TextToClipboard text={partner.bpnl} variant="light"/>})
                                             </Typography>
                                         </>
                                     )}
@@ -405,7 +405,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                                     </Typography>
                                                     <Typography variant="body1">{partnerSite.name}</Typography>
                                                     <Typography variant="body3" color="#ccc">
-                                                        ({<TextToClipboard text={partnerSite.bpns} color="#ccc"/>})
+                                                        ({<TextToClipboard text={partnerSite.bpns} variant="light"/>})
                                                     </Typography>
                                                 </>
                                             )}
