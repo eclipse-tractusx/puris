@@ -27,7 +27,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.poi.ss.formula.FormulaParseException;
+import org.apache.poi.ss.formula.eval.NotImplementedFunctionException;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellReference;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.EventTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.IncotermEnumeration;
@@ -133,9 +136,11 @@ public class ExcelService {
     
     public DataImportResult readExcelFile(InputStream is) throws IOException {
         Workbook workbook = WorkbookFactory.create(is);
+        List<DataImportError> formulaErrors = evaluateWorkbook(workbook);
+        if (!formulaErrors.isEmpty()) {
+            return new DataImportResult("Excel formula evaluation failed", formulaErrors);
+        }
         Sheet sheet = workbook.getSheetAt(0);
-        FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
-        evaluator.evaluateAll();
         var result = extractAndSaveData(sheet);
         workbook.close();
         return result;
@@ -762,5 +767,52 @@ public class ExcelService {
             }
         }
         return true;
+    }
+
+    private List<DataImportError> evaluateWorkbook(Workbook workbook) {
+        List<DataImportError> errors = new ArrayList<>();
+        FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+        try {
+            evaluator.evaluateAll();
+            return errors;
+        } catch (RuntimeException bulkEx) {
+            for (int s = 0; s < workbook.getNumberOfSheets(); s++) {
+                Sheet sheet = workbook.getSheetAt(s);
+                String sheetName = sheet.getSheetName();
+                for (Row row : sheet) {
+                    for (Cell cell : row) {
+                        if (cell != null && cell.getCellType() == CellType.FORMULA) {
+                            try {
+                                evaluator.evaluateFormulaCell(cell);
+                            } catch (NotImplementedFunctionException nie) {
+                                errors.add(new DataImportError((cell.getRowIndex() + 1), List.of(String.format("Unsupported function '%s' at Sheet '%s'!%s. Formula: =%s", nie.getFunctionName(), sheetName, new CellReference(cell).formatAsString(), safeFormula(cell)))));
+                            } catch (FormulaParseException fpe) {
+                                errors.add(new DataImportError((cell.getRowIndex() + 1), List.of(String.format("Formula parse error at Sheet '%s'!%s. Formula: =%s. Reason: %s", sheetName, new CellReference(cell).formatAsString(), safeFormula(cell), nullToEmpty(fpe.getMessage())))));
+                            } catch (RuntimeException ex) {
+                                errors.add(new DataImportError((cell.getRowIndex() + 1), List.of(String.format("Error evaluating at Sheet '%s'!%s. Formula: =%s. Reason: %s", sheetName, new CellReference(cell).formatAsString(), safeFormula(cell), nullToEmpty(ex.getMessage())))));
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!errors.isEmpty()) {
+                String msg = "Excel formula evaluation failed. Likely unsupported function(s) or parse error(s) detected:\n" + errors;
+                log.warn(msg, bulkEx);
+                return errors;
+            } else {
+                String msg = "Excel formula evaluation failed, but the failing cell could not be pinpointed. ";
+                log.warn(msg);
+                errors.add(new DataImportError(0, List.of(msg)));
+                return errors;
+            }
+        }
+    }
+
+    private static String safeFormula(Cell c) {
+        try { return c.getCellFormula(); } catch (Exception ignore) { return "<unavailable>"; }
+    }
+    private static String nullToEmpty(String s) {
+        return (s == null) ? "" : s;
     }
 }
