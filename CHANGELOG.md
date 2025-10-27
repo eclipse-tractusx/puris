@@ -14,6 +14,7 @@ The **need for configuration updates** is **marked bold**.
 ### Added
 
 - Implemented update logic for delivery information ([#1004](https://github.com/eclipse-tractusx/puris/pull/1004))
+- Implemented update logic for Productiob information ([#1037](https://github.com/eclipse-tractusx/puris/pull/1037))
 
 ### Changed
 
