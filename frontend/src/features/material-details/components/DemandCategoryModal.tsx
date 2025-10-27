@@ -18,24 +18,30 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-import { useEffect, useMemo, useState } from 'react';
-import { Datepicker, Input, Table } from '@catena-x/portal-shared-components';
-import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Demand } from '@models/types/data/demand';
-import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, Stack } from '@mui/material';
 import { getUnitOfMeasurement } from '@util/helpers';
-import { usePartners } from '@features/stock-view/hooks/usePartners';
-import { deleteDemand, postDemand } from '@services/demands-service';
 import { DEMAND_CATEGORY } from '@models/constants/demand-category';
-import { Close, Delete, Save } from '@mui/icons-material';
-import { ModalMode } from '@models/types/data/modal-mode';
-import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
-import { GridItem } from '@components/ui/GridItem';
+import { Close, Delete, Edit } from '@mui/icons-material';
+import { useMemo } from 'react';
+import { useDataModal } from '@contexts/dataModalContext';
+import { deleteDemand } from '@services/demands-service';
+import { Table } from '@catena-x/portal-shared-components';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
 
-const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
-    const columns = [
+type DemandCategoryModalProps = {
+    open: boolean;
+    demand: Partial<Demand> | null;
+    demands: Demand[];
+    onClose: () => void;
+    onSave: () => void;
+    onRemove?: (deletedUuid: string) => void;
+};
+
+
+const createDemandColumns = (handleDelete?: (row: Demand) => void, handleEdit?: (row: Demand) => void) => {
+    return [
         {
             field: 'quantity',
             headerName: 'Quantity',
@@ -112,58 +118,51 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void) => {
                 </Stack>
             ),
         },
+        {
+            field: 'edit',
+            headerName: '',
+            sortable: false,
+            disableColumnMenu: true,
+            width: 20,
+            renderCell: (data: { row: Demand }) => (
+                handleEdit ? (
+                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                        <Button variant="text" onClick={() => handleEdit(data.row)} data-testid="edit-stock">
+                            <Edit />
+                        </Button>
+
+                    </Box>
+                ) : null
+            ),
+        },
+        {
+            field: 'delete',
+            headerName: '',
+            width: 40,
+            sortable: false,
+            disableColumnMenu: true,
+            renderCell: ({ row }: { row: Demand }) => (
+                handleDelete ? (
+                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                        <Button
+                            variant="text"
+                            color="error"
+                            onClick={() => handleDelete(row)}
+                        >
+                            <Delete />
+                        </Button>
+                    </Box>
+                ) : null
+            ),
+        }
+
     ] as const;
-    if (handleDelete) {
-        return [
-            ...columns,
-            {
-                field: 'delete',
-                headerName: '',
-                sortable: false,
-                disableColumnMenu: true,
-                headerAlign: 'center',
-                type: 'string',
-                width: 30,
-                renderCell: (data: { row: Demand }) => {
-                    return (
-                        <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)} data-testid="delete-demand">
-                                <Delete></Delete>
-                            </Button>
-                        </Box>
-                    );
-                },
-            },
-        ] as const;
-    }
-    return columns;
 };
 
-type DemandCategoryModalProps = {
-    open: boolean;
-    demand: Partial<Demand> | null;
-    demands: Demand[] | null;
-    mode: ModalMode;
-    onClose: () => void;
-    onSave: () => void;
-    onRemove?: (deletedUuid: string) => void;
-};
 
-const isValidDemand = (demand: Partial<Demand>) =>
-    demand &&
-    demand.day &&
-    demand.demandLocationBpns &&
-    typeof demand.quantity === 'number' && demand?.quantity >= 0 &&
-    demand.demandCategoryCode &&
-    demand.measurementUnit &&
-    demand.partnerBpnl;
-
-export const DemandCategoryModal = ({ open, mode, onClose, onSave, onRemove, demand, demands }: DemandCategoryModalProps) => {
-    const [temporaryDemand, setTemporaryDemand] = useState<Partial<Demand>>(demand ?? {});
-    const { partners } = usePartners('material', temporaryDemand?.ownMaterialNumber ?? null);
+export const DemandCategoryModal = ({ open, onClose, onRemove, demand, demands }: DemandCategoryModalProps) => {
     const { sites } = useSites();
     const { notify } = useNotifications();
-    const [formError, setFormError] = useState(false);
     const dailyDemands = useMemo(
         () =>
             demands?.filter(
@@ -171,38 +170,10 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, onRemove, dem
             ),
         [demands, demand?.day]
     );
-
+    const { openDialog } = useDataModal();
     const canDelete = Boolean(sites?.find(site => demands?.some(d => d.demandLocationBpns === site.bpns)));
-
-    const handleSaveClick = (demand: Partial<Demand>) => {
-        if (!isValidDemand(demand)) {
-            setFormError(true);
-            return;
-        }
-        setFormError(false);
-        postDemand(demand)
-            .then(() => {
-                onSave();
-                notify({
-                    title: 'Demand Created',
-                    description: 'The Demand has been saved successfully',
-                    severity: 'success',
-                });
-            })
-            .catch((error) => {
-                notify({
-                    title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                    description: error.status === 409 ? 'Date conflicting with another Demand' : error.error,
-                    severity: 'error',
-                });
-            })
-            .finally(onClose);
-    };
-
-    const handleClose = () => {
-        setTemporaryDemand({});
-        setFormError(false);
-        onClose();
+    const handleEdit = (row: Demand) => {
+        openDialog('demand', { ...row }, dailyDemands, 'edit');
     };
 
     const handleDelete = async (row: Demand) => {
@@ -220,183 +191,36 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, onRemove, dem
         }
     };
 
-    useEffect(() => {
-        if (demand) {
-            setTemporaryDemand(demand);
-        }
-    }, [demand]);
+
     return (
         <>
-            <Dialog open={open && demand !== null} onClose={handleClose} data-testid="demand-modal">
+            <Dialog open={open && demand !== null} onClose={onClose} data-testid="demand-modal">
                 <DialogTitle variant="h3" textAlign="center">
                     Demand Information
                 </DialogTitle>
+
                 <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
-                    {mode === 'create' ? (
-                        <Grid container spacing={2} padding=".25rem">
-                            <GridItem label="Material Number" value={temporaryDemand.ownMaterialNumber ?? ''} />
-                            <Grid item xs={6}>
-                                <LabelledAutoComplete
-                                    id="demandLocationBpns"
-                                    options={sites ?? []}
-                                    getOptionLabel={(option) => option.name ?? ''}
-                                    error={formError}
-                                    isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
-                                    onChange={(_, value) =>
-                                        setTemporaryDemand({ ...temporaryDemand, demandLocationBpns: value?.bpns ?? undefined })
-                                    }
-                                    value={sites?.find((s) => s.bpns === temporaryDemand.demandLocationBpns) ?? null}
-                                    label="Demand Site*"
-                                    placeholder="Select a Site"
-                                    data-testid="demand-location-field"
-                                />
-                            </Grid>
-                            <Grid item xs={6}>
-                                <FormLabel sx={{ marginBottom: '.5rem', display: 'block' }}>Day*</FormLabel>
-                                <div className="date-picker" data-testid="demand-day-field">
-                                    <Datepicker
-                                        id="day"
-                                        label=""
-                                        hiddenLabel
-                                        placeholder="Pick a Day"
-                                        locale="de"
-                                        error={formError && !temporaryDemand?.day}
-                                        readOnly={false}
-                                        value={temporaryDemand?.day}
-                                        onChangeItem={(value) => setTemporaryDemand((curr) => ({ ...curr, day: value ?? undefined }))}
-                                    />
-                                </div>
-                            </Grid>
-                            <Grid item xs={6}>
-                                <LabelledAutoComplete
-                                    id="category"
-                                    options={DEMAND_CATEGORY}
-                                    getOptionLabel={(option) => option?.value ?? ''}
-                                    onChange={(_, value) => setTemporaryDemand((curr) => ({ ...curr, demandCategoryCode: value?.key }))}
-                                    isOptionEqualToValue={(option, value) => option?.key === value?.key}
-                                    value={
-                                        {
-                                            key: temporaryDemand.demandCategoryCode,
-                                            value: DEMAND_CATEGORY.find((c) => c.key === temporaryDemand.demandCategoryCode)?.value,
-                                        }
-                                    }
-                                    label="Category*"
-                                    placeholder="Select category"
-                                    error={formError && !temporaryDemand?.demandCategoryCode}
-                                    data-testid="demand-category-field"
-                                />
-                            </Grid>
-                            <Grid item xs={6}>
-                                <FormLabel>Quantity*</FormLabel>
-                                <Input
-                                    type="number"
-                                    placeholder="Enter quantity"
-                                    value={temporaryDemand.quantity ?? ''}
-                                    error={formError && (temporaryDemand?.quantity == null || temporaryDemand.quantity < 0)}
-                                    onChange={(e) =>
-                                        setTemporaryDemand((curr) =>
-                                            parseFloat(e.target.value) >= 0
-                                                ? { ...curr, quantity: parseFloat(e.target.value) }
-                                                : { ...curr, quantity: 0 }
-                                        )
-                                    }
-                                    sx={{ marginTop: '.5rem' }}
-                                    data-testid="demand-quantity-field"
-                                />
-                            </Grid>
-                            <Grid item xs={6}>
-                                <LabelledAutoComplete
-                                    id="uom"
-                                    options={UNITS_OF_MEASUREMENT}
-                                    getOptionLabel={(option) => option?.value ?? ''}
-                                    onChange={(_, value) => setTemporaryDemand((curr) => ({ ...curr, measurementUnit: value?.key }))}
-                                    isOptionEqualToValue={(option, value) => option?.key === value?.key}
-                                    value={
-                                        temporaryDemand.measurementUnit
-                                            ? {
-                                                  key: temporaryDemand.measurementUnit,
-                                                  value: getUnitOfMeasurement(temporaryDemand.measurementUnit),
-                                              }
-                                            : null
-                                    }
-                                    label="UOM*"
-                                    placeholder="Select unit"
-                                    error={formError && !temporaryDemand?.measurementUnit}
-                                    data-testid="demand-uom-field"
-                                />
-                            </Grid>
-                            <Grid item xs={6}>
-                                <LabelledAutoComplete
-                                    id="partner"
-                                    options={partners ?? []}
-                                    getOptionLabel={(option) => option?.name ?? ''}
-                                    isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
-                                    value={partners?.find((s) => s.bpnl === temporaryDemand.partnerBpnl) ?? null}
-                                    onChange={(_, value) =>
-                                        setTemporaryDemand({ ...temporaryDemand, partnerBpnl: value?.bpnl ?? undefined })
-                                    }
-                                    label="Partner*"
-                                    placeholder="Select a Partner"
-                                    error={formError && !temporaryDemand?.partnerBpnl}
-                                    data-testid="demand-partner-field"
-                                />
-                            </Grid>
-                            <Grid item xs={6}>
-                                <LabelledAutoComplete
-                                    id="supplierLocationBpns"
-                                    options={partners?.find((s) => s.bpnl === temporaryDemand.partnerBpnl)?.sites ?? []}
-                                    getOptionLabel={(option) => option.name ?? ''}
-                                    disabled={!temporaryDemand?.partnerBpnl}
-                                    isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
-                                    onChange={(_, value) =>
-                                        setTemporaryDemand({ ...temporaryDemand, supplierLocationBpns: value?.bpns ?? undefined })
-                                    }
-                                    value={
-                                        partners
-                                            ?.find((s) => s.bpnl === temporaryDemand.partnerBpnl)
-                                            ?.sites.find((s) => s.bpns === temporaryDemand.supplierLocationBpns) ?? null
-                                    }
-                                    label="Expected Supplier Site"
-                                    placeholder="Select a Site"
-                                    data-testid="demand-supplier-site-field"
-                                />
-                            </Grid>
-                        </Grid>
-                    ) : (
-                        <Table
-                            title={`Material Demand ${
-                                temporaryDemand?.day
-                                    ? ' on ' +
-                                      new Date(temporaryDemand?.day).toLocaleDateString('en-GB', {
-                                          weekday: 'long',
-                                          day: '2-digit',
-                                          month: '2-digit',
-                                          year: 'numeric',
-                                      })
-                                    : ''
+                    <Table
+                        title={`Material Demand ${demand?.day
+                            ? ' on ' +
+                            new Date(demand?.day).toLocaleDateString('en-GB', {
+                                weekday: 'long',
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                            })
+                            : ''
                             }`}
-                            density="standard"
-                            getRowId={(row) => row.uuid}
-                            columns={createDemandColumns(canDelete ? handleDelete : undefined)}
-                            rows={dailyDemands ?? []}
-                            hideFooter
-                        />
-                    )}
-                    <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="2rem">
-                        <Button variant="outlined" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleClose}>
-                            <Close></Close> Close
+                        getRowId={(row) => row.uuid}
+                        columns={createDemandColumns(canDelete ? handleDelete : undefined, handleEdit)}
+                        rows={dailyDemands ?? []}
+                        hideFooter
+                    />
+
+                    <Box display="flex" justifyContent="flex-end" marginTop="2rem">
+                        <Button variant="outlined" onClick={onClose}>
+                            <Close /> Close
                         </Button>
-                        {mode === 'create' && (
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                sx={{ display: 'flex', gap: '.25rem' }}
-                                onClick={() => handleSaveClick(temporaryDemand)}
-                                data-testid="save-demand-button"
-                            >
-                                <Save></Save> Save
-                            </Button>
-                        )}
                     </Box>
                 </Stack>
             </Dialog>

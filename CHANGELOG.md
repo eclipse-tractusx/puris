@@ -13,6 +13,8 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
+- added formula support for excel imports ([#1020](https://github.com/eclipse-tractusx/puris/pull/1020))
+- Implemented update logic for Demand Modal ([#1028](https://github.com/eclipse-tractusx/puris/pull/1028))
 - Implemented update logic for delivery information ([#1004](https://github.com/eclipse-tractusx/puris/pull/1004))
 
 ### Changed

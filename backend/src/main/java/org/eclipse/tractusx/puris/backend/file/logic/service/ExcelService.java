@@ -134,6 +134,8 @@ public class ExcelService {
     public DataImportResult readExcelFile(InputStream is) throws IOException {
         Workbook workbook = WorkbookFactory.create(is);
         Sheet sheet = workbook.getSheetAt(0);
+        FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+        evaluator.evaluateAll();
         var result = extractAndSaveData(sheet);
         workbook.close();
         return result;
@@ -688,9 +690,23 @@ public class ExcelService {
     }
 
     private String getStringCellValue(Cell cell) {
-        return cell == null || cell.getCellType() == CellType.BLANK ? null : cell.getCellType() == CellType.STRING
-                ? cell.getStringCellValue().trim()
-                : String.valueOf(cell.getNumericCellValue()).trim();
+        if (cell == null || cell.getCellType() == CellType.BLANK) {
+            return null;
+        }
+        CellType type = cell.getCellType();
+        if (type == CellType.FORMULA) {
+            type = cell.getCachedFormulaResultType();
+        }
+        switch (type) {
+            case STRING:
+                return cell.getStringCellValue() == null ? null : cell.getStringCellValue().trim();
+            case NUMERIC:
+                return String.valueOf(cell.getNumericCellValue()).trim();
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return null;
+        }
     }
 
     private Date getDateCellValue(Cell cell) {
