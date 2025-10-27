@@ -23,10 +23,10 @@ import { useEffect, useState } from 'react';
 import { Input, Table } from '@catena-x/portal-shared-components';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Stock, StockType } from '@models/types/data/stock';
-import { Box, Button, Checkbox, Dialog, DialogTitle, FormLabel, Grid, InputLabel, Stack, capitalize , MenuItem, Select, } from '@mui/material';
+import { Box, Button, Checkbox, Dialog, DialogTitle, FormLabel, Grid, InputLabel, Stack, capitalize } from '@mui/material';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
-import { Close, Create,Delete, Save } from '@mui/icons-material';
+import { Close, Delete, Save } from '@mui/icons-material';
 import { ModalMode } from '@models/types/data/modal-mode';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
@@ -34,38 +34,18 @@ import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
 import { deleteStocks, postStocks } from '@services/stocks-service';
 
-const createStockColumns = (
-    handleDelete?: (row: Stock) => void,
-    editRow?: Stock | null,
-    setEditRow?: (row: Stock | null) => void,
-    editedValues?: Partial<Stock>,
-    setEditedValues?: (val: Partial<Stock>) => void,
-    setIsChanged?: (changed: boolean) => void
-) => {
+const createStockColumns = (handleDelete?: (row: Stock) => void) => {
     const columns = [
         {
             field: 'quantity',
             headerName: 'Quantity',
             headerAlign: 'center',
             flex: 1.2,
-            renderCell: ({ row }: { row: Stock }) =>
-                editRow?.uuid === row.uuid ? (
-                    <Input
-                        type="number"
-                        value={editedValues?.quantity ?? row.quantity}
-                        onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            setEditedValues?.({ ...editedValues, quantity: val });
-                            setIsChanged?.(val !== row.quantity);
-                        }}
-                        sx={{ width: '100px' }}
-                        data-testid="edit-quantity-field"
-                    />
-                ) : (
-                    <Box textAlign="center" width="100%">
-                        {`${row.quantity} ${getUnitOfMeasurement(row.measurementUnit)}`}
-                    </Box>
-                ),
+            renderCell: (data: { row: Stock }) => (
+                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                    {`${data.row.quantity} ${getUnitOfMeasurement(data.row.measurementUnit)}`}
+                </Box>
+            ),
         },
         {
           field: 'stockLocationBpns',
@@ -84,7 +64,7 @@ const createStockColumns = (
             headerAlign: 'center',
             flex: 2,
             renderCell: (data: { row: Stock }) => (
-                <Box sx={{ whiteSpace: 'normal' }} display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
                     {data.row.partner?.name}
                 </Box>
             ),
@@ -106,150 +86,34 @@ const createStockColumns = (
             headerName: 'Order Reference',
             headerAlign: 'center',
             flex: 2,
-            renderCell: (data: { row: Stock }) =>
-                editRow?.uuid === data.row.uuid ? (
-                    <Stack spacing={1} alignItems="center" width="100%">
-                        <Input
-                            value={editedValues?.customerOrderNumber ?? data.row.customerOrderNumber ?? ''}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setEditedValues?.({ ...editedValues, customerOrderNumber: val });
-                                setIsChanged?.(
-                                    val !== data.row.customerOrderNumber);
-                            }}
-                            sx={{ width: '120px', paddingY: '5px' }}
-                            placeholder="Order No"
-                            data-testid="edit-customer-order-number-field"
-                        />
-                        <Input
-                            value={editedValues?.customerOrderPositionNumber ?? data.row.customerOrderPositionNumber ?? ''}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setEditedValues?.({ ...editedValues, customerOrderPositionNumber: val });
-                                setIsChanged?.(
-                                    val !== data.row.customerOrderPositionNumber);
-                            }}
-                            sx={{ width: '120px' }}
-                            placeholder="Order Pos"
-                            data-testid="edit-customer-order-position-field"
-                        />
-                        <Input
-                            value={editedValues?.supplierOrderNumber ?? data.row.supplierOrderNumber ?? ''}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setEditedValues?.({ ...editedValues, supplierOrderNumber: val });
-                                setIsChanged?.(
-                                    val !== data.row.supplierOrderNumber);
-                            }}
-                            sx={{ width: '120px', paddingY: '5px' }}
-                            placeholder="Order Pos"
-                            data-testid="edit-customer-order-position-field"
-                        />
-                    </Stack>
-                ) : (
-                    <Box
-                        display="flex"
-                        textAlign="center"
-                        alignItems="center"
-                        justifyContent="center"
-                        width="100%"
-                        height="100%"
-                    >
-                        {data.row.customerOrderNumber ? (
-                            <Stack>
-                                <Box>{`${data.row.customerOrderNumber} / ${data.row.customerOrderPositionNumber}`}</Box>
-                                <Box>{data.row.supplierOrderNumber || '-'}</Box>
-                            </Stack>
-                        ) : (
-                            '-'
-                        )}
-                    </Box>
-                ),
+            renderCell: (data: { row: Stock }) => (
+                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                    {data.row.customerOrderNumber ? (
+                        <Stack>
+                            <Box>{`${data.row.customerOrderNumber} / ${data.row.customerOrderPositionNumber}  `}</Box>
+                            <Box>{data.row.supplierOrderNumber || '-'}</Box>
+                        </Stack>
+                    ) : (
+                        '-'
+                    )}
+                </Box>
+            ),
         },
         {
             field: 'isBlocked',
             headerName: 'Blocked',
             headerAlign: 'center',
             flex: 1,
-            renderCell: ({ row }: { row: Stock }) =>
-                editRow?.uuid === row.uuid ? (
-                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-
-                        <Select
-                            value={
-                                editedValues?.isBlocked !== undefined
-                                    ? String(editedValues.isBlocked)
-                                    : String(row.isBlocked)
-                            }
-                            onChange={(e) => {
-                                const val = e.target.value === 'true';
-                                setEditedValues?.({ ...editedValues, isBlocked: val });
-                                setIsChanged?.(val !== row.isBlocked);
-                            }}
-                            sx={{
-                                width: '74px',
-                                textAlign: 'center',
-                                '& .MuiSelect-select': {
-                                    paddingY: '1px',
-                                    textAlign: 'center',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                },
-                                '& .MuiSelect-icon': {
-                                    right: 2,
-                                },
-                            }}
-                            size="small"
-                            data-testid="edit-is-blocked-select"
-                        >
-                            <MenuItem value="false">No</MenuItem>
-                            <MenuItem value="true">Yes</MenuItem>
-                        </Select>
-
-                    </Box>
-                ) : (
-                    <Box
-                        display="flex"
-                        textAlign="center"
-                        alignItems="center"
-                        justifyContent="center"
-                        width="100%"
-                        height="100%"
-                    >
-                        {row.isBlocked ? 'Yes' : 'No'}
-                    </Box>
-                ),
-        }
+            renderCell: (data: { row: Stock }) => (
+                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                    {data.row.isBlocked ? 'Yes' : 'No'}
+                </Box>
+            ),
+        },
     ] as const;
-   if (handleDelete) {
+    if (handleDelete) {
         return [
             ...columns,
-            {
-                field: 'edit',
-                headerName: '',
-                sortable: false,
-                disableColumnMenu: true,
-                headerAlign: 'center',
-                type: 'string',
-                width: 30,
-                renderCell: ({ row }: { row: Stock }) => (
-                    <Box display="flex" justifyContent="center">
-                        <Button
-                            variant="text"
-                            color="primary"
-                            onClick={() => {
-                                setEditRow?.(row);
-                                setEditedValues?.({});
-                                setIsChanged?.(false);
-                            }}
-                            data-testid="edit-stock"
-                        >
-                            <Create />
-                        </Button>
-                    </Box>
-                ),
-            },
             {
                 field: 'delete',
                 headerName: '',
@@ -267,8 +131,7 @@ const createStockColumns = (
                         </Box>
                     );
                 },
-            }
-
+            },
         ] as const;
     }
     return columns;
@@ -299,15 +162,6 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
     const { sites } = useSites();
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
-     const [editRow, setEditRow] = useState<Stock | null>(null);
-    const [editedValues, setEditedValues] = useState<Partial<Stock>>({});
-    const [isChanged, setIsChanged] = useState(false);
-
-    const updatedStock = {
-        ...editRow,
-        ...editedValues,
-        lastUpdatedOn: new Date().toISOString(),
-    };
 
     const handleSaveClick = () => {
         temporaryStock.customerOrderNumber ||= undefined;
@@ -334,16 +188,8 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
                     severity: 'error',
                 });
             })
-            .finally(handleClose);
+            .finally(onClose);
     };
-
-    const handleClose = () => {
-        setEditRow(null);
-        setEditedValues({});
-        setIsChanged(false);
-        onClose();
-    };
-
     const handleDelete = async (row: Stock) => {
         if (row.uuid) {
             try {
@@ -363,7 +209,7 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
     }, [stock]);
     return (
         <>
-            <Dialog open={open && stock !== null} onClose={handleClose} data-testid="stock-modal">
+            <Dialog open={open && stock !== null} onClose={onClose} data-testid="stock-modal">
                 <DialogTitle variant="h3" textAlign="center">
                     {capitalize(mode)} {capitalize(stockType)} Stock
                 </DialogTitle>
@@ -526,22 +372,8 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
                             <Grid item xs={12}>
                                 <Table
                                     title={`Current ${stockType} stock`}
-                                     getRowId={(row) => row.uuid}
-                                    columns={createStockColumns(
-                                        sites?.find((s) =>
-                                            stocks.some((stock) => stock.stockLocationBpns === s.bpns)
-                                        )
-                                            ? handleDelete
-                                            : undefined,
-                                        editRow,
-                                        setEditRow,
-                                        editedValues,
-                                        setEditedValues,
-                                        setIsChanged
-                                    )}
-                                    getRowHeight={(params) => {
-                                        return editRow?.uuid === params.id ? 150 : 52;
-                                    }}
+                                    getRowId={(row) => row.uuid}
+                                    columns={createStockColumns(sites?.find(s => stocks.some(stock => stock.stockLocationBpns === s.bpns)) ? handleDelete : undefined)}
                                     rows={stocks}
                                     hideFooter
                                     density="standard"
@@ -550,7 +382,7 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
                         )}
                     </Grid>
                     <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="2rem">
-                        <Button variant="outlined" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleClose}>
+                        <Button variant="outlined" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={onClose}>
                             <Close></Close> Close
                         </Button>
                         {mode === 'create' && (
@@ -558,42 +390,6 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
                                 <Save></Save> Save
                             </Button>
                         )}
-
-                        {editRow && (
-                            <Button
-                                disabled={!isChanged}
-                                onClick={() => {
-                                    if (editRow?.uuid) {
-                                        postStocks(stockType, updatedStock)
-                                            .then(() => {
-                                                onSave();
-                                                notify({
-                                                    title: 'Stock Updated',
-                                                    description: 'Stock has been saved',
-                                                    severity: 'success',
-                                                });
-                                            })
-                                            .catch((error) => {
-                                                notify({
-                                                    title: 'Error requesting update',
-                                                    description: error.error,
-                                                    severity: 'error',
-                                                });
-                                            })
-                                            .finally(() => {
-                                                setEditRow(null);
-                                                setEditedValues({});
-                                                setIsChanged(false);
-                                            });
-                                    }
-                                }}
-                                data-testid="edit-save-button"
-                            >
-                                <Save />
-                                Save
-                            </Button>
-                        )}
-
                     </Box>
                 </Stack>
             </Dialog>
