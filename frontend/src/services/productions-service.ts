@@ -38,6 +38,22 @@ export const postProductionRange = async (range: Partial<Production>[]) => {
   return res.json();
 }
 
+export const updateProductionRange = async (range: Partial<Production>[]) => {
+  const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION_RANGE, {
+    method: 'PUT',
+    body: JSON.stringify(range),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
+    },
+  });
+  if(res.status >= 400) {
+    const error = await res.json();
+    throw error;
+  }
+  return res.json();
+}
+
 export const deleteProduction = async (id: UUID) => {
   const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION + `/${id}`, {
     method: 'DELETE',

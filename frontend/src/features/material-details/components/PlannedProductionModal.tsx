@@ -19,24 +19,19 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { useEffect, useMemo, useState } from 'react';
-import { Input, Table } from '@catena-x/portal-shared-components';
-import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
+import { useMemo } from 'react';
+import { Table } from '@catena-x/portal-shared-components';
 import { Production } from '@models/types/data/production';
-import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, capitalize } from '@mui/material';
-import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
-import { usePartners } from '@features/stock-view/hooks/usePartners';
-import { deleteProduction, postProductionRange } from '@services/productions-service';
-import { Close, Delete, Save } from '@mui/icons-material';
-import { DateTime } from '@components/ui/DateTime';
-import { ModalMode } from '@models/types/data/modal-mode';
-import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
-import { GridItem } from '@components/ui/GridItem';
+import { Box, Button, Dialog, DialogTitle, Stack } from '@mui/material';
+import { getUnitOfMeasurement } from '@util/helpers';
+import { deleteProduction } from '@services/productions-service';
+import { Close, Delete, Edit } from '@mui/icons-material';
 import { useSites } from '@features/stock-view/hooks/useSites';
+import { useDataModal } from '@contexts/dataModalContext';
 import { useNotifications } from '@contexts/notificationContext';
 
-const createProductionColumns = (handleDelete?: (row: Production) => void) => {
-    const columns = [
+const createProductionColumns = (handleDelete?: (row: Production) => void, handleEdit?: (row: Production) => void) => {
+    return [
         {
             field: 'estimatedTimeOfCompletion',
             headerName: 'Completion Time',
@@ -100,57 +95,59 @@ const createProductionColumns = (handleDelete?: (row: Production) => void) => {
                 </Stack>
             ),
         },
+        {
+            field: 'edit',
+            headerName: '',
+            sortable: false,
+            disableColumnMenu: true,
+            width: 20,
+            renderCell: (data: { row: Production }) => (
+                handleEdit ? (
+                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                        <Button variant="text" onClick={() => handleEdit(data.row)} data-testid="edit-stock">
+                            <Edit />
+                        </Button>
+
+                    </Box>
+                ) : null
+            ),
+        },
+        {
+            field: 'delete',
+            headerName: '',
+            width: 40,
+            sortable: false,
+            disableColumnMenu: true,
+            renderCell: ({ row }: { row: Production }) => (
+                handleDelete ? (
+                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                        <Button
+                            variant="text"
+                            color="error"
+                            onClick={() => handleDelete(row)}
+                        >
+                            <Delete />
+                        </Button>
+                    </Box>
+                ) : null
+            ),
+        }
     ] as const;
-    if (handleDelete) {
-        return [
-            ...columns,
-            {
-                field: 'delete',
-                headerName: '',
-                sortable: false,
-                disableColumnMenu: true,
-                headerAlign: 'center',
-                type: 'string',
-                width: 30,
-                renderCell: (data: { row: Production }) => {
-                    return (
-                        <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                            <Button variant="text" color="error" onClick={() => handleDelete(data.row)} data-testid="delete-production">
-                                <Delete></Delete>
-                            </Button>
-                        </Box>
-                    );
-                },
-            },
-        ] as const;
-    }
-    return columns;
 };
 
 type PlannedProductionModalProps = {
     open: boolean;
-    mode: ModalMode;
     onClose: () => void;
     onSave: () => void;
     onRemove?: (deletedUuid: string) => void;
     production: Partial<Production> | null;
     productions: Production[];
 };
-const isValidProduction = (production: Partial<Production>) =>
-    production &&
-    production.productionSiteBpns &&
-    production.estimatedTimeOfCompletion &&
-    typeof production.quantity === 'number' && production.quantity >= 0 &&
-    production.measurementUnit &&
-    production.partner &&
-    isValidOrderReference(production);
 
-export const PlannedProductionModal = ({ open, mode, onClose, onSave, onRemove, production, productions }: PlannedProductionModalProps) => {
-    const [temporaryProduction, setTemporaryProduction] = useState<Partial<Production>>(production ?? {});
-    const { partners } = usePartners('product', temporaryProduction?.material?.materialNumberSupplier ?? null);
+export const PlannedProductionModal = ({ open, onClose, onRemove, production, productions }: PlannedProductionModalProps) => {
     const { sites } = useSites();
     const { notify } = useNotifications();
-    const [formError, setFormError] = useState(false);
+    const { openDialog } = useDataModal();
     const dailyProductions = useMemo(
         () =>
             productions.filter(
@@ -161,34 +158,10 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, onRemove, 
         [productions, production?.estimatedTimeOfCompletion]
     );
 
-    const canDelete = Boolean(sites?.find(site => productions?.some(d => d.productionSiteBpns === site.bpns)));
+    const canDelete = Boolean(sites?.find((site) => productions?.some((d) => d.productionSiteBpns === site.bpns)));
 
-    const handleSaveClick = () => {
-        temporaryProduction.customerOrderNumber ||= undefined;
-        temporaryProduction.customerOrderPositionNumber ||= undefined;
-        temporaryProduction.supplierOrderNumber ||= undefined;
-        if (!isValidProduction(temporaryProduction)) {
-            setFormError(true);
-            return;
-        }
-        setFormError(false);
-        postProductionRange([temporaryProduction])
-            .then(() => {
-                onSave();
-                notify({
-                    title: 'Production Created',
-                    description: 'The Production has been saved successfully',
-                    severity: 'success',
-                });
-            })
-            .catch((error) => {
-                notify({
-                    title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                    description: error.status === 409 ? 'Date conflicting with another Production' : error.error,
-                    severity: 'error',
-                });
-            })
-            .finally(onClose);
+    const handleEdit = (row: Production) => {
+        openDialog('production', { ...row }, dailyProductions, 'edit');
     };
     const handleDelete = async (row: Production) => {
         if (row.uuid) {
@@ -204,183 +177,37 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, onRemove, 
             }
         }
     };
-    useEffect(() => {
-        if (production) setTemporaryProduction(production);
-    }, [production]);
+
     return (
         <>
             <Dialog open={open && production !== null} onClose={onClose} data-testid="production-modal">
                 <DialogTitle variant="h3" textAlign="center">
-                    {capitalize(mode)} Production Information
+                    Production Information
                 </DialogTitle>
                 <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
-                    <Grid container spacing={2} padding=".25rem">
-                        {mode === 'create' ? (
-                            <>
-                                <GridItem label="Material Number" value={temporaryProduction.material?.materialNumberSupplier ?? ''} />
-                                <Grid item xs={6}>
-                                    <LabelledAutoComplete
-                                        id="productionSiteBpns"
-                                        options={sites ?? []}
-                                        getOptionLabel={(option) => option.name ?? ''}
-                                        error={formError}
-                                        isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
-                                        onChange={(_, value) =>
-                                            setTemporaryProduction({ ...temporaryProduction, productionSiteBpns: value?.bpns ?? undefined })
-                                        }
-                                        value={sites?.find((s) => s.bpns === temporaryProduction.productionSiteBpns) ?? null}
-                                        label="Production Site*"
-                                        placeholder="Select a Site"
-                                        data-testid="production-site-field"
-                                    />
-                                </Grid>
-                                <Grid item xs={6} display="flex" alignItems="end" data-testid="production-completion-time-field">
-                                    <DateTime
-                                        label="Estimated Completion Time*"
-                                        placeholder="Pick Production Date"
-                                        locale="de"
-                                        error={formError}
-                                        value={temporaryProduction.estimatedTimeOfCompletion ?? null}
-                                        onValueChange={(date) =>
-                                            setTemporaryProduction({ ...temporaryProduction, estimatedTimeOfCompletion: date ?? undefined })
-                                        }
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <LabelledAutoComplete
-                                        sx={{ margin: '0' }}
-                                        id="partner"
-                                        options={partners ?? []}
-                                        getOptionLabel={(option) => option?.name ?? ''}
-                                        label="Partner*"
-                                        placeholder="Select a Partner"
-                                        error={formError && !temporaryProduction?.partner}
-                                        onChange={(_, value) =>
-                                            setTemporaryProduction({ ...temporaryProduction, partner: value ?? undefined })
-                                        }
-                                        value={temporaryProduction.partner ?? null}
-                                        isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
-                                        data-testid="production-partner-field"
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <FormLabel>Quantity*</FormLabel>
-                                    <Input
-                                        id="quantity"
-                                        type="number"
-                                        placeholder="Enter quantity"
-                                        value={temporaryProduction.quantity ?? ''}
-                                        error={formError && (temporaryProduction?.quantity == null || temporaryProduction.quantity < 0)}
-                                        onChange={(e) =>
-                                            setTemporaryProduction((curr) => ({
-                                                ...curr,
-                                                quantity: e.target.value ? parseFloat(e.target.value) : undefined,
-                                            }))
-                                        }
-                                        sx={{ marginTop: '.5rem' }}
-                                        data-testid="production-quantity-field"
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <LabelledAutoComplete
-                                        id="uom"
-                                        value={
-                                            temporaryProduction.measurementUnit
-                                                ? {
-                                                      key: temporaryProduction.measurementUnit,
-                                                      value: getUnitOfMeasurement(temporaryProduction.measurementUnit),
-                                                  }
-                                                : null
-                                        }
-                                        options={UNITS_OF_MEASUREMENT}
-                                        getOptionLabel={(option) => option?.value ?? ''}
-                                        label="UOM*"
-                                        placeholder="Select unit"
-                                        error={formError && !temporaryProduction?.measurementUnit}
-                                        onChange={(_, value) =>
-                                            setTemporaryProduction((curr) => ({ ...curr, measurementUnit: value?.key }))
-                                        }
-                                        isOptionEqualToValue={(option, value) => option?.key === value?.key}
-                                        data-testid="production-uom-field"
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <FormLabel>Customer Order Number</FormLabel>
-                                    <Input
-                                        id="customer-order-number"
-                                        type="text"
-                                        error={formError && !isValidOrderReference(temporaryProduction)}
-                                        value={temporaryProduction?.customerOrderNumber ?? ''}
-                                        onChange={(event) =>
-                                            setTemporaryProduction({ ...temporaryProduction, customerOrderNumber: event.target.value })
-                                        }
-                                        data-testid="production-customer-order-number-field"
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <FormLabel>Customer Order Position</FormLabel>
-                                    <Input
-                                        id="customer-order-position-number"
-                                        type="text"
-                                        error={formError && !isValidOrderReference(temporaryProduction)}
-                                        value={temporaryProduction?.customerOrderPositionNumber ?? ''}
-                                        onChange={(event) =>
-                                            setTemporaryProduction({
-                                                ...temporaryProduction,
-                                                customerOrderPositionNumber: event.target.value,
-                                            })
-                                        }
-                                        data-testid="production-customer-order-position-field"
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <FormLabel>Supplier Order Number</FormLabel>
-                                    <Input
-                                        id="supplier-order-number"
-                                        type="text"
-                                        value={temporaryProduction?.supplierOrderNumber ?? ''}
-                                        onChange={(event) =>
-                                            setTemporaryProduction({
-                                                ...temporaryProduction,
-                                                supplierOrderNumber: event.target.value ?? '',
-                                            })
-                                        }
-                                        data-testid="production-supplier-order-number-field"
-                                    />
-                                </Grid>
-                            </>
-                        ) : (
-                            <Grid item xs={12}>
-                                <Table
-                                    title={`Planned Production ${
-                                        temporaryProduction?.estimatedTimeOfCompletion
-                                            ? ' on ' +
-                                              new Date(temporaryProduction?.estimatedTimeOfCompletion).toLocaleDateString('en-GB', {
-                                                  weekday: 'long',
-                                                  day: '2-digit',
-                                                  month: '2-digit',
-                                                  year: 'numeric',
-                                              })
-                                            : ''
-                                    }`}
-                                    getRowId={(row) => row.uuid}
-                                    columns={createProductionColumns(canDelete ? handleDelete : undefined)}
-                                    rows={dailyProductions}
-                                    hideFooter
-                                    density="standard"
-                                />
-                            </Grid>
-                        )}
-                    </Grid>
-                    <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="2rem">
-                        <Button variant="outlined" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={onClose}>
-                            <Close></Close> Close
+
+                    <Table
+                        title={`Planned Production ${production?.estimatedTimeOfCompletion
+                            ? ' on ' +
+                            new Date(production?.estimatedTimeOfCompletion).toLocaleDateString('en-GB', {
+                                weekday: 'long',
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                            })
+                            : ''
+                            }`}
+                        getRowId={(row) => row.uuid}
+                        columns={createProductionColumns(canDelete ? handleDelete : undefined, handleEdit)}
+                        rows={dailyProductions}
+                        hideFooter
+                        density="standard"
+                    />
+
+                    <Box display="flex" justifyContent="flex-end" marginTop="2rem">
+                        <Button variant="outlined" onClick={onClose}>
+                            <Close /> Close
                         </Button>
-                        {mode === 'create' && (
-                            <Button variant="contained" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleSaveClick} data-testid="save-production-button">
-                                <Save></Save> Save
-                            </Button>
-                        )}
                     </Box>
                 </Stack>
             </Dialog>
