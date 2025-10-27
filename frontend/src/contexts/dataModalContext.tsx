@@ -211,11 +211,7 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
                 <StockModal
                     {...state.viewStockDialogOptions}
                     onClose={() => dispatch({ type: 'viewStockDialogOptions', payload: { ...state.viewStockDialogOptions, open: false } })}
-                     onSave={(stock) => {
-                          const updatedStocks = state.stocks.map(d => d.uuid === stock?.uuid ? stock! : d);
-                          dispatch({ type: 'stocks', payload: updatedStocks });
-                          onSave('stock');
-                    }}
+                    onSave={() => onSave('stock')}
                     onRemove={(deletedUuid: string) => {
                         const updatedStocks = state.stocks.filter(p => p.uuid !== deletedUuid);
                         dispatch({ type: 'stocks', payload: updatedStocks });
@@ -227,7 +223,11 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
                 <StockCreationModal
                     {...state.editStockDialogOptions}
                     onClose={() => dispatch({ type: 'editStockDialogOptions', payload: { ...state.editStockDialogOptions, open: false } })}
-                    onSave={() => onSave('stock')}
+                    onSave={(stock) => {
+                          const updatedStocks = state.stocks.map(d => d.uuid === stock?.uuid ? stock! : d);
+                          dispatch({ type: 'stocks', payload: updatedStocks });
+                          onSave('stock');
+                    }}
                     stock={state.stock}
                 />
             </dataModalContext.Provider>
