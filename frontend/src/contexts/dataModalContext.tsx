@@ -176,7 +176,11 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
             <DemandCategoryCreationModal
                 {...state.editDemandDialogOptions}
                 onClose={() => dispatch({ type: 'editDemandDialogOptions', payload: { ...state.editDemandDialogOptions, open: false } })}
-                onSave={() => onSave('demand')}
+                onSave={(demand) => {
+                    const updatedDemands = state.demands.map(d => d.uuid === demand?.uuid ? demand! : d);
+                    dispatch({ type: 'demand', payload: updatedDemands });
+                    onSave('demand');
+                }}
                 demand={state.demand}
             />
             <PlannedProductionModal
