@@ -18,6 +18,7 @@ The **need for configuration updates** is **marked bold**.
 ### Changed
 
 - bump spring boot from 3.5.4 to 3.5.7 ([#1040](https://github.com/eclipse-tractusx/puris/pull/1040))
+- ci(quality-checks.yaml): configure notice file checks ([#1041](https://github.com/eclipse-tractusx/puris/pull/1041))
 
 ### Fixes
 
