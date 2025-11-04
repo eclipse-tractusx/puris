@@ -138,7 +138,7 @@ public class ExcelService {
         Workbook workbook = WorkbookFactory.create(is);
         List<DataImportError> formulaErrors = evaluateWorkbook(workbook);
         if (!formulaErrors.isEmpty()) {
-            return new DataImportResult("Excel formula evaluation failed", formulaErrors);
+            return new DataImportResult("Excel formula evaluation failed.", formulaErrors);
         }
         Sheet sheet = workbook.getSheetAt(0);
         var result = extractAndSaveData(sheet);
@@ -784,12 +784,12 @@ public class ExcelService {
                         if (cell != null && cell.getCellType() == CellType.FORMULA) {
                             try {
                                 evaluator.evaluateFormulaCell(cell);
-                            } catch (NotImplementedFunctionException nie) {
-                                errors.add(new DataImportError((cell.getRowIndex() + 1), List.of(String.format("Unsupported function '%s' at Sheet '%s'!%s. Formula: =%s", nie.getFunctionName(), sheetName, new CellReference(cell).formatAsString(), safeFormula(cell)))));
-                            } catch (FormulaParseException fpe) {
-                                errors.add(new DataImportError((cell.getRowIndex() + 1), List.of(String.format("Formula parse error at Sheet '%s'!%s. Formula: =%s. Reason: %s", sheetName, new CellReference(cell).formatAsString(), safeFormula(cell), nullToEmpty(fpe.getMessage())))));
                             } catch (RuntimeException ex) {
-                                errors.add(new DataImportError((cell.getRowIndex() + 1), List.of(String.format("Error evaluating at Sheet '%s'!%s. Formula: =%s. Reason: %s", sheetName, new CellReference(cell).formatAsString(), safeFormula(cell), nullToEmpty(ex.getMessage())))));
+                                if (ex.getCause() instanceof NotImplementedFunctionException){
+                                    log.error("Runtime Exception is notImplementedFunction");
+                                }
+                                log.error("RUntime exception cause is: " + ex.getCause().toString());
+                                errors.add(new DataImportError((cell.getRowIndex() + 1), List.of(String.format("Error evaluating at Sheet '%s'!%s. Formula: =%s. Reason: %s", sheetName, new CellReference(cell).formatAsString(), getFormulaAsString(cell), nullToEmpty(ex.getMessage())))));
                             }
                         }
                     }
@@ -809,9 +809,19 @@ public class ExcelService {
         }
     }
 
-    private static String safeFormula(Cell c) {
+    /**
+     * Safely returns the formula of the given cell as a string.
+     *
+     * @param c the cell whose formula should be obtained
+     * @return the cell's formula, or "<unavailable>" if it cannot be read
+     */
+    private static String getFormulaAsString(Cell c) {
         try { return c.getCellFormula(); } catch (Exception ignore) { return "<unavailable>"; }
     }
+
+    /**
+     * Returns an empty string if the given value is null.
+     */
     private static String nullToEmpty(String s) {
         return (s == null) ? "" : s;
     }
