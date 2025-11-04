@@ -19,14 +19,14 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Input, Table } from '@catena-x/portal-shared-components';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Production } from '@models/types/data/production';
 import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, capitalize } from '@mui/material';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
-import { deleteProduction, postProductionRange } from '@services/productions-service';
+import { deleteProduction, postProductionRange, putProduction } from '@services/productions-service';
 import { Close, Delete, Save } from '@mui/icons-material';
 import { DateTime } from '@components/ui/DateTime';
 import { ModalMode } from '@models/types/data/modal-mode';
@@ -34,6 +34,8 @@ import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
+import { ConfirmUpdateHandle, ConfirmUpdateDialog } from './UpdateModal';
+import { UUID } from 'crypto';
 
 const createProductionColumns = (handleDelete?: (row: Production) => void) => {
     const columns = [
@@ -151,6 +153,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, onRemove, 
     const { sites } = useSites();
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
+    const confirmRef = useRef<ConfirmUpdateHandle>(null);
     const dailyProductions = useMemo(
         () =>
             productions.filter(
@@ -180,15 +183,51 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, onRemove, 
                     description: 'The Production has been saved successfully',
                     severity: 'success',
                 });
+                onClose();
             })
-            .catch((error) => {
-                notify({
-                    title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                    description: error.status === 409 ? 'Date conflicting with another Production' : error.error,
-                    severity: 'error',
-                });
-            })
-            .finally(onClose);
+            .catch(async (error) => {
+                if (error?.status === 409) {
+                    const existing: UUID | undefined = error?.existingId ?? undefined;
+                    if (!existing) {
+                        notify({
+                            title: 'Conflict',
+                            description: 'Date conflicting with another Production',
+                            severity: 'error',
+                        });
+                        return;
+                    }
+                    const message =
+                        `There is already a production matching your criteria with a quantity ` +
+                        `${error?.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === error?.measurementUnit)?.value ?? error?.measurementUnit}. ` +
+                        `Do you want to update to ${temporaryProduction.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === temporaryProduction.measurementUnit)?.value ?? temporaryProduction.measurementUnit}?`;
+                    const confirmed = await confirmRef.current?.open({message});
+                    if (confirmed) {
+                        try {
+                            await putProduction({ ...temporaryProduction, uuid: existing });
+                            onSave();
+                            notify({ 
+                                title: 'Production Updated', 
+                                description: 'The production has been updated successfully', 
+                                severity: 'success' 
+                            });
+                            onClose();
+                        } 
+                        catch (e: any) {
+                            notify({ 
+                                title: 'Error updating',
+                                description: e?.error ?? 'Unexpected error', severity: 'error' 
+                            });
+                        }
+                    }
+                } else {
+                    notify({
+                        title: 'Error requesting update',
+                        description: error.error,
+                        severity: 'error',
+                    });
+                }
+                
+            });
     };
     const handleDelete = async (row: Production) => {
         if (row.uuid) {
@@ -384,6 +423,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, onRemove, 
                     </Box>
                 </Stack>
             </Dialog>
+            <ConfirmUpdateDialog ref={confirmRef} />
         </>
     );
 };
