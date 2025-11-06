@@ -785,11 +785,22 @@ public class ExcelService {
                             try {
                                 evaluator.evaluateFormulaCell(cell);
                             } catch (RuntimeException ex) {
-                                if (ex.getCause() instanceof NotImplementedFunctionException){
-                                    log.error("Runtime Exception is notImplementedFunction");
+                                Throwable cause = ex.getCause();
+                                String cellRef = new CellReference(cell).formatAsString();
+                                int rowIndex = cell.getRowIndex() + 1;
+                                String formula = getFormulaAsString(cell);
+                                switch (cause) {
+                                    case NotImplementedFunctionException nie -> {
+                                        errors.add(new DataImportError(rowIndex, List.of(String.format("Unsupported function '%s' at Sheet '%s'!%s. Formula: =%s", nie.getFunctionName(), sheetName, cellRef, formula))));
+                                    }
+                                    case FormulaParseException fpe -> {
+                                        errors.add(new DataImportError(rowIndex, List.of(String.format("Formula parse error at Sheet '%s'!%s. Formula: =%s. Reason: %s", sheetName, cellRef, formula, nullToEmpty(fpe.getMessage())))));
+                                    }
+                                    default -> {
+                                        errors.add(new DataImportError(rowIndex, List.of(String.format("Error evaluating at Sheet '%s'!%s. Formula: =%s. Reason: %s", sheetName, cellRef, formula, nullToEmpty(ex.getMessage())))));
+                                    }
                                 }
-                                log.error("RUntime exception cause is: " + ex.getCause().toString());
-                                errors.add(new DataImportError((cell.getRowIndex() + 1), List.of(String.format("Error evaluating at Sheet '%s'!%s. Formula: =%s. Reason: %s", sheetName, new CellReference(cell).formatAsString(), getFormulaAsString(cell), nullToEmpty(ex.getMessage())))));
+                                log.error("RUntime exception cause is: " + cause.toString());
                             }
                         }
                     }
