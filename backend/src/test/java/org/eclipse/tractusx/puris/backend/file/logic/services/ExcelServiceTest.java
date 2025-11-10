@@ -184,7 +184,7 @@ public class ExcelServiceTest {
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(null);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Failed to process Demand rows", result.getMessage());
@@ -198,7 +198,7 @@ public class ExcelServiceTest {
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(null);
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Failed to process Demand rows", result.getMessage());
@@ -215,7 +215,7 @@ public class ExcelServiceTest {
         when(ownDemandService.validateWithDetails(any(OwnDemand.class)))
             .thenReturn(validationErrors);
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Failed to process Demand rows", result.getMessage());
@@ -232,7 +232,7 @@ public class ExcelServiceTest {
     void testReadExcelFile_InvalidHeaders_ThrowsError() throws IOException {
         ByteArrayInputStream inputStream = createInvalidHeaderExcelFile();
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
-            () -> excelService.readExcelFile(inputStream, "testFile"));
+            () -> excelService.readExcelFile(inputStream));
         assertTrue(exception.getMessage().contains("Unsupported Excel file format"));
     }
 
@@ -252,7 +252,7 @@ public class ExcelServiceTest {
         when(ownDemandService.findAll()).thenReturn(Collections.emptyList());
         when(ownDemandService.create(any(OwnDemand.class))).thenReturn(new OwnDemand());
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Successfully imported demands", result.getMessage());
@@ -272,7 +272,7 @@ public class ExcelServiceTest {
         when(ownDemandService.findAll()).thenReturn(Collections.emptyList());
         when(ownDemandService.create(any(OwnDemand.class))).thenReturn(new OwnDemand());
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("One or more conflicting rows found.", result.getMessage());
@@ -290,7 +290,7 @@ public class ExcelServiceTest {
         when(ownProductionService.findAll()).thenReturn(Collections.emptyList());
         when(ownProductionService.create(any(OwnProduction.class))).thenReturn(new OwnProduction());
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Successfully imported productions", result.getMessage());
@@ -310,7 +310,7 @@ public class ExcelServiceTest {
         when(ownProductionService.findAll()).thenReturn(Collections.emptyList());
         when(ownProductionService.create(any(OwnProduction.class))).thenReturn(new OwnProduction());
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("One or more conflicting rows found.", result.getMessage());
@@ -328,7 +328,7 @@ public class ExcelServiceTest {
         when(ownDeliveryService.findAll()).thenReturn(Collections.emptyList());
         when(ownDeliveryService.create(any(OwnDelivery.class))).thenReturn(new OwnDelivery());
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Successfully imported deliveries", result.getMessage());
@@ -348,7 +348,7 @@ public class ExcelServiceTest {
         when(ownDeliveryService.findAll()).thenReturn(Collections.emptyList());
         when(ownDeliveryService.create(any(OwnDelivery.class))).thenReturn(new OwnDelivery());
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("One or more conflicting rows found.", result.getMessage());
@@ -367,7 +367,7 @@ public class ExcelServiceTest {
         when(productItemStockService.findAll()).thenReturn(Collections.emptyList());
         when(materialItemStockService.create(any(MaterialItemStock.class))).thenReturn(new MaterialItemStock());
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Successfully imported stocks", result.getMessage());
@@ -387,7 +387,7 @@ public class ExcelServiceTest {
         when(materialItemStockService.findAll()).thenReturn(Collections.emptyList());
         when(materialItemStockService.create(any(MaterialItemStock.class))).thenReturn(new MaterialItemStock());
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("One or more conflicting rows found.", result.getMessage());
@@ -402,7 +402,7 @@ public class ExcelServiceTest {
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Failed to process Demand rows", result.getMessage());
@@ -417,7 +417,7 @@ public class ExcelServiceTest {
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Failed to process Demand rows", result.getMessage());
@@ -432,7 +432,7 @@ public class ExcelServiceTest {
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Failed to process Delivery rows", result.getMessage());
@@ -447,7 +447,7 @@ public class ExcelServiceTest {
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Failed to process Delivery rows", result.getMessage());
@@ -462,7 +462,7 @@ public class ExcelServiceTest {
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Failed to process Delivery rows", result.getMessage());
@@ -477,7 +477,7 @@ public class ExcelServiceTest {
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
 
-        DataImportResult result = excelService.readExcelFile(inputStream, "testFile");
+        DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
         assertEquals("Failed to process stock rows", result.getMessage());

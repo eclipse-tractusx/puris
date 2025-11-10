@@ -70,7 +70,7 @@ public class FileController {
             if (filename != null && !(filename.endsWith(".xlsx"))) {
                 return ResponseEntity.badRequest().body("Invalid File Type");
             }
-            var result = excelService.readExcelFile(file.getInputStream(), filename);
+            var result = excelService.readExcelFile(file.getInputStream());
             if (!result.getErrors().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(result);
             }

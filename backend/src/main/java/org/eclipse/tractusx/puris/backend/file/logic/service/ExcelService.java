@@ -134,9 +134,9 @@ public class ExcelService {
     @Autowired
     private ProductItemStockService productItemStockService;
     
-    public DataImportResult readExcelFile(InputStream is, String sourceName) throws IOException {
+    public DataImportResult readExcelFile(InputStream is) throws IOException {
         Workbook workbook = WorkbookFactory.create(is);
-        List<DataImportError> formulaErrors = evaluateWorkbook(workbook, sourceName);
+        List<DataImportError> formulaErrors = evaluateWorkbook(workbook);
         if (!formulaErrors.isEmpty()) {
             return new DataImportResult("Excel formula evaluation failed.", formulaErrors);
         }
@@ -769,7 +769,7 @@ public class ExcelService {
         return true;
     }
 
-    private List<DataImportError> evaluateWorkbook(Workbook workbook, String fileName) {
+    private List<DataImportError> evaluateWorkbook(Workbook workbook) {
         List<DataImportError> errors = new ArrayList<>();
         FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
         try {
@@ -800,7 +800,7 @@ public class ExcelService {
                                         errors.add(new DataImportError(rowIndex, List.of(String.format("Error evaluating at Sheet '%s'!%s. Formula: =%s. Reason: %s", sheetName, cellRef, formula, nullToEmpty(ex.getMessage())))));
                                     }
                                 }
-                                log.error("Excel import failed for '{}' due to RuntimeException with cause: {}", fileName != null ? fileName.replaceAll("[\\r\\n\\t]", " ") : "<null>", cause.toString());
+                                log.error("Excel import failed due to RuntimeException with cause:" + cause.toString());
                             }
                         }
                     }
