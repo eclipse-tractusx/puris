@@ -19,6 +19,8 @@ The **need for configuration updates** is **marked bold**.
 
 - bump spring boot from 3.5.4 to 3.5.7 ([#1040](https://github.com/eclipse-tractusx/puris/pull/1040))
 - ci(quality-checks.yaml): configure notice file checks ([#1041](https://github.com/eclipse-tractusx/puris/pull/1041))
+- bump dtr version to 0.10.0-RC1 ([#1043](https://github.com/eclipse-tractusx/puris/pull/1043))
+- bump edc version to 0.10.2 ([#1043](https://github.com/eclipse-tractusx/puris/pull/1043))
 
 ### Fixes
 
