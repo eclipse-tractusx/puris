@@ -114,7 +114,7 @@ spec:
             - name: NGINX_RATE
               value: "{{ .Values.frontend.puris.rateLimiting.rate }}"
             - name: FRONTEND_GENERATE_MATERIAL_CATENAX_ID
-              value: "{{ .Values.backend.puris.generatematerialcatenaxid | default true | quote }}"
+              value: "{{ .Values.backend.puris.generatematerialcatenaxid | default true }}"
             ######################################
             ## Additional environment variables ##
             ######################################

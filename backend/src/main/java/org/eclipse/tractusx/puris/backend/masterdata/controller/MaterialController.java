@@ -108,7 +108,7 @@ public class MaterialController {
         }
 
         if (createdMaterial == null) {
-            log.error("Could not create material {} – service returned null", materialDto.getOwnMaterialNumber());
+            log.error("Could not create material – service returned null");
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not create material.");
         }
         return modelMapper.map(createdMaterial, MaterialEntityDto.class);
