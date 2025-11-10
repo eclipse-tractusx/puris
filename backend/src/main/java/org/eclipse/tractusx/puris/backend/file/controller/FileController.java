@@ -19,13 +19,16 @@
  */
 package org.eclipse.tractusx.puris.backend.file.controller;
 
-import org.eclipse.tractusx.puris.backend.file.logic.service.ExcelService;
 import org.eclipse.tractusx.puris.backend.file.domain.model.DataImportResult;
+import org.eclipse.tractusx.puris.backend.file.logic.service.ExcelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -67,7 +70,7 @@ public class FileController {
             if (filename != null && !(filename.endsWith(".xlsx"))) {
                 return ResponseEntity.badRequest().body("Invalid File Type");
             }
-            var result = excelService.readExcelFile(file.getInputStream());
+            var result = excelService.readExcelFile(file.getInputStream(), filename);
             if (!result.getErrors().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(result);
             }
