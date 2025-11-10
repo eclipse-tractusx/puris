@@ -23,7 +23,7 @@ import { config } from "@models/constants/config";
 import { Material } from "@models/types/data/stock";
 import { Close, Send } from "@mui/icons-material";
 import { Input } from '@catena-x/portal-shared-components';
-import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, InputLabel, Stack } from "@mui/material";
+import { Box, Button, Dialog, DialogTitle, Grid, InputLabel, Stack } from "@mui/material";
 import { useEffect, useState } from "react";
 
 
