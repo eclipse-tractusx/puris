@@ -800,7 +800,7 @@ public class ExcelService {
                                         errors.add(new DataImportError(rowIndex, List.of(String.format("Error evaluating at Sheet '%s'!%s. Formula: =%s. Reason: %s", sheetName, cellRef, formula, nullToEmpty(ex.getMessage())))));
                                     }
                                 }
-                                log.error("Excel import failed for '{}' due to RuntimeException with cause: {}", fileName, cause.toString());
+                                log.error("Excel import failed for '{}' due to RuntimeException with cause: {}", fileName != null ? fileName.replaceAll("[\\r\\n\\t]", " ") : "<null>", cause.toString());
                             }
                         }
                     }
