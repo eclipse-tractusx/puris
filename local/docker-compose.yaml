@@ -52,6 +52,7 @@ services:
       - ENDPOINT_DAYS_OF_SUPPLY=days-of-supply
       - ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION=demand-and-capacity-notification
       - ENDPOINT_IMPORT_FILES=files
+      - ENDPOINT_ALL_MATERIALS=materials
       - IDP_URL=http://127.0.0.1:10081/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-customer
@@ -81,6 +82,7 @@ services:
       retries: 20
     ports:
       - "127.0.0.1:8081:8081" # expose port of server.port
+      - "127.0.0.1:5005:5005"
     env_file:
       - ./tractus-x-edc/config/customer/puris-backend.properties
     environment:
@@ -91,6 +93,7 @@ services:
       puris.dtr.idp.edc-client.secret.alias: ${CUSTOMER_KC_DTR_PURIS_CLIENT_ALIAS}
       puris.dtr.idp.puris-client.id: ${KC_MANAGE_CLIENT_ID}
       puris.dtr.idp.puris-client.secret: ${CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET}
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,address=*:5005,server=y,suspend=n
     networks:
       - miw-net
     extra_hosts:
@@ -240,6 +243,7 @@ services:
       - ENDPOINT_DAYS_OF_SUPPLY=days-of-supply
       - ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION=demand-and-capacity-notification
       - ENDPOINT_IMPORT_FILES=files
+      - ENDPOINT_ALL_MATERIALS=materials
       - IDP_URL=http://127.0.0.1:10081/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-supplier
@@ -269,6 +273,7 @@ services:
       retries: 20
     ports:
       - "127.0.0.1:8082:8082"
+      - "127.0.0.1:5006:5006"
     env_file:
       - ./tractus-x-edc/config/supplier/puris-backend.properties
     environment:
@@ -279,6 +284,7 @@ services:
       puris.dtr.idp.edc-client.secret.alias: ${SUPPLIER_KC_DTR_PURIS_CLIENT_ALIAS}
       puris.dtr.idp.puris-client.id: ${KC_MANAGE_CLIENT_ID}
       puris.dtr.idp.puris-client.secret: ${SUPPLIER_KC_DTR_PURIS_CLIENT_SECRET}
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,address=*:5006,server=y,suspend=n
     networks:
       - miw-net
     extra_hosts:
