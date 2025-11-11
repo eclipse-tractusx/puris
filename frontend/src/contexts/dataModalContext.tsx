@@ -31,6 +31,7 @@ import { Demand } from '@models/types/data/demand';
 import { Production } from '@models/types/data/production';
 import { Material, Stock, StockType } from '@models/types/data/stock';
 import { DirectionType } from '@models/types/erp/directionType';
+import { StockCreationModal } from '@features/material-details/components/StockCreationModal';
 import { DeliveryCreationModal } from '@features/material-details/components/DeliveryInformationCreationModal';
 
 export type DataCategory = 'production' | 'demand' | 'stock' | 'delivery';
@@ -52,7 +53,7 @@ type DataModalContext = {
         site?: Site | null
     ) => void;
     addOnSaveListener: (callback: (category: DataCategory) => void) => void;
-    removeOnSaveListener: (callback: (category: DataCategory) => void) => void; 
+    removeOnSaveListener: (callback: (category: DataCategory) => void) => void;
 };
 
 const dataModalContext = createContext<DataModalContext | null>(null);
@@ -121,6 +122,7 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
 
     const openStockDialog = useCallback(
         (s: Partial<Stock>, mode: ModalMode, direction: DirectionType, site: Site | null, list: Stock[]) => {
+            const optionName = mode === 'view' ? 'viewStockDialogOptions' : 'editStockDialogOptions';
             s.material = material ? {
                 ...material,
                 materialNumberCustomer: material?.ownMaterialNumber ?? null,
@@ -129,7 +131,7 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
             const stockType: StockType = direction === DirectionType.Inbound ? 'material' : 'product';
             dispatch({ type: 'stock', payload: s });
             dispatch({ type: 'stocks', payload: list });
-            dispatch({ type: 'stockDialogOptions', payload: { open: true, mode, stockType, site } });
+            dispatch({ type: optionName, payload: { open: true, stockType, site, mode } });
         },
         [material]
     );
@@ -159,65 +161,75 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
     return (
         <>
             <dataModalContext.Provider value={{ openDialog, addOnSaveListener, removeOnSaveListener }}>{children}
-            <DemandCategoryModal
-                {...state.demandDialogOptions}
-                onClose={() => dispatch({ type: 'demandDialogOptions', payload: { open: false, mode: state.demandDialogOptions.mode } })}
-                onSave={() => onSave('demand')}
-                onRemove={(deletedUuid: string) => {
-                    const updatedDemands = state.demands.filter(p => p.uuid !== deletedUuid);
-                    dispatch({ type: 'demands', payload: updatedDemands });
-                    onSave('demand');
-                }}
-                demand={state.demand}
-                demands={state.demands}
-            />
-            <PlannedProductionModal
-                {...state.productionDialogOptions}
-                onClose={() => dispatch({ type: 'productionDialogOptions', payload: { open: false, mode: state.productionDialogOptions.mode } })}
-                onSave={() => onSave('production')}
-                onRemove={(deletedUuid: string) => {
-                    const updatedProductions = state.productions.filter(p => p.uuid !== deletedUuid);
-                    dispatch({ type: 'productions', payload: updatedProductions });
-                    onSave('production');
-                }}
-                production={state.production}
-                productions={state.productions}
-            />
-            <DeliveryInformationModal
-                {...state.viewDeliveryDialogOptions}
-                onClose={() => dispatch({ type: 'viewDeliveryDialogOptions', payload: { ...state.viewDeliveryDialogOptions, open: false } })}
-                onSave={() => onSave('delivery')}
-                onRemove={(deletedUuid: string) => {
-                    const updatedDeliveries = state.deliveries.filter(p => p.uuid !== deletedUuid);
-                    dispatch({ type: 'deliveries', payload: updatedDeliveries });
-                    onSave('delivery');
-                }}
-                delivery={state.delivery}
-                deliveries={state.deliveries}
-            />
-            <DeliveryCreationModal
-                {...state.editDeliveryDialogOptions}
-                onClose={() => dispatch({ type: 'editDeliveryDialogOptions', payload: { ...state.editDeliveryDialogOptions, open: false } })}
-                onSave={(delivery) => {
-                    const updatedDeliveries = state.deliveries.map(d => d.uuid === delivery?.uuid ? delivery! : d);
-                    dispatch({ type: 'deliveries', payload: updatedDeliveries });
-                    onSave('delivery');
-                }}
-                delivery={state.delivery}
-                deliveries={state.deliveries}
-            />
-            <StockModal
-                {...state.stockDialogOptions}
-                onClose={() => dispatch({ type: 'stockDialogOptions', payload: {...state.stockDialogOptions, open: false } })}
-                onSave={() => onSave('stock')}
-                onRemove={(deletedUuid: string) => {
-                    const updatedStocks = state.stocks.filter(p => p.uuid !== deletedUuid);
-                    dispatch({ type: 'stocks', payload: updatedStocks });
-                    onSave('stock');
-                }}
-                stock={state.stock}
-                stocks={state.stocks}
-            />
+                <DemandCategoryModal
+                    {...state.demandDialogOptions}
+                    onClose={() => dispatch({ type: 'demandDialogOptions', payload: { open: false, mode: state.demandDialogOptions.mode } })}
+                    onSave={() => onSave('demand')}
+                    onRemove={(deletedUuid: string) => {
+                        const updatedDemands = state.demands.filter(p => p.uuid !== deletedUuid);
+                        dispatch({ type: 'demands', payload: updatedDemands });
+                        onSave('demand');
+                    }}
+                    demand={state.demand}
+                    demands={state.demands}
+                />
+                <PlannedProductionModal
+                    {...state.productionDialogOptions}
+                    onClose={() => dispatch({ type: 'productionDialogOptions', payload: { open: false, mode: state.productionDialogOptions.mode } })}
+                    onSave={() => onSave('production')}
+                    onRemove={(deletedUuid: string) => {
+                        const updatedProductions = state.productions.filter(p => p.uuid !== deletedUuid);
+                        dispatch({ type: 'productions', payload: updatedProductions });
+                        onSave('production');
+                    }}
+                    production={state.production}
+                    productions={state.productions}
+                />
+                <DeliveryInformationModal
+                    {...state.viewDeliveryDialogOptions}
+                    onClose={() => dispatch({ type: 'viewDeliveryDialogOptions', payload: { ...state.viewDeliveryDialogOptions, open: false } })}
+                    onSave={() => onSave('delivery')}
+                    onRemove={(deletedUuid: string) => {
+                        const updatedDeliveries = state.deliveries.filter(p => p.uuid !== deletedUuid);
+                        dispatch({ type: 'deliveries', payload: updatedDeliveries });
+                        onSave('delivery');
+                    }}
+                    delivery={state.delivery}
+                    deliveries={state.deliveries}
+                />
+                <DeliveryCreationModal
+                    {...state.editDeliveryDialogOptions}
+                    onClose={() => dispatch({ type: 'editDeliveryDialogOptions', payload: { ...state.editDeliveryDialogOptions, open: false } })}
+                    onSave={(delivery) => {
+                        const updatedDeliveries = state.deliveries.map(d => d.uuid === delivery?.uuid ? delivery! : d);
+                        dispatch({ type: 'deliveries', payload: updatedDeliveries });
+                        onSave('delivery');
+                    }}
+                    delivery={state.delivery}
+                    deliveries={state.deliveries}
+                />
+                <StockModal
+                    {...state.viewStockDialogOptions}
+                    onClose={() => dispatch({ type: 'viewStockDialogOptions', payload: { ...state.viewStockDialogOptions, open: false } })}
+                    onSave={() => onSave('stock')}
+                    onRemove={(deletedUuid: string) => {
+                        const updatedStocks = state.stocks.filter(p => p.uuid !== deletedUuid);
+                        dispatch({ type: 'stocks', payload: updatedStocks });
+                        onSave('stock');
+                    }}
+                    stock={state.stock}
+                    stocks={state.stocks}
+                />
+                <StockCreationModal
+                    {...state.editStockDialogOptions}
+                    onClose={() => dispatch({ type: 'editStockDialogOptions', payload: { ...state.editStockDialogOptions, open: false } })}
+                    onSave={(stock) => {
+                          const updatedStocks = state.stocks.map(d => d.uuid === stock?.uuid ? stock! : d);
+                          dispatch({ type: 'stocks', payload: updatedStocks });
+                          onSave('stock');
+                    }}
+                    stock={state.stock}
+                />
             </dataModalContext.Provider>
         </>
     );
@@ -236,7 +248,8 @@ type ModalState = {
     viewDeliveryDialogOptions: { open: boolean; direction: DirectionType; site: Site | null };
     demandDialogOptions: { open: boolean; mode: ModalMode };
     productionDialogOptions: { open: boolean; mode: ModalMode };
-    stockDialogOptions: { open: boolean; mode: ModalMode, stockType: StockType };
+    viewStockDialogOptions: { open: boolean; stockType: StockType };
+    editStockDialogOptions: { open: boolean; stockType: StockType};
     delivery: Delivery | null;
     demand: Partial<Demand> | null;
     production: Partial<Production> | null;
@@ -261,7 +274,8 @@ const initialState: ModalState = {
     viewDeliveryDialogOptions: { open: false, direction: DirectionType.Inbound, site: null },
     demandDialogOptions: { open: false, mode: 'edit' },
     productionDialogOptions: { open: false, mode: 'edit' },
-    stockDialogOptions: { open: false, mode: 'edit', stockType: 'material' },
+    viewStockDialogOptions: { open: false, stockType: 'material' },
+    editStockDialogOptions: { open: false, stockType: 'material' },
     delivery: null,
     demand: null,
     production: null,

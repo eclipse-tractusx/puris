@@ -35,7 +35,18 @@ import { GridItem } from '@components/ui/GridItem';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
 import { DirectionType } from '@models/types/erp/directionType';
-import { DeliveryInformationModalProps } from './DeliveryInformationModal';
+import { Site } from '@models/types/edc/site';
+
+export type DeliveryInformationCreationModalProps = {
+    open: boolean;
+    direction: DirectionType;
+    site: Site | null;
+    onClose: () => void;
+    onSave: (d?: Delivery) => void;
+    onRemove?: (deletedUuid: string) => void;
+    delivery: Delivery | null;
+    deliveries: Delivery[];
+};
 
 const isValidDelivery = (delivery: Partial<Delivery>, previousDeliveryState: Delivery | null) =>
     delivery &&
@@ -62,7 +73,7 @@ export const DeliveryCreationModal = ({
     onClose,
     onSave,
     delivery,
-}: DeliveryInformationModalProps) => {
+}: DeliveryInformationCreationModalProps) => {
     const [temporaryDelivery, setTemporaryDelivery] = useState<Partial<Delivery>>({});
     const { partners } = usePartners(
         direction === DirectionType.Outbound ? 'product' : 'material',
