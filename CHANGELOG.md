@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- /
+- added detailed error messages for formulas in excel imports ([#1036](https://github.com/eclipse-tractusx/puris/pull/1036))
 
 ### Changed
 
