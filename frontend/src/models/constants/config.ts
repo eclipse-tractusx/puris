@@ -40,6 +40,8 @@ const app = {
     ENDPOINT_DAYS_OF_SUPPLY: import.meta.env.VITE_ENDPOINT_DAYS_OF_SUPPLY.trim() as string,
     ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION: import.meta.env.VITE_ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION.trim() as string,
     ENDPOINT_IMPORT_FILES: import.meta.env.VITE_ENDPOINT_IMPORT_FILES.trim() as string,
+    ENDPOINT_ALL_MATERIALS: import.meta.env.VITE_ENDPOINT_ALL_MATERIALS.trim() as string,
+    GENERATE_MATERIAL_CATENAX_ID: (import.meta.env.VITE_GENERATE_MATERIAL_CATENAX_ID ?? "true").trim() === "true",
 };
 
 const auth = {

@@ -34,6 +34,7 @@ import { DemandCapacityNotificationView } from '@views/DemandCapacityNotificatio
 import { MaterialListView } from '@views/MaterialListView';
 import { MaterialDetailView } from '@views/MaterialDetailView';
 import { ImportExportView } from '@views/ImportExportView';
+import { MasterDataView } from '@features/master-data/components/MasterDataView';
 
 export const router = createBrowserRouter([
     {
@@ -77,6 +78,10 @@ export const router = createBrowserRouter([
                     {
                         path: 'import',
                         element: <ImportExportView />,
+                    },
+                    {
+                        path: 'master-data',
+                        element: <MasterDataView />,
                     },
                 ],
             },

@@ -19,7 +19,15 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.management.openmbean.KeyAlreadyExistsException;
+
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingService;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -27,19 +35,19 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialServiceImpl;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 public class MaterialServiceTest {
 
@@ -53,6 +61,9 @@ public class MaterialServiceTest {
 
     @InjectMocks
     private MaterialServiceImpl materialService;
+
+    @Mock
+    VariablesService variablesService;
 
     private final static String semiconductorMatNbrCustomer = "MNR-7307-AU340474.002";
     private final static String semiconductorMatNbrSupplier = "MNR-8101-ID146955.001";
@@ -71,6 +82,7 @@ public class MaterialServiceTest {
 
         // When
         when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
+        when(materialRepository.findByMaterialNumberCx(material.getMaterialNumberCx())).thenReturn(List.of());
         when(materialRepository.save(material)).thenReturn(material);
 
         // Then
@@ -79,11 +91,12 @@ public class MaterialServiceTest {
         assertNotNull(createdMaterial);
         assertEquals(material, createdMaterial);
         verify(materialRepository, times(1)).findById(material.getOwnMaterialNumber());
+        verify(materialRepository, times(1)).findByMaterialNumberCx(material.getMaterialNumberCx());
         verify(materialRepository, times(1)).save(material);
     }
 
     @Test
-    void create_WhenMaterialExists_ReturnsNull() {
+    void create_WhenMaterialExists_ThrowsKeyAlreadyExistsException() {
         // Given
         Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material", new Date());
 
@@ -91,11 +104,102 @@ public class MaterialServiceTest {
         when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.of(material));
 
         // Then
-        Material createdMaterial = materialService.create(material);
+        KeyAlreadyExistsException exception =
+            assertThrows(KeyAlreadyExistsException.class, () -> materialService.create(material));
 
-        assertNull(createdMaterial);
+        assertEquals("Material with given ownMaterialNumber already exists.", exception.getMessage());
         verify(materialRepository, times(1)).findById(material.getOwnMaterialNumber());
         verify(materialRepository, never()).save(material);
+    }
+
+    @Test
+    void create_WhenCatenaXIdAlreadyExists_ThrowsKeyAlreadyExistsExceptionWithMessage() {
+        // Given
+        Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material", new Date());
+
+        when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
+        when(materialRepository.findByMaterialNumberCx(material.getMaterialNumberCx()))
+            .thenReturn(List.of(new Material())); // simulate existing material
+
+        // Then
+        KeyAlreadyExistsException exception =
+            assertThrows(KeyAlreadyExistsException.class, () -> materialService.create(material));
+
+        assertEquals("CatenaXId already exists.", exception.getMessage());
+        verify(materialRepository, times(1)).findById(material.getOwnMaterialNumber());
+        verify(materialRepository, times(1)).findByMaterialNumberCx(material.getMaterialNumberCx());
+        verify(materialRepository, never()).save(material);
+    }
+
+    @Test
+    void create_WhenCatenaXIdMissingAndAutoGenerationDisabled_ThrowsIllegalArgumentExceptionWithMessage() {
+        // Given
+        Material material = new Material(true, false, "MNR-123", null, "Test Material", new Date());
+
+        when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
+        when(variablesService.isGenerateMaterialCatenaXId()).thenReturn(false);
+
+        // Then
+        IllegalArgumentException exception =
+            assertThrows(IllegalArgumentException.class, () -> materialService.create(material));
+
+        assertEquals("Missing CatenaXId and auto-generation disabled.", exception.getMessage());
+        verify(materialRepository, times(1)).findById(material.getOwnMaterialNumber());
+        verify(variablesService, times(1)).isGenerateMaterialCatenaXId();
+        verify(materialRepository, never()).save(material);
+    }
+
+    @Test
+    void update_WhenMaterialDoesNotExist_ReturnsNull() {
+        // Given
+        Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material", new Date());
+
+        when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
+
+        // When
+        Material result = materialService.update(material);
+
+        // Then
+        assertNull(result);
+        verify(materialRepository, times(1)).findById(material.getOwnMaterialNumber());
+        verify(materialRepository, never()).save(material);
+    }
+
+    @Test
+    void update_WhenCatenaXIdChanged_ThrowsIllegalArgumentExceptionWithMessage() {
+        // Given
+        Material existing = new Material(true, false, "MNR-123", "old-uuid", "Existing Material", new Date());
+        Material toUpdate = new Material(true, false, "MNR-123", "new-uuid", "Updated Material", new Date());
+
+        when(materialRepository.findById(toUpdate.getOwnMaterialNumber())).thenReturn(Optional.of(existing));
+
+        // When / Then
+        IllegalArgumentException exception =
+            assertThrows(IllegalArgumentException.class, () -> materialService.update(toUpdate));
+
+        assertEquals("Changing the CatenaXId is not allowed.", exception.getMessage());
+        verify(materialRepository, times(1)).findById(toUpdate.getOwnMaterialNumber());
+        verify(materialRepository, never()).save(toUpdate);
+    }
+
+    @Test
+    void update_WhenProductFlagSetFromFalseToTrue_UpdatesDigitalTwinAndSaves() {
+        // Given
+        Material existing = new Material(true, false, "MNR-123", "uuid-value", "Existing Material", new Date()); // productFlag = false
+        Material toUpdate = new Material(true, true, "MNR-123", "uuid-value", "Updated Material", new Date());   // productFlag = true
+
+        when(materialRepository.findById(toUpdate.getOwnMaterialNumber())).thenReturn(Optional.of(existing));
+        when(materialRepository.save(toUpdate)).thenReturn(toUpdate);
+
+        // When
+        Material result = materialService.update(toUpdate);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(toUpdate, result);
+        verify(materialRepository, times(1)).findById(toUpdate.getOwnMaterialNumber());
+        verify(digitalTwinMappingService, times(1)).update(toUpdate);
+        verify(materialRepository, times(1)).save(toUpdate);
     }
 
     @Test

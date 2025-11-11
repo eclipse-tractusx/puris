@@ -14,6 +14,7 @@ The **need for configuration updates** is **marked bold**.
 ### Added
 
 - added detailed error messages for formulas in excel imports ([#1036](https://github.com/eclipse-tractusx/puris/pull/1036))
+- added Master data page for viewing all materials and option to add material as an admin ([#1044](https://github.com/eclipse-tractusx/puris/pull/1044))
 
 ### Changed
 
