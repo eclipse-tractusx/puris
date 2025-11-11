@@ -73,9 +73,10 @@ registry:
     runAsUser: 100
     allowPrivilegeEscalation: false
 postgresql:
-  image:
-    repository: bitnamilegacy/postgresql
-    tag: 15.4.0-debian-11-r45
+  # # not needed anymore since 0.9.0
+  # image:
+  #   repository: bitnamilegacy/postgresql
+  #   tag: 15.4.0-debian-11-r45
   primary:
     persistence:
       enabled: true
@@ -98,9 +99,10 @@ postgresql:
     # -- Secret contains passwords for username postgres.
     existingSecret: secret-dtr-postgres-init-customer
 keycloak:
-  image:
-    repository: bitnamilegacy/keycloak
-    tag: 22.0.3-debian-11-r14
+  # not needed anymore since 0.9.0
+  # image:
+  #   repository: bitnamilegacy/keycloak
+  #   tag: 22.0.3-debian-11-r14
   type: NodePort
   postgresql:
     image:
