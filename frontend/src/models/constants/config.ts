@@ -42,6 +42,7 @@ const app = {
     ENDPOINT_IMPORT_FILES: import.meta.env.VITE_ENDPOINT_IMPORT_FILES.trim() as string,
     ENDPOINT_ALL_MATERIALS: import.meta.env.VITE_ENDPOINT_ALL_MATERIALS.trim() as string,
     GENERATE_MATERIAL_CATENAX_ID: (import.meta.env.VITE_GENERATE_MATERIAL_CATENAX_ID ?? "true").trim() === "true",
+    ENDPOINT_ALL_PARTNERS: import.meta.env.VITE_ENDPOINT_ALL_PARTNERS.trim() as string,
 };
 
 const auth = {

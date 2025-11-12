@@ -47,11 +47,14 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import javax.management.openmbean.KeyAlreadyExistsException;
 
 @RestController
 @RequestMapping("partners")
@@ -83,37 +86,42 @@ public class PartnerController {
         @ApiResponse(responseCode = "400", description = "Request body was malformed, didn't meet the minimum constraints or wrongfully contained a UUID."),
         @ApiResponse(responseCode = "409", description = "The BPNL specified in the request body is already assigned. ")
     })
-    public ResponseEntity<?> createPartner(@RequestBody PartnerDto partnerDto) {
+    public PartnerDto createPartner(@RequestBody PartnerDto partnerDto) {
         if(!validator.validate(partnerDto).isEmpty()) {
             log.warn("Rejected invalid message body.");
-            return ResponseEntity.status(400).build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Partner.");
         }
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
         // Any given UUID is wrong by default since we're creating a new Partner entity
         if (partnerDto.getUuid() != null || partnerDto.getBpnl() == null) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Partner information misses BPNL or wrongly contains a UUID.");
         }
 
         // Check whether the given BPNL is already assigned
         Partner checkExistingPartner = partnerService.findByBpnl(partnerDto.getBpnl());
         if (checkExistingPartner != null) {
             // Cannot create Partner because BPNL is already assigned
-            return new ResponseEntity<>(HttpStatusCode.valueOf(409));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Partner already exists. Use PUT instead.");
         }
 
-        Partner partnerEntity;
+        Partner createdPartner;
         try {
-            partnerEntity = modelMapper.map(partnerDto, Partner.class);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+            Partner partnerEntity = modelMapper.map(partnerDto, Partner.class);
+            createdPartner = partnerService.create(partnerEntity);
+        } catch (KeyAlreadyExistsException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,"Partner already exists. Use PUT instead.");
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Partner is invalid.");
+        } catch (IllegalStateException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
-        partnerEntity = partnerService.create(partnerEntity);
-        if (partnerEntity == null) {
+        if (createdPartner == null) {
             // Creation failed due to unfulfilled constraints
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+            log.error("Could not create partner – service returned null");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Could not create partner.");
         }
-        return new ResponseEntity<>(HttpStatusCode.valueOf(200));
+        return modelMapper.map(createdPartner, PartnerDto.class);
     }
 
     @PreAuthorize("hasRole('PURIS_ADMIN')")
@@ -127,36 +135,44 @@ public class PartnerController {
         @ApiResponse(responseCode = "404", description = "Partner not found."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
-    public ResponseEntity<?> addAddress(
+    public PartnerDto addAddress(
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
         @RequestBody AddressDto address) {
         if(!validator.validate(address).isEmpty()) {
             log.warn("Rejected invalid message body.");
-            return ResponseEntity.status(400).build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Address.");
         }
         if(!bpnlPattern.matcher(partnerBpnl).matches()) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid partnerBpnl.");
         }
         Partner existingPartner = partnerService.findByBpnl(partnerBpnl);
         if (existingPartner == null) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(404));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Partner not found.");
         }
         Address newAddress;
         try {
             newAddress = modelMapper.map(address, Address.class);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(500));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Address is invalid.");
         }
         // Remove operation in case there is an update of an existing address
         existingPartner.getAddresses().remove(newAddress);
 
         existingPartner.getAddresses().add(newAddress);
-        existingPartner = partnerService.update(existingPartner);
-        if (existingPartner == null) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        Partner updatedPartner;
+        try {
+            updatedPartner = partnerService.update(existingPartner);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Partner is invalid.");
+        } catch (IllegalStateException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
-        return new ResponseEntity<>(HttpStatusCode.valueOf(200));
+        if (updatedPartner  == null) {
+            log.error("Could not update partner – service returned null");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Could not update partner.");
+        }
+        return modelMapper.map(updatedPartner, PartnerDto.class);
     }
 
     @PreAuthorize("hasRole('PURIS_ADMIN')")
@@ -170,37 +186,45 @@ public class PartnerController {
         @ApiResponse(responseCode = "404", description = "Partner not found."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
-    public ResponseEntity<?> addSite(
+    public PartnerDto addSite(
         @Parameter(description = "The unique BPNL that was assigned to that Partner.",
             example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
         @RequestBody SiteDto site) {
         if(!validator.validate(site).isEmpty()) {
             log.warn("Rejected invalid message body.");
-            return ResponseEntity.status(400).build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Site.");
         }
         if(!bpnlPattern.matcher(partnerBpnl).matches()) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid partnerBpnl.");
         }
         Partner existingPartner = partnerService.findByBpnl(partnerBpnl);
         if (existingPartner == null) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(404));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Partner not found.");
         }
         Site newSite;
         try {
             newSite = modelMapper.map(site, Site.class);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(500));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Site is invalid.");
         }
         // Remove operation in case there is an update of an existing site
         existingPartner.getSites().remove(newSite);
 
         existingPartner.getSites().add(newSite);
-        existingPartner = partnerService.update(existingPartner);
-        if (existingPartner == null) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        Partner updatedPartner;
+        try {
+            updatedPartner = partnerService.update(existingPartner);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Partner is invalid.");
+        } catch (IllegalStateException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+        if (updatedPartner == null) {
+            log.error("Could not update partner – service returned null");
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Could not update partner.");
         }
 
-        return new ResponseEntity<>(HttpStatusCode.valueOf(200));
+        return modelMapper.map(updatedPartner, PartnerDto.class);
     }
 
     @GetMapping

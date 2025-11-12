@@ -40,6 +40,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
+import javax.management.openmbean.KeyAlreadyExistsException;
+
 @Service
 @Slf4j
 public class PartnerServiceImpl implements PartnerService {
@@ -70,14 +72,19 @@ public class PartnerServiceImpl implements PartnerService {
     public Partner create(Partner partner) {
         if (!testConstraints(partner)) {
             log.error("Could not create Partner " + partner.getBpnl() + " because of constraint violation");
-            return null;
+            throw new IllegalArgumentException("Partner violates constraints.");
         }
-        if (partner.getUuid() == null && partnerRepository.findFirstByBpnl(partner.getBpnl()).isEmpty()) {
-            prepareApiAssetsForPartner(partner);
-            return partnerRepository.save(partner);
+        if (partner.getUuid() != null) {
+            log.error("Could not create Partner {} because UUID was provided for a new Partner", partner.getBpnl());
+            throw new IllegalArgumentException("UUID must not be set when creating a new Partner.");
         }
-        log.error("Could not create Partner " + partner.getBpnl() + " because it already existed before");
-        return null;
+        if (partnerRepository.findFirstByBpnl(partner.getBpnl()).isPresent()) {
+            log.error("Could not create Partner {} because BPNL already exists", partner.getBpnl());
+            throw new KeyAlreadyExistsException("Partner with given BPNL already exists.");
+        }
+        
+        prepareApiAssetsForPartner(partner);
+        return partnerRepository.save(partner);
     }
 
     @Override
@@ -183,15 +190,28 @@ public class PartnerServiceImpl implements PartnerService {
     public Partner update(Partner partner) {
         if (!testConstraints(partner)) {
             log.error("Could not update Partner " + partner.getBpnl() + " because of constraint violation");
-            return null;
+            throw new IllegalArgumentException("Partner violates constraints.");
         }
-        Optional<Partner> existingPartner =
-            partnerRepository.findById(partner.getUuid());
-        if (existingPartner.isPresent() && existingPartner.get().getBpnl().equals(partner.getBpnl())) {
-            return partnerRepository.save(partner);
+        if (partner.getUuid() == null) {
+            log.error("Could not update Partner {} because UUID is missing", partner.getBpnl());
+            throw new IllegalArgumentException("UUID must be set when updating a Partner.");
         }
-        log.error("Could not update Partner " + partner.getBpnl() + " because it didn't exist before");
-        return null;
+
+        Optional<Partner> existingPartnerOpt = partnerRepository.findById(partner.getUuid());
+        if (existingPartnerOpt.isEmpty()) {
+            log.error("Could not update Partner {} because it didn't exist before", partner.getBpnl());
+            throw new IllegalStateException("Partner does not exist.");
+        }
+
+        Partner existingPartner = existingPartnerOpt.get();
+        if (!existingPartner.getBpnl().equals(partner.getBpnl())) {
+            log.error(
+                "Could not update Partner {} because BPNL change is not allowed (existing: {}, new: {})",
+                partner.getBpnl(), existingPartner.getBpnl(), partner.getBpnl()
+            );
+            throw new IllegalArgumentException("BPNL cannot be changed for an existing Partner.");
+        }
+        return partnerRepository.save(partner);
     }
 
     @Override

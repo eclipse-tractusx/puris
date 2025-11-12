@@ -18,7 +18,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Button, Stack, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { Table } from '@catena-x/portal-shared-components';
 import { useTitle } from '@contexts/titleProvider';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
@@ -26,29 +26,140 @@ import { useCallback, useEffect, useState } from 'react';
 import { MaterialInformationModal } from './MaterialModal';
 import { Material } from '@models/types/data/stock';
 import { getAllMaterials, postMaterial } from '@services/materials-service';
+import { Partner } from '@models/types/edc/partner';
+import { getAllPartners, postPartner } from '@services/partners-service';
+import { Address } from '@models/types/edc/address';
+import { Site } from '@models/types/edc/site';
+import { PartnerCreateModal } from './PartnerModal';
+
+const createParnerColumns = () => {
+    return [
+        { headerName: 'Partner Name', field: 'name', flex: 1 },
+        { headerName: 'BPNL', field: 'bpnl', flex: 1.5 },
+        {
+            field: 'addresses',
+            headerName: 'Addresses',
+            flex: 2,
+            sortable: false,
+            renderCell: (data: { row: Partner }) => {
+                const { addresses } = data.row;
+                if (!addresses || addresses.length === 0) {
+                    return (
+                        <Box display="flex" alignItems="center" justifyContent="center" width="100%" height="100%">-</Box>
+                    );
+                }
+
+                return (
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        justifyContent="center"
+                        width="100%"
+                        height="100%"
+                        sx={{ whiteSpace: 'normal', wordBreak: 'break-word', py: 0.5 }}
+                    >
+                        {addresses.map((address) => (
+                            <Box key={address.bpna} sx={{ lineHeight: 1.2, mb: 0.75, '&:last-of-type': { mb: 0 } }} >
+                                <Box fontWeight={500}> {address.streetAndNumber}</Box>
+                                <Box>{address.zipCodeAndCity}</Box>
+                                <Box fontSize="0.75rem" sx={{ opacity: 0.7 }}>{address.country}</Box>
+                            </Box>
+                        ))}
+                    </Box>
+                );
+            },
+        },
+        {
+            field: 'sites',
+            headerName: 'Sites',
+            flex: 2,
+            sortable: false,
+            renderCell: (data: { row: Partner }) => {
+                const { sites } = data.row;
+                if (!sites || sites.length === 0) {
+                    return (
+                        <Box display="flex" alignItems="center" justifyContent="center" width="100%" height="100%">-</Box>
+                    );
+                }
+
+                return (
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        justifyContent="center"
+                        width="100%"
+                        height="100%"
+                        sx={{ whiteSpace: 'normal', wordBreak: 'break-word', py: 0.5 }}
+                    >
+                        {sites.map((site: Site) => (
+                            <Box
+                                key={site.bpns}
+                                sx={{ mb: 0.75, '&:last-of-type': { mb: 0 }}}
+                            >
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                    <Box fontWeight={600}>{site.name || site.bpns}</Box>
+                                    {site.name && (
+                                        <Box fontSize="0.75rem" sx={{ opacity: 0.7 }}>{site.bpns}</Box>
+                                    )}
+                                </Box>
+                                {site.addresses && site.addresses.length > 0 && (
+                                    <Box sx={{ mt: 0.25, pl: 1 }}>
+                                        {site.addresses.map((address: Address) => (
+                                            <Box key={address.bpna} sx={{ lineHeight: 1.2, mb: 0.5 }}>
+                                                <Box>{address.streetAndNumber}</Box>
+                                                <Box>{address.zipCodeAndCity}</Box>
+                                                <Box fontSize="0.75rem" sx={{ opacity: 0.7 }}>{address.country}</Box>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                )}
+                            </Box>
+                        ))}
+                    </Box>
+                );
+            },
+        }
+    ] as const;
+};
 
 export const MasterDataView = () => {
-    const [modalOpen, setModalOpen] = useState<boolean>(false);
-    const [materialz, setMaterialz] = useState<Material[]>([]);
+    const [materialModalOpen, setMaterialModalOpen] = useState<boolean>(false);
+    const [partnerModalOpen, setPartnerModalOpen] = useState<boolean>(false);
+    const [materials, setMaterials] = useState<Material[]>([]);
+    const [partners, setPartners] = useState<Partner[]>([]);
     const { setTitle } = useTitle();
 
     const fetchMaterials = useCallback(async () => {
-            try {
-                setMaterialz(await getAllMaterials());
-            } catch (error) {
-                console.error(error);
-            }
-        }, []);
+        try {
+            setMaterials(await getAllMaterials());
+        } catch (error) {
+            console.error(error);
+        }
+    }, []);
+
+    const fetchPartners = useCallback(async () => {
+        try {
+            setPartners(await getAllPartners());
+        } catch (error) {
+            console.error(error);
+        }
+    }, []);
 
     const handleSaveMaterial = async (material: Partial<Material>) => {
         await postMaterial(material);
         await fetchMaterials();
     };
 
+    const handleSavePartner = async (partner: Partial<Partner>) => {
+        await postPartner(partner);
+        await fetchPartners();
+    };
+
     useEffect(() => {
         setTitle('Materials');
         fetchMaterials();
-    }, [setTitle, fetchMaterials]);
+        fetchPartners();
+    }, [setTitle, fetchMaterials, fetchPartners]);
 
     const getDirectionLabel = (row: Material): string => {
         if (row.materialFlag && row.productFlag) return 'Bidirectional';
@@ -62,12 +173,12 @@ export const MasterDataView = () => {
             <Stack spacing={3}>
                 <ConfidentialBanner />
                 <Stack width='100%' direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="h6">Master data</Typography>
+                    <Typography variant="h6">Master data Materials</Typography>
                     {<Button variant="contained" sx={{ display: 'flex', gap: '.5rem' }} onClick={() => {
-                        setModalOpen(true);
+                        setMaterialModalOpen(true);
                     }}>
                         New Material
-                    </Button> }
+                    </Button>}
                 </Stack>
 
                 <Table
@@ -75,20 +186,44 @@ export const MasterDataView = () => {
                     columns={[
                         { headerName: 'Material Number', field: 'ownMaterialNumber', flex: 1 },
                         { headerName: 'Name', field: 'name', flex: 1.5 },
-                        { headerName: 'Global Asset Id', field: 'materialNumberCx', flex: 1},
+                        { headerName: 'Global Asset Id', field: 'materialNumberCx', flex: 1 },
                         { headerName: 'Direction', field: 'direction', flex: 1, valueGetter: (params) => getDirectionLabel(params.row) },
                     ]}
-                    rows={materialz ?? []}
+                    rows={materials ?? []}
                     getRowId={(row) => row.ownMaterialNumber}
                     noRowsMsg='No materials found'
+                />
+
+                <Stack width='100%' direction="row" justifyContent="space-between" alignItems="center">
+                    <Typography variant="h6">Master data Partners</Typography>
+                    {<Button variant="contained" sx={{ display: 'flex', gap: '.5rem' }} onClick={() => {
+                        setPartnerModalOpen(true);
+                    }}>
+                        New Partner
+                    </Button>}
+                </Stack>
+
+                <Table
+                    autoHeight
+                    title="Partners"
+                    columns={createParnerColumns()}
+                    rows={partners ?? []}
+                    getRowId={(row) => row.uuid}
+                    noRowsMsg='No partners found'
                 />
             </Stack>
 
             <MaterialInformationModal
-                open={modalOpen}
+                open={materialModalOpen}
                 material={null}
-                onClose={() => setModalOpen(false)}
+                onClose={() => setMaterialModalOpen(false)}
                 onSave={handleSaveMaterial}
+            />
+
+            <PartnerCreateModal
+                open={partnerModalOpen}
+                onClose={() => setPartnerModalOpen(false)}
+                onSave={handleSavePartner}
             />
         </>
     );
