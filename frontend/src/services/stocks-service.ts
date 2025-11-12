@@ -36,8 +36,24 @@ export const postStocks = async (type: StockType, stock: Partial<Stock>) => {
       'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
-  if(res.status >= 400) {
-      throw await res.json();
+  if (res.status >= 400) {
+    throw await res.json();
+  }
+  return res.json();
+}
+
+export const updateStocks = async (type: StockType, stock: Partial<Stock>) => {
+  const endpoint = type === 'product' ? config.app.ENDPOINT_PRODUCT_STOCKS : config.app.ENDPOINT_MATERIAL_STOCKS;
+  const res = await fetch(config.app.BACKEND_BASE_URL + endpoint, {
+    method: 'PUT',
+    body: JSON.stringify(stock),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
+    },
+  });
+  if (res.status >= 400) {
+    throw await res.json();
   }
   return res.json();
 }
@@ -52,8 +68,8 @@ export const putStocks = async (type: StockType, stock: Stock) => {
       'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
-  if(res.status >= 400) {
-      throw await res.json();
+  if (res.status >= 400) {
+    throw await res.json();
   }
   return res.json();
 }
@@ -67,10 +83,10 @@ export const deleteStocks = async (type: StockType, id: string) => {
       'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
-  if(res.status >= 400) {
-      throw await res.json();
+  if (res.status >= 400) {
+    throw await res.json();
   }
-  return ;
+  return;
 }
 
 export const requestReportedStocks = async (type: StockType, materialNumber: string | null) => {
@@ -85,17 +101,17 @@ export const requestReportedStocks = async (type: StockType, materialNumber: str
       'Authorization': `Bearer ${AuthenticationService.getToken()}`
     },
   });
-  if(res.status >= 400) {
-      throw await res.json();
+  if (res.status >= 400) {
+    throw await res.json();
   }
   return res.json();
 }
 
 export const scheduleErpUpdateStocks = async (type: StockType, partnerBpnl: string | null, materialNumber: string | null): Promise<void> => {
-    // assetType always ItemStock
-    const assetType = AssetType.ItemStock;
-    // infer product = OUTBOUND, material = INBOUND
-    const direction = type === 'product' ? DirectionType.Outbound : DirectionType.Inbound;
+  // assetType always ItemStock
+  const assetType = AssetType.ItemStock;
+  // infer product = OUTBOUND, material = INBOUND
+  const direction = type === 'product' ? DirectionType.Outbound : DirectionType.Inbound;
 
-    return scheduleErpUpdate(partnerBpnl, materialNumber, assetType, direction);
+  return scheduleErpUpdate(partnerBpnl, materialNumber, assetType, direction);
 }
