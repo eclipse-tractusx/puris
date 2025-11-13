@@ -20,9 +20,10 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.demand.logic.services;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.ReportedDemand;
 import org.eclipse.tractusx.puris.backend.demand.domain.repository.ReportedDemandRepository;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.stereotype.Service;
@@ -36,18 +37,13 @@ public class ReportedDemandService extends DemandService<ReportedDemand, Reporte
 
     @Override
     public boolean validate(ReportedDemand demand) {
-        Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
-        return 
-            demand.getMaterial() != null &&
-            demand.getPartner() != null &&
-            mprService.partnerOrdersProduct(demand.getMaterial(), demand.getPartner()) &&
-            demand.getQuantity() >= 0 &&
-            demand.getMeasurementUnit() != null && 
-            demand.getDay() != null && 
-            demand.getDemandCategoryCode() != null &&
-            demand.getDemandLocationBpns() != null &&
-            !demand.getPartner().equals(ownPartnerEntity) &&
-            (demand.getSupplierLocationBpns() == null || ownPartnerEntity.getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns()))) &&
-            demand.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns()));
+        return validateWithDetails(demand).isEmpty();
+    }
+
+    public List<String> validateWithDetails(ReportedDemand demand) {
+        List<String> validationErrors = new ArrayList<>();
+        validationErrors.addAll(basicValidation(demand));
+        validationErrors.addAll(validateReportedDemand(demand));
+        return validationErrors;
     }
 }

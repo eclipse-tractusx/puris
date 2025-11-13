@@ -27,7 +27,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.poi.ss.formula.FormulaParseException;
+import org.apache.poi.ss.formula.eval.NotImplementedFunctionException;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellReference;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.EventTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.IncotermEnumeration;
@@ -133,6 +136,10 @@ public class ExcelService {
     
     public DataImportResult readExcelFile(InputStream is) throws IOException {
         Workbook workbook = WorkbookFactory.create(is);
+        List<DataImportError> formulaErrors = evaluateWorkbook(workbook);
+        if (!formulaErrors.isEmpty()) {
+            return new DataImportResult("Excel formula evaluation failed.", formulaErrors);
+        }
         Sheet sheet = workbook.getSheetAt(0);
         var result = extractAndSaveData(sheet);
         workbook.close();
@@ -688,9 +695,23 @@ public class ExcelService {
     }
 
     private String getStringCellValue(Cell cell) {
-        return cell == null || cell.getCellType() == CellType.BLANK ? null : cell.getCellType() == CellType.STRING
-                ? cell.getStringCellValue().trim()
-                : String.valueOf(cell.getNumericCellValue()).trim();
+        if (cell == null || cell.getCellType() == CellType.BLANK) {
+            return null;
+        }
+        CellType type = cell.getCellType();
+        if (type == CellType.FORMULA) {
+            type = cell.getCachedFormulaResultType();
+        }
+        switch (type) {
+            case STRING:
+                return cell.getStringCellValue() == null ? null : cell.getStringCellValue().trim();
+            case NUMERIC:
+                return String.valueOf(cell.getNumericCellValue()).trim();
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return null;
+        }
     }
 
     private Date getDateCellValue(Cell cell) {
@@ -746,5 +767,73 @@ public class ExcelService {
             }
         }
         return true;
+    }
+
+    private List<DataImportError> evaluateWorkbook(Workbook workbook) {
+        List<DataImportError> errors = new ArrayList<>();
+        FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+        try {
+            evaluator.evaluateAll();
+            return errors;
+        } catch (RuntimeException bulkEx) {
+            for (int s = 0; s < workbook.getNumberOfSheets(); s++) {
+                Sheet sheet = workbook.getSheetAt(s);
+                String sheetName = sheet.getSheetName();
+                for (Row row : sheet) {
+                    for (Cell cell : row) {
+                        if (cell != null && cell.getCellType() == CellType.FORMULA) {
+                            try {
+                                evaluator.evaluateFormulaCell(cell);
+                            } catch (RuntimeException ex) {
+                                Throwable cause = ex.getCause();
+                                String cellRef = new CellReference(cell).formatAsString();
+                                int rowIndex = cell.getRowIndex() + 1;
+                                String formula = getFormulaAsString(cell);
+                                switch (cause) {
+                                    case NotImplementedFunctionException nie -> {
+                                        errors.add(new DataImportError(rowIndex, List.of(String.format("Unsupported function '%s' at Sheet '%s'!%s. Formula: =%s", nie.getFunctionName(), sheetName, cellRef, formula))));
+                                    }
+                                    case FormulaParseException fpe -> {
+                                        errors.add(new DataImportError(rowIndex, List.of(String.format("Formula parse error at Sheet '%s'!%s. Formula: =%s. Reason: %s", sheetName, cellRef, formula, nullToEmpty(fpe.getMessage())))));
+                                    }
+                                    default -> {
+                                        errors.add(new DataImportError(rowIndex, List.of(String.format("Error evaluating at Sheet '%s'!%s. Formula: =%s. Reason: %s", sheetName, cellRef, formula, nullToEmpty(ex.getMessage())))));
+                                    }
+                                }
+                                log.error("Excel import failed due to RuntimeException with cause:" + cause.toString());
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!errors.isEmpty()) {
+                String msg = "Excel formula evaluation failed. Likely unsupported function(s) or parse error(s) detected:\n" + errors;
+                log.warn(msg, bulkEx);
+                return errors;
+            } else {
+                String msg = "Excel formula evaluation failed, but the failing cell could not be pinpointed. ";
+                log.warn(msg);
+                errors.add(new DataImportError(0, List.of(msg)));
+                return errors;
+            }
+        }
+    }
+
+    /**
+     * Safely returns the formula of the given cell as a string.
+     *
+     * @param c the cell whose formula should be obtained
+     * @return the cell's formula, or "<unavailable>" if it cannot be read
+     */
+    private static String getFormulaAsString(Cell c) {
+        try { return c.getCellFormula(); } catch (Exception ignore) { return "<unavailable>"; }
+    }
+
+    /**
+     * Returns an empty string if the given value is null.
+     */
+    private static String nullToEmpty(String s) {
+        return (s == null) ? "" : s;
     }
 }

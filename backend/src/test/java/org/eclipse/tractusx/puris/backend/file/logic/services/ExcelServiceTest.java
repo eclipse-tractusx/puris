@@ -19,7 +19,21 @@
  */
 package org.eclipse.tractusx.puris.backend.file.logic.services;
 
-import org.apache.poi.ss.usermodel.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.OwnDeliveryService;
@@ -37,21 +51,19 @@ import org.eclipse.tractusx.puris.backend.production.logic.service.OwnProduction
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.time.Instant;
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 public class ExcelServiceTest {
 
@@ -81,7 +93,9 @@ public class ExcelServiceTest {
 
     private static final Material testMaterial;
     private static final Partner testPartner;
-    private static final Date testDate = Date.from(Instant.parse("2025-01-15T10:00:00Z"));
+    private static final String todaysDateFromFormula = "=TODAY()";
+    private static final String tomorrowsDateFromFormula = "=TODAY()+1";
+    private static final Date todaysDateFromParsing = Date.from(Instant.now());
     
     private static final String OWN_BPNS = "BPNS1234567890AB";
     private static final String OWN_BPNA = "BPNA1234567890AB";
@@ -135,27 +149,27 @@ public class ExcelServiceTest {
         SAMPLE_DEMAND_ROW = List.of(
             testMaterial.getOwnMaterialNumber(), testPartner.getBpnl(), 100.0, "unit:piece",
             OWN_BPNS, PARTNER_BPNS, "0001",
-            testDate, testDate
+            todaysDateFromFormula, todaysDateFromParsing
         );
 
         SAMPLE_PRODUCTION_ROW = List.of(
             testMaterial.getOwnMaterialNumber(), testPartner.getBpnl(), 100.0, "unit:piece",
-            OWN_BPNS, testDate, "ORDER-001",
-            "POS-001", "SUPPLY-001", testDate
+            OWN_BPNS, todaysDateFromFormula, "ORDER-001",
+            "POS-001", "SUPPLY-001", todaysDateFromParsing
         );
 
         SAMPLE_DELIVERY_ROW = List.of(
             testMaterial.getOwnMaterialNumber(), testPartner.getBpnl(), 100.0, "unit:piece",
             OWN_BPNS, OWN_BPNA, PARTNER_BPNS, PARTNER_BPNA,
-            "estimated-departure", testDate, "estimated-arrival", testDate,
+            "estimated-departure", todaysDateFromFormula, "estimated-arrival", tomorrowsDateFromFormula,
             "TRACK-001", "EXW", "ORDER-001", "POS-001",
-            "SUPPLY-001", testDate
+            "SUPPLY-001", todaysDateFromParsing
         );
 
         SAMPLE_STOCK_ROW = List.of(
             testMaterial.getOwnMaterialNumber(), testPartner.getBpnl(), 100.0, "unit:piece",
             OWN_BPNS, OWN_BPNA, "ORDER-001", "POS-001",
-            "SUPPLY-001", false, testDate, "INBOUND"
+            "SUPPLY-001", false, todaysDateFromParsing, "INBOUND"
         );
     }
 
@@ -508,7 +522,7 @@ public class ExcelServiceTest {
         List<Object> dataValues = List.of(
             testMaterial.getOwnMaterialNumber(), testPartner.getBpnl(), 100.0, "invalid-unit",
             OWN_BPNS, PARTNER_BPNS, "0001",
-            testDate, testDate
+            todaysDateFromFormula, todaysDateFromFormula
         );
         
         return createExcelFile("Demands", DEMAND_HEADERS, List.of(dataValues));
@@ -518,7 +532,7 @@ public class ExcelServiceTest {
         List<Object> dataValues = List.of(
             testMaterial.getOwnMaterialNumber(), testPartner.getBpnl(), 100.0, "unit:piece",
             OWN_BPNS, PARTNER_BPNS, "invalid-category",
-            testDate, testDate
+            todaysDateFromFormula, todaysDateFromFormula
         );
         
         return createExcelFile("Demands", DEMAND_HEADERS, List.of(dataValues));
@@ -528,9 +542,9 @@ public class ExcelServiceTest {
         List<Object> dataValues = List.of(
             testMaterial.getOwnMaterialNumber(), testPartner.getBpnl(), 100.0, "unit:piece",
             OWN_BPNS, OWN_BPNA, PARTNER_BPNS, PARTNER_BPNA,
-            "estimated-departure", testDate, "estimated-arrival", testDate,
+            "estimated-departure", todaysDateFromFormula, "estimated-arrival", todaysDateFromFormula,
             "TRACK-001", "INVALID-INCOTERM", "ORDER-001", "POS-001",
-            "SUPPLY-001", testDate
+            "SUPPLY-001", todaysDateFromFormula
         );
         
         return createExcelFile("Deliveries", DELIVERY_HEADERS, List.of(dataValues));
@@ -540,9 +554,9 @@ public class ExcelServiceTest {
         List<Object> dataValues = List.of(
             testMaterial.getOwnMaterialNumber(), testPartner.getBpnl(), 100.0, "unit:piece",
             OWN_BPNS, OWN_BPNA, PARTNER_BPNS, PARTNER_BPNA,
-            "invalid-departure-type", testDate, "estimated-arrival", testDate,
+            "invalid-departure-type", todaysDateFromFormula, "estimated-arrival", todaysDateFromFormula,
             "TRACK-001", "EXW", "ORDER-001", "POS-001",
-            "SUPPLY-001", testDate
+            "SUPPLY-001", todaysDateFromFormula
         );
         
         return createExcelFile("Deliveries", DELIVERY_HEADERS, List.of(dataValues));
@@ -552,9 +566,9 @@ public class ExcelServiceTest {
         List<Object> dataValues = List.of(
             testMaterial.getOwnMaterialNumber(), testPartner.getBpnl(), 100.0, "unit:piece",
             OWN_BPNS, OWN_BPNA, PARTNER_BPNS, PARTNER_BPNA,
-            "estimated-departure", testDate, "invalid-arrival-type", testDate,
+            "estimated-departure", todaysDateFromFormula, "invalid-arrival-type", todaysDateFromFormula,
             "TRACK-001", "EXW", "ORDER-001", "POS-001",
-            "SUPPLY-001", testDate
+            "SUPPLY-001", todaysDateFromFormula
         );
         
         return createExcelFile("Deliveries", DELIVERY_HEADERS, List.of(dataValues));
@@ -564,7 +578,7 @@ public class ExcelServiceTest {
         List<Object> dataValues = List.of(
             testMaterial.getOwnMaterialNumber(), testPartner.getBpnl(), 100.0, "unit:piece",
             OWN_BPNS, OWN_BPNA, "ORDER-001", "POS-001",
-            "SUPPLY-001", false, testDate, "invalid-direction"
+            "SUPPLY-001", false, todaysDateFromFormula, "invalid-direction"
         );
         
         return createExcelFile("Stocks", STOCK_HEADERS, List.of(dataValues));
@@ -583,6 +597,7 @@ public class ExcelServiceTest {
 
     private ByteArrayInputStream createExcelFile(String sheetName, List<String> headers, List<List<Object>> rows) throws IOException {
         Workbook workbook = new XSSFWorkbook();
+        FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
         Sheet sheet = workbook.createSheet(sheetName);
         
         Row headerRow = sheet.createRow(0);
@@ -598,7 +613,12 @@ public class ExcelServiceTest {
                 Object value = rowData.get(colIdx);
                 
                 if (value instanceof String) {
-                    cell.setCellValue((String) value);
+                    if (((String) value).startsWith("=")) {
+                        cell.setCellFormula(((String) value).substring(1));
+                        evaluator.evaluateFormulaCell(cell);
+                    } else {
+                        cell.setCellValue((String) value);
+                    }
                 } else if (value instanceof Double) {
                     cell.setCellValue((Double) value);
                 } else if (value instanceof Boolean) {
