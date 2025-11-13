@@ -31,19 +31,7 @@ npm install
 
 ### Build PURIS
 
-Same as for the extended run build PURIS manually.
-
-```shell
-cd ../backend
-docker build -t puris-backend:dev .
-
-cd ../frontend
-docker build -t puris-frontend:dev .
-
-cd ../local
-```
-
-Then use the deployment script to fulfill common scenarios:
+Use the deployment script to run build PURIS and fulfill common scenarios:
 
 ```shell
 cd local
@@ -70,6 +58,9 @@ sh deploy.sh -i
 
 # redeploy puris but keep infrastructure and show logs of EDC, DTR, PURIS
 sh deploy.sh -l
+
+# Preserve existing images (skip backend/frontend rebuild)
+sh deploy.sh -p
 
 
 ```
