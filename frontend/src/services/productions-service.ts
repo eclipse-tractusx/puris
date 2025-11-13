@@ -39,7 +39,7 @@ export const postProductionRange = async (range: Partial<Production>[]) => {
 }
 
 export const updateProductionRange = async (range: Partial<Production>[]) => {
-  const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION_RANGE, {
+  const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION, {
     method: 'PUT',
     body: JSON.stringify(range),
     headers: {

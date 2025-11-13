@@ -2,6 +2,7 @@
 Copyright (c) 2024 Volkswagen AG
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2025 IAV
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -168,6 +169,11 @@ export const PlannedProductionModal = ({ open, onClose, onRemove, production, pr
             try {
                 await deleteProduction(row.uuid);
                 onRemove?.(row.uuid);
+                 notify({
+                    title: 'Production deleted',
+                    description: 'The production record was successfully deleted.',
+                    severity: 'success',
+                });
             } catch (error) {
                 notify({
                     title: 'Error deleting production',

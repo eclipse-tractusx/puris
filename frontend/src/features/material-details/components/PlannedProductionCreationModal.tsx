@@ -1,7 +1,6 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Contributors to the Eclipse Foundation
-Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2025 IAV
+Copyright (c) 2025 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -90,8 +89,8 @@ export const PlannedProductionCreationModal = ({
 
         setFormError(false);
         const method = mode === 'create' ? postProductionRange : updateProductionRange;
-        const successLabel = mode === 'create' ? 'Production Created' : 'Production Updaated';
-        const successDescription = mode === 'create' ? 'The Production has been saved successfully' : 'The Production has been successfully updated';
+        const successLabel = mode === 'create' ? 'Production Created' : 'Production Updated';
+        const successDescription = mode === 'create' ? 'The Production has been added' : 'The Production has been successfully updated';
 
         method([{
             ...temporaryProduction,
@@ -108,7 +107,7 @@ export const PlannedProductionCreationModal = ({
             .catch((error) => {
                 notify({
                     title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                    description: error.status === 409 ? 'Date conflicting with another Production' : error.error,
+                    description: error.status === 409 ? 'Production conflicting with an existing one' : error.error,
                     severity: 'error',
                 });
             })
