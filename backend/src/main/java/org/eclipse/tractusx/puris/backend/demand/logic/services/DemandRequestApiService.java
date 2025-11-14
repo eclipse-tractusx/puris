@@ -28,6 +28,8 @@ import org.eclipse.tractusx.puris.backend.demand.logic.adapter.ShortTermMaterial
 import org.eclipse.tractusx.puris.backend.demand.logic.dto.demandsamm.ShortTermMaterialDemand;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshError;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -35,6 +37,8 @@ import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.Directio
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -93,7 +97,8 @@ public class DemandRequestApiService {
         return sammMapper.ownDemandToSamm(currentDemands, partner, material);
     }
 
-    public void doReportedDemandRequest(Partner partner, Material material) {
+    public RefreshResult doReportedDemandRequest(Partner partner, Material material) {
+        List<RefreshError> errors = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
             if (mpr.getPartnerCXNumber() == null) {
@@ -103,14 +108,32 @@ public class DemandRequestApiService {
             var data = edcAdapterService.doSubmodelRequest(AssetType.DEMAND_SUBMODEL, mpr, DirectionCharacteristic.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ShortTermMaterialDemand.class);
             var demands = sammMapper.sammToReportedDemand(samm, partner);
+            
             for (var demand : demands) {
                 var demandPartner = demand.getPartner();
                 var demandMaterial = demand.getMaterial();
                 if (!partner.equals(demandPartner) || !material.equals(demandMaterial)) {
-                    log.warn("Received inconsistent data from " + partner.getBpnl() + "\n" + demands);
-                    return;
+                    errors.add(new RefreshError(List.of("Received inconsistent data: partner or material mismatch (expected bpnl=%s, ownMaterialNumber=%s; received bpnl=%s, ownMaterialNumber=%s)".formatted(
+                        partner.getBpnl(),
+                        material.getOwnMaterialNumber(),
+                        demandPartner.getBpnl(),
+                        demandMaterial.getOwnMaterialNumber()
+                    ))));
+                    continue;
+                }
+
+                List<String> validationErrors = reportedDemandService.validateWithDetails(demand);
+                if (!validationErrors.isEmpty()) {
+                    errors.add(new RefreshError(validationErrors));
                 }
             }
+
+            if (!errors.isEmpty()) {
+                log.warn("Validation errors found for ReportedDemand request from partner {} for material {}: {}", 
+                        partner.getBpnl(), material.getOwnMaterialNumber(), errors);
+                return new RefreshResult("Validation failed for reported demands", errors);
+            }
+
             // delete older data:
             var oldDemands = reportedDemandService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
             for (var oldDemand : oldDemands) {
@@ -119,11 +142,14 @@ public class DemandRequestApiService {
             for (var newDemand : demands) {
                 reportedDemandService.create(newDemand);
             }
-            log.info("Updated ReportedDemand for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
-
-            materialService.updateTimestamp(material.getOwnMaterialNumber());
+            log.info("Successfully updated ReportedDemand for {} and partner {}", 
+                material.getOwnMaterialNumber(), partner.getBpnl());
+                materialService.updateTimestamp(material.getOwnMaterialNumber());
+            return new RefreshResult("Successfully processed all reported demands", errors);
         } catch (Exception e) {
             log.error("Error in ReportedDemandRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
+            errors.add(new RefreshError(List.of("System error: " + e.getMessage())));
+            return new RefreshResult("Error in ReportedDemandRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), errors);
         }
     }
 }

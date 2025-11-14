@@ -21,6 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -61,21 +62,13 @@ public class ReportedProductionService extends ProductionService<ReportedProduct
     }
 
     public boolean validate(ReportedProduction production) {
-        return 
-            production.getQuantity() >= 0 &&
-            production.getMeasurementUnit() != null && 
-            production.getEstimatedTimeOfCompletion() != null && 
-            production.getMaterial() != null &&
-            production.getPartner() != null &&
-            production.getProductionSiteBpns() != null &&
-            production.getPartner().getSites().stream().anyMatch(site -> site.getBpns().equals(production.getProductionSiteBpns())) &&
-            ((
-                production.getCustomerOrderNumber() != null && 
-                production.getCustomerOrderPositionNumber() != null
-            ) || (
-                production.getCustomerOrderNumber() == null && 
-                production.getCustomerOrderPositionNumber() == null && 
-                production.getSupplierOrderNumber() == null
-            ));
+        return validateWithDetails(production).isEmpty();
+    }
+
+    public List<String> validateWithDetails(ReportedProduction production) {
+        List<String> validationErrors = new ArrayList<>();
+        validationErrors.addAll(basicValidation(production));
+        validationErrors.addAll(validateReportedProduction(production));
+        return validationErrors;
     }
 }
