@@ -99,7 +99,7 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                                           'production',
                                                           { estimatedTimeOfCompletion: date },
                                                           summary.dailySummaries[date.toLocaleDateString()]?.primaryValues as Production[],
-                                                          'edit',
+                                                          'view',
                                                           DirectionType.Outbound
                                                       )
                                             }

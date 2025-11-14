@@ -33,6 +33,7 @@ import { Material, Stock, StockType } from '@models/types/data/stock';
 import { DirectionType } from '@models/types/erp/directionType';
 import { StockCreationModal } from '@features/material-details/components/StockCreationModal';
 import { DeliveryCreationModal } from '@features/material-details/components/DeliveryInformationCreationModal';
+import { PlannedProductionCreationModal } from '@features/material-details/components/PlannedProductionCreationModal';
 
 export type DataCategory = 'production' | 'demand' | 'stock' | 'delivery';
 
@@ -93,6 +94,7 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
 
     const openProductionDialog = useCallback(
         (p: Partial<Production>, mode: ModalMode, list: Production[]) => {
+            const optionName = mode === 'view' ? 'viewProductionDialogOptions' : 'editProductionDialogOptions';
             p.material ??= {
                 materialFlag: true,
                 productFlag: false,
@@ -104,7 +106,7 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
             };
             dispatch({ type: 'production', payload: p });
             dispatch({ type: 'productions', payload: list });
-            dispatch({ type: 'productionDialogOptions', payload: { open: true, mode } });
+            dispatch({ type: optionName, payload: { open: true, mode } });
         },
         [material?.name, materialNumber]
     );
@@ -161,7 +163,7 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
     return (
         <>
             <dataModalContext.Provider value={{ openDialog, addOnSaveListener, removeOnSaveListener }}>{children}
-                <DemandCategoryModal
+            <DemandCategoryModal
                     {...state.demandDialogOptions}
                     onClose={() => dispatch({ type: 'demandDialogOptions', payload: { open: false, mode: state.demandDialogOptions.mode } })}
                     onSave={() => onSave('demand')}
@@ -174,8 +176,8 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
                     demands={state.demands}
                 />
                 <PlannedProductionModal
-                    {...state.productionDialogOptions}
-                    onClose={() => dispatch({ type: 'productionDialogOptions', payload: { open: false, mode: state.productionDialogOptions.mode } })}
+                    {...state.viewProductionDialogOptions}
+                    onClose={() => dispatch({ type: 'viewProductionDialogOptions', payload: { ...state.viewProductionDialogOptions, open: false } })}
                     onSave={() => onSave('production')}
                     onRemove={(deletedUuid: string) => {
                         const updatedProductions = state.productions.filter(p => p.uuid !== deletedUuid);
@@ -184,6 +186,16 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
                     }}
                     production={state.production}
                     productions={state.productions}
+                />
+                <PlannedProductionCreationModal
+                    {...state.editProductionDialogOptions}
+                    onClose={() => dispatch({ type: 'editProductionDialogOptions', payload: { ...state.editProductionDialogOptions, open: false } })}
+                    onSave={(production) => {
+                        const updatedProductions = state.productions.map(d => d.uuid === production?.uuid ? production! : d);
+                        dispatch({ type: 'productions', payload: updatedProductions });
+                        onSave('production');
+                    }}
+                    production={state.production}
                 />
                 <DeliveryInformationModal
                     {...state.viewDeliveryDialogOptions}
@@ -247,7 +259,8 @@ type ModalState = {
     editDeliveryDialogOptions: { open: boolean; direction: DirectionType; site: Site | null };
     viewDeliveryDialogOptions: { open: boolean; direction: DirectionType; site: Site | null };
     demandDialogOptions: { open: boolean; mode: ModalMode };
-    productionDialogOptions: { open: boolean; mode: ModalMode };
+    viewProductionDialogOptions: { open: boolean };
+    editProductionDialogOptions: { open: boolean };
     viewStockDialogOptions: { open: boolean; stockType: StockType };
     editStockDialogOptions: { open: boolean; stockType: StockType};
     delivery: Delivery | null;
@@ -273,7 +286,8 @@ const initialState: ModalState = {
     editDeliveryDialogOptions: { open: false, direction: DirectionType.Inbound, site: null },
     viewDeliveryDialogOptions: { open: false, direction: DirectionType.Inbound, site: null },
     demandDialogOptions: { open: false, mode: 'edit' },
-    productionDialogOptions: { open: false, mode: 'edit' },
+    viewProductionDialogOptions: { open: false },
+    editProductionDialogOptions: { open: false },
     viewStockDialogOptions: { open: false, stockType: 'material' },
     editStockDialogOptions: { open: false, stockType: 'material' },
     delivery: null,
