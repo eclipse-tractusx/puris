@@ -39,6 +39,22 @@ export const postDemand = async (demand: Partial<Demand>) => {
   return res.json();
 }
 
+export const putDemand = async (demand: Partial<Demand>) => {
+  const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_DEMAND, {
+    method: 'PUT',
+    body: JSON.stringify(demand),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
+    },
+  });
+  if(res.status >= 400) {
+    const error = await res.json();
+    throw error;
+  }
+  return res.json();
+}
+
 export const deleteDemand = async (id: UUID) => {
   const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_DEMAND + `/${id}`, {
     method: 'DELETE',

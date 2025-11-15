@@ -19,7 +19,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input, Table } from '@catena-x/portal-shared-components';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Stock, StockType } from '@models/types/data/stock';
@@ -32,7 +32,9 @@ import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
-import { deleteStocks, postStocks } from '@services/stocks-service';
+import { deleteStocks, postStocks, putStocks } from '@services/stocks-service';
+import { ConfirmUpdateDialog, ConfirmUpdateHandle } from './UpdateModal';
+import { UUID } from 'crypto';
 
 const createStockColumns = (handleDelete?: (row: Stock) => void) => {
     const columns = [
@@ -48,16 +50,16 @@ const createStockColumns = (handleDelete?: (row: Stock) => void) => {
             ),
         },
         {
-          field: 'stockLocationBpns',
-          headerName: 'Site',
-          headerAlign: 'center',
-          flex: 2,
-          renderCell: (data: { row: Stock }) => (
-              <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                  {data.row.stockLocationBpns}
-              </Box>
-          ),
-      },
+            field: 'stockLocationBpns',
+            headerName: 'Site',
+            headerAlign: 'center',
+            flex: 2,
+            renderCell: (data: { row: Stock }) => (
+                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                    {data.row.stockLocationBpns}
+                </Box>
+            ),
+        },
         {
             field: 'partner',
             headerName: 'Partner',
@@ -162,6 +164,7 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
     const { sites } = useSites();
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
+    const confirmRef = useRef<ConfirmUpdateHandle>(null);
 
     const handleSaveClick = () => {
         temporaryStock.customerOrderNumber ||= undefined;
@@ -180,15 +183,51 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
                     description: 'The Stock has been saved successfully',
                     severity: 'success',
                 });
+                onClose();
             })
-            .catch((error) => {
-                notify({
-                    title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                    description: error.status === 409 ? 'Date conflicting with another Stock' : error.error,
-                    severity: 'error',
-                });
-            })
-            .finally(onClose);
+            .catch(async (error) => {
+                if (error?.status === 409) {
+                    const existing: UUID | undefined = error?.existingId ?? undefined;
+                    if (!existing) {
+                        notify({
+                            title: 'Conflict',
+                            description: 'Date conflicting with another Stock',
+                            severity: 'error',
+                        });
+                        return;
+                    }
+                    const message =
+                        `There is already a stock matching your criteria with a quantity ` +
+                        `${error?.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === error?.measurementUnit)?.value ?? error?.measurementUnit}. ` +
+                        `Do you want to update to ${temporaryStock.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === temporaryStock.measurementUnit)?.value ?? temporaryStock.measurementUnit}?`;
+                    const confirmed = await confirmRef.current?.open({ message });
+                    if (confirmed) {
+                        try {
+                            await putStocks(stockType, {...temporaryStock, uuid: existing});
+                            onSave();
+                            notify({
+                                title: 'Stock Updated',
+                                description: 'The stock has been updated successfully',
+                                severity: 'success'
+                            });
+                            onClose();
+                        }
+                        catch (e: any) {
+                            notify({
+                                title: 'Error updating',
+                                description: e?.error ?? 'Unexpected error', severity: 'error'
+                            });
+                        }
+                    }
+                } else {
+                    notify({
+                        title: 'Error requesting update',
+                        description: error.error,
+                        severity: 'error',
+                    });
+                }
+
+            });
     };
     const handleDelete = async (row: Stock) => {
         if (row.uuid) {
@@ -241,10 +280,10 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
                                         error={formError}
                                         isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
                                         onChange={(_, value) =>
-                                            setTemporaryStock({ 
+                                            setTemporaryStock({
                                                 ...temporaryStock,
                                                 stockLocationBpns: value?.bpns ?? undefined,
-                                                stockLocationBpna: value ? temporaryStock.stockLocationBpna : undefined 
+                                                stockLocationBpna: value ? temporaryStock.stockLocationBpna : undefined
                                             })
                                         }
                                         value={sites?.find((s) => s.bpns === temporaryStock.stockLocationBpns) ?? null}
@@ -263,8 +302,8 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
                                         onChange={(_, value) =>
                                             setTemporaryStock({ ...temporaryStock, stockLocationBpna: value?.bpna ?? undefined })
                                         }
-                                        value={sites?.find(site => 
-                                            site.bpns === temporaryStock.stockLocationBpns)?.addresses?.find((a) => 
+                                        value={sites?.find(site =>
+                                            site.bpns === temporaryStock.stockLocationBpns)?.addresses?.find((a) =>
                                                 a.bpna === temporaryStock.stockLocationBpna) ?? null
                                         }
                                         label="Stock Address*"
@@ -297,9 +336,9 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
                                         value={
                                             temporaryStock.measurementUnit
                                                 ? {
-                                                      key: temporaryStock.measurementUnit,
-                                                      value: getUnitOfMeasurement(temporaryStock.measurementUnit),
-                                                  }
+                                                    key: temporaryStock.measurementUnit,
+                                                    value: getUnitOfMeasurement(temporaryStock.measurementUnit),
+                                                }
                                                 : null
                                         }
                                         options={UNITS_OF_MEASUREMENT}
@@ -393,6 +432,7 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
                     </Box>
                 </Stack>
             </Dialog>
+            <ConfirmUpdateDialog ref={confirmRef} />
         </>
     );
 };
