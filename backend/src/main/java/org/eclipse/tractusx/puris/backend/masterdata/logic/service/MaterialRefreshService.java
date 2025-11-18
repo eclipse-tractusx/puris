@@ -22,12 +22,16 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.DeliveryRequestApiService;
 import org.eclipse.tractusx.puris.backend.demand.logic.services.DemandRequestApiService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.production.logic.service.ProductionRequestApiService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockRequestApiService;
@@ -65,6 +69,9 @@ public class MaterialRefreshService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     public void refreshPartnerData(String ownMaterialNumber) {
         var material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         var customers = partnerService.findAllCustomerPartnersForMaterialId(ownMaterialNumber);
@@ -73,54 +80,83 @@ public class MaterialRefreshService {
         allPartners.addAll(suppliers);
         var numberOfTasks = (customers.size() + suppliers.size()) * 3 + allPartners.size();
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfTasks);
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        List<CompletableFuture<RefreshResult>> futures = new ArrayList<>();
+        // customers
         customers.forEach(customer -> {
-            futures.add(CompletableFuture.runAsync(
+            futures.add(CompletableFuture.supplyAsync(
                     () -> demandRequestApiService.doReportedDemandRequest(customer, material),
                     executorService));
             futures.add(
-                    CompletableFuture.runAsync(
+                    CompletableFuture.supplyAsync(
                             () -> itemStockRequestApiService
                                     .doItemStockSubmodelReportedProductItemStockRequest(
                                             customer, material),
                             executorService));
             futures.add(
-                    CompletableFuture.runAsync(
+                    CompletableFuture.supplyAsync(
                             () -> daysOfSupplyRequestApiService
                                     .doReportedDaysOfSupplyRequest(customer,
                                             material,
                                             DirectionCharacteristic.INBOUND),
                             executorService));
         });
+        // suppliers
         suppliers.forEach(supplier -> {
-            futures.add(CompletableFuture.runAsync(
+            futures.add(CompletableFuture.supplyAsync(
                     () -> productionRequestApiService.doReportedProductionRequest(supplier,
                             material),
                     executorService));
             futures.add(
-                    CompletableFuture.runAsync(
+                    CompletableFuture.supplyAsync(
                             () -> itemStockRequestApiService
                                     .doItemStockSubmodelReportedMaterialItemStockRequest(
                                             supplier, material),
                             executorService));
             futures.add(
-                    CompletableFuture.runAsync(
+                    CompletableFuture.supplyAsync(
                             () -> daysOfSupplyRequestApiService
                                     .doReportedDaysOfSupplyRequest(supplier,
                                             material,
                                             DirectionCharacteristic.OUTBOUND),
                             executorService));
         });
+        // deliveries
         allPartners.forEach(partner -> {
-            futures.add(CompletableFuture.runAsync(
+            futures.add(CompletableFuture.supplyAsync(
                     () -> deliveryRequestApiService.doReportedDeliveryRequest(partner, material),
                     executorService));
         });
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() -> {
-            var topic = "/topic/material/" + material.getOwnMaterialNumber();
-            messagingTemplate.convertAndSend(topic, "SUCCESS");
-            log.info("Refreshed Material data for " + material.getOwnMaterialNumber());
-        });
+        
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+            .thenApply(v -> futures.stream().map(CompletableFuture::join).toList())
+            .thenAccept(results -> {
+                var allErrors = results.stream()
+                        .filter(r -> r.getErrors() != null && !r.getErrors().isEmpty())
+                        .map(r -> Map.of(
+                        "message", r.getMessage(),
+                        "errors", r.getErrors()
+                        ))
+                        .toList();
+
+                var topic = "/topic/material/" + material.getOwnMaterialNumber();
+                if (allErrors.isEmpty()) {
+                    messagingTemplate.convertAndSend(topic, "SUCCESS");
+                    log.info("Successfully refreshed material {}", material.getOwnMaterialNumber());
+                } else {
+                        try {
+                                var json = objectMapper.writeValueAsString(allErrors);
+                                messagingTemplate.convertAndSend(topic, json);
+                                log.warn("Refresh completed with errors for material {}: {}",
+                                        material.getOwnMaterialNumber(), json);
+                        } catch (Exception e) {
+                                messagingTemplate.convertAndSend(topic, "[{\"errors\":[\"Serialization error: "
+                                        + e.getMessage().replace("\"","\\\"") + "\"]}]");
+                                log.error("Failed to serialize error payload for material {}", 
+                                        material.getOwnMaterialNumber(), e);
+                        }
+                }
+            });
+
         executorService.shutdown();
     }
 }
