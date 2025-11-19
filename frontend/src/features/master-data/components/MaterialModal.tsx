@@ -168,7 +168,7 @@ export const MaterialInformationModal = ({
                                 onChange={(event) =>
                                     setTemporaryMaterial({
                                         ...temporaryMaterial,
-                                        materialNumberCx: event.target.value,
+                                        materialNumberCx: event.target.value.trim() || null,
                                     })
                                 }
                                 placeholder="Enter global Asset Id"
