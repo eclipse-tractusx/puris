@@ -21,7 +21,15 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.Date;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.management.openmbean.KeyAlreadyExistsException;
+
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DigitalTwinMappingService;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
@@ -31,10 +39,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialR
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -55,31 +60,34 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Override
     public Material create(Material material) {
+        if (materialRepository.findById(material.getOwnMaterialNumber()).isPresent()) {
+            log.error("Could not create material {} because it already exists", material.getOwnMaterialNumber());
+            throw new KeyAlreadyExistsException("Material with given ownMaterialNumber already exists.");
+        }
+
         if (material.getMaterialNumberCx() == null) {
             if (variablesService.isGenerateMaterialCatenaXId()) {
                 UUID uuid;
                 do {
                     uuid = UUID.randomUUID();
                 } while (!materialRepository.findByMaterialNumberCx(uuid.toString()).isEmpty());
-                log.info("Auto-generated CX Id for " + material.getOwnMaterialNumber() + " number: " + uuid);
+                log.info("Auto-generated CX Id for {} number: {}", material.getOwnMaterialNumber(), uuid);
                 material.setMaterialNumberCx(uuid.toString());
             } else {
-                log.error("Could not create material " + material.getOwnMaterialNumber() + " because of missing CatenaXId");
-                return null;
+                log.error("Could not create material {} because of missing CatenaXId", material.getOwnMaterialNumber());
+                throw new IllegalArgumentException("Missing CatenaXId and auto-generation disabled.");
             }
         } else {
             if (!materialRepository.findByMaterialNumberCx(material.getMaterialNumberCx()).isEmpty()) {
-                log.error("Could not create material " + material.getOwnMaterialNumber() + " because CatenaXId already exists: " + material.getMaterialNumberCx());
+                log.error("Could not create material {} because CatenaXId already exists: {}",
+                        material.getOwnMaterialNumber(), material.getMaterialNumberCx());
+                throw new KeyAlreadyExistsException("CatenaXId already exists.");
             }
         }
-        var searchResult = materialRepository.findById(material.getOwnMaterialNumber());
-        if (searchResult.isEmpty()) {
-            material.setLastUpdatedOn(new Date());
-            dtmService.create(material);
-            return materialRepository.save(material);
-        }
-        log.error("Could not create material " + material.getOwnMaterialNumber() + " because it already exists");
-        return null;
+
+        material.setLastUpdatedOn(new Date());
+        dtmService.create(material);
+        return materialRepository.save(material);
     }
 
 
@@ -87,20 +95,25 @@ public class MaterialServiceImpl implements MaterialService {
     public Material update(Material material) {
         Optional<Material> existingMaterial =
             materialRepository.findById(material.getOwnMaterialNumber());
-        if (existingMaterial.isPresent()) {
-            var foundMaterial = existingMaterial.get();
-            if (!foundMaterial.getMaterialNumberCx().equals(material.getMaterialNumberCx())) {
-                log.error("Could not update material " + material.getOwnMaterialNumber() + " because changing the CatenaXId is not allowed");
-            }
 
-            if (!foundMaterial.isProductFlag() && material.isProductFlag()) {
-                dtmService.update(material);
-            }
-
-            return materialRepository.save(material);
+        if (existingMaterial.isEmpty()) {
+            log.error("Could not update material {} because it didn't exist before",
+                    material.getOwnMaterialNumber());
+            throw new NoSuchElementException("Material does not exist.");
         }
-        log.error("Could not update material " + material.getOwnMaterialNumber() + " because it didn't exist before");
-        return null;
+
+        Material foundMaterial = existingMaterial.get();
+        if (!Objects.equals(foundMaterial.getMaterialNumberCx(), material.getMaterialNumberCx())) {
+            log.error("Could not update material {} because changing the CatenaXId is not allowed", material.getOwnMaterialNumber());
+            throw new IllegalArgumentException("Changing the CatenaXId is not allowed.");
+        }
+
+        if (!foundMaterial.isProductFlag() && material.isProductFlag()) {
+            dtmService.update(material);
+        }
+
+        material.setLastUpdatedOn(new Date());
+        return materialRepository.save(material);
     }
 
     @Override
