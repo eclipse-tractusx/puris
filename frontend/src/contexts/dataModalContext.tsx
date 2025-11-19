@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2025 Volkswagen AG
 Copyright (c) 2025 Contributors to the Eclipse Foundation
+Copyright (c) 2025 IAV
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -180,7 +181,7 @@ export const DataModalProvider = ({ children, material }: DataModalProviderProps
                 onClose={() => dispatch({ type: 'editDemandDialogOptions', payload: { ...state.editDemandDialogOptions, open: false } })}
                 onSave={(demand) => {
                     const updatedDemands = state.demands.map(d => d.uuid === demand?.uuid ? demand! : d);
-                    dispatch({ type: 'demand', payload: updatedDemands });
+                    dispatch({ type: 'demands', payload: updatedDemands });
                     onSave('demand');
                 }}
                 demand={state.demand}

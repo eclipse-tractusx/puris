@@ -1,7 +1,6 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Contributors to the Eclipse Foundation
-Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2025 IAV
+Copyright (c) 2025 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -85,7 +84,7 @@ export const DemandCategoryCreationModal = ({
 
         const method = mode === 'create' ? postDemand : updateDemand;
         const successLabel = mode === 'create' ? 'Demand Created' : 'Demand Updated';
-        const successDescription = mode === 'create' ? 'The Demand has been saved successfully' : 'The Demand has been updated successfully';
+        const successDescription = mode === 'create' ? 'The Demand has been added' : 'The Demand has been successfully updated';
         method({
             ...temporaryDemand,
             lastUpdatedOnDateTime: new Date()
@@ -101,7 +100,7 @@ export const DemandCategoryCreationModal = ({
             .catch((error) => {
                 notify({
                     title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                    description: error.status === 409 ? 'Date conflicting with another Demand' : error.error,
+                    description: error.status === 409 ? 'Demand conflicting with an existing one' : error.error,
                     severity: 'error',
                 });
             }).finally(() => handleClose());

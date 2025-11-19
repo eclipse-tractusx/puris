@@ -2,6 +2,7 @@
 Copyright (c) 2024 Volkswagen AG
 Copyright (c) 2024 Contributors to the Eclipse Foundation
 Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+Copyright (c) 2025 IAV
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -181,9 +182,14 @@ export const DemandCategoryModal = ({ open, onClose, onRemove, demand, demands }
             try {
                 await deleteDemand(row.uuid);
                 onRemove?.(row.uuid);
+                notify({
+                    title: 'Demand deleted',
+                    description: 'The demand record was successfully deleted.',
+                    severity: 'success',
+                });
             } catch (error) {
                 notify({
-                    title: 'Error deleting demand',
+                    title: 'Error',
                     description: 'Failed to delete the demand',
                     severity: 'error',
                 });
