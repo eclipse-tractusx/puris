@@ -23,6 +23,7 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -98,7 +99,7 @@ public class MaterialServiceImpl implements MaterialService {
         if (existingMaterial.isEmpty()) {
             log.error("Could not update material {} because it didn't exist before",
                     material.getOwnMaterialNumber());
-            return null;
+            throw new NoSuchElementException("Material does not exist.");
         }
 
         Material foundMaterial = existingMaterial.get();

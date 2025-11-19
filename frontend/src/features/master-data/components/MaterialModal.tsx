@@ -65,7 +65,7 @@ export const MaterialInformationModal = ({
         setTemporaryMaterial({
                 ownMaterialNumber: '',
                 name: '',
-                materialNumberCx: '',
+                materialNumberCx: null,
                 materialFlag: false,
                 productFlag: false,
             });
@@ -79,7 +79,7 @@ export const MaterialInformationModal = ({
         onClose();
     };
 
-    const handleDirectionChange = (_: any, value: { key: DirectionKey; value: string } | null) => {
+    const handleDirectionChange = (value: { key: DirectionKey; value: string } | null) => {
         const key = value?.key ?? null;
         setDirection(key);
 
@@ -91,7 +91,8 @@ export const MaterialInformationModal = ({
     };
 
     const handleSaveClick = async () => {
-        if (!isValidMaterial(temporaryMaterial)) {
+        const sanitizedMaterial: Partial<Material> = {...temporaryMaterial, materialNumberCx: temporaryMaterial.materialNumberCx || null };
+        if (!isValidMaterial(sanitizedMaterial)) {
             setFormError(true);
             return;
         }
@@ -99,7 +100,7 @@ export const MaterialInformationModal = ({
         setFormError(false);
 
         try {
-            await onSave(temporaryMaterial);
+            await onSave(sanitizedMaterial);
             notify({
                 title: 'Material created',
                 description: 'Material has been created',
@@ -181,7 +182,7 @@ export const MaterialInformationModal = ({
                                 options={DIRECTIONS}
                                 getOptionLabel={(option) => option.value ?? ''}
                                 isOptionEqualToValue={(option, value) => option?.key === value.key}
-                                onChange={handleDirectionChange}
+                                onChange={(_, value) => handleDirectionChange(value)}
                                 value={DIRECTIONS.find((dt) => dt.key === direction) ?? null}
                                 label="Direction*"
                                 placeholder="Select direction"

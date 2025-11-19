@@ -31,6 +31,14 @@ import { getAllPartners, postPartner } from '@services/partners-service';
 import { Address } from '@models/types/edc/address';
 import { Site } from '@models/types/edc/site';
 import { PartnerCreateModal } from './PartnerModal';
+import { Add } from '@mui/icons-material';
+
+const getDirectionLabel = (row: Material): string => {
+    if (row.materialFlag && row.productFlag) return 'Bidirectional';
+    if (row.materialFlag) return 'Outbound';
+    if (row.productFlag) return 'Inbound';
+    return 'Unknown';
+};
 
 const createParnerColumns = () => {
     return [
@@ -161,13 +169,6 @@ export const MasterDataView = () => {
         fetchPartners();
     }, [setTitle, fetchMaterials, fetchPartners]);
 
-    const getDirectionLabel = (row: Material): string => {
-        if (row.materialFlag && row.productFlag) return 'Bidirectional';
-        if (row.materialFlag) return 'Outbound';
-        if (row.productFlag) return 'Inbound';
-        return 'Unknown';
-    };
-
     return (
         <>
             <Stack spacing={3}>
@@ -177,8 +178,8 @@ export const MasterDataView = () => {
                     {<Button variant="contained" sx={{ display: 'flex', gap: '.5rem' }} onClick={() => {
                         setMaterialModalOpen(true);
                     }}>
-                        New Material
-                    </Button>}
+                        <Add></Add> New Material
+                    </Button> }
                 </Stack>
 
                 <Table
