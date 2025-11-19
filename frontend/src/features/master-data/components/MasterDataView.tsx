@@ -28,7 +28,6 @@ import { Material } from '@models/types/data/stock';
 import { getAllMaterials, postMaterial } from '@services/materials-service';
 import { Partner } from '@models/types/edc/partner';
 import { getAllPartners, postPartner } from '@services/partners-service';
-import { Address } from '@models/types/edc/address';
 import { Site } from '@models/types/edc/site';
 import { PartnerCreateModal } from './PartnerModal';
 import { Add } from '@mui/icons-material';
@@ -100,27 +99,8 @@ const createParnerColumns = () => {
                         sx={{ whiteSpace: 'normal', wordBreak: 'break-word', py: 0.5 }}
                     >
                         {sites.map((site: Site) => (
-                            <Box
-                                key={site.bpns}
-                                sx={{ mb: 0.75, '&:last-of-type': { mb: 0 }}}
-                            >
-                                <Box display="flex" alignItems="center" gap={0.5}>
-                                    <Box fontWeight={600}>{site.name || site.bpns}</Box>
-                                    {site.name && (
-                                        <Box fontSize="0.75rem" sx={{ opacity: 0.7 }}>{site.bpns}</Box>
-                                    )}
-                                </Box>
-                                {site.addresses && site.addresses.length > 0 && (
-                                    <Box sx={{ mt: 0.25, pl: 1 }}>
-                                        {site.addresses.map((address: Address) => (
-                                            <Box key={address.bpna} sx={{ lineHeight: 1.2, mb: 0.5 }}>
-                                                <Box>{address.streetAndNumber}</Box>
-                                                <Box>{address.zipCodeAndCity}</Box>
-                                                <Box fontSize="0.75rem" sx={{ opacity: 0.7 }}>{address.country}</Box>
-                                            </Box>
-                                        ))}
-                                    </Box>
-                                )}
+                            <Box key={site.bpns} sx={{ lineHeight: 1.2, mb: 0.5, '&:last-of-type': { mb: 0 } }}>
+                                {site.name}
                             </Box>
                         ))}
                     </Box>
@@ -200,7 +180,7 @@ export const MasterDataView = () => {
                     {<Button variant="contained" sx={{ display: 'flex', gap: '.5rem' }} onClick={() => {
                         setPartnerModalOpen(true);
                     }}>
-                        New Partner
+                        <Add></Add> New Partner
                     </Button>}
                 </Stack>
 

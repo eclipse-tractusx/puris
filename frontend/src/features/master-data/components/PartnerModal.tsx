@@ -18,7 +18,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 import { useNotifications } from "@contexts/notificationContext";
-import { AddCircleOutline, Close, RemoveCircleOutline, Send } from "@mui/icons-material";
+import { Add, AddCircleOutline, Close, RemoveCircleOutline, Send } from "@mui/icons-material";
 import { Input } from '@catena-x/portal-shared-components';
 import { Box, Button, Dialog, DialogTitle, Divider, Grid, IconButton, InputLabel, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -63,8 +63,8 @@ const RE_BPNS = /^BPNS[A-Z0-9]{12}$/;
 const RE_NUMERIC = /^\d+$/;
 
 const createEmptyAddress = (): AddressForm => ({ bpna: '', street: '', number: '', zipCode: '', city: '', country: '' });
-const createEmptySite = (): SiteForm => ({ bpns: '', name: '', addresses: [] });
-const partnerToForm = (): PartnerForm => ({ name: '', bpnl: '', edcUrl: '', addresses: [createEmptyAddress()], sites: [] });
+const createEmptySite = (): SiteForm => ({ bpns: '', name: '', addresses: [createEmptyAddress()] });
+const partnerToForm = (): PartnerForm => ({ name: '', bpnl: '', edcUrl: '', addresses: [], sites: [createEmptySite()] });
 
 const formToPartner = (form: PartnerForm): Partial<Partner> => {
     const mapAddress = (a: AddressForm): Address => ({
@@ -79,9 +79,11 @@ const formToPartner = (form: PartnerForm): Partial<Partner> => {
 
 const isValidPartnerForm = (form: PartnerForm) => {
     if (!form.name.trim() || !RE_BPNL.test(form.bpnl.trim()) || !isHttpUrl(form.edcUrl)) return false;
-    if (!form.addresses.length) return false;
+    
     const addrOk = (a: AddressForm) => RE_BPNA.test(a.bpna.trim()) && a.street.trim() && RE_NUMERIC.test(a.number.trim()) && RE_NUMERIC.test(a.zipCode.trim()) && a.city.trim() && a.country.trim();
     if (!form.addresses.every(addrOk)) return false;
+
+    if (!form.sites.length) return false;
     const sitesOk = form.sites.every((s) => RE_BPNS.test(s.bpns.trim()) && s.addresses.length && s.addresses.every(addrOk));
     return sitesOk;
 };
@@ -117,10 +119,10 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
     };
 
     const handleRemoveAddress = (index: number) => {
-        setForm((prev) => {
-            if (prev.addresses.length === 1) return prev;
-            return { ...prev, addresses: prev.addresses.filter((_, i) => i !== index)};
-        });
+        setForm((prev) => ({
+            ...prev,
+            addresses: prev.addresses.filter((_, i) => i !== index),
+        }));
     };
 
     const handleSiteFieldChange = (siteIndex: number, field: keyof SiteForm, value: string) => {
@@ -136,7 +138,10 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
     };
 
     const handleRemoveSite = (siteIndex: number) => {
-        setForm((prev) => ({ ...prev, sites: prev.sites.filter((_, i) => i !== siteIndex)}));
+        setForm((prev) => {
+            if (siteIndex === 0) return prev;
+            return { ...prev, sites: prev.sites.filter((_, i) => i !== siteIndex) };
+        });
     };
 
     const handleSiteAddressChange = (siteIndex: number, addressIndex: number, field: keyof AddressForm, value: string,
@@ -164,7 +169,8 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
         setForm((prev) => {
             const sites = prev.sites.map((site, i) => {
                 if (i !== siteIndex) return site;
-                return {...site, addresses: site.addresses.filter((_, j) => j !== addressIndex)};
+                if (addressIndex === 0) return site;
+                return { ...site, addresses: site.addresses.filter((_, j) => j !== addressIndex) };
             });
             return { ...prev, sites };
         });
@@ -242,7 +248,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                 <Divider sx={{ my: 2 }} />
                 <Box>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                        <Typography variant="h6">Addresses*</Typography>
+                        <Typography variant="h6">Addresses</Typography>
                         <Button
                             variant="outlined"
                             size="small"
@@ -250,9 +256,13 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                             onClick={handleAddAddress}
                             data-testid="partner-modal-add-address"
                         >
-                            Add address
+                            <Add></Add> Add address
                         </Button>
                     </Box>
+
+                    {(!form.addresses || form.addresses.length === 0) && (
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>No addresses created</Typography>
+                    )}
 
                     {form.addresses.map((address, index) => (
                         <Box key={index} sx={{ border: '1px solid #e0e0e0', borderRadius: '.5rem', padding: '0.75rem', mb: 1 }} >
@@ -337,7 +347,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                 <Divider sx={{ my: 2 }} />
                 <Box>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                        <Typography variant="h6">Sites</Typography>
+                        <Typography variant="h6">Sites*</Typography>
                         <Button
                             variant="outlined"
                             size="small"
@@ -345,13 +355,14 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                             onClick={handleAddSite}
                             data-testid="partner-modal-add-site"
                         >
-                            Add site
+                            <Add></Add> Add site
                         </Button>
                     </Box>
 
                     {form.sites.map((site, siteIndex) => (
                         <Box key={siteIndex} sx={{ border: '1px solid #e0e0e0', borderRadius: '.5rem', padding: '0.75rem', mb: 1 }} >
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
+                            {siteIndex > 0 && (
+                                <Box display="flex" justifyContent="space-between" alignItems="center">
                                 <Typography variant="subtitle1">Site {siteIndex + 1}</Typography>
                                 <IconButton
                                     size="small"
@@ -361,6 +372,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                     <RemoveCircleOutline fontSize="small" />
                                 </IconButton>
                             </Box>
+                            )}
 
                             <Grid container spacing={1} mt={0.5}>
                                 <Grid item xs={12} sm={6}>
@@ -374,7 +386,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
-                                    <InputLabel>Site Name</InputLabel>
+                                    <InputLabel>Site Name*</InputLabel>
                                     <Input
                                         type="text"
                                         value={site.name}
@@ -386,7 +398,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                             
                             <Box mt={1}>
                                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5} >
-                                    <Typography variant="subtitle2">Addresses</Typography>
+                                    <Typography variant="subtitle2">Addresses*</Typography>
                                     <Button
                                         variant="text"
                                         size="small"
@@ -400,7 +412,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
 
                                 {site.addresses.map((address, addressIndex) => (
                                     <Box key={addressIndex} sx={{ border: '1px dashed #e0e0e0', borderRadius: '.5rem', padding: '0.5rem', mb: 0.75 }} >
-                                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                                        {addressIndex > 0 && (<Box display="flex" justifyContent="space-between" alignItems="center">
                                             <Typography variant="body2">Address {addressIndex + 1}</Typography>
                                             <IconButton
                                                 size="small"
@@ -410,6 +422,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                                 <RemoveCircleOutline fontSize="small" />
                                             </IconButton>
                                         </Box>
+                                        )}
                                         <Grid container spacing={1} mt={0.5}>
                                             <Grid item xs={12} sm={4}>
                                                 <InputLabel>BPNA*</InputLabel>
