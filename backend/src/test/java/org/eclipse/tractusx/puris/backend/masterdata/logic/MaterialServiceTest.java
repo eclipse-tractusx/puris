@@ -41,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.never;
@@ -48,6 +49,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
+
+import jakarta.persistence.EntityNotFoundException;
 
 public class MaterialServiceTest {
 
@@ -82,17 +85,13 @@ public class MaterialServiceTest {
 
         // When
         when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
-        when(materialRepository.findByMaterialNumberCx(material.getMaterialNumberCx())).thenReturn(List.of());
-        when(materialRepository.save(material)).thenReturn(material);
 
-        // Then
-        Material createdMaterial = materialService.create(material);
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> materialService.update(material));
 
-        assertNotNull(createdMaterial);
-        assertEquals(material, createdMaterial);
+        assertEquals("Material with id MNR-123 does not exist.", ex.getMessage());
+
         verify(materialRepository, times(1)).findById(material.getOwnMaterialNumber());
-        verify(materialRepository, times(1)).findByMaterialNumberCx(material.getMaterialNumberCx());
-        verify(materialRepository, times(1)).save(material);
+        verify(materialRepository, never()).save(any(Material.class));
     }
 
     @Test
