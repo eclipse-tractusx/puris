@@ -142,10 +142,6 @@ public class MaterialController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
         }
 
-        if (updatedMaterial == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material does not exist.");
-        }
-
         return modelMapper.map(updatedMaterial, MaterialEntityDto.class);
     }
 
