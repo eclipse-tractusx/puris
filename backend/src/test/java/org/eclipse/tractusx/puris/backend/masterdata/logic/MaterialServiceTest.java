@@ -21,6 +21,7 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic;
 
 import java.util.Date;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -50,8 +51,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
-import jakarta.persistence.EntityNotFoundException;
-
 public class MaterialServiceTest {
 
     @Mock
@@ -79,16 +78,15 @@ public class MaterialServiceTest {
     }
 
     @Test
-    void create_WhenMaterialDoesNotExist_ReturnsCreatedMaterial() {
+    void create_WhenMaterialDoesNotExist_ThrowsNoSuchElementException() {
         // Given
         Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material", new Date());
-
-        // When
         when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
 
-        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> materialService.update(material));
+        // When
+        NoSuchElementException ex = assertThrows(NoSuchElementException.class, () -> materialService.update(material));
 
-        assertEquals("Material with id MNR-123 does not exist.", ex.getMessage());
+        assertEquals("Material does not exist.", ex.getMessage());
 
         verify(materialRepository, times(1)).findById(material.getOwnMaterialNumber());
         verify(materialRepository, never()).save(any(Material.class));
@@ -149,19 +147,18 @@ public class MaterialServiceTest {
     }
 
     @Test
-    void update_WhenMaterialDoesNotExist_ReturnsNull() {
+    void update_WhenMaterialDoesNotExist_ThrowsNoSuchElementException() {
         // Given
         Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material", new Date());
-
+        // When
         when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
 
-        // When
-        Material result = materialService.update(material);
-
         // Then
-        assertNull(result);
+        NoSuchElementException ex = assertThrows(NoSuchElementException.class, () -> materialService.update(material));
+
+        assertEquals("Material does not exist.", ex.getMessage());
         verify(materialRepository, times(1)).findById(material.getOwnMaterialNumber());
-        verify(materialRepository, never()).save(material);
+        verify(materialRepository, never()).save(any(Material.class));
     }
 
     @Test
