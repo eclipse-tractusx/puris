@@ -26,15 +26,23 @@ import { useCallback, useEffect, useState } from 'react';
 import { MaterialInformationModal } from './MaterialModal';
 import { Material } from '@models/types/data/stock';
 import { getAllMaterials, postMaterial } from '@services/materials-service';
+import { Add } from '@mui/icons-material';
+
+const getDirectionLabel = (row: Material): string => {
+    if (row.materialFlag && row.productFlag) return 'Bidirectional';
+    if (row.materialFlag) return 'Outbound';
+    if (row.productFlag) return 'Inbound';
+    return 'Unknown';
+};
 
 export const MasterDataView = () => {
     const [modalOpen, setModalOpen] = useState<boolean>(false);
-    const [materialz, setMaterialz] = useState<Material[]>([]);
+    const [materials, setMaterials] = useState<Material[]>([]);
     const { setTitle } = useTitle();
 
     const fetchMaterials = useCallback(async () => {
             try {
-                setMaterialz(await getAllMaterials());
+                setMaterials(await getAllMaterials());
             } catch (error) {
                 console.error(error);
             }
@@ -50,13 +58,6 @@ export const MasterDataView = () => {
         fetchMaterials();
     }, [setTitle, fetchMaterials]);
 
-    const getDirectionLabel = (row: Material): string => {
-        if (row.materialFlag && row.productFlag) return 'Bidirectional';
-        if (row.materialFlag) return 'Outbound';
-        if (row.productFlag) return 'Inbound';
-        return 'Unknown';
-    };
-
     return (
         <>
             <Stack spacing={3}>
@@ -66,7 +67,7 @@ export const MasterDataView = () => {
                     {<Button variant="contained" sx={{ display: 'flex', gap: '.5rem' }} onClick={() => {
                         setModalOpen(true);
                     }}>
-                        New Material
+                        <Add></Add> New Material
                     </Button> }
                 </Stack>
 
@@ -78,7 +79,7 @@ export const MasterDataView = () => {
                         { headerName: 'Global Asset Id', field: 'materialNumberCx', flex: 1},
                         { headerName: 'Direction', field: 'direction', flex: 1, valueGetter: (params) => getDirectionLabel(params.row) },
                     ]}
-                    rows={materialz ?? []}
+                    rows={materials ?? []}
                     getRowId={(row) => row.ownMaterialNumber}
                     noRowsMsg='No materials found'
                 />

@@ -23,6 +23,7 @@ package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import java.util.Base64;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -107,10 +108,6 @@ public class MaterialController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
-        if (createdMaterial == null) {
-            log.error("Could not create material – service returned null");
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not create material.");
-        }
         return modelMapper.map(createdMaterial, MaterialEntityDto.class);
     }
 
@@ -136,6 +133,8 @@ public class MaterialController {
         try {
             Material entity = modelMapper.map(materialDto, Material.class);
             updatedMaterial = materialService.update(entity);
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
