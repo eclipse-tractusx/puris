@@ -78,18 +78,21 @@ public class MaterialServiceTest {
     }
 
     @Test
-    void create_WhenMaterialDoesNotExist_ThrowsNoSuchElementException() {
+    void create_WhenMaterialDoesNotExist_ReturnsCreatedMaterial() {
         // Given
         Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material", new Date());
-        when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
 
         // When
-        NoSuchElementException ex = assertThrows(NoSuchElementException.class, () -> materialService.update(material));
+        when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
+        when(materialRepository.save(material)).thenReturn(material);
 
-        assertEquals("Material does not exist.", ex.getMessage());
+        // Then
+        Material createdMaterial = materialService.create(material);
 
+        assertNotNull(createdMaterial);
+        assertEquals(material, createdMaterial);
         verify(materialRepository, times(1)).findById(material.getOwnMaterialNumber());
-        verify(materialRepository, never()).save(any(Material.class));
+        verify(materialRepository, times(1)).save(material);
     }
 
     @Test
@@ -113,7 +116,7 @@ public class MaterialServiceTest {
     void create_WhenCatenaXIdAlreadyExists_ThrowsKeyAlreadyExistsExceptionWithMessage() {
         // Given
         Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material", new Date());
-
+        // When
         when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
         when(materialRepository.findByMaterialNumberCx(material.getMaterialNumberCx()))
             .thenReturn(List.of(new Material())); // simulate existing material
@@ -133,9 +136,10 @@ public class MaterialServiceTest {
         // Given
         Material material = new Material(true, false, "MNR-123", null, "Test Material", new Date());
 
+        // When
         when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
         when(variablesService.isGenerateMaterialCatenaXId()).thenReturn(false);
-
+        
         // Then
         IllegalArgumentException exception =
             assertThrows(IllegalArgumentException.class, () -> materialService.create(material));
@@ -152,8 +156,8 @@ public class MaterialServiceTest {
         Material material = new Material(true, false, "MNR-123", "uuid-value", "Test Material", new Date());
         // When
         when(materialRepository.findById(material.getOwnMaterialNumber())).thenReturn(Optional.empty());
-
-        // Then
+        
+        // Then        
         NoSuchElementException ex = assertThrows(NoSuchElementException.class, () -> materialService.update(material));
 
         assertEquals("Material does not exist.", ex.getMessage());
@@ -166,10 +170,10 @@ public class MaterialServiceTest {
         // Given
         Material existing = new Material(true, false, "MNR-123", "old-uuid", "Existing Material", new Date());
         Material toUpdate = new Material(true, false, "MNR-123", "new-uuid", "Updated Material", new Date());
-
+        // When
         when(materialRepository.findById(toUpdate.getOwnMaterialNumber())).thenReturn(Optional.of(existing));
 
-        // When / Then
+        // Then
         IllegalArgumentException exception =
             assertThrows(IllegalArgumentException.class, () -> materialService.update(toUpdate));
 
@@ -183,14 +187,12 @@ public class MaterialServiceTest {
         // Given
         Material existing = new Material(true, false, "MNR-123", "uuid-value", "Existing Material", new Date()); // productFlag = false
         Material toUpdate = new Material(true, true, "MNR-123", "uuid-value", "Updated Material", new Date());   // productFlag = true
-
+        // When
         when(materialRepository.findById(toUpdate.getOwnMaterialNumber())).thenReturn(Optional.of(existing));
         when(materialRepository.save(toUpdate)).thenReturn(toUpdate);
 
-        // When
-        Material result = materialService.update(toUpdate);
-
         // Then
+        Material result = materialService.update(toUpdate);
         assertNotNull(result);
         assertEquals(toUpdate, result);
         verify(materialRepository, times(1)).findById(toUpdate.getOwnMaterialNumber());
