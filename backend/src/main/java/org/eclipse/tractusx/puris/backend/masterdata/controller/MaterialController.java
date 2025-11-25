@@ -86,7 +86,7 @@ public class MaterialController {
     public MaterialEntityDto createMaterial(@RequestBody MaterialEntityDto materialDto) {
         if(!validator.validate(materialDto).isEmpty()) {
             log.warn("Rejected invalid message body.");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Material.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material is invalid.");
         }
         if (materialDto.getOwnMaterialNumber() == null || materialDto.getOwnMaterialNumber().isEmpty()) {
             // Cannot create material without ownMaterialNumber
@@ -123,7 +123,7 @@ public class MaterialController {
     public MaterialEntityDto updateMaterial(@RequestBody MaterialEntityDto materialDto) {
         if(!validator.validate(materialDto).isEmpty()) {
             log.warn("Rejected invalid message body.");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Material.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material is invalid.");
         }
         if (materialDto.getOwnMaterialNumber() == null || materialDto.getOwnMaterialNumber().isEmpty()) {
             // Cannot update material without ownMaterialNumber

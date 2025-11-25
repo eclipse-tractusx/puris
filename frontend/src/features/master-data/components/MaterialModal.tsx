@@ -25,6 +25,7 @@ import { Close, Send } from "@mui/icons-material";
 import { Input } from '@catena-x/portal-shared-components';
 import { Box, Button, Dialog, DialogTitle, Grid, InputLabel, Stack } from "@mui/material";
 import { useEffect, useState } from "react";
+import { InfoButton } from "@components/ui/InfoButton";
 
 
 const isValidMaterial = (material: Partial<Material>) =>
@@ -160,7 +161,9 @@ export const MaterialInformationModal = ({
                             />
                         </Grid>
                         <Grid item xs={12}>
-                            <InputLabel>Global Asset Id {config.app.GENERATE_MATERIAL_CATENAX_ID && '*'}</InputLabel>
+                            <InputLabel>Global Asset Id {config.app.GENERATE_MATERIAL_CATENAX_ID && '*'} 
+                                <InfoButton text={`Your configuration ${config.app.GENERATE_MATERIAL_CATENAX_ID ? 'does not' : 'does'} generate the UUID for you. If you specify an outbound or bidirectional twin (a product), it makes sense to specify the UUID in case you want to also communicate this number to your customers.`} />
+                            </InputLabel>
                             <Input
                                 id="material-global-asset-id"
                                 type="text"
