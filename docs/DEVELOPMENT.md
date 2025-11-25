@@ -335,14 +335,16 @@ All notable changes must be recorded in the `./CHANGELOG.md` file in the reposit
 
 ## Versioning and Chart Updates
 
-We follow Semantic Versioning to determine whether a change is a major, minor, or patch release.
+We follow [semantic versioning 2.x.y](https://semver.org/) to determine whether a change is a major, minor, or patch release.
 When you change anything that affects deployment, Helm Charts, you must update the relevant metadata and version numbers. To update Helm Charts:
 
 - Open the chart descriptor at: `charts/puris/Chart.yaml`
 - Update the `version` if any Helm chart files change
 - Update the `appVersion` only if the application version itself changes
 
-Please note that the chart version must always be increased when the app version changes, even if no chart files were modified.
+Please note that the chart version must always be increased when the app version changes, even if no chart files were modified. The app version bump should be reflected the same way in the chart version bump (e.g. if the app version was a major change, then also the chart version should be a major change).
+
+Further, update the helm chart README.md using [helm-docs](https://github.com/norwoodj/helm-docs).
 
 If you changed environment variables or service configuration, verify with:
 
@@ -354,9 +356,18 @@ If you changed environment variable names, volumes, or ports, reflect that in:
 
 - `local/docker-compose.yaml`
 - `docs/INSTALL.md`
-- and in the Helm README (`charts/puris/README.md`)
+- and in the Helm README (`charts/puris/README.md`, also considered when using [helm-docs](https://github.com/norwoodj/helm-docs)
 
-When updating to the next version of the application, aside frome the above mentioned please also upade the `package.json` and `pom.xml` with version that is supposed to be released.
+When updating to the next version of the application, aside from the above mentioned please also upade the `package.json`, `package-lock.json` and `pom.xml` with version that is supposed to be released.
+
+In case the controller interfaces were changed during the update, you need to update the open-api documentation. To do so run the local deployment and use the following command in `/local/`, to run a python script, that:
+
+1. Downloads the open api (json),
+2. Converts it into the target format (yaml)
+
+```shell
+python3 generate_open_api_yaml.py
+```
 
 # Notes on the release
 
