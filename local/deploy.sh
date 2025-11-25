@@ -184,6 +184,9 @@ echo "Infrastructure services are up and running."
 
 echo "All services started successfully."
 
+echo "Updating OpenAPI documentation..."
+python3 generate_openapi_yaml.py
+
 if [ $int_seed -eq 1 ]; then
   echo "Seeding Int Data (2/2)..."
   npm run local-test
