@@ -28,30 +28,23 @@ import { Partner } from "@models/types/edc/partner";
 import { BPNA, BPNS } from "@models/types/edc/bpn";
 
 
-type PartnerCreateModalProps = {
+type PartnerCreationModalProps = {
     open: boolean;
     onClose: () => void;
     onSave: (partner: Partial<Partner>) => Promise<void> | void;
 };
 
-type AddressForm = {
+type AddressForm = Omit<Address, 'streetAndNumber' | 'zipCodeAndCity' | 'bpna'> & {
     bpna: string;
     street: string;
     number: string;
     zipCode: string;
     city: string;
-    country: string;
 };
 
-type SiteForm = { bpns: string; name: string; addresses: AddressForm[]; };
+type SiteForm = Omit<Site, 'addresses' | 'bpns'> & { bpns: string; addresses: AddressForm[]; };
 
-type PartnerForm = {
-    name: string;
-    bpnl: string;
-    edcUrl: string;
-    addresses: AddressForm[];
-    sites: SiteForm[];
-};
+type PartnerForm = Omit<Omit<Partner, 'uuid'>, 'bpnl' | 'addresses' | 'sites'> & { bpnl: string; addresses: AddressForm[]; sites: SiteForm[]; };
 
 const isHttpUrl = (s: string) => {
     try { const u = new URL(s.trim()); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; }
@@ -64,7 +57,7 @@ const RE_NUMERIC = /^\d+$/;
 
 const createEmptyAddress = (): AddressForm => ({ bpna: '', street: '', number: '', zipCode: '', city: '', country: '' });
 const createEmptySite = (): SiteForm => ({ bpns: '', name: '', addresses: [createEmptyAddress()] });
-const partnerToForm = (): PartnerForm => ({ name: '', bpnl: '', edcUrl: '', addresses: [], sites: [createEmptySite()] });
+const createEmptyPartner = (): PartnerForm => ({ name: '', bpnl: '', edcUrl: '', addresses: [], sites: [createEmptySite()] });
 
 const formToPartner = (form: PartnerForm): Partial<Partner> => {
     const mapAddress = (a: AddressForm): Address => ({
@@ -88,8 +81,8 @@ const isValidPartnerForm = (form: PartnerForm) => {
     return sitesOk;
 };
 
-export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModalProps) => {
-    const [form, setForm] = useState<PartnerForm>(partnerToForm());
+export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationModalProps) => {
+    const [form, setForm] = useState<PartnerForm>(createEmptyPartner());
     const [formError, setFormError] = useState(false);
     const { notify } = useNotifications();
 
@@ -97,7 +90,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
 
     const handleClose = () => {
         setFormError(false);
-        setForm(partnerToForm());
+        setForm(createEmptyPartner());
         onClose();
     };
 
@@ -139,7 +132,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
 
     const handleRemoveSite = (siteIndex: number) => {
         setForm((prev) => {
-            if (siteIndex === 0) return prev;
+            if (prev.sites.length < 2) return prev;
             return { ...prev, sites: prev.sites.filter((_, i) => i !== siteIndex) };
         });
     };
@@ -169,7 +162,9 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
         setForm((prev) => {
             const sites = prev.sites.map((site, i) => {
                 if (i !== siteIndex) return site;
-                if (addressIndex === 0) return site;
+                if (site.addresses.length < 2) {
+                    return site;
+                }
                 return { ...site, addresses: site.addresses.filter((_, j) => j !== addressIndex) };
             });
             return { ...prev, sites };
@@ -287,6 +282,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                         onChange={(e) => handleAddressChange(index, 'bpna', e.target.value)}
                                         placeholder="Enter BPNA"
                                         error={formError && !RE_BPNA.test(address.bpna.trim())}
+                                        data-testid={`partner-modal-address-${index}-bpna`}
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={4}>
@@ -297,6 +293,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                         onChange={(e) => handleAddressChange(index, 'street', e.target.value)}
                                         placeholder="Street"
                                         error={formError && !address.street.trim()}
+                                        data-testid={`partner-modal-address-${index}-street`}
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={4}>
@@ -307,6 +304,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                         onChange={(e) => handleAddressChange(index, 'number', e.target.value)}
                                         placeholder="Number"
                                         error={formError && !RE_NUMERIC.test(address.number.trim())}
+                                        data-testid={`partner-modal-address-${index}-number`}
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={4}>
@@ -317,6 +315,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                         onChange={(e) => handleAddressChange(index, 'zipCode', e.target.value)}
                                         placeholder="ZIP code"
                                         error={formError && !RE_NUMERIC.test(address.number.trim())}
+                                        data-testid={`partner-modal-address-${index}-zipcode`}
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={4}>
@@ -327,6 +326,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                         onChange={(e) => handleAddressChange(index, 'city', e.target.value)}
                                         placeholder="City"
                                         error={formError && !address.city.trim()}
+                                        data-testid={`partner-modal-address-${index}-city`}
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={4}>
@@ -337,6 +337,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                         onChange={(e) => handleAddressChange(index, 'country', e.target.value)}
                                         placeholder="Country"
                                         error={formError && !address.country.trim()}
+                                        data-testid={`partner-modal-address-${index}-country`}
                                     />
                                 </Grid>
                             </Grid>
@@ -383,6 +384,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                         onChange={(e) => handleSiteFieldChange(siteIndex, 'bpns', e.target.value)}
                                         placeholder="Enter BPNS"
                                         error={formError && !RE_BPNS.test(site.bpns.trim())}
+                                        data-testid={`partner-modal-site-${siteIndex}-bpns`}
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
@@ -392,6 +394,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                         value={site.name}
                                         onChange={(e) => handleSiteFieldChange(siteIndex, 'name', e.target.value)}
                                         placeholder="Enter site name"
+                                        data-testid={`partner-modal-site-${siteIndex}-name`}
                                     />
                                 </Grid>
                             </Grid>
@@ -432,6 +435,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                                     onChange={(e) => handleSiteAddressChange(siteIndex, addressIndex, 'bpna', e.target.value)}
                                                     placeholder="Enter BPNA"
                                                     error={formError && !RE_BPNA.test(address.bpna.trim())}
+                                                    data-testid={`partner-modal-site-address-${siteIndex}-${addressIndex}-bpna`}
                                                 />
                                             </Grid>
                                             <Grid item xs={12} sm={4}>
@@ -441,6 +445,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                                     value={address.street}
                                                     onChange={(e) => handleSiteAddressChange( siteIndex, addressIndex, 'street', e.target.value)}
                                                     placeholder="Street"
+                                                    data-testid={`partner-modal-site-address-${siteIndex}-${addressIndex}-street`}
                                                 />
                                             </Grid>
                                             <Grid item xs={12} sm={4}>
@@ -451,6 +456,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                                     onChange={(e) => handleSiteAddressChange(siteIndex, addressIndex, 'number', e.target.value)}
                                                     placeholder="Number"
                                                     error={formError && !RE_NUMERIC.test(address.number.trim())}
+                                                    data-testid={`partner-modal-site-address-${siteIndex}-${addressIndex}-number`}
                                                 />
                                             </Grid>
                                             <Grid item xs={12} sm={4}>
@@ -461,6 +467,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                                     onChange={(e) => handleSiteAddressChange(siteIndex, addressIndex, 'zipCode', e.target.value)}
                                                     placeholder="ZIP code"
                                                     error={formError && !RE_NUMERIC.test(address.number.trim())}
+                                                    data-testid={`partner-modal-site-address-${siteIndex}-${addressIndex}-zipcode`}
                                                 />
                                             </Grid>
                                             <Grid item xs={12} sm={4}>
@@ -470,6 +477,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                                     value={address.city}
                                                     onChange={(e) => handleSiteAddressChange(siteIndex, addressIndex, 'city', e.target.value)}
                                                     placeholder="City"
+                                                    data-testid={`partner-modal-site-address-${siteIndex}-${addressIndex}-city`}
                                                 />
                                             </Grid>
                                             <Grid item xs={12} sm={4}>
@@ -479,6 +487,7 @@ export const PartnerCreateModal = ({ open, onClose, onSave }: PartnerCreateModal
                                                     value={address.country}
                                                     onChange={(e) => handleSiteAddressChange(siteIndex, addressIndex, 'country', e.target.value)}
                                                     placeholder="Country"
+                                                    data-testid={`partner-modal-site-address-${siteIndex}-${addressIndex}-country`}
                                                 />
                                             </Grid>
                                         </Grid>

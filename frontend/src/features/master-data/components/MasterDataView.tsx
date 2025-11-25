@@ -29,7 +29,7 @@ import { getAllMaterials, postMaterial } from '@services/materials-service';
 import { Partner } from '@models/types/edc/partner';
 import { getAllPartners, postPartner } from '@services/partners-service';
 import { Site } from '@models/types/edc/site';
-import { PartnerCreateModal } from './PartnerModal';
+import { PartnerCreationModal } from './PartnerModal';
 import { Add } from '@mui/icons-material';
 
 const getDirectionLabel = (row: Material): string => {
@@ -153,8 +153,8 @@ export const MasterDataView = () => {
         <>
             <Stack spacing={3}>
                 <ConfidentialBanner />
-                <Stack width='100%' direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="h6">Master data Materials</Typography>
+                <Typography variant="h6">Master data</Typography>
+                <Stack width='100%' direction="row" justifyContent="end" alignItems="center">
                     {<Button variant="contained" sx={{ display: 'flex', gap: '.5rem' }} onClick={() => {
                         setMaterialModalOpen(true);
                     }}>
@@ -175,8 +175,7 @@ export const MasterDataView = () => {
                     noRowsMsg='No materials found'
                 />
 
-                <Stack width='100%' direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="h6">Master data Partners</Typography>
+                <Stack width='100%' direction="row" justifyContent="end" alignItems="center">
                     {<Button variant="contained" sx={{ display: 'flex', gap: '.5rem' }} onClick={() => {
                         setPartnerModalOpen(true);
                     }}>
@@ -201,7 +200,7 @@ export const MasterDataView = () => {
                 onSave={handleSaveMaterial}
             />
 
-            <PartnerCreateModal
+            <PartnerCreationModal
                 open={partnerModalOpen}
                 onClose={() => setPartnerModalOpen(false)}
                 onSave={handleSavePartner}

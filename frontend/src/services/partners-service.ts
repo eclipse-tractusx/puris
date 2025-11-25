@@ -21,9 +21,6 @@ SPDX-License-Identifier: Apache-2.0
 import { config } from '@models/constants/config';
 import AuthenticationService from './authentication-service';
 import { Partner } from '@models/types/edc/partner';
-import { Address } from '@models/types/edc/address';
-import { Site } from '@models/types/edc/site';
-import { BPNL } from '@models/types/edc/bpn';
 
 export const getAllPartners = async () => {
     
@@ -55,41 +52,5 @@ export const postPartner = async (partner: Partial<Partner>) => {
         throw error;
     }
 
-    return res.json();
-}
-
-export const putPartnerAddress = async (address: Partial<Address>, partnerBpnl: BPNL) => {
-    const url = `${config.app.ENDPOINT_ALL_PARTNERS}/putAddress`;
-    const query = `?partnerBpnl=${btoa(partnerBpnl)}`;
-    const res = await fetch(config.app.BACKEND_BASE_URL + url + query, {
-        method: 'PUT',
-        body: JSON.stringify(address),
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${AuthenticationService.getToken()}`
-        },
-    });
-    if (res.status >= 400) {
-        const error = await res.json();
-        throw error;
-    }
-    return res.json();
-}
-
-export const putPartnerSite = async (site: Partial<Site>, partnerBpnl: BPNL) => {
-    const url = `${config.app.ENDPOINT_ALL_PARTNERS}/putSite`;
-    const query = `?partnerBpnl=${btoa(partnerBpnl)}`;
-    const res = await fetch(config.app.BACKEND_BASE_URL + url + query, {
-        method: 'PUT',
-        body: JSON.stringify(site),
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${AuthenticationService.getToken()}`
-        },
-    });
-    if (res.status >= 400) {
-        const error = await res.json();
-        throw error;
-    }
     return res.json();
 }

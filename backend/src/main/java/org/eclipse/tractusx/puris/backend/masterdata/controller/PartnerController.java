@@ -56,6 +56,7 @@ import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
+
 @RestController
 @RequestMapping("partners")
 @Slf4j
@@ -93,15 +94,12 @@ public class PartnerController {
         }
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
         // Any given UUID is wrong by default since we're creating a new Partner entity
-        if (partnerDto.getUuid() != null || partnerDto.getBpnl() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Partner information misses BPNL or wrongly contains a UUID.");
+        if (partnerDto.getUuid() != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Partner information must not contain a UUID when creating a new partner.");
         }
 
-        // Check whether the given BPNL is already assigned
-        Partner checkExistingPartner = partnerService.findByBpnl(partnerDto.getBpnl());
-        if (checkExistingPartner != null) {
-            // Cannot create Partner because BPNL is already assigned
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Partner already exists. Use PUT instead.");
+        if (partnerDto.getBpnl() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Partner information is missing BPNL.");
         }
 
         Partner createdPartner;
@@ -116,11 +114,6 @@ public class PartnerController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
-        if (createdPartner == null) {
-            // Creation failed due to unfulfilled constraints
-            log.error("Could not create partner – service returned null");
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Could not create partner.");
-        }
         return modelMapper.map(createdPartner, PartnerDto.class);
     }
 
@@ -168,10 +161,7 @@ public class PartnerController {
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
-        if (updatedPartner  == null) {
-            log.error("Could not update partner – service returned null");
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Could not update partner.");
-        }
+        
         return modelMapper.map(updatedPartner, PartnerDto.class);
     }
 
@@ -218,10 +208,6 @@ public class PartnerController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Partner is invalid.");
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
-        if (updatedPartner == null) {
-            log.error("Could not update partner – service returned null");
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Could not update partner.");
         }
 
         return modelMapper.map(updatedPartner, PartnerDto.class);
