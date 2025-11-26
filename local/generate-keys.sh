@@ -21,8 +21,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# Define the output file path
-BRUNO_FILE="bruno/puris-integration-test/environments/local.bru"
 
 # generate EDC PW (used for both EDC and BDRS)
 EDC_API_PW=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
@@ -167,17 +165,18 @@ curl -X POST -H "x-api-key: \$KEY" -H "Content-Type: application/json" -d '{ "bp
 echo ""
 EOF
 
-# Update the properties in the bruno file
-sed -i "s/^  CUSTOMER_EDC_API_KEY: .*/  CUSTOMER_EDC_API_KEY: $EDC_API_PW/" $BRUNO_FILE
-sed -i "s/^  CUSTOMER_PURIS_BACKEND_API_KEY: .*/  CUSTOMER_PURIS_BACKEND_API_KEY: $CUSTOMER_BACKEND_API_KEY/" $BRUNO_FILE
-sed -i "s/^  CUSTOMER_MANAGE_CLIENT_SECRET: .*/  CUSTOMER_MANAGE_CLIENT_SECRET: $CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET/" $BRUNO_FILE
-sed -i "s/^  CUSTOMER_MANAGE_CLIENT_SECRET_ALIAS: .*/  CUSTOMER_MANAGE_CLIENT_SECRET_ALIAS: $CUSTOMER_KC_DTR_PURIS_CLIENT_ALIAS/" $BRUNO_FILE
-sed -i "s/^  SUPPLIER_EDC_API_KEY: .*/  SUPPLIER_EDC_API_KEY: $EDC_API_PW/" $BRUNO_FILE
-sed -i "s/^  SUPPLIER_PURIS_BACKEND_API_KEY: .*/  SUPPLIER_PURIS_BACKEND_API_KEY: $SUPPLIER_BACKEND_API_KEY/" $BRUNO_FILE
-sed -i "s/^  SUPPLIER_MANAGE_CLIENT_SECRET: .*/  SUPPLIER_MANAGE_CLIENT_SECRET: $SUPPLIER_KC_DTR_PURIS_CLIENT_SECRET/" $BRUNO_FILE
-sed -i "s/^  SUPPLIER_MANAGE_CLIENT_SECRET_ALIAS: .*/  SUPPLIER_MANAGE_CLIENT_SECRET_ALIAS: $SUPPLIER_KC_DTR_PURIS_CLIENT_ALIAS/" $BRUNO_FILE
+chmod +x seed-bdrs.sh
 
-echo "Secrets have been updated in $BRUNO_FILE"
+# generate .env for the bruno collection
+echo "Creating .env for bruno"
+cat << EOF > "./bruno/puris-integration-test/.env"
+CUSTOMER_PURIS_BACKEND_API_KEY=$CUSTOMER_BACKEND_API_KEY
+CUSTOMER_EDC_API_KEY=$EDC_API_PW
+SUPPLIER_PURIS_BACKEND_API_KEY=$SUPPLIER_BACKEND_API_KEY
+SUPPLIER_EDC_API_KEY=$EDC_API_PW
+CUSTOMER_MANAGE_CLIENT_SECRET=$CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET
+SUPPLIER_MANAGE_CLIENT_SECRET=$SUPPLIER_KC_DTR_PURIS_CLIENT_SECRET
+EOF
 
 # let everyone access the files so that the non-root user in vault container can put them
 chmod -R 755 ./vault/secrets

@@ -108,7 +108,7 @@ public class DemandAndCapacityNotificationRequestApiController {
         "      \"text\": \"Capacity reduction due to ongoing strike.\",\n" +
         "      \"expectedEndDateOfEffect\": \"2023-12-17T08:00:00+01:00\",\n" +
         "      \"sourceDisruptionId\": \"urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e\",\n" +
-        "      \"status\": \"resolved\"\n" +
+        "      \"status\": \"resolved\",\n" +
         "      \"resolvingMeasureDescription\": \"An agreement was found and the strike was ended.\"\n" +
         "    }\n" +
         "  }\n" +

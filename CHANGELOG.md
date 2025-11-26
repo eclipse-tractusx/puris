@@ -24,7 +24,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- /
+- Improved documentation, added option for persitent containers and a .env file for bruno ([1024](https://github.com/eclipse-tractusx/puris/pull/1024))
 
 ### Known Knowns
 

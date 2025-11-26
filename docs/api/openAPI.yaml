@@ -2096,13 +2096,14 @@ paths:
                   leadingRootCause: strike
                   materialsAffected: []
                   notificationId: urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362
-                  relatedNotificationIds: 
+                  relatedNotificationIds:
                   - urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04
+                  resolvingMeasureDescription: An agreement was found and the strike
+                    was ended.
                   sourceDisruptionId: urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e
                   startDateOfEffect: '2023-12-13T15:00:00+01:00'
                   status: resolved
                   text: Capacity reduction due to ongoing strike.
-                  resolvingMeasureDescription: An agreement was found and the strike was ended.
               header:
                 context: CX-DemandAndCapacityNotificationAPI-Receive:2.0
                 messageId: 3b4edc05-e214-47a1-b0c2-1d831cdd9ba9

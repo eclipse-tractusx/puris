@@ -24,8 +24,9 @@ edc_only=0
 int_seed=0
 logs=0
 attach=0
+preserve_images=0
 # Remove previous installations if -c flag has been specified, and generate new keys
-while getopts "aceilh" opt;do
+while getopts "aceilph" opt;do
   case $opt in
     a)
         echo "Alright, we'll run PURIS backends in attached mode."
@@ -43,11 +44,16 @@ while getopts "aceilh" opt;do
       echo "Alright, you'll see the logs of the edc, dtr, puris."
       logs=1
       ;;
+    p)
+      echo "Preserving existing images (skip rebuild of backend/frontend)."
+      preserve_images=1
+      ;;
     h)
       echo "By default the tool does the following:"
       echo "- ensure that environment and keys have been generated"
       echo "- startup infrastructure, if needed"
       echo "- (delete and re-) start edc, dtr, puris"
+      echo "- Rebuild backend/frontend images (puris-backend:dev, puris-frontend:dev)"
       echo ""
       echo "If no option is provided, then start PURIS (detached mode), with same result as running following commands:"
       echo "\$sh generate-keys.sh # if no .env exists"
@@ -60,6 +66,8 @@ while getopts "aceilh" opt;do
       echo "-c clean         = run sh.cleanup before starting to create a new environment (Wallet, Keycloak, Keys)"
       echo "-i seed-int-data = start backends with empty role and seed integration test data"
       echo "-l logs          = Follows the logs of the EDC, DTR and PURIS same as with docker-compose but detached mode."
+      echo "-p preserve-img  = Do not rebuild backend/frontend images; use existing ones"
+      echo "- If -p is used but images are missing, a one-time build will run to avoid compose failures."
       echo "\nExiting..."
       exit 1
       ;;
@@ -103,6 +111,29 @@ if [ $env_created -eq 1 ]; then
   # Seed the bdrs-service
   echo "Seeding the bdrs-service..."
   sh seed-bdrs.sh
+fi
+
+bg_build() { echo "Building $3 ($1) ..."
+  docker build -t "$1" "$2"
+}
+if [ $preserve_images -eq 1 ]; then
+  echo "Preserving existing images. Checking presence..."
+  if ! docker image inspect puris-backend:dev >/dev/null 2>&1; then
+    bg_build puris-backend:dev ../backend Backend || { echo "Backend build failed \nExiting..."; exit 1; }
+  fi
+  if ! docker image inspect puris-frontend:dev >/dev/null 2>&1; then
+    bg_build puris-frontend:dev ../frontend Frontend || { echo "Frontend build failed \nExiting..."; exit 1; }
+  fi
+  echo "Missing images built."
+else
+  ( bg_build puris-backend:dev ../backend Backend ) &
+  b=$!
+  ( bg_build puris-frontend:dev ../frontend Frontend ) &
+  f=$!
+
+  wait "$b" || { echo "Backend build failed \nExiting...";  exit 1; }
+  wait "$f" || { echo "Frontend build failed \nExiting..."; exit 1; }
+  echo "Both images rebuilt."
 fi
 
 echo "Removing the PURIS + EDCs with their DTR and Database..."
@@ -152,6 +183,9 @@ done
 echo "Infrastructure services are up and running."
 
 echo "All services started successfully."
+
+echo "Updating OpenAPI documentation..."
+python3 generate_openapi_yaml.py
 
 if [ $int_seed -eq 1 ]; then
   echo "Seeding Int Data (2/2)..."
