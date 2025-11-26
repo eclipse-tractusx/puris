@@ -64,6 +64,7 @@ sh deploy.sh -p
 
 
 ```
+For local testing and development you will typically log in as either `puris_admin` or `puris_user` (username and password are identical).
 
 The script also checks if the respective services are healthy (sometimes simplified).
 
