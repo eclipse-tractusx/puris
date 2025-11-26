@@ -56,7 +56,6 @@ import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
-
 @RestController
 @RequestMapping("partners")
 @Slf4j

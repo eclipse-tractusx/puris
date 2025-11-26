@@ -26,6 +26,8 @@ import { Site } from "@models/types/edc/site";
 import { Address } from "@models/types/edc/address";
 import { Partner } from "@models/types/edc/partner";
 import { BPNA, BPNS } from "@models/types/edc/bpn";
+import { InfoButton } from "@components/ui/InfoButton";
+import { NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING, RE_BPNA, RE_BPNL, RE_BPNS, URL_REGEX } from "@models/constants/pattern-store";
 
 
 type PartnerCreationModalProps = {
@@ -46,14 +48,7 @@ type SiteForm = Omit<Site, 'addresses' | 'bpns'> & { bpns: string; addresses: Ad
 
 type PartnerForm = Omit<Omit<Partner, 'uuid'>, 'bpnl' | 'addresses' | 'sites'> & { bpnl: string; addresses: AddressForm[]; sites: SiteForm[]; };
 
-const isHttpUrl = (s: string) => {
-    try { const u = new URL(s.trim()); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; }
-};
-
-const RE_BPNL = /^BPNL[A-Z0-9]{12}$/;
-const RE_BPNA = /^BPNA[A-Z0-9]{12}$/;
-const RE_BPNS = /^BPNS[A-Z0-9]{12}$/;
-const RE_NUMERIC = /^\d+$/;
+const isHttpUrl = (s: string) => URL_REGEX.test(s.trim());
 
 const createEmptyAddress = (): AddressForm => ({ bpna: '', street: '', number: '', zipCode: '', city: '', country: '' });
 const createEmptySite = (): SiteForm => ({ bpns: '', name: '', addresses: [createEmptyAddress()] });
@@ -73,12 +68,23 @@ const formToPartner = (form: PartnerForm): Partial<Partner> => {
 const isValidPartnerForm = (form: PartnerForm) => {
     if (!form.name.trim() || !RE_BPNL.test(form.bpnl.trim()) || !isHttpUrl(form.edcUrl)) return false;
     
-    const addrOk = (a: AddressForm) => RE_BPNA.test(a.bpna.trim()) && a.street.trim() && RE_NUMERIC.test(a.number.trim()) && RE_NUMERIC.test(a.zipCode.trim()) && a.city.trim() && a.country.trim();
+    const addrOk = (a: AddressForm) => RE_BPNA.test(a.bpna.trim()) && a.street.trim() && NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.test(a.number.trim()) && NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.test(a.zipCode.trim()) && a.city.trim() && a.country.trim();
     if (!form.addresses.every(addrOk)) return false;
 
     if (!form.sites.length) return false;
     const sitesOk = form.sites.every((s) => RE_BPNS.test(s.bpns.trim()) && s.addresses.length && s.addresses.every(addrOk));
     return sitesOk;
+};
+
+const findDuplicate = (values: string[]): string | null => {
+    const checked = new Set<string>();
+    for (const value of values) {
+        const v = value.trim();
+        if (!v) continue;
+        if (checked.has(v)) return v;
+        checked.add(v);
+    }
+    return null;
 };
 
 export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationModalProps) => {
@@ -172,8 +178,25 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
     };
 
     const handleSaveClick = async () => {
-        if (!isValidPartnerForm(form)) {
+        const bpnaValues = [...form.addresses.map(a => a.bpna), ...form.sites.flatMap(s => s.addresses.map(a => a.bpna))];
+        const bpnsValues = form.sites.map(s => s.bpns);
+
+        const duplicateBpna = findDuplicate(bpnaValues);
+        const duplicateBpns = findDuplicate(bpnsValues);
+
+        if (duplicateBpna || duplicateBpns || !isValidPartnerForm(form)) {
             setFormError(true);
+
+            if (duplicateBpna || duplicateBpns) {
+                notify({
+                    title: 'Duplicate BPN',
+                    description: duplicateBpna
+                        ? `Address BPNA ${duplicateBpna} is used more than once. Each address must have a unique BPN.`
+                        : `Site BPN ${duplicateBpns} is used more than once. Each site must have a unique BPNS.`,
+                    severity: 'error',
+                });
+            }
+
             return;
         }
 
@@ -227,7 +250,7 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
                         />
                     </Grid>
                     <Grid item xs={12}>
-                        <InputLabel>EDC URL*</InputLabel>
+                        <InputLabel>EDC URL* <InfoButton text={`The EDC URL needs to include the data space protocol (DSP) endpoint. This commonly is "api/v1/dsp"`} /></InputLabel>
                         <Input
                             id="partner-edc-url"
                             type="text"
@@ -303,7 +326,7 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
                                         value={address.number}
                                         onChange={(e) => handleAddressChange(index, 'number', e.target.value)}
                                         placeholder="Number"
-                                        error={formError && !RE_NUMERIC.test(address.number.trim())}
+                                        error={formError && !NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.test(address.number.trim())}
                                         data-testid={`partner-modal-address-${index}-number`}
                                     />
                                 </Grid>
@@ -314,7 +337,7 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
                                         value={address.zipCode}
                                         onChange={(e) => handleAddressChange(index, 'zipCode', e.target.value)}
                                         placeholder="ZIP code"
-                                        error={formError && !RE_NUMERIC.test(address.number.trim())}
+                                        error={formError && !NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.test(address.zipCode.trim())}
                                         data-testid={`partner-modal-address-${index}-zipcode`}
                                     />
                                 </Grid>
@@ -439,7 +462,7 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
                                                 />
                                             </Grid>
                                             <Grid item xs={12} sm={4}>
-                                                <InputLabel>Street</InputLabel>
+                                                <InputLabel>Street*</InputLabel>
                                                 <Input
                                                     type="text"
                                                     value={address.street}
@@ -449,29 +472,29 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
                                                 />
                                             </Grid>
                                             <Grid item xs={12} sm={4}>
-                                                <InputLabel>Number</InputLabel>
+                                                <InputLabel>Number*</InputLabel>
                                                 <Input
                                                     type="text"
                                                     value={address.number}
                                                     onChange={(e) => handleSiteAddressChange(siteIndex, addressIndex, 'number', e.target.value)}
                                                     placeholder="Number"
-                                                    error={formError && !RE_NUMERIC.test(address.number.trim())}
+                                                    error={formError && !NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.test(address.number.trim())}
                                                     data-testid={`partner-modal-site-address-${siteIndex}-${addressIndex}-number`}
                                                 />
                                             </Grid>
                                             <Grid item xs={12} sm={4}>
-                                                <InputLabel>ZIP code</InputLabel>
+                                                <InputLabel>ZIP code*</InputLabel>
                                                 <Input
                                                     type="text"
                                                     value={address.zipCode}
                                                     onChange={(e) => handleSiteAddressChange(siteIndex, addressIndex, 'zipCode', e.target.value)}
                                                     placeholder="ZIP code"
-                                                    error={formError && !RE_NUMERIC.test(address.number.trim())}
+                                                    error={formError && !NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.test(address.zipCode.trim())}
                                                     data-testid={`partner-modal-site-address-${siteIndex}-${addressIndex}-zipcode`}
                                                 />
                                             </Grid>
                                             <Grid item xs={12} sm={4}>
-                                                <InputLabel>City</InputLabel>
+                                                <InputLabel>City*</InputLabel>
                                                 <Input
                                                     type="text"
                                                     value={address.city}
@@ -481,7 +504,7 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
                                                 />
                                             </Grid>
                                             <Grid item xs={12} sm={4}>
-                                                <InputLabel>Country</InputLabel>
+                                                <InputLabel>Country*</InputLabel>
                                                 <Input
                                                     type="text"
                                                     value={address.country}
