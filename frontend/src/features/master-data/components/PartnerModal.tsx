@@ -106,7 +106,7 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
 
     const handleAddressChange = (index: number, field: keyof AddressForm, value: string) => {
         setForm((prev) => {
-            const sanitized = field === 'number' || field === 'zipCode' ? value.replace(/\D/g, '') : field === 'bpna' ? value.toUpperCase() : value;
+            const sanitized = field === 'bpna' ? value.toUpperCase() : value;
 
             const addresses = prev.addresses.map((addr, i) => i === index ? { ...addr, [field]: sanitized } : addr );
             return { ...prev, addresses };
@@ -149,7 +149,7 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
             const sites = prev.sites.map((site, i) => {
                 if (i !== siteIndex) return site;
 
-                const sanitized = field === 'number' || field === 'zipCode' ? value.replace(/\D/g, '') : field === 'bpna' ? value.toUpperCase() : value;
+                const sanitized = field === 'bpna' ? value.toUpperCase() : value;
                 const addresses = site.addresses.map((addr, j) => j === addressIndex ? { ...addr, [field]: sanitized } : addr);
                 return { ...site, addresses };
             });
