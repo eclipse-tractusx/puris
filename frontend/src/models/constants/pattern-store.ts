@@ -22,5 +22,5 @@ export const RE_BPNL = /^BPNL[A-Z0-9]{12}$/;
 export const RE_BPNA = /^BPNA[A-Z0-9]{12}$/;
 export const RE_BPNS = /^BPNS[A-Z0-9]{12}$/;
 
-export const NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING = /^[^\\n\\x0B\\f\\r\\x85\\u2028\\u2029]+$/;
+export const NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING = /^[^\n\x0B\f\r\x85\u2028\u2029]+$/;
 export const URL_REGEX = /^http[s]?:\/\/([a-z0-9][a-z0-9-]+[a-z0-9])(\.[a-z0-9-]+)*(:[0-9]{1,4})?(\/[a-z0-9-]+)*\/?$/;

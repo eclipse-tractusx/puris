@@ -48,8 +48,8 @@ export const postPartner = async (partner: Partial<Partner>) => {
         },
     });
     if (res.status >= 400) {
-        const error = await res.json();
-        throw error;
+        const errorText = await res.text();
+        throw new Error(errorText);
     }
 
     return res.json();

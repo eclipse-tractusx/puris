@@ -213,7 +213,7 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
         } catch (error: any) {
             notify({
                 title: 'Error saving partner',
-                description: error?.message ?? 'Unknown error',
+                description:  error instanceof Error ? (error.message || 'Unknown error') : (typeof error === 'string' && error.trim() ? error : 'Unknown error'),
                 severity: 'error',
             });
             handleClose();
