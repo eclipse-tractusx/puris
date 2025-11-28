@@ -24,7 +24,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- /
+- fixed incorrect expected heading in E2E test suite ([#1057](https://github.com/eclipse-tractusx/puris/pull/1057))
 
 ### Known Knowns
 
