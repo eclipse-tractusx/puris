@@ -21,7 +21,6 @@ SPDX-License-Identifier: Apache-2.0
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { Notification } from '@models/types/data/notification';
 import { PageSnackbar, PageSnackbarStack } from '@catena-x/portal-shared-components';
-import ReactDOM from 'react-dom';
 
 type NotificationContext = {
     notify: (notification: Notification) => void;
