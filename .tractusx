@@ -19,6 +19,7 @@
 
 product: "PURIS"
 leadingRepository: "https://github.com/eclipse-tractusx/puris"
+repoCategory: "product"
 repositories:
 - name: "puris"
   usage: "PURIS Frontend and Backend Implementation"
@@ -28,3 +29,5 @@ skipReleaseChecks:
     - "local/vault/Dockerfile"
     - "local/iam-mock/Dockerfile"
     - "local/testing/e2e/Dockerfile"
+  legalNoticesNonCode:
+    - "frontend/src/assets/User_Guide.md"

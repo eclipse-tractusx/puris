@@ -14,8 +14,8 @@ Beside the dependencies provided in the Helm Chart, the following dependencies h
 
 | Application                                                                                                       | App Version | Chart Version |
 | ----------------------------------------------------------------------------------------------------------------- | ----------- | ------------- |
-| [Tractus-X Connector](https://github.com/eclipse-tractusx/tractusx-edc/tree/main/charts/tractusx-connector)       | 0.10.0      | 0.10.0        |
-| [Digital Twin Registry](https://github.com/eclipse-tractusx/sldt-digital-twin-registry/tree/main/charts/registry) | 0.9.0       | 0.9.0         |
+| [Tractus-X Connector](https://github.com/eclipse-tractusx/tractusx-edc/tree/main/charts/tractusx-connector)       | 0.10.2      | 0.10.2        |
+| [Digital Twin Registry](https://github.com/eclipse-tractusx/sldt-digital-twin-registry/tree/main/charts/registry) | 0.10.0      | 0.10.0        |
 
 ## Overview of Implemented Standards
 

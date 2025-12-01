@@ -34,7 +34,7 @@ See the `INSTALL.md` files in the [backend](./backend/INSTALL.md) and [frontend]
 See `Install.md` file in folder [local](./local/docker-compose.yaml) for integration testing environment with two
 deployed applications and EDCs.
 
-# NOTICE
+## NOTICE
 
 This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
