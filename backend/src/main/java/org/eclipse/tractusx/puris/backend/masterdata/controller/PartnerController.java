@@ -107,7 +107,7 @@ public class PartnerController {
             PartnerDto createdPartnerDto = modelMapper.map(createdPartner, PartnerDto.class);
             return ResponseEntity.ok(createdPartnerDto);
         } catch (KeyAlreadyExistsException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Partner already exists. Use PUT instead.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Partner already exists.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Partner is invalid.");
         } catch (IllegalStateException e) {

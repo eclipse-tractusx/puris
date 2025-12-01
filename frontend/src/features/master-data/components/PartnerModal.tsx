@@ -65,8 +65,8 @@ const formToPartner = (form: PartnerForm): Partial<Partner> => {
     return { name: form.name.trim(), bpnl: form.bpnl.trim() as any, edcUrl: form.edcUrl.trim(), addresses: form.addresses.map(mapAddress), sites: form.sites.map(mapSite) };
 };
 
-const isValidPartnerForm = (form: PartnerForm) => {
-    if (!form.name.trim() || !RE_BPNL.test(form.bpnl.trim()) || !isHttpUrl(form.edcUrl)) return false;
+const isValidPartnerForm = (form: PartnerForm, existingBpnls: string[] = []) => {
+    if (!form.name.trim() || !RE_BPNL.test(form.bpnl.trim()) || existingBpnls.includes(form.bpnl.trim()) || !isHttpUrl(form.edcUrl)) return false;
     
     const addrOk = (a: AddressForm) => RE_BPNA.test(a.bpna.trim()) && a.street.trim() && NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.test(a.number.trim()) && NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING.test(a.zipCode.trim()) && a.city.trim() && a.country.trim();
     if (!form.addresses.every(addrOk)) return false;
@@ -90,6 +90,7 @@ const findDuplicate = (values: string[]): string | null => {
 export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationModalProps) => {
     const [form, setForm] = useState<PartnerForm>(createEmptyPartner());
     const [formError, setFormError] = useState(false);
+    const [conflictingBpnls, setConflictingBpnls] = useState<string[]>([]);
     const { notify } = useNotifications();
 
     useEffect(() => { if (!open) return; setFormError(false); }, [open]);
@@ -184,7 +185,7 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
         const duplicateBpna = findDuplicate(bpnaValues);
         const duplicateBpns = findDuplicate(bpnsValues);
 
-        if (duplicateBpna || duplicateBpns || !isValidPartnerForm(form)) {
+        if (duplicateBpna || duplicateBpns || !isValidPartnerForm(form, conflictingBpnls)) {
             setFormError(true);
 
             if (duplicateBpna || duplicateBpns) {
@@ -210,18 +211,28 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
                 severity: 'success',
             });
             handleClose();
-        } catch (error: any) {
+        } catch (e: any) {
+            const error = (e || {}) as { status?: number; message?: string };
+            const bpnl = form.bpnl.trim();
+
+            if (error.status === 409) {
+                setConflictingBpnls((prev) => (prev.includes(bpnl) ? prev : [...prev, bpnl]));
+                setFormError(true);
+            }
+
             notify({
-                title: 'Error saving partner',
-                description:  error instanceof Error ? (error.message || 'Unknown error') : (typeof error === 'string' && error.trim() ? error : 'Unknown error'),
+                title: error.status === 409 ? 'BPNL already exists' : 'Error saving partner',
+                description:
+                    error.status === 409
+                        ? `A partner with BPNL ${bpnl} already exists. Please use a different BPNL.`
+                        : (error.message && error.message.trim()) || 'Unknown error',
                 severity: 'error',
             });
-            handleClose();
         }
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth >
+        <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
             <DialogTitle variant="h3" textAlign="center">New Partner</DialogTitle>
             <Stack padding="0 2rem 2rem" sx={{ maxWidth: '100%' }}>
                 <Grid container spacing={1} padding=".25rem">
@@ -245,7 +256,7 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
                             value={form.bpnl}
                             onChange={(e) => handleFieldChange('bpnl', e.target.value)}
                             placeholder="Enter BPNL"
-                            error={formError && !RE_BPNL.test(form.bpnl.trim())}
+                            error={formError && (!RE_BPNL.test(form.bpnl.trim()) || conflictingBpnls.includes(form.bpnl.trim()))}
                             data-testid="partner-modal-bpnl"
                         />
                     </Grid>

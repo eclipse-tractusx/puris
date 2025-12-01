@@ -39,17 +39,28 @@ export const getAllPartners = async () => {
 }
 
 export const postPartner = async (partner: Partial<Partner>) => {
-    const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_ALL_PARTNERS, {
-        method: 'POST',
-        body: JSON.stringify(partner),
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${AuthenticationService.getToken()}`
-        },
-    });
+    let res: Response;
+    try {
+        res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_ALL_PARTNERS, {
+            method: 'POST',
+            body: JSON.stringify(partner),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${AuthenticationService.getToken()}`
+            },
+        });
+    } catch (error) {
+        throw {
+            message: 'Failed to fetch: ' + (error instanceof Error ? error.message : String(error)) 
+        };
+    }
+    
     if (res.status >= 400) {
         const errorText = await res.text();
-        throw new Error(errorText);
+        throw {
+            status: res.status,
+            message: errorText
+        };
     }
 
     return res.json();

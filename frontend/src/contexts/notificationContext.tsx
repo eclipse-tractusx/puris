@@ -21,6 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { Notification } from '@models/types/data/notification';
 import { PageSnackbar, PageSnackbarStack } from '@catena-x/portal-shared-components';
+import ReactDOM from 'react-dom';
 
 type NotificationContext = {
     notify: (notification: Notification) => void;
@@ -40,20 +41,28 @@ export const NotificationContextProvider = ({ children }: NotificationProviderPr
     return (
         <>
             <notificationContext.Provider value={{ notify }}>{children}</notificationContext.Provider>
-            <PageSnackbarStack>
-                {notifications.map((notification, index) => (
-                    <PageSnackbar
-                        key={index}
-                        open={!!notification}
-                        severity={notification?.severity}
-                        title={notification?.title}
-                        description={notification?.description}
-                        autoClose={true}
-                        onCloseNotification={() => setNotifications((ns) => ns.filter((_, i) => i !== index) ?? [])}
-                        data-testid={`toast-${notification?.severity}`}
-                    />
-                ))}
-            </PageSnackbarStack>
+            {notifications.length > 0 && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 2000, pointerEvents: 'none' }}>
+                    <div style={{ pointerEvents: 'auto' }}>
+                        <PageSnackbarStack>
+                            {notifications.map((notification, index) => (
+                                <PageSnackbar
+                                    key={index}
+                                    open={!!notification}
+                                    severity={notification?.severity}
+                                    title={notification?.title}
+                                    description={notification?.description}
+                                    autoClose={true}
+                                    onCloseNotification={() =>
+                                        setNotifications((ns) => ns.filter((_, i) => i !== index) ?? [])
+                                    }
+                                    data-testid={`toast-${notification?.severity}`}
+                                />
+                            ))}
+                        </PageSnackbarStack>
+                    </div>
+                </div>
+            )}
         </>
     );
 };
