@@ -149,7 +149,7 @@ export const DemandCategoryCreationModal = ({
                                 locale="de"
                                 error={formError && !temporaryDemand?.day}
                                 readOnly={false}
-                                value={temporaryDemand?.day}
+                                defaultValue={temporaryDemand?.day}
                                 onChangeItem={(value) => setTemporaryDemand((curr) => ({ ...curr, day: value ?? undefined }))}
                             />
                         </div>
