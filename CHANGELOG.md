@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- Added component to copy text to clipboard for puris frontend ([#1057](https://github.com/eclipse-tractusx/puris/pull/1057))
+- Added component to copy text to clipboard for puris frontend ([#1058](https://github.com/eclipse-tractusx/puris/pull/1058))
 
 ### Changed
 
