@@ -26,6 +26,7 @@ import { Box, Button, Checkbox, Dialog, DialogTitle, Grid, InputLabel, Stack } f
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { Partner } from '@models/types/edc/partner';
 import { MaterialPartnerRelation } from '@models/types/data/material-partner-relation';
+import { InfoButton } from '@components/ui/InfoButton';
 
 const isValidMpr = (mpr: Partial<MaterialPartnerRelation>) =>
     !!mpr.ownMaterialNumber?.trim() &&
@@ -168,30 +169,33 @@ export const MaterialPartnerRelationModal = ({ open, materials, partners, mprs, 
                                 data-testid="material-modal-material-number"
                             />
                         </Grid>
-                        <Grid item xs={3} alignContent="end">
-                            <Stack direction="row" alignItems="center">
-                                <Checkbox
-                                    id="partnerSuppliesMaterial"
-                                    disabled={!selectedMaterial?.materialFlag || !selectedMaterial.productFlag}
-                                    checked={temporaryMpr?.partnerSuppliesMaterial ?? false}
-                                    onChange={(event) => setTemporaryMpr({ ...temporaryMpr, partnerSuppliesMaterial: event.target.checked })}
-                                    data-testid="mpr-modal-partner-supplies-material"
-                                />
-                                <InputLabel htmlFor="partnerSuppliesMaterial"> supplies material </InputLabel>
+                        <Grid item xs={6} alignContent="end">
+                            <Stack>
+                                <Stack direction="row" alignItems="center" spacing=".25rem">
+                                    <InputLabel>Relation Type*</InputLabel>
+                                    <InfoButton text="These values are defaulted based on the material's definition (Inbound, Outbound, Bidirectional)" />
+                                </Stack>
+                                <Stack direction="row" alignItems="center">
+                                    <Checkbox
+                                        id="partnerSuppliesMaterial"
+                                        disabled={!selectedMaterial?.materialFlag || !selectedMaterial.productFlag}
+                                        checked={temporaryMpr?.partnerSuppliesMaterial ?? false}
+                                        onChange={(event) => setTemporaryMpr({ ...temporaryMpr, partnerSuppliesMaterial: event.target.checked })}
+                                        data-testid="mpr-modal-partner-supplies-material"
+                                        />
+                                    <InputLabel htmlFor="partnerSuppliesMaterial"> supplies material </InputLabel>
+                                    <Checkbox
+                                        id="partnerBuysMaterial"
+                                        disabled={!selectedMaterial?.materialFlag || !selectedMaterial.productFlag}
+                                        checked={temporaryMpr?.partnerBuysMaterial ?? false}
+                                        onChange={(event) => setTemporaryMpr({ ...temporaryMpr, partnerBuysMaterial: event.target.checked })}
+                                        data-testid="mpr-modal-partner-buys-material"
+                                        />
+                                    <InputLabel htmlFor="partnerBuysMaterial"> buys material </InputLabel>
+                                </Stack>
                             </Stack>
                         </Grid>
-                        <Grid item xs={3} alignContent="end">
-                            <Stack direction="row" alignItems="center">
-                                <Checkbox
-                                    id="partnerBuysMaterial"
-                                    disabled={!selectedMaterial?.materialFlag || !selectedMaterial.productFlag}
-                                    checked={temporaryMpr?.partnerBuysMaterial ?? false}
-                                    onChange={(event) => setTemporaryMpr({ ...temporaryMpr, partnerBuysMaterial: event.target.checked })}
-                                    data-testid="mpr-modal-partner-buys-material"
-                                />
-                                <InputLabel htmlFor="partnerBuysMaterial"> buys material </InputLabel>
-                            </Stack>
-                        </Grid>
+                            
                     </>
                 </Grid>
                 <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="1rem">

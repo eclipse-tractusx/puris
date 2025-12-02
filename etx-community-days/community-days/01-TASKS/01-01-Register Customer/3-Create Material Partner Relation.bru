@@ -5,18 +5,21 @@ meta {
 }
 
 post {
-  url: {{OWN_PURIS_BACKEND}}/catena/materialpartnerrelations?partnerBpnl={{CUSTOMER_BPNL}}&ownMaterialNumber={{B64_MNR_OWN}}&partnerMaterialNumber={{B64_MNR_CUSTOMER}}&partnerSupplies=false&partnerBuys=true
-  body: none
+  url: {{OWN_PURIS_BACKEND}}/catena/materialpartnerrelations
+  body: json
   auth: none
 }
 
-params:query {
-  partnerBpnl: {{CUSTOMER_BPNL}}
-  ownMaterialNumber: {{B64_MNR_OWN}}
-  partnerMaterialNumber: {{B64_MNR_CUSTOMER}}
-  partnerSupplies: false
-  partnerBuys: true
+body:json {
+  {
+    "partnerBpnl": "{{CUSTOMER_BPNL}}",
+    "ownMaterialNumber": "{{PRODUCT_OWN_MATERIAL_NUMBER}}",
+    "partnerMaterialNumber": "PRODUCT_CUSTOMER_MATERIAL_NUMBER",
+    "partnerSupplies": false,
+    "partnerBuys": true
+  }
 }
+
 
 headers {
   X-Api-Key: {{OWN_PURIS_BACKEND_API_KEY}}
