@@ -76,7 +76,7 @@ The following is an example of such a body:
 }
 ```
 
-Please note that with this change the properties `partnerCxNumber` and `nameAtManufacturer` where removed from the creation payload.
+Please note that with this change the properties `partnerCxNumber` and `nameAtManufacturer` were removed from the creation payload.
 
 For further documentation of the changed endpoint please refer to the swagger-ui hosted at `your-backend-address/catena/swagger-ui/index.html` or the [latest version hosted at the api hub.](https://eclipse-tractusx.github.io/api-hub/puris/)
 
