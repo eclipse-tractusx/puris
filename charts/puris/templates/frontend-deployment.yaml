@@ -101,6 +101,8 @@ spec:
               value: "{{ .Values.frontend.puris.endpointAllMaterials | default "materials" }}"
             - name: ENDPOINT_ALL_PARTNERS
               value: "{{ .Values.frontend.puris.endpointAllPartners | default "partners" }}"
+            - name: ENDPOINT_MATERIAL_PARTNER_RELATIONS
+              value: "{{ .Values.frontend.puris.endpointMaterialPartnerRelations | default "materialpartnerrelations" }}"
             - name: IDP_URL
               value: "{{ .Values.idp.url }}"
             - name: IDP_REALM

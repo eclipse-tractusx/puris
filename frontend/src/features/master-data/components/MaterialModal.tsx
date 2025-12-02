@@ -86,8 +86,8 @@ export const MaterialInformationModal = ({
 
         setTemporaryMaterial((prev) => ({
             ...prev,
-            materialFlag: key === 'outbound' || key === 'bidirectional',
-            productFlag: key === 'inbound' || key === 'bidirectional',
+            materialFlag: key === 'inbound' || key === 'bidirectional',
+            productFlag: key === 'outbound' || key === 'bidirectional',
         }));
     };
 

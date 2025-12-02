@@ -232,7 +232,7 @@ export const PartnerCreationModal = ({ open, onClose, onSave }: PartnerCreationM
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
+        <Dialog open={open} onClose={handleClose}>
             <DialogTitle variant="h3" textAlign="center">New Partner</DialogTitle>
             <Stack padding="0 2rem 2rem" sx={{ maxWidth: '100%' }}>
                 <Grid container spacing={1} padding=".25rem">

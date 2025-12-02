@@ -31,11 +31,14 @@ import { getAllPartners, postPartner } from '@services/partners-service';
 import { Site } from '@models/types/edc/site';
 import { PartnerCreationModal } from './PartnerModal';
 import { Add } from '@mui/icons-material';
+import { MaterialPartnerRelation } from '@models/types/data/material-partner-relation';
+import { getAllMaterialPartnerRelations, postMaterialPartnerRelation } from '@services/material-partner-relation-service';
+import { MaterialPartnerRelationModal } from './MaterialpartnerRelationModal';
 
 const getDirectionLabel = (row: Material): string => {
     if (row.materialFlag && row.productFlag) return 'Bidirectional';
-    if (row.materialFlag) return 'Outbound';
-    if (row.productFlag) return 'Inbound';
+    if (row.materialFlag) return 'Inbound';
+    if (row.productFlag) return 'Outbound';
     return 'Unknown';
 };
 
@@ -113,8 +116,10 @@ const createParnerColumns = () => {
 export const MasterDataView = () => {
     const [materialModalOpen, setMaterialModalOpen] = useState<boolean>(false);
     const [partnerModalOpen, setPartnerModalOpen] = useState<boolean>(false);
+    const [mprModalOpen, setMprModalOpen] = useState<boolean>(false);
     const [materials, setMaterials] = useState<Material[]>([]);
     const [partners, setPartners] = useState<Partner[]>([]);
+    const [mprs, setMprs] = useState<MaterialPartnerRelation[]>([]);
     const { setTitle } = useTitle();
 
     const fetchMaterials = useCallback(async () => {
@@ -133,6 +138,14 @@ export const MasterDataView = () => {
         }
     }, []);
 
+    const fetchMprs = useCallback(async () => {
+        try {
+            setMprs(await getAllMaterialPartnerRelations());
+        } catch (error) {
+            console.error(error);
+        }
+    }, []);
+
     const handleSaveMaterial = async (material: Partial<Material>) => {
         await postMaterial(material);
         await fetchMaterials();
@@ -143,17 +156,23 @@ export const MasterDataView = () => {
         await fetchPartners();
     };
 
+    const handleSaveMpr = async (mpr: Partial<MaterialPartnerRelation>) => {
+        await postMaterialPartnerRelation(mpr);
+        await fetchMprs();
+    };
+
     useEffect(() => {
         setTitle('Materials');
         fetchMaterials();
         fetchPartners();
-    }, [setTitle, fetchMaterials, fetchPartners]);
+        fetchMprs();
+    }, [setTitle, fetchMaterials, fetchPartners, fetchMprs]);
 
     return (
         <>
-            <Stack spacing={3}>
+            <Stack spacing={2}>
                 <ConfidentialBanner />
-                <Typography variant="h6">Master data</Typography>
+                <Typography variant="h3" component="h1">Master data</Typography>
                 <Stack width='100%' direction="row" justifyContent="end" alignItems="center">
                     {<Button variant="contained" sx={{ display: 'flex', gap: '.5rem' }} onClick={() => {
                         setMaterialModalOpen(true);
@@ -184,12 +203,43 @@ export const MasterDataView = () => {
                 </Stack>
 
                 <Table
-                    autoHeight
                     title="Partners"
                     columns={createParnerColumns()}
                     rows={partners ?? []}
                     getRowId={(row) => row.uuid}
                     noRowsMsg='No partners found'
+                />
+
+                <Stack width='100%' direction="row" justifyContent="end" alignItems="center">
+                    {<Button variant="contained" sx={{ display: 'flex', gap: '.5rem' }} onClick={() => {
+                        setMprModalOpen(true);
+                    }}>
+                        <Add></Add> New Relation
+                    </Button>}
+                </Stack>
+
+                <Table
+                    title="Material Partner Relations"
+                    columns={[
+                        { headerName: 'Material Number', field: 'ownMaterialNumber', flex: 1 },
+                        { headerName: 'Partner BPNL', field: 'partnerBpnl', flex: 1 },
+                        { headerName: 'Partner Material Number', field: 'partnerMaterialNumber', flex: 1 },
+                        {
+                            headerName: 'Supplies Material',
+                            field: 'partnerSuppliesMaterial',
+                            flex: 1,
+                            valueGetter: (params) => (params.row.partnerSuppliesMaterial ? 'Yes' : 'No'),
+                        },
+                        {
+                            headerName: 'Buys Material',
+                            field: 'partnerBuysMaterial',
+                            flex: 1,
+                            valueGetter: (params) => (params.row.partnerBuysMaterial ? 'Yes' : 'No'),
+                        },
+                    ]}
+                    rows={mprs ?? []}
+                    getRowId={(row) => row.ownMaterialNumber + '-' + row.partnerBpnl}
+                    noRowsMsg='No material partner relations found.'
                 />
             </Stack>
 
@@ -204,6 +254,15 @@ export const MasterDataView = () => {
                 open={partnerModalOpen}
                 onClose={() => setPartnerModalOpen(false)}
                 onSave={handleSavePartner}
+            />
+
+            <MaterialPartnerRelationModal
+                open={mprModalOpen}
+                onClose={() => setMprModalOpen(false)}
+                onSave={handleSaveMpr}
+                materials={materials}
+                partners={partners}
+                mprs={mprs}
             />
         </>
     );

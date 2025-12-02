@@ -30,6 +30,7 @@ import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialPartnerRelationDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -40,7 +41,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Base64;
+import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("materialpartnerrelations")
@@ -62,6 +65,33 @@ public class MaterialPartnerRelationsController {
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
     @PreAuthorize("hasRole('PURIS_ADMIN')")
+    @GetMapping
+    @Operation(summary = "Get all Material Partner Relations -- ADMIN ONLY", description =
+        "Returns a list of all MaterialPartnerRelations as DTOs.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved all MaterialPartnerRelations."),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.")
+    })
+    public ResponseEntity<List<MaterialPartnerRelationDto>> getAllMaterialPartnerRelations() {
+        try {
+            List<MaterialPartnerRelation> allRelations = mprService.findAll();
+            List<MaterialPartnerRelationDto> dtos = allRelations.stream()
+                .map(mpr -> new MaterialPartnerRelationDto(
+                    mpr.getMaterial().getOwnMaterialNumber(),
+                    mpr.getPartner().getBpnl(),
+                    mpr.getPartnerMaterialNumber(),
+                    mpr.isPartnerSuppliesMaterial(),
+                    mpr.isPartnerBuysMaterial()
+                ))
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            log.error("Error retrieving all material partner relations", e);
+            return new ResponseEntity<>(HttpStatusCode.valueOf(500));
+        }
+    }
+
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @PostMapping
     @Operation(summary = "Creates a Material Partner Relation -- ADMIN ONLY", description =
         "Creates a new MaterialPartnerRelation with the given parameter data. " +
@@ -73,60 +103,32 @@ public class MaterialPartnerRelationsController {
         @ApiResponse(responseCode = "409", description = "Relation for given Material and Partner does already exist."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
-    public ResponseEntity<?> createMaterialPartnerRelation(
-        @Parameter(description = "The Material Number that is used in your own company to identify the Material, "+
-            "encoded in base64") @RequestParam String ownMaterialNumber,
-        @Parameter(description = "The unique BPNL that was assigned to that Partner.",
-            example = "BPNL2222222222RR") @RequestParam() String partnerBpnl,
-        @Parameter(description = "The Material Number that this Partner is using in his own company to identify the Material, "
-            + "encoded in base64") @RequestParam String partnerMaterialNumber,
-        @Parameter(description = "The CatenaX Number that this Partner uses",
-            example = "860fb504-b884-4009-9313-c6fb6cdc776b") @RequestParam(required = false) String partnerCXNumber,
-        @Parameter(description = "The informal name that this Partner uses",
-            example = "Semiconductor") @RequestParam(required = false) String nameAtManufacturer,
-        @Parameter(description = "This boolean flag indicates whether this Partner is a potential supplier of the given Material.",
-            example = "true") @RequestParam boolean partnerSupplies,
-        @Parameter(description = "This boolean flag indicates whether this Partner is a potential customer of this Material.",
-            example = "true") @RequestParam boolean partnerBuys) {
-        try {
-            ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
-            partnerMaterialNumber = new String(Base64.getDecoder().decode(partnerMaterialNumber));
-        } catch (Exception e) {
-            log.error("parameters were not properly encoded in base64");
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
-        }
-        if (!materialPattern.matcher(ownMaterialNumber).matches() || !materialPattern.matcher(partnerMaterialNumber).matches()
-            || !bpnlPattern.matcher(partnerBpnl).matches()) {
+    public ResponseEntity<?> createMaterialPartnerRelation(@RequestBody MaterialPartnerRelationDto dto) {
+        if (!materialPattern.matcher(dto.getOwnMaterialNumber()).matches() || !materialPattern.matcher(dto.getPartnerMaterialNumber()).matches()
+            || !bpnlPattern.matcher(dto.getPartnerBpnl()).matches()) {
             log.warn("Rejected message parameters. ");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
 
-        Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
+        Material material = materialService.findByOwnMaterialNumber(dto.getOwnMaterialNumber());
         if (material == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-        Partner partner = partnerService.findByBpnl(partnerBpnl);
+        Partner partner = partnerService.findByBpnl(dto.getPartnerBpnl());
         if (partner == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-
         if (mprService.find(material, partner) != null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(409));
         }
-        MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber, partnerSupplies, partnerBuys);
-        if (partnerCXNumber != null) {
-            newMpr.setPartnerCXNumber(partnerCXNumber);
-        }
-        if (nameAtManufacturer != null) {
-            newMpr.setNameAtManufacturer(nameAtManufacturer);
-        }
+        MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, dto.getPartnerMaterialNumber(), dto.isPartnerSuppliesMaterial(), dto.isPartnerBuysMaterial());
 
         newMpr = mprService.create(newMpr);
         if (newMpr == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(500));
         }
 
-        return new ResponseEntity<>(HttpStatusCode.valueOf(200));
+        return new ResponseEntity<>(newMpr, HttpStatusCode.valueOf(200));
     }
 
     @PreAuthorize("hasRole('PURIS_ADMIN')")

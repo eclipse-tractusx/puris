@@ -4,6 +4,8 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 
 <!-- TOC -->
 - [Migration Guide](#migration-guide)
+  - [Version 5.0.x to 5.2.x](#version-50x-to-52x)
+    - [The endpoint for Material Partner Relations was changed](#the-endpoint-for-material-partner-relations-was-changed)
   - [Version 4.2.x to 5.0.x](#version-42x-to-50x)
     - [StockView Controller Needs Mandatory Parameter for Routes material-stocks and product-stocks](#stockview-controller-needs-mandatory-parameter-for-routes-material-stocks-and-product-stocks)
   - [Version 4.1.x to 4.2.x](#version-41x-to-42x)
@@ -55,6 +57,28 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 > 
 > - Deploying an older version of the software may have used an older postgresql version. This is NOT applicable for the PURIS charts.
 > - The community is working out on how to resolve the issue.
+
+## Version 5.0.x to 5.2.x
+
+### The endpoint for Material Partner Relations was changed
+
+In case you used the backend route `materialpartnerrelations` to create new material partner relations you need to update your API calls. Instead of query paramaters the endpoint now expects the material partner relations as a json body.
+
+The following is an example of such a body:
+
+```json
+{
+  "partnerBpnl": "BPNL1234567890ZZ",
+  "ownMaterialNumber": "MNR-7307-AU340474.002",
+  "partnerMaterialNumber": "MNR-8101-ID146955.001",
+  "partnerSuppliesMaterial": true,
+  "partnerBuysMaterial": false
+}
+```
+
+Please note that with this change the properties `partnerCxNumber` and `nameAtManufacturer` were removed from the creation payload.
+
+For further documentation of the changed endpoint please refer to the swagger-ui hosted at `your-backend-address/catena/swagger-ui/index.html` or the [latest version hosted at the api hub.](https://eclipse-tractusx.github.io/api-hub/puris/)
 
 ## Version 4.2.x to 5.0.x
 
