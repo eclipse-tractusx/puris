@@ -4,7 +4,7 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 
 <!-- TOC -->
 - [Migration Guide](#migration-guide)
-  - [Version 5.0.x to 5.2.x](#version-50x-to-52x)
+  - [Version 5.0.x to 6.0.x](#version-50x-to-60x)
     - [The endpoint for Material Partner Relations was changed](#the-endpoint-for-material-partner-relations-was-changed)
   - [Version 4.2.x to 5.0.x](#version-42x-to-50x)
     - [StockView Controller Needs Mandatory Parameter for Routes material-stocks and product-stocks](#stockview-controller-needs-mandatory-parameter-for-routes-material-stocks-and-product-stocks)
@@ -58,7 +58,7 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 > - Deploying an older version of the software may have used an older postgresql version. This is NOT applicable for the PURIS charts.
 > - The community is working out on how to resolve the issue.
 
-## Version 5.0.x to 5.2.x
+## Version 5.0.x to 6.0.x
 
 ### The endpoint for Material Partner Relations was changed
 
