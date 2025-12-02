@@ -29,7 +29,7 @@ npm/npmjs/-/inline-style-parser/0.1.1, MIT, approved, #2971
 npm/npmjs/-/is-arrayish/0.2.1, MIT, approved, clearlydefined
 npm/npmjs/-/is-buffer/2.0.5, MIT, approved, clearlydefined
 npm/npmjs/-/is-core-module/2.15.1, MIT, approved, clearlydefined
-npm/npmjs/-/is-number/7.0.0, MIT, approved, clearlydefined
+npm/npmjs/-/is-number/7.0.0, MIT, approved, #24836
 npm/npmjs/-/is-plain-obj/4.1.0, MIT, approved, clearlydefined
 npm/npmjs/-/js-sha256/0.11.0, MIT, approved, clearlydefined
 npm/npmjs/-/json-parse-even-better-errors/2.3.1, MIT, approved, clearlydefined
@@ -61,13 +61,13 @@ npm/npmjs/-/micromark-util-subtokenize/1.1.0, MIT, approved, clearlydefined
 npm/npmjs/-/micromark-util-symbol/1.1.0, MIT, approved, clearlydefined
 npm/npmjs/-/micromark-util-types/1.1.0, MIT, approved, clearlydefined
 npm/npmjs/-/micromark/3.2.0, MIT, approved, clearlydefined
-npm/npmjs/-/micromatch/4.0.8, MIT, approved, clearlydefined
+npm/npmjs/-/micromatch/4.0.8, MIT, approved, #24818
 npm/npmjs/-/minimatch/9.0.3, ISC, approved, #9190
 npm/npmjs/-/minimatch/9.0.5, ISC, approved, #9190
 npm/npmjs/-/mri/1.2.0, MIT, approved, clearlydefined
 npm/npmjs/-/parse-json/5.2.0, MIT, approved, clearlydefined
 npm/npmjs/-/path-parse/1.0.7, MIT, approved, clearlydefined
-npm/npmjs/-/picocolors/1.1.1, ISC, approved, clearlydefined
+npm/npmjs/-/picocolors/1.1.1, ISC, approved, #24873
 npm/npmjs/-/postcss/8.4.49, MIT, approved, #3545
 npm/npmjs/-/property-information/6.5.0, MIT, approved, clearlydefined
 npm/npmjs/-/querystringify/2.2.0, MIT, approved, clearlydefined
@@ -88,7 +88,7 @@ npm/npmjs/-/source-map/0.5.7, BSD-3-Clause, approved, #2400
 npm/npmjs/-/space-separated-tokens/2.0.2, MIT, approved, clearlydefined
 npm/npmjs/-/style-to-object/0.4.4, MIT, approved, #6637
 npm/npmjs/-/supports-preserve-symlinks-flag/1.0.0, MIT, approved, clearlydefined
-npm/npmjs/-/to-regex-range/5.0.1, MIT, approved, clearlydefined
+npm/npmjs/-/to-regex-range/5.0.1, MIT, approved, #24810
 npm/npmjs/-/trim-lines/3.0.1, MIT, approved, clearlydefined
 npm/npmjs/-/trough/2.2.0, MIT, approved, clearlydefined
 npm/npmjs/-/ts-api-utils/1.4.3, MIT, approved, #17411
@@ -106,7 +106,7 @@ npm/npmjs/-/vfile/5.3.7, MIT, approved, clearlydefined
 npm/npmjs/-/vite/5.4.11, MIT AND (ISC AND MIT) AND (Apache-2.0 AND BSD-2-Clause AND BlueOak-1.0.0 AND CC0-1.0 AND ISC AND MIT) AND (BSD-3-Clause AND MIT) AND ISC AND (BSD-2-Clause AND BSD-3-Clause), approved, #15844
 npm/npmjs/-/websocket-driver/0.7.4, Apache-2.0, approved, clearlydefined
 npm/npmjs/-/websocket-extensions/0.1.4, Apache-2.0, approved, CQ23021
-npm/npmjs/-/yaml/1.10.2, ISC, approved, clearlydefined
+npm/npmjs/-/yaml/1.10.2, ISC, approved, #24847
 npm/npmjs/@babel/runtime/7.24.0, MIT AND (BSD-2-Clause AND ISC AND MIT) AND BSD-2-Clause AND BSD-3-Clause, approved, #13900
 npm/npmjs/@catena-x/portal-shared-components/2.1.31, Apache-2.0 AND CC-BY-4.0, approved, #10502
 npm/npmjs/@emotion/babel-plugin/11.13.5, MIT AND (BSD-2-Clause AND MIT), approved, #17718
