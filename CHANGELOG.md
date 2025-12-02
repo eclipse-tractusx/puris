@@ -14,6 +14,7 @@ The **need for configuration updates** is **marked bold**.
 ### Added
 
 - added Master data page for viewing all materials and option to add material as an admin ([#1044](https://github.com/eclipse-tractusx/puris/pull/1044))
+- added Partner table and creation modal to Master data page ([#1054](https://github.com/eclipse-tractusx/puris/pull/1054))
 
 ### Changed
 
