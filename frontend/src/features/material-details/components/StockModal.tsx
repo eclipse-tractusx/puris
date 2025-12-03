@@ -30,9 +30,11 @@ import { Close, Delete, Save } from '@mui/icons-material';
 import { ModalMode } from '@models/types/data/modal-mode';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
-import { useSites } from '@features/stock-view/hooks/useSites';
+import { useSiteDesignations } from '../hooks/useSiteDesignations';
 import { useNotifications } from '@contexts/notificationContext';
 import { deleteStocks, postStocks } from '@services/stocks-service';
+import { DirectionType } from '@models/types/erp/directionType';
+import { Site } from '@models/types/edc/site';
 
 const createStockColumns = (handleDelete?: (row: Stock) => void) => {
     const columns = [
@@ -159,9 +161,10 @@ const isValidStock = (stock: Partial<Stock>) =>
 export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stocks, stockType }: StockModalProps) => {
     const [temporaryStock, setTemporaryStock] = useState<Partial<Stock>>(stock ?? {});
     const { partners } = usePartners(stockType, temporaryStock?.material?.ownMaterialNumber ?? null);
-    const { sites } = useSites();
+    const { siteDesignations } = useSiteDesignations(stock?.material?.ownMaterialNumber ?? null, stockType === 'material' ? DirectionType.Inbound : DirectionType.Outbound);
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
+    const sites = siteDesignations?.reduce((acc: Site[], sd) => temporaryStock?.partner?.bpnl && sd.partnerBpnls.includes(temporaryStock.partner.bpnl) ? [...acc, sd.site] : acc, []) ?? [];
 
     const handleSaveClick = () => {
         temporaryStock.customerOrderNumber ||= undefined;
@@ -238,6 +241,7 @@ export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stock
                                         id="stockLocationBpns"
                                         options={sites ?? []}
                                         getOptionLabel={(option) => option.name ?? ''}
+                                        disabled={!temporaryStock?.partner}
                                         error={formError}
                                         isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
                                         onChange={(_, value) =>

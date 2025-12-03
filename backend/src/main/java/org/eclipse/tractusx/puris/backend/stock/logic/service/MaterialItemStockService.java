@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
@@ -53,6 +54,10 @@ public class MaterialItemStockService extends ItemStockService<MaterialItemStock
         errors.addAll(basicValidation(materialItemStock));
         errors.addAll(validateLocalStock(materialItemStock));
         errors.addAll(validateMaterialItemStock(materialItemStock));
+        MaterialPartnerRelation mpr = mprService.find(materialItemStock.getPartner().getBpnl(), materialItemStock.getMaterial().getOwnMaterialNumber());
+        if (mpr.getOwnStockingSites().stream().noneMatch(site -> site.getBpns().equals(materialItemStock.getLocationBpns()))) {
+            errors.add("Invalid stocking site for the material and partner.");
+        }
         return errors;
     }
 }

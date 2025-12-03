@@ -32,8 +32,10 @@ import { DateTime } from '@components/ui/DateTime';
 import { ModalMode } from '@models/types/data/modal-mode';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
-import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
+import { useSiteDesignations } from '../hooks/useSiteDesignations';
+import { DirectionType } from '@models/types/erp/directionType';
+import { Site } from '@models/types/edc/site';
 
 const createProductionColumns = (handleDelete?: (row: Production) => void) => {
     const columns = [
@@ -148,7 +150,7 @@ const isValidProduction = (production: Partial<Production>) =>
 export const PlannedProductionModal = ({ open, mode, onClose, onSave, onRemove, production, productions }: PlannedProductionModalProps) => {
     const [temporaryProduction, setTemporaryProduction] = useState<Partial<Production>>(production ?? {});
     const { partners } = usePartners('product', temporaryProduction?.material?.materialNumberSupplier ?? null);
-    const { sites } = useSites();
+    const { siteDesignations } = useSiteDesignations(production?.material?.ownMaterialNumber ?? null, DirectionType.Outbound);
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
     const dailyProductions = useMemo(
@@ -160,6 +162,7 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, onRemove, 
             ),
         [productions, production?.estimatedTimeOfCompletion]
     );
+    const sites = siteDesignations?.reduce((acc: Site[], sd) => temporaryProduction.partner?.bpnl && sd.partnerBpnls.includes(temporaryProduction.partner.bpnl) ? [...acc, sd.site] : acc, []) ?? [];
 
     const canDelete = Boolean(sites?.find(site => productions?.some(d => d.productionSiteBpns === site.bpns)));
 
@@ -220,9 +223,27 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, onRemove, 
                                 <GridItem label="Material Number" value={temporaryProduction.material?.materialNumberSupplier ?? ''} />
                                 <Grid item xs={6}>
                                     <LabelledAutoComplete
+                                        sx={{ margin: '0' }}
+                                        id="partner"
+                                        options={partners ?? []}
+                                        getOptionLabel={(option) => option?.name ?? ''}
+                                        label="Partner*"
+                                        placeholder="Select a Partner"
+                                        error={formError && !temporaryProduction?.partner}
+                                        onChange={(_, value) =>
+                                            setTemporaryProduction({ ...temporaryProduction, partner: value ?? undefined })
+                                        }
+                                        value={temporaryProduction.partner ?? null}
+                                        isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
+                                        data-testid="production-partner-field"
+                                    />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <LabelledAutoComplete
                                         id="productionSiteBpns"
                                         options={sites ?? []}
                                         getOptionLabel={(option) => option.name ?? ''}
+                                        disabled={!temporaryProduction?.partner}
                                         error={formError}
                                         isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
                                         onChange={(_, value) =>
@@ -244,23 +265,6 @@ export const PlannedProductionModal = ({ open, mode, onClose, onSave, onRemove, 
                                         onValueChange={(date) =>
                                             setTemporaryProduction({ ...temporaryProduction, estimatedTimeOfCompletion: date ?? undefined })
                                         }
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <LabelledAutoComplete
-                                        sx={{ margin: '0' }}
-                                        id="partner"
-                                        options={partners ?? []}
-                                        getOptionLabel={(option) => option?.name ?? ''}
-                                        label="Partner*"
-                                        placeholder="Select a Partner"
-                                        error={formError && !temporaryProduction?.partner}
-                                        onChange={(_, value) =>
-                                            setTemporaryProduction({ ...temporaryProduction, partner: value ?? undefined })
-                                        }
-                                        value={temporaryProduction.partner ?? null}
-                                        isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
-                                        data-testid="production-partner-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
