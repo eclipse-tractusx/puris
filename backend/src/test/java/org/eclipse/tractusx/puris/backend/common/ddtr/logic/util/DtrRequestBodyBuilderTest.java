@@ -28,6 +28,7 @@ import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +42,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.SortedSet;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -116,13 +118,17 @@ class DtrRequestBodyBuilderTest {
             "4711 Test City",
             "Testonia"
         );
+        SortedSet<Site> ownSites = PARTNER.getSites();
+        SortedSet<Site> ownSites2 = PARTNER2.getSites();
 
         MPR = new MaterialPartnerRelation(
             MATERIAL,
             PARTNER,
             "MNR-4711-S",
             true,
-            true
+            true,
+            ownSites,
+            ownSites
         );
         MPR.setPartnerCXNumber("urn:uuid:ccfffbba-cfa0-49c4-bc9c-4e13d7a4ac88");
 
@@ -131,7 +137,9 @@ class DtrRequestBodyBuilderTest {
             PARTNER2,
             "MNR-4711-S2",
             true,
-            true
+            true,
+            ownSites2,
+            ownSites2
         );
         MPR2.setPartnerCXNumber("urn:uuid:ccfffbba-cfa0-49c4-bc9c-4e13d7a4ac99");
     }

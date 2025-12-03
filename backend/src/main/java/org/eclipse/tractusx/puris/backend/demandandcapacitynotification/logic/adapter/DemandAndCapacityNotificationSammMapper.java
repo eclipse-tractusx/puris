@@ -75,10 +75,11 @@ public class DemandAndCapacityNotificationSammMapper {
 
         List<String> affectedSitesBpnsSender = notification.getAffectedSitesSender().stream().map(site -> site.getBpns()).collect(Collectors.toList());
         List<String> affectedSitesBpnsRecipient = notification.getAffectedSitesRecipient().stream().map(site -> site.getBpns()).collect(Collectors.toList());
+        List<String> relatedIds = notification.getRelatedNotificationIds() != null ? notification.getRelatedNotificationIds().stream().map(uuid -> uuid.toString()).toList() : null;
         var builder = DemandAndCapacityNotificationSamm.builder();
         var samm = builder
                 .notificationId(notification.getNotificationId().toString())
-                .relatedNotificationIds(notification.getRelatedNotificationIds() != null ? notification.getRelatedNotificationIds().stream().map(uuid -> uuid.toString()).toList() : null)
+                .relatedNotificationIds(relatedIds)
                 .sourceDisruptionId(notification.getSourceDisruptionId() != null ? notification.getSourceDisruptionId().toString() : null)
                 .text(notification.getText())
                 .resolvingMeasureDescription(notification.getResolvingMeasureDescription())
@@ -133,9 +134,10 @@ public class DemandAndCapacityNotificationSammMapper {
         var affectedSitesBpnsRecipient = partnerService.getOwnPartnerEntity().getSites().stream()
             .filter(site -> samm.getAffectedSitesRecipient().contains(site.getBpns()))
             .collect(Collectors.toList());
+        List<UUID> relatedIds = samm.getRelatedNotificationIds() != null ? samm.getRelatedNotificationIds().stream().map(id ->  UUID.fromString(id)).toList() : null;
         var notification = builder
                 .notificationId(UUID.fromString(samm.getNotificationId()))
-                .relatedNotificationIds(samm.getRelatedNotificationIds() != null ? samm.getRelatedNotificationIds().stream().map(id ->  UUID.fromString(id)).toList() : null)
+                .relatedNotificationIds(relatedIds)
                 .sourceDisruptionId(samm.getSourceDisruptionId() != null ? UUID.fromString(samm.getSourceDisruptionId()) : null)
                 .text(samm.getText())
                 .resolvingMeasureDescription(samm.getResolvingMeasureDescription())
