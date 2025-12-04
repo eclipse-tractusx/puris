@@ -1,5 +1,5 @@
 meta {
-  name: 4-Create Material Partner Relation
+  name: 3-Create Material Partner Relation
   type: http
   seq: 4
 }
@@ -10,19 +10,18 @@ post {
   auth: none
 }
 
+headers {
+  X-Api-Key: {{OWN_PURIS_BACKEND_API_KEY}}
+}
+
 body:json {
   {
     "partnerBpnl": "{{CUSTOMER_BPNL}}",
     "ownMaterialNumber": "{{PRODUCT_OWN_MATERIAL_NUMBER}}",
-    "partnerMaterialNumber": "PRODUCT_CUSTOMER_MATERIAL_NUMBER",
-    "partnerSupplies": false,
-    "partnerBuys": true
+    "partnerMaterialNumber": "{{PRODUCT_CUSTOMER_MATERIAL_NUMBER}}",
+    "partnerSuppliesMaterial": false,
+    "partnerBuysMaterial": true
   }
-}
-
-
-headers {
-  X-Api-Key: {{OWN_PURIS_BACKEND_API_KEY}}
 }
 
 script:pre-request {
