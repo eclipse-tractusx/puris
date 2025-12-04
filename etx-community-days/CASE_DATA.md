@@ -2,333 +2,334 @@
 
 <!-- TOC -->
 
-* [Participants](#participants)
-  * [1. Partner "OEM B" (BPNL00000003AVTH)](#1-partner-oem-b-bpnl00000003avth)
-    * [1.1 Product "Vehicle"](#11-product-vehicle)
-      * [1.1.1 Product "Vehicle" Information](#111-product-vehicle-information)
-      * [1.2.3 Partner "OEM B" Supplies Products to](#123-partner-oem-b-supplies-products-to)
-      * [1.2.4 BoM of Product "Vehicle"](#124-bom-of-product-vehicle)
-      * [1.2.4 Partner "OEM B" Buys Materials for Product "Vehicle" from](#124-partner-oem-b-buys-materials-for-product-vehicle-from)
-  * [2. Partner "Tier A" (BPNL00000003B2OM)](#2-partner-tier-a-bpnl00000003b2om)
-    * [2.1 Product "Gearbox"](#21-product-gearbox)
-      * [2.1.1 Product "Gearbox" Information](#211-product-gearbox-information)
-      * [2.1.2 Partner "Tier A" Supplies Product "Gearbox" to](#212-partner-tier-a-supplies-product-gearbox-to)
-      * [2.1.3 BoM of Product "Gearbox"](#213-bom-of-product-gearbox)
-      * [2.1.4 Partner "Tier A" Buys Materials for Product "Gearbox" from](#214-partner-tier-a-buys-materials-for-product-gearbox-from)
-    * [2.2 Product "Tire Model A"](#22-product-tire-model-a)
-      * [2.2.1 Product "Tire Model A" Information](#221-product-tire-model-a-information)
-      * [2.2.2 Partner "Tier A" Supplies Product "Tire Model A"](#222-partner-tier-a-supplies-product-tire-model-a)
-      * [2.2.3 BoM of Product "Tire Model A"](#223-bom-of-product-tire-model-a)
-      * [2.2.4 Partner "Tier A" Buys Materials for Product "Tire Model A" from](#224-partner-tier-a-buys-materials-for-product-tire-model-a-from)
-  * [3 Partner "Sub Tier A" (BPNL00000003B3NX)](#3-partner-sub-tier-a-bpnl00000003b3nx)
-    * [3.1 Product "Sensor"](#31-product-sensor)
-      * [3.1.1 Product "Sensor" Information](#311-product-sensor-information)
-      * [3.1.2 Partner "Sub Tier A" Supplies Product "Sensor" to](#312-partner-sub-tier-a-supplies-product-sensor-to)
-      * [3.1.3 BoM of Product "Sensor"](#313-bom-of-product-sensor)
-      * [3.1.4 Partner "Sub Tier A" Buys Materials for Product "Sensor" from](#314-partner-sub-tier-a-buys-materials-for-product-sensor-from)
-  * [4 Partner "Tier N" (BPNL00000003B0Q0)](#4-partner-tier-n-bpnl00000003b0q0)
-    * [4.1 Product "Tier N Product"](#41-product-tier-n-product)
-      * [4.1.1 Product "Tier N Product" Information](#411-product-tier-n-product-information)
-      * [4.1.2 Partner "Tier N" Supplies Product "Tier N Product" to](#412-partner-tier-n-supplies-product-tier-n-product-to)
-      * [4.1.3 BoM of Product "Tier N Product"](#413-bom-of-product-tier-n-product)
-      * [4.1.4 Partner "Tier N" Buys Materials for Product "Tier N Product"](#414-partner-tier-n-buys-materials-for-product-tier-n-product)
-    * [4.2 Product "Tier-A Plastics"](#42-product-tier-a-plastics)
-      * [4.2.1 Product "Tier-A Plastics" Information](#421-product-tier-a-plastics-information)
-      * [4.2.2 Partner "Tier N" Supplies Product "Tier-A Plastics" to](#422-partner-tier-n-supplies-product-tier-a-plastics-to)
-      * [4.2.3 BoM of Product "Tier-A Plastics"](#423-bom-of-product-tier-a-plastics)
-      * [4.2.4 Partner "Tier N" Buys Materials for Product "Tier-A Plastics" from](#424-partner-tier-n-buys-materials-for-product-tier-a-plastics-from)
-  * [5 Partner "Tier B" (BPNL00000003B5MJ)](#5-partner-tier-b-bpnl00000003b5mj)
-    * [5.1 Product "ECU1"](#51-product-ecu1)
-      * [5.1.1 Product "ECU1" Information](#511-product-ecu1-information)
-      * [5.1.2 Partner "Tier B" Supplies Product "ECU1" to](#512-partner-tier-b-supplies-product-ecu1-to)
-      * [5.1.3 BoM of Product "ECU1"](#513-bom-of-product-ecu1)
-      * [5.1.4 Partner "Tier B" Buys Materials for Product "ECU1" from](#514-partner-tier-b-buys-materials-for-product-ecu1-from)
-  * [6 Partner "Sub Tier B" (BPNL00000003AXS3)](#6-partner-sub-tier-b-bpnl00000003axs3)
-    * [6.1 Product "Glue"](#61-product-glue)
-      * [6.1.1 Product "Glue" Information](#611-product-glue-information)
-      * [6.1.2 Partner "Sub Tier B" Supplies Product "Glue" to](#612-partner-sub-tier-b-supplies-product-glue-to)
-      * [6.1.3 BoM of Product "Glue"](#613-bom-of-product-glue)
-      * [6.1.4 Partner "Sub Tier B" Buys Materials for Product "Glue" from](#614-partner-sub-tier-b-buys-materials-for-product-glue-from)
-  * [7. Partner "Natural Rubber" (BPNL00000007OR16)](#7-partner-natural-rubber-bpnl00000007or16)
-    * [7.1 Product "Natural Rubber Product (40KG blocks)"](#71-product-natural-rubber-product-40kg-blocks)
-      * [7.1.1 Product "Natural Rubber Product (40KG blocks)" Information](#711-product-natural-rubber-product-40kg-blocks-information)
-      * [7.1.2. Partner "Natural Rubber" Supplies Product "Natural Rubber Product (40KG blocks)" to](#712-partner-natural-rubber-supplies-product-natural-rubber-product-40kg-blocks-to)
-      * [7.1.3 BoM of Product "Natural Rubber Product (40KG blocks)"](#713-bom-of-product-natural-rubber-product-40kg-blocks)
-      * [7.1.4 Partner "Natural Rubber" Buys Materials for Product "Natural Rubber Product (40KG blocks)" from](#714-partner-natural-rubber-buys-materials-for-product-natural-rubber-product-40kg-blocks-from)
-  * [8 Partner "Tier C" (BPNL00000000BJTL)](#8-partner-tier-c-bpnl00000000bjtl)
-    * [8.1 Product "Natural Rubber"](#81-product-natural-rubber)
-      * [8.1.1 Product "Natural Rubber" Information](#811-product-natural-rubber-information)
-      * [8.1.2 Partner "Tier C" Supplies Product "Natural Rubber" to](#812-partner-tier-c-supplies-product-natural-rubber-to)
-      * [8.1.3 BoM of Product "Natural Rubber"](#813-bom-of-product-natural-rubber)
-      * [8.1.4 Partner "Tier C" Buys Materials for Product "Natural Rubber" from](#814-partner-tier-c-buys-materials-for-product-natural-rubber-from)
+- [Participants](#participants)
+  - [1 Partner "Atlas" (BPNL000000000065)](#1-partner-atlas-bpnl000000000065)
+    - [1.1 Product "Vehicle"](#11-product-vehicle)
+      - [1.1.1 Product "Vehicle" Information](#111-product-vehicle-information)
+      - [1.1.2 Partner "Atlas" Supplies Product "Vehicle" to](#112-partner-atlas-supplies-product-vehicle-to)
+      - [1.1.3 BoM of Product "Vehicle"](#113-bom-of-product-vehicle)
+      - [1.1.4 Partner "Atlas" Buys Materials for Product "Vehicle" from](#114-partner-atlas-buys-materials-for-product-vehicle-from)
+  - [2 Partner "Belfast" (BPNL00000000015G)](#2-partner-belfast-bpnl00000000015g)
+    - [2.1 Product "Gearbox"](#21-product-gearbox)
+      - [2.1.1 Product "Gearbox" Information](#211-product-gearbox-information)
+      - [2.1.2 Partner "Belfast" Supplies Product "Gearbox" to](#212-partner-belfast-supplies-product-gearbox-to)
+      - [2.1.3 BoM of Product "Gearbox"](#213-bom-of-product-gearbox)
+      - [2.1.4 Partner "Belfast" Buys Materials for Product "Gearbox" from](#214-partner-belfast-buys-materials-for-product-gearbox-from)
+    - [2.2 Product "Tire Model A"](#22-product-tire-model-a)
+      - [2.2.1 Product "Tire Model A" Information](#221-product-tire-model-a-information)
+      - [2.2.2 Partner "Belfast" Supplies Product "Tire Model A" to](#222-partner-belfast-supplies-product-tire-model-a-to)
+      - [2.2.3 BoM of Product "Tire Model A"](#223-bom-of-product-tire-model-a)
+      - [2.2.4 Partner "Belfast" Buys Materials for Product "Tire Model A" from](#224-partner-belfast-buys-materials-for-product-tire-model-a-from)
+  - [3 Partner "Ceres" (BPNL00000000043D)](#3-partner-ceres-bpnl00000000043d)
+    - [3.1 Product "Sensor"](#31-product-sensor)
+      - [3.1.1 Product "Sensor" Information](#311-product-sensor-information)
+      - [3.1.2 Partner "Ceres" Supplies Product "Sensor" to](#312-partner-ceres-supplies-product-sensor-to)
+      - [3.1.3 BoM of Product "Sensor"](#313-bom-of-product-sensor)
+      - [3.1.4 Partner "Ceres" Buys Materials for Product "Sensor" from](#314-partner-ceres-buys-materials-for-product-sensor-from)
+  - [4 Partner "Delta" (BPNL00000000061Z)](#4-partner-delta-bpnl00000000061z)
+    - [4.1 Product "Delta Product"](#41-product-delta-product)
+      - [4.1.1 Product "Delta Product" Information](#411-product-delta-product-information)
+      - [4.1.2 Partner "Delta" Supplies Product "Delta Product" to](#412-partner-delta-supplies-product-delta-product-to)
+      - [4.1.3 BoM of Product "Delta Product"](#413-bom-of-product-delta-product)
+      - [4.1.4 Partner "Delta" Buys Materials for Product "Delta Product" from](#414-partner-delta-buys-materials-for-product-delta-product-from)
+    - [4.2 Product "Belfast Plastics"](#42-product-belfast-plastics)
+      - [4.2.1 Product "Belfast Plastics" Information](#421-product-belfast-plastics-information)
+      - [4.2.2 Partner "Delta" Supplies Product "Belfast Plastics" to](#422-partner-delta-supplies-product-belfast-plastics-to)
+      - [4.2.3 BoM of Product "Belfast Plastics"](#423-bom-of-product-belfast-plastics)
+      - [4.2.4 Partner "Delta" Buys Materials for Product "Belfast Plastics" from](#424-partner-delta-buys-materials-for-product-belfast-plastics-from)
+  - [5 Partner "Bristol" (BPNL00000000024R)](#5-partner-bristol-bpnl00000000024r)
+    - [5.1 Product "ECU1"](#51-product-ecu1)
+      - [5.1.1 Product "ECU1" Information](#511-product-ecu1-information)
+      - [5.1.2 Partner "Bristol" Supplies Product "ECU1" to](#512-partner-bristol-supplies-product-ecu1-to)
+      - [5.1.3 BoM of Product "ECU1"](#513-bom-of-product-ecu1)
+      - [5.1.4 Partner "Bristol" Buys Materials for Product "ECU1" from](#514-partner-bristol-buys-materials-for-product-ecu1-from)
+  - [6 Partner "Cirrus" (BPNL00000000052O)](#6-partner-cirrus-bpnl00000000052o)
+    - [6.1 Product "Glue"](#61-product-glue)
+      - [6.1.1 Product "Glue" Information](#611-product-glue-information)
+      - [6.1.2 Partner "Cirrus" Supplies Product "Glue" to](#612-partner-cirrus-supplies-product-glue-to)
+      - [6.1.3 BoM of Product "Glue"](#613-bom-of-product-glue)
+      - [6.1.4 Partner "Cirrus" Buys Materials for Product "Glue" from](#614-partner-cirrus-buys-materials-for-product-glue-from)
+  - [7 Partner "Caucho" (BPNL00000000071A)](#7-partner-caucho-bpnl00000000071a)
+    - [7.1 Product "Natural Rubber Product (40KG blocks)"](#71-product-natural-rubber-product-40kg-blocks)
+      - [7.1.1 Product "Natural Rubber Product (40KG blocks)" Information](#711-product-natural-rubber-product-40kg-blocks-information)
+      - [7.1.2 Partner "Caucho" Supplies Product "Natural Rubber Product (40KG blocks)" to](#712-partner-caucho-supplies-product-natural-rubber-product-40kg-blocks-to)
+      - [7.1.3 BoM of Product "Natural Rubber Product (40KG blocks)"](#713-bom-of-product-natural-rubber-product-40kg-blocks)
+      - [7.1.4 Partner "Caucho" Buys Materials for Product "Natural Rubber Product (40KG blocks)" from](#714-partner-caucho-buys-materials-for-product-natural-rubber-product-40kg-blocks-from)
+  - [8 Partner "Dione" (BPNL000000000342)](#8-partner-dione-bpnl000000000342)
+    - [8.1 Product "Natural Rubber"](#81-product-natural-rubber)
+      - [8.1.1 Product "Natural Rubber" Information](#811-product-natural-rubber-information)
+      - [8.1.2 Partner "Dione" Supplies Product "Natural Rubber" to](#812-partner-dione-supplies-product-natural-rubber-to)
+      - [8.1.3 BoM of Product "Natural Rubber"](#813-bom-of-product-natural-rubber)
+      - [8.1.4 Partner "Dione" Buys Materials for Product "Natural Rubber" from](#814-partner-dione-buys-materials-for-product-natural-rubber-from)
+  - [NOTICE](#notice)
 
 <!-- TOC -->
 
-| #Chapter | NAME           | BPNL             | SITES            | ADDRESSES        | ADDED |
-|----------|----------------|------------------|------------------|------------------|-------|
-| 1        | OEM B          | BPNL00000003AVTH | BPNS000000815DMY | BPNA000000815DMY | x     |
-| 2        | Tier A         | BPNL00000003B2OM | BPNS00000003B2OM | BPNA00000003B2OM | x     |
-| 3        | Tier B         | BPNL00000003B5MJ | BPNS00000003B5MJ | BPNA00000003B5MJ | x     |
-| 4        | Tier C         | BPNL00000003CSGV | BPNS00000003CSGV | BPNA00000003CSGV | x     |
-| 5        | Sub Tier A     | BPNL00000003B3NX | BPNS00000003B3NX | BPNA00000003B3NX | x     |
-| 6        | Sub Tier B     | BPNL00000003AXS3 | BPNS00000003AXS3 | BPNA00000003AXS3 | x     |
-| 7        | Tier N         | BPNL00000003B0Q0 | BPNS00000003B0Q0 | BPNA00000003B0Q0 | x     |
-| 8        | Natural Rubber | BPNL00000007OR16 | BPNS000000000001 | BPNA000000000001 | x     |
+| #Chapter | NAME    | BPNL             | SITES            | ADDRESSES        | Difficulty |
+|----------| ------- | ---------------- | ---------------- | ---------------- | ---------- |
+| 1        | Atlas   | BPNL000000000065 | BPNS0000000000WN | BPNA00000000084C | Easy+      |
+| 2        | Belfast | BPNL00000000015G | BPNS0000000001VY | BPNA00000000093N | Hard       |
+| 3        | Ceres   | BPNL00000000043D | BPNS0000000004TV | BPNA000000000C1K | Normal+    |
+| 4        | Delta   | BPNL00000000061Z | BPNS0000000006SH | BPNA00000003B0Q0 | Easy+      |
+| 5        | Bristol | BPNL00000000024R | BPNS0000000002V9 | BPNA000000000A2Y | Normal+    |
+| 6        | Cirrus  | BPNL00000000052O | BPNS0000000005T6 | BPNA000000000D0V | Easy       |
+| 7        | Caucho  | BPNL00000000071A | BPNS0000000007RS | BPNA000000000FYS | Normal     |
+| 8        | Dione   | BPNL000000000342 | BPNS0000000003UK | BPNA000000000B29 | Easy       |
 
 Table 1: *Overview of Participants*
 
-## 1 Partner "OEM B" (BPNL00000003AVTH)
+## 1 Partner "Atlas" (BPNL000000000065)
 
 ### 1.1 Product "Vehicle"
 
 #### 1.1.1 Product "Vehicle" Information
 
 | Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|-------------------|-------------------|
-| Vehicle Model B            | FJ-87                | FJ-87            | urn:uuid:68904173-ad59-4a77-8412-3e73fcafbd8b | BPNL00000003AVTH  | OEM_B             |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Vehicle Model B            | FJ-87                | FJ-87            | urn:uuid:68904173-ad59-4a77-8412-3e73fcafbd8b | BPNL000000000065  | Atlas             |
 
-#### 1.2.3 Partner "OEM B" Supplies Products to
+#### 1.1.2 Partner "Atlas" Supplies Product "Vehicle" to
 
 None
 
-#### 1.2.4 BoM of Product "Vehicle"
+#### 1.1.3 BoM of Product "Vehicle"
 
-- urn:uuid:2c57b0e9-a653-411d-bdcd-64787e9fd3a7 (BPNL00000003B2OM, Tier A)
-- urn:uuid:07cb071f-8716-45fe-89f1-f2f77a1ce93b (BPNL00000003B5MJ, Tier B)
-- urn:uuid:e8c48a8e-d2d7-43d9-a867-65c70c85f5b8 (BPNL00000003B2OM, Tier A)
+- urn:uuid:2c57b0e9-a653-411d-bdcd-64787e9fd3a7 (BPNL00000000015G, Belfast)
+- urn:uuid:07cb071f-8716-45fe-89f1-f2f77a1ce93b (BPNL00000000024R, Bristol)
+- urn:uuid:e8c48a8e-d2d7-43d9-a867-65c70c85f5b8 (BPNL00000000015G, Belfast)
 
-#### 1.2.4 Partner "OEM B" Buys Materials for Product "Vehicle" from
+#### 1.1.4 Partner "Atlas" Buys Materials for Product "Vehicle" from
 
-| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|-------------------|-------------------|
-| Tier A Gearbox             | 32494586-73          | TIER-A-GEARBOX-1 | urn:uuid:2c57b0e9-a653-411d-bdcd-64787e9fd3a7 | BPNL00000003B2OM  | Tier A            |
-| Tire Model A               | 123564887-01         | TIRE-MODEL-A1    | urn:uuid:e8c48a8e-d2d7-43d9-a867-65c70c85f5b8 | BPNL00000003B2OM  | Tier A            |
-| ZX-55                      | Tier B ECU1          | TIER-B-ECU1      | urn:uuid:07cb071f-8716-45fe-89f1-f2f77a1ce93b | BPNL00000003B5MJ  | Tier B            |
+| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID  | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
+| -------------------------- | -------------------- | ----------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Belfast Gearbox            | 32494586-73          | BELFAST-GEARBOX-1 | urn:uuid:2c57b0e9-a653-411d-bdcd-64787e9fd3a7 | BPNL00000000015G  | Belfast           |
+| Tire Model A               | 123564887-01         | TIRE-MODEL-A1     | urn:uuid:e8c48a8e-d2d7-43d9-a867-65c70c85f5b8 | BPNL00000000015G  | Belfast           |
+| Bristol ECU1               | ZX-55                | BRISTOL-ECU1      | urn:uuid:07cb071f-8716-45fe-89f1-f2f77a1ce93b | BPNL00000000024R  | Bristol           |
 
-## 2 Partner "Tier A" (BPNL00000003B2OM)
+## 2 Partner "Belfast" (BPNL00000000015G)
 
 ### 2.1 Product "Gearbox"
 
 #### 2.1.1 Product "Gearbox" Information
 
-| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|-------------------|-------------------|
-| Tier A Gearbox             | 32494586-73          | TIER-A-GEARBOX-1 | urn:uuid:2c57b0e9-a653-411d-bdcd-64787e9fd3a7 | BPNL00000003B2OM  | Tier A            |
+| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID  | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
+| -------------------------- | -------------------- | ----------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Belfast Gearbox            | 32494586-73          | BELFAST-GEARBOX-1 | urn:uuid:2c57b0e9-a653-411d-bdcd-64787e9fd3a7 | BPNL00000000015G  | Belfast           |
 
-#### 2.1.2 Partner "Tier A" Supplies Product "Gearbox" to
+#### 2.1.2 Partner "Belfast" Supplies Product "Gearbox" to
 
-| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Customer    | Customer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|------------------|---------------|
-| Tier A Gearbox             | 32494586-73          | TIER-A-GEARBOX-1 | urn:uuid:2c57b0e9-a653-411d-bdcd-64787e9fd3a7 | BPNL00000003AVTH | OEM_B         |
+| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID  | Catena-X ID                                   | BPNL Customer    | Customer Name |
+| -------------------------- | -------------------- | ----------------- | --------------------------------------------- | ---------------- | ------------- |
+| Belfast Gearbox            | 32494586-73          | BELFAST-GEARBOX-1 | urn:uuid:2c57b0e9-a653-411d-bdcd-64787e9fd3a7 | BPNL000000000065 | Atlas         |
 
 #### 2.1.3 BoM of Product "Gearbox"
 
-- urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc (BPNL00000003B3NX, Sub Tier A)
-- urn:uuid:4518c080-14fb-4252-b8de-4362d615868d (BPNL00000003B0Q0, Tier N)
+- urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc (BPNL00000000043D, Ceres)
+- urn:uuid:4518c080-14fb-4252-b8de-4362d615868d (BPNL00000000061Z, Delta)
 
-#### 2.1.4 Partner "Tier A" Buys Materials for Product "Gearbox" from
+#### 2.1.4 Partner "Belfast" Buys Materials for Product "Gearbox" from
 
-| Material Name Manufacturer | Manufacturer Part Id | Customer Part ID         | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|--------------------------|-----------------------------------------------|-------------------|-------------------|
-| Sub Tier A Sensor          | 6740244-02           | SUB-TIER-A-SENSOR-1      | urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc | BPNL00000003B3NX  | Sub Tier A        |
-| Tier-A Plastics            | 7A987KK-04           | N-TIER-TIER-A-PLASTICS-1 | urn:uuid:4518c080-14fb-4252-b8de-4362d615868d | BPNL00000003B2OM  | Tier N            |
+| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID         | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
+| -------------------------- | -------------------- | ------------------------ | --------------------------------------------- | ----------------- | ----------------- |
+| Ceres Sensor               | 6740244-02           | CERES-SENSOR-1           | urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc | BPNL00000000043D  | Ceres             |
+| Belfast Plastics           | 7A987KK-04           | DELTA-BELFAST-PLASTICS-1 | urn:uuid:4518c080-14fb-4252-b8de-4362d615868d | BPNL00000000061Z  | Delta             |
 
 ### 2.2 Product "Tire Model A"
 
 #### 2.2.1 Product "Tire Model A" Information
 
 | Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|-------------------|-------------------|
-| Tire Model A               | 123564887-01         | TIRE-MODEL-A1    | urn:uuid:e8c48a8e-d2d7-43d9-a867-65c70c85f5b8 | BPNL00000003B2OM  | Tier A            |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Tire Model A               | 123564887-01         | TIRE-MODEL-A1    | urn:uuid:e8c48a8e-d2d7-43d9-a867-65c70c85f5b8 | BPNL00000000015G  | Belfast           |
 
-#### 2.2.2 Partner "Tier A" Supplies Product "Tire Model A"
+#### 2.2.2 Partner "Belfast" Supplies Product "Tire Model A" to
 
 | Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Customer    | Customer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|------------------|---------------|
-| Tire Model A               | 123564887-01         | TIRE-MODEL-A1    | urn:uuid:e8c48a8e-d2d7-43d9-a867-65c70c85f5b8 | BPNL00000003AVTH | OEM_B         |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ---------------- | ------------- |
+| Tire Model A               | 123564887-01         | TIRE-MODEL-A1    | urn:uuid:e8c48a8e-d2d7-43d9-a867-65c70c85f5b8 | BPNL000000000065 | Atlas         |
 
 #### 2.2.3 BoM of Product "Tire Model A"
 
-- urn:uuid:94d086c6-0124-4f2c-86b2-1d419e47499d (BPNL00000007OR16, Natural Rubber)
+- urn:uuid:94d086c6-0124-4f2c-86b2-1d419e47499d (BPNL00000000071A, Caucho)
 
-#### 2.2.4 Partner "Tier A" Buys Materials for Product "Tire Model A" from
+#### 2.2.4 Partner "Belfast" Buys Materials for Product "Tire Model A" from
 
-| Material Name Manufacturer           | Manufacturer Part Id | Customer Part ID        | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|--------------------------------------|----------------------|-------------------------|-----------------------------------------------|-------------------|-------------------|
-| Natural Rubber Product (40KG blocks) | 9953421-03           | NATURAL-RUBBER-BLOCK-40 | urn:uuid:94d086c6-0124-4f2c-86b2-1d419e47499d | BPNL00000007OR16  | Natural Rubber    |
+| Material Name Manufacturer           | Manufacturer Part ID | Customer Part ID        | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
+| ------------------------------------ | -------------------- | ----------------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Natural Rubber Product (40KG blocks) | 9953421-03           | NATURAL-RUBBER-BLOCK-40 | urn:uuid:94d086c6-0124-4f2c-86b2-1d419e47499d | BPNL00000000071A  | Caucho            |
 
-## 3 Partner "Sub Tier A" (BPNL00000003B3NX)
+## 3 Partner "Ceres" (BPNL00000000043D)
 
 ### 3.1 Product "Sensor"
 
 #### 3.1.1 Product "Sensor" Information
 
-| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID    | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|---------------------|-----------------------------------------------|-------------------|-------------------|
-| Sub Tier A Sensor          | 6740244-02           | SUB-TIER-A-SENSOR-1 | urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc | BPNL00000003B3NX  | Sub Tier A        |
+| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Ceres Sensor               | 6740244-02           | CERES-SENSOR-1   | urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc | BPNL00000000043D  | Ceres             |
 
-#### 3.1.2 Partner "Sub Tier A" Supplies Product "Sensor" to
+#### 3.1.2 Partner "Ceres" Supplies Product "Sensor" to
 
-| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID    | Catena-X ID                                   | BPNL Customer    | Customer Name |
-|----------------------------|----------------------|---------------------|-----------------------------------------------|------------------|---------------|
-| Sub Tier A Sensor          | 6740244-02           | SUB-TIER-A-SENSOR-1 | urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc | BPNL00000003B2OM | Tier A        |
-| Sub Tier A Sensor          | 6740244-02           | SUB-TIER-A-SENSOR-2 | urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc | BPNL00000003B5MJ | Tier B        |
+| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Customer    | Customer Name |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ---------------- | ------------- |
+| Ceres Sensor               | 6740244-02           | CERES-SENSOR-1   | urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc | BPNL00000000015G | Belfast       |
+| Ceres Sensor               | 6740244-02           | CERES-SENSOR-2   | urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc | BPNL00000000024R | Bristol       |
 
 #### 3.1.3 BoM of Product "Sensor"
 
-- urn:uuid:86f69643-3b90-4e34-90bf-789edcf40e7e (BPNL00000003B0Q0, Tier N)
+- urn:uuid:86f69643-3b90-4e34-90bf-789edcf40e7e (BPNL00000000061Z, Delta)
 
-#### 3.1.4 Partner "Sub Tier A" Buys Materials for Product "Sensor" from
-
-| Material Name Manufacturer | Manufacturer Part Id | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|-------------------|-------------------|
-| Tier N Product             | 7A047KK-01           | TIER-N-PRODUCT-1 | urn:uuid:86f69643-3b90-4e34-90bf-789edcf40e7e | BPNL00000003B0Q0  | Tier N            |
-
-## 4 Partner "Tier N" (BPNL00000003B0Q0)
-
-### 4.1 Product "Tier N Product"
-
-#### 4.1.1 Product "Tier N Product" Information
+#### 3.1.4 Partner "Ceres" Buys Materials for Product "Sensor" from
 
 | Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|-------------------|-------------------|
-| Tier N Product             | 7A047KK-01           | TIER-N-PRODUCT-1 | urn:uuid:86f69643-3b90-4e34-90bf-789edcf40e7e | BPNL00000003B0Q0  | Tier N            |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Delta Product              | 7A047KK-01           | DELTA-PRODUCT-1  | urn:uuid:86f69643-3b90-4e34-90bf-789edcf40e7e | BPNL00000000061Z  | Delta             |
 
-#### 4.1.2 Partner "Tier N" Supplies Product "Tier N Product" to
+## 4 Partner "Delta" (BPNL00000000061Z)
+
+### 4.1 Product "Delta Product"
+
+#### 4.1.1 Product "Delta Product" Information
+
+| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Delta Product              | 7A047KK-01           | DELTA-PRODUCT-1  | urn:uuid:86f69643-3b90-4e34-90bf-789edcf40e7e | BPNL00000000061Z  | Delta             |
+
+#### 4.1.2 Partner "Delta" Supplies Product "Delta Product" to
 
 | Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Customer    | Customer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|------------------|---------------|
-| Tier N Product             | 7A047KK-01           | TIER-N-PRODUCT-1 | urn:uuid:86f69643-3b90-4e34-90bf-789edcf40e7e | BPNL00000003B3NX | Sub Tier A    |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ---------------- | ------------- |
+| Delta Product              | 7A047KK-01           | DELTA-PRODUCT-1  | urn:uuid:86f69643-3b90-4e34-90bf-789edcf40e7e | BPNL00000000043D | Ceres         |
 
-#### 4.1.3 BoM of Product "Tier N Product"
+#### 4.1.3 BoM of Product "Delta Product"
 
-none
+None
 
-#### 4.1.4 Partner "Tier N" Buys Materials for Product "Tier N Product"
+#### 4.1.4 Partner "Delta" Buys Materials for Product "Delta Product" from
 
-none
+None
 
-### 4.2 Product "Tier-A Plastics"
+### 4.2 Product "Belfast Plastics"
 
-#### 4.2.1 Product "Tier-A Plastics" Information
+#### 4.2.1 Product "Belfast Plastics" Information
 
 | Material Name Manufacturer | Manufacturer Part ID | Customer Part ID         | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|--------------------------|-----------------------------------------------|-------------------|-------------------|
-| Tier-A Plastics            | 7A987KK-04           | N-TIER-TIER-A-PLASTICS-1 | urn:uuid:4518c080-14fb-4252-b8de-4362d615868d | BPNL00000003B0Q0  | Tier N            |
+| -------------------------- | -------------------- | ------------------------ | --------------------------------------------- | ----------------- | ----------------- |
+| Belfast Plastics           | 7A987KK-04           | DELTA-BELFAST-PLASTICS-1 | urn:uuid:4518c080-14fb-4252-b8de-4362d615868d | BPNL00000000061Z  | Delta             |
 
-#### 4.2.2 Partner "Tier N" Supplies Product "Tier-A Plastics" to
+#### 4.2.2 Partner "Delta" Supplies Product "Belfast Plastics" to
 
 | Material Name Manufacturer | Manufacturer Part ID | Customer Part ID         | Catena-X ID                                   | BPNL Customer    | Customer Name |
-|----------------------------|----------------------|--------------------------|-----------------------------------------------|------------------|---------------|
-| Tier-A Plastics            | 7A987KK-04           | N-TIER-TIER-A-PLASTICS-1 | urn:uuid:4518c080-14fb-4252-b8de-4362d615868d | BPNL00000003B2OM | Tier A        |
+| -------------------------- | -------------------- | ------------------------ | --------------------------------------------- | ---------------- | ------------- |
+| Belfast Plastics           | 7A987KK-04           | DELTA-BELFAST-PLASTICS-1 | urn:uuid:4518c080-14fb-4252-b8de-4362d615868d | BPNL00000000015G | Belfast       |
 
-#### 4.2.3 BoM of Product "Tier-A Plastics"
+#### 4.2.3 BoM of Product "Belfast Plastics"
 
-none
+None
 
-#### 4.2.4 Partner "Tier N" Buys Materials for Product "Tier-A Plastics" from
+#### 4.2.4 Partner "Delta" Buys Materials for Product "Belfast Plastics" from
 
-none
+None
 
-## 5 Partner "Tier B" (BPNL00000003B5MJ)
+## 5 Partner "Bristol" (BPNL00000000024R)
 
 ### 5.1 Product "ECU1"
 
 #### 5.1.1 Product "ECU1" Information
 
 | Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|-------------------|-------------------|
-| Tier B ECU1                | ZX-55                | TIER-B-ECU1      | urn:uuid:07cb071f-8716-45fe-89f1-f2f77a1ce93b | BPNL00000003B5MJ  | Tier B            |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Bristol ECU1               | ZX-55                | BRISTOL-ECU1     | urn:uuid:07cb071f-8716-45fe-89f1-f2f77a1ce93b | BPNL00000000024R  | Bristol           |
 
-#### 5.1.2 Partner "Tier B" Supplies Product "ECU1" to
+#### 5.1.2 Partner "Bristol" Supplies Product "ECU1" to
 
 | Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Customer    | Customer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|------------------|---------------|
-| Tier B ECU1                | ZX-55                | TIER-B-ECU1      | urn:uuid:07cb071f-8716-45fe-89f1-f2f77a1ce93b | BPNL00000003AVTH | OEM_B         |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ---------------- | ------------- |
+| Bristol ECU1               | ZX-55                | BRISTOL-ECU1     | urn:uuid:07cb071f-8716-45fe-89f1-f2f77a1ce93b | BPNL000000000065 | Atlas         |
 
 #### 5.1.3 BoM of Product "ECU1"
 
-- urn:uuid:3cdd2826-5df0-4c7b-b540-9eeccecb2301 (PNL00000003AXS3, Sub Tier B)
-- urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc (BPNL00000003B3NX, Sub Tier A)
+- urn:uuid:3cdd2826-5df0-4c7b-b540-9eeccecb2301 (BPNL00000000052O, Cirrus)
+- urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc (BPNL00000000043D, Ceres)
 
-#### 5.1.4 Partner "Tier B" Buys Materials for Product "ECU1" from
+#### 5.1.4 Partner "Bristol" Buys Materials for Product "ECU1" from
 
-| Material Name Manufacturer | Manufacturer Part Id | Customer Part ID    | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|---------------------|-----------------------------------------------|-------------------|-------------------|
-| Sub Tier A Sensor          | 6740244-02           | SUB-TIER-A-SENSOR-2 | urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc | BPNL00000003B3NX  | Sub Tier A        |
-| Sub Tier B Glue            | 6775244-06           | SUB-TIER-B-GLUE-1   | urn:uuid:3cdd2826-5df0-4c7b-b540-9eeccecb2301 | BPNL00000003AXS3  | Sub Tier B        |
+| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Ceres Sensor               | 6740244-02           | CERES-SENSOR-2   | urn:uuid:bee5614f-9e46-4c98-9209-61a6f2b2a7fc | BPNL00000000043D  | Ceres             |
+| Cirrus Glue                | 6775244-06           | CIRRUS-GLUE-1    | urn:uuid:3cdd2826-5df0-4c7b-b540-9eeccecb2301 | BPNL00000000052O  | Cirrus            |
 
-## 6 Partner "Sub Tier B" (BPNL00000003AXS3)
+## 6 Partner "Cirrus" (BPNL00000000052O)
 
 ### 6.1 Product "Glue"
 
 #### 6.1.1 Product "Glue" Information
 
-| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID  | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|-------------------|-----------------------------------------------|-------------------|-------------------|
-| Sub Tier B Glue            | 6775244-06           | SUB-TIER-B-GLUE-1 | urn:uuid:3cdd2826-5df0-4c7b-b540-9eeccecb2301 | BPNL00000003AXS3  | SUB TIER B        |
+| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Cirrus Glue                | 6775244-06           | CIRRUS-GLUE-1    | urn:uuid:3cdd2826-5df0-4c7b-b540-9eeccecb2301 | BPNL00000000052O  | Cirrus            |
 
-#### 6.1.2 Partner "Sub Tier B" Supplies Product "Glue" to
+#### 6.1.2 Partner "Cirrus" Supplies Product "Glue" to
 
-| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID  | Catena-X ID                                   | BPNL Customer    | Customer Name |
-|----------------------------|----------------------|-------------------|-----------------------------------------------|------------------|---------------|
-| Sub Tier B Glue            | 6775244-06           | SUB-TIER-B-GLUE-1 | urn:uuid:3cdd2826-5df0-4c7b-b540-9eeccecb2301 | BPNL00000003B5MJ | TIER B        |
+| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Customer    | Customer Name |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ---------------- | ------------- |
+| Cirrus Glue                | 6775244-06           | CIRRUS-GLUE-1    | urn:uuid:3cdd2826-5df0-4c7b-b540-9eeccecb2301 | BPNL00000000024R | Bristol       |
 
 #### 6.1.3 BoM of Product "Glue"
 
 None
 
-#### 6.1.4 Partner "Sub Tier B" Buys Materials for Product "Glue" from
+#### 6.1.4 Partner "Cirrus" Buys Materials for Product "Glue" from
 
 None
 
-## 7 Partner "Natural Rubber" (BPNL00000007OR16)
+## 7 Partner "Caucho" (BPNL00000000071A)
 
 ### 7.1 Product "Natural Rubber Product (40KG blocks)"
 
 #### 7.1.1 Product "Natural Rubber Product (40KG blocks)" Information
 
 | Material Name Manufacturer           | Manufacturer Part ID | Customer Part ID        | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|--------------------------------------|----------------------|-------------------------|-----------------------------------------------|-------------------|-------------------|
-| Natural Rubber Product (40KG blocks) | 9953421-03           | NATURAL-RUBBER-BLOCK-40 | urn:uuid:94d086c6-0124-4f2c-86b2-1d419e47499d | BPNL00000007OR16  | Natural Rubber    |
+| ------------------------------------ | -------------------- | ----------------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Natural Rubber Product (40KG blocks) | 9953421-03           | NATURAL-RUBBER-BLOCK-40 | urn:uuid:94d086c6-0124-4f2c-86b2-1d419e47499d | BPNL00000000071A  | Caucho            |
 
-#### 7.1.2. Partner "Natural Rubber" Supplies Product "Natural Rubber Product (40KG blocks)" to
+#### 7.1.2 Partner "Caucho" Supplies Product "Natural Rubber Product (40KG blocks)" to
 
 | Material Name Manufacturer           | Manufacturer Part ID | Customer Part ID        | Catena-X ID                                   | BPNL Customer    | Customer Name |
-|--------------------------------------|----------------------|-------------------------|-----------------------------------------------|------------------|---------------|
-| Natural Rubber Product (40KG blocks) | 9953421-03           | NATURAL-RUBBER-BLOCK-40 | urn:uuid:94d086c6-0124-4f2c-86b2-1d419e47499d | BPNL00000003B2OM | TIER A        |
+| ------------------------------------ | -------------------- | ----------------------- | --------------------------------------------- | ---------------- | ------------- |
+| Natural Rubber Product (40KG blocks) | 9953421-03           | NATURAL-RUBBER-BLOCK-40 | urn:uuid:94d086c6-0124-4f2c-86b2-1d419e47499d | BPNL00000000015G | Belfast       |
 
 #### 7.1.3 BoM of Product "Natural Rubber Product (40KG blocks)"
 
-- urn:uuid:b0926d3c-6a8f-4fc7-81a4-88c50817358a (BPNL00000003CSGV, Tier C)
+- urn:uuid:b0926d3c-6a8f-4fc7-81a4-88c50817358a (BPNL000000000342, Dione)
 
-#### 7.1.4 Partner "Natural Rubber" Buys Materials for Product "Natural Rubber Product (40KG blocks)" from
+#### 7.1.4 Partner "Caucho" Buys Materials for Product "Natural Rubber Product (40KG blocks)" from
 
-| Material Name Manufacturer | Manufacturer Part Id | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|-------------------|-------------------|
-| Natural Rubber             | A26581-11            | NATURAL-RUBBER-1 | urn:uuid:b0926d3c-6a8f-4fc7-81a4-88c50817358a | BPNL00000000BJTL  | Tier C            |
+| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Natural Rubber             | A26581-11            | NATURAL-RUBBER-1 | urn:uuid:b0926d3c-6a8f-4fc7-81a4-88c50817358a | BPNL000000000342  | Dione             |
 
-## 8 Partner "Tier C" (BPNL00000000BJTL)
+## 8 Partner "Dione" (BPNL000000000342)
 
 ### 8.1 Product "Natural Rubber"
 
 #### 8.1.1 Product "Natural Rubber" Information
 
 | Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Manufacturer | Manufacturer Name |
-|----------------------------|----------------------|------------------|-----------------------------------------------|-------------------|-------------------|
-| Natural Rubber             | A26581-11            | NATURAL-RUBBER-1 | urn:uuid:b0926d3c-6a8f-4fc7-81a4-88c50817358a | BPNL00000000BJTL  | TIER C            |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ----------------- | ----------------- |
+| Natural Rubber             | A26581-11            | NATURAL-RUBBER-1 | urn:uuid:b0926d3c-6a8f-4fc7-81a4-88c50817358a | BPNL000000000342  | Dione             |
 
-#### 8.1.2 Partner "Tier C" Supplies Product "Natural Rubber" to
+#### 8.1.2 Partner "Dione" Supplies Product "Natural Rubber" to
 
-| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Customer    | Customer Name  |
-|----------------------------|----------------------|------------------|-----------------------------------------------|------------------|----------------|
-| Natural Rubber             | A26581-11            | NATURAL-RUBBER-1 | urn:uuid:b0926d3c-6a8f-4fc7-81a4-88c50817358a | BPNL00000007OR16 | Natural Rubber |
+| Material Name Manufacturer | Manufacturer Part ID | Customer Part ID | Catena-X ID                                   | BPNL Customer    | Customer Name |
+| -------------------------- | -------------------- | ---------------- | --------------------------------------------- | ---------------- | ------------- |
+| Natural Rubber             | A26581-11            | NATURAL-RUBBER-1 | urn:uuid:b0926d3c-6a8f-4fc7-81a4-88c50817358a | BPNL00000000071A | Caucho        |
 
 #### 8.1.3 BoM of Product "Natural Rubber"
 
 None
 
-#### 8.1.4 Partner "Tier C" Buys Materials for Product "Natural Rubber" from
+#### 8.1.4 Partner "Dione" Buys Materials for Product "Natural Rubber" from
 
 None
 
@@ -341,4 +342,4 @@ This test data has been built on [test data set](https://github.com/eclipse-trac
 - SPDX-License-Identifier: CC-BY-4.0
 - SPDX-FileCopyrightText: 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 - SPDX-FileCopyrightText: 2025 Contributors to the Eclipse Foundation
-- Source URL: https://github.com/eclipse-tractusx/puris
+- Source URL: <https://github.com/eclipse-tractusx/puris>
