@@ -110,8 +110,13 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
      * relevant data about the owner of the running instance of
      * the PURIS application.
      */
-    private void createOwnPartnerEntity() {
-        Partner mySelf;
+    void createOwnPartnerEntity() {
+
+        Partner mySelf = partnerService.findByBpnl(variablesService.getOwnBpnl());
+        if (mySelf != null){
+            log.info("Following partner has been configured for yourself (and not been changed): " + mySelf.toString());
+            return;
+        }
         if (variablesService.getOwnDefaultBpns() != null && variablesService.getOwnDefaultBpns().length() != 0) {
             mySelf = new Partner(variablesService.getOwnName(),
                 variablesService.getEdcProtocolUrl(),
@@ -133,11 +138,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             );
         }
         mySelf = partnerService.create(mySelf);
-        log.info("Successfully created own Partner Entity: " + (mySelf != null));
-        mySelf = partnerService.findByBpnl(variablesService.getOwnBpnl());
-        if (mySelf != null) {
-            log.info("Following partner has been configured for yourself (and not been changed): " + mySelf.toString());
-        }
+        log.info("Successfully created own Partner Entity: " + mySelf);
     }
 
     /**
