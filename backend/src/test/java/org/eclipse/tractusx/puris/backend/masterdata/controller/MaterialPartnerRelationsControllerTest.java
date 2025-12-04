@@ -30,9 +30,11 @@ import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialPartnerRelationDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -91,6 +93,13 @@ public class MaterialPartnerRelationsControllerTest {
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
 
+        MaterialPartnerRelationDto dto = new MaterialPartnerRelationDto(
+            materialNumber,
+            bpnl,
+            partnerMaterialNumber,
+            true,
+            true
+        );
 
         // when
         when(materialService.findByOwnMaterialNumber(materialNumber)).thenReturn(material);
@@ -100,11 +109,8 @@ public class MaterialPartnerRelationsControllerTest {
 
         // then
         mockMvc.perform(post("/materialpartnerrelations")
-                .param("ownMaterialNumber", new String(Base64.getEncoder().encode(materialNumber.getBytes())))
-                .param("partnerBpnl", bpnl)
-                .param("partnerMaterialNumber", new String(Base64.getEncoder().encode(partnerMaterialNumber.getBytes())))
-                .param("partnerSupplies", "true")
-                .param("partnerBuys", "true"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(dto)))
             .andExpect(status().isOk());
 
         verify(materialService).findByOwnMaterialNumber(materialNumber);
@@ -127,6 +133,14 @@ public class MaterialPartnerRelationsControllerTest {
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
             true, true);
 
+        MaterialPartnerRelationDto dto = new MaterialPartnerRelationDto(
+            materialNumber,
+            bpnlWrong,
+            partnerMaterialNumber,
+            true,
+            true
+        );
+
         // when
         when(materialService.findByOwnMaterialNumber(materialNumber)).thenReturn(material);
         when(partnerService.findByBpnl(bpnlWrong)).thenReturn(partner);
@@ -135,11 +149,8 @@ public class MaterialPartnerRelationsControllerTest {
 
         // then
         mockMvc.perform(post("/materialpartnerrelations")
-                .param("ownMaterialNumber", new String(Base64.getEncoder().encode(materialNumber.getBytes())))
-                .param("partnerBpnl", bpnlWrong)
-                .param("partnerMaterialNumber", new String(Base64.getEncoder().encode(partnerMaterialNumber.getBytes())))
-                .param("partnerSupplies", "true")
-                .param("partnerBuys", "true"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(dto)))
             .andExpect(status().is4xxClientError());
     }
 

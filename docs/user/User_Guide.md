@@ -253,6 +253,109 @@ The following fields are pre-selected and read only:
 
 The Partner field only provides options for partners that aren't linked to any of the related or any of the existing outgoing notifications. This creates another entry in the existing table.
 
+## Master Data Maintenance
+
+> [!info]
+>
+> Master Data can only be added by users with the role `PURIS_ADMIN`.
+>
+
+To setup PURIS, you need to provide master data to the system. Right now you can only create master data and there is no integration with business partner data mangement. Thus, you need to create the following data:
+
+- Material Data: Material (Inbound Material), Products (Outbound Material) and Trading Goods (Bidirectional Material)
+- Partner Data: Parnters with their sites and address including their connector address.
+- Material Partner Relationships: The linkage whether you buy a material from or sell a product to a partner.
+
+> [!info]
+>
+> When creating the Material Partner Relationship, PURIS FOSS will do the following:
+>
+> - for inbound material: lookup the product twin (part type) at the partner and take over the global asset id to create your local copy. The product twin will be registered with the material numbers of your and your partner within our Digital Twin Registry.
+> - for outbound material: create the product twin (part type). The product twin will be registered with the material numbers of your and your partner within our Digital Twin Registry.
+>
+
+This master data maintenance can either be done via the backend interfaces ([Admin Guide, chapter Onboarding your Data](../admin/Admin_Guide.md#onboarding-your-data); [Interface Dcocmentation and swagger-ui](../api/Interface_Doc.md)). The following part will only focus on the user interface!
+
+This can be found in the navigation bar under the item "Master Data".
+
+Please always follow these three steps:
+
+1. Create Partner. Pay attention to Business Partner Numbers (BPN) for Legal Entities (BPNL), Sites (BPNS) and Addresses (BPNA).
+2. Create the Material / Product / Trading Good. Pay attention to direction (Inbound = something you buy, Outbound = something you sell, Bidirection = both).
+3. Create the Material Partner Relationship. Pay attention whether your partner buys or sells the the good (direction).
+
+### Create Partner
+
+> [!note]
+>
+> Please keep in mind that right now partner information can't be changed.
+>
+
+![Partner  Creation Modal](./img/master_data_create_partner.png)
+
+In the Partners table you can see the onboarded partners. To create a partner you need to trigger the button "New Partner" in the upper right corner and fill out the mandatory information marked by an **asteric (*)**.
+
+General Partner Information
+
+- Partner Name: Legal name of your partner
+- BPNL: Catena-X identifier for the legal entity (your business partner)
+- EDC URL: URL of your partner's connector **including the DSP endpoint**
+
+Addresses of the legal entity (commonly those that are no manufacturing sites but important for e.g. invoicing)
+
+- BPNA: Catena-X identifier for the address
+- Street
+- Number
+- Zip Code
+- City
+- Country: 2 Digit Iso Code
+
+Sites of the legal entity (commonly where they manufacture)
+
+- BPNS: Catena-X identifier for the site
+- Site Name: Official name for reference
+- one or more addresses
+
+A notification will mention issues or success of the creation after triggering the "Save" button.
+
+### Create Material
+
+> [!note]
+>
+> Please keep in mind that right now material information can't be changed.
+>
+
+![Material Creation Modal](./img/master_data_create_material.png)
+
+In the  Materials table you can see the onboarded materials. To create a material you need to trigger the button "New Material" in the upper right corner and fill out the mandatory information marked by an **asteric (*)**.
+
+- Material Number: your internal material number
+- Name: your official name for the material
+- Global Asset Id: enter in case you want to have a catena-x global asset id
+- Direction: define if it's an inbound material, an outbound product or a bidirectional good
+
+A notification will mention issues or success of the creation after triggering the "Save" button.
+
+### Create Material Partner Relatinship
+
+> [!note]
+>
+> Please keep in mind that right now material information can't be changed.
+>
+> This step triggers communication with the partner in the network for inbound material AND creates the digital wins in all cases. In case the lookup does not succeed, the application retriggers the lookup for twin completion during when triggering the data exchange (see [Material Details View](#materials-detail-view)).
+>
+
+![Material Patner Relationship Creation Modal](./img/master_data_create_material_partner_relationship.png)
+
+In the Material Partner Relationships table you can see the assigned relationships between partners and materials. To create the relationship you need to trigger the button "New Relation" in the upper right corner and fill out the mandatory information marked by an **asteric (*)**.
+
+- Material
+- Partner
+- Patner Material Number: Customer part id for outbound product, manufacturer part id for inbound material
+- Supplies material / buys material: defaulted based on diretion. Either a partner buys inbound material or supplies outbound products
+
+A notification will mention issues or success of the creation after triggering the "Save" button.
+
 ## Import
 
 An Admin can upload data in this page. Once the file is uploaded, all existing data for that type will be replaced by the newly uploaded data. This action only takes place if the file does NOT contain any invalid information. All infvalid rows are listed to the user with the respective validation error messages. Users can click and download one of pre-existing template files listed on the page:
@@ -263,6 +366,10 @@ An Admin can upload data in this page. Once the file is uploaded, all existing d
 - stock-template.xlsx
 
 Right now, only files of type xlsx are supported.
+
+### Formula support
+
+The import feature evaluates formulas to dynamically calculate values. Due to technical limitations of the underlying Java library Apache POI not all functions are supported. You can find a list of supported functions int the [Apache POI documentation](https://poi.apache.org/components/spreadsheet/eval-devguide.html#appendixA).
 
 ### Import view
 

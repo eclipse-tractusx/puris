@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2024 Volkswagen AG
 Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -145,12 +146,19 @@ type DemandCategoryModalProps = {
     mode: ModalMode;
     onClose: () => void;
     onSave: () => void;
+    onRemove?: (deletedUuid: string) => void;
 };
 
 const isValidDemand = (demand: Partial<Demand>) =>
-    demand?.day && demand?.demandLocationBpns && demand?.quantity && demand.demandCategoryCode && demand?.measurementUnit && demand?.partnerBpnl;
+    demand &&
+    demand.day &&
+    demand.demandLocationBpns &&
+    typeof demand.quantity === 'number' && demand?.quantity >= 0 &&
+    demand.demandCategoryCode &&
+    demand.measurementUnit &&
+    demand.partnerBpnl;
 
-export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, demands }: DemandCategoryModalProps) => {
+export const DemandCategoryModal = ({ open, mode, onClose, onSave, onRemove, demand, demands }: DemandCategoryModalProps) => {
     const [temporaryDemand, setTemporaryDemand] = useState<Partial<Demand>>(demand ?? {});
     const { partners } = usePartners('material', temporaryDemand?.ownMaterialNumber ?? null);
     const { sites } = useSites();
@@ -197,8 +205,19 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
         onClose();
     };
 
-    const handleDelete = (row: Demand) => {
-        if (row.uuid) deleteDemand(row.uuid).then(onSave);
+    const handleDelete = async (row: Demand) => {
+        if (row.uuid) {
+            try {
+                await deleteDemand(row.uuid);
+                onRemove?.(row.uuid);
+            } catch (error) {
+                notify({
+                    title: 'Error deleting demand',
+                    description: 'Failed to delete the demand',
+                    severity: 'error',
+                });
+            }
+        }
     };
 
     useEffect(() => {
@@ -273,7 +292,7 @@ export const DemandCategoryModal = ({ open, mode, onClose, onSave, demand, deman
                                     type="number"
                                     placeholder="Enter quantity"
                                     value={temporaryDemand.quantity ?? ''}
-                                    error={formError && !temporaryDemand?.quantity}
+                                    error={formError && (temporaryDemand?.quantity == null || temporaryDemand.quantity < 0)}
                                     onChange={(e) =>
                                         setTemporaryDemand((curr) =>
                                             parseFloat(e.target.value) >= 0

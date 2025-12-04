@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2025 Volkswagen AG
 Copyright (c) 2025 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -141,14 +142,21 @@ type StockModalProps = {
     mode: ModalMode;
     onClose: () => void;
     onSave: () => void;
+    onRemove?: (deletedUuid: string) => void;
     stock: Partial<Stock> | null;
     stocks: Stock[];
     stockType: StockType;
 };
 const isValidStock = (stock: Partial<Stock>) =>
-    stock && stock.quantity && stock.measurementUnit && stock.partner && stock.stockLocationBpns && stock.stockLocationBpna && isValidOrderReference(stock);
+    stock &&
+    typeof stock.quantity === 'number' && stock.quantity >= 0 &&
+    stock.measurementUnit &&
+    stock.partner &&
+    stock.stockLocationBpns &&
+    stock.stockLocationBpna &&
+    isValidOrderReference(stock);
 
-export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockType }: StockModalProps) => {
+export const StockModal = ({ open, mode, onClose, onSave, onRemove, stock, stocks, stockType }: StockModalProps) => {
     const [temporaryStock, setTemporaryStock] = useState<Partial<Stock>>(stock ?? {});
     const { partners } = usePartners(stockType, temporaryStock?.material?.ownMaterialNumber ?? null);
     const { sites } = useSites();
@@ -182,8 +190,19 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
             })
             .finally(onClose);
     };
-    const handleDelete = (row: Stock) => {
-        if (row.uuid) deleteStocks(stockType, row.uuid).then(onSave);
+    const handleDelete = async (row: Stock) => {
+        if (row.uuid) {
+            try {
+                await deleteStocks(stockType, row.uuid);
+                onRemove?.(row.uuid);
+            } catch (error) {
+                notify({
+                    title: 'Error deleting stock',
+                    description: 'Failed to delete the stock',
+                    severity: 'error',
+                });
+            }
+        }
     };
     useEffect(() => {
         if (stock) setTemporaryStock(stock);
@@ -261,7 +280,7 @@ export const StockModal = ({ open, mode, onClose, onSave, stock, stocks, stockTy
                                         type="number"
                                         placeholder="Enter quantity"
                                         value={temporaryStock.quantity ?? ''}
-                                        error={formError && !temporaryStock?.quantity}
+                                        error={formError && (temporaryStock?.quantity == null || temporaryStock.quantity < 0)}
                                         onChange={(e) =>
                                             setTemporaryStock((curr) => ({
                                                 ...curr,

@@ -1,12 +1,13 @@
 # puris
 
-![Version: 4.2.0](https://img.shields.io/badge/Version-4.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.4.0](https://img.shields.io/badge/AppVersion-3.4.0-informational?style=flat-square)
+![Version: 6.0.1](https://img.shields.io/badge/Version-6.01-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.0.1](https://img.shields.io/badge/AppVersion-5.01-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
 **Homepage:** <https://github.com/eclipse-tractusx/puris>
 
 ## Prerequisites
+
 - Kubernetes 1.19+
 - Helm 3.2.0+
 
@@ -18,6 +19,7 @@ To install the chart with the release name `puris`:
 helm repo add tractusx-dev https://eclipse-tractusx.github.io/charts/dev
 helm install puris tractusx-dev/puris
 ```
+
 To install the helm chart into your cluster with your values:
 
 ```shell
@@ -39,8 +41,8 @@ dependencies:
 
 ## Requirements
 
-| Repository | Name | Version |
-|------------|------|---------|
+| Repository                         | Name       | Version |
+|------------------------------------|------------|---------|
 | https://charts.bitnami.com/bitnami | postgresql | 12.12.x |
 
 ## Values
@@ -195,6 +197,8 @@ dependencies:
 | frontend.puris.endpointDemandAndCapacityNotification                                                                                | string | `"demand-and-capacity-notification"`                                                                                                                                                                         | The endpoint for demand and capacity notifications                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | frontend.puris.endpointErpScheduleUpdate                                                                                            | string | `"erp-adapter/trigger"`                                                                                                                                                                                      | The endpoint for scheduling an update of erp data (currently only stock supported)                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | frontend.puris.endpointImportFiles                                                                                                  | string | `"files"`                                                                                                                                                                                                    | The endpoint for importing excel files                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| frontend.puris.endpointAllMaterials                                                                                                  | string | `"materials"`                                                                                                                                                                                                    | The endpoint for materials for the master data view                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| frontend.puris.endpointAllPartners                                                                                                  | string | `"partners"`                                                                                                                                                                                                    | The endpoint for partners for the master data view                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | frontend.puris.endpointMaterialStocks                                                                                               | string | `"stockView/material-stocks"`                                                                                                                                                                                | The endpoint for material stocks for the stock view                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | frontend.puris.endpointMaterials                                                                                                    | string | `"stockView/materials"`                                                                                                                                                                                      | The endpoint for materials for the stock view                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | frontend.puris.endpointPartners                                                                                                     | string | `"partners"`                                                                                                                                                                                                 | The endpoint for partner information                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |

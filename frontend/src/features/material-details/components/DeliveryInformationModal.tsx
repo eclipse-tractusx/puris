@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2024 Volkswagen AG
 Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -221,11 +222,12 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void) => {
 };
 
 const isValidDelivery = (delivery: Partial<Delivery>) =>
+    delivery &&
     delivery.ownMaterialNumber &&
     delivery.originBpns &&
     delivery.partnerBpnl &&
     delivery.destinationBpns &&
-    delivery.quantity &&
+    typeof delivery.quantity === 'number' && delivery.quantity > 0 &&
     delivery.measurementUnit &&
     delivery.incoterm &&
     delivery.dateOfDeparture &&
@@ -244,6 +246,7 @@ type DeliveryInformationModalProps = {
     site: Site | null;
     onClose: () => void;
     onSave: () => void;
+    onRemove?: (deletedUuid: string) => void;
     delivery: Delivery | null;
     deliveries: Delivery[];
 };
@@ -255,6 +258,7 @@ export const DeliveryInformationModal = ({
     site,
     onClose,
     onSave,
+    onRemove,
     delivery,
     deliveries,
 }: DeliveryInformationModalProps) => {
@@ -314,8 +318,19 @@ export const DeliveryInformationModal = ({
         onClose();
     };
 
-    const handleDelete = (row: Delivery) => {
-        if (row.uuid) deleteDelivery(row.uuid).then(onSave);
+    const handleDelete = async (row: Delivery) => {
+        if (row.uuid) {
+            try {
+                await deleteDelivery(row.uuid);
+                onRemove?.(row.uuid);
+            } catch (error) {
+                notify({
+                    title: 'Error deleting delivery',
+                    description: 'Failed to delete the delivery',
+                    severity: 'error',
+                });
+            }
+        }
     };
 
     useEffect(() => {
@@ -495,7 +510,7 @@ export const DeliveryInformationModal = ({
                                         hiddenLabel
                                         type="number"
                                         value={temporaryDelivery.quantity ?? ''}
-                                        error={formError && !temporaryDelivery?.quantity}
+                                        error={formError && (temporaryDelivery?.quantity == null || temporaryDelivery.quantity <= 0)}
                                         onChange={(e) =>
                                             setTemporaryDelivery((curr) => ({
                                                 ...curr,

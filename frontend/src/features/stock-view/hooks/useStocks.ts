@@ -23,14 +23,15 @@ import { useFetch } from '@hooks/useFetch';
 import { Stock, StockType } from '@models/types/data/stock';
 
 
-export const useStocks = <T extends StockType>(type: T) => {
+export const useStocks = <T extends StockType>(type: T, ownMaterialNumber: string) => {
   const url = type === 'material' ? config.app.ENDPOINT_MATERIAL_STOCKS : config.app.ENDPOINT_PRODUCT_STOCKS;
+  const query = `?ownMaterialNumber=${btoa(ownMaterialNumber)}`;
   const {
       data: stocks,
       error: stocksError,
       isLoading: isLoadingStocks,
       refresh: refreshStocks,
-  } = useFetch<Stock[]>(config.app.BACKEND_BASE_URL + url);
+  } = useFetch<Stock[]>(config.app.BACKEND_BASE_URL + url + query);
   return {
       stocks,
       stocksError,

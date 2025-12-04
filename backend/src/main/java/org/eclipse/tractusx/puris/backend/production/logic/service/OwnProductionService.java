@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2024 Volkswagen AG
 Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -21,13 +22,10 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
-
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.eclipse.tractusx.puris.backend.production.domain.repository.OwnProductionRepository;
@@ -74,43 +72,9 @@ public class OwnProductionService extends ProductionService<OwnProduction> {
     }
 
     public List<String> validateWithDetails(OwnProduction production) {
-        List<String> errors = new ArrayList<>();
-        Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
-
-        if (production.getQuantity() <= 0) {
-            errors.add("Quantity must be greater than 0.");
-        }
-        if (production.getMeasurementUnit() == null) {
-            errors.add("Missing measurement unit.");
-        }
-        if (production.getLastUpdatedOnDateTime() == null) {
-            errors.add("Missing lastUpdatedOnTime.");
-        } else if (production.getLastUpdatedOnDateTime().after(new Date())) {
-            errors.add("lastUpdatedOnDateTime cannot be in the future.");
-        }
-        if (production.getEstimatedTimeOfCompletion() == null) {
-            errors.add("Missing estimated time of completion.");
-        }
-        if (production.getMaterial() == null) {
-            errors.add("Missing material.");
-        }
-        if (production.getPartner() == null) {
-            errors.add("Missing partner.");
-        }
-        if (production.getPartner().equals(ownPartnerEntity)) {
-            errors.add("Partner cannot be the same as own partner entity.");
-        }
-        if (production.getProductionSiteBpns() == null) {
-            errors.add("Missing production site BPNS.");
-        }
-        if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(production.getProductionSiteBpns()))) {
-            errors.add("Production site BPNS must match one of the own partner entity's site BPNS.");
-        }
-        if (!((production.getCustomerOrderNumber() != null && production.getCustomerOrderPositionNumber() != null) || 
-            (production.getCustomerOrderNumber() == null && production.getCustomerOrderPositionNumber() == null && production.getSupplierOrderNumber() == null))) {
-            errors.add("If an order position reference is given, customer order number and customer order position number must be set.");
-        }
-
-        return errors;
+        List<String> validationErrors = new ArrayList<>();
+        validationErrors.addAll(basicValidation(production));
+        validationErrors.addAll(validateOwnProduction(production, partnerService.getOwnPartnerEntity()));
+        return validationErrors;
     }
 }

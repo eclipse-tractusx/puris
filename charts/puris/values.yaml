@@ -217,6 +217,12 @@ frontend:
     endpointDemandAndCapacityNotification: demand-and-capacity-notification
     # -- The endpoint for importing excel files
     endpointImportFiles: files
+    # -- The endpoint for interfacing with all materials
+    endpointAllMaterials: materials
+    # -- The endpoint for interfacing with all partners
+    endpointAllPartners: partners
+    # -- The endpoint for interfacing with material partner relations
+    endpointMaterialPartnerRelations: materialpartnerrelations
     rateLimiting:
       # -- Bucket zone limit for rate limiting in nginx.
       limit: 10m
