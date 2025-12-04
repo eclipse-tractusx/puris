@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2053 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
  * (represented by Fraunhofer ISST)
  * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
