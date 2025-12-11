@@ -129,14 +129,14 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
         deliveries,
         stocks,
         expandablePartners,
-        sites,
+        siteDesignations,
         reportedDemands,
         reportedProductions,
         reportedStocks,
         refresh,
     } = useMaterialDetails(material.ownMaterialNumber ?? '', direction);
-    const incomingDeliveries = useMemo(() => deliveries?.filter((d) => sites?.some((site) => site.bpns === d.destinationBpns)), [deliveries, sites]);
-    const outgoingShipments = useMemo(() => deliveries?.filter((d) => sites?.some((site) => site.bpns === d.originBpns)), [deliveries, sites]);
+    const incomingDeliveries = useMemo(() => deliveries?.filter((d) => siteDesignations?.some(({site}) => site.bpns === d.destinationBpns)), [deliveries, siteDesignations]);
+    const outgoingShipments = useMemo(() => deliveries?.filter((d) => siteDesignations?.some(({site}) => site.bpns === d.originBpns)), [deliveries, siteDesignations]);
     const groupedProductions = useMemo(() => groupBy(productions ?? [], (prod) => prod.productionSiteBpns), [productions]);
     const groupedDemands = useMemo(() => groupBy(demands ?? [], (dem) => dem.demandLocationBpns), [demands]);
     const groupedIncomingDeliveries = useMemo(() => groupBy(incomingDeliveries ?? [], (del) => del.destinationBpns), [incomingDeliveries]);
@@ -345,7 +345,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                             </CollapsibleSummary>
                         ))}
                     </SummaryContainer>
-                    {sites?.map((site) => (
+                    {siteDesignations?.map(({site, partnerBpnls}) => (
                         <SummaryContainer key={site.bpns}>
                             <OwnSummaryPanel
                                 title={site.name}
@@ -369,7 +369,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                 showHeader
                                 includeDaysOfSupply
                             ></OwnSummaryPanel>
-                            {expandablePartners.map((partner) => (
+                            {expandablePartners.filter(p => partnerBpnls.includes(p.bpnl)).map((partner) => (
                                 <CollapsibleSummary
                                     key={partner.bpnl}
                                     summary={createSummaryByPartnerAndDirection(partner, direction, undefined, site.bpns)}

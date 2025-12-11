@@ -34,7 +34,7 @@ import { ModalMode } from '@models/types/data/modal-mode';
 import { Site } from '@models/types/edc/site';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
-import { useSites } from '@features/stock-view/hooks/useSites';
+import { useSiteDesignations } from '../hooks/useSiteDesignations';
 import { useNotifications } from '@contexts/notificationContext';
 import { DirectionType } from '@models/types/erp/directionType';
 
@@ -264,7 +264,7 @@ export const DeliveryInformationModal = ({
 }: DeliveryInformationModalProps) => {
     const [temporaryDelivery, setTemporaryDelivery] = useState<Partial<Delivery>>(delivery ?? {});
     const { partners } = usePartners(direction === DirectionType.Outbound ? 'product' : 'material', temporaryDelivery?.ownMaterialNumber ?? null);
-    const { sites } = useSites();
+    const { siteDesignations } = useSiteDesignations(delivery?.ownMaterialNumber ?? null, direction);
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
     const dailyDeliveries = useMemo(
@@ -280,6 +280,7 @@ export const DeliveryInformationModal = ({
             ) ?? [],
         [deliveries, delivery, direction, site]
     );
+    const sites = siteDesignations?.reduce((acc: Site[], sd) => temporaryDelivery.partnerBpnl && sd.partnerBpnls.includes(temporaryDelivery.partnerBpnl) ? [...acc, sd.site] : acc, []) ?? [];
 
     const handleSaveClick = () => {
         temporaryDelivery.customerOrderNumber ||= undefined;
@@ -338,6 +339,90 @@ export const DeliveryInformationModal = ({
             setTemporaryDelivery(delivery);
         }
     }, [delivery]);
+
+    const renderSiteSelectors = () => {
+        const ownSiteSelecor = (
+            <Grid item xs={6}>
+                <LabelledAutoComplete
+                    id="ownBpns"
+                    options={sites ?? []}
+                    getOptionLabel={(option) => option.name ?? ''}
+                    disabled={!temporaryDelivery?.partnerBpnl}
+                    isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
+                    onChange={(_, value) =>
+                        setTemporaryDelivery({
+                            ...temporaryDelivery,
+                            ...(direction === DirectionType.Outbound
+                                ? { originBpns: value?.bpns ?? undefined }
+                                : { destinationBpns: value?.bpns ?? undefined }),
+                        })
+                    }
+                    value={
+                        sites?.find(
+                                (s) =>
+                                    (direction === DirectionType.Outbound
+                                        ? s.bpns === temporaryDelivery.originBpns
+                                        : s.bpns === temporaryDelivery.destinationBpns)
+                            ) ?? null
+                    }
+                    label={`${direction === DirectionType.Outbound ? 'Origin' : 'Destination'}*`}
+                    placeholder={`Select a ${direction === DirectionType.Outbound ? 'Origin' : 'Destination'} Site`}
+                    error={
+                        formError &&
+                        (direction === DirectionType.Outbound ? !temporaryDelivery.originBpns : !temporaryDelivery.destinationBpns)
+                    }
+                    data-testid="delivery-own-bpns-field"
+                />
+            </Grid>
+        );
+        const partnerSiteSelector = (
+            <Grid item xs={6}>
+                <LabelledAutoComplete
+                    id="partnerBpns"
+                    options={partners?.find((s) => s.bpnl === temporaryDelivery?.partnerBpnl)?.sites ?? []}
+                    getOptionLabel={(option) => option.name ?? ''}
+                    disabled={!temporaryDelivery?.partnerBpnl}
+                    isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
+                    onChange={(_, value) =>
+                        setTemporaryDelivery({
+                            ...temporaryDelivery,
+                            ...(direction === DirectionType.Inbound
+                                ? { originBpns: value?.bpns ?? undefined }
+                                : { destinationBpns: value?.bpns ?? undefined }),
+                        })
+                    }
+                    value={
+                        partners
+                            ?.find((s) => s.bpnl === temporaryDelivery?.partnerBpnl)
+                            ?.sites.find(
+                                (s) =>
+                                    (direction === DirectionType.Inbound
+                                        ? s.bpns === temporaryDelivery.originBpns
+                                        : s.bpns === temporaryDelivery.destinationBpns)
+                            ) ?? null
+                    }
+                    label={`${direction === DirectionType.Inbound ? 'Origin' : 'Destination'}*`}
+                    placeholder={`Select a ${direction === DirectionType.Inbound ? 'Origin' : 'Destination'} Site`}
+                    error={
+                        formError &&
+                        (direction === DirectionType.Inbound ? !temporaryDelivery.originBpns : !temporaryDelivery.destinationBpns)
+                    }
+                    data-testid="delivery-partner-bpns-field"
+                />
+            </Grid>
+        );
+        return direction === DirectionType.Inbound ? (
+                <>
+                    {partnerSiteSelector}
+                    {ownSiteSelecor}
+                </>
+            ) : (
+                <>
+                    {ownSiteSelecor}
+                    {partnerSiteSelector}
+                </>
+            )
+    };
     return (
         <>
             <Dialog open={open && delivery !== null} onClose={handleClose} data-testid="delivery-modal">
@@ -351,33 +436,19 @@ export const DeliveryInformationModal = ({
                                 <GridItem label="Material Number" value={temporaryDelivery.ownMaterialNumber ?? ''} />
                                 <Grid item xs={6}>
                                     <LabelledAutoComplete
-                                        id="ownBpns"
-                                        options={sites ?? []}
-                                        getOptionLabel={(option) => option.name ?? ''}
-                                        isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
+                                        sx={{ margin: '0' }}
+                                        id="partner"
+                                        options={partners ?? []}
+                                        getOptionLabel={(option) => option?.name ?? ''}
+                                        label="Partner*"
+                                        placeholder="Select a Partner"
+                                        error={formError && !temporaryDelivery?.partnerBpnl}
                                         onChange={(_, value) =>
-                                            setTemporaryDelivery({
-                                                ...temporaryDelivery,
-                                                ...(direction === DirectionType.Outbound
-                                                    ? { originBpns: value?.bpns ?? undefined }
-                                                    : { destinationBpns: value?.bpns ?? undefined }),
-                                            })
+                                            setTemporaryDelivery({ ...temporaryDelivery, partnerBpnl: value?.bpnl ?? undefined })
                                         }
-                                        value={
-                                            sites?.find(
-                                                    (s) =>
-                                                        (direction === DirectionType.Outbound
-                                                            ? s.bpns === temporaryDelivery.originBpns
-                                                            : s.bpns === temporaryDelivery.destinationBpns)
-                                                ) ?? null
-                                        }
-                                        label={`${direction === DirectionType.Outbound ? 'Origin' : 'Destination'}*`}
-                                        placeholder={`Select a ${direction === DirectionType.Outbound ? 'Origin' : 'Destination'} Site`}
-                                        error={
-                                            formError &&
-                                            (direction === DirectionType.Outbound ? !temporaryDelivery.originBpns : !temporaryDelivery.destinationBpns)
-                                        }
-                                        data-testid="delivery-own-bpns-field"
+                                        value={partners?.find((p) => p.bpnl === temporaryDelivery.partnerBpnl) ?? null}
+                                        isOptionEqualToValue={(option, value) => option?.bpnl === value?.bpnl}
+                                        data-testid="delivery-partner-field"
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -453,57 +524,7 @@ export const DeliveryInformationModal = ({
                                         }
                                     />
                                 </Grid>
-                                <Grid item xs={6}>
-                                    <LabelledAutoComplete
-                                        sx={{ margin: '0' }}
-                                        id="partner"
-                                        options={partners ?? []}
-                                        getOptionLabel={(option) => option?.name ?? ''}
-                                        label="Partner*"
-                                        placeholder="Select a Partner"
-                                        error={formError && !temporaryDelivery?.partnerBpnl}
-                                        onChange={(_, value) =>
-                                            setTemporaryDelivery({ ...temporaryDelivery, partnerBpnl: value?.bpnl ?? undefined })
-                                        }
-                                        value={partners?.find((p) => p.bpnl === temporaryDelivery.partnerBpnl) ?? null}
-                                        isOptionEqualToValue={(option, value) => option?.bpnl === value?.bpnl}
-                                        data-testid="delivery-partner-field"
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <LabelledAutoComplete
-                                        id="partnerBpns"
-                                        options={partners?.find((s) => s.bpnl === temporaryDelivery?.partnerBpnl)?.sites ?? []}
-                                        getOptionLabel={(option) => option.name ?? ''}
-                                        disabled={!temporaryDelivery?.partnerBpnl}
-                                        isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
-                                        onChange={(_, value) =>
-                                            setTemporaryDelivery({
-                                                ...temporaryDelivery,
-                                                ...(direction === DirectionType.Inbound
-                                                    ? { originBpns: value?.bpns ?? undefined }
-                                                    : { destinationBpns: value?.bpns ?? undefined }),
-                                            })
-                                        }
-                                        value={
-                                            partners
-                                                ?.find((s) => s.bpnl === temporaryDelivery?.partnerBpnl)
-                                                ?.sites.find(
-                                                    (s) =>
-                                                        (direction === DirectionType.Inbound
-                                                            ? s.bpns === temporaryDelivery.originBpns
-                                                            : s.bpns === temporaryDelivery.destinationBpns)
-                                                ) ?? null
-                                        }
-                                        label={`${direction === DirectionType.Inbound ? 'Origin' : 'Destination'}*`}
-                                        placeholder={`Select a ${direction === DirectionType.Inbound ? 'Origin' : 'Destination'} Site`}
-                                        error={
-                                            formError &&
-                                            (direction === DirectionType.Inbound ? !temporaryDelivery.originBpns : !temporaryDelivery.destinationBpns)
-                                        }
-                                        data-testid="delivery-partner-bpns-field"
-                                    />
-                                </Grid>
+                                {renderSiteSelectors()}
                                 <Grid item xs={6}>
                                     <FormLabel>Quantity*</FormLabel>
                                     <Input

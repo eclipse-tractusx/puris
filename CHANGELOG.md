@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v5.0.1
+## v6.0.0
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
 
@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- /
+- added site designations per material partner relationhip ([#1061](https://github.com/eclipse-tractusx/puris/pull/1061))
 
 ### Changed
 
@@ -80,6 +80,7 @@ The **need for configuration updates** is **marked bold**.
 - added Master data page for viewing all materials and option to add material as an admin ([#1044](https://github.com/eclipse-tractusx/puris/pull/1044))
 - added Partner table and creation modal to Master data page ([#1054](https://github.com/eclipse-tractusx/puris/pull/1054))
 - added Material-Partner Relation table and creation modal to master data page ([#1059](https://github.com/eclipse-tractusx/puris/pull/1059))
+- added site designations per material partner relationhip ([#XXXX](https://github.com/eclipse-tractusx/puris/pull/XXXX))
 
 ### Changed
 

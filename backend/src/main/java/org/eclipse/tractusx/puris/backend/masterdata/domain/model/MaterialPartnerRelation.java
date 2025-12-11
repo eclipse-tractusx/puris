@@ -22,12 +22,14 @@
 package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.SortedSet;
 import java.util.UUID;
 
 /**
@@ -66,18 +68,33 @@ public class MaterialPartnerRelation {
 
     @ManyToOne
     private Partner partner;
+    @OneToMany(cascade = CascadeType.ALL)
+    @Valid
+    /**
+     * Contains all own Sites (BPNSs) that produce the specified Material for the partner.
+     */
+    private SortedSet<Site> ownProducingSites;
+    @OneToMany(cascade = CascadeType.ALL)
+    @Valid
+    /**
+     * Contains all own Sites (BPNSs) that stock the specified Material from the partner.
+     */
+    private SortedSet<Site> ownStockingSites;
 
     public MaterialPartnerRelation() {
         this.key = new Key();
     }
 
-    public MaterialPartnerRelation(Material material, Partner partner, String partnerMaterialNumber, boolean partnerSupplies, boolean partnerBuys) {
+   public MaterialPartnerRelation(Material material, Partner partner, String partnerMaterialNumber,
+            boolean partnerSupplies, boolean partnerBuys, SortedSet<Site> ownProducingSites, SortedSet<Site> ownStockIngSites) {
         this.material = material;
         this.partner = partner;
         this.key = new Key(material.getOwnMaterialNumber(), partner.getUuid());
         this.partnerMaterialNumber = partnerMaterialNumber;
         this.partnerSuppliesMaterial = partnerSupplies;
         this.partnerBuysMaterial = partnerBuys;
+        this.ownProducingSites = ownProducingSites;
+        this.ownStockingSites = ownStockIngSites;
     }
 
     @Override
@@ -89,6 +106,8 @@ public class MaterialPartnerRelation {
             ", partnerBuysMaterial=" + partnerBuysMaterial +
             ", material=" + material.getOwnMaterialNumber() +
             ", partner=" + partner.getBpnl() +
+            ", ownProducingSites=" + (ownProducingSites != null ? ownProducingSites.toString() : "null") +
+            ", ownStockIngSites=" + (ownStockingSites != null ? ownStockingSites.toString() : "null") +
             '}';
     }
 
