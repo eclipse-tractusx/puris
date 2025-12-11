@@ -147,21 +147,23 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
      * @throws JsonProcessingException
      */
     private void setupCustomerRole() throws JsonProcessingException {
-        Partner supplierPartner = createAndGetSupplierPartner();
+
+        Partner supplierPartner = partnerService.findByBpnl("BPNL1234567890ZZ");
+        if (supplierPartner != null){
+            log.info("Restart of demo setup for role {} detected (supplier partner has been existing before setup). Skipping data seeding for master data and operational data.", variablesService.getDemoRole());
+            return;
+        }
+
+        supplierPartner = createAndGetSupplierPartner();
         Partner mySelf = partnerService.getOwnPartnerEntity();
 
         Material semiconductorMaterial = getNewSemiconductorMaterialForCustomer();
 
-        Material existingSemiconductorMaterial = materialService.findByOwnMaterialNumber(semiconductorMaterial.getOwnMaterialNumber());
-        if (existingSemiconductorMaterial != null){
-            log.info("Following material has been created as {} (and not been changed): {}", variablesService.getDemoRole(), existingSemiconductorMaterial.toString());
-        }else {
-            semiconductorMaterial.setProductFlag(true);
-            semiconductorMaterial = materialService.create(semiconductorMaterial);
-            log.info(String.format("Created material: %s", semiconductorMaterial));
-            List<Material> materialsFound = materialService.findAllMaterials();
-            log.info(String.format("Found Material: %s", materialsFound));
-        }
+        semiconductorMaterial.setProductFlag(true);
+        semiconductorMaterial = materialService.create(semiconductorMaterial);
+        log.info(String.format("Created material: %s", semiconductorMaterial));
+        List<Material> materialsFound = materialService.findAllMaterials();
+        log.info(String.format("Found Material: %s", materialsFound));
 
         log.info(String.format("UUID of supplier partner: %s", supplierPartner.getUuid()));
         supplierPartner = partnerService.findByUuid(supplierPartner.getUuid());
@@ -169,16 +171,11 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         supplierPartner = partnerService.findByBpns(supplierPartner.getSites().stream().findFirst().get().getBpns());
         log.info("Found supplier partner by bpns: " + (supplierPartner != null));
 
-        MaterialPartnerRelation existingMpr = mprService.find(semiconductorMaterial, supplierPartner);
-        if (existingMpr != null){
-            log.info("Following mpr has been created as {} (and not been changed): {}", variablesService.getDemoRole(), existingMpr.toString());
-        }else {
-            MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
-                supplierPartner, semiconductorMatNbrSupplier, true, true);
-            mprService.create(semiconductorPartnerRelation);
-            semiconductorPartnerRelation = mprService.find(semiconductorMaterial, supplierPartner);
-            log.info("Found Relation: " + semiconductorPartnerRelation);
-        }
+        MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
+            supplierPartner, semiconductorMatNbrSupplier, true, true);
+        mprService.create(semiconductorPartnerRelation);
+        semiconductorPartnerRelation = mprService.find(semiconductorMaterial, supplierPartner);
+        log.info("Found Relation: " + semiconductorPartnerRelation);
 
         // customer + material
         Partner nonScenarioCustomer = createAndGetNonScenarioCustomer();
@@ -191,16 +188,11 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
             log.info(String.format("Created Product: %s", centralControlUnitEntity));
         }
 
-        MaterialPartnerRelation existingCcuMpr = mprService.find(centralControlUnitEntity, nonScenarioCustomer);
-        if (existingCcuMpr != null){
-            log.info("Following mpr has been created as {} (and not been changed): {}", variablesService.getDemoRole(), existingCcuMpr.toString());
-        }else {
-            MaterialPartnerRelation ccuPartnerRelation = new MaterialPartnerRelation(centralControlUnitEntity,
-                nonScenarioCustomer, "MNR-4177-C", false, true);
-            ccuPartnerRelation.setPartnerCXNumber("89f9c477-7e6e-4899-9b4b-d2c1081455ec");
-            ccuPartnerRelation = mprService.create(ccuPartnerRelation);
-            log.info("Found Relation: " + ccuPartnerRelation);
-        }
+        MaterialPartnerRelation ccuPartnerRelation = new MaterialPartnerRelation(centralControlUnitEntity,
+            nonScenarioCustomer, "MNR-4177-C", false, true);
+        ccuPartnerRelation.setPartnerCXNumber("89f9c477-7e6e-4899-9b4b-d2c1081455ec");
+        ccuPartnerRelation = mprService.create(ccuPartnerRelation);
+        log.info("Found Relation: " + ccuPartnerRelation);
 
         log.info("All stored Relations: " + mprService.findAll());
 
@@ -215,11 +207,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         log.info("Products that customer buys: " + productsFound);
 
         log.info(mySelf.toString());
-
-        if (existingSemiconductorMaterial == null) {
-            log.info("Restart of demo setup detected (semiconductor material has been existing before setup). Don't create operational data again.");
-            return;
-        }
 
         log.info("Creating operational data for demo setup in role {}", variablesService.getDemoRole());
         var builder = MaterialItemStock.builder();
@@ -277,7 +264,14 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
      * Generates an initial set of data for a supplier within the demonstration context.
      */
     private void setupSupplierRole() {
-        Partner customerPartner = createAndGetCustomerPartner();
+
+        Partner customerPartner = partnerService.findByBpnl("BPNL4444444444XX");
+        if (customerPartner != null){
+            log.info("Restart of demo setup for role {} detected (customer partner has been existing before setup). Skipping data seeding for master data and operational data.", variablesService.getDemoRole());
+            return;
+        }
+
+        customerPartner = createAndGetCustomerPartner();
         Material semiconductorMaterial = getNewSemiconductorMaterialForSupplier();
         semiconductorMaterial.setMaterialFlag(true);
         Partner mySelf = partnerService.getOwnPartnerEntity();
@@ -295,27 +289,17 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
         mySelf = partnerService.update(mySelf);
         log.info(String.format("Added Site to mySelf Partner: %s", mySelf));
 
-        Material existingSemiconductorMaterial = materialService.findByOwnMaterialNumber(semiconductorMaterial.getOwnMaterialNumber());
-        if (existingSemiconductorMaterial != null){
-            log.info("Following material has been created as {} (and not been changed): {}", variablesService.getDemoRole(), existingSemiconductorMaterial.toString());
-        }else {
-            semiconductorMaterial = materialService.create(semiconductorMaterial);
-            log.info(String.format("Created product: %s", semiconductorMaterial));
-        }
+        semiconductorMaterial = materialService.create(semiconductorMaterial);
+        log.info(String.format("Created product: %s", semiconductorMaterial));
 
-        MaterialPartnerRelation existingMpr = mprService.find(semiconductorMaterial, customerPartner);
-        if (existingMpr != null){
-            log.info("Following mpr has been created as {} (and not been changed): {}", variablesService.getDemoRole(), existingMpr.toString());
-        }else {
-            MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
-                customerPartner, semiconductorMatNbrCustomer, true, true);
-            semiconductorPartnerRelation = mprService.create(semiconductorPartnerRelation);
-    
-            log.info("Created Relation " + semiconductorPartnerRelation);
-            semiconductorPartnerRelation = mprService.find(semiconductorMaterial, customerPartner);
-    
-            log.info("Found Relation " + semiconductorPartnerRelation);
-        }
+        MaterialPartnerRelation semiconductorPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
+            customerPartner, semiconductorMatNbrCustomer, true, true);
+        semiconductorPartnerRelation = mprService.create(semiconductorPartnerRelation);
+
+        log.info("Created Relation " + semiconductorPartnerRelation);
+        semiconductorPartnerRelation = mprService.find(semiconductorMaterial, customerPartner);
+
+        log.info("Found Relation " + semiconductorPartnerRelation);
 
 
         List<Material> materialsFound = materialService.findAllProducts();
@@ -326,11 +310,6 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
 
         Site siteNy = mySelf.getSites().stream().filter(site -> site.getBpns().equals("BPNS1234567890ZZ")).findFirst().get();
         Site siteLa = mySelf.getSites().stream().filter(site -> site.getBpns().equals("BPNS2222222222SS")).findFirst().get();
-
-        if (existingSemiconductorMaterial == null) {
-            log.info("Restart of demo setup detected (semiconductor material has been existing before setup). Don't create operational data again.");
-            return;
-        }
 
         log.info("Creating operational data for demo setup in role {}", variablesService.getDemoRole());
 
@@ -439,13 +418,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
      */
     private Partner createAndGetSupplierPartner() {
         
-        Partner supplierPartnerEntity = partnerService.findByBpnl("BPNL1234567890ZZ");
-        if (supplierPartnerEntity != null){
-            log.info("Following partner has been created as {} (and not been changed): {}", variablesService.getDemoRole(), supplierPartnerEntity.toString());
-            return supplierPartnerEntity;
-        }
-
-        supplierPartnerEntity = new Partner(
+        Partner supplierPartnerEntity = new Partner(
             "Semiconductor Supplier Inc.",
             "http://supplier-control-plane:9184/api/v1/dsp",
             "BPNL1234567890ZZ",
@@ -485,13 +458,7 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
      */
     private Partner createAndGetNonScenarioCustomer() {
 
-        Partner nonScenarioCustomer = partnerService.findByBpnl("BPNL2222222222RR");
-        if (nonScenarioCustomer != null){
-            log.info("Following partner has been created as non-scenario customer (and not been changed): " + nonScenarioCustomer.toString());
-            return nonScenarioCustomer;
-        }
-
-        nonScenarioCustomer = new Partner(
+        Partner nonScenarioCustomer = new Partner(
             "Non-Scenario Customer",
             "http://nonscenario-customer.com/api/v1/dsp",
             "BPNL2222222222RR",
