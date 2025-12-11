@@ -7,6 +7,8 @@ meta {
 post {
   url: {{SUPPLIER_PURIS_BACKEND}}/catena/materialpartnerrelations
   body: json
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/materialpartnerrelations
+  body: json
   auth: none
 }
 
@@ -20,7 +22,11 @@ body:json {
     "ownMaterialNumber": "{{MATERIAL_NUMBER_SUPPLIER}}",
     "partnerMaterialNumber": "{{MATERIAL_NUMBER_CUSTOMER}}",
     "partnerSuppliesMaterial": false,
-    "partnerBuysMaterial": true
+    "partnerBuysMaterial": true,
+    "ownProducingSiteBpnss": [
+      "{{SUPPLIER_BPNS}}"
+    ],
+    "ownStockingSiteBpnss": []
   }
 }
 

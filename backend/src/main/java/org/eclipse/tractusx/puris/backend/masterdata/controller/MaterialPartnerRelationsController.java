@@ -29,8 +29,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelationDto;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialPartnerRelationDto;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -39,7 +40,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.Base64;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -64,6 +66,8 @@ public class MaterialPartnerRelationsController {
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
+    private final Pattern bpnsPattern = PatternStore.BPNS_PATTERN;
+
     @PreAuthorize("hasRole('PURIS_ADMIN')")
     @GetMapping
     @Operation(summary = "Get all Material Partner Relations -- ADMIN ONLY", description =
@@ -81,7 +85,9 @@ public class MaterialPartnerRelationsController {
                     mpr.getPartner().getBpnl(),
                     mpr.getPartnerMaterialNumber(),
                     mpr.isPartnerSuppliesMaterial(),
-                    mpr.isPartnerBuysMaterial()
+                    mpr.isPartnerBuysMaterial(),
+                    mpr.getOwnProducingSites().stream().map(Site::getBpns).collect(Collectors.toList()),
+                    mpr.getOwnStockingSites().stream().map(Site::getBpns).collect(Collectors.toList())
                 ))
                 .collect(Collectors.toList());
             return ResponseEntity.ok(dtos);
@@ -118,10 +124,47 @@ public class MaterialPartnerRelationsController {
         if (partner == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
+        Partner ownPartner = partnerService.getOwnPartnerEntity();
+        SortedSet<Site> producingSites = new TreeSet<>();
+        if (dto.getOwnProducingSiteBpnss() != null) {
+            for (var siteBpns : dto.getOwnProducingSiteBpnss()) {
+                if (!bpnsPattern.matcher(siteBpns).matches()) {
+                    log.warn("Invalid producing site BPNS format.");
+                    return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+                }
+                Site site = ownPartner.getSites().stream()
+                    .filter(s -> s.getBpns().contains(siteBpns))
+                    .findFirst()
+                    .orElse(null);
+                if (site == null) {
+                    log.warn("Invalid producing site. Own site with BPNS {} not found.", siteBpns);
+                    return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+                }
+                producingSites.add(site);
+            }
+        }
+        SortedSet<Site> stockingSites = new TreeSet<>();
+        if (dto.getOwnStockingSiteBpnss() != null) {
+            for (var siteBpns : dto.getOwnStockingSiteBpnss()) {
+                if (!bpnsPattern.matcher(siteBpns).matches()) {
+                    log.warn("Invalid stocking site BPNS format.");
+                    return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+                }
+                Site site = ownPartner.getSites().stream()
+                    .filter(s -> s.getBpns().contains(siteBpns))
+                    .findFirst()
+                    .orElse(null);
+                if (site == null) {
+                    log.warn("Invalid stocking site. Own site with BPNS {} not found.", siteBpns);
+                    return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+                }
+                stockingSites.add(site);
+            }
+        }
         if (mprService.find(material, partner) != null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(409));
         }
-        MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, dto.getPartnerMaterialNumber(), dto.isPartnerSuppliesMaterial(), dto.isPartnerBuysMaterial());
+        MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, dto.getPartnerMaterialNumber(), dto.isPartnerSuppliesMaterial(), dto.isPartnerBuysMaterial(), producingSites, stockingSites);
 
         newMpr = mprService.create(newMpr);
         if (newMpr == null) {
