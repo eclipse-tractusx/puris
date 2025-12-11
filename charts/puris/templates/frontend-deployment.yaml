@@ -97,6 +97,12 @@ spec:
               value: "{{ .Values.frontend.puris.endpointDemandAndCapacityNotification }}"
             - name: ENDPOINT_IMPORT_FILES
               value: "{{ .Values.frontend.puris.endpointImportFiles | default "files" }}"
+            - name: ENDPOINT_ALL_MATERIALS
+              value: "{{ .Values.frontend.puris.endpointAllMaterials | default "materials" }}"
+            - name: ENDPOINT_ALL_PARTNERS
+              value: "{{ .Values.frontend.puris.endpointAllPartners | default "partners" }}"
+            - name: ENDPOINT_MATERIAL_PARTNER_RELATIONS
+              value: "{{ .Values.frontend.puris.endpointMaterialPartnerRelations | default "materialpartnerrelations" }}"
             - name: IDP_URL
               value: "{{ .Values.idp.url }}"
             - name: IDP_REALM
@@ -111,6 +117,8 @@ spec:
               value: "{{ .Values.frontend.puris.rateLimiting.burst }}"
             - name: NGINX_RATE
               value: "{{ .Values.frontend.puris.rateLimiting.rate }}"
+            - name: FRONTEND_GENERATE_MATERIAL_CATENAX_ID
+              value: "{{ .Values.backend.puris.generatematerialcatenaxid | default true }}"
             ######################################
             ## Additional environment variables ##
             ######################################
