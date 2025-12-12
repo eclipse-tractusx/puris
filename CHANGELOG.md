@@ -24,6 +24,7 @@ The **need for configuration updates** is **marked bold**.
 - don't fail during startup if own partner already exists ([#1062](https://github.com/eclipse-tractusx/puris/pull/1062))
 - in demo setup, skip setup if run has been performed before ([#1065](https://github.com/eclipse-tractusx/puris/pull/1065))
 - Improved documentation, added option for persitent containers and a .env file for bruno ([1024](https://github.com/eclipse-tractusx/puris/pull/1024))
+- fixed incorrect expected heading in E2E test suite ([#1057](https://github.com/eclipse-tractusx/puris/pull/1057))
 
 ### Known Knowns
 
