@@ -544,6 +544,20 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     }
 
     /**
+     * Returns a list of all MaterialPartnerRelations for the given own material number.
+     *
+     * @param ownMaterialNumber the own material number to search for
+     * @return a list of MaterialPartnerRelations for this material
+     */
+    @Override
+    public List<MaterialPartnerRelation> findAllByOwnMaterialNumber(String ownMaterialNumber) {
+        return mprRepository.findAll().stream()
+            .filter(mpr -> mpr.getMaterial() != null && 
+                          mpr.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
+            .collect(Collectors.toList());
+    }
+
+    /**
      * Returns a list of all Materials, for which a MaterialPartnerRelation exists,
      * where the partner is using the given partnerMaterialNumber.
      *
