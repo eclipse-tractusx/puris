@@ -30,8 +30,9 @@ public enum AssetType {
     DELIVERY_SUBMODEL("urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation", "$value", "DeliveryInformation", "2.0"),
     NOTIFICATION("urn:samm:io.catenax.demand_and_capacity_notification:3.0.0#DemandAndCapacityNotification", "none", "none", "3.0"),
     DAYS_OF_SUPPLY("urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply", "$value", "DaysOfSupply", "2.0"),
-    PART_TYPE_INFORMATION_SUBMODEL("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value", "none", "1.0");
-
+    PART_TYPE_INFORMATION_SUBMODEL("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value", "none", "1.0"),
+    SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL("urn:samm:io.catenax.single_level_bom_as_planned:3.0.0#SingleLevelBomAsPlanned", "$value", "SingleLevelBomAsPlanned", "3.0");
+    
     public final String URN_SEMANTIC_ID;
     public final String REPRESENTATION;
     public final String ERP_KEYWORD;
@@ -50,6 +51,8 @@ public enum AssetType {
             case "urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply" -> AssetType.DAYS_OF_SUPPLY;
             case "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation" ->
                 AssetType.PART_TYPE_INFORMATION_SUBMODEL;
+            case "urn:samm:io.catenax.single_level_bom_as_planned:3.0.0#SingleLevelBomAsPlanned" ->
+                AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL;
             default -> AssetType.DTR; // Handle unknown URN by returning a default enum value
         };
     }

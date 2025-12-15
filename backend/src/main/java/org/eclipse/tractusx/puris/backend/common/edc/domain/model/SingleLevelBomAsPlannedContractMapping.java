@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2025 Volkswagen AG
- * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2026 Volkswagen AG
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,15 +16,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.masterdata.domain.repository;
 
-import java.util.List;
-import java.util.UUID;
+package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
-import org.springframework.data.jpa.repository.JpaRepository;
+import jakarta.persistence.Entity;
+import lombok.ToString;
 
-public interface MaterialRelationRepository extends JpaRepository<MaterialRelation, UUID> {
-
-	List<MaterialRelation> findAllByParentOwnMaterialNumber(String parentOwnMaterialNumber);
+@Entity
+@ToString(callSuper = true)
+public class SingleLevelBomAsPlannedContractMapping extends ContractMapping {
 }
