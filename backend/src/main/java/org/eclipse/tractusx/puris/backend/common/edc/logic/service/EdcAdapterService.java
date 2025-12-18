@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DspProtocolVersionEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
@@ -355,7 +356,8 @@ public class EdcAdapterService {
      * @return The response containing the full catalog, if successful
      */
     public Response getCatalogResponse(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException {
-        return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, partnerBpnl, filter), List.of("v3", "catalog", "request"));
+        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(dspUrl, partnerBpnl);
+        return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspaceVersionParams.counterPartyAddress, dspaceVersionParams.counterPartyId, filter), List.of("v3", "catalog", "request"));
     }
 
     /**
@@ -375,6 +377,39 @@ public class EdcAdapterService {
             return responseNode;
         }
 
+    }
+
+    // Represents information dspaceVersionParams endpoint
+    public record DspaceVersionParams (String counterPartyId, String counterPartyAddress, DspProtocolVersionEnum protocol) {}
+
+    public DspaceVersionParams getPartnerDspaceVersionParams(String dspUrl, String partnerBpnl) throws IOException{
+        JsonNode dspaceVersionParmsRequest = edcRequestBodyBuilder.buildDspaceVersionParamsRequest(dspUrl, partnerBpnl);
+        try (Response response = this.sendPostRequest(dspaceVersionParmsRequest, List.of("v4alpha", "connectordiscovery", "dspaceversionparams"))){
+            JsonNode responseNode = objectMapper.readTree(response.body().string());
+            
+            DspaceVersionParams dspaceVersionParams = null;
+            // if connector verison < 0.10.x 404 is returned, then assemble default from dsp v0.8
+            if (response.code() == 404)
+            {
+                // TODO: counterPartyId should be a did - do we really need to use that?
+                dspaceVersionParams = new DspaceVersionParams(partnerBpnl, dspUrl, DspProtocolVersionEnum.V_0_8);
+                log.debug("Connector does not yet support endpoint /v4alpha/connectordiscovery/dspversionparams. Fallback to following parameters: {}", dspaceVersionParams.toString());
+                return dspaceVersionParams;
+            }
+            
+            log.debug("Got response from Dspace Version Params request: {}", responseNode.toPrettyString());
+
+            // TODO: refactor to work based on expanded jsonld
+            
+            // fallback to v.0.8 in case of missing information / issues
+            String counterPartyAddress = responseNode.get("edc:counterPartyAddress").asText(dspUrl);
+            String counterPartyId = responseNode.get("edc:counterPartyId").asText(partnerBpnl);
+            String protocolString = responseNode.get("edc:protocol").asText(DspProtocolVersionEnum.V_0_8.getVersion());
+            DspProtocolVersionEnum dspProtocolVersion = DspProtocolVersionEnum.fromVersion(protocolString);
+            dspaceVersionParams = new DspaceVersionParams(counterPartyAddress, counterPartyId, dspProtocolVersion);
+            log.debug("Will use the following dsp version information for partner: {}", dspaceVersionParams.toString());
+            return dspaceVersionParams;
+        }
     }
 
     /**
