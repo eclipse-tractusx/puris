@@ -20,17 +20,6 @@
 #
 
 services:
-  # Outcommented as not updated for R24.05 but scheduled for R24.08
-  #  miw:
-  #    image: tractusx/managed-identity-wallet:0.4.0
-  #    container_name: miw
-  #    env_file:
-  #      - ./miw/infrastructure.properties
-  #    ports:
-  #      - "127.0.0.1:8000:80"
-  #      - "127.0.0.1:8090:8090"
-  #    networks:
-  #      - miw-net
 
   dns-host-resolver:
     container_name: resolver
@@ -41,14 +30,14 @@ services:
 
   postgres:
     image: postgres:15.4-alpine
-    container_name: postgres-miw
+    container_name: postgres-wallet
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready  -d miw -U ${PG_USER}"]
+      test: ["CMD-SHELL", "pg_isready  -d wallet -U ${PG_USER}"]
       interval: 4s
       timeout: 3s
       retries: 15
     environment:
-      POSTGRES_DB: miw
+      POSTGRES_DB: wallet
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PW}
       #    volumes:
@@ -112,25 +101,37 @@ services:
     networks:
       - miw-net
 
-#  mock-util-service:
+#  replaced by ssi-dim-wallet-stub
+#  if you need dcp v08
+#  1. update the edc settings to force use dcp 0.8
+#  2. outcomment wallet stub based service
+#  3. incomment this old wallet 
+#  wallet:
 #    build: ./iam-mock
-#    container_name: mock-util-service
+#    container_name: wallet
 #    ports:
 #      - "127.0.0.1:8888:80"
 #    networks:
 #      - miw-net
-#      -
-  mock-util-service:
-    image: tractusx/ssi-dim-wallet-stub:0.0.6
-    container_name: mock-util-service
-    environment:
-#      STUB_ENV: default
-      APPLICATION_PORT: 80
-      BASE_WALLET_BPN: BPNL000000000000
-      SEED_WALLETS_BPN: BPNL000000000000,BPNL4444444444XX,BPNL1234567890ZZ
-      STUB_URL: http://mock-util-service:80
-      STATUS_LIST_VC_ID: 8a6c7486-1e1f-4555-bdd2-1a178182651e
-      DID_HOST: mock-util-service
+
+  wallet:
+    image: tractusx/ssi-dim-wallet-stub:0.0.8
+    container_name: wallet
+    env_file:
+      - ./ssi-dim-wallet-stub/application.properties
+#     environment:
+# #      STUB_ENV: default
+#       APPLICATION_PORT: 80
+#       BASE_WALLET_BPN: BPNL000000000000
+#       SEED_WALLETS_BPN: BPNL000000000000,BPNL4444444444XX,BPNL1234567890ZZ
+#       STUB_URL: http://wallet:80
+#       STATUS_LIST_VC_ID: 8a6c7486-1e1f-4555-bdd2-1a178182651e
+#       DID_HOST: wallet
+#       SPRING_DATASOURCE_URL: #TODO
+#       SPRING_DATASOURCE_USERNAME: #TODO
+#       SPRING_DATASOURCE_PASSWORD: #TODO
+#       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+#       SPRING_DATASOURCE_JPA_DATABASE-PLATFORM: org.hibernate.dialect.PostgreSQLDialect
     ports:
       - "127.0.0.1:8888:80"
     networks:
@@ -149,7 +150,7 @@ services:
     environment:
       WEB_HTTP_PORT: 8580
       WEB_HTTP_PATH: /api
-      edc.iam.trusted-issuer.issuer.id: did:web:mock-util-service:BPNL000000000000
+      edc.iam.trusted-issuer.issuer.id: did:web:wallet:BPNL000000000000
     ports:
       - "127.0.0.1:8580:8580"
       - "127.0.0.1:8581:8581"
