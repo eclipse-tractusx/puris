@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2054 Volkswagen AG
+Copyright (c) 2025 Volkswagen AG
 Copyright (c) 2025 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -51,6 +51,9 @@ export function TextToClipboard({ text, variant = 'default' }: TextToClipboardPr
         dark: { color: '#000' },
         default: { color: null },
     };
+    if (!text) {
+        return null;
+    }
     return (
         <Button variant="text" sx={{ padding: 0, justifyContent: 'start', width: 'fit-content' }} onClick={handleCopyText}>
             <Typography variant="body3" sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem', ...variantStyles[variant] }}>

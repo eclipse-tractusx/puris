@@ -25,6 +25,7 @@ import { Box, Button, capitalize, Stack, Typography } from '@mui/material';
 import { useDataModal } from '@contexts/dataModalContext';
 import { Link } from 'react-router-dom';
 import { LoadingButton } from '@components/ui/LoadingButton';
+import { TextToClipboard } from '@components/ui/TextToClipboard';
 
 type MaterialDetailsHeaderProps = {
     material: Material;
@@ -42,7 +43,7 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, isSch
             <Stack direction="row" alignItems="center" spacing={1} width="100%">
                 <Link to="/materials" data-testid="back-button"> <Box padding="0.25rem" display="flex" alignItems="center"> <ChevronLeftOutlined /> </Box> </Link>
                 <Typography variant="h3" component="h1" marginRight="auto !important">
-                    {direction === DirectionType.Outbound ? 'Production Information' : 'Demand Information'} for {material?.name} ({material?.ownMaterialNumber}), ({capitalize(direction.toLowerCase())})
+                    {direction === DirectionType.Outbound ? 'Production Information' : 'Demand Information'} for {material?.name} (<TextToClipboard text={material?.ownMaterialNumber ?? ""} />), ({capitalize(direction.toLowerCase())})
                 </Typography>
                 <Stack gap="0.5rem" sx={{flexDirection: { xs: 'column', xl: 'row'}}}>
                     <Stack direction="row" gap="0.5rem">
