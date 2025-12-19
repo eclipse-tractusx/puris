@@ -425,15 +425,25 @@ public class EdcAdapterService {
                 return dspaceVersionParams;
             }
             JsonNode responseNode = objectMapper.readTree(response.body().string());
+            responseNode = jsonLdUtils.expand(responseNode);
                 
             log.debug("Got response from Dspace Version Params request: {}", responseNode.toPrettyString());
 
-            // TODO: refactor to work based on expanded jsonld
-            
+            // todo iterate over array and take newest
+
             // fallback to v.0.8 in case of missing information / issues
-            String counterPartyAddress = responseNode.get("edc:counterPartyAddress").asText(dspUrl);
-            String counterPartyId = responseNode.get("edc:counterPartyId").asText(partnerBpnl);
-            String protocolString = responseNode.get("edc:protocol").asText(DspProtocolVersionEnum.V_0_8.getVersion());
+            String counterPartyAddress = responseNode.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyAddress")
+                .get(0)
+                .get("@value")
+                .asText(dspUrl);
+            String counterPartyId = responseNode.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyId")
+                .get(0)
+                .get("@value")
+                .asText(partnerBpnl);
+            String protocolString = responseNode.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "protocol")
+                .get(0)
+                .get("@value")
+                .asText(DspProtocolVersionEnum.V_0_8.getVersion());
             DspProtocolVersionEnum dspProtocolVersion = DspProtocolVersionEnum.fromVersion(protocolString);
             dspaceVersionParams = new DspaceVersionParams(counterPartyId, counterPartyAddress, dspProtocolVersion);
             log.debug("Will use the following dsp version information for partner: {}", dspaceVersionParams.toString());
