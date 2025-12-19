@@ -25,8 +25,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum DspProtocolVersionEnum {
     
-    V_2025_01("2024/1"),
-    V_0_8("v0.8");
+    V_2025_01("dataspace-protocol-http:2025-1"),
+    // TODO evaluate if there is an expected value
+    V_0_8("dataspace-protocol-http:0_8");
 
     private String version;
 

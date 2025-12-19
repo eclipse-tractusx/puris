@@ -64,8 +64,23 @@ public class EdcAdapterService {
 
     private final Pattern urlPattern = PatternStore.URL_PATTERN;
 
+    @Autowired
     public EdcAdapterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+    }
+
+    public EdcAdapterService(
+        ObjectMapper objectMapper,
+        VariablesService variablesService,
+        EdcRequestBodyBuilder edcRequestBodyBuilder,
+        EdcContractMappingService edcContractMappingService,
+        JsonLdUtils jsonLdUtils
+    ) {
+        this.objectMapper = objectMapper;
+        this.variablesService = variablesService;
+        this.edcRequestBodyBuilder = edcRequestBodyBuilder;
+        this.edcContractMappingService = edcContractMappingService;
+        this.jsonLdUtils = jsonLdUtils;
     }
 
     /**
@@ -117,7 +132,7 @@ public class EdcAdapterService {
      * @return The response from your control plane
      * @throws IOException If the connection to your control plane fails
      */
-    private Response sendPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
+    public Response sendPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getEdcManagementUrl()).newBuilder();
         for (var pathSegment : pathSegments) {
             urlBuilder.addPathSegment(pathSegment);
@@ -356,7 +371,7 @@ public class EdcAdapterService {
      * @return The response containing the full catalog, if successful
      */
     public Response getCatalogResponse(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException {
-        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(dspUrl, partnerBpnl);
+        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partnerBpnl, dspUrl);
         return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspaceVersionParams.counterPartyAddress, dspaceVersionParams.counterPartyId, filter), List.of("v3", "catalog", "request"));
     }
 
@@ -379,16 +394,29 @@ public class EdcAdapterService {
 
     }
 
-    // Represents information dspaceVersionParams endpoint
+    /**
+     * represents the latest version information from dspaceVersionParams endpoint
+     *
+     * @param counterPartyId      The counterPartyId taken from endpoint
+     * @param counterPartyAddress The dsp url taken from endpoint for the given protocol
+     * @param protocol            The protocol version used
+     * @return a newly initialized DspaceVersionParams
+     */
     public record DspaceVersionParams (String counterPartyId, String counterPartyAddress, DspProtocolVersionEnum protocol) {}
 
-    public DspaceVersionParams getPartnerDspaceVersionParams(String dspUrl, String partnerBpnl) throws IOException{
+    /**
+     * represents the latest version information from dspaceVersionParams endpoint
+     *
+     * @param partnerBpnl The bpnl of your partner used for identification and lookup of did 
+     * @param dspUrl      The dsp url known from your partner (master data / discovery)
+     * @return the latest {@link DspaceVersionParams} of your partner or a fallback prior to TX Connector 0.10.0
+     */
+    public DspaceVersionParams getPartnerDspaceVersionParams(String partnerBpnl, String dspUrl) throws IOException{
         JsonNode dspaceVersionParmsRequest = edcRequestBodyBuilder.buildDspaceVersionParamsRequest(dspUrl, partnerBpnl);
         try (Response response = this.sendPostRequest(dspaceVersionParmsRequest, List.of("v4alpha", "connectordiscovery", "dspaceversionparams"))){
-            JsonNode responseNode = objectMapper.readTree(response.body().string());
             
             DspaceVersionParams dspaceVersionParams = null;
-            // if connector verison < 0.10.x 404 is returned, then assemble default from dsp v0.8
+            // if connector version < 0.10.x 404 is returned, then assemble default from dsp v0.8
             if (response.code() == 404)
             {
                 // TODO: counterPartyId should be a did - do we really need to use that?
@@ -396,7 +424,8 @@ public class EdcAdapterService {
                 log.debug("Connector does not yet support endpoint /v4alpha/connectordiscovery/dspversionparams. Fallback to following parameters: {}", dspaceVersionParams.toString());
                 return dspaceVersionParams;
             }
-            
+            JsonNode responseNode = objectMapper.readTree(response.body().string());
+                
             log.debug("Got response from Dspace Version Params request: {}", responseNode.toPrettyString());
 
             // TODO: refactor to work based on expanded jsonld
@@ -406,7 +435,7 @@ public class EdcAdapterService {
             String counterPartyId = responseNode.get("edc:counterPartyId").asText(partnerBpnl);
             String protocolString = responseNode.get("edc:protocol").asText(DspProtocolVersionEnum.V_0_8.getVersion());
             DspProtocolVersionEnum dspProtocolVersion = DspProtocolVersionEnum.fromVersion(protocolString);
-            dspaceVersionParams = new DspaceVersionParams(counterPartyAddress, counterPartyId, dspProtocolVersion);
+            dspaceVersionParams = new DspaceVersionParams(counterPartyId, counterPartyAddress, dspProtocolVersion);
             log.debug("Will use the following dsp version information for partner: {}", dspaceVersionParams.toString());
             return dspaceVersionParams;
         }
