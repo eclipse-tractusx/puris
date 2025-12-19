@@ -22,6 +22,8 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
@@ -416,38 +418,67 @@ public class EdcAdapterService {
         try (Response response = this.sendPostRequest(dspaceVersionParmsRequest, List.of("v4alpha", "connectordiscovery", "dspaceversionparams"))){
             
             DspaceVersionParams dspaceVersionParams = null;
+            final DspaceVersionParams fallback = new DspaceVersionParams(partnerBpnl, dspUrl, DspProtocolVersionEnum.V_0_8);
             // if connector version < 0.10.x 404 is returned, then assemble default from dsp v0.8
             if (response.code() == 404)
             {
-                // TODO: counterPartyId should be a did - do we really need to use that?
+                // Note: following swagger-ui counterPartyId should be a did - likely this is an upstream example bug
                 dspaceVersionParams = new DspaceVersionParams(partnerBpnl, dspUrl, DspProtocolVersionEnum.V_0_8);
                 log.debug("Connector does not yet support endpoint /v4alpha/connectordiscovery/dspversionparams. Fallback to following parameters: {}", dspaceVersionParams.toString());
                 return dspaceVersionParams;
+            } 
+            else if (!response.isSuccessful()){
+                log.warn("Dspace version could not be determined and error was not expected. Status code {}; error: {}", response.code(), response.body());
+                log.debug("No supported version found, fallback: {}", fallback.toString());
+                return fallback;
             }
             JsonNode responseNode = objectMapper.readTree(response.body().string());
             responseNode = jsonLdUtils.expand(responseNode);
                 
             log.debug("Got response from Dspace Version Params request: {}", responseNode.toPrettyString());
 
-            // todo iterate over array and take newest
+            ArrayNode responseArray = null;
+            // ensure it's an array
+            if (responseNode.isObject()){
+                responseArray = objectMapper.createArrayNode().add(responseNode);
+            } else {
+                responseArray = (ArrayNode) responseNode;
+            }
 
-            // fallback to v.0.8 in case of missing information / issues
-            String counterPartyAddress = responseNode.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyAddress")
-                .get(0)
-                .get("@value")
-                .asText(dspUrl);
-            String counterPartyId = responseNode.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyId")
-                .get(0)
-                .get("@value")
-                .asText(partnerBpnl);
-            String protocolString = responseNode.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "protocol")
-                .get(0)
-                .get("@value")
-                .asText(DspProtocolVersionEnum.V_0_8.getVersion());
-            DspProtocolVersionEnum dspProtocolVersion = DspProtocolVersionEnum.fromVersion(protocolString);
-            dspaceVersionParams = new DspaceVersionParams(counterPartyId, counterPartyAddress, dspProtocolVersion);
-            log.debug("Will use the following dsp version information for partner: {}", dspaceVersionParams.toString());
-            return dspaceVersionParams;
+            // collect supported dspace versions
+            List<DspaceVersionParams> partnerSupportedDspaceVersions = new ArrayList<>();
+            for (JsonNode entry: responseArray){
+                // fallback to v.0.8 in case of missing information / issues
+                String counterPartyAddress = entry.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyAddress")
+                    .get(0)
+                    .get("@value")
+                    .asText(dspUrl);
+                String counterPartyId = entry.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyId")
+                    .get(0)
+                    .get("@value")
+                    .asText(partnerBpnl);
+                String protocolString = entry.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "protocol")
+                    .get(0)
+                    .get("@value")
+                    .asText(DspProtocolVersionEnum.V_0_8.getVersion());
+                DspProtocolVersionEnum dspProtocolVersion = DspProtocolVersionEnum.fromVersion(protocolString);
+                dspaceVersionParams = new DspaceVersionParams(counterPartyId, counterPartyAddress, dspProtocolVersion);
+                log.debug("Partner supports the following dsp version: {}", dspaceVersionParams.toString());
+                partnerSupportedDspaceVersions.add(dspaceVersionParams);
+            }
+
+            // Identify the highest enum in the list of supported versions based on natural order (youngest -> latest)
+            Optional<DspaceVersionParams> latest = partnerSupportedDspaceVersions.stream()
+                .max(Comparator.comparingInt(p -> p.protocol().ordinal()));
+
+            // If found any is given / latest found return it or use fallback
+            if (latest.isPresent()) {
+                log.debug("Will use the following dsp version information for partner: {}", latest.get().toString());
+                return latest.get();
+            } else {
+                log.debug("No supported version found, fallback: {}", fallback.toString());
+                return fallback;
+            }
         }
     }
 
@@ -815,9 +846,17 @@ public class EdcAdapterService {
                 EdcRequestBodyBuilder.CX_TAXO_NAMESPACE + "DigitalTwinRegistry"
             );
             var responseNode = getCatalog(partner.getEdcUrl(), partner.getBpnl(), equalFilters);
+            log.debug("Response prior to expansion: {}", responseNode);
             responseNode = jsonLdUtils.expand(responseNode);
+            log.debug("Response after expansion: {}", responseNode);
+
+            // per specifciation jsonLd wraps into an array if multiple entries, thus take first entry as we get only one contract.
+            if (responseNode.isArray()) {
+                responseNode = responseNode.get(0);
+            }
 
             var catalogArray = responseNode.get(EdcRequestBodyBuilder.DCAT_NAMESPACE + "dataset");
+            
             // If there is exactly one asset, the catalogContent will be a JSON object.
             // In all other cases catalogContent will be a JSON array.
             // For the sake of uniformity we will embed a single object in an array.
@@ -1157,6 +1196,12 @@ public class EdcAdapterService {
         try {
             var responseNode = getCatalog(dspUrl, partner.getBpnl(), equalFilters);
             responseNode = jsonLdUtils.expand(responseNode);
+
+            // per specifciation jsonLd wraps into an array if multiple entries, thus take first entry as we get only one contract.
+            if (responseNode.isArray()) {
+                responseNode = responseNode.get(0);
+            }
+
             var catalogArray = responseNode.get(EdcRequestBodyBuilder.DCAT_NAMESPACE + "dataset");
             // If there is exactly one asset, the catalogContent will be a JSON object.
             // In all other cases catalogContent will be a JSON array.
@@ -1254,6 +1299,7 @@ public class EdcAdapterService {
             .map(constr -> constr.get(0))
             .map(con -> con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "and"));
         if (constraint.isEmpty()) {
+            System.out.println("No constraint in permission node found");
             log.debug("Constraint mismatch: we expect to have a constraint in permission node.");
             return false;
         }

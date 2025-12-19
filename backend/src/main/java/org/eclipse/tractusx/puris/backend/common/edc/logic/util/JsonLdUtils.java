@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,42 +22,45 @@
 
 package org.eclipse.tractusx.puris.backend.common.edc.logic.util;
 
+import com.apicatalog.jsonld.JsonLd;
+import com.apicatalog.jsonld.JsonLdError;
+import com.apicatalog.jsonld.JsonLdErrorCode;
+import com.apicatalog.jsonld.JsonLdOptions;
+import com.apicatalog.jsonld.document.Document;
+import com.apicatalog.jsonld.document.JsonDocument;
+import com.apicatalog.jsonld.loader.DocumentLoader;
+import com.apicatalog.jsonld.loader.DocumentLoaderOptions;
+import com.apicatalog.jsonld.loader.SchemeRouter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+import jakarta.json.JsonStructure;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.edc.jsonld.TitaniumJsonLd;
-import org.eclipse.edc.spi.monitor.Monitor;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 @Slf4j
 @Service
 public class JsonLdUtils {
 
     private final ObjectMapper MAPPER = new ObjectMapper();
+    private final DocumentLoader CACHED_LOADER;
+    private final JsonDocument DEFAULT_CONTEXT_DOCUMENT;
 
-    private final TitaniumJsonLd TITANIUM_JSON_LD = new TitaniumJsonLd(new MonitorAdapter() {
-    });
-
-   {
-        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.CX_POLICY_CONTEXT);
-        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT);
-        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.DCAT_NAMESPACE);
-        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.DSPACE_NAMESPACE);
-        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.EDC_NAMESPACE);
-        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.TX_AUTH_NAMESPACE);
-        TITANIUM_JSON_LD.registerContext(EdcRequestBodyBuilder.TX_NAMESPACE);
-
+    /**
+     * JsonLd processor having preloaded Eclipse Tractus-X related jsonLd documents.
+     */
+    public JsonLdUtils() {
+        // Map of contexts to load
         final String prefix = "json-ld" + File.separator;
         Map<String, String> filesMap = Map.of(
             EdcRequestBodyBuilder.CX_POLICY_CONTEXT, prefix + "cx-policy-v1.jsonld",
@@ -67,81 +72,125 @@ public class JsonLdUtils {
             EdcRequestBodyBuilder.TX_NAMESPACE, prefix + "tx-v1.jsonld"
         );
 
-        Function<String, URI> uriFunction = fileName -> {
-            Resource resource = new ClassPathResource(fileName);
-            try {
-                return resource.getURI();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        };
+        // Load only internal documments
+        this.CACHED_LOADER = new CachingDocumentLoader(filesMap);
 
-        for (var entry : filesMap.entrySet()) {
-            TITANIUM_JSON_LD.registerCachedDocument(entry.getKey(), uriFunction.apply(entry.getValue()));
-        }
+        JsonObject contextObject = Json.createObjectBuilder()
+            .add("edc", EdcRequestBodyBuilder.EDC_NAMESPACE)
+            .add("dcat", EdcRequestBodyBuilder.DCAT_NAMESPACE)
+            .add("odrl", EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT)
+            .add("dspace", EdcRequestBodyBuilder.DSPACE_NAMESPACE)
+            .add("tx", EdcRequestBodyBuilder.TX_NAMESPACE)
+            .add("cx-policy", EdcRequestBodyBuilder.CX_POLICY_CONTEXT)
+            .build();
+
+        JsonObject rootContext = Json.createObjectBuilder()
+            .add("@context", contextObject)
+            .build();
+
+        this.DEFAULT_CONTEXT_DOCUMENT = JsonDocument.of(rootContext);
     }
 
-    public ObjectNode expand(JsonNode node) {
-        JsonReader jsonReader = Json.createReader(new StringReader(node.toString()));
-        var jakartaJson = jsonReader.readObject();
-        var expandedJakartaJson = TITANIUM_JSON_LD.expand(jakartaJson).getContent();
-        try {
-            return (ObjectNode) MAPPER.readTree(expandedJakartaJson.toString());
+    public JsonNode expand(JsonNode node) {
+        try (JsonReader jsonReader = Json.createReader(new StringReader(node.toString()))){
+            
+            // transform from jackson to jakarta
+            JsonStructure jakartaJson = jsonReader.read();
+            JsonDocument document = JsonDocument.of(jakartaJson);
+
+            JsonLdOptions options = new JsonLdOptions();
+            options.setDocumentLoader(CACHED_LOADER);
+
+            var expandedJakartaJson = JsonLd.expand(document)
+                .options(options)
+                .get();
+
+            // transform back from jakarto to jackson
+            return MAPPER.readTree(expandedJakartaJson.toString());
         } catch (Exception e) {
             log.error("Failure expanding json node: \n{}", node.toPrettyString(), e);
-            return null;
+        }
+        return null;
+    }
+
+    /**
+     * compacts JSON-LD using the default context
+     * 
+     * @param node JsonNode (jackson) to compact
+     */
+    public JsonNode compact(JsonNode node) {
+        return compact(node, DEFAULT_CONTEXT_DOCUMENT);
+    }
+
+    /**
+     * compacts JSON-LD using a specific context
+     * 
+     * @param node JsonNode (jackson) to compact
+     * @param contextNode JsonNode (jackson) to use as context during compaction
+     */
+    public JsonNode compact(JsonNode node, JsonNode contextNode) {
+        try (JsonReader contextReader = Json.createReader(new StringReader(contextNode.toString()))) {
+            JsonDocument contextDocument = JsonDocument.of(contextReader.read());
+            return compact(node, contextDocument);
         }
     }
 
-    public ObjectNode compact(JsonNode node) {
-        JsonReader jsonReader = Json.createReader(new StringReader(node.toString()));
-        var jakartaJson = jsonReader.readObject();
-        var expandedJakartaJson = TITANIUM_JSON_LD.compact(jakartaJson).getContent();
-        try {
-            return (ObjectNode) MAPPER.readTree(expandedJakartaJson.toString());
-        } catch (Exception e) {
-            log.error("Failure compacting json node: \n{}", node.toPrettyString(), e);
-            return null;
+    /**
+     * compacts a JsonNode
+     * 
+     * @param node JsonNode (Jackson) to compact
+     * @param contextDocument JsonDocument (jakarta) to use as context during compaction
+     */
+    private JsonNode compact(JsonNode node, JsonDocument contextDocument) {
+        try (JsonReader jsonReader = Json.createReader(new StringReader(node.toString()))) {
+            JsonStructure jakartaJson = jsonReader.read();
+            JsonDocument document = JsonDocument.of(jakartaJson);
+
+            JsonLdOptions options = new JsonLdOptions();
+            options.setDocumentLoader(CACHED_LOADER);
+
+            var compactedObject = JsonLd.compact(document, contextDocument)
+                .options(options)
+                .get();
+
+            return MAPPER.readTree(compactedObject.toString());
+        } catch (JsonLdError | IOException e) {
+            log.error("Failure compacting json node", e);
         }
+        return null;
     }
 
-    private static class MonitorAdapter implements Monitor {
+    /**
+     * Internal Custom Loader that serves Contexts from ClassPath (memory)
+     * and falls back to HTTP for everything else.
+     */
+    private static class CachingDocumentLoader implements DocumentLoader {
+        private final Map<URI, Document> cache = new HashMap<>();
+        private final DocumentLoader defaultLoader = SchemeRouter.defaultInstance();
 
-        @Override
-        public void severe(Supplier<String> supplier, Throwable... errors) {
-            log.error(supplier.get());
-            if (errors != null) {
-                for (var error : errors) {
-                    log.error("{} \n{}", error.getMessage(), error.getStackTrace());
+        public CachingDocumentLoader(Map<String, String> filesMap) {
+            for (Map.Entry<String, String> entry : filesMap.entrySet()) {
+                try {
+                    URI uri = URI.create(entry.getKey());
+                    ClassPathResource resource = new ClassPathResource(entry.getValue());
+                    try (InputStream is = resource.getInputStream()) {
+                        // Parse the local file immediately into a JsonDocument
+                        JsonDocument doc = JsonDocument.of(Json.createReader(is).read());
+                        cache.put(uri, doc);
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to load cached JSON-LD context: {}", entry.getKey(), e);
                 }
             }
         }
 
         @Override
-        public void severe(Map<String, Object> data) {
-            for(var entry : data.entrySet()){
-                log.error(entry.getKey(), entry.getValue());
+        public Document loadDocument(URI url, DocumentLoaderOptions options) throws JsonLdError {
+            // Return cached document, if loaded
+            if (cache.containsKey(url)) {
+                return cache.get(url);
             }
-        }
-
-        @Override
-        public void warning(Supplier<String> supplier, Throwable... errors) {
-            log.warn(supplier.get());
-            if (errors != null) {
-                for (var error : errors) {
-                    log.warn("{} \n{}", error.getMessage(), error.getStackTrace());
-                }
-            }
-        }
-
-        @Override
-        public void info(Supplier<String> supplier, Throwable... errors) {
-            log.info(supplier.get(), (Object[]) errors);
-        }
-
-        @Override
-        public void debug(Supplier<String> supplier, Throwable... errors) {
-            log.debug(supplier.get(), (Object[]) errors);
-        }
+            throw new JsonLdError(JsonLdErrorCode.LOADING_DOCUMENT_FAILED, String.format("Document \"%s\" has not been found in cache. Due to security concerns, no remote file has been loaded.", url.toString()));
+          }
     }
 }

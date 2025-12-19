@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -23,7 +25,6 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
@@ -40,15 +41,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
@@ -56,7 +52,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -88,14 +83,7 @@ public class EdcAdapterServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        // MockitoAnnotations.openMocks(this);
 
-        // edcAdapterService = new EdcAdapterService(new ObjectMapper());
-
-        // make variablesService mockable
-        // Field field = EdcAdapterService.class.getDeclaredField("variablesService");
-        // field.setAccessible(true);
-        // field.set(edcAdapterService, variablesService);
         edcAdapterService = new EdcAdapterService(
             objectMapper,
             variablesService,
@@ -161,6 +149,10 @@ public class EdcAdapterServiceTest {
         validJsonNode = jsonLdUtils.expand(validJsonNode);
         System.out.println(validJsonNode.toPrettyString());
 
+        // per specifciation jsonLd wraps into an array if multiple entries, thus take it.
+        if (validJsonNode.isArray()) {
+            validJsonNode = validJsonNode.get(0);
+        }
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
@@ -228,6 +220,11 @@ public class EdcAdapterServiceTest {
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
         invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
+
+        // per specifciation jsonLd wraps into an array if multiple entries, thus take it.
+        if (invalidJsonNode.isArray()) {
+            invalidJsonNode = invalidJsonNode.get(0);
+        }
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
@@ -326,7 +323,7 @@ public class EdcAdapterServiceTest {
             expectedCounterPartyAddress,
             DspProtocolVersionEnum.fromVersion(expectedProtocolString));
 
-        String validJsonLd = "{\n" + //
+        String validJsonLd = "[{\n" + //
                         "  \"@context\": {\n" + //
                         "    \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" + //
                         "    \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\"\n" + //
@@ -334,7 +331,15 @@ public class EdcAdapterServiceTest {
                         "  \"edc:counterPartyId\": \"" + expectedCounterPartyId + "\",\n" + //
                         "  \"edc:counterPartyAddress\": \"" + expectedCounterPartyAddress + "\",\n" + //
                         "  \"edc:protocol\": \"" + expectedProtocolString + "\"\n" + //
-                        "}";
+                        "}, {\n" + //
+                        "  \"@context\": {\n" + //
+                        "    \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" + //
+                        "    \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\"\n" + //
+                        "  },\n" + //
+                        "  \"edc:counterPartyId\": \"http://other-ignored-connector.com/v1/dsp\",\n" + //
+                        "  \"edc:counterPartyAddress\": \"BPNL1111111111XX\",\n" + //
+                        "  \"edc:protocol\": \"" + DspProtocolVersionEnum.V_0_8.getVersion() + "\"\n" + //
+                        "}]";
 
         String partnerBpnl = "BPNL4444444444XX";
         String partnerDspUrl = "http://customer-control-plane:8184/api/v1/dsp"; 
@@ -343,6 +348,7 @@ public class EdcAdapterServiceTest {
         Response mockResponse = mock(Response.class);
         ResponseBody mockBody = mock(ResponseBody.class);
         when(mockResponse.code()).thenReturn(200);
+        when(mockResponse.isSuccessful()).thenReturn(true);
         when(mockResponse.body()).thenReturn(mockBody);
         when(mockBody.string()).thenReturn(validJsonLd);
 

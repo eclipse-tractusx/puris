@@ -48,12 +48,13 @@
         <postgresql.version>42.7.3</postgresql.version>
         <snakeyaml.version>2.2</snakeyaml.version>
         <springdoc.version>2.8.5</springdoc.version>
-        <edc-connector-version>0.11.1</edc-connector-version>
         <liquibase.version>4.32.0</liquibase.version>
         <keycloak-core.version>26.3.2</keycloak-core.version>
         <keycloak-server-spi-private.version>26.3.2</keycloak-server-spi-private.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <bcprov-jdk18on.version>1.78</bcprov-jdk18on.version>
+        <titanium-jsonLd.version>1.7.0</titanium-jsonLd.version>
+        <jakarta-json.version>2.0.1</jakarta-json.version>
     </properties>
     <!-- override versions manually due to security reasons -->
     <dependencyManagement>
@@ -182,18 +183,6 @@
             <artifactId>modelmapper</artifactId>
             <version>${modelmapper.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.eclipse.edc/json-ld-lib -->
-        <dependency>
-            <groupId>org.eclipse.edc</groupId>
-            <artifactId>json-ld-lib</artifactId>
-            <version>${edc-connector-version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.eclipse.edc/json-ld-spi -->
-        <dependency>
-            <groupId>org.eclipse.edc</groupId>
-            <artifactId>json-ld-spi</artifactId>
-            <version>${edc-connector-version}</version>
-        </dependency>
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-spring-boot-starter</artifactId>
@@ -203,7 +192,17 @@
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
             <version>${liquibase.version}</version>
-        </dependency> 
+        </dependency>
+        <dependency>
+            <groupId>com.apicatalog</groupId>
+            <artifactId>titanium-json-ld</artifactId>
+            <version>${titanium-jsonLd.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <version>${jakarta-json.version}</version>
+        </dependency>
     </dependencies>
     <pluginRepositories>
         <pluginRepository>
