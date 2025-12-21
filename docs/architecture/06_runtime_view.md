@@ -6,6 +6,50 @@ The runtime view mainly focuses on the following scenarios:
 - Create Digital Twins for Material or Product
 - Interact with Data in the Web-UI
 
+## Technical Capability: Catalog Request
+
+When performing a catalog request the folling steps are performed:
+
+```mermaid
+sequenceDiagram
+   title
+   autonumber
+
+   box "Data Consumer"
+   participant app_cons as Business<br/>Application
+   participant edc_cons as EDC<br/>Consumer
+   end
+
+   box "Data Provider"
+   participant edc_prov as EDC<br/>Provider
+   end
+
+   note over app_cons,edc_prov: Identify Catalog DSP Version
+   app_cons -->>+ edc_cons: call `v4alpha/connectordiscovery/dspaceversionversions`
+   edc_cons <<-->> edc_prov: lookup .well-known/dpace-version
+   edc_cons -->>-app_cons: return response
+   app_cons ->> app_cons: evaluate response
+   alt endpoint not found (404) or any non-success
+      app_cons ->> app_cons: assemble fallback parameters<br>(partner dsp url, bpnl)
+   else endpoint returned 
+      app_cons ->> app_cons: expand JsonLD
+      app_cons ->> app_cons: take latest dsp version parameters<br>from endpoint (partner dsp url, bpnl)
+   end
+   
+   note over app_cons,edc_prov: Lookup Datasets in partner catalog
+   app_cons -->>+ edc_cons: call `vX/management/catalog` with determined parmaters
+   edc_cons <<-->> edc_prov: communicate via <br>data space protocol (DSP)<br>and decentralized claims protocol
+   edc_cons -->>-app_cons: return catalog
+
+   app_cons ->> app_cons: expand JsonLD
+   note over app_cons,edc_cons: The constraint evaluation is currently only<br>performed against submodel assets.<br>The DTR asset is not eveluated.
+   app_cons ->> app_cons: identify first matching dataset for<br>contract policy constraints<br>PURIS FOSS can handle<br>(see data sovereingy concepts)
+
+   break if no dataset found with contract policy that we can fulfill
+      app_cons ->> app_cons: log error
+   end
+```
+
 ## Scenario: Update partner-related data
 
 The information exchange in PURIS follows a shared asset approach of the Digital Twin KIT and the Industry Core KIT.
@@ -99,4 +143,5 @@ This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LIC
 
 - SPDX-License-Identifier: Apache-2.0
 - SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- SPDX-FileCopyrightText: 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 - Source URL: https://github.com/eclipse-tractusx/puris

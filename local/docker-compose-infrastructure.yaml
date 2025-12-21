@@ -20,17 +20,6 @@
 #
 
 services:
-  # Outcommented as not updated for R24.05 but scheduled for R24.08
-  #  miw:
-  #    image: tractusx/managed-identity-wallet:0.4.0
-  #    container_name: miw
-  #    env_file:
-  #      - ./miw/infrastructure.properties
-  #    ports:
-  #      - "127.0.0.1:8000:80"
-  #      - "127.0.0.1:8090:8090"
-  #    networks:
-  #      - miw-net
 
   dns-host-resolver:
     container_name: resolver
@@ -41,14 +30,14 @@ services:
 
   postgres:
     image: postgres:15.4-alpine
-    container_name: postgres-miw
+    container_name: postgres-wallet
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready  -d miw -U ${PG_USER}"]
+      test: ["CMD-SHELL", "pg_isready  -d wallet -U ${PG_USER}"]
       interval: 4s
       timeout: 3s
       retries: 15
     environment:
-      POSTGRES_DB: miw
+      POSTGRES_DB: wallet
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PW}
       #    volumes:
@@ -84,7 +73,7 @@ services:
       - ./keycloak/customer/Customer-realm.json:/opt/keycloak/data/import/Customer-realm.json
       - ./keycloak/customer/Customer-users-0.json:/opt/keycloak/data/import/Customer-users-0.json
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:80:8080"
     depends_on:
       - postgres
     networks:
@@ -112,9 +101,24 @@ services:
     networks:
       - miw-net
 
-  mock-util-service:
-    build: ./iam-mock
-    container_name: mock-util-service
+#  replaced by ssi-dim-wallet-stub
+#  if you need dcp v08
+#  1. update the edc settings to force use dcp 0.8
+#  2. outcomment wallet stub based service
+#  3. incomment this old wallet 
+#  wallet:
+#    build: ./iam-mock
+#    container_name: wallet
+#    ports:
+#      - "127.0.0.1:8888:80"
+#    networks:
+#      - miw-net
+
+  wallet:
+    image: tractusx/ssi-dim-wallet-stub:0.0.8
+    container_name: wallet
+    env_file:
+      - ./ssi-dim-wallet-stub/application.properties
     ports:
       - "127.0.0.1:8888:80"
     networks:
@@ -133,7 +137,7 @@ services:
     environment:
       WEB_HTTP_PORT: 8580
       WEB_HTTP_PATH: /api
-      edc.iam.trusted-issuer.issuer.id: did:web:mock-util-service/trusted-issuer
+      edc.iam.trusted-issuer.issuer.id: did:web:wallet:BPNL000000000000
     ports:
       - "127.0.0.1:8580:8580"
       - "127.0.0.1:8581:8581"

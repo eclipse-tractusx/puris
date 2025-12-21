@@ -22,9 +22,12 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DspProtocolVersionEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
@@ -63,8 +66,23 @@ public class EdcAdapterService {
 
     private final Pattern urlPattern = PatternStore.URL_PATTERN;
 
+    @Autowired
     public EdcAdapterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+    }
+
+    public EdcAdapterService(
+        ObjectMapper objectMapper,
+        VariablesService variablesService,
+        EdcRequestBodyBuilder edcRequestBodyBuilder,
+        EdcContractMappingService edcContractMappingService,
+        JsonLdUtils jsonLdUtils
+    ) {
+        this.objectMapper = objectMapper;
+        this.variablesService = variablesService;
+        this.edcRequestBodyBuilder = edcRequestBodyBuilder;
+        this.edcContractMappingService = edcContractMappingService;
+        this.jsonLdUtils = jsonLdUtils;
     }
 
     /**
@@ -116,7 +134,7 @@ public class EdcAdapterService {
      * @return The response from your control plane
      * @throws IOException If the connection to your control plane fails
      */
-    private Response sendPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
+    public Response sendPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getEdcManagementUrl()).newBuilder();
         for (var pathSegment : pathSegments) {
             urlBuilder.addPathSegment(pathSegment);
@@ -355,7 +373,8 @@ public class EdcAdapterService {
      * @return The response containing the full catalog, if successful
      */
     public Response getCatalogResponse(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException {
-        return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspUrl, partnerBpnl, filter), List.of("v3", "catalog", "request"));
+        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partnerBpnl, dspUrl);
+        return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspaceVersionParams.counterPartyAddress, dspaceVersionParams.counterPartyId, filter), List.of("v3", "catalog", "request"));
     }
 
     /**
@@ -375,6 +394,92 @@ public class EdcAdapterService {
             return responseNode;
         }
 
+    }
+
+    /**
+     * represents the latest version information from dspaceVersionParams endpoint
+     *
+     * @param counterPartyId      The counterPartyId taken from endpoint
+     * @param counterPartyAddress The dsp url taken from endpoint for the given protocol
+     * @param protocol            The protocol version used
+     * @return a newly initialized DspaceVersionParams
+     */
+    public record DspaceVersionParams (String counterPartyId, String counterPartyAddress, DspProtocolVersionEnum protocol) {}
+
+    /**
+     * represents the latest version information from dspaceVersionParams endpoint
+     *
+     * @param partnerBpnl The bpnl of your partner used for identification and lookup of did 
+     * @param dspUrl      The dsp url known from your partner (master data / discovery)
+     * @return the latest {@link DspaceVersionParams} of your partner or a fallback prior to TX Connector 0.10.0
+     */
+    public DspaceVersionParams getPartnerDspaceVersionParams(String partnerBpnl, String dspUrl) throws IOException{
+        JsonNode dspaceVersionParmsRequest = edcRequestBodyBuilder.buildDspaceVersionParamsRequest(dspUrl, partnerBpnl);
+        try (Response response = this.sendPostRequest(dspaceVersionParmsRequest, List.of("v4alpha", "connectordiscovery", "dspaceversionparams"))){
+            
+            DspaceVersionParams dspaceVersionParams = null;
+            final DspaceVersionParams fallback = new DspaceVersionParams(partnerBpnl, dspUrl, DspProtocolVersionEnum.V_0_8);
+            // if connector version < 0.10.x 404 is returned, then assemble default from dsp v0.8
+            if (response.code() == 404)
+            {
+                // Note: following swagger-ui counterPartyId should be a did - likely this is an upstream example bug
+                dspaceVersionParams = new DspaceVersionParams(partnerBpnl, dspUrl, DspProtocolVersionEnum.V_0_8);
+                log.debug("Connector does not yet support endpoint /v4alpha/connectordiscovery/dspversionparams. Fallback to following parameters: {}", dspaceVersionParams.toString());
+                return dspaceVersionParams;
+            } 
+            else if (!response.isSuccessful()){
+                log.warn("Dspace version could not be determined and error was not expected. Status code {}; error: {}", response.code(), response.body());
+                log.debug("No supported version found, fallback: {}", fallback.toString());
+                return fallback;
+            }
+            JsonNode responseNode = objectMapper.readTree(response.body().string());
+            responseNode = jsonLdUtils.expand(responseNode);
+                
+            log.debug("Got response from Dspace Version Params request: {}", responseNode.toPrettyString());
+
+            ArrayNode responseArray = null;
+            // ensure it's an array
+            if (responseNode.isObject()){
+                responseArray = objectMapper.createArrayNode().add(responseNode);
+            } else {
+                responseArray = (ArrayNode) responseNode;
+            }
+
+            // collect supported dspace versions
+            List<DspaceVersionParams> partnerSupportedDspaceVersions = new ArrayList<>();
+            for (JsonNode entry: responseArray){
+                // fallback to v.0.8 in case of missing information / issues
+                String counterPartyAddress = entry.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyAddress")
+                    .get(0)
+                    .get("@value")
+                    .asText(dspUrl);
+                String counterPartyId = entry.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyId")
+                    .get(0)
+                    .get("@value")
+                    .asText(partnerBpnl);
+                String protocolString = entry.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "protocol")
+                    .get(0)
+                    .get("@value")
+                    .asText(DspProtocolVersionEnum.V_0_8.getVersion());
+                DspProtocolVersionEnum dspProtocolVersion = DspProtocolVersionEnum.fromVersion(protocolString);
+                dspaceVersionParams = new DspaceVersionParams(counterPartyId, counterPartyAddress, dspProtocolVersion);
+                log.debug("Partner supports the following dsp version: {}", dspaceVersionParams.toString());
+                partnerSupportedDspaceVersions.add(dspaceVersionParams);
+            }
+
+            // Identify the highest enum in the list of supported versions based on natural order (youngest -> latest)
+            Optional<DspaceVersionParams> latest = partnerSupportedDspaceVersions.stream()
+                .max(Comparator.comparingInt(p -> p.protocol().ordinal()));
+
+            // If found any is given / latest found return it or use fallback
+            if (latest.isPresent()) {
+                log.debug("Will use the following dsp version information for partner: {}", latest.get().toString());
+                return latest.get();
+            } else {
+                log.debug("No supported version found, fallback: {}", fallback.toString());
+                return fallback;
+            }
+        }
     }
 
     /**
@@ -742,8 +847,15 @@ public class EdcAdapterService {
             );
             var responseNode = getCatalog(partner.getEdcUrl(), partner.getBpnl(), equalFilters);
             responseNode = jsonLdUtils.expand(responseNode);
+            log.debug("Catalog response after expansion: {}", responseNode);
+
+            // per specifciation jsonLd wraps into an array if multiple entries, thus take first entry as we get only one contract.
+            if (responseNode.isArray()) {
+                responseNode = responseNode.get(0);
+            }
 
             var catalogArray = responseNode.get(EdcRequestBodyBuilder.DCAT_NAMESPACE + "dataset");
+            
             // If there is exactly one asset, the catalogContent will be a JSON object.
             // In all other cases catalogContent will be a JSON array.
             // For the sake of uniformity we will embed a single object in an array.
@@ -1083,6 +1195,12 @@ public class EdcAdapterService {
         try {
             var responseNode = getCatalog(dspUrl, partner.getBpnl(), equalFilters);
             responseNode = jsonLdUtils.expand(responseNode);
+
+            // per specifciation jsonLd wraps into an array if multiple entries, thus take first entry as we get only one contract.
+            if (responseNode.isArray()) {
+                responseNode = responseNode.get(0);
+            }
+
             var catalogArray = responseNode.get(EdcRequestBodyBuilder.DCAT_NAMESPACE + "dataset");
             // If there is exactly one asset, the catalogContent will be a JSON object.
             // In all other cases catalogContent will be a JSON array.
