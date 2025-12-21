@@ -19,8 +19,6 @@
  */
 package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
-import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum DspProtocolVersionEnum {
@@ -44,8 +42,6 @@ public enum DspProtocolVersionEnum {
         throw new IllegalArgumentException("Unknown version: " + version);
     }
 
-    // TODO: do I need the annotation?
-    @JsonValue
     public String getVersion() {
         return version;
     }

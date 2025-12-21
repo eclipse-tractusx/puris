@@ -846,9 +846,8 @@ public class EdcAdapterService {
                 EdcRequestBodyBuilder.CX_TAXO_NAMESPACE + "DigitalTwinRegistry"
             );
             var responseNode = getCatalog(partner.getEdcUrl(), partner.getBpnl(), equalFilters);
-            log.debug("Response prior to expansion: {}", responseNode);
             responseNode = jsonLdUtils.expand(responseNode);
-            log.debug("Response after expansion: {}", responseNode);
+            log.debug("Catalog response after expansion: {}", responseNode);
 
             // per specifciation jsonLd wraps into an array if multiple entries, thus take first entry as we get only one contract.
             if (responseNode.isArray()) {
@@ -1299,7 +1298,6 @@ public class EdcAdapterService {
             .map(constr -> constr.get(0))
             .map(con -> con.get(EdcRequestBodyBuilder.ODRL_NAMESPACE + "and"));
         if (constraint.isEmpty()) {
-            System.out.println("No constraint in permission node found");
             log.debug("Constraint mismatch: we expect to have a constraint in permission node.");
             return false;
         }

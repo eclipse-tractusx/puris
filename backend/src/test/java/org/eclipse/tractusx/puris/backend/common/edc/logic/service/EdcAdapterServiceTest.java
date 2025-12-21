@@ -70,8 +70,7 @@ public class EdcAdapterServiceTest {
     @Mock
     private EdcContractMappingService edcContractMappingService;
 
-    // @Spy
-    // @InjectMocks
+    // use setup to inject mocks on our own
     private EdcAdapterService edcAdapterService;
 
     @Mock
