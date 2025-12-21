@@ -1,6 +1,6 @@
 # Creating a local testing and development setup via Docker
 
-> [!info] Disclaimer
+> [!NOTE] Disclaimer
 >
 > This setup is not secure. It also uses minimum identity:
 >
