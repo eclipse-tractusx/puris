@@ -22,14 +22,18 @@
 package org.eclipse.tractusx.puris.backend.stock.controller;
 
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Validator;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -41,22 +45,46 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedMaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.*;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.*;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.FrontendMaterialDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.MaterialStockDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ProductStockDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ReportedMaterialStockDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.ReportedProductStockDto;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockRequestApiService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedMaterialItemStockService;
+import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedProductItemStockService;
 import org.eclipse.tractusx.puris.backend.supply.logic.service.CustomerSupplyService;
 import org.eclipse.tractusx.puris.backend.supply.logic.service.SupplierSupplyService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.ErrorResponseException;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class contains a range of REST endpoints to provide the frontend
@@ -215,19 +243,28 @@ public class StockViewController {
             productStockToCreate.getPartner(),
             productStockToCreate.getMaterial());
 
-        boolean stockDoesExist = existingProductItemStocks.stream().filter(stock ->
-            stock.isBlocked() == productStockToCreate.isBlocked() &&
+        Optional<ProductItemStock> stockDoesExist = existingProductItemStocks.stream()
+            .filter(stock ->
+                stock.isBlocked() == productStockToCreate.isBlocked() &&
                 stock.getLocationBpns().equals(productStockToCreate.getLocationBpns()) &&
                 stock.getLocationBpna().equals(productStockToCreate.getLocationBpna()) &&
                 Objects.equals(stock.getCustomerOrderId(), productStockToCreate.getCustomerOrderId()) &&
                 Objects.equals(stock.getCustomerOrderPositionId(), productStockToCreate.getCustomerOrderPositionId()) &&
                 Objects.equals(stock.getSupplierOrderId(), productStockToCreate.getSupplierOrderId())
-        ).anyMatch(stock -> true);
+            )
+            .findFirst();
 
-        if (stockDoesExist) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Product Stock does already exist. Use PUT instead.");
+        if (stockDoesExist.isPresent()) {
+            ProductStockDto existingDto = convertToDto(stockDoesExist.get());
+
+            ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+            pd.setTitle("Product Stock already exists");
+            pd.setDetail("A Product-stock with the same natural key already exists. Use PUT instead.");
+            pd.setProperty("existingId", existingDto.getUuid());
+            pd.setProperty("quantity", existingDto.getQuantity());
+            pd.setProperty("measurementUnit", existingDto.getMeasurementUnit());
+            throw new ErrorResponseException(HttpStatus.CONFLICT, pd, null);
         }
-
         ProductItemStock createdProductStock = productItemStockService.create(productStockToCreate);
         if (createdProductStock == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Stock could not be created.");
@@ -389,17 +426,27 @@ public class StockViewController {
         List<MaterialItemStock> existingMaterialItemStocks = materialItemStockService.findByPartnerAndMaterial(materialStockToCreate.getPartner(),
             materialStockToCreate.getMaterial());
 
-        boolean stockDoesExist = existingMaterialItemStocks.stream().filter(stock ->
-            stock.isBlocked() == materialStockToCreate.isBlocked() &&
-                stock.getLocationBpns().equals(materialStockToCreate.getLocationBpns()) &&
-                stock.getLocationBpna().equals(materialStockToCreate.getLocationBpna()) &&
+        Optional<MaterialItemStock> existingStock = existingMaterialItemStocks.stream()
+            .filter(stock ->
+                stock.isBlocked() == materialStockToCreate.isBlocked() &&
+                Objects.equals(stock.getLocationBpns(), materialStockToCreate.getLocationBpns()) &&
+                Objects.equals(stock.getLocationBpna(), materialStockToCreate.getLocationBpna()) &&
                 Objects.equals(stock.getCustomerOrderId(), materialStockToCreate.getCustomerOrderId()) &&
                 Objects.equals(stock.getCustomerOrderPositionId(), materialStockToCreate.getCustomerOrderPositionId()) &&
                 Objects.equals(stock.getSupplierOrderId(), materialStockToCreate.getSupplierOrderId())
-        ).anyMatch(stock -> true);
+            )
+            .findFirst();
 
-        if (stockDoesExist) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Material Stock does already exist. Use PUT instead.");
+        if (existingStock.isPresent()) {
+            MaterialStockDto existingDto = convertToDto(existingStock.get());
+
+            ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+            pd.setTitle("Material Stock already exists");
+            pd.setDetail("A material-stock with the same natural key already exists. Use PUT instead.");
+            pd.setProperty("existingId", existingDto.getUuid());
+            pd.setProperty("quantity", existingDto.getQuantity());
+            pd.setProperty("measurementUnit", existingDto.getMeasurementUnit());
+            throw new ErrorResponseException(HttpStatus.CONFLICT, pd, null);
         }
 
         MaterialItemStock createdMaterialStock = materialItemStockService.create(materialStockToCreate);
