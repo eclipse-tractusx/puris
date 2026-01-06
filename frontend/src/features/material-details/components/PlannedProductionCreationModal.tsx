@@ -38,7 +38,7 @@ import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { useSites } from '@features/stock-view/hooks/useSites';
-import { postProductionRange, updateProductionRange } from '@services/productions-service';
+import { postProduction, updateProduction } from '@services/productions-service';
 import { useNotifications } from '@contexts/notificationContext';
 import { GridItem } from '@components/ui/GridItem';
 
@@ -88,14 +88,14 @@ export const PlannedProductionCreationModal = ({
         }
 
         setFormError(false);
-        const method = mode === 'create' ? postProductionRange : updateProductionRange;
+        const method = mode === 'create' ? postProduction : updateProduction;
         const successLabel = mode === 'create' ? 'Production Created' : 'Production Updated';
         const successDescription = mode === 'create' ? 'The Production has been added' : 'The Production has been successfully updated';
 
-        method([{
+        method({
             ...temporaryProduction,
             lastUpdatedOnDateTime: new Date().toISOString(),
-        }])
+        })
             .then((d) => {
                 onSave(d);
                 notify({

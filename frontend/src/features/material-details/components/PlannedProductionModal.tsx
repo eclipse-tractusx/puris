@@ -159,7 +159,7 @@ export const PlannedProductionModal = ({ open, onClose, onRemove, production, pr
         [productions, production?.estimatedTimeOfCompletion]
     );
 
-    const canDelete = Boolean(sites?.find((site) => productions?.some((d) => d.productionSiteBpns === site.bpns)));
+    const isReported = Boolean(!sites?.find((site) => productions?.some((d) => d.productionSiteBpns === site.bpns)));
 
     const handleEdit = (row: Production) => {
         openDialog('production', { ...row }, dailyProductions, 'edit');
@@ -204,7 +204,7 @@ export const PlannedProductionModal = ({ open, onClose, onRemove, production, pr
                             : ''
                             }`}
                         getRowId={(row) => row.uuid}
-                        columns={createProductionColumns(canDelete ? handleDelete : undefined, handleEdit)}
+                        columns={createProductionColumns(!isReported ? handleDelete : undefined, !isReported ? handleEdit : undefined)}
                         rows={dailyProductions}
                         hideFooter
                         density="standard"

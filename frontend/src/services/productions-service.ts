@@ -22,8 +22,8 @@ import { Production } from '@models/types/data/production';
 import { UUID } from 'crypto';
 import AuthenticationService from './authentication-service';
 
-export const postProductionRange = async (range: Partial<Production>[]) => {
-  const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION_RANGE, {
+export const postProduction = async (range: Partial<Production>) => {
+  const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION, {
     method: 'POST',
     body: JSON.stringify(range),
     headers: {
@@ -38,10 +38,10 @@ export const postProductionRange = async (range: Partial<Production>[]) => {
   return res.json();
 }
 
-export const updateProductionRange = async (range: Partial<Production>[]) => {
+export const updateProduction = async (production: Partial<Production>) => {
   const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION, {
     method: 'PUT',
-    body: JSON.stringify(range),
+    body: JSON.stringify(production),
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${AuthenticationService.getToken()}`
