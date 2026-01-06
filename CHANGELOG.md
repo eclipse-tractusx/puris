@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Implemented Edit functionality logic for Stock Modal ([#1022](https://github.com/eclipse-tractusx/puris/pull/1022/))
 - Implemented update logic for delivery information ([#1004](https://github.com/eclipse-tractusx/puris/pull/1004))
+- Implemented update logic for Demand Modal ([#1028](https://github.com/eclipse-tractusx/puris/pull/1028))
 
 ### Changed
 
