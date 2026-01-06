@@ -28,6 +28,7 @@ import { useNotifications } from '@contexts/notificationContext';
 import { useDataModal } from '@contexts/dataModalContext';
 import { getUnitOfMeasurement } from '@util/helpers';
 import { DirectionType } from '@models/types/erp/directionType';
+import { useSites } from '@features/stock-view/hooks/useSites';
 
 export type StockModalProps = {
     open: boolean;
@@ -40,7 +41,7 @@ export type StockModalProps = {
 };
 
 const createStockColumns = (
-    handleDelete: (row: Stock) => void, handleEdit: (row: Stock) => void
+    handleDelete?: (row: Stock) => void, handleEdit?: (row: Stock) => void
 ) => {
     return [
         {
@@ -123,16 +124,16 @@ const createStockColumns = (
             sortable: false,
             disableColumnMenu: true,
             width: 20,
-            renderCell: (data: { row: Stock }) => {
-                return (
+            renderCell: (data: { row: Stock }) => (
+                handleEdit ? (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
                         <Button variant="text" onClick={() => handleEdit(data.row)} data-testid="edit-stock">
                             <Edit />
                         </Button>
 
                     </Box>
-                );
-            },
+                ) : null
+            ),
         },
         {
             field: 'delete',
@@ -141,16 +142,17 @@ const createStockColumns = (
             sortable: false,
             disableColumnMenu: true,
             renderCell: ({ row }: { row: Stock }) => (
-                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-
-                    <Button
-                        variant="text"
-                        color="error"
-                        onClick={() => handleDelete(row)}
-                    >
-                        <Delete />
-                    </Button>
-                </Box>
+                handleDelete ? (
+                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                        <Button
+                            variant="text"
+                            color="error"
+                            onClick={() => handleDelete(row)}
+                        >
+                            <Delete />
+                        </Button>
+                    </Box>
+                ) : null
             ),
         },
     ] as const;
@@ -164,9 +166,11 @@ export const StockModal = ({
     stocks,
     stockType,
 }: StockModalProps) => {
+    const { sites } = useSites();
     const { notify } = useNotifications();
     const { openDialog } = useDataModal();
     const direction = stockType == 'material' ? DirectionType.Inbound : DirectionType.Outbound
+    const isReported = Boolean(!sites?.find(site => stocks?.some(s => s.stockLocationBpns === site.bpns)));
 
     const handleEdit = (row: Stock) => {
         openDialog('stock', { ...row }, stocks, 'edit', direction);
@@ -201,7 +205,7 @@ export const StockModal = ({
                     <Table
                         title={`Current ${stockType} stock`}
                         getRowId={(row) => row.uuid}
-                        columns={createStockColumns(handleDelete, handleEdit)}
+                        columns={createStockColumns(!isReported ? handleDelete : undefined, !isReported ? handleEdit : undefined)}
                         rows={stocks}
                         density="standard"
                         hideFooter
