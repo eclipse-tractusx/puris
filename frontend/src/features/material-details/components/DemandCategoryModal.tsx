@@ -172,7 +172,7 @@ export const DemandCategoryModal = ({ open, onClose, onRemove, demand, demands }
         [demands, demand?.day]
     );
     const { openDialog } = useDataModal();
-    const canDelete = Boolean(sites?.find(site => demands?.some(d => d.demandLocationBpns === site.bpns)));
+    const isReported = Boolean(!sites?.find(site => demands?.some(d => d.demandLocationBpns === site.bpns)));
     const handleEdit = (row: Demand) => {
         openDialog('demand', { ...row }, dailyDemands, 'edit');
     };
@@ -218,7 +218,7 @@ export const DemandCategoryModal = ({ open, onClose, onRemove, demand, demands }
                             : ''
                             }`}
                         getRowId={(row) => row.uuid}
-                        columns={createDemandColumns(canDelete ? handleDelete : undefined, handleEdit)}
+                        columns={createDemandColumns(!isReported ? handleDelete : undefined, !isReported ? handleEdit : undefined)}
                         rows={dailyDemands ?? []}
                         hideFooter
                     />
