@@ -27,7 +27,7 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://puris-frontend-customer:3000"]
       interval: 4s
       timeout: 3s
-      retries: 20
+      retries: 40
     ports:
       - "127.0.0.1:3000:8080"
     environment:
@@ -52,6 +52,9 @@ services:
       - ENDPOINT_DAYS_OF_SUPPLY=days-of-supply
       - ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION=demand-and-capacity-notification
       - ENDPOINT_IMPORT_FILES=files
+      - ENDPOINT_ALL_MATERIALS=materials
+      - ENDPOINT_ALL_PARTNERS=partners
+      - ENDPOINT_MATERIAL_PARTNER_RELATIONS=materialpartnerrelations
       - IDP_URL=http://127.0.0.1:10081/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-customer
@@ -78,9 +81,10 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://puris-backend-customer:8081/catena/actuator/health"]
       interval: 4s
       timeout: 3s
-      retries: 20
+      retries: 40
     ports:
       - "127.0.0.1:8081:8081" # expose port of server.port
+      - "127.0.0.1:5005:5005"
     env_file:
       - ./tractus-x-edc/config/customer/puris-backend.properties
     environment:
@@ -91,6 +95,7 @@ services:
       puris.dtr.idp.edc-client.secret.alias: ${CUSTOMER_KC_DTR_PURIS_CLIENT_ALIAS}
       puris.dtr.idp.puris-client.id: ${KC_MANAGE_CLIENT_ID}
       puris.dtr.idp.puris-client.secret: ${CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET}
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,address=*:5005,server=y,suspend=n
     networks:
       - miw-net
     extra_hosts:
@@ -106,7 +111,7 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://dtr-customer:4243/actuator/health/readiness"]
       interval: 4s
       timeout: 3s
-      retries: 30
+      retries: 40
     ports:
       - "127.0.0.1:4243:4243"
     environment:
@@ -165,12 +170,15 @@ services:
     env_file:
       - ./tractus-x-edc/config/customer/control-plane.properties
     environment:
-      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
+      edc.iam.trusted-issuer.portal.id: did:web:wallet:BPNL000000000000
+      # Default: DSP 1.0 with ssi-dim-wallet-stub
+      # Backup: DSP 0.8 with mock-util-iam
+      # edc.dcp.v08.forced: true
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://edc-customer-control-plane:8180/api/check/health"]
       interval: 4s
       timeout: 3s
-      retries: 20
+      retries: 40
     ports:
       - "127.0.0.1:8180:8180"
       - "127.0.0.1:8181:8181"
@@ -197,7 +205,7 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://edc-customer-data-plane:8280/api/check/health"]
       interval: 4s
       timeout: 3s
-      retries: 20
+      retries: 40
     ports:
       - "127.0.0.1:8280:8280"
       - "127.0.0.1:8281:8281"
@@ -207,7 +215,7 @@ services:
     env_file:
       - ./tractus-x-edc/config/customer/data-plane.properties
     environment:
-      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
+      edc.iam.trusted-issuer.portal.id: did:web:wallet:BPNL000000000000
     networks:
       - miw-net
     extra_hosts:
@@ -240,6 +248,9 @@ services:
       - ENDPOINT_DAYS_OF_SUPPLY=days-of-supply
       - ENDPOINT_DEMAND_AND_CAPACITY_NOTIFICATION=demand-and-capacity-notification
       - ENDPOINT_IMPORT_FILES=files
+      - ENDPOINT_ALL_MATERIALS=materials
+      - ENDPOINT_ALL_PARTNERS=partners
+      - ENDPOINT_MATERIAL_PARTNER_RELATIONS=materialpartnerrelations
       - IDP_URL=http://127.0.0.1:10081/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-supplier
@@ -266,9 +277,10 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://puris-backend-supplier:8082/catena/actuator/health"]
       interval: 4s
       timeout: 3s
-      retries: 20
+      retries: 40
     ports:
       - "127.0.0.1:8082:8082"
+      - "127.0.0.1:5006:5006"
     env_file:
       - ./tractus-x-edc/config/supplier/puris-backend.properties
     environment:
@@ -279,6 +291,7 @@ services:
       puris.dtr.idp.edc-client.secret.alias: ${SUPPLIER_KC_DTR_PURIS_CLIENT_ALIAS}
       puris.dtr.idp.puris-client.id: ${KC_MANAGE_CLIENT_ID}
       puris.dtr.idp.puris-client.secret: ${SUPPLIER_KC_DTR_PURIS_CLIENT_SECRET}
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,address=*:5006,server=y,suspend=n
     networks:
       - miw-net
     extra_hosts:
@@ -294,7 +307,7 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://dtr-supplier:4243/actuator/health/readiness"]
       interval: 4s
       timeout: 3s
-      retries: 30
+      retries: 40
     ports:
       - "127.0.0.1:4244:4243"
     environment:
@@ -328,7 +341,7 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://edc-supplier-control-plane:9180/api/check/health"]
       interval: 4s
       timeout: 3s
-      retries: 20
+      retries: 40
     ports:
       - "127.0.0.1:9180:9180"
       - "127.0.0.1:9181:9181"
@@ -339,7 +352,10 @@ services:
     env_file:
       - ./tractus-x-edc/config/supplier/control-plane.properties
     environment:
-      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
+      edc.iam.trusted-issuer.portal.id: did:web:wallet:BPNL000000000000
+      # Default: DSP 1.0 with ssi-dim-wallet-stub
+      # Backup: DSP 0.8 with mock-util-iam
+      # edc.dcp.v08.forced: true
     networks:
       - miw-net
     extra_hosts:
@@ -360,7 +376,7 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://edc-supplier-data-plane:9280/api/check/health"]
       interval: 4s
       timeout: 3s
-      retries: 20
+      retries: 40
     ports:
       - "127.0.0.1:9280:9280"
       - "127.0.0.1:9281:9281"
@@ -370,7 +386,7 @@ services:
     env_file:
       - ./tractus-x-edc/config/supplier/data-plane.properties
     environment:
-      edc.iam.trusted-issuer.portal.id: did:web:mock-util-service/trusted-issuer
+      edc.iam.trusted-issuer.portal.id: did:web:wallet:BPNL000000000000
     networks:
       - miw-net
     extra_hosts:

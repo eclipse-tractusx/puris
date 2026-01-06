@@ -5,7 +5,10 @@ postgres that can be started freshly for development:
 
 ```shell
 cd local
-# create .env manually or run sh generate-keys.sh
+# .env files are now generated automatically:
+# You can still create it manually, but the recommended way is:
+sh generate-keys.sh
+# This will also generate the Bruno .env file for API testing.
 docker compose -f docker-compose-dev-postgres.yaml up
 
 # update your application.properties (src) accordingly to user and password
@@ -316,6 +319,56 @@ If you have a new major release,
 
 Note: when using this approach, make sure to validate the `changeSets` and adding suitable `preConditions`.
 
+# Development Process
+
+## Updating the Changelog
+
+All notable changes must be recorded in the `./CHANGELOG.md` file in the repository root. This should be done before merging your PR into `main`.
+
+- To update the changelog find (or create) the unreleased section, or the section for the next version and add your changes to the proper category:
+    - `Added` for new features
+    - `Changed` for changes to existing features
+    - `Fixed` for bugfixes
+    - `Removed` for deletions
+    - `Chore` for updates to dependencies, documentation etc.
+- Always include a PR reference and short summary. If the PR hasn’t been opened yet, look up the number of the most recent PR and use the following number as a placeholder.
+
+## Versioning and Chart Updates
+
+We follow [semantic versioning 2.x.y](https://semver.org/) to determine whether a change is a major, minor, or patch release.
+When you change anything that affects deployment, Helm Charts, you must update the relevant metadata and version numbers. To update Helm Charts:
+
+- Open the chart descriptor at: `charts/puris/Chart.yaml`
+- Update the `version` if any Helm chart files change
+- Update the `appVersion` only if the application version itself changes
+
+Please note that the chart version must always be increased when the app version changes, even if no chart files were modified. The app version bump should be reflected the same way in the chart version bump (e.g. if the app version was a major change, then also the chart version should be a major change).
+
+Further, update the helm chart README.md using [helm-docs](https://github.com/norwoodj/helm-docs).
+
+If you changed environment variables or service configuration, verify with:
+
+```shell
+helm template charts/puris
+```
+
+If you changed environment variable names, volumes, or ports, reflect that in:
+
+- `local/docker-compose.yaml`
+- `docs/INSTALL.md`
+- and in the Helm README (`charts/puris/README.md`, also considered when using [helm-docs](https://github.com/norwoodj/helm-docs)
+
+When updating to the next version of the application, aside from the above mentioned please also upade the `package.json`, `package-lock.json` and `pom.xml` with version that is supposed to be released.
+
+In case the controller interfaces were changed during the update, you need to update the open-api documentation. To do so run the local deployment and use the following command in `/local/`, to run a python script, that:
+
+1. Downloads the open api (json),
+2. Converts it into the target format (yaml)
+
+```shell
+python3 generate_open_api_yaml.py
+```
+
 # Notes on the release
 
 ## Run helm test locally for n kubernetes versions
@@ -353,6 +406,9 @@ Bruno allows to specify tags in the meta information per request. In the [integr
 | admin                     | Use this tag in requests you use for debugging. This way we can include common requests in the bruno collection without running those during test automation. |
 
 All other requests are considered as common test to run during test automation (see [integration test documentation](../local/postman/README.md)).
+
+As of this release, `generate-keys.sh` automatically writes a `.env` file into the Bruno collection root (e.g. `local/bruno/.env`).  
+This file contains only sensitive API keys and client secrets required for running Bruno requests locally. The .env file is automatically added to .gitignore. Do not commit this file.
 
 ## NOTICE
 
