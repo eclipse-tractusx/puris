@@ -92,7 +92,7 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                                           'demand',
                                                           { day: date },
                                                           summary.dailySummaries[date.toLocaleDateString()]?.primaryValues as Demand[],
-                                                          'edit',
+                                                          'view',
                                                           DirectionType.Inbound
                                                       )
                                                     : openDialog(
