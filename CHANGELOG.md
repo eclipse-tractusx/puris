@@ -13,10 +13,12 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- implemented Edit functionality logic for Stock Modal ([#1022](https://github.com/eclipse-tractusx/puris/pull/1022/))
-- implemented update logic for delivery information ([#1004](https://github.com/eclipse-tractusx/puris/pull/1004))
-- implemented update logic for demand Modal ([#1028](https://github.com/eclipse-tractusx/puris/pull/1028))
-- implemented update logic for production information ([#1037](https://github.com/eclipse-tractusx/puris/pull/1037))
+- Feature: Added update logic for operational information ([#1069](https://github.com/eclipse-tractusx/puris/pull/1069/)):
+  - added update logic for Stock Modal ([#1022](https://github.com/eclipse-tractusx/puris/pull/1022/))
+  - added update logic for delivery information ([#1004](https://github.com/eclipse-tractusx/puris/pull/1004))
+  - added update logic for demand Modal ([#1028](https://github.com/eclipse-tractusx/puris/pull/1028))
+  - added update logic for production information ([#1037](https://github.com/eclipse-tractusx/puris/pull/1037))
+  - updated user guide ([#1070](https://github.com/eclipse-tractusx/puris/pull/1070))
 
 ### Changed
 
