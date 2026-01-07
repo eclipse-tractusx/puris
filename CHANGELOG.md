@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v5.0.2
+## v5.1.0
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
 
@@ -13,7 +13,12 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- /
+- Feature: Added update logic for operational information ([#1069](https://github.com/eclipse-tractusx/puris/pull/1069/)):
+  - added update logic for Stock Modal ([#1022](https://github.com/eclipse-tractusx/puris/pull/1022/))
+  - added update logic for delivery information ([#1004](https://github.com/eclipse-tractusx/puris/pull/1004))
+  - added update logic for demand Modal ([#1028](https://github.com/eclipse-tractusx/puris/pull/1028))
+  - added update logic for production information ([#1037](https://github.com/eclipse-tractusx/puris/pull/1037))
+  - updated user guide ([#1070](https://github.com/eclipse-tractusx/puris/pull/1070))
 
 ### Changed
 
