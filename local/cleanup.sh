@@ -23,6 +23,11 @@
 
 docker compose down -v
 docker compose -f docker-compose-infrastructure.yaml down -v
+
+# renamed mock-util-service to wallet, thus to not confuse others, remove it
+docker container stop mock-util-service
+docker container rm -v mock-util-service
+
 docker compose -f docker-compose-newman.yaml down -v
 docker image rm local-vault
 docker image rm local-mock-util-service
