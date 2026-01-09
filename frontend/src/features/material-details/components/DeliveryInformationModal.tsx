@@ -29,6 +29,7 @@ import { INCOTERMS } from '@models/constants/incoterms';
 import { Site } from '@models/types/edc/site';
 import { useNotifications } from '@contexts/notificationContext';
 import { DirectionType } from '@models/types/erp/directionType';
+import { TextToClipboard } from '@components/ui/TextToClipboard';
 import { useDataModal } from '@contexts/dataModalContext';
 
 const createDeliveryColumns = (handleDelete: (row: Delivery) => void, handleEdit: (row: Delivery) => void) => {
@@ -110,17 +111,17 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void, handleEdit
             renderCell: (data: { row: Delivery }) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                        {data.row.partnerBpnl}
+                        <TextToClipboard text={data.row.partnerBpnl} />
                     </Box>
                 );
             },
         },
         {
             field: 'customerOrderNumber',
-            headerName: 'Order Reference',
+            headerName: 'Customer Order Number',
             sortable: false,
             headerAlign: 'center',
-            width: 200,
+            flex: 2,
             renderCell: (data: { row: Delivery }) => {
                 return (
                     <Box
@@ -133,10 +134,59 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void, handleEdit
                         height="100%"
                     >
                         {data.row.customerOrderNumber ? (
-                            <>
-                                <Box>{`${data.row.customerOrderNumber} / ${data.row.customerOrderPositionNumber}`}</Box>
-                                <Box>{data.row.supplierOrderNumber}</Box>
-                            </>
+                            <TextToClipboard text={data.row.customerOrderNumber} />
+                        ) : (
+                            '-'
+                        )}
+                    </Box>
+                );
+            },
+        },
+        {
+            field: 'customerOrderPositionNumber',
+            headerName: 'Customer Order Position',
+            sortable: false,
+            headerAlign: 'center',
+            flex: 2,
+            renderCell: (data: { row: Delivery }) => {
+                return (
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        textAlign="center"
+                        alignItems="center"
+                        justifyContent="center"
+                        width="100%"
+                        height="100%"
+                    >
+                        {data.row.customerOrderPositionNumber ? (
+                            <TextToClipboard text={data.row.customerOrderPositionNumber} />
+                        ) : (
+                            '-'
+                        )}
+                    </Box>
+                );
+            },
+        },
+        {
+            field: 'supplierOrderNumber',
+            headerName: 'Supplier Order Number',
+            sortable: false,
+            headerAlign: 'center',
+            flex: 2,
+            renderCell: (data: { row: Delivery }) => {
+                return (
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        textAlign="center"
+                        alignItems="center"
+                        justifyContent="center"
+                        width="100%"
+                        height="100%"
+                    >
+                        {data.row.supplierOrderNumber ? (
+                            <TextToClipboard text={data.row.supplierOrderNumber} />
                         ) : (
                             '-'
                         )}
@@ -152,7 +202,7 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void, handleEdit
             renderCell: (data: { row: Delivery }) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                        {data.row.trackingNumber}
+                        <TextToClipboard text={data.row.trackingNumber} />
                     </Box>
                 );
             },
@@ -309,7 +359,7 @@ export const DeliveryInformationModal = ({
                 <DialogTitle variant="h3" textAlign="center">
                     Delivery Information
                 </DialogTitle>
-                <Stack padding="0 2rem 2rem" sx={{ maxWidth: '95vw' }}>
+                <Stack padding="0 2rem 2rem" sx={{ width: '95vw', minWidth: '60rem' }}>
                     <Grid item xs={12}>
                         <Table
                             title={`${direction === DirectionType.Outbound ? 'Outgoing Shipments' : 'Incoming Deliveries'} on ${

@@ -30,6 +30,7 @@ import { deleteDemand } from '@services/demands-service';
 import { Table } from '@catena-x/portal-shared-components';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
+import { TextToClipboard } from '@components/ui/TextToClipboard';
 
 type DemandCategoryModalProps = {
     open: boolean;
@@ -70,7 +71,7 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void, handleEdit?: 
             renderCell: (data: { row: Demand }) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                        {data.row.partnerBpnl}
+                        <TextToClipboard text={data.row.partnerBpnl} />
                     </Box>
                 );
             },
@@ -86,7 +87,11 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void, handleEdit?: 
             renderCell: (data: { row: Demand }) => {
                 return (
                     <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                        {data.row.supplierLocationBpns}
+                        {
+                            data.row.supplierLocationBpns
+                                ? <TextToClipboard text={data.row.supplierLocationBpns}></TextToClipboard>
+                                : "-"
+                        }
                     </Box>
                 );
             },
@@ -205,7 +210,7 @@ export const DemandCategoryModal = ({ open, onClose, onRemove, demand, demands }
                     Demand Information
                 </DialogTitle>
 
-                <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
+                <Stack padding="0 2rem 2rem" sx={{ width: '95vw', minWidth: '60rem' }}>
                     <Table
                         title={`Material Demand ${demand?.day
                             ? ' on ' +
