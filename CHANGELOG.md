@@ -20,6 +20,7 @@ The **need for configuration updates** is **marked bold**.
   - added update logic for production information ([#1037](https://github.com/eclipse-tractusx/puris/pull/1037))
   - updated user guide ([#1070](https://github.com/eclipse-tractusx/puris/pull/1070))
 - Added component to copy text to clipboard for puris frontend ([#1058](https://github.com/eclipse-tractusx/puris/pull/1058))
+- Added version to about license ([#1067](https://github.com/eclipse-tractusx/puris/pull/1067))
 
 ### Changed
 
