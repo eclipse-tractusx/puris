@@ -30,6 +30,7 @@ import { Close, Delete, Edit } from '@mui/icons-material';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { useDataModal } from '@contexts/dataModalContext';
 import { useNotifications } from '@contexts/notificationContext';
+import { TextToClipboard } from '@components/ui/TextToClipboard';
 
 const createProductionColumns = (handleDelete?: (row: Production) => void, handleEdit?: (row: Production) => void) => {
     return [
@@ -62,27 +63,87 @@ const createProductionColumns = (handleDelete?: (row: Production) => void, handl
             flex: 2,
             renderCell: (data: { row: Production }) => (
                 <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    {data.row.partner?.name}
+                    <TextToClipboard text={data.row.partner.bpnl} />
                 </Box>
             ),
         },
         {
             field: 'customerOrderNumber',
-            headerName: 'Order Reference',
+            headerName: 'Customer Order Number',
+            sortable: false,
             headerAlign: 'center',
             flex: 2,
-            renderCell: (data: { row: Production }) => (
-                <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    {data.row.customerOrderNumber ? (
-                        <Stack>
-                            <Box>{`${data.row.customerOrderNumber} / ${data.row.customerOrderPositionNumber}  `}</Box>
-                            <Box>{data.row.supplierOrderNumber || '-'}</Box>
-                        </Stack>
-                    ) : (
-                        '-'
-                    )}
-                </Box>
-            ),
+            renderCell: (data: { row: Production }) => {
+                return (
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        textAlign="center"
+                        alignItems="center"
+                        justifyContent="center"
+                        width="100%"
+                        height="100%"
+                    >
+                        {data.row.customerOrderNumber ? (
+                            <TextToClipboard text={data.row.customerOrderNumber} />
+                        ) : (
+                            '-'
+                        )}
+                    </Box>
+                );
+            },
+        },
+        {
+            field: 'customerOrderPositionNumber',
+            headerName: 'Customer Order Position',
+            sortable: false,
+            headerAlign: 'center',
+            flex: 2,
+            renderCell: (data: { row: Production }) => {
+                return (
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        textAlign="center"
+                        alignItems="center"
+                        justifyContent="center"
+                        width="100%"
+                        height="100%"
+                    >
+                        {data.row.customerOrderPositionNumber ? (
+                            <TextToClipboard text={data.row.customerOrderPositionNumber} />
+                        ) : (
+                            '-'
+                        )}
+                    </Box>
+                );
+            },
+        },
+        {
+            field: 'supplierOrderNumber',
+            headerName: 'Supplier Order Number',
+            sortable: false,
+            headerAlign: 'center',
+            flex: 2,
+            renderCell: (data: { row: Production }) => {
+                return (
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        textAlign="center"
+                        alignItems="center"
+                        justifyContent="center"
+                        width="100%"
+                        height="100%"
+                    >
+                        {data.row.supplierOrderNumber ? (
+                            <TextToClipboard text={data.row.supplierOrderNumber} />
+                        ) : (
+                            '-'
+                        )}
+                    </Box>
+                );
+            },
         },
         {
             field: 'lastUpdatedOnDateTime',
@@ -190,7 +251,7 @@ export const PlannedProductionModal = ({ open, onClose, onRemove, production, pr
                 <DialogTitle variant="h3" textAlign="center">
                     Production Information
                 </DialogTitle>
-                <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
+                <Stack padding="0 2rem 2rem" sx={{ width: '95vw', minWidth: '60rem' }}>
 
                     <Table
                         title={`Planned Production ${production?.estimatedTimeOfCompletion

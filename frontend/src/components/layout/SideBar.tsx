@@ -53,6 +53,7 @@ import { visuallyHidden } from '@mui/utils';
 import { Link, useLocation } from 'react-router-dom';
 import { useOwnPartner } from '@hooks/useOwnPartner';
 import { useNotifications } from '@contexts/notificationContext';
+import { TextToClipboard } from '@components/ui/TextToClipboard';
 
 const openedMixin = (theme: Theme): CSSObject => ({
     width: theme.sidebarWidth,
@@ -221,15 +222,6 @@ export default function MiniDrawer() {
 
 function CompanyInfo() {
     const { ownPartner } = useOwnPartner();
-    const { notify } = useNotifications();
-    const handleCopyBpnl = async () => {
-        await navigator.clipboard.writeText(ownPartner?.bpnl ?? '');
-        notify({
-            title: 'Copied to Clipboard',
-            description: 'Your company BPNL was copied to the clipboard',
-            severity: 'success'
-        });
-    };
     return (
         <Stack gap="0.25rem" paddingInline=".5rem" paddingBlock="1rem" marginTop="auto" data-testid="sidebar-item-license">
             <Typography
@@ -240,9 +232,11 @@ function CompanyInfo() {
             >
                 {ownPartner?.name}
             </Typography>
-            <Button variant="text" sx={{ padding: 0, justifyContent: 'start', width: 'fit-content'}} onClick={handleCopyBpnl}>
-                <Typography variant="body3">{ownPartner?.bpnl} <ContentCopyOutlined /></Typography>
-            </Button>
+            {
+                ownPartner?.bpnl 
+                    ? <TextToClipboard text={ownPartner?.bpnl}></TextToClipboard>
+                    : null
+            }
         </Stack>
     )
 }
