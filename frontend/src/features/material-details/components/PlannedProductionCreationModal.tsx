@@ -43,6 +43,7 @@ import { useSites } from '@features/stock-view/hooks/useSites';
 import { postProduction, updateProduction } from '@services/productions-service';
 import { useNotifications } from '@contexts/notificationContext';
 import { GridItem } from '@components/ui/GridItem';
+import { withDefaultProductionTime } from '@util/production-helpers';
 
 type ProductionCategoryCreationModalProps = {
     open: boolean;
@@ -153,8 +154,13 @@ export const PlannedProductionCreationModal = ({
                             locale="de"
                             error={formError}
                             value={temporaryProduction.estimatedTimeOfCompletion ?? null}
-                            onValueChange={(date) =>
-                                setTemporaryProduction({ ...temporaryProduction, estimatedTimeOfCompletion: date ?? undefined })
+                            onValueChange={(date) => 
+                                setTemporaryProduction({
+                                    ...temporaryProduction,
+                                    estimatedTimeOfCompletion: temporaryProduction.estimatedTimeOfCompletion == null
+                                        ? withDefaultProductionTime(date)
+                                        : date ?? undefined
+                                })
                             }
                         />
                     </Grid>
