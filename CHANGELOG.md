@@ -25,7 +25,7 @@ The **need for configuration updates** is **marked bold**.
 ### Changed
 
 - switch to ssi-dim-wallet-stub instead of own mock-util-service (now DCP 1.0 is used) ([#1066](https://github.com/eclipse-tractusx/puris/pull/1066))
-- Added environment variable for default production time ([#1071](https://github.com/eclipse-tractusx/puris/pull/1071))
+- Added environment variable for default production time ([#1072](https://github.com/eclipse-tractusx/puris/pull/1072))
 
 ### Fixes
 
