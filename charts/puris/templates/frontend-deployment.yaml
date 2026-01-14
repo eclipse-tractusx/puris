@@ -119,6 +119,8 @@ spec:
               value: "{{ .Values.frontend.puris.rateLimiting.rate }}"
             - name: FRONTEND_GENERATE_MATERIAL_CATENAX_ID
               value: "{{ .Values.backend.puris.generatematerialcatenaxid | default true }}"
+            - name: FRONTEND_DEFAULT_PRODUCTION_TIME
+              value: "{{ .Values.frontend.puris.defaultProductionTime | default "23:59" }}"
             ######################################
             ## Additional environment variables ##
             ######################################

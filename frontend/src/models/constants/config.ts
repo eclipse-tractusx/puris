@@ -21,6 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 const app = {
     APP_NAME: import.meta.env.VITE_APP_NAME.trim() as string,
     BACKEND_BASE_URL: import.meta.env.VITE_BACKEND_BASE_URL.trim() as string,
+    DEFAULT_PRODUCTION_TIME: (import.meta.env.VITE_DEFAULT_PRODUCTION_TIME).trim() as string,
     ENDPOINT_MATERIALS: import.meta.env.VITE_ENDPOINT_MATERIALS.trim() as string,
     ENDPOINT_PRODUCTS: import.meta.env.VITE_ENDPOINT_PRODUCTS.trim() as string,
     ENDPOINT_MATERIAL_STOCKS: import.meta.env.VITE_ENDPOINT_MATERIAL_STOCKS.trim() as string,
