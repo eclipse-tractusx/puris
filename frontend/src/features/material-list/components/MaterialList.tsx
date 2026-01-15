@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { Table } from '@catena-x/portal-shared-components';
+import { TextToClipboard } from '@components/ui/TextToClipboard';
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
 import { capitalize } from '@mui/material';
 
@@ -28,12 +29,12 @@ type MaterialListProps = {
 };
 
 export function MaterialList({ materials, onRowClick }: MaterialListProps) {
-    
+
     return (
         <Table
             title="Materials"
             columns={[
-                { headerName: 'Material Number', field: 'ownMaterialNumber', flex: 1.5 },
+                { headerName: 'Material Number', field: 'ownMaterialNumber', flex: 1.5, renderCell: (params) => <TextToClipboard text={params.row.ownMaterialNumber} /> },
                 { headerName: 'Name', field: 'description', flex: 2 },
                 { headerName: 'Days of Supply', field: 'daysOfSupply', flex: 1, valueGetter: (params) => params.row.daysOfSupply.toFixed(2),},
                 { headerName: 'Updated', field: 'lastUpdatedOn', flex: 1, valueGetter: (params) => new Date(params.row.lastUpdatedOn).toLocaleString() },

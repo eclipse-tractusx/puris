@@ -39,7 +39,7 @@ export const postDemand = async (demand: Partial<Demand>) => {
   return res.json();
 }
 
-export const putDemand = async (demand: Partial<Demand>) => {
+export const updateDemand = async (demand: Partial<Demand>) => {
   const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_DEMAND, {
     method: 'PUT',
     body: JSON.stringify(demand),

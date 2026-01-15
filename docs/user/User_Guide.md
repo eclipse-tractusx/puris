@@ -185,6 +185,95 @@ To add a new item, the user:
 
 A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added stock reflected in their detailed material overview.
 
+### Updating or deleting data
+
+In addition to adding and viewing the user's own data, the user can also update and delete his data for the selected material. These actions are available for own data (not partner data received via the [refresh functionality](#updating-partner-data)).
+
+To update information,
+
+1. Follow the blue link reflecting your own summarized information (1 in image below).
+2. In the modal dialog, per row, the options to edit (pencil icon) and remove (trash bin icon) are offered (2 in image below).
+3. Triggering the edit functionality will open another information-specific modal dialog on top. These modal dialogs are explained information-wise in the sections below. After saving this dialog or directly after triggering the trash bin, the changes will be reflected in the tables and a notification will be shown in the upper right corner informing the user about success or failure of the operation (3 in image below).
+
+![Overview of edit and delete functionality](./img/materials_overview_update_delete_production.png)
+
+The user can update or edit demand for the customer role as well as production output for the supplier. Deliveries and stock can be updated or deleted for either role.
+
+> _**NOTE**: Updates are not allowed for all fields. If a user needs to change a field that may not be updated, then the user needs to delete the exisitng information and create it newly. Further updates of the allocated partner or sites are not allowed for all modal dialogs. Please find more information in the secions below._
+>
+
+#### Updating demand
+
+![Updating demand in the modal dialog](./img/materials_update_demand.png)
+
+Upon clicking the "edit" pencil button, a popup will demand the user to update the details for the demand. The dialog will be pre-filled for the user based on the selected demand.
+
+The following fields may be updated for a demand:
+
+1. Quanitity demanded
+2. Day of the demand
+3. Cateogy of the demand
+
+The user may confirm the changes using the "save" button or abort using the "close" button respectively "escape".
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the updated demand reflected in detailed material overview.
+
+#### Updating production
+
+![Updating production in the modal dialog](./img/materials_update_production.png)
+
+Upon clicking the "edit" pencil button, a popup will prompt the user to update the details for the production output. The dialog will be pre-filled for the user based on the selected production.
+
+The following fields may be updated for a production output:
+
+1. Estimated time of completion
+2. Quantity planned for production
+3. (optional) customer order number, customer position number and supplier order number
+
+The user may confirm the changes using the "save" button or abort using the "close" button respectively "escape".
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the updated production output reflected in their detailed material overview.
+
+#### Updating deliveries
+
+![Updating a delivery in the modal dialog](./img/materials_update_delivery.png)
+
+Unlike demand and production output, own deliveries can be updated regardless of the user's role. Upon clicking the "edit" pencil button, a popup will prompt the user to update the details for the selected delivery. The dialog will be pre-filled for the user based on the selected delivery.
+
+The following fields may be updated for a delivery:
+
+1. Departure and arrival type (if it has not been changed to type actual)
+2. Departure and arrival date and time (if the corresponding type has not been changed to actual)
+3. Quantity considered for delivery
+4. (optional) Tracking number
+5. (optional) customer order number, customer position number and supplier order number
+
+The user may confirm the changes using the "save" button or abort using the "close" button respectively "escape".
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the updated delivery reflected in their detailed material overview.
+
+_**Note:** When entering updating a delivery the user should make sure that:_
+
+- _a date can only be of type actual if it is in the past_
+- _arrival can only be of type actual if departure is as well_
+- _departure must be before arrival_
+
+#### Updating stock
+
+![Updating a stock in the modal dialog](./img/materials_update_stock.png)
+
+Upon clicking the "edit" pencil button, a popup will prompt the user to update the details for the selected stock. The dialog will be pre-filled for the user based on the selected delivery.
+
+The following fields may be updated for a stock:
+
+1. Quantity considered for delivery
+2. (optional) Tracking number
+3. Is Blocked
+
+The user may confirm the changes using the "save" button or abort using the "close" button respectively "escape".
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added stock reflected in their detailed material overview.
+
 ## Demand and Capacity Notifications
 
 A user may use the page to send notifications to partners or read received notifications.
@@ -252,6 +341,109 @@ The following fields are pre-selected and read only:
 - Status (this field is automatically pre-selected with the `Open` option)
 
 The Partner field only provides options for partners that aren't linked to any of the related or any of the existing outgoing notifications. This creates another entry in the existing table.
+
+## Master Data Maintenance
+
+> [!info]
+>
+> Master Data can only be added by users with the role `PURIS_ADMIN`.
+>
+
+To setup PURIS, you need to provide master data to the system. Right now you can only create master data and there is no integration with business partner data mangement. Thus, you need to create the following data:
+
+- Material Data: Material (Inbound Material), Products (Outbound Material) and Trading Goods (Bidirectional Material)
+- Partner Data: Parnters with their sites and address including their connector address.
+- Material Partner Relationships: The linkage whether you buy a material from or sell a product to a partner.
+
+> [!info]
+>
+> When creating the Material Partner Relationship, PURIS FOSS will do the following:
+>
+> - for inbound material: lookup the product twin (part type) at the partner and take over the global asset id to create your local copy. The product twin will be registered with the material numbers of your and your partner within our Digital Twin Registry.
+> - for outbound material: create the product twin (part type). The product twin will be registered with the material numbers of your and your partner within our Digital Twin Registry.
+>
+
+This master data maintenance can either be done via the backend interfaces ([Admin Guide, chapter Onboarding your Data](../admin/Admin_Guide.md#onboarding-your-data); [Interface Dcocmentation and swagger-ui](../api/Interface_Doc.md)). The following part will only focus on the user interface!
+
+This can be found in the navigation bar under the item "Master Data".
+
+Please always follow these three steps:
+
+1. Create Partner. Pay attention to Business Partner Numbers (BPN) for Legal Entities (BPNL), Sites (BPNS) and Addresses (BPNA).
+2. Create the Material / Product / Trading Good. Pay attention to direction (Inbound = something you buy, Outbound = something you sell, Bidirection = both).
+3. Create the Material Partner Relationship. Pay attention whether your partner buys or sells the the good (direction).
+
+### Create Partner
+
+> [!note]
+>
+> Please keep in mind that right now partner information can't be changed.
+>
+
+![Partner  Creation Modal](./img/master_data_create_partner.png)
+
+In the Partners table you can see the onboarded partners. To create a partner you need to trigger the button "New Partner" in the upper right corner and fill out the mandatory information marked by an **asteric (*)**.
+
+General Partner Information
+
+- Partner Name: Legal name of your partner
+- BPNL: Catena-X identifier for the legal entity (your business partner)
+- EDC URL: URL of your partner's connector **including the DSP endpoint**
+
+Addresses of the legal entity (commonly those that are no manufacturing sites but important for e.g. invoicing)
+
+- BPNA: Catena-X identifier for the address
+- Street
+- Number
+- Zip Code
+- City
+- Country: 2 Digit Iso Code
+
+Sites of the legal entity (commonly where they manufacture)
+
+- BPNS: Catena-X identifier for the site
+- Site Name: Official name for reference
+- one or more addresses
+
+A notification will mention issues or success of the creation after triggering the "Save" button.
+
+### Create Material
+
+> [!note]
+>
+> Please keep in mind that right now material information can't be changed.
+>
+
+![Material Creation Modal](./img/master_data_create_material.png)
+
+In the  Materials table you can see the onboarded materials. To create a material you need to trigger the button "New Material" in the upper right corner and fill out the mandatory information marked by an **asteric (*)**.
+
+- Material Number: your internal material number
+- Name: your official name for the material
+- Global Asset Id: enter in case you want to have a catena-x global asset id
+- Direction: define if it's an inbound material, an outbound product or a bidirectional good
+
+A notification will mention issues or success of the creation after triggering the "Save" button.
+
+### Create Material Partner Relatinship
+
+> [!note]
+>
+> Please keep in mind that right now material information can't be changed.
+>
+> This step triggers communication with the partner in the network for inbound material AND creates the digital wins in all cases. In case the lookup does not succeed, the application retriggers the lookup for twin completion during when triggering the data exchange (see [Material Details View](#materials-detail-view)).
+>
+
+![Material Patner Relationship Creation Modal](./img/master_data_create_material_partner_relationship.png)
+
+In the Material Partner Relationships table you can see the assigned relationships between partners and materials. To create the relationship you need to trigger the button "New Relation" in the upper right corner and fill out the mandatory information marked by an **asteric (*)**.
+
+- Material
+- Partner
+- Patner Material Number: Customer part id for outbound product, manufacturer part id for inbound material
+- Supplies material / buys material: defaulted based on diretion. Either a partner buys inbound material or supplies outbound products
+
+A notification will mention issues or success of the creation after triggering the "Save" button.
 
 ## Import
 
@@ -350,4 +542,5 @@ This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LIC
 
 - SPDX-License-Identifier: Apache-2.0
 - SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- SPDX-FileCopyrightText: 2026 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 - Source URL: [https://github.com/eclipse-tractusx/puris/blob/main/docs/user/User_Guide.md](https://github.com/eclipse-tractusx/puris/blob/main/docs/user/User_Guide.md)

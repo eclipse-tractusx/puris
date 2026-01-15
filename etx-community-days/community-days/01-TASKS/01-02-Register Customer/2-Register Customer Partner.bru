@@ -1,0 +1,45 @@
+meta {
+  name: 2-Register Customer Partner
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{OWN_PURIS_BACKEND}}/catena/partners
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{OWN_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+    "name": "{{CUSTOMER_NAME}}",
+    "edcUrl": "{{CUSTOMER_EDC}}/{{PROTOCOL_PATH}}",
+    "bpnl": "{{CUSTOMER_BPNL}}",
+    "addresses": [],
+    "sites": [
+      {
+        "bpns": "{{CUSTOMER_BPNS}}",
+        "name": "{{CUSTOMER_SITE_NAME}}",
+        "addresses": [
+          {
+            "bpna": "{{CUSTOMER_BPNA}}",
+            "streetAndNumber": "Wall Street 101",
+            "zipCodeAndCity": "10001 New York",
+            "country": "USA"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+}

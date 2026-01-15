@@ -5,6 +5,10 @@
         "link": "SERVER_URL_PLACEHOLDER/REPOSITORY_PLACEHOLDER"
     },
     {
+        "header": "Version",
+        "body": "VERSION_PLACEHOLDER"
+    },
+    {
         "header": "License",
         "body": "LICENSE_PLACEHOLDER"
     },
