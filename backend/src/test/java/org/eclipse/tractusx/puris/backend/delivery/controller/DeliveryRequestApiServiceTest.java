@@ -33,6 +33,7 @@ import org.eclipse.tractusx.puris.backend.delivery.logic.service.ReportedDeliver
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -49,6 +50,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @Slf4j
@@ -331,12 +333,16 @@ public class DeliveryRequestApiServiceTest {
     }
 
     private MaterialPartnerRelation getMpr(Partner partner, boolean partnerSupplies, boolean partnerBuys) {
+        var ownPartner = List.of(CUSTOMER_PARTNER, SUPPLIER_PARTNER).stream().filter(p -> p.equals(partner) == false).findFirst();
+        SortedSet<Site> ownSites = ownPartner.get().getSites();
         return new MaterialPartnerRelation(
             TEST_MATERIAL,
             partner,
             "Partner Material Number",
             partnerSupplies,
-            partnerBuys
+            partnerBuys,
+            partnerSupplies ? ownSites : new TreeSet<>(),
+            partnerBuys ? ownSites : new TreeSet<>()
         );
     }
 }

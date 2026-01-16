@@ -19,7 +19,9 @@
  */
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.production.domain.model.Production;
 import org.eclipse.tractusx.puris.backend.production.domain.repository.ProductionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,9 @@ import java.util.stream.Stream;
 public abstract class ProductionService<T extends Production>  {
     @Autowired
     protected ProductionRepository<T> repository;
+
+    @Autowired
+    protected MaterialPartnerRelationService mprService;
 
     public final List<T> findAll() {
         return repository.findAll();
@@ -137,8 +142,9 @@ public abstract class ProductionService<T extends Production>  {
         if (production.getPartner().equals(ownPartnerEntity)) {
             errors.add(String.format("Partner cannot be the same as own partner entity '%s'.", production.getPartner().getBpnl()));
         }
-        if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(production.getProductionSiteBpns()))) {
-            errors.add(String.format("Production site BPNS '%s' must match to one site of the partner '%s' .", production.getProductionSiteBpns(), production.getPartner().getBpnl()));
+        MaterialPartnerRelation mpr = mprService.find(production.getPartner().getBpnl(), production.getMaterial().getOwnMaterialNumber());
+        if (mpr.getOwnProducingSites().stream().noneMatch(site -> site.getBpns().equals(production.getProductionSiteBpns()))) {
+            errors.add(String.format("Production site BPNS '%s' must match to one of the sites producing the material for the partner %s", production.getProductionSiteBpns(), production.getPartner().getBpnl()));
         }
         return errors;
     }

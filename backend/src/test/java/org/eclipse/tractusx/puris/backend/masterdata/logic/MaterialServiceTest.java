@@ -51,6 +51,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.TreeSet;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 public class MaterialServiceTest {
 
     @Mock
@@ -207,7 +216,7 @@ public class MaterialServiceTest {
         material.setProductFlag(true);
         material.setOwnMaterialNumber(semiconductorMatNbrSupplier);
         Partner customerPartner = createAndGetCustomerPartner();
-        MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(material, customerPartner, semiconductorMatNbrCustomer, false, true);
+        MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(material, customerPartner, semiconductorMatNbrCustomer, false, true, new TreeSet<>(), new TreeSet<>());
 
         // When
         when(mprService.findAllByCustomerPartnerAndPartnerMaterialNumber(customerPartner, semiconductorMatNbrCustomer)).thenReturn(List.of(materialPartnerRelation));
@@ -225,7 +234,7 @@ public class MaterialServiceTest {
         material.setProductFlag(true);
         material.setOwnMaterialNumber(semiconductorMatNbrSupplier);
         Partner customerPartner = createAndGetCustomerPartner();
-        MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(material, customerPartner, semiconductorMatNbrCustomer, false, true);
+        MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(material, customerPartner, semiconductorMatNbrCustomer, false, true, new TreeSet<>(), new TreeSet<>());
 
         // When
         when(mprService.findAllByCustomerPartnerMaterialNumber(semiconductorMatNbrCustomer)).thenReturn(List.of(materialPartnerRelation));
@@ -242,7 +251,7 @@ public class MaterialServiceTest {
         material.setProductFlag(true);
         material.setOwnMaterialNumber(semiconductorMatNbrSupplier);
         Partner customerPartner = createAndGetCustomerPartner();
-        MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(material, customerPartner, semiconductorMatNbrCustomer, false, true);
+        MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(material, customerPartner, semiconductorMatNbrCustomer, false, true, new TreeSet<>(), new TreeSet<>());
 
         // When
         when(mprService.findAllByCustomerPartnerMaterialNumber(semiconductorMatNbrCustomer)).thenReturn(List.of(materialPartnerRelation));
@@ -276,7 +285,7 @@ public class MaterialServiceTest {
         material.setProductFlag(true);
         material.setOwnMaterialNumber(semiconductorMatNbrSupplier);
         Partner customerPartner = createAndGetCustomerPartner();
-        MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(material, customerPartner, semiconductorMatNbrCustomer, false, true);
+        MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(material, customerPartner, semiconductorMatNbrCustomer, false, true, new TreeSet<>(), new TreeSet<>());
 
         // When
         when(mprService.findAllByCustomerPartnerAndPartnerMaterialNumber(customerPartner, semiconductorMatNbrCustomer)).thenReturn(List.of(materialPartnerRelation));
@@ -296,8 +305,6 @@ public class MaterialServiceTest {
         material.setMaterialFlag(true);
         material.setOwnMaterialNumber(semiconductorMatNbrCustomer);
         Partner supplierPartner = createAndGetSupplierPartner();
-        MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(material, supplierPartner, semiconductorMatNbrSupplier, true, false);
-
         // When
         when(materialRepository.findById(semiconductorMatNbrCustomer)).thenReturn(Optional.of(material));
 
@@ -313,7 +320,7 @@ public class MaterialServiceTest {
         material.setMaterialFlag(true);
         material.setOwnMaterialNumber(semiconductorMatNbrCustomer);
         Partner supplierPartner = createAndGetSupplierPartner();
-        MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(material, supplierPartner, semiconductorMatNbrSupplier, true, false);
+        MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(material, supplierPartner, semiconductorMatNbrSupplier, true, false, new TreeSet<>(), new TreeSet<>());
 
         // When
         when(mprService.findAllBySupplierPartnerAndPartnerMaterialNumber(supplierPartner, semiconductorMatNbrSupplier)).thenReturn(List.of(materialPartnerRelation));

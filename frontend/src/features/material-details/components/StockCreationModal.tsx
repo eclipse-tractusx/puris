@@ -43,9 +43,11 @@ import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
-import { useSites } from '@features/stock-view/hooks/useSites';
 import { postStocks, updateStocks } from '@services/stocks-service';
 import { useNotifications } from '@contexts/notificationContext';
+import { DirectionType } from '@models/types/erp/directionType';
+import { useSiteDesignations } from '../hooks/useSiteDesignations';
+import { Site } from '@models/types/edc/site';
 
 type StockCreationModalProps = {
   open: boolean;
@@ -72,9 +74,10 @@ export const StockCreationModal = ({
 }: StockCreationModalProps) => {
   const [temporaryStock, setTemporaryStock] = useState<Partial<Stock>>(stock ?? {});
   const { partners } = usePartners(stockType, stock?.material?.ownMaterialNumber ?? null);
-  const { sites } = useSites();
+  const { siteDesignations } = useSiteDesignations(stock?.material?.ownMaterialNumber ?? null, stockType === 'material' ? DirectionType.Inbound : DirectionType.Outbound);
   const { notify } = useNotifications();
   const [formError, setFormError] = useState(false);
+  const sites = siteDesignations?.reduce((acc: Site[], sd) => temporaryStock?.partner?.bpnl && sd.partnerBpnls.includes(temporaryStock.partner.bpnl) ? [...acc, sd.site] : acc, []) ?? [];
   const [originalData, setOriginalData] = useState<Partial<Stock>>(stock ?? {});
   const mode = temporaryStock?.uuid ? 'edit' : 'create';
   const isFormChanged = JSON.stringify(temporaryStock) !== JSON.stringify(originalData);
@@ -165,7 +168,7 @@ export const StockCreationModal = ({
               label="Stock Site*"
               placeholder="Select a Site"
               data-testid="stock-site-field"
-              disabled={mode === 'edit'}
+              disabled={mode === 'edit' || !temporaryStock.partner}
             />
           </Grid>
 
