@@ -31,7 +31,12 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelationTypeEnumeration;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.SiteDesignationDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialEntityDto;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRefreshService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.modelmapper.ModelMapper;
@@ -56,6 +61,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @RestController
 @RequestMapping("materials")
@@ -64,6 +74,9 @@ public class MaterialController {
 
     @Autowired
     private MaterialService materialService;
+
+    @Autowired
+    private MaterialPartnerRelationService mprService;
 
     @Autowired
     private MaterialRefreshService materialRefreshService;
@@ -176,6 +189,48 @@ public class MaterialController {
             HttpStatusCode.valueOf(200));
     }
 
+    @GetMapping("/demanding-sites")
+    @Operation(summary = "Gets designated demanding sites for the material.", description = "Returns the designated demanding sites for the given material. Each site includes the partner BPNLs it receives this material from.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Returns the requested Site Designations."),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Requested Material was not found.", content = @Content)
+    })
+    public ResponseEntity<List<SiteDesignationDto>> getDemandingSitesByMaterial(@Parameter(name = "ownMaterialNumber",
+        description = "The Material Number that is used in your own company to identify the Material, encoded in base64"
+        ) @RequestParam String ownMaterialNumber) {
+        final String decodedMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        if(!materialPattern.matcher(decodedMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        Material foundMaterial = materialService.findByOwnMaterialNumber(decodedMaterialNumber);
+        if (foundMaterial == null) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(404));
+        }
+        return new ResponseEntity<>(getSiteDesignationsForMaterialAndRelationType(decodedMaterialNumber, MaterialRelationTypeEnumeration.DEMANDING), HttpStatusCode.valueOf(200));
+    }
+
+    @GetMapping("/producing-sites")
+    @Operation(summary = "Gets designated producing sites for the material.", description = "Returns the designated producing sites for the given material. Each site includes the partner BPNLs it produces this material for.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Returns the requested Site Designations."),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Requested Material was not found.", content = @Content)
+    })
+    public ResponseEntity<List<SiteDesignationDto>> getProducingSitesByMaterial(@Parameter(name = "ownMaterialNumber",
+        description = "The Material Number that is used in your own company to identify the Material, encoded in base64"
+        ) @RequestParam String ownMaterialNumber) {
+        final String decodedMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
+        if(!materialPattern.matcher(decodedMaterialNumber).matches()) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+        }
+        Material foundMaterial = materialService.findByOwnMaterialNumber(decodedMaterialNumber);
+        if (foundMaterial == null) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(404));
+        }
+        return new ResponseEntity<>(getSiteDesignationsForMaterialAndRelationType(decodedMaterialNumber, MaterialRelationTypeEnumeration.PRODUCING), HttpStatusCode.valueOf(200));
+    }
+
     @GetMapping("/refresh")
     @Operation(summary = "Refreshes partner data for specified material", description = "Requests material data for the given material from all partners")
     public ResponseEntity<String> refreshMaterialData(@RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
@@ -185,5 +240,25 @@ public class MaterialController {
         }
         materialRefreshService.refreshPartnerData(ownMaterialNumber);
         return new ResponseEntity<>(ownMaterialNumber, HttpStatusCode.valueOf(200));
+    }
+
+    public List<SiteDesignationDto> getSiteDesignationsForMaterialAndRelationType(String ownMaterialNumber, MaterialRelationTypeEnumeration relationType) {
+        List<MaterialPartnerRelation> mprs = mprService.findAll().stream().filter(mpr-> ownMaterialNumber.equals(mpr.getMaterial().getOwnMaterialNumber())).toList();
+        Map<Site, List<String>> siteDesignations = new HashMap<>();
+        mprs.stream().forEach(mpr -> {
+            SortedSet<Site> sites = new TreeSet<>();
+            if (relationType == MaterialRelationTypeEnumeration.DEMANDING) {
+                sites = mpr.getOwnDemandingSites();
+            } else {
+                sites = mpr.getOwnProducingSites();
+            }
+            sites.stream().forEach(site -> {
+                siteDesignations.putIfAbsent(site, new ArrayList<>());
+                siteDesignations.get(site).add(mpr.getPartner().getBpnl());
+            });
+        });
+        return siteDesignations.entrySet().stream()
+            .map(entry -> new SiteDesignationDto(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
     }
 }

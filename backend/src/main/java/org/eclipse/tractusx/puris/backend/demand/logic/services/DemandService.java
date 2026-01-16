@@ -29,6 +29,7 @@ import java.util.function.Function;
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.demand.domain.model.Demand;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -135,12 +136,12 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
 
     protected List<String> validateOwnDemand(Demand demand) {
         List<String> errors = new ArrayList<>();
-        Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
         if (!mprService.partnerSuppliesMaterial(demand.getMaterial(), demand.getPartner())) {
             errors.add(String.format("Partner '%s' is not configured to supply you the specified material '%s'.", demand.getPartner().getBpnl(), demand.getMaterial().getOwnMaterialNumber()));
         }
-        if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns()))) {
-            errors.add(String.format("Demand location BPNS '%s' must match to one site configured for your own partner '%s' .", demand.getDemandLocationBpns(), ownPartnerEntity.getBpnl()));
+        MaterialPartnerRelation mpr = mprService.find(demand.getPartner().getBpnl(), demand.getMaterial().getOwnMaterialNumber());
+        if (mpr.getOwnDemandingSites().stream().noneMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns()))) {
+            errors.add(String.format("Demand site BPNS '%s' must match to one of the sites demanding the material from the partner %s", demand.getDemandLocationBpns(), demand.getPartner().getBpnl()));
         }
         if (demand.getSupplierLocationBpns() != null && 
             demand.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns()))) {

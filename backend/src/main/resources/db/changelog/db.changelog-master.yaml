@@ -21,3 +21,6 @@
 databaseChangeLog:
   - includeAll:
       path: db/changelog/changelog-3.x
+  - includeAll:
+      path: db/changelog/changelog-6.x
+

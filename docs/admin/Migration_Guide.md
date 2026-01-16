@@ -4,6 +4,8 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 
 <!-- TOC -->
 - [Migration Guide](#migration-guide)
+  - [Version 6.0.x to 7.0.x](#version-60x-to-70x)
+    - [Database changes to support new site designation functionality](#database-changes-to-support-new-site-designation-functionality)
   - [Version 5.0.x to 6.0.x](#version-50x-to-60x)
     - [The endpoint for Material Partner Relations was changed](#the-endpoint-for-material-partner-relations-was-changed)
   - [Version 4.2.x to 5.0.x](#version-42x-to-50x)
@@ -57,6 +59,17 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 > 
 > - Deploying an older version of the software may have used an older postgresql version. This is NOT applicable for the PURIS charts.
 > - The community is working out on how to resolve the issue.
+
+## Version 6.0.x to 7.0.x
+
+### Database changes to support new site designation functionality
+
+To enable the designation of sites as `demanding` or `producing` per material and partner the following database changes are required:
+
+- new table `material_partner_relation_own_producing_sites`
+- new table `material_partner_relation_own_demanding_sites`
+
+The changes will be applied automatically by liquibase if you are using the recommended configuration.
 
 ## Version 5.0.x to 6.0.x
 

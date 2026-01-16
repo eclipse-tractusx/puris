@@ -8,7 +8,20 @@ A partner asking for information may not receive any information that are not me
 is, that exchanged information MUST be allocated to a partner to not leak any partner relationships in the vertical
 direction.
 
-## Material Numbers
+## Material-Partner relations
+
+### Material directions and user roles
+
+For each material and partner the user can take on the role of the customer, the supplier or, in edge cases, both. The role of the user is expressed using the relation flags `partnerBuysMaterial` and `partnerSuppliesMaterial` as well as the material directions `Inbound` and `Outbound`.
+
+The following table shows the correlation of roles, flags and directions as well as the applicable PURIS standards
+
+| User role | Material direction | Relation flag           | Own PURIS data                                         | Reported PURIS data                                    |
+| ----------|--------------------|-------------------------|--------------------------------------------------------|--------------------------------------------------------|
+| Customer  | Inbound            | partnerSuppliesMaterial | Demand, MaterialItemStock, Delivery, CustomerSupply    | Production, ProductItemStock, Delivery, SupplierSupply |
+| Supplier  | Outbound           | partnerBuysMaterial     | Production, ProductItemStock, Delivery, SupplierSupply | Demand, MaterialItemStock, Delivery, CustomerSupply    |
+
+### Material Numbers
 
 In the backend materials are commonly handled by the own material number. The partner material relationship then brings
 the respective material number of a partner leading to the following constellations:
@@ -35,6 +48,35 @@ Within PURIS this results in the following steps:
 - when creating a mpr, the global asset id (Catena-X ID), initially left null
   - is usually not set (acting as supplier)
   - is set to the supplier's material's catena-X id (acting as customer)
+
+### Site designations
+
+Not all sites produce or demand the same materials. This can vary by material, but also per partner. Thus sites can be designated
+as producing or demanding sites for a given material-partner relation.
+
+Depending on the role of the user in the relationship the following can be defined:
+
+- puris user acts as customer:
+  - own sites can be designated as demanding sites
+  - partner sites can be designated as producing sites
+- puris user acts as supplier:
+  - own sites can be designated as producing sites
+  - partner sites can be designated as demanding sites
+
+Own site designations are manually added as part of the material-partner relation creation process. Partner site designations
+should be retrieved via the `PartSitesInformationAsPlanned` component of `PartTypeInformation`.
+
+Designated sites are valid for the individual PURIS data types as follows:
+
+- producing sites
+  - Production
+  - Demand (`supplierLocationBpns`)
+  - ProductItemStock
+  - Delivery (`originBpns`)
+- demanding sites
+  - Demand (`demandLocationBpns`)
+  - MaterialItemStock
+  - Delivery (`destinationBpns`)
 
 ## Data Sovereignty
 

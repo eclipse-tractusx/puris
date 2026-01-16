@@ -39,10 +39,12 @@ import { Production } from '@models/types/data/production';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
-import { useSites } from '@features/stock-view/hooks/useSites';
 import { postProduction, updateProduction } from '@services/productions-service';
 import { useNotifications } from '@contexts/notificationContext';
 import { GridItem } from '@components/ui/GridItem';
+import { useSiteDesignations } from '../hooks/useSiteDesignations';
+import { DirectionType } from '@models/types/erp/directionType';
+import { Site } from '@models/types/edc/site';
 
 type ProductionCategoryCreationModalProps = {
     open: boolean;
@@ -68,12 +70,13 @@ export const PlannedProductionCreationModal = ({
 }: ProductionCategoryCreationModalProps) => {
     const [temporaryProduction, setTemporaryProduction] = useState<Partial<Production>>(production ?? {});
     const { partners } = usePartners('product', temporaryProduction?.material?.materialNumberSupplier ?? null);
-    const { sites } = useSites();
+    const { siteDesignations } = useSiteDesignations(production?.material?.ownMaterialNumber ?? null, DirectionType.Outbound);
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
     const [originalData, setOriginalData] = useState<Partial<Production>>(production ?? {});
     const mode = temporaryProduction?.uuid ? 'edit' : 'create';
     const isFormChanged = JSON.stringify(temporaryProduction) !== JSON.stringify(originalData);
+    const sites = siteDesignations?.reduce((acc: Site[], sd) => temporaryProduction.partner?.bpnl && sd.partnerBpnls.includes(temporaryProduction.partner.bpnl) ? [...acc, sd.site] : acc, []) ?? [];
     useEffect(() => {
         setTemporaryProduction(production ?? {});
         setOriginalData(production ?? {});
@@ -130,34 +133,6 @@ export const PlannedProductionCreationModal = ({
             <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
                 <Grid container spacing={2} padding=".25rem">
                     <GridItem label="Material Number" value={temporaryProduction.material?.materialNumberSupplier ?? ''} />
-
-                    <Grid item xs={6}>
-                        <LabelledAutoComplete
-                            id="productionSiteBpns"
-                            options={sites ?? []}
-                            getOptionLabel={(option) => option.name ?? ''}
-                            error={formError && !temporaryProduction.productionSiteBpns}
-                            isOptionEqualToValue={(option, value) => option.bpns === value.bpns}
-                            onChange={(_, value) => setTemporaryProduction({ ...temporaryProduction, productionSiteBpns: value?.bpns })}
-                            value={sites?.find((s) => s.bpns === temporaryProduction.productionSiteBpns) ?? null}
-                            label="Production Site*"
-                            placeholder="Select a Site"
-                            data-testid="production-site-field"
-                            disabled={mode === 'edit'}
-                        />
-                    </Grid>
-                    <Grid item xs={6} display="flex" alignItems="end" data-testid="production-completion-time-field">
-                        <DateTime
-                            label="Estimated Completion Time*"
-                            placeholder="Pick Production Date"
-                            locale="de"
-                            error={formError}
-                            value={temporaryProduction.estimatedTimeOfCompletion ?? null}
-                            onValueChange={(date) =>
-                                setTemporaryProduction({ ...temporaryProduction, estimatedTimeOfCompletion: date ?? undefined })
-                            }
-                        />
-                    </Grid>
                     <Grid item xs={6}>
                         <LabelledAutoComplete
                             id="partner"
@@ -171,6 +146,33 @@ export const PlannedProductionCreationModal = ({
                             isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
                             data-testid="production-partner-field"
                             disabled={mode === 'edit'}
+                        />
+                    </Grid>
+                    <Grid item xs={6}>
+                        <LabelledAutoComplete
+                            id="productionSiteBpns"
+                            options={sites ?? []}
+                            getOptionLabel={(option) => option.name ?? ''}
+                            error={formError && !temporaryProduction.productionSiteBpns}
+                            isOptionEqualToValue={(option, value) => option.bpns === value.bpns}
+                            onChange={(_, value) => setTemporaryProduction({ ...temporaryProduction, productionSiteBpns: value?.bpns })}
+                            value={sites?.find((s) => s.bpns === temporaryProduction.productionSiteBpns) ?? null}
+                            label="Production Site*"
+                            placeholder="Select a Site"
+                            data-testid="production-site-field"
+                            disabled={mode === 'edit'  || !temporaryProduction?.partner}
+                        />
+                    </Grid>
+                    <Grid item xs={6} display="flex" alignItems="end" data-testid="production-completion-time-field">
+                        <DateTime
+                            label="Estimated Completion Time*"
+                            placeholder="Pick Production Date"
+                            locale="de"
+                            error={formError}
+                            value={temporaryProduction.estimatedTimeOfCompletion ?? null}
+                            onValueChange={(date) =>
+                                setTemporaryProduction({ ...temporaryProduction, estimatedTimeOfCompletion: date ?? undefined })
+                            }
                         />
                     </Grid>
                     <Grid item xs={6}>
