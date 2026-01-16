@@ -79,14 +79,14 @@ public class MaterialPartnerRelation {
     /**
      * Contains all own Sites (BPNSs) that stock the specified Material from the partner.
      */
-    private SortedSet<Site> ownStockingSites;
+    private SortedSet<Site> ownDemandingSites;
 
     public MaterialPartnerRelation() {
         this.key = new Key();
     }
 
    public MaterialPartnerRelation(Material material, Partner partner, String partnerMaterialNumber,
-            boolean partnerSupplies, boolean partnerBuys, SortedSet<Site> ownProducingSites, SortedSet<Site> ownStockIngSites) {
+            boolean partnerSupplies, boolean partnerBuys, SortedSet<Site> ownProducingSites, SortedSet<Site> ownDemandingSites) {
         this.material = material;
         this.partner = partner;
         this.key = new Key(material.getOwnMaterialNumber(), partner.getUuid());
@@ -94,7 +94,7 @@ public class MaterialPartnerRelation {
         this.partnerSuppliesMaterial = partnerSupplies;
         this.partnerBuysMaterial = partnerBuys;
         this.ownProducingSites = ownProducingSites;
-        this.ownStockingSites = ownStockIngSites;
+        this.ownDemandingSites = ownDemandingSites;
     }
 
     @Override
@@ -107,7 +107,7 @@ public class MaterialPartnerRelation {
             ", material=" + material.getOwnMaterialNumber() +
             ", partner=" + partner.getBpnl() +
             ", ownProducingSites=" + (ownProducingSites != null ? ownProducingSites.toString() : "null") +
-            ", ownStockIngSites=" + (ownStockingSites != null ? ownStockingSites.toString() : "null") +
+            ", ownDemandingSites=" + (ownDemandingSites != null ? ownDemandingSites.toString() : "null") +
             '}';
     }
 

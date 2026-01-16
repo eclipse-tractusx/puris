@@ -43,5 +43,5 @@ public class MaterialPartnerRelationDto {
     private boolean partnerBuysMaterial;
 
     private List<@Pattern(regexp = PatternStore.BPNS_STRING) String> ownProducingSiteBpnss;
-    private List<@Pattern(regexp = PatternStore.BPNS_STRING) String> ownStockingSiteBpnss;
+    private List<@Pattern(regexp = PatternStore.BPNS_STRING) String> ownDemandingSiteBpnss;
 }

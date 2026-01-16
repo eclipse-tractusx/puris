@@ -140,8 +140,8 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
             errors.add(String.format("Partner '%s' is not configured to supply you the specified material '%s'.", demand.getPartner().getBpnl(), demand.getMaterial().getOwnMaterialNumber()));
         }
         MaterialPartnerRelation mpr = mprService.find(demand.getPartner().getBpnl(), demand.getMaterial().getOwnMaterialNumber());
-        if (mpr.getOwnStockingSites().stream().noneMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns()))) {
-            errors.add(String.format("Demand site BPNS '%s' must match to one of the sites stocking the material from the partner %s", demand.getDemandLocationBpns(), demand.getPartner().getBpnl()));
+        if (mpr.getOwnDemandingSites().stream().noneMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns()))) {
+            errors.add(String.format("Demand site BPNS '%s' must match to one of the sites demanding the material from the partner %s", demand.getDemandLocationBpns(), demand.getPartner().getBpnl()));
         }
         if (demand.getSupplierLocationBpns() != null && 
             demand.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns()))) {

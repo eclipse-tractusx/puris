@@ -55,8 +55,8 @@ public class MaterialItemStockService extends ItemStockService<MaterialItemStock
         errors.addAll(validateLocalStock(materialItemStock));
         errors.addAll(validateMaterialItemStock(materialItemStock));
         MaterialPartnerRelation mpr = mprService.find(materialItemStock.getPartner().getBpnl(), materialItemStock.getMaterial().getOwnMaterialNumber());
-        if (mpr.getOwnStockingSites().stream().noneMatch(site -> site.getBpns().equals(materialItemStock.getLocationBpns()))) {
-            errors.add("Invalid stocking site for the material and partner.");
+        if (mpr.getOwnDemandingSites().stream().noneMatch(site -> site.getBpns().equals(materialItemStock.getLocationBpns()))) {
+            errors.add("Invalid demanding site for the material and partner.");
         }
         return errors;
     }

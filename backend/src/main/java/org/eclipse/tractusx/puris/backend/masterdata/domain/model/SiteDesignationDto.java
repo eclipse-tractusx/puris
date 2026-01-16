@@ -31,7 +31,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class SiteDesignation {
+public class SiteDesignationDto {
     private Site site;
     private List<@Pattern(regexp = PatternStore.BPNL_STRING) String> partnerBpnls;
 }

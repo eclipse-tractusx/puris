@@ -241,7 +241,7 @@ public abstract class DeliveryService<T extends Delivery> {
                     if (!delivery.getMaterial().isMaterialFlag()) {
                         errors.add(String.format("Material '%s' must be configured as material via flag (incoterm '%s' with customer responsibility).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue()));
                     }
-                    errors.addAll(validateLocationsAsCustomer(delivery, mpr.getOwnStockingSites(), partnerSites));
+                    errors.addAll(validateLocationsAsCustomer(delivery, mpr.getOwnDemandingSites(), partnerSites));
                     break;
                 case PARTIAL:
                     boolean valid = false;
@@ -255,7 +255,7 @@ public abstract class DeliveryService<T extends Delivery> {
                         }
                     }
                     if (delivery.getMaterial().isMaterialFlag()) {
-                        customerPathErrors = validateLocationsAsCustomer(delivery, mpr.getOwnStockingSites(), partnerSites);
+                        customerPathErrors = validateLocationsAsCustomer(delivery, mpr.getOwnDemandingSites(), partnerSites);
                         if (customerPathErrors.isEmpty()) {
                             valid = true;
                         }

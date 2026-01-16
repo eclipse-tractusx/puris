@@ -32,8 +32,9 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelationTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.SiteDesignation;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.SiteDesignationDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialEntityDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRefreshService;
@@ -188,14 +189,14 @@ public class MaterialController {
             HttpStatusCode.valueOf(200));
     }
 
-    @GetMapping("/stocking-sites")
-    @Operation(summary = "Gets designated stocking sites for the material.", description = "Returns the designated stocking sites for the given material. Each site includes the partner BPNLs it receives this material from.")
+    @GetMapping("/demanding-sites")
+    @Operation(summary = "Gets designated demanding sites for the material.", description = "Returns the designated demanding sites for the given material. Each site includes the partner BPNLs it receives this material from.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Returns the requested Site Designations."),
         @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content),
         @ApiResponse(responseCode = "404", description = "Requested Material was not found.", content = @Content)
     })
-    public ResponseEntity<List<SiteDesignation>> getStockingSitesByMaterial(@Parameter(name = "ownMaterialNumber",
+    public ResponseEntity<List<SiteDesignationDto>> getDemandingSitesByMaterial(@Parameter(name = "ownMaterialNumber",
         description = "The Material Number that is used in your own company to identify the Material, encoded in base64"
         ) @RequestParam String ownMaterialNumber) {
         final String decodedMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
@@ -206,7 +207,7 @@ public class MaterialController {
         if (foundMaterial == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
         }
-        return new ResponseEntity<>(getSiteDesignationsForMaterialAndRelationType(decodedMaterialNumber, "stocking"), HttpStatusCode.valueOf(200));
+        return new ResponseEntity<>(getSiteDesignationsForMaterialAndRelationType(decodedMaterialNumber, MaterialRelationTypeEnumeration.DEMANDING), HttpStatusCode.valueOf(200));
     }
 
     @GetMapping("/producing-sites")
@@ -216,7 +217,7 @@ public class MaterialController {
         @ApiResponse(responseCode = "400", description = "Invalid parameter", content = @Content),
         @ApiResponse(responseCode = "404", description = "Requested Material was not found.", content = @Content)
     })
-    public ResponseEntity<List<SiteDesignation>> getProducingSitesByMaterial(@Parameter(name = "ownMaterialNumber",
+    public ResponseEntity<List<SiteDesignationDto>> getProducingSitesByMaterial(@Parameter(name = "ownMaterialNumber",
         description = "The Material Number that is used in your own company to identify the Material, encoded in base64"
         ) @RequestParam String ownMaterialNumber) {
         final String decodedMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
@@ -227,7 +228,7 @@ public class MaterialController {
         if (foundMaterial == null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
         }
-        return new ResponseEntity<>(getSiteDesignationsForMaterialAndRelationType(decodedMaterialNumber, "producing"), HttpStatusCode.valueOf(200));
+        return new ResponseEntity<>(getSiteDesignationsForMaterialAndRelationType(decodedMaterialNumber, MaterialRelationTypeEnumeration.PRODUCING), HttpStatusCode.valueOf(200));
     }
 
     @GetMapping("/refresh")
@@ -241,14 +242,14 @@ public class MaterialController {
         return new ResponseEntity<>(ownMaterialNumber, HttpStatusCode.valueOf(200));
     }
 
-    public List<SiteDesignation> getSiteDesignationsForMaterialAndRelationType(String ownMaterialNumber, String relationType) {
+    public List<SiteDesignationDto> getSiteDesignationsForMaterialAndRelationType(String ownMaterialNumber, MaterialRelationTypeEnumeration relationType) {
         List<MaterialPartnerRelation> mprs = mprService.findAll().stream().filter(mpr-> ownMaterialNumber.equals(mpr.getMaterial().getOwnMaterialNumber())).toList();
         Map<Site, List<String>> siteDesignations = new HashMap<>();
         mprs.stream().forEach(mpr -> {
             SortedSet<Site> sites = new TreeSet<>();
-            if ("stocking".equalsIgnoreCase(relationType)) {
-                sites = mpr.getOwnStockingSites();
-            } else if ("producing".equalsIgnoreCase(relationType)) {
+            if (relationType == MaterialRelationTypeEnumeration.DEMANDING) {
+                sites = mpr.getOwnDemandingSites();
+            } else {
                 sites = mpr.getOwnProducingSites();
             }
             sites.stream().forEach(site -> {
@@ -257,7 +258,7 @@ public class MaterialController {
             });
         });
         return siteDesignations.entrySet().stream()
-            .map(entry -> new SiteDesignation(entry.getKey(), entry.getValue()))
+            .map(entry -> new SiteDesignationDto(entry.getKey(), entry.getValue()))
             .collect(Collectors.toList());
     }
 }

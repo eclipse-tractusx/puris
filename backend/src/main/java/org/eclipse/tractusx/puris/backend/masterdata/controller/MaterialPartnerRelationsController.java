@@ -87,7 +87,7 @@ public class MaterialPartnerRelationsController {
                     mpr.isPartnerSuppliesMaterial(),
                     mpr.isPartnerBuysMaterial(),
                     mpr.getOwnProducingSites().stream().map(Site::getBpns).collect(Collectors.toList()),
-                    mpr.getOwnStockingSites().stream().map(Site::getBpns).collect(Collectors.toList())
+                    mpr.getOwnDemandingSites().stream().map(Site::getBpns).collect(Collectors.toList())
                 ))
                 .collect(Collectors.toList());
             return ResponseEntity.ok(dtos);
@@ -143,11 +143,11 @@ public class MaterialPartnerRelationsController {
                 producingSites.add(site);
             }
         }
-        SortedSet<Site> stockingSites = new TreeSet<>();
-        if (dto.getOwnStockingSiteBpnss() != null) {
-            for (var siteBpns : dto.getOwnStockingSiteBpnss()) {
+        SortedSet<Site> demandingSites = new TreeSet<>();
+        if (dto.getOwnDemandingSiteBpnss() != null) {
+            for (var siteBpns : dto.getOwnDemandingSiteBpnss()) {
                 if (!bpnsPattern.matcher(siteBpns).matches()) {
-                    log.warn("Invalid stocking site BPNS format.");
+                    log.warn("Invalid demanding site BPNS format.");
                     return new ResponseEntity<>(HttpStatusCode.valueOf(400));
                 }
                 Site site = ownPartner.getSites().stream()
@@ -155,16 +155,16 @@ public class MaterialPartnerRelationsController {
                     .findFirst()
                     .orElse(null);
                 if (site == null) {
-                    log.warn("Invalid stocking site. Own site with BPNS {} not found.", siteBpns);
+                    log.warn("Invalid demanding site. Own site with BPNS {} not found.", siteBpns);
                     return new ResponseEntity<>(HttpStatusCode.valueOf(400));
                 }
-                stockingSites.add(site);
+                demandingSites.add(site);
             }
         }
         if (mprService.find(material, partner) != null) {
             return new ResponseEntity<>(HttpStatusCode.valueOf(409));
         }
-        MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, dto.getPartnerMaterialNumber(), dto.isPartnerSuppliesMaterial(), dto.isPartnerBuysMaterial(), producingSites, stockingSites);
+        MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, dto.getPartnerMaterialNumber(), dto.isPartnerSuppliesMaterial(), dto.isPartnerBuysMaterial(), producingSites, demandingSites);
 
         newMpr = mprService.create(newMpr);
         if (newMpr == null) {

@@ -41,7 +41,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
         - createTable:
-            tableName: material_partner_relation_own_stocking_sites
+            tableName: material_partner_relation_own_demanding_sites
             columns:
               - column:
                   name: material_partner_relation_key_own_material_number
@@ -54,7 +54,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: own_stocking_sites_bpns
+                  name: own_demanding_sites_bpns
                   type: VARCHAR(255)
                   constraints:
                     nullable: false

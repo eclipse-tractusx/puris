@@ -31,7 +31,7 @@ export const useSiteDesignations = (materialNumber: string | null, direction?: D
     let url: string | undefined = undefined;
     if (materialNumber) {
         params.set('ownMaterialNumber', materialNumber);
-        const endpoint = direction === DirectionType.Inbound ? '/stocking-sites' : '/producing-sites';
+        const endpoint = direction === DirectionType.Inbound ? '/demanding-sites' : '/producing-sites';
         url = `${config.app.BACKEND_BASE_URL}materials${endpoint}?${params.toString()}`;
     }
     const {
