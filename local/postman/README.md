@@ -13,6 +13,7 @@ It creates a setup of a partner and customer that refer to the same material fro
 - The setup is ready to trigger the update from customer to supplier
 
 ## Automation With Bruno
+
 Please refer to the tag conventions mentioned in the [developer documentation](../../docs/DEVELOPMENT.md).
 
 We provide the following test scenarios as mentioned in package.json:
@@ -37,15 +38,15 @@ relevant information is the following:
 Items (Material or Product) involved:
 
 - Semiconductor
-    - Name: Semiconductor
-    - Material Number Customer: MNR-7307-AU340474.002
-    - Material Number Supplier: MNR-8101-ID146955.001
-    - Material Number Catena-X: 860fb504-b884-4009-9313-c6fb6cdc776b
+  - Name: Semiconductor
+  - Material Number Customer: MNR-7307-AU340474.002
+  - Material Number Supplier: MNR-8101-ID146955.001
+  - Material Number Catena-X: 860fb504-b884-4009-9313-c6fb6cdc776b
 - Control Unit
-    - Name: Central Control Unit
-    - Material Number Customer: MNR-4177-C
-    - Material Number Supplier: MNR-4177-S
-    - Material Number Catena-X: none
+  - Name: Central Control Unit
+  - Material Number Customer: MNR-4177-C
+  - Material Number Supplier: MNR-4177-S
+  - Material Number Catena-X: none
 
 ### Customer
 
@@ -54,26 +55,27 @@ Overall the customer has the following information:
 - BPNL: BPNL4444444444XX
 - Name: Control Unit Creator Inc.
 - Site
-    - BPNS: BPNS4444444444XX
-    - Site Name: Control Unit Creator Production Site
-    - Site Address:
-        - BPNA: BPNA4444444444AA
-        - Street and Number: 13th Street 47
-        - Zip Code, City: 10011 New York
-        - Country: USA
+  - BPNS: BPNS4444444444XX
+  - Site Name: Control Unit Creator Production Site
+  - Site Address:
+    - BPNA: BPNA4444444444AA
+    - Street and Number: 13th Street 47
+    - Zip Code, City: 10011 New York
+    - Country: USA
+  - dedicated as demanding site for Semiconductor
 - Materials available: Semiconductor
 - Products available: Control Unit
-    - Material Stock 1:
-        - Partner: Semiconductor Supplier (BPNL1234567890ZZ)
-        - Material: Semiconductor
-        - Quantity: 500 pieces
-        - Blocked: true
-        - Location BPNS: BPNS4444444444XX
-        - Location BPNA: BPNA4444444444AA
-        - Order Position Reference:
-            - Customer Order Number: CNbr-1
-            - Customer Order Position Number: C-Pos-1
-            - Supplier Order Number: SNbr-1
+  - Material Stock 1:
+    - Partner: Semiconductor Supplier (BPNL1234567890ZZ)
+    - Material: Semiconductor
+    - Quantity: 500 pieces
+    - Blocked: true
+    - Location BPNS: BPNS4444444444XX
+    - Location BPNA: BPNA4444444444AA
+    - Order Position Reference:
+      - Customer Order Number: CNbr-1
+      - Customer Order Position Number: C-Pos-1
+      - Supplier Order Number: SNbr-1
 
 ### Demand
 
@@ -86,7 +88,7 @@ There are 5 Demands created by the collection. They all share the same
 The following table shows the differences.
 
 | ETA        | Quantity   | Category       | Supplier Location BPNS set |
-|------------|------------|----------------|----------------------------|
+| ---------- | ---------- | -------------- | -------------------------- |
 | now        | 500 pieces | Default (0001) | yes                        |
 | now +1 day | 510 pieces | (A1S1)         | yes                        |
 | now +2 day | 500 pieces | Series (SR99)  | yes                        |
@@ -105,26 +107,26 @@ There are 5 Deliveries created for each collection. They all share the same
 - ownMaterialNumber (MATERIAL_NUMBER_SUPPLIER)
 - partnerBpnl (CUSTOMER_BPNL)
 
-| Departure   | Type       | Arrival      | Type       | Quantity   | Incoterm       | Origin BPNA set | Destination BPNA set | Customer Order Number | Customer Position Number | Supplier Order Number |
-|-------------|------------|--------------|------------|------------|----------------|-----------------|----------------------|-----------------------|--------------------------|-----------------------|
-| now -1 day  | actual     | now          | actual     | 50  pieces | FAS            | yes             | yes                  | null                  | null                     | null                  |
-| now         | actual     | now + 1 days | estimated  | 100 pieces | DAP            | yes             | yes                  | null                  | null                     | null                  |
-| now +1 day  | estimated  | now + 2 days | estimated  | 200 pieces | DPU            | yes             | no                   | C-Nbr-1               | C-Position-01            | null                  |
-| now +2 days | estimated  | now + 3 days | estimated  | 300 pieces | CPT            | no              | yes                  | C-Nbr-1               | C-Position-01            | S-Nbr-1               |
-| now +3 days | estimated  | now + 4 days | estimated  | 400 pieces | CIP            | no              | no                   | null                  | null                     | null                  |
+| Departure   | Type      | Arrival      | Type      | Quantity   | Incoterm | Origin BPNA set | Destination BPNA set | Customer Order Number | Customer Position Number | Supplier Order Number |
+| ----------- | --------- | ------------ | --------- | ---------- | -------- | --------------- | -------------------- | --------------------- | ------------------------ | --------------------- |
+| now -1 day  | actual    | now          | actual    | 50 pieces  | FAS      | yes             | yes                  | null                  | null                     | null                  |
+| now         | actual    | now + 1 days | estimated | 100 pieces | DAP      | yes             | yes                  | null                  | null                     | null                  |
+| now +1 day  | estimated | now + 2 days | estimated | 200 pieces | DPU      | yes             | no                   | C-Nbr-1               | C-Position-01            | null                  |
+| now +2 days | estimated | now + 3 days | estimated | 300 pieces | CPT      | no              | yes                  | C-Nbr-1               | C-Position-01            | S-Nbr-1               |
+| now +3 days | estimated | now + 4 days | estimated | 400 pieces | CIP      | no              | no                   | null                  | null                     | null                  |
 
 #### Customer deliveries
 
 - ownMaterialNumber (MATERIAL_NUMBER_CUSTOMER)
 - partnerBpnl (SUPPLIER_BPNL)
 
-| Departure   | Type       | Arrival      | Type       | Quantity   | Incoterm       | Origin BPNA set | Destination BPNA set | Customer Order Number | Customer Position Number | Supplier Order Number |
-|-------------|------------|--------------|------------|------------|----------------|-----------------|----------------------|-----------------------|--------------------------|-----------------------|
-| now -1 day  | actual     | now          | actual     | 50  pieces | CIF            | yes             | yes                  | null                  | null                     | null                  |
-| now         | actual     | now + 1 days | estimated  | 100 pieces | EXW            | yes             | yes                  | null                  | null                     | null                  |
-| now +1 day  | estimated  | now + 2 days | estimated  | 200 pieces | FAS            | yes             | no                   | C-Nbr-1               | C-Position-01            | null                  |
-| now +2 days | estimated  | now + 3 days | estimated  | 300 pieces | FOB            | no              | yes                  | C-Nbr-1               | C-Position-01            | S-Nbr-1               |
-| now +3 days | estimated  | now + 4 days | estimated  | 400 pieces | CFR            | no              | no                   | null                  | null                     | null                  |
+| Departure   | Type      | Arrival      | Type      | Quantity   | Incoterm | Origin BPNA set | Destination BPNA set | Customer Order Number | Customer Position Number | Supplier Order Number |
+| ----------- | --------- | ------------ | --------- | ---------- | -------- | --------------- | -------------------- | --------------------- | ------------------------ | --------------------- |
+| now -1 day  | actual    | now          | actual    | 50 pieces  | CIF      | yes             | yes                  | null                  | null                     | null                  |
+| now         | actual    | now + 1 days | estimated | 100 pieces | EXW      | yes             | yes                  | null                  | null                     | null                  |
+| now +1 day  | estimated | now + 2 days | estimated | 200 pieces | FAS      | yes             | no                   | C-Nbr-1               | C-Position-01            | null                  |
+| now +2 days | estimated | now + 3 days | estimated | 300 pieces | FOB      | no              | yes                  | C-Nbr-1               | C-Position-01            | S-Nbr-1               |
+| now +3 days | estimated | now + 4 days | estimated | 400 pieces | CFR      | no              | no                   | null                  | null                     | null                  |
 
 ### Supplier
 
@@ -133,44 +135,51 @@ Overall the supplier has the following information:
 - BPNL: BPNL1234567890ZZ
 - Name: Semiconductor Supplier Inc.
 - Site 1
-    - BPNS: BPNS1234567890ZZ
-    - Site Name: Semiconductor Supplier Inc. Production Site
-    - Site Address:
-        - BPNA: BPNA1234567890AA
-        - Street and Number: Wall Street 101
-        - Zip Code, City: 10001 New York
-        - Country: USA
+  - BPNS: BPNS1234567890ZZ
+  - Site Name: Semiconductor Supplier Inc. Production Site
+  - Site Address:
+    - BPNA: BPNA1234567890AA
+    - Street and Number: Wall Street 101
+    - Zip Code, City: 10001 New York
+    - Country: USA
+  - dedicated as producing site for Semiconductor
 - Site 2
-    - BPNS: BPNS2222222222SS
-    - Site Name: Semiconductor Supplier Inc. Secondary Site
-    - Site Address:
-        - BPNA: BPNA2222222222AA
-        - Street and Number: Sunset Blvd. 345
-        - Zip Code, City: 90001 Los Angeles
-        - Country: USA
+  - BPNS: BPNS2222222222SS
+  - Site Name: Semiconductor Supplier Inc. Secondary Site
+  - Site Address:
+    - BPNA: BPNA2222222222AA
+    - Street and Number: Sunset Blvd. 345
+    - Zip Code, City: 90001 Los Angeles
+    - Country: USA
+  - not dedicated as producing site for a material
 - Materials available: none
 - Products available: Semiconductor
 - Stocks
-    - Product Stock 1:
-        - Partner: Control Unit Creator Inc. (BPNL4444444444XX)
-        - Material: Semiconductor
-        - Quantity: 100 pieces
-        - Blocked: true
-        - Location BPNS: BPNS1234567890ZZ
-        - Location BPNA: BPNA1234567890AA
-        - Order Position Reference:
-            - Customer Order Number: CNbr-2
-            - Customer Order Position Number: C-Pos-2
-            - Supplier Order Number: SNbr-2
-    - Product Stock 2:
-        - Partner: Control Unit Creator Inc. (BPNL4444444444XX)
-        - Material: Semiconductor
-        - Quantity: 400 pieces
-        - Blocked: false
-        - Order Position Reference:
-            - Customer Order Number: CNbr-2
-            - Customer Order Position Number: C-Pos-2
-            - Supplier Order Number: SNbr-2
+  - Product Stock 1:
+    - Partner: Control Unit Creator Inc. (BPNL4444444444XX)
+    - Material: Semiconductor
+    - Quantity: 100 pieces
+    - Blocked: true
+    - Stock Location: Site 1
+    - Location BPNS: BPNS1234567890ZZ
+    - Location BPNA: BPNA1234567890AA
+    - Order Position Reference:
+      - Customer Order Number: CNbr-2
+      - Customer Order Position Number: C-Pos-2
+      - Supplier Order Number: SNbr-2
+  - Product Stock 2:
+    - Partner: Control Unit Creator Inc. (BPNL4444444444XX)
+    - Material: Semiconductor
+    - Quantity: 400 pieces
+    - Blocked: false
+    - Stock Location: Site 2
+    - Order Position Reference:
+      - Customer Order Number: CNbr-2
+      - Customer Order Position Number: C-Pos-2
+      - Supplier Order Number: SNbr-2
+
+> [!NOTE]
+> The creation of Product Stock 2 is expected to fail due to Site 2 not being a valid producing site
 
 ### Production
 
@@ -183,7 +192,7 @@ There are 6 Production Outputs created by the collection. They all share the sam
 The following table shows the differences.
 
 | ETA                | Quantity   | Order Position Reference (customer order, customer order position, supplier order) |
-|--------------------|------------|------------------------------------------------------------------------------------|
+| ------------------ | ---------- | ---------------------------------------------------------------------------------- |
 | now                | 600 pieces | CNbr-2, C-Pos-2, SNbr-2                                                            |
 | now +1 day         | 600 pieces | none                                                                               |
 | now +2 day         | 550 pieces | CNbr-2, C-Pos-2, SNbr-2                                                            |

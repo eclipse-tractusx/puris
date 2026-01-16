@@ -725,7 +725,7 @@ components:
             type: string
           maxItems: 50
           type: array
-        ownStockingSiteBpnss:
+        ownDemandingSiteBpnss:
           items:
             maxItems: 50
             pattern: ^BPNS[0-9a-zA-Z]{12}$
@@ -1382,7 +1382,7 @@ components:
       required:
       - bpns
       type: object
-    SiteDesignation:
+    SiteDesignationDto:
       additionalProperties: false
       properties:
         partnerBpnls:
@@ -3083,7 +3083,7 @@ paths:
               schema:
                 additionalProperties: false
                 items:
-                  $ref: '#/components/schemas/SiteDesignation'
+                  $ref: '#/components/schemas/SiteDesignationDto'
                 maxItems: 50
                 type: array
           description: Returns the requested Site Designations.
@@ -3119,11 +3119,11 @@ paths:
       summary: Refreshes partner data for specified material
       tags:
       - material-controller
-  /materials/stocking-sites:
+  /materials/demanding-sites:
     get:
-      description: Returns the designated stocking sites for the given material. Each
+      description: Returns the designated demanding sites for the given material. Each
         site includes the partner BPNLs it receives this material from.
-      operationId: getStockingSitesByMaterial
+      operationId: getDemandingSitesByMaterial
       parameters:
       - description: The Material Number that is used in your own company to identify
           the Material, encoded in base64
@@ -3141,7 +3141,7 @@ paths:
               schema:
                 additionalProperties: false
                 items:
-                  $ref: '#/components/schemas/SiteDesignation'
+                  $ref: '#/components/schemas/SiteDesignationDto'
                 maxItems: 50
                 type: array
           description: Returns the requested Site Designations.
@@ -3149,7 +3149,7 @@ paths:
           description: Invalid parameter
         '404':
           description: Requested Material was not found.
-      summary: Gets designated stocking sites for the material.
+      summary: Gets designated demanding sites for the material.
       tags:
       - material-controller
   /partners:
