@@ -22,14 +22,12 @@ package org.eclipse.tractusx.puris.backend.stock.logic.adapter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.*;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
 import org.junit.jupiter.api.*;
@@ -442,6 +440,105 @@ public class ItemStockSammMapperTest {
         assertEquals(SAMM_FROM_CUSTOMER_PARTNER, itemStockSamm);
         var list = itemStockSammMapper.itemStockSammToReportedProductItemStock(itemStockSamm, supplierPartner);
         assertEquals(5, list.size());
+    }
+
+    @Test
+    @Order(5)
+    void testErpMaterialItemStockMapping() {
+        // given
+        Material semiconductorMaterial = Material.builder()
+            .ownMaterialNumber(SUPPLIER_MAT_NUMBER)
+            .materialFlag(false)
+            .productFlag(true)
+            .name("Semiconductor")
+            .build();
+
+        Site site = customerPartner.getSites().getFirst();
+        Address address = site.getAddresses().first();
+
+        ItemStockSamm itemStockSamm = new ItemStockSamm();
+        itemStockSamm.setDirection(DirectionCharacteristic.INBOUND);
+        itemStockSamm.setMaterialGlobalAssetId(CX_MAT_NUMBER);
+        Position position = new Position();
+        ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity();
+        itemQuantityEntity.setUnit(ItemUnitEnumeration.UNIT_PIECE);
+        itemQuantityEntity.setValue(20.0);
+        AllocatedStock allocatedStock = new AllocatedStock(itemQuantityEntity, site.getBpns(), false, address.getBpna(),
+            new Date());
+        position.setAllocatedStocks(Set.of(allocatedStock));
+
+        String supplierOrderId = "abc123";
+        String customerOrderId = "def456";
+        String customerOrderPositionId = "ghi789";
+
+        OrderPositionReference orderPositionReference = new OrderPositionReference(supplierOrderId, customerOrderId, customerOrderPositionId);
+        position.setOrderPositionReference(orderPositionReference);
+        itemStockSamm.setPositions(Set.of(position));
+
+        // then
+        List<MaterialItemStock> resultList = itemStockSammMapper.erpSammToMaterialItemStock(itemStockSamm, customerPartner, semiconductorMaterial);
+
+        Assertions.assertEquals(1, resultList.size());
+        MaterialItemStock materialItemStock = resultList.getFirst();
+        Assertions.assertEquals(materialItemStock.getLocationBpna(), address.getBpna());
+        Assertions.assertEquals(materialItemStock.getLocationBpns(), site.getBpns());
+        Assertions.assertEquals(materialItemStock.getQuantity(), 20.0);
+        Assertions.assertEquals(materialItemStock.getMeasurementUnit(), ItemUnitEnumeration.UNIT_PIECE);
+        Assertions.assertEquals(materialItemStock.getMaterial(), semiconductorMaterial);
+        Assertions.assertEquals(materialItemStock.getCustomerOrderId(), customerOrderId);
+        Assertions.assertEquals(materialItemStock.getCustomerOrderPositionId(), customerOrderPositionId);
+        Assertions.assertEquals(materialItemStock.getSupplierOrderId(), supplierOrderId);
+        Assertions.assertFalse(materialItemStock.isBlocked());
+    }
+
+    @Test
+    @Order(6)
+    void testErpProductItemStockMapping() {
+        // given
+        Material semiconductorMaterial = Material.builder()
+            .ownMaterialNumber(CUSTOMER_MAT_NUMBER)
+            .materialFlag(true)
+            .productFlag(false)
+            .name("Semiconductor")
+            .build();
+
+        Site site = supplierPartner.getSites().getFirst();
+        Address address = site.getAddresses().first();
+
+        ItemStockSamm itemStockSamm = new ItemStockSamm();
+        itemStockSamm.setDirection(DirectionCharacteristic.OUTBOUND);
+        itemStockSamm.setMaterialGlobalAssetId(CX_MAT_NUMBER);
+        Position position = new Position();
+        ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity();
+        itemQuantityEntity.setUnit(ItemUnitEnumeration.UNIT_PIECE);
+        itemQuantityEntity.setValue(20.0);
+        AllocatedStock allocatedStock = new AllocatedStock(itemQuantityEntity, site.getBpns(), false, address.getBpna(),
+            new Date());
+        position.setAllocatedStocks(Set.of(allocatedStock));
+
+        String supplierOrderId = "abc123";
+        String customerOrderId = "def456";
+        String customerOrderPositionId = "ghi789";
+
+        OrderPositionReference orderPositionReference = new OrderPositionReference(supplierOrderId, customerOrderId, customerOrderPositionId);
+        position.setOrderPositionReference(orderPositionReference);
+
+        itemStockSamm.setPositions(Set.of(position));
+
+        // then
+        List<ProductItemStock> resultList = itemStockSammMapper.erpSammToProductItemStock(itemStockSamm, supplierPartner, semiconductorMaterial);
+
+        Assertions.assertEquals(1, resultList.size());
+        ProductItemStock productItemStock = resultList.getFirst();
+        Assertions.assertEquals(productItemStock.getLocationBpna(), address.getBpna());
+        Assertions.assertEquals(productItemStock.getLocationBpns(), site.getBpns());
+        Assertions.assertEquals(productItemStock.getQuantity(), 20.0);
+        Assertions.assertEquals(productItemStock.getMeasurementUnit(), ItemUnitEnumeration.UNIT_PIECE);
+        Assertions.assertEquals(productItemStock.getMaterial(), semiconductorMaterial);
+        Assertions.assertEquals(productItemStock.getCustomerOrderId(), customerOrderId);
+        Assertions.assertEquals(productItemStock.getCustomerOrderPositionId(), customerOrderPositionId);
+        Assertions.assertEquals(productItemStock.getSupplierOrderId(), supplierOrderId);
+        Assertions.assertFalse(productItemStock.isBlocked());
     }
 
     private List<? extends ItemStock> filterReportedItemStock(List<? extends ItemStock> reportedProductItemStocks, AllocatedStock allocatedStock, Position position, String cxMaterialNumber) {

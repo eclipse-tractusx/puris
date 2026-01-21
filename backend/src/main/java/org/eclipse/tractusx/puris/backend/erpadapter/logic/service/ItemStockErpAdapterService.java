@@ -64,6 +64,7 @@ public class ItemStockErpAdapterService {
 
     @Autowired
     private MaterialItemStockService materialItemStockService;
+
     @Autowired
     private ProductItemStockService productItemStockService;
 
