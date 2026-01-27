@@ -41,7 +41,7 @@ body:json {
 }
 
 tests {
-  test("response is ok", function() {
-      expect(res.getStatus()).to.equal(200);
+  test("request fails", function() {
+      expect(res.getStatus()).to.equal(400);
   })
 }

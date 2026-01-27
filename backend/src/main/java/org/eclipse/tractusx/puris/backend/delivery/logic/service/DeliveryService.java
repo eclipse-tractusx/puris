@@ -36,8 +36,10 @@ import java.util.stream.Stream;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.Delivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.EventTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.repository.DeliveryRepository;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,9 @@ public abstract class DeliveryService<T extends Delivery> {
 
     @Autowired
     private PartnerService partnerService;
+
+    @Autowired
+    private MaterialPartnerRelationService mprService;
 
     private Partner ownPartnerEntity;
     
@@ -219,8 +224,8 @@ public abstract class DeliveryService<T extends Delivery> {
         if (ownPartnerEntity == null) {
             ownPartnerEntity = partnerService.getOwnPartnerEntity();
         }
-        var ownSites = ownPartnerEntity.getSites();
         var partnerSites = delivery.getPartner().getSites();
+        MaterialPartnerRelation mpr = mprService.find(delivery.getPartner().getBpnl(), delivery.getMaterial().getOwnMaterialNumber());
 
         if (delivery.getIncoterm() == null) {
             errors.add("Missing Incoterm.");
@@ -230,13 +235,13 @@ public abstract class DeliveryService<T extends Delivery> {
                     if (!delivery.getMaterial().isProductFlag()) {
                         errors.add(String.format("Material '%s' must be configured as product via flag (incoterm '%s' with supplier responsibility).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue()));
                     }
-                    errors.addAll(validateLocationsAsSupplier(delivery, ownSites, partnerSites));
+                    errors.addAll(validateLocationsAsSupplier(delivery, mpr.getOwnProducingSites(), partnerSites));
                     break;
                 case CUSTOMER:
                     if (!delivery.getMaterial().isMaterialFlag()) {
                         errors.add(String.format("Material '%s' must be configured as material via flag (incoterm '%s' with customer responsibility).", delivery.getMaterial().getOwnMaterialNumber(), delivery.getIncoterm().getValue()));
                     }
-                    errors.addAll(validateLocationsAsCustomer(delivery, ownSites, partnerSites));
+                    errors.addAll(validateLocationsAsCustomer(delivery, mpr.getOwnDemandingSites(), partnerSites));
                     break;
                 case PARTIAL:
                     boolean valid = false;
@@ -244,13 +249,13 @@ public abstract class DeliveryService<T extends Delivery> {
                     List<String> customerPathErrors = Collections.emptyList();
 
                     if (delivery.getMaterial().isProductFlag()) {
-                        supplierPathErrors = validateLocationsAsSupplier(delivery, ownSites, partnerSites);
+                        supplierPathErrors = validateLocationsAsSupplier(delivery, mpr.getOwnProducingSites(), partnerSites);
                         if (supplierPathErrors.isEmpty()) {
                             valid = true;
                         }
                     }
                     if (delivery.getMaterial().isMaterialFlag()) {
-                        customerPathErrors = validateLocationsAsCustomer(delivery, ownSites, partnerSites);
+                        customerPathErrors = validateLocationsAsCustomer(delivery, mpr.getOwnDemandingSites(), partnerSites);
                         if (customerPathErrors.isEmpty()) {
                             valid = true;
                         }

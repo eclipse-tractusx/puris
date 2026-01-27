@@ -718,6 +718,20 @@ components:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
+        ownProducingSiteBpnss:
+          items:
+            maxItems: 50
+            pattern: ^BPNS[0-9a-zA-Z]{12}$
+            type: string
+          maxItems: 50
+          type: array
+        ownDemandingSiteBpnss:
+          items:
+            maxItems: 50
+            pattern: ^BPNS[0-9a-zA-Z]{12}$
+            type: string
+          maxItems: 50
+          type: array
         partnerBpnl:
           maxItems: 50
           pattern: ^BPNL[0-9a-zA-Z]{12}$
@@ -1368,6 +1382,19 @@ components:
       required:
       - bpns
       type: object
+    SiteDesignationDto:
+      additionalProperties: false
+      properties:
+        partnerBpnls:
+          items:
+            maxItems: 50
+            pattern: ^BPNL[0-9a-zA-Z]{12}$
+            type: string
+          maxItems: 50
+          type: array
+        site:
+          $ref: '#/components/schemas/Site'
+      type: object
     SiteDto:
       additionalProperties: false
       properties:
@@ -1404,7 +1431,7 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 5.0.0
+  version: 6.0.0
 openapi: 3.1.0
 paths:
   /days-of-supply/customer:
@@ -3034,6 +3061,39 @@ paths:
       summary: Gets all materials
       tags:
       - material-controller
+  /materials/producing-sites:
+    get:
+      description: Returns the designated producing sites for the given material.
+        Each site includes the partner BPNLs it produces this material for.
+      operationId: getProducingSitesByMaterial
+      parameters:
+      - description: The Material Number that is used in your own company to identify
+          the Material, encoded in base64
+        in: query
+        name: ownMaterialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/SiteDesignationDto'
+                maxItems: 50
+                type: array
+          description: Returns the requested Site Designations.
+        '400':
+          description: Invalid parameter
+        '404':
+          description: Requested Material was not found.
+      summary: Gets designated producing sites for the material.
+      tags:
+      - material-controller
   /materials/refresh:
     get:
       description: Requests material data for the given material from all partners
@@ -3057,6 +3117,39 @@ paths:
                 type: string
           description: OK
       summary: Refreshes partner data for specified material
+      tags:
+      - material-controller
+  /materials/demanding-sites:
+    get:
+      description: Returns the designated demanding sites for the given material. Each
+        site includes the partner BPNLs it receives this material from.
+      operationId: getDemandingSitesByMaterial
+      parameters:
+      - description: The Material Number that is used in your own company to identify
+          the Material, encoded in base64
+        in: query
+        name: ownMaterialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/SiteDesignationDto'
+                maxItems: 50
+                type: array
+          description: Returns the requested Site Designations.
+        '400':
+          description: Invalid parameter
+        '404':
+          description: Requested Material was not found.
+      summary: Gets designated demanding sites for the material.
       tags:
       - material-controller
   /partners:

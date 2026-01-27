@@ -29,6 +29,7 @@ import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthentica
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialEntityDto;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRefreshService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.junit.jupiter.api.Test;
@@ -63,6 +64,9 @@ public class MaterialControllerTest {
 
     @MockBean 
     private MaterialRefreshService materialRefreshService;
+
+    @MockBean
+    private MaterialPartnerRelationService materialPartnerRelationService;
 
     private final ModelMapper modelMapper = new ModelMapper();
     private final String materialNumber = "MNR-7307-AU340474.001";

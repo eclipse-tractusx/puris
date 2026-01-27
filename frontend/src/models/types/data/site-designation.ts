@@ -1,6 +1,6 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2025 Volkswagen AG
+Copyright (c) 2025 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -18,20 +18,10 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { UUID } from 'crypto';
-import { UnitOfMeasurementKey } from './uom';
-import { BPNL, BPNS } from '../edc/bpn';
-import { DemandCategoryCode } from './demand-category';
+import { BPNL } from "../edc/bpn";
+import { Site } from "../edc/site"
 
-export type Demand = {
-  uuid?: UUID;
-  ownMaterialNumber: string;
-  demandLocationBpns: BPNS;
-  partnerBpnl: BPNL;
-  supplierLocationBpns?: string;
-  quantity: number;
-  measurementUnit: UnitOfMeasurementKey;
-  day: Date;
-  demandCategoryCode: DemandCategoryCode;
-  lastUpdatedOnDateTime: Date;
+export type SiteDesignation = {
+    site: Site;
+    partnerBpnls: BPNL[];
 }

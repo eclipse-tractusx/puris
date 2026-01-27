@@ -35,12 +35,14 @@ import { DEMAND_CATEGORY } from '@models/constants/demand-category';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Demand } from '@models/types/data/demand';
 import { getUnitOfMeasurement } from '@util/helpers';
-import { useSites } from '@features/stock-view/hooks/useSites';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { postDemand, updateDemand } from '@services/demands-service';
 import { useNotifications } from '@contexts/notificationContext';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
+import { DirectionType } from '@models/types/erp/directionType';
+import { useSiteDesignations } from '../hooks/useSiteDesignations';
+import { Site } from '@models/types/edc/site';
 
 type DemandCategoryModalProps = {
     open: boolean;
@@ -64,13 +66,14 @@ export const DemandCategoryCreationModal = ({
     demand
 }: DemandCategoryModalProps) => {
     const { notify } = useNotifications();
-    const { sites } = useSites();
     const { partners } = usePartners('material', demand?.ownMaterialNumber ?? null);
     const [temporaryDemand, setTemporaryDemand] = useState<Partial<Demand>>(demand ?? {});
+    const { siteDesignations } = useSiteDesignations(temporaryDemand?.ownMaterialNumber ?? null, DirectionType.Inbound);
     const [formError, setFormError] = useState(false);
     const [originalData, setOriginalData] = useState<Partial<Demand>>(demand ?? {});
     const mode = temporaryDemand?.uuid ? 'edit' : 'create';
     const isFormChanged = JSON.stringify(temporaryDemand) !== JSON.stringify(originalData);
+    const sites = siteDesignations?.reduce((acc: Site[], sd) => temporaryDemand.partnerBpnl && sd.partnerBpnls.includes(temporaryDemand.partnerBpnl) ? [...acc, sd.site] : acc, []) ?? [];
 
     useEffect(() => {
         setTemporaryDemand(demand ?? {});
@@ -121,7 +124,23 @@ export const DemandCategoryCreationModal = ({
             <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
                 <Grid container spacing={2} padding=".25rem">
                     <GridItem label="Material Number" value={temporaryDemand.ownMaterialNumber ?? ''} />
-
+                    <Grid item xs={6}>
+                        <LabelledAutoComplete
+                            id="partnerBpnl"
+                            options={partners ?? []}
+                            getOptionLabel={(option) => option?.name ?? ''}
+                            isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
+                            value={partners?.find((s) => s.bpnl === temporaryDemand.partnerBpnl) ?? null}
+                            onChange={(_, value) =>
+                                setTemporaryDemand({ ...temporaryDemand, partnerBpnl: value?.bpnl ?? undefined })
+                            }
+                            label="Partner*"
+                            placeholder="Select a Partner"
+                            error={formError && !temporaryDemand?.partnerBpnl}
+                            data-testid="demand-partner-field"
+                            disabled={mode === 'edit'}
+                        />
+                    </Grid>
                     <Grid item xs={6}>
                         <LabelledAutoComplete
                             id="demandLocationBpns"
@@ -132,14 +151,33 @@ export const DemandCategoryCreationModal = ({
                             onChange={(_, value) =>
                                 setTemporaryDemand({ ...temporaryDemand, demandLocationBpns: value?.bpns ?? undefined })
                             }
-                            value={sites?.find((s: any) => s.bpns === temporaryDemand.demandLocationBpns) ?? null}
+                            value={sites?.find((s: Site) => s.bpns === temporaryDemand.demandLocationBpns) ?? null}
                             label="Demand Site*"
                             placeholder="Select a Site"
                             data-testid="demand-location-field"
-                            disabled={mode === 'edit'}
+                            disabled={mode === 'edit' || !temporaryDemand?.partnerBpnl}
                         />
                     </Grid>
-
+                    <Grid item xs={6}>
+                        <LabelledAutoComplete
+                            id="supplierLocationBpns"
+                            options={partners?.find((s) => s.bpnl === temporaryDemand.partnerBpnl)?.sites ?? []}
+                            getOptionLabel={(option) => option.name ?? ''}
+                            disabled={!temporaryDemand?.partnerBpnl || mode === 'edit'}
+                            isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
+                            onChange={(_, value) =>
+                                setTemporaryDemand({ ...temporaryDemand, supplierLocationBpns: value?.bpns ?? undefined })
+                            }
+                            value={
+                                partners
+                                    ?.find((s) => s.bpnl === temporaryDemand.partnerBpnl)
+                                    ?.sites.find((s) => s.bpns === temporaryDemand.supplierLocationBpns) ?? null
+                            }
+                            label="Expected Supplier Site"
+                            placeholder="Select a Site"
+                            data-testid="demand-supplier-site-field"
+                        />
+                    </Grid>
                     <Grid item xs={6}>
                         <FormLabel sx={{ marginBottom: '.5rem', display: 'block' }}>Day*</FormLabel>
                         <div className="date-picker" data-testid="demand-day-field">
@@ -214,45 +252,6 @@ export const DemandCategoryCreationModal = ({
                             error={formError && !temporaryDemand?.measurementUnit}
                             data-testid="demand-uom-field"
                             disabled={mode === 'edit'}
-                        />
-                    </Grid>
-
-                    <Grid item xs={6}>
-                        <LabelledAutoComplete
-                            id="partnerBpnl"
-                            options={partners ?? []}
-                            getOptionLabel={(option) => option?.name ?? ''}
-                            isOptionEqualToValue={(option, value) => option?.uuid === value?.uuid}
-                            value={partners?.find((s) => s.bpnl === temporaryDemand.partnerBpnl) ?? null}
-                            onChange={(_, value) =>
-                                setTemporaryDemand({ ...temporaryDemand, partnerBpnl: value?.bpnl ?? undefined })
-                            }
-                            label="Partner*"
-                            placeholder="Select a Partner"
-                            error={formError && !temporaryDemand?.partnerBpnl}
-                            data-testid="demand-partner-field"
-                            disabled={mode === 'edit'}
-                        />
-                    </Grid>
-
-                    <Grid item xs={6}>
-                        <LabelledAutoComplete
-                            id="supplierLocationBpns"
-                            options={partners?.find((s) => s.bpnl === temporaryDemand.partnerBpnl)?.sites ?? []}
-                            getOptionLabel={(option) => option.name ?? ''}
-                            disabled={!temporaryDemand?.partnerBpnl || mode === 'edit'}
-                            isOptionEqualToValue={(option, value) => option?.bpns === value.bpns}
-                            onChange={(_, value) =>
-                                setTemporaryDemand({ ...temporaryDemand, supplierLocationBpns: value?.bpns ?? undefined })
-                            }
-                            value={
-                                partners
-                                    ?.find((s) => s.bpnl === temporaryDemand.partnerBpnl)
-                                    ?.sites.find((s) => s.bpns === temporaryDemand.supplierLocationBpns) ?? null
-                            }
-                            label="Expected Supplier Site"
-                            placeholder="Select a Site"
-                            data-testid="demand-supplier-site-field"
                         />
                     </Grid>
                 </Grid>

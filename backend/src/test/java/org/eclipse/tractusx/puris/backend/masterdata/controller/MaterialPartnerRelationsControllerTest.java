@@ -44,6 +44,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Base64;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -91,7 +92,7 @@ public class MaterialPartnerRelationsControllerTest {
         String partnerMaterialNumber = "MNR-8101-ID146955.001";
         System.out.println(partnerMaterialNumber + " -> " + new String(Base64.getEncoder().encode(partnerMaterialNumber.getBytes())));
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
-            true, true);
+            true, true, new TreeSet<>(), new TreeSet<>());
 
         MaterialPartnerRelationDto dto = new MaterialPartnerRelationDto(
             materialNumber,
@@ -131,7 +132,7 @@ public class MaterialPartnerRelationsControllerTest {
 
         String partnerMaterialNumber = "MNR-8101-ID146955.002";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
-            true, true);
+            true, true, new TreeSet<>(), new TreeSet<>());
 
         MaterialPartnerRelationDto dto = new MaterialPartnerRelationDto(
             materialNumber,
@@ -160,12 +161,12 @@ public class MaterialPartnerRelationsControllerTest {
         // given
         String partnerMaterialNumber = "MNR-8101-ID146955.001";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
-            true, true);
+            true, true, new TreeSet<>(), new TreeSet<>());
 
 
         String partnerMaterialNumber2 = "MNR-8101-ID146955.002";
         MaterialPartnerRelation newMpr2 = new MaterialPartnerRelation(material, partner, partnerMaterialNumber2,
-            true, true);
+            true, true, new TreeSet<>(), new TreeSet<>());
 
         // when
         when(partnerService.findByBpnl(anyString())).thenReturn(partner);
@@ -199,12 +200,12 @@ public class MaterialPartnerRelationsControllerTest {
 
         String partnerMaterialNumber = "MNR-8101-ID146955.001";
         MaterialPartnerRelation newMpr = new MaterialPartnerRelation(material, partner, partnerMaterialNumber,
-            true, true);
+            true, true, new TreeSet<>(), new TreeSet<>());
 
 
         String partnerMaterialNumber2 = "MNR-8101-ID146955.002";
         MaterialPartnerRelation newMpr2 = new MaterialPartnerRelation(material, partner, partnerMaterialNumber2,
-            true, true);
+            true, true, new TreeSet<>(), new TreeSet<>());
 
 
         // when

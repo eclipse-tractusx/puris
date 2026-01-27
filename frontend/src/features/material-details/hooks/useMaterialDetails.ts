@@ -22,7 +22,6 @@ import { useDelivery } from '@features/material-details/hooks/useDelivery';
 import { useDemand } from '@features/material-details/hooks/useDemand';
 import { useProduction } from '@features/material-details/hooks/useProduction';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
-import { useSites } from '@features/stock-view/hooks/useSites';
 import { useStocks } from '@features/stock-view/hooks/useStocks';
 import { Partner } from '@models/types/edc/partner';
 import { DirectionType } from '@models/types/erp/directionType';
@@ -37,6 +36,7 @@ import { Delivery } from '@models/types/data/delivery';
 import { Stock } from '@models/types/data/stock';
 import { useDaysOfSupply } from './useDaysOfSupply';
 import { Supply } from '@models/types/data/supply';
+import { useSiteDesignations } from './useSiteDesignations';
 
 export type DataCategory = 'production' | 'demand' | 'stock' | 'delivery' | 'supply' | 'partner-data';
 
@@ -49,7 +49,7 @@ export type DataCategoryTypeMap = {
 }
 
 export function useMaterialDetails(materialNumber: string, direction: DirectionType) {
-    const { sites, isLoadingSites } = useSites();
+    const { siteDesignations, isLoadingSiteDesignations } = useSiteDesignations(materialNumber, direction);
     const { productions, isLoadingProductions, refreshProduction } = useProduction(materialNumber ?? null, null);
     const { demands, isLoadingDemands, refreshDemand } = useDemand(materialNumber ?? null, null);
     const { deliveries, isLoadingDeliveries, refreshDelivery } = useDelivery(materialNumber ?? null, null);
@@ -97,7 +97,7 @@ export function useMaterialDetails(materialNumber: string, direction: DirectionT
         isLoadingStocks ||
         isLoadingSupply ||
         isLoadingPartners ||
-        isLoadingSites ||
+        isLoadingSiteDesignations ||
         isLoadingReportedProductions ||
         isLoadingReportedDemands ||
         isLoadingReportedStocks;
@@ -112,7 +112,7 @@ export function useMaterialDetails(materialNumber: string, direction: DirectionT
         deliveries,
         stocks,
         supplies,
-        sites,
+        siteDesignations,
         expandablePartners,
         reportedProductions,
         reportedDemands,

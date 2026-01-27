@@ -31,8 +31,8 @@ tests {
   
   const responseJson = res.getBody();
   
-  test("Verify response contains two product stock objects", function () {
-      expect(responseJson).to.be.an("array").with.lengthOf(2);
+  test("Verify response contains one product stock object", function () {
+      expect(responseJson).to.be.an("array").with.lengthOf(1);
   });
   
   test("Verify stock composition NY (material number with BPNS, BPNA and Partner BPNL)", function () {
@@ -65,25 +65,5 @@ tests {
       expect(stockNy).to.have.property("partner");
       expect(stockNy.partner).to.have.property("bpnl");
       expect(stockNy.partner.bpnl).to.equal(bru.getEnvVar("CUSTOMER_BPNL"));
-  });
-  
-  test("Verify stock composition LA (material number with BPNS, BPNA and Partner BPNL)", function () {
-      const stockLa = responseJson.find(function (stock) {
-          return stock.stockLocationBpns === bru.getEnvVar("SUPPLIER_BPNS2");
-      });
-  
-      expect(stockLa).to.have.property("material");
-      expect(stockLa.material).to.have.property("materialNumberSupplier");
-      expect(stockLa.material.materialNumberSupplier).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
-  
-      expect(stockLa).to.have.property("stockLocationBpns");
-      expect(stockLa.stockLocationBpns).to.equal(bru.getEnvVar("SUPPLIER_BPNS2"));
-  
-      expect(stockLa).to.have.property("stockLocationBpna");
-      expect(stockLa.stockLocationBpna).to.equal(bru.getEnvVar("SUPPLIER_BPNA2"));
-  
-      expect(stockLa).to.have.property("partner");
-      expect(stockLa.partner).to.have.property("bpnl");
-      expect(stockLa.partner.bpnl).to.equal(bru.getEnvVar("CUSTOMER_BPNL"));
   });
 }
