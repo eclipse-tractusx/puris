@@ -21,6 +21,7 @@ The **need for configuration updates** is **marked bold**.
   - updated user guide ([#1070](https://github.com/eclipse-tractusx/puris/pull/1070))
 - Added component to copy text to clipboard for puris frontend ([#1058](https://github.com/eclipse-tractusx/puris/pull/1058))
 - Added version to about license ([#1067](https://github.com/eclipse-tractusx/puris/pull/1067))
+- Added update flow to Material Details View buttons ([#1034](https://github.com/eclipse-tractusx/puris/pull/1034))
 
 ### Changed
 
@@ -283,7 +284,6 @@ The **need for configuration updates** is **marked bold**.
 - Added improved error messages for refresh materials ([#995](https://github.com/eclipse-tractusx/puris/pull/995))
 - Added Material Number in material details view ([#1005](https://github.com/eclipse-tractusx/puris/pull/1005))
 - added formula support for excel imports ([#1020](https://github.com/eclipse-tractusx/puris/pull/1020))
-- Added update flow to Material Details View buttons ([#1034](https://github.com/eclipse-tractusx/puris/pull/1034))
 
 ### Changed
 
