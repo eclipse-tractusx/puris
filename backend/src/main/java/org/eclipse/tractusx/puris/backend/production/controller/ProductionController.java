@@ -152,6 +152,14 @@ public class ProductionController {
             return dto;
         } catch (KeyAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Production already exists. Use PUT instead.");
+        } catch (DuplicateEntityException e) {
+            ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+            pd.setTitle("Production already exists");
+            pd.setDetail("One or more productions already exist. Use PUT instead.");
+            pd.setProperty("existingId", e.getConflictingId());
+            pd.setProperty("quantity", e.getQuantity());
+            pd.setProperty("measurementUnit", e.getMeasurementUnit());
+            throw new ErrorResponseException(HttpStatus.CONFLICT, pd, null);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Production is invalid.");
         }
@@ -192,14 +200,8 @@ public class ProductionController {
                 materialService.updateTimestamp(entity.getMaterial().getOwnMaterialNumber());
                 return convertToDto(entity);
             }).collect(Collectors.toList());
-        } catch (DuplicateEntityException e) {
-            ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
-            pd.setTitle("Production already exists");
-            pd.setDetail("One or more productions already exist. Use PUT instead.");
-            pd.setProperty("existingId", e.getConflictingId());
-            pd.setProperty("quantity", e.getQuantity());
-            pd.setProperty("measurementUnit", e.getMeasurementUnit());
-            throw new ErrorResponseException(HttpStatus.CONFLICT, pd, null);
+        } catch (KeyAlreadyExistsException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "One or more productions already exist. Use PUT instead.");
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or more productions are invalid.");
         }      

@@ -102,12 +102,12 @@ public abstract class Demand {
         }
 
         final Demand that = (Demand) o;
-        return this.getMaterial().getOwnMaterialNumber().equals(that.getMaterial().getOwnMaterialNumber()) &&
-                this.getPartner().getUuid().equals(that.getPartner().getUuid()) &&
-                Objects.equals(toLocalDate(this.getDay()), toLocalDate(that.getDay())) &&
-                this.getDemandCategoryCode().getValue().equals(that.getDemandCategoryCode().getValue()) &&
-                this.getDemandLocationBpns().equals(that.getDemandLocationBpns()) &&
-                this.getSupplierLocationBpns().equals(that.getSupplierLocationBpns());
+        return Objects.equals(this.getMaterial().getOwnMaterialNumber(), that.getMaterial().getOwnMaterialNumber()) &&
+            Objects.equals(this.getPartner().getUuid(), that.getPartner().getUuid()) &&
+            Objects.equals(toLocalDate(this.getDay()), toLocalDate(that.getDay())) &&
+            Objects.equals(this.getDemandCategoryCode().getValue(), that.getDemandCategoryCode().getValue()) &&
+            Objects.equals(this.getDemandLocationBpns(), that.getDemandLocationBpns()) &&
+            Objects.equals(this.getSupplierLocationBpns(), that.getSupplierLocationBpns());
     }
 
     @Override

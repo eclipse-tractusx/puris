@@ -20,6 +20,7 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.domain.model;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
@@ -127,8 +128,8 @@ public abstract class Delivery {
             Objects.equals(this.getDestinationBpna(), that.getDestinationBpna()) &&
             this.getOriginBpns().equals(that.getOriginBpns()) &&
             Objects.equals(this.getOriginBpna(), that.getOriginBpna()) &&
-            this.getDateOfDeparture().equals(that.getDateOfDeparture()) &&
-            this.getDateOfArrival().equals(that.getDateOfArrival()) &&
+            Objects.equals(toInstant(this.getDateOfDeparture()), toInstant(that.getDateOfDeparture())) &&
+            Objects.equals(toInstant(this.getDateOfArrival()),   toInstant(that.getDateOfArrival())) &&
             this.getDepartureType().equals(that.getDepartureType()) &&
             this.getArrivalType().equals(that.getArrivalType()) &&
             this.getIncoterm().equals(that.getIncoterm()) &&
@@ -148,5 +149,9 @@ public abstract class Delivery {
             destinationBpns, destinationBpna, originBpns, originBpna,
             dateOfDeparture, dateOfArrival, departureType, arrivalType
         );
+    }
+
+    private static Instant toInstant(Date d) {
+        return d == null ? null : d.toInstant();
     }
 }
