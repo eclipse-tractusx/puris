@@ -22,6 +22,7 @@ The **need for configuration updates** is **marked bold**.
 - Added component to copy text to clipboard for puris frontend ([#1058](https://github.com/eclipse-tractusx/puris/pull/1058))
 - Added version to about license ([#1067](https://github.com/eclipse-tractusx/puris/pull/1067))
 - Added site designations per material partner relationhip ([#1061](https://github.com/eclipse-tractusx/puris/pull/1061))
+- Added site designations per material partner relationhip in the frontend and display in table ([#1073](https://github.com/eclipse-tractusx/puris/pull/1073))
 
 ### Changed
 
