@@ -22,11 +22,13 @@ import { useNotifications } from '@contexts/notificationContext';
 import { Material } from '@models/types/data/stock';
 import { Close, Send } from '@mui/icons-material';
 import { Input } from '@catena-x/portal-shared-components';
-import { Box, Button, Checkbox, Dialog, DialogTitle, Grid, InputLabel, Stack } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, Dialog, DialogTitle, Grid, InputLabel, Stack } from '@mui/material';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { Partner } from '@models/types/edc/partner';
 import { MaterialPartnerRelation } from '@models/types/data/material-partner-relation';
 import { InfoButton } from '@components/ui/InfoButton';
+import { useOwnPartner } from '@hooks/useOwnPartner';
+import { BPNS } from '@models/types/edc/bpn';
 
 const isValidMpr = (mpr: Partial<MaterialPartnerRelation>) =>
     !!mpr.ownMaterialNumber?.trim() &&
@@ -48,6 +50,12 @@ export const MaterialPartnerRelationModal = ({ open, materials, partners, mprs, 
     const [formError, setFormError] = useState(false);
     const { notify } = useNotifications();
     const selectedMaterial = materials.find((mat) => mat.ownMaterialNumber === temporaryMpr.ownMaterialNumber);
+    const { ownPartner } = useOwnPartner();
+    const siteOptions = (ownPartner?.sites ?? []).map((s) => s.bpns);
+    const getSiteLabel = (bpns: BPNS) => {
+    const s = ownPartner?.sites.find((x) => x.bpns === bpns);
+        return `${s?.name ?? bpns} (${bpns})`;
+    };
     const validMaterials = materials.filter((mat) => !mprs.some((existingMpr) =>
             existingMpr.ownMaterialNumber === mat.ownMaterialNumber &&
             existingMpr.partnerBpnl === temporaryMpr.partnerBpnl
@@ -67,15 +75,21 @@ export const MaterialPartnerRelationModal = ({ open, materials, partners, mprs, 
             partnerMaterialNumber: '',
             partnerSuppliesMaterial: false,
             partnerBuysMaterial: false,
+            ownDemandingSiteBpnss: [],
+            ownProducingSiteBpnss: [],
         });
     }, [open, setTemporaryMpr]);
 
     const handleMaterialChange = (_: SyntheticEvent, value: Material | null) => {
+        const supplies = !!value?.materialFlag;
+        const buys = !!value?.productFlag;
         setTemporaryMpr({
             ...temporaryMpr,
             ownMaterialNumber: value?.ownMaterialNumber ?? '',
             partnerSuppliesMaterial: value?.materialFlag,
             partnerBuysMaterial: value?.productFlag,
+            ...(supplies ? {} : { ownStockingSiteBpnss: [] }),
+            ...(buys ? {} : { ownProducingSiteBpnss: [] }),
         });
     };
 
@@ -109,6 +123,9 @@ export const MaterialPartnerRelationModal = ({ open, materials, partners, mprs, 
         handleClose();
     };
 
+    const showStockingSites = !!temporaryMpr.partnerSuppliesMaterial;
+    const showProducingSites = !!temporaryMpr.partnerBuysMaterial;
+
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle variant="h3" textAlign="center">
@@ -140,10 +157,12 @@ export const MaterialPartnerRelationModal = ({ open, materials, partners, mprs, 
                                 getOptionLabel={(option) => `${option.name} (${option.bpnl})`}
                                 isOptionEqualToValue={(option, value) => option?.bpnl === value.bpnl}
                                 onChange={(_, value) =>
-                                    setTemporaryMpr({
-                                        ...temporaryMpr,
+                                    setTemporaryMpr((prev) => ({
+                                        ...prev,
                                         partnerBpnl: value?.bpnl ?? '',
-                                    })
+                                        ownStockingSiteBpnss: [],
+                                        ownProducingSiteBpnss: [],
+                                    }))
                                 }
                                 value={validPartners.find((p) => p.bpnl === temporaryMpr.partnerBpnl) ?? null}
                                 label="Partner*"
@@ -180,7 +199,13 @@ export const MaterialPartnerRelationModal = ({ open, materials, partners, mprs, 
                                         id="partnerSuppliesMaterial"
                                         disabled={!selectedMaterial?.materialFlag || !selectedMaterial.productFlag}
                                         checked={temporaryMpr?.partnerSuppliesMaterial ?? false}
-                                        onChange={(event) => setTemporaryMpr({ ...temporaryMpr, partnerSuppliesMaterial: event.target.checked })}
+                                        onChange={(event) =>
+                                            setTemporaryMpr((prev) => ({
+                                                ...prev,
+                                                partnerSuppliesMaterial: event.target.checked,
+                                                ...(event.target.checked ? {} : { ownStockingSiteBpnss: [] }),
+                                            }))
+                                        }
                                         data-testid="mpr-modal-partner-supplies-material"
                                         />
                                     <InputLabel htmlFor="partnerSuppliesMaterial"> supplies material </InputLabel>
@@ -188,14 +213,63 @@ export const MaterialPartnerRelationModal = ({ open, materials, partners, mprs, 
                                         id="partnerBuysMaterial"
                                         disabled={!selectedMaterial?.materialFlag || !selectedMaterial.productFlag}
                                         checked={temporaryMpr?.partnerBuysMaterial ?? false}
-                                        onChange={(event) => setTemporaryMpr({ ...temporaryMpr, partnerBuysMaterial: event.target.checked })}
+                                        onChange={(event) =>
+                                            setTemporaryMpr((prev) => ({
+                                                ...prev,
+                                                partnerBuysMaterial: event.target.checked,
+                                                ...(event.target.checked ? {} : { ownProducingSiteBpnss: [] }),
+                                            }))
+                                        }
                                         data-testid="mpr-modal-partner-buys-material"
                                         />
                                     <InputLabel htmlFor="partnerBuysMaterial"> buys material </InputLabel>
                                 </Stack>
                             </Stack>
                         </Grid>
-                            
+                        {showStockingSites && (
+                            <Grid item xs={12}>
+                                <InputLabel>Demanding Sites</InputLabel>
+                                <Autocomplete
+                                    id="own-demanding-sites"
+                                    multiple
+                                    options={siteOptions}
+                                    value={temporaryMpr.ownDemandingSiteBpnss ?? []}
+                                    getOptionLabel={getSiteLabel}
+                                    isOptionEqualToValue={(o, v) => o === v}
+                                    renderInput={(params) => (
+                                        <Input {...params} hiddenLabel placeholder="Select Demanding Sites of Partner" />
+                                    )}
+                                    onChange={(_, value) =>
+                                        setTemporaryMpr((prev) => ({
+                                            ...prev,
+                                            ownDemandingSiteBpnss: value ?? [],
+                                        }))
+                                    }
+                                    />
+                            </Grid>
+                        )}
+                        {showProducingSites && (
+                            <Grid item xs={12}>
+                                <InputLabel>Producing Sites</InputLabel>
+                                <Autocomplete
+                                    id="own-producing-sites"
+                                    multiple
+                                    options={siteOptions}
+                                    value={temporaryMpr.ownProducingSiteBpnss ?? []}
+                                    getOptionLabel={getSiteLabel}
+                                    isOptionEqualToValue={(o, v) => o === v}
+                                    renderInput={(params) => (
+                                        <Input {...params} hiddenLabel placeholder="Select Producing Sites of Partner" />
+                                    )}
+                                    onChange={(_, value) =>
+                                        setTemporaryMpr((prev) => ({
+                                            ...prev,
+                                            ownProducingSiteBpnss: value ?? [],
+                                        }))
+                                    }
+                                />
+                            </Grid>
+                        )}    
                     </>
                 </Grid>
                 <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="1rem">
