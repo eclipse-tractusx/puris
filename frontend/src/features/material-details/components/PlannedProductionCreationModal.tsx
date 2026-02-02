@@ -20,7 +20,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -40,9 +40,11 @@ import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { useSites } from '@features/stock-view/hooks/useSites';
-import { postProduction, updateProduction } from '@services/productions-service';
+import { postProduction, putProduction, updateProduction } from '@services/productions-service';
 import { useNotifications } from '@contexts/notificationContext';
 import { GridItem } from '@components/ui/GridItem';
+import { ConfirmUpdateDialog, ConfirmUpdateHandle } from './UpdateModal';
+import { UUID } from 'crypto';
 
 type ProductionCategoryCreationModalProps = {
     open: boolean;
@@ -71,6 +73,7 @@ export const PlannedProductionCreationModal = ({
     const { sites } = useSites();
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
+    const confirmRef = useRef<ConfirmUpdateHandle>(null);
     const [originalData, setOriginalData] = useState<Partial<Production>>(production ?? {});
     const mode = temporaryProduction?.uuid ? 'edit' : 'create';
     const isFormChanged = JSON.stringify(temporaryProduction) !== JSON.stringify(originalData);
@@ -105,15 +108,55 @@ export const PlannedProductionCreationModal = ({
                     description: successDescription,
                     severity: 'success',
                 });
+                handleClose();
             })
-            .catch((error) => {
-                notify({
-                    title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                    description: error.status === 409 ? 'Production conflicting with an existing one' : error.error,
-                    severity: 'error',
-                });
-            })
-            .finally(() => handleClose());
+            .catch(async (error) => {
+                if (error?.status === 409) {
+                    const existing: UUID | undefined = error?.existingId ?? undefined;
+                    if (!existing) {
+                        notify({
+                            title: 'Conflict',
+                            description: 'Date conflicting with another Production',
+                            severity: 'error',
+                        });
+                        return;
+                    }
+                    const message =
+                        `There is already a production matching your criteria with a quantity ` +
+                        `${error?.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === error?.measurementUnit)?.value ?? error?.measurementUnit}. ` +
+                        `Do you want to update to ${temporaryProduction.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === temporaryProduction.measurementUnit)?.value ?? temporaryProduction.measurementUnit}?`;
+                    const confirmed = await confirmRef.current?.open({message});
+                    if (confirmed) {
+                        try {
+                            const updated = await putProduction({
+                                ...temporaryProduction,
+                                uuid: existing,
+                                lastUpdatedOnDateTime: new Date().toISOString(),
+                            });
+                            onSave(updated);
+                            notify({ 
+                                title: 'Production Updated', 
+                                description: 'The production has been updated successfully', 
+                                severity: 'success' 
+                            });
+                            handleClose();
+                        } 
+                        catch (e: any) {
+                            notify({ 
+                                title: 'Error updating',
+                                description: e?.error ?? 'Unexpected error', severity: 'error' 
+                            });
+                        }
+                    }
+                } else {
+                    notify({
+                        title: 'Error requesting update',
+                        description: error.error,
+                        severity: 'error',
+                    });
+                }
+
+            });
     };
 
     const handleClose = () => {
@@ -258,6 +301,7 @@ export const PlannedProductionCreationModal = ({
                     </Button>
                 </Box>
             </Stack>
+            <ConfirmUpdateDialog ref={confirmRef} />
         </Dialog>
     );
 };

@@ -25,9 +25,9 @@ import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Delivery } from '@models/types/data/delivery';
 import { Close, Save } from '@mui/icons-material';
 import { Box, Button, Dialog, DialogTitle, FormLabel, Grid, Stack, capitalize } from '@mui/material';
-import { postDelivery, updateDelivery } from '@services/delivery-service';
+import { postDelivery, putDelivery, updateDelivery } from '@services/delivery-service';
 import { getUnitOfMeasurement, isValidOrderReference } from '@util/helpers';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { INCOTERMS } from '@models/constants/incoterms';
 import { ARRIVAL_TYPES, DEPARTURE_TYPES } from '@models/constants/event-type';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
@@ -36,6 +36,8 @@ import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
 import { DirectionType } from '@models/types/erp/directionType';
 import { Site } from '@models/types/edc/site';
+import { ConfirmUpdateDialog, ConfirmUpdateHandle } from './UpdateModal';
+import { UUID } from 'crypto';
 
 export type DeliveryInformationCreationModalProps = {
     open: boolean;
@@ -82,6 +84,7 @@ export const DeliveryCreationModal = ({
     const { sites } = useSites();
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
+    const confirmRef = useRef<ConfirmUpdateHandle>(null);
     const mode = temporaryDelivery?.uuid ? 'edit' : 'create';
     const handleSaveClick = () => {
         temporaryDelivery.customerOrderNumber ||= undefined;
@@ -103,15 +106,54 @@ export const DeliveryCreationModal = ({
                     description: successDescription,
                     severity: 'success',
                 });
+                handleClose();
             })
-            .catch((error) => {
-                notify({
-                    title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                    description: error.status === 409 ? 'Delivery conflicting with an existing one' : error.error,
-                    severity: 'error',
-                });
-            })
-            .finally(() => onClose());
+             .catch(async (error) => {
+                if (error?.status === 409) {
+                    const existing: UUID | undefined = error?.existingId ?? undefined;
+                    if (!existing) {
+                        notify({
+                            title: 'Conflict',
+                            description: 'Delivery conflicting with an existing one',
+                            severity: 'error',
+                        });
+                        return;
+                    }
+                    const message =
+                        `There is already a delivery matching your criteria with a quantity ` +
+                        `${error?.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === error?.measurementUnit)?.value ?? error?.measurementUnit}. ` +
+                        `Do you want to update to ${temporaryDelivery.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === temporaryDelivery.measurementUnit)?.value ?? temporaryDelivery.measurementUnit}?`;
+                    const confirmed = await confirmRef.current?.open({ message });
+                    if (confirmed) {
+                        try {
+                            const updated = await putDelivery({
+                                ...temporaryDelivery,
+                                uuid: existing,
+                                lastUpdatedOnDateTime: new Date(),
+                            });
+                            onSave(updated);
+                            notify({
+                                title: 'Delivery Updated',
+                                description: 'The delivery has been updated successfully',
+                                severity: 'success'
+                            });
+                            handleClose();
+                        }
+                        catch (e: any) {
+                            notify({
+                                title: 'Error updating',
+                                description: e?.error ?? 'Unexpected error', severity: 'error'
+                            });
+                        }
+                    }
+                } else {
+                    notify({
+                        title: 'Error requesting update',
+                        description: error.error,
+                        severity: 'error',
+                    });
+                }
+            });
     };
     const handleClose = () => {
         setFormError(false);
@@ -443,6 +485,7 @@ export const DeliveryCreationModal = ({
                         </Button>
                     </Box>
                 </Stack>
+                <ConfirmUpdateDialog ref={confirmRef} />
             </Dialog>
         </>
     );
