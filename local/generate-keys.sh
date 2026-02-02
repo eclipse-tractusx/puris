@@ -21,6 +21,28 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# Define the BPNLs. Allows us to easily create different environments (dev, int)
+CUSTOMER_BPNL=BPNL4444444444XX
+CUSTOMER_BPNS=BPNS4444444444XX
+CUSTOMER_BPNA=BPNA4444444444AA
+SUPPLIER_BPNL=BPNL1234567890ZZ
+SUPPLIER_BPNS=BPNS1234567890ZZ
+SUPPLIER_BPNA=BPNA1234567890AA
+SUPPLIER_BPNS2=BPNS2222222222SS
+SUPPLIER_BPNA2=BPNA2222222222AA
+ISSUER_BPNL=BPNL000000000000
+
+# Define Notification Source & Fordwarding Partner Identifiers (used by supplier)
+NOTIFICATION_SOURCE_PARTNER_BPNL=BPNL8888888888YY
+NOTIFICATION_SOURCE_PARTNER_BPNS=BPNS8888888888YY
+NOTIFICATION_SOURCE_PARTNER_BPNA=BPNA8888888888YY
+
+NOTIFICATION_FORWARDING_PARTNER_BPNL=BPNL9999999999YY
+NOTIFICATION_FORWARDING_PARTNER_BPNS=BPNS9999999999YY
+NOTIFICATION_FORWARDING_PARTNER_BPNA=BPNA9999999999YY
+
+# Define the output file path
+BRUNO_ENV_FILE="./bruno/puris-integration-test/.env"
 
 # generate EDC PW (used for both EDC and BDRS)
 EDC_API_PW=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
@@ -53,7 +75,7 @@ PG_PW=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
 VAULT_SECRETS_DIR=/vault/secrets/
 KC_MIW_ENC=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
 
-CUSTOMER_BPNL=BPNL4444444444XX
+CUSTOMER_BPNL=$CUSTOMER_BPNL
 CUSTOMER_OAUTH_SECRET_ALIAS=customer.miw.secret
 # use hard coded client for now to only have some bearer token for the wallet
 CUSTOMER_OAUTH_CLIENT_ID=miw_private_client
@@ -66,7 +88,7 @@ CUSTOMER_KC_DTR_PURIS_CLIENT_ALIAS=customer.dtr.puris-client.secret
 CUSTOMER_DEMONSTRATOR_ROLE=customer
 CUSTOMER_PURIS_DTR_EDC_ASSET_REGISTER=true
 
-SUPPLIER_BPNL=BPNL1234567890ZZ
+SUPPLIER_BPNL=$SUPPLIER_BPNL
 SUPPLIER_OAUTH_SECRET_ALIAS=supplier.miw.secret
 # use hard coded client for now to only have some bearer token for the wallet
 SUPPLIER_OAUTH_CLIENT_ID=miw_private_client
@@ -155,13 +177,13 @@ if [ -z "\$KEY" ]; then
   exit 1
 fi
 
-curl -X POST -H "x-api-key: \$KEY" -H "Content-Type: application/json" -d '{ "bpn": "BPNL4444444444XX", "did": "did:web:wallet:BPNL4444444444XX" }' http://localhost:8581/api/management/bpn-directory | jq
+curl -X POST -H "x-api-key: \$KEY" -H "Content-Type: application/json" -d '{ "bpn": "$CUSTOMER_BPNL", "did": "did:web:wallet:$CUSTOMER_BPNL" }' http://localhost:8581/api/management/bpn-directory | jq
 echo ""
 
-curl -X POST -H "x-api-key: \$KEY" -H "Content-Type: application/json" -d '{ "bpn": "BPNL1234567890ZZ", "did": "did:web:wallet:BPNL1234567890ZZ" }' http://localhost:8581/api/management/bpn-directory | jq
+curl -X POST -H "x-api-key: \$KEY" -H "Content-Type: application/json" -d '{ "bpn": "$SUPPLIER_BPNL", "did": "did:web:wallet:$SUPPLIER_BPNL" }' http://localhost:8581/api/management/bpn-directory | jq
 echo ""
 
-curl -X POST -H "x-api-key: \$KEY" -H "Content-Type: application/json" -d '{ "bpn": "BPNL000000000000", "did": "did:web:wallet:BPNL000000000000" }' http://localhost:8581/api/management/bpn-directory | jq
+curl -X POST -H "x-api-key: \$KEY" -H "Content-Type: application/json" -d '{ "bpn": "$ISSUER_BPNL", "did": "did:web:wallet:$ISSUER_BPNL" }' http://localhost:8581/api/management/bpn-directory | jq
 echo ""
 EOF
 
@@ -169,13 +191,28 @@ chmod +x seed-bdrs.sh
 
 # generate .env for the bruno collection
 echo "Creating .env for bruno"
-cat << EOF > "./bruno/puris-integration-test/.env"
+cat << EOF > "$BRUNO_ENV_FILE"
 CUSTOMER_PURIS_BACKEND_API_KEY=$CUSTOMER_BACKEND_API_KEY
 CUSTOMER_EDC_API_KEY=$EDC_API_PW
+CUSTOMER_BPNL=$CUSTOMER_BPNL
+CUSTOMER_BPNS=$CUSTOMER_BPNS
+CUSTOMER_BPNA=$CUSTOMER_BPNA
+SUPPLIER_BPNL=$SUPPLIER_BPNL
+SUPPLIER_BPNS=$SUPPLIER_BPNS
+SUPPLIER_BPNA=$SUPPLIER_BPNA
+SUPPLIER_BPNS2=$SUPPLIER_BPNS2
+SUPPLIER_BPNA2=$SUPPLIER_BPNA2
 SUPPLIER_PURIS_BACKEND_API_KEY=$SUPPLIER_BACKEND_API_KEY
 SUPPLIER_EDC_API_KEY=$EDC_API_PW
 CUSTOMER_MANAGE_CLIENT_SECRET=$CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET
 SUPPLIER_MANAGE_CLIENT_SECRET=$SUPPLIER_KC_DTR_PURIS_CLIENT_SECRET
+NOTIFICATION_SOURCE_PARTNER_BPNL=$NOTIFICATION_SOURCE_PARTNER_BPNL
+NOTIFICATION_SOURCE_PARTNER_BPNS=$NOTIFICATION_SOURCE_PARTNER_BPNS
+NOTIFICATION_SOURCE_PARTNER_BPNA=$NOTIFICATION_SOURCE_PARTNER_BPNA
+NOTIFICATION_FORWARDING_PARTNER_BPNL=$NOTIFICATION_FORWARDING_PARTNER_BPNL
+NOTIFICATION_FORWARDING_PARTNER_BPNS=$NOTIFICATION_FORWARDING_PARTNER_BPNS
+NOTIFICATION_FORWARDING_PARTNER_BPNA=$NOTIFICATION_FORWARDING_PARTNER_BPNA
+
 EOF
 
 # let everyone access the files so that the non-root user in vault container can put them
