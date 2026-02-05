@@ -1,0 +1,86 @@
+#######################################################################
+# Copyright (c) 2026 Volkswagen AG
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+#######################################################################
+
+@prefix samm: <urn:samm:org.eclipse.esmf.samm:meta-model:2.1.0#>.
+@prefix samm-c: <urn:samm:org.eclipse.esmf.samm:characteristic:2.1.0#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix : <urn:samm:io.catenax.item_stock_anonymized:1.0.0#>.
+@prefix ext-quantity: <urn:samm:io.catenax.shared.quantity:2.0.0#>.
+
+:ItemStockAnonymized a samm:Aspect;
+    samm:preferredName "Anonymized Stock of Items"@en;
+    samm:description "This aspect represents the anonymized latest quantities of a partner's items that are on stock in an n-tier supply chain. The stock represents the build-to-order (BTO) stocks already available. All identifiable information must be anonymized but must remain traceable within a specific contract agreement to enable data correlation. For example, in n-tier supply chains, identifiers (such as BPNs and UUIDs) can be hashed using an appropriate hashing algorithm (such as bcrypt) with the contractAgreementId used as a seed."@en;
+    samm:properties (:allocatedStocks :materialGlobalAssetIdAnonymized :direction);
+    samm:operations ();
+    samm:events ().
+:materialGlobalAssetIdAnonymized a samm:Property;
+    samm:preferredName "Anonymized UUID of the Part Type Twin"@en;
+    samm:description "Anonymized identifier used to identify part type twin. Must be unique but traceable (same) within a specific contract agreement. For example, in n-tier supply chains, identifiers (such as BPNs and UUIDs) can be hashed using an appropriate hashing algorithm (such as bcrypt) with the contractAgreementId used as a seed."@en;
+    samm:characteristic samm-c:Text;
+    samm:exampleValue "3f4a1b8c9d2e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0".
+:direction a samm:Property;
+    samm:preferredName "Direction of Stock"@en;
+    samm:description "Direction of the stock from data provider perspective."@en;
+    samm:characteristic :DirectionCharacteristic;
+    samm:exampleValue "OUTBOUND".
+:DirectionCharacteristic a samm-c:Enumeration;
+    samm:preferredName "Direction of Stock Characteristic"@en;
+    samm:description "If a supplier provides stock information to a customer, use \"OUTBOUND\".\nIf a customer provides stock information to a supplier, use \"INBOUND\"."@en;
+    samm:dataType xsd:string;
+    samm-c:values ("INBOUND" "OUTBOUND").
+:lastUpdatedOnDateTime a samm:Property;
+    samm:preferredName "Last Updated on Date"@en;
+    samm:description "Date and time at which the allocated stock has been updated by the reporting partner's system. Date and time are set according to a timezone."@en;
+    samm:characteristic samm-c:Timestamp;
+    samm:exampleValue "2023-04-28T14:23:00.123456+14:00"^^xsd:dateTime.
+:allocatedStocks a samm:Property;
+    samm:preferredName "Allocated Stocks"@en;
+    samm:description "Stocks that have been already allocated to the customer or delivered by a specific supplier. An allocated stock always refers to a stock location."@en;
+    samm:characteristic :AllocatedStockSet.
+:AllocatedStock a samm:Entity;
+    samm:preferredName "Stock Allocated to a Partner"@en;
+    samm:description "This is the anonymized quantity of items on stock at a location. A stock can either be from a certain supplier and ready to be consumed by a customer or from a supplier and ready to be shipped to a certain customer. This stock consists only of the good-finished items."@en;
+    samm:properties (:quantityOnAllocatedStock :stockLocationBpnsAnonymized :isBlocked :lastUpdatedOnDateTime).
+:quantityOnAllocatedStock a samm:Property;
+    samm:preferredName "Quantity on Allocated Stock"@en;
+    samm:description "This is the quantity of the material on stock."@en;
+    samm:characteristic :QuantityCharacteristic.
+:stockLocationBpnsAnonymized a samm:Property;
+    samm:preferredName "Anonymized BPNS of Stock Location"@en;
+    samm:description "The site identifier must be unique but traceable (same) within a specific contract agreement. For example, in n-tier supply chains, BPNS can be hashed using an appropriate hashing algorithm (such as bcrypt) with the contractAgreementId used as a seed."@en;
+    samm:characteristic samm-c:Text;
+    samm:exampleValue "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2".
+:isBlocked a samm:Property;
+    samm:preferredName "Is Blocked"@en;
+    samm:description "A set of finished items that are located on the blocked stock area, quarantine area, etc. waiting to be released.\n\nExample: Stock is in review and not released due to customer complaint regarding a recent batch."@en;
+    samm:characteristic :IsBlockedCharacteristic;
+    samm:exampleValue "false"^^xsd:boolean.
+:QuantityCharacteristic a samm-c:Quantifiable;
+    samm:preferredName "Quantity Characteristic"@en;
+    samm:description "Describes the quantity on stock of the item defined by a quantity value and the measurement unit in which the quantity is measured."@en;
+    samm:dataType ext-quantity:ItemQuantityEntity.
+:IsBlockedCharacteristic a samm:Characteristic;
+    samm:preferredName "Is Blocked Characteristic"@en;
+    samm:description "Boolean characteristic indicating whether a stock is blocked (true) or not (false)."@en;
+    samm:dataType xsd:boolean.
+:AllocatedStockSet a samm-c:Set;
+    samm:preferredName "Allocated Stock Set"@en;
+    samm:description "Set of allocated stocks that may relate to different stock locations. Per location there could be at maximum one blocked and one non blocked stock at the same time."@en;
+    samm:dataType :AllocatedStock.
