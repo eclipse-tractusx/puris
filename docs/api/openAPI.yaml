@@ -1404,7 +1404,7 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 5.0.0
+  version: 5.1.0
 openapi: 3.1.0
 paths:
   /days-of-supply/customer:

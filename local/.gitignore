@@ -9,3 +9,8 @@ local.postman_environment.json
 tmp.json
 
 node_modules/
+
+# don't check-in bruno results files
+*results.json
+*results.xml
+*results.html
