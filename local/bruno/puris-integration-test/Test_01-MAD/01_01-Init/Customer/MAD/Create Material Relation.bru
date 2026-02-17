@@ -1,0 +1,31 @@
+meta {
+  name: Create Material Relation
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/material-relations
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+      "parentMaterialNumber": "{{MATERIAL_NUMBER_CUSTOMER_2}}",
+      "childMaterialNumber": "{{MATERIAL_NUMBER_CUSTOMER}}",
+      "quantity": 5.0,
+      "measurementUnit": "unit:piece"
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(201);
+  })
+}
