@@ -28,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockSammAnonymized;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockRequestApiService;
@@ -53,12 +54,6 @@ public class ItemStockRequestApiController {
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
     private final Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
-
-    @RequestMapping(value = "/**")
-    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-    public ResponseEntity<String> handleNotImplemented() {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-    }
 
     @Operation(summary = "This endpoint receives the ItemStock Submodel 2.0.0 requests. " +
         "This endpoint is meant to be accessed by partners via EDC only. ")
@@ -91,5 +86,45 @@ public class ItemStockRequestApiController {
             return ResponseEntity.status(500).build();
         }
         return ResponseEntity.ok(samm);
+    }
+
+    @Operation(summary = "This endpoint receives the AnonymizedItemStock Submodel 2.0.0 requests. " +
+        "This endpoint is meant to be accessed by partners via EDC only. ")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Ok"),
+        @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content),
+        @ApiResponse(responseCode = "501", description = "Unsupported representation", content = @Content)
+    })
+    @GetMapping("anonymized/request/{materialnumber}/{direction}/submodel/{representation}")
+    public ResponseEntity<ItemStockSammAnonymized> getAnonymizedItemStockMapping(@RequestHeader("edc-bpn") String bpnl,
+                                                              @RequestHeader("edc-contract-agreement-id") String contractAgreementId,
+                                                              @PathVariable String materialnumber,
+                                                              @PathVariable DirectionCharacteristic direction,
+                                                              @PathVariable String representation) {
+        if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumber).matches() || direction == null) {
+            log.warn("Rejecting request at Anonymized ItemStock Submodel request 2.0.0 endpoint");
+            return ResponseEntity.badRequest().build();
+        }
+        if (!"$value".equals(representation)) {
+            log.warn("Rejecting request at Anonymized ItemStock Submodel request 2.0.0 endpoint, missing '@value' in request");
+            if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
+                representation = "<REPLACED_INVALID_REPRESENTATION>";
+            }
+            log.warn("Received {} from {} with direction {}", representation, bpnl, direction);
+            return ResponseEntity.status(501).build();
+        }
+        log.info("Received request for {} with {} from {}", materialnumber, direction, bpnl);
+        var samm = itemStockRequestApiService.handleItemStockAnonymizedSubmodelRequest(bpnl, materialnumber, direction, contractAgreementId);
+        if (samm == null) {
+            return ResponseEntity.status(500).build();
+        }
+        return ResponseEntity.ok(samm);
+    }
+
+    @RequestMapping(value = "/**")
+    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+    public ResponseEntity<String> handleNotImplemented() {
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 }

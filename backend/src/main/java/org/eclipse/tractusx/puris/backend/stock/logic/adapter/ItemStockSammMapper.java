@@ -27,8 +27,11 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.AllocatedStockAnonymized;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockSammAnonymized;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -44,13 +47,23 @@ public class ItemStockSammMapper {
     private MaterialService materialService;
     @Autowired
     private MaterialPartnerRelationService mprService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public ItemStockSamm materialItemStocksToItemStockSamm(List<MaterialItemStock> materialItemStocks, Partner partner, Material material) {
         return listToItemStockSamm(materialItemStocks, DirectionCharacteristic.INBOUND, partner, material);
     }
 
+    public ItemStockSammAnonymized materialItemStocksToItemStockAnonymizedSamm(List<MaterialItemStock> materialItemStocks, Partner partner, Material material, String salt) {
+        return listToItemStockAnonymizedSamm(materialItemStocks, DirectionCharacteristic.INBOUND, partner, material, salt);
+    }
+
     public ItemStockSamm productItemStocksToItemStockSamm(List<ProductItemStock> productItemStocks, Partner partner, Material material) {
         return listToItemStockSamm(productItemStocks, DirectionCharacteristic.OUTBOUND, partner, material);
+    }
+    
+    public ItemStockSammAnonymized productItemStocksToItemStockAnonymizedSamm(List<ProductItemStock> productItemStocks, Partner partner, Material material, String salt) {
+        return listToItemStockAnonymizedSamm(productItemStocks, DirectionCharacteristic.OUTBOUND, partner, material, salt);
     }
 
     private ItemStockSamm listToItemStockSamm(List<? extends ItemStock> itemStocks, DirectionCharacteristic directionCharacteristic, Partner partner, Material material) {
@@ -97,6 +110,45 @@ public class ItemStockSammMapper {
                 ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(v.getQuantity(), v.getMeasurementUnit());
                 AllocatedStock allocatedStock = new AllocatedStock(itemQuantityEntity, v.getLocationBpns(), v.isBlocked(), v.getLocationBpna(), v.getLastUpdatedOnDateTime());
                 allocatedStocksList.add(allocatedStock);
+            }
+        }
+        return samm;
+    }
+
+    
+    private ItemStockSammAnonymized listToItemStockAnonymizedSamm(List<? extends ItemStock> itemStocks, DirectionCharacteristic directionCharacteristic, Partner partner, Material material, String salt) {
+        if (itemStocks.stream().anyMatch(stock -> !stock.getPartner().equals(partner))) {
+            log.warn("Can't map item stock list with different partners");
+            return null;
+        }
+
+        if (itemStocks.stream().anyMatch(stock -> !stock.getMaterial().equals(material))) {
+            log.warn("Can't map item stock list with different materials");
+            return null;
+        }
+        var groupedByPositionAttributes = itemStocks
+            .stream()
+            .collect(Collectors.groupingBy(
+                itemStock -> new PositionsMappingHelper(itemStock.getNonNullCustomerOrderId(),
+                    itemStock.getNonNullSupplierOrderId(),
+                    itemStock.getNonNullCustomerOrderPositionId())));
+
+        ItemStockSammAnonymized samm = new ItemStockSammAnonymized();
+
+        if (directionCharacteristic == DirectionCharacteristic.INBOUND) {
+            samm.setMaterialGlobalAssetIdAnonymized(passwordEncoder.encode(mprService.find(material, partner).getPartnerCXNumber() + salt));
+        } else {
+            samm.setMaterialGlobalAssetIdAnonymized(passwordEncoder.encode(material.getMaterialNumberCx() + salt));
+        }
+
+        samm.setDirection(directionCharacteristic);
+        var anonymizedAllocatedStockList = new HashSet<AllocatedStockAnonymized>();
+        samm.setAllocatedStocksAnonymized(anonymizedAllocatedStockList);
+        for (var mappingHelperListEntry : groupedByPositionAttributes.entrySet()) {
+            for (var v : mappingHelperListEntry.getValue()) {
+                ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(v.getQuantity(), v.getMeasurementUnit());
+                AllocatedStockAnonymized allocatedStock = new AllocatedStockAnonymized(itemQuantityEntity, passwordEncoder.encode(v.getLocationBpns() + salt), v.isBlocked(), v.getLastUpdatedOnDateTime());
+                anonymizedAllocatedStockList.add(allocatedStock);
             }
         }
         return samm;
