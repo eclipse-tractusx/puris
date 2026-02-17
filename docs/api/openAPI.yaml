@@ -157,6 +157,35 @@ components:
       - direction
       - materialGlobalAssetId
       type: object
+    DeliveryAnonymized:
+      additionalProperties: false
+      properties:
+        deliveryQuantity:
+          $ref: '#/components/schemas/ItemQuantityEntity'
+        destinationBpnsAnonymized:
+          maxItems: 50
+          type: string
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        originBpnsAnonymized:
+          maxItems: 50
+          type: string
+        transitEvents:
+          items:
+            $ref: '#/components/schemas/TransitEvent'
+          maxItems: 2
+          minItems: 1
+          type: array
+          uniqueItems: true
+      required:
+      - deliveryQuantity
+      - destinationBpnsAnonymized
+      - lastUpdatedOnDateTime
+      - originBpnsAnonymized
+      - transitEvents
+      type: object
     DeliveryDto:
       additionalProperties: false
       properties:
@@ -308,6 +337,23 @@ components:
       required:
       - materialGlobalAssetId
       - positions
+      type: object
+    DeliveryInformationAnonymized:
+      additionalProperties: false
+      properties:
+        deliveries:
+          items:
+            $ref: '#/components/schemas/DeliveryAnonymized'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        materialGlobalAssetIdAnonymized:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+      required:
+      - deliveries
+      - materialGlobalAssetIdAnonymized
       type: object
     Demand:
       additionalProperties: false
@@ -1397,6 +1443,25 @@ components:
           format: double
           type: number
       type: object
+    TransitEvent:
+      additionalProperties: false
+      properties:
+        dateTimeOfEvent:
+          format: date-time
+          maxItems: 50
+          type: string
+        eventType:
+          enum:
+          - estimated-departure
+          - actual-departure
+          - estimated-arrival
+          - actual-arrival
+          maxItems: 50
+          type: string
+      required:
+      - dateTimeOfEvent
+      - eventType
+      type: object
   securitySchemes:
     X-API-KEY:
       in: header
@@ -1808,6 +1873,57 @@ paths:
       summary: Updates a delivery by its UUID
       tags:
       - delivery-controller
+  /delivery-information/anonymized/request/{materialNumberCx}/submodel/{representation}:
+    get:
+      operationId: getAnonymizedDeliveryMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: header
+        name: edc-contract-agreement-id
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: materialNumberCx
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DeliveryInformationAnonymized'
+                additionalProperties: false
+          description: Ok
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '501':
+          description: Unsupported representation
+      summary: 'This endpoint receives the Delivery Information Anonymized Submodel
+        1.0.0 requests. This endpoint is meant to be accessed by partners via EDC
+        only. '
+      tags:
+      - delivery-request-api-controller
   /delivery-information/request/{materialNumberCx}/submodel/{representation}:
     get:
       operationId: getDeliveryMapping
@@ -2540,6 +2656,7 @@ paths:
           - NOTIFICATION
           - DAYS_OF_SUPPLY
           - PART_TYPE_INFORMATION_SUBMODEL
+          - DELIVERY_ANONYMIZED_SUBMODEL
           maxItems: 50
           type: string
       - in: query
