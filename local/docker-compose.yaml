@@ -59,6 +59,7 @@ services:
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-customer
       - IDP_REDIRECT_URL_FRONTEND=http://localhost:3000
+      - DEFAULT_PRODUCTION_TIME=23:59
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
       - NGINX_RATE=10r/s
@@ -255,6 +256,7 @@ services:
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-supplier
       - IDP_REDIRECT_URL_FRONTEND=http://localhost:3001
+      - DEFAULT_PRODUCTION_TIME=23:59
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
       - NGINX_RATE=10r/s

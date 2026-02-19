@@ -21,11 +21,11 @@ The **need for configuration updates** is **marked bold**.
   - updated user guide ([#1070](https://github.com/eclipse-tractusx/puris/pull/1070))
 - Added component to copy text to clipboard for puris frontend ([#1058](https://github.com/eclipse-tractusx/puris/pull/1058))
 - Added version to about license ([#1067](https://github.com/eclipse-tractusx/puris/pull/1067))
+- Added environment variable for default production time ([#1072](https://github.com/eclipse-tractusx/puris/pull/1072))
 
 ### Changed
 
 - switch to ssi-dim-wallet-stub instead of own mock-util-service (now DCP 1.0 is used) ([#1066](https://github.com/eclipse-tractusx/puris/pull/1066))
-- Added environment variable for default production time ([#1072](https://github.com/eclipse-tractusx/puris/pull/1072))
 
 ### Fixes
 
