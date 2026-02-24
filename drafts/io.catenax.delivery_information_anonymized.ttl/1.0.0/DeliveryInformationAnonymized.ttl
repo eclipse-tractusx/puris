@@ -1,0 +1,102 @@
+#######################################################################
+# Copyright (c) 2026 Volkswagen AG
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This work is made available under the terms of the
+# Creative Commons Attribution 4.0 International (CC-BY-4.0) license,
+# which is available at
+# https://creativecommons.org/licenses/by/4.0/legalcode.
+#
+# SPDX-License-Identifier: CC-BY-4.0
+#######################################################################
+
+@prefix samm: <urn:samm:org.eclipse.esmf.samm:meta-model:2.1.0#>.
+@prefix samm-c: <urn:samm:org.eclipse.esmf.samm:characteristic:2.1.0#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix : <urn:samm:io.catenax.delivery_information_anonymized:1.0.0#>.
+@prefix ext-quantity: <urn:samm:io.catenax.shared.quantity:2.0.0#>.
+
+:DeliveryInformationAnonymized a samm:Aspect;
+    samm:preferredName "Anonymized Delivery information"@en;
+    samm:description "This aspect represents the anonymized estimated and actual delivery information of one specific item in an n-tier supply chain. All identifiable information must be anonymized but must remain traceable within a specific contract agreement to enable data correlation. For example, in n-tier supply chains, identifiers (such as BPNs and UUIDs) can be hashed using an appropriate hashing algorithm (such as bcrypt) with the contractAgreementId used as a seed."@en;
+    samm:properties (:deliveries :materialGlobalAssetIdAnonymized);
+    samm:operations ();
+    samm:events ().
+:materialGlobalAssetIdAnonymized a samm:Property;
+    samm:preferredName "Anonymized UUID of the Part Type Twin"@en;
+    samm:description "Anonymized identifier used to identify part type twin. Must be unique but traceable (same) within a specific contract agreement. For example, in n-tier supply chains, UUID can be hashed using an appropriate hashing algorithm (such as bcrypt) with the contractAgreementId used as a seed."@en;
+    samm:characteristic samm-c:Text;
+    samm:exampleValue "3f4a1b8c9d2e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0".
+:lastUpdatedOnDateTime a samm:Property;
+    samm:preferredName "Lasted Updated on Date"@en;
+    samm:description "Date and time at which the delivery has been updated by the data provider. Date and time are set according to the timezone."@en;
+    samm:characteristic samm-c:Timestamp;
+    samm:exampleValue "2023-04-28T14:23:00.123456+14:00"^^xsd:dateTime.
+:deliveries a samm:Property;
+    samm:preferredName "Estimated or actual delivery from supplier to a customer"@en;
+    samm:description "Anonymized deliveries from supplier to customer."@en;
+    samm:characteristic :DeliverySet.
+:DeliverySet a samm-c:Set;
+    samm:preferredName "Anonymized Delivery Set"@en;
+    samm:description "Set of anonymized deliveries that may relate to different origin or destination, different quantities and different time of departure or time of arrival."@en;
+    samm:dataType :Delivery.
+:Delivery a samm:Entity;
+    samm:preferredName "Anonymized Delivery"@en;
+    samm:description "Anonymized quantity, origin and destination, and time of departure and arrival for a certain delivery."@en;
+    samm:properties (:deliveryQuantity :lastUpdatedOnDateTime :transitEvents :originBpnsAnonymized :destinationBpnsAnonymized).
+:deliveryQuantity a samm:Property;
+    samm:preferredName "Delivery Quantity"@en;
+    samm:description "Amount of items of a delivery between a supplier and a customer."@en;
+    samm:characteristic :QuantityCharacteristic.
+:transitEvents a samm:Property;
+    samm:preferredName "Date of departure or arrival"@en;
+    samm:description "Transit dates provide date and time of departure and date and time of arrival for a specific delivery. Date and time are set according to the timezone."@en;
+    samm:characteristic :TransitEventsTrait.
+:originBpnsAnonymized a samm:Property;
+    samm:preferredName "Anonymized Origin BPNS"@en;
+    samm:description "Anonymized business partner number site of the origin location. Must be unique but traceable (same) within a specific contract agreement. For example, in n-tier supply chains, BPNs can be hashed using an appropriate hashing algorithm (such as bcrypt) with the contractAgreementId used as a seed."@en;
+    samm:characteristic samm-c:Text;
+    samm:exampleValue "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2".
+:destinationBpnsAnonymized a samm:Property;
+    samm:preferredName "Anonymized Destination BPNS"@en;
+    samm:description "Anonymized business partner number site of the destination location. Must be unique but traceable (same) within a specific contract agreement. For example, in n-tier supply chains, BPNs can be hashed using an appropriate hashing algorithm (such as bcrypt) with the contractAgreementId used as a seed."@en;
+    samm:characteristic samm-c:Text;
+    samm:exampleValue "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3".
+:QuantityCharacteristic a samm-c:Quantifiable;
+    samm:preferredName "Quantity Characteristic"@en;
+    samm:description "Describes the quantity and the unit of measure with which the delivery is measured."@en;
+    samm:dataType ext-quantity:ItemQuantityEntity.
+:TransitEventsTrait a samm-c:Trait;
+    samm-c:baseCharacteristic :TransitEventsSet;
+    samm-c:constraint :TransitEventsContstraint.
+:TransitEventsSet a samm-c:Set;
+    samm:preferredName "Transit events set"@en;
+    samm:description "Transit events refer to the specific timeframes associated with the departure or arrival of products during their transportation from one location to another - from the supplier to the customer.\n\nIf the set has two elements, following restrictions apply:\n- one element MUST describe the departure and another element MUST describe the arrival\n- if the set contains a estimated departure, the set MUST NOT contain an actual arrival."@en;
+    samm:dataType :TransitEvent.
+:TransitEventsContstraint a samm-c:LengthConstraint;
+    samm:preferredName "Transit events constraint"@en;
+    samm:description "The TransitEventsSet MUST contain either 1 or 2 TransitEvents."@en;
+    samm-c:minValue "1"^^xsd:nonNegativeInteger;
+    samm-c:maxValue "2"^^xsd:nonNegativeInteger.
+:TransitEvent a samm:Entity;
+    samm:preferredName "Transit event"@en;
+    samm:description "Entity for specifying the departure or arrival time and date."@en;
+    samm:properties (:dateTimeOfEvent :eventType).
+:dateTimeOfEvent a samm:Property;
+    samm:preferredName "Time of Event"@en;
+    samm:description "Time of Event signifies the time and date when the products leave (or will leave) the origin location of a delivery (i.e. supplier's production site) or when the products arrive (or will arrive) at the destination location of the delivery (i.e. customer's production site)."@en;
+    samm:characteristic samm-c:Timestamp;
+    samm:exampleValue "2023-04-29T14:23:00.123456+14:00"^^xsd:dateTime.
+:eventType a samm:Property;
+    samm:preferredName "Event Type"@en;
+    samm:description "Event type describes whether the mentioned timeOfEvent refers to a departure or arrival and provides the status of the delivery (estimated or actual)."@en;
+    samm:characteristic :EventTypeEnumeration;
+    samm:exampleValue "estimated-departure".
+:EventTypeEnumeration a samm-c:Enumeration;
+    samm:preferredName "Event Type Enumeration"@en;
+    samm:description "Event type is the permutation of actual, estimated and departure, arrival."@en;
+    samm:dataType xsd:string;
+    samm-c:values ("estimated-departure" "estimated-arrival" "actual-departure" "actual-arrival").
