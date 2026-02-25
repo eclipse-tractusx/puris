@@ -27,10 +27,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockSammAnonymized;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockAnonymizedSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockRequestApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -88,7 +89,7 @@ public class ItemStockRequestApiController {
         return ResponseEntity.ok(samm);
     }
 
-    @Operation(summary = "This endpoint receives the AnonymizedItemStock Submodel 2.0.0 requests. " +
+    @Operation(summary = "This endpoint receives the ItemStockAnonymized Submodel 1.0.0 requests. " +
         "This endpoint is meant to be accessed by partners via EDC only. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),
@@ -97,17 +98,17 @@ public class ItemStockRequestApiController {
         @ApiResponse(responseCode = "501", description = "Unsupported representation", content = @Content)
     })
     @GetMapping("anonymized/request/{materialnumber}/{direction}/submodel/{representation}")
-    public ResponseEntity<ItemStockSammAnonymized> getAnonymizedItemStockMapping(@RequestHeader("edc-bpn") String bpnl,
+    public ResponseEntity<ItemStockAnonymizedSamm> getAnonymizedItemStockMapping(@RequestHeader("edc-bpn") String bpnl,
                                                               @RequestHeader("edc-contract-agreement-id") String contractAgreementId,
                                                               @PathVariable String materialnumber,
                                                               @PathVariable DirectionCharacteristic direction,
                                                               @PathVariable String representation) {
         if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumber).matches() || direction == null) {
-            log.warn("Rejecting request at Anonymized ItemStock Submodel request 2.0.0 endpoint");
+            log.warn("Rejecting request at ItemStockAnonymized Submodel request 1.0.0 endpoint");
             return ResponseEntity.badRequest().build();
         }
         if (!"$value".equals(representation)) {
-            log.warn("Rejecting request at Anonymized ItemStock Submodel request 2.0.0 endpoint, missing '@value' in request");
+            log.warn("Rejecting request at ItemStockAnonymized Submodel request 1.0.0 endpoint, missing '@value' in request");
             if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
                 representation = "<REPLACED_INVALID_REPRESENTATION>";
             }

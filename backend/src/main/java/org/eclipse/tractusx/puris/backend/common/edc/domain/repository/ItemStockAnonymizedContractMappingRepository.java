@@ -25,8 +25,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ItemStockAnonymizedContractMappingRepository extends GeneralContractMappingRepository<ItemStockAnonymizedContractMapping> {
-         @Override
-     default Class<? extends ContractMapping> getType() {
-         return ItemStockAnonymizedContractMapping.class;
-     }
+    
+    @Override
+    default Class<? extends ContractMapping> getType() {
+        return ItemStockAnonymizedContractMapping.class;
+    }
 }

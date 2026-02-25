@@ -657,7 +657,7 @@ components:
       - direction
       - positions
       type: object
-    ItemStockSammAnonymized:
+    ItemStockAnonymizedSamm:
       additionalProperties: false
       properties:
         allocatedStocksAnonymized:
@@ -2723,7 +2723,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/ItemStockSammAnonymized'
+                $ref: '#/components/schemas/ItemStockAnonymizedSamm'
                 additionalProperties: false
           description: Ok
         '400':

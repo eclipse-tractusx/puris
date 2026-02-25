@@ -41,7 +41,7 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString
-public class ItemStockSammAnonymized {
+public class ItemStockAnonymizedSamm {
     @NotNull
     @Valid
     private Set<AllocatedStockAnonymized> allocatedStocksAnonymized;
@@ -53,7 +53,7 @@ public class ItemStockSammAnonymized {
     private DirectionCharacteristic direction;
 
     @JsonCreator
-    public ItemStockSammAnonymized(@JsonProperty(value = "allocatedStocksAnonymized") Set<AllocatedStockAnonymized> allocatedStocksAnonymized,
+    public ItemStockAnonymizedSamm(@JsonProperty(value = "allocatedStocksAnonymized") Set<AllocatedStockAnonymized> allocatedStocksAnonymized,
                          @JsonProperty(value = "materialGlobalAssetIdAnonymized") String materialGlobalAssetIdAnonymized,
                          @JsonProperty(value = "direction") DirectionCharacteristic direction) {
         this.allocatedStocksAnonymized = allocatedStocksAnonymized;
@@ -70,7 +70,7 @@ public class ItemStockSammAnonymized {
             return false;
         }
 
-        final ItemStockSammAnonymized that = (ItemStockSammAnonymized) o;
+        final ItemStockAnonymizedSamm that = (ItemStockAnonymizedSamm) o;
         return Objects.equals(allocatedStocksAnonymized, that.allocatedStocksAnonymized)
             && Objects.equals(materialGlobalAssetIdAnonymized, that.materialGlobalAssetIdAnonymized)
             && Objects.equals(direction, that.direction);

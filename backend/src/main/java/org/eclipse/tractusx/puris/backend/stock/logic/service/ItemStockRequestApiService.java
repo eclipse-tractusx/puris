@@ -34,7 +34,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ItemStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockSammAnonymized;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockAnonymizedSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,7 +133,7 @@ public class ItemStockRequestApiService {
 
     }
 
-    public ItemStockSammAnonymized handleItemStockAnonymizedSubmodelRequest(String bpnl, String materialNumber, DirectionCharacteristic direction, String contractAgreementId) {
+    public ItemStockAnonymizedSamm handleItemStockAnonymizedSubmodelRequest(String bpnl, String materialNumber, DirectionCharacteristic direction, String contractAgreementId) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
             log.error("Unknown Partner BPNL " + bpnl);
@@ -147,8 +147,6 @@ public class ItemStockRequestApiService {
                 if (material != null && mprService.find(material, partner).isPartnerBuysMaterial()) {
                     // only send an answer if partner is registered as customer
                     var currentStocks = productItemStockService.findByPartnerAndMaterial(partner, material);
-
-                    erpAdapterTriggerService.notifyPartnerRequest(bpnl, material.getOwnMaterialNumber(), AssetType.ITEM_STOCK_SUBMODEL, direction);
 
                     return sammMapper.productItemStocksToItemStockAnonymizedSamm(currentStocks, partner, material, contractAgreementId);
                 }
@@ -179,8 +177,6 @@ public class ItemStockRequestApiService {
                     return null;
                 }
 
-                // request looks valid
-                erpAdapterTriggerService.notifyPartnerRequest(bpnl, material.getOwnMaterialNumber(), AssetType.ITEM_STOCK_SUBMODEL, direction);
                 var currentStocks = materialItemStockService.findByPartnerAndMaterial(partner, material);
 
                 return sammMapper.materialItemStocksToItemStockAnonymizedSamm(currentStocks, partner, material, contractAgreementId);

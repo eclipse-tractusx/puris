@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2026 Volkswagen AG
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -31,7 +31,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.AllocatedStockAnonymized;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockSammAnonymized;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockAnonymizedSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -135,17 +135,13 @@ public class ItemStockAnonymizedSammMapperTest {
             .isBlocked(true)
             .build();
 
-        System.out.println(materialItemStock);
 
         // When
         when(mprService.find(semiconductorMaterial, supplierPartner)).thenReturn(mpr);
 
         when(passwordEncoder.encode(anyString())).thenAnswer(invocation -> "enc:" + invocation.getArgument(0));
 
-        // Then we could have a message as follows:
-        // - MaterialItem Stock as above
-        // - MaterialItem Stock as above BUT with isBlocked = false and other Quanitty
-        ItemStockSammAnonymized materialItemStockAnonymizedSamm = itemStockSammMapper.materialItemStocksToItemStockAnonymizedSamm(List.of(materialItemStock), supplierPartner, semiconductorMaterial, "SALT");
+        ItemStockAnonymizedSamm materialItemStockAnonymizedSamm = itemStockSammMapper.materialItemStocksToItemStockAnonymizedSamm(List.of(materialItemStock), supplierPartner, semiconductorMaterial, "SALT");
 
         // Then
         assertNotNull(materialItemStockAnonymizedSamm);
@@ -161,6 +157,9 @@ public class ItemStockAnonymizedSammMapperTest {
         assertEquals(20, allocatedStockAnoynmized.getQuantityOnAllocatedStock().getValue());
         assertEquals(ItemUnitEnumeration.UNIT_PIECE, allocatedStockAnoynmized.getQuantityOnAllocatedStock().getUnit());
         assertTrue(allocatedStockAnoynmized.getStockLocationBPNSAnonymized().startsWith("enc:"));
+        assertEquals(materialItemStock.isBlocked(), allocatedStockAnoynmized.getIsBlocked());
+        assertEquals(materialItemStock.getQuantity(), allocatedStockAnoynmized.getQuantityOnAllocatedStock().getValue());
+
 
         assertEquals(materialItemStock.getLastUpdatedOnDateTime(), allocatedStockAnoynmized.getLastUpdatedOnDateTime());
     }

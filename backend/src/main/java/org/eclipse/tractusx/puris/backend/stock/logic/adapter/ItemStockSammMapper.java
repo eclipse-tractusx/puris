@@ -28,7 +28,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.*;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.AllocatedStockAnonymized;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockSammAnonymized;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockAnonymizedSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -54,7 +54,7 @@ public class ItemStockSammMapper {
         return listToItemStockSamm(materialItemStocks, DirectionCharacteristic.INBOUND, partner, material);
     }
 
-    public ItemStockSammAnonymized materialItemStocksToItemStockAnonymizedSamm(List<MaterialItemStock> materialItemStocks, Partner partner, Material material, String salt) {
+    public ItemStockAnonymizedSamm materialItemStocksToItemStockAnonymizedSamm(List<MaterialItemStock> materialItemStocks, Partner partner, Material material, String salt) {
         return listToItemStockAnonymizedSamm(materialItemStocks, DirectionCharacteristic.INBOUND, partner, material, salt);
     }
 
@@ -62,7 +62,7 @@ public class ItemStockSammMapper {
         return listToItemStockSamm(productItemStocks, DirectionCharacteristic.OUTBOUND, partner, material);
     }
     
-    public ItemStockSammAnonymized productItemStocksToItemStockAnonymizedSamm(List<ProductItemStock> productItemStocks, Partner partner, Material material, String salt) {
+    public ItemStockAnonymizedSamm productItemStocksToItemStockAnonymizedSamm(List<ProductItemStock> productItemStocks, Partner partner, Material material, String salt) {
         return listToItemStockAnonymizedSamm(productItemStocks, DirectionCharacteristic.OUTBOUND, partner, material, salt);
     }
 
@@ -116,7 +116,7 @@ public class ItemStockSammMapper {
     }
 
     
-    private ItemStockSammAnonymized listToItemStockAnonymizedSamm(List<? extends ItemStock> itemStocks, DirectionCharacteristic directionCharacteristic, Partner partner, Material material, String salt) {
+    private ItemStockAnonymizedSamm listToItemStockAnonymizedSamm(List<? extends ItemStock> itemStocks, DirectionCharacteristic directionCharacteristic, Partner partner, Material material, String salt) {
         if (itemStocks.stream().anyMatch(stock -> !stock.getPartner().equals(partner))) {
             log.warn("Can't map item stock list with different partners");
             return null;
@@ -126,14 +126,8 @@ public class ItemStockSammMapper {
             log.warn("Can't map item stock list with different materials");
             return null;
         }
-        var groupedByPositionAttributes = itemStocks
-            .stream()
-            .collect(Collectors.groupingBy(
-                itemStock -> new PositionsMappingHelper(itemStock.getNonNullCustomerOrderId(),
-                    itemStock.getNonNullSupplierOrderId(),
-                    itemStock.getNonNullCustomerOrderPositionId())));
 
-        ItemStockSammAnonymized samm = new ItemStockSammAnonymized();
+        ItemStockAnonymizedSamm samm = new ItemStockAnonymizedSamm();
 
         if (directionCharacteristic == DirectionCharacteristic.INBOUND) {
             samm.setMaterialGlobalAssetIdAnonymized(passwordEncoder.encode(mprService.find(material, partner).getPartnerCXNumber() + salt));
@@ -143,14 +137,12 @@ public class ItemStockSammMapper {
 
         samm.setDirection(directionCharacteristic);
         var anonymizedAllocatedStockList = new HashSet<AllocatedStockAnonymized>();
-        samm.setAllocatedStocksAnonymized(anonymizedAllocatedStockList);
-        for (var mappingHelperListEntry : groupedByPositionAttributes.entrySet()) {
-            for (var v : mappingHelperListEntry.getValue()) {
-                ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(v.getQuantity(), v.getMeasurementUnit());
-                AllocatedStockAnonymized allocatedStock = new AllocatedStockAnonymized(itemQuantityEntity, passwordEncoder.encode(v.getLocationBpns() + salt), v.isBlocked(), v.getLastUpdatedOnDateTime());
-                anonymizedAllocatedStockList.add(allocatedStock);
-            }
+        for (var v : itemStocks) {
+            ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(v.getQuantity(), v.getMeasurementUnit());
+            AllocatedStockAnonymized allocatedStock = new AllocatedStockAnonymized(itemQuantityEntity, passwordEncoder.encode(v.getLocationBpns() + salt), v.isBlocked(), v.getLastUpdatedOnDateTime());
+            anonymizedAllocatedStockList.add(allocatedStock);
         }
+        samm.setAllocatedStocksAnonymized(anonymizedAllocatedStockList);
         return samm;
     }
 
