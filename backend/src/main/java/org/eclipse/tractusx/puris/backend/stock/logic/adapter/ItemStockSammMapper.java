@@ -137,9 +137,9 @@ public class ItemStockSammMapper {
 
         samm.setDirection(directionCharacteristic);
         var anonymizedAllocatedStockList = new HashSet<AllocatedStockAnonymized>();
-        for (var v : itemStocks) {
-            ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(v.getQuantity(), v.getMeasurementUnit());
-            AllocatedStockAnonymized allocatedStock = new AllocatedStockAnonymized(itemQuantityEntity, passwordEncoder.encode(v.getLocationBpns() + salt), v.isBlocked(), v.getLastUpdatedOnDateTime());
+        for (var itemStock : itemStocks) {
+            ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(itemStock.getQuantity(), itemStock.getMeasurementUnit());
+            AllocatedStockAnonymized allocatedStock = new AllocatedStockAnonymized(itemQuantityEntity, passwordEncoder.encode(itemStock.getLocationBpns() + salt), itemStock.isBlocked(), itemStock.getLastUpdatedOnDateTime());
             anonymizedAllocatedStockList.add(allocatedStock);
         }
         samm.setAllocatedStocksAnonymized(anonymizedAllocatedStockList);

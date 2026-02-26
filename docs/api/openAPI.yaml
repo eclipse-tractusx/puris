@@ -634,29 +634,6 @@ components:
       - unit
       - value
       type: object
-    ItemStockSamm:
-      additionalProperties: false
-      properties:
-        direction:
-          enum:
-          - INBOUND
-          - OUTBOUND
-          maxItems: 50
-          type: string
-        materialGlobalAssetId:
-          maxItems: 50
-          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
-          type: string
-        positions:
-          items:
-            $ref: '#/components/schemas/Position'
-          maxItems: 50
-          type: array
-          uniqueItems: true
-      required:
-      - direction
-      - positions
-      type: object
     ItemStockAnonymizedSamm:
       additionalProperties: false
       properties:
@@ -679,6 +656,29 @@ components:
       required:
       - allocatedStocksAnonymized
       - direction
+      type: object
+    ItemStockSamm:
+      additionalProperties: false
+      properties:
+        direction:
+          enum:
+          - INBOUND
+          - OUTBOUND
+          maxItems: 50
+          type: string
+        materialGlobalAssetId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        positions:
+          items:
+            $ref: '#/components/schemas/Position'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+      required:
+      - direction
+      - positions
       type: object
     JsonNode:
       type: object
@@ -2732,7 +2732,7 @@ paths:
           description: Internal Server Error
         '501':
           description: Unsupported representation
-      summary: 'This endpoint receives the AnonymizedItemStock Submodel 2.0.0 requests.
+      summary: 'This endpoint receives the ItemStockAnonymized Submodel 1.0.0 requests.
         This endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - item-stock-request-api-controller
