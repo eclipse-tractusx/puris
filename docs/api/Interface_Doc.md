@@ -33,7 +33,7 @@ _Note: The port and the path depend on the configuration of the spring backend (
 
 ## Postman
 
-There is a [postman collection](../../local/postman/README.md) containing
+There is a [postman collection](../../local/bruno/puris-integration-test/README.md) containing
 information on how to provide master data and some basic data to test the application.
 
 ## NOTICE

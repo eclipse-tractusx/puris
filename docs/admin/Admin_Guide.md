@@ -182,6 +182,41 @@ _**ATTENTION**: Usage Purposes are no credentials than can be enforced technical
 supported within Catena-X in the [odrl profile](https://github.com/catenax-eV/cx-odrl-profile/blob/main/profile.md)
 of the current release._
 
+## Configure anonymized data exchange
+
+To facilitate data exchange across multiple tiers, PURIS provides **anonymized versions** of selected PURIS data standards. The anonymized variants are meant to be consumed by partners without exposing sensitive identifiers.
+
+PURIS ensures that:
+
+- anonymized semantic models are provided in the repository as `.ttl` files with JSON examples
+- anonymized DTOs and mappers exist (reusing existing delivery/production/stock logic)
+- **assets and DTR submodels are registered** for each anonymized data model
+
+However contract definitions and policies are NOT created by PURIS for anonymized models so the operator must:
+
+1. create the **access policy** and **contract policy** in the provider EDC
+2. create a **contract definition** per anonymized asset (or however you group contracts in your environment)
+
+This mirrors the standard setup flow, but uses the anonymized asset IDs / semantic IDs. From an operator's point of view, the implementation combines the following building blocks:
+
+1. a DTR entry for the digital twin shell and its anonymized submodel descriptor,
+2. a provider-side EDC asset exposing the anonymized submodel endpoint,
+3. provider-side access and contract policies aligned with the configured Framework Agreement and Usage Purpose,
+4. a consumer-side contract negotiation and transfer process to first resolve the submodel descriptor and then pull the anonymized submodel data.
+
+### Backend endpoints
+
+For each anonymized standard, PURIS exposes an endpoint that returns the anonymized SAMM e.g. `planned-production-output/anonymized/request`
+
+### How to validate the setup
+
+Use the Bruno integration tests for anonymized exchange to validate:
+
+- provider catalog exposes anonymized assets
+- DTR contains anonymized submodel descriptors (by semantic ID)
+- contract negotiation + transfer succeed
+- `$value` pull returns anonymized payloads
+
 ## Configure ERP Update
 
 To use an ERP Adapter, you need to configure the information below `backend.puris.erpadapter`:
