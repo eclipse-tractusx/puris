@@ -18,10 +18,14 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
+import { BPNS } from "../edc/bpn";
+
 export type MaterialPartnerRelation = {
     ownMaterialNumber: string;
     partnerBpnl: string;
     partnerMaterialNumber: string;
     partnerSuppliesMaterial: boolean;
     partnerBuysMaterial: boolean;
+    ownDemandingSiteBpnss: BPNS[];
+    ownProducingSiteBpnss: BPNS[];
 };
