@@ -123,7 +123,7 @@ export const MaterialPartnerRelationModal = ({ open, materials, partners, mprs, 
         handleClose();
     };
 
-    const showStockingSites = !!temporaryMpr.partnerSuppliesMaterial;
+    const showDemandingSite = !!temporaryMpr.partnerSuppliesMaterial;
     const showProducingSites = !!temporaryMpr.partnerBuysMaterial;
 
     return (
@@ -226,7 +226,7 @@ export const MaterialPartnerRelationModal = ({ open, materials, partners, mprs, 
                                 </Stack>
                             </Stack>
                         </Grid>
-                        {showStockingSites && (
+                        {showDemandingSite && (
                             <Grid item xs={12}>
                                 <InputLabel>Demanding Sites</InputLabel>
                                 <Autocomplete
