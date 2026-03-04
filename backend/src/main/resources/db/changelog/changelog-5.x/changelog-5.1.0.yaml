@@ -19,7 +19,7 @@
 databaseChangeLog:
   - changeSet:
         id: "1"
-        author: ReneSchroederLJ
+        author: jakoballgaier
         changes:
           - createTable:
               columns:

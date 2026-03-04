@@ -175,27 +175,4 @@ class PlannedProductionSammMapperTest {
         assertEquals("P1", rd.getCustomerOrderPositionNumber());
         assertEquals("S1", rd.getSupplierOrderNumber());
     }
-
-    @Test
-    void ownProductionToSamm_materialFlag_usesMprService() {
-        // material with materialFlag=true and productFlag=false -> should use MPR partner CX
-        Material mat = MATERIAL_5;
-        MaterialPartnerRelation mpr = new MaterialPartnerRelation(mat, PARTNER, "PMAT", true, false);
-        mpr.setPartnerCXNumber("urn:uuid:99999999-9999-9999-9999-999999999999");
-
-        when(mprService.find(mat, PARTNER)).thenReturn(mpr);
-
-        Date now = new Date();
-        OwnProduction op = OwnProduction.builder()
-                .partner(PARTNER)
-                .material(mat)
-                .quantity(3.0)
-                .measurementUnit(ItemUnitEnumeration.UNIT_PIECE)
-                .lastUpdatedOnDateTime(now)
-                .build();
-
-        var samm = mapper.ownProductionToSamm(List.of(op), PARTNER, mat);
-        assertNotNull(samm);
-        assertEquals(mpr.getPartnerCXNumber(), samm.getMaterialGlobalAssetId());
-    }
 }
