@@ -24,6 +24,7 @@ The **need for configuration updates** is **marked bold**.
 - Added update flow to Material Details View buttons ([#1034](https://github.com/eclipse-tractusx/puris/pull/1034))
 - Added submodel implementation for delivery information anyonymized ([#1095](https://github.com/eclipse-tractusx/puris/pull/1095))
 - Added submodel implementation for item stock anyonymized ([#1096](https://github.com/eclipse-tractusx/puris/pull/1096))
+- Added submodel implementation for planned production output anyonymized ([#1099](https://github.com/eclipse-tractusx/puris/pull/1099))
 
 ### Changed
 

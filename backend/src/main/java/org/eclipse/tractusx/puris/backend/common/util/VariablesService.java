@@ -177,6 +177,21 @@ public class VariablesService {
      */
     private String deliveryAnonymizedSubmodelApiAssetId;
 
+    /**
+     * The url under which this application's anonymized planned production request endpoint can
+     * be reached by external machines.
+     */
+    public String getProductionAnonymizedSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "planned-production/anonymized/request";
+    }
+
+    @Value("${puris.productionanonymizedsubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the Anonymized Planned Production request API
+     * during asset creation.
+     */
+    private String productionAnonymizedSubmodelApiAssetId;
+
     @Value("${puris.frameworkagreement.credential}")
     /**
      * The name of the framework agreement to be used.
@@ -353,6 +368,10 @@ public class VariablesService {
     
     public String getDeliveryAnonymizedSubmodelApiAssetId() {
         return deliveryAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
+    }
+
+    public String getProductionAnonymizedSubmodelApiAssetId() {
+        return productionAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
     }
 
     public String getNotificationApiAssetId() {
