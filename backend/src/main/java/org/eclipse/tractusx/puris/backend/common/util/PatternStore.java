@@ -38,12 +38,6 @@ public class PatternStore {
 
     /**
      * Contains a Java-Regex-String that can be used to validate
-     * that a string is not a valid BPNL number.
-     */
-    public final static String NOT_BPNL_STRING = "^(?!(?:" + BPNL_STRING + ")$).*";
-
-    /**
-     * Contains a Java-Regex-String that can be used to validate
      * BPNA numbers.
      */
     public static final String BPNA_STRING = "^BPNA[0-9a-zA-Z]{12}$";
@@ -53,13 +47,6 @@ public class PatternStore {
      * It is constructed from the BPNA_STRING constant.
      */
     public static final Pattern BPNA_PATTERN = Pattern.compile(BPNA_STRING);
-
-    /**
-     * Contains a Java-Regex-String that can be used to validate
-     * that a string is not a valid BPNA number.
-     */
-    public static final String NOT_BPNA_STRING = "^(?!(?:" + BPNA_STRING + ")$).*";
-
 
     /**
      * Contains a Java-Regex-String that can be used to validate
