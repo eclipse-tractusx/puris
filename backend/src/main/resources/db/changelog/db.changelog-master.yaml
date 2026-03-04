@@ -22,4 +22,4 @@ databaseChangeLog:
   - includeAll:
       path: db/changelog/changelog-3.x
   - includeAll:
-      path: db/changelog/changelog-5.1
+      path: db/changelog/changelog-5.x

@@ -135,36 +135,34 @@ public class ItemStockRequestApiService {
             case INBOUND -> {
                 // Partner is supplier, requesting our MaterialItemStocks from him
                 // materialNumber is partner's CX id
-                var relation = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber);
-                Material material = relation != null ? relation.getMaterial() : null;
+                var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber);
 
-                if (material == null) {
-                    // Could not identify partner cx number. I.e. we do not have that partner's
-                    // CX id in one of our MaterialPartnerRelation entities. Try to fix this by
-                    // looking for MPR's, where that partner is a supplier and where we don't have
-                    // a partnerCXId yet. Of course this can only work if there was previously an MPR
-                    // created, but for some unforeseen reason, the initial PartTypeRetrieval didn't succeed.
-                    log.warn("Could not find {} from partner {}", materialNumber, partner.getBpnl());
+                if (mpr == null) {
+                    log.warn("Could not find partner CX number {} from partner {}", materialNumber, partner.getBpnl());
                     mprService.triggerPartTypeRetrievalTask(partner);
-
-                    relation = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber);
-                    material = relation != null ? relation.getMaterial() : null;
+                    mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber);
                 }
 
-                if (material == null) {
-                    log.error("Unknown Material");
+                if (mpr == null) {
+                    log.error("Unknown MaterialPartnerRelation for partner {} and partner CX number {}", partner.getBpnl(), materialNumber);
                     return null;
                 }
 
-                var mpr = mprService.find(material, partner);
-                if (mpr == null || !mpr.isPartnerSuppliesMaterial()) {
+                if (!mpr.isPartnerSuppliesMaterial()) {
                     // only send an answer if partner is registered as supplier
                     return null;
                 }
 
+                Material material = mpr.getMaterial();
+
                 if (notifyPartnerRequest) {
                     // request looks valid
-                    erpAdapterTriggerService.notifyPartnerRequest(bpnl, material.getOwnMaterialNumber(), AssetType.ITEM_STOCK_SUBMODEL, direction);
+                    erpAdapterTriggerService.notifyPartnerRequest(
+                            bpnl,
+                            material.getOwnMaterialNumber(),
+                            AssetType.ITEM_STOCK_SUBMODEL,
+                            direction
+                    );
                 }
 
                 var currentStocks = materialItemStockService.findByPartnerAndMaterial(partner, material);
