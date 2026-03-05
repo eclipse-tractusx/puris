@@ -17,11 +17,16 @@ headers {
 
 body:json {
   {
-      "parentMaterialNumber": "{{MATERIAL_NUMBER_CUSTOMER_2}}",
-      "childMaterialNumber": "{{MATERIAL_NUMBER_CUSTOMER}}",
+      "parentOwnMaterialNumber": "{{MATERIAL_NUMBER_CUSTOMER_2}}",
+      "childOwnMaterialNumber": "{{MATERIAL_NUMBER_CUSTOMER}}",
       "quantity": 5.0,
       "measurementUnit": "unit:piece"
   }
+}
+
+script:post-response {
+  const uuid = res.getBody().uuid;
+  bru.setVar("MATERIAL_RELATION_ID", uuid)
 }
 
 tests {

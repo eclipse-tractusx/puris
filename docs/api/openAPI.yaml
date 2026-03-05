@@ -734,7 +734,7 @@ components:
     MaterialRelationDto:
       additionalProperties: false
       properties:
-        childMaterialNumber:
+        childOwnMaterialNumber:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
@@ -785,7 +785,7 @@ components:
           - unit:day
           maxItems: 50
           type: string
-        parentMaterialNumber:
+        parentOwnMaterialNumber:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
@@ -805,9 +805,9 @@ components:
           maxItems: 50
           type: string
       required:
-      - childMaterialNumber
+      - childOwnMaterialNumber
       - measurementUnit
-      - parentMaterialNumber
+      - parentOwnMaterialNumber
       - quantity
       type: object
     MaterialStockDto:
@@ -2827,7 +2827,8 @@ paths:
       - material-relation-controller
     post:
       description: Creates a new MaterialRelation entity with the data given in the
-        request body.
+        request body. The fields validFrom and validTo can optionally be set. If validto
+        is set, validFrom is also required and needs to be before validTo.
       operationId: createMaterialRelation
       requestBody:
         content:
@@ -2859,6 +2860,43 @@ paths:
                 type: object
           description: Internal Server error.
       summary: Creates a Material Relation -- ADMIN ONLY
+      tags:
+      - material-relation-controller
+    put:
+      description: Updates an existing MaterialRelation entity with the data given
+        in the request body. The fields validFrom and validTo can optionally be set.If
+        validto is set, validFrom is also required and needs to be before validTo
+      operationId: updateMaterialRelation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialRelationDto'
+              additionalProperties: false
+        required: true
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: Successfully updated the MaterialRelation entity.
+        '400':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: Malformed request body.
+        '500':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: Internal Server error.
+      summary: Updates an existing Material Relation -- ADMIN ONLY
       tags:
       - material-relation-controller
   /materialpartnerrelations:

@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2025 Volkswagen AG
- * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2026 Volkswagen AG
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,12 +20,13 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.function.Function;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialRelationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +35,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MaterialRelationService {
     
-    @Autowired
     private MaterialRelationRepository materialRelationRepository;
+
+    protected final Function<MaterialRelation, Boolean> validator;
+
+    public MaterialRelationService(MaterialRelationRepository repository) {
+        this.materialRelationRepository = repository;
+        this.validator = this::validate;
+    }
     
     /**
      * Creates a new MaterialRelation entity.
@@ -45,14 +51,17 @@ public class MaterialRelationService {
      * @return the created MaterialRelation entity
      */
     public MaterialRelation create(MaterialRelation materialRelation) {
+        if (!validator.apply(materialRelation)) {
+            throw new IllegalArgumentException("Invalid material relation");
+        }
         MaterialRelation existingRelation = materialRelationRepository.findAll().stream()
-                .filter(rel -> rel.getParentMaterialNumber().equals(materialRelation.getParentMaterialNumber())
-                        && rel.getChildMaterialNumber().equals(materialRelation.getChildMaterialNumber()))
+                .filter(rel -> rel.getParentOwnMaterialNumber().equals(materialRelation.getParentOwnMaterialNumber())
+                        && rel.getChildOwnMaterialNumber().equals(materialRelation.getChildOwnMaterialNumber()))
                 .findFirst()
                 .orElse(null);
         if (existingRelation != null) {
             log.warn("MaterialRelation between parent '{}' and child '{}' already exists.",
-                    materialRelation.getParentMaterialNumber(), materialRelation.getChildMaterialNumber());
+                    materialRelation.getParentOwnMaterialNumber(), materialRelation.getChildOwnMaterialNumber());
             throw new KeyAlreadyExistsException();
         }
         Date now = new Date();
@@ -63,6 +72,45 @@ public class MaterialRelationService {
         log.info("Created MaterialRelation with UUID: {}", savedRelation.getUuid());
         return savedRelation;
     }
+
+    /**
+     * Updates an existing MaterialRelation entity
+     * 
+     * @param materialRelation the Materialrelation to update
+     * @return the updated MaterialRelation entity
+     */
+    public MaterialRelation update(MaterialRelation materialRelation) {
+        if (materialRelation.getUuid() == null) {
+            throw new IllegalArgumentException("Missing uuid. Cannot identify entity.");
+        }
+        MaterialRelation existingRelation = materialRelationRepository.findById(materialRelation.getUuid()).orElse(null);
+        if (existingRelation == null) {
+            log.warn("MaterialRelation with uuid {} does not exist.", materialRelation.getUuid());
+            throw new NoSuchElementException("Material relation does not exist.");
+        }
+        if (!validator.apply(materialRelation)) {
+            throw new IllegalArgumentException("Invalid material relation");
+        }
+        if (!materialRelation.getChildOwnMaterialNumber().equals(existingRelation.getChildOwnMaterialNumber())) {
+            log.warn("Cannot update childOwnMaterialNumber");
+            throw new IllegalArgumentException("Changing the childOwnMaterialNumber is not allowed.");
+        }
+        if (!materialRelation.getParentOwnMaterialNumber().equals(existingRelation.getParentOwnMaterialNumber())) {
+            log.warn("Cannot update parentOwnMaterialNumber");
+            throw new IllegalArgumentException("Changing the parentOwnMaterialNumber is not allowed.");
+        }
+        if (!materialRelation.getMeasurementUnit().equals(existingRelation.getMeasurementUnit())) {
+            log.warn("Cannot update measurementUnit");
+            throw new IllegalArgumentException("Changing the measurementUnit is not allowed.");
+        }
+        existingRelation.setQuantity(materialRelation.getQuantity());
+        existingRelation.setValidFrom(materialRelation.getValidFrom());
+        existingRelation.setValidTo(materialRelation.getValidTo());
+        existingRelation.setLastModifiedOn(new Date());
+        MaterialRelation updatedRelation = materialRelationRepository.save(existingRelation);
+        log.info("Updated MaterialRelation with UUID: {}", updatedRelation.getUuid());
+        return updatedRelation;
+    }
     
     /**
      * Retrieves all MaterialRelation entities.
@@ -71,5 +119,25 @@ public class MaterialRelationService {
      */
     public List<MaterialRelation> findAll() {
         return materialRelationRepository.findAll();
+    }
+
+    /**
+     * Validates a given material relation
+     * @param   materialRelation    the material relation entity to validate
+     * @return                      a boolean value indication whether or not eh validation passes
+     */
+    public boolean validate(MaterialRelation materialRelation) {
+        return 
+            materialRelation.getParentOwnMaterialNumber() != null &&
+            materialRelation.getChildOwnMaterialNumber() != null &&
+            materialRelation.getQuantity() > 0 &&
+            materialRelation.getMeasurementUnit() != null &&
+            (
+                materialRelation.getValidTo() == null || 
+                (
+                    materialRelation.getValidFrom() != null &&
+                    materialRelation.getValidFrom().compareTo(materialRelation.getValidTo()) < 0
+                )
+            );
     }
 }

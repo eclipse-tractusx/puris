@@ -30,7 +30,7 @@ tests {
     
       responseJson.forEach(function (obj) {
           expect(obj).to.have.property("ownMaterialNumber");
-          expect(obj.ownMaterialNumber).to.be.oneOf(["MNR-4177-S", bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER")]);
+          expect(obj.ownMaterialNumber).to.be.oneOf([bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER_2"), bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER")]);
   
           // Put found value into foundValues to ensure that each value is only found once
           expect(foundValues).to.not.include(obj.ownMaterialNumber);
