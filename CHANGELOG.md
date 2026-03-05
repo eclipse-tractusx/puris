@@ -22,6 +22,7 @@ The **need for configuration updates** is **marked bold**.
 - Added component to copy text to clipboard for puris frontend ([#1058](https://github.com/eclipse-tractusx/puris/pull/1058))
 - Added version to about license ([#1067](https://github.com/eclipse-tractusx/puris/pull/1067))
 - Added update flow to Material Details View buttons ([#1034](https://github.com/eclipse-tractusx/puris/pull/1034))
+- Added backend implementation for material relations ([#1097](https://github.com/eclipse-tractusx/puris/pull/1097))
 
 ### Changed
 
