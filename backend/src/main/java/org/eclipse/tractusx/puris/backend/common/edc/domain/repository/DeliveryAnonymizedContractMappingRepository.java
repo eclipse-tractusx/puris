@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026 Volkswagen AGs
+ * Copyright (c) 2026 Volkswagen AG
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.

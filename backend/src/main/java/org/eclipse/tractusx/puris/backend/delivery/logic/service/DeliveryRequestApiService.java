@@ -78,9 +78,14 @@ public class DeliveryRequestApiService {
 
         MaterialPartnerRelation mpr = identifyMprByPartnerAndCxNumber(partner, materialNumberCx);
         if (mpr == null) {
+            log.error(
+                "No material partner relation for BPNL '{}' and material global asset id '{}'. Abort answering delivery request.",
+                partner.getBpnl(),
+                materialNumberCx
+            );
             return null;
         }
-        List<OwnDelivery> currentDeliveries = getAllCurrentDeliveriesByPartnerAndMaterial(partner, mpr, materialNumberCx);
+        List<OwnDelivery> currentDeliveries = getAllCurrentDeliveriesByMprAndCxNumber(mpr, materialNumberCx);
         return sammMapper.ownDeliveryToSamm(currentDeliveries, partner, mpr.getMaterial());
     }
 
@@ -92,51 +97,53 @@ public class DeliveryRequestApiService {
         }
         MaterialPartnerRelation mpr = identifyMprByPartnerAndCxNumber(partner, materialNumberCx);
         if (mpr == null) {
+            log.error(
+                "No material partner relation for BPNL '{}' and material global asset id '{}'. Abort answering anonymized delivery request.",
+                partner.getBpnl(),
+                materialNumberCx
+            );
             return null;
         }
-        List<OwnDelivery> currentDeliveries = getAllCurrentDeliveriesByPartnerAndMaterial(partner, mpr, materialNumberCx);
+        List<OwnDelivery> currentDeliveries = getAllCurrentDeliveriesByMprAndCxNumber(mpr, materialNumberCx);
         return sammMapper.ownDeliveryToAnonymizedSamm(currentDeliveries, partner, mpr.getMaterial(), contractAgreementId);
     }
 
+    /**
+     * Attempts to identify the corresponding MPR for a given pair of a partner and a materialNumberCx.
+     * In case the materialNumberCx is found in a material the role of supplier is assumed and the corresponding MPR for the partner 
+     * and material returned.
+     * 
+     * If a matching material is not found, an MPR with a partnerCxNumber matching the materialNumberCx is looked up. If this search 
+     * is successful it is returned.
+     * 
+     * If the search for a fitting MPR is not successful, a PartTypeRetrievalTask is started in case the target MPR does not include the 
+     * partnerCxNumber yet. After the Retrieval task finishes a new search is done.
+     * 
+     * The result of the search is returned whether it's successful or not.
+     * 
+     * @param partner           the partner requesting data
+     * @param materialNumberCx  the materialNumberCx of the request
+     * @return                  the corresponding MPR for the given partner and materialNunberCx or null if none could be identified
+     */
     private MaterialPartnerRelation identifyMprByPartnerAndCxNumber(Partner partner, String materialNumberCx) {
         Material material = materialService.findByMaterialNumberCx(materialNumberCx);
         
-        // if a material with the given materialNumberCx exists we act as supplier and can directly search for the mpr by material and partner
         if (material != null) {
             return mprService.find(material.getOwnMaterialNumber(), partner.getBpnl());
         }
-        // in case the materialNumberCx is not known to us, we might still have an mpr with that partner cx number if the partner is a supplier. 
-        // In that case we can search for the mpr by partner and partner cx number
         MaterialPartnerRelation mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx);
-        // Could not identify partner cx number. I.e. we do not have that partner's
-        // CX id in one of our MaterialPartnerRelation entities. Try to fix this by
-        // looking for MPR's, where that partner is a supplier and where we don't have
-        // a partnerCXId yet. Of course this can only work if there was previously an MPR
-        // created, but for some unforeseen reason, the initial PartTypeRetrieval didn't succeed.
-        // Sidenote: This still means that the ShellDescriptor has not been created and someone tries to access our
-        // api without using the href from DTR
         if (mpr == null) {
             log.warn("Could not find " + materialNumberCx + " from partner " + partner.getBpnl());
-            log.warn("ATTENTION: PARTNER WITH BPNL {} ACCESSED THE SERVICE FOR A MATERIAL WITHOUT SHELL DESCRIPTOR " +
-                "IN DTR. THIS MIGHT BE A SECURITY ISSUE!", partner.getBpnl());
             mprService.triggerPartTypeRetrievalTask(partner);
-            // check if cx id is now given
             mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx);
-            if (mpr == null) {
-                log.error("No material partner relation for BPNL '{}' and material global asset id '{}'." +
-                        "Abort answering delivery request.",
-                    partner.getBpnl(),
-                    materialNumberCx
-                );
-            }
         }
         return mpr;
     }
 
-    private List<OwnDelivery> getAllCurrentDeliveriesByPartnerAndMaterial(Partner partner, MaterialPartnerRelation mpr, String materialNumberCx) {
+    private List<OwnDelivery> getAllCurrentDeliveriesByMprAndCxNumber(MaterialPartnerRelation mpr, String materialNumberCx) {
         Material material = mpr.getMaterial();
+        Partner partner = mpr.getPartner();
         boolean partnerIsCustomer = material.getMaterialNumberCx().equals(materialNumberCx);
-        mpr = mprService.find(material, partner);
         if ((partnerIsCustomer && !mpr.isPartnerBuysMaterial()) ||
             (!partnerIsCustomer && !mpr.isPartnerSuppliesMaterial())
         ) {
