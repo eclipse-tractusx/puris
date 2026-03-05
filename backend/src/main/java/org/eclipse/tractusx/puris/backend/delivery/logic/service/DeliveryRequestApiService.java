@@ -129,7 +129,7 @@ public class DeliveryRequestApiService {
         Material material = materialService.findByMaterialNumberCx(materialNumberCx);
         
         if (material != null) {
-            return mprService.find(material.getOwnMaterialNumber(), partner.getBpnl());
+            return mprService.find(partner.getBpnl(), material.getOwnMaterialNumber());
         }
         MaterialPartnerRelation mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx);
         if (mpr == null) {

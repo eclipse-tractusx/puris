@@ -1,0 +1,44 @@
+meta {
+  name: 03-Create Contract Definitiion
+  type: http
+  seq: 1
+  tags: [
+    share-enablement-services
+  ]
+}
+
+post {
+  url: {{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v3/contractdefinitions
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{SUPPLIER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+      "@context": {
+          "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+      },
+      "@id": "AnonymizedDeliveryContractDefinition",
+      "@type": "ContractDefinition",
+      "accessPolicyId": "AnonyimizedDeliveryAccessPolicy",
+      "contractPolicyId": "AnonyimizedDeliveryContractPolicy",
+      "assetsSelector" : {
+          "@type" : "CriterionDto",
+          "operandLeft": "{{EDC_NAMESPACE}}id",
+          "operator": "=",
+          "operandRight": "deliveryanonymizedsubmodel-api-asset@{{SUPPLIER_BPNL}}"
+      }
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
