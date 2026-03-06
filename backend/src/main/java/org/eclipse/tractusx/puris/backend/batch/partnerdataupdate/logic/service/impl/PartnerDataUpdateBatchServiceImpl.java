@@ -54,7 +54,7 @@ public class PartnerDataUpdateBatchServiceImpl implements PartnerDataUpdateBatch
     @Autowired
     private final ModelMapper mapper;
 
-    @Value("${puris.batch.partnerdataupdate.retention-days:30}")
+    @Value("${puris.batch.partnerdataupdate.cleanup.retention-days:30}")
     private int retentionDays;
 
     @Override

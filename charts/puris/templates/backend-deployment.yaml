@@ -201,8 +201,12 @@ spec:
               value: "{{ .Values.backend.puris.batch.partnerdataupdate.enabled }}"
             - name: PURIS_BATCH_PARTNERDATAUPDATE_CRON
               value: "{{ .Values.backend.puris.batch.partnerdataupdate.cron }}"
-            - name: PURIS_BATCH_PARTNERDATAUPDATE_RETENTION_DAYS
-              value: "{{ .Values.backend.puris.batch.partnerdataupdate.retentiondays }}"
+            - name: PURIS_BATCH_PARTNERDATAUPDATE_CLEANUP_ENABLED
+              value: "{{ .Values.backend.puris.batch.partnerdataupdate.cleanup.enabled }}"
+            - name: PURIS_BATCH_PARTNERDATAUPDATE_CLEANUP_CRON
+              value: "{{ .Values.backend.puris.batch.partnerdataupdate.cleanup.cron }}"
+            - name: PURIS_BATCH_PARTNERDATAUPDATE_CLEANUP_RETENTION_DAYS
+              value: "{{ .Values.backend.puris.batch.partnerdataupdate.cleanup.retentiondays }}"
 
             ######################################
             ## Additional environment variables ##
