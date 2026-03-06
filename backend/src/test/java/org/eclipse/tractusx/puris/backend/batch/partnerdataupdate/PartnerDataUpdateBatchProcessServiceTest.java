@@ -112,11 +112,6 @@ class PartnerDataUpdateBatchProcessServiceTest {
         MaterialPartnerRelation supplierMpr = new MaterialPartnerRelation(material, supplier, "supplier-part-id", true, false);
         MaterialPartnerRelation customerMpr = new MaterialPartnerRelation(material, customer, "customer-part-id", false, true);
         
-        PartnerDataUpdateBatchRun run = PartnerDataUpdateBatchRun.builder()
-            .startTime(OffsetDateTime.now(ZoneOffset.UTC))
-            .status(BatchRunStatusEnum.IN_PROGRESS)
-            .build();
-        
         // Prepare answers
         RefreshResult successResult = mock(RefreshResult.class);
         successResult.setMessage("Success");
@@ -150,8 +145,8 @@ class PartnerDataUpdateBatchProcessServiceTest {
         // then
         verify(itemStockService, times(1)).doItemStockSubmodelReportedMaterialItemStockRequest(eq(supplier), eq(material));
         verify(itemStockService, times(1)).doItemStockSubmodelReportedProductItemStockRequest(eq(customer), eq(material));
-        verify(daysOfSupplyService, times(1)).doReportedDaysOfSupplyRequest(eq(customer), eq(material), eq(DirectionCharacteristic.OUTBOUND));
-        verify(daysOfSupplyService, times(1)).doReportedDaysOfSupplyRequest(eq(supplier), eq(material), eq(DirectionCharacteristic.INBOUND));
+        verify(daysOfSupplyService, times(1)).doReportedDaysOfSupplyRequest(eq(customer), eq(material), eq(DirectionCharacteristic.INBOUND));
+        verify(daysOfSupplyService, times(1)).doReportedDaysOfSupplyRequest(eq(supplier), eq(material), eq(DirectionCharacteristic.OUTBOUND));
         verify(productionService, times(1)).doReportedProductionRequest(eq(supplier), eq(material));
         verify(demandService, times(1)).doReportedDemandRequest(eq(customer), eq(material));
         verify(deliveryService, times(1)).doReportedDeliveryRequest(eq(supplier), eq(material));
