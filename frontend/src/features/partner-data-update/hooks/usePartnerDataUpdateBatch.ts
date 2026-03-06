@@ -23,10 +23,10 @@ import { config } from '@models/constants/config';
 import AuthenticationService from '@services/authentication-service';
 import { BatchRunDto, BatchRunEntryDto } from '@models/types/data/batch';
 
-export const usePartnerDataUpdateBatch = (runId?: string, page?: number, size?: number) => {
+export const usePartnerDataUpdateBatch = (runId?: string, page?: number, size?: number, sort?: string) => {
   const base = config.app.BACKEND_BASE_URL;
   const endpoint = config.app.ENDPOINT_PARNTER_DATA_UPDATE_BATCH;
-  const runsUrl = `${base}${endpoint}?page=${page ?? 0}&size=${size ?? 20}&sort=startTime,desc`;
+  const runsUrl = `${base}${endpoint}?page=${page ?? 0}&size=${size ?? 20}${sort ? `&sort=${encodeURIComponent(sort)}` : ''}`;
   const entriesUrl = runId ? `${base}${endpoint}/${runId}/entries?page=${page ?? 0}&size=${size ?? 20}` : undefined;
 
   const { data: runs, error: runsError, isLoading: isLoadingRuns, refresh: refreshRuns } = useFetch<{ content: BatchRunDto[], totalElements:number }>(runsUrl);

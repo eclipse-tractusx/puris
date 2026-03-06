@@ -44,14 +44,22 @@ const statusColor = (status: string) => {
 export const BatchView = () => {
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(0);
+  const [sortModel, setSortModel] = useState<any>([{ field: 'startTime', sort: 'desc' }]);
   const [selected, setSelected] = useState<string | null>(null);
-  const { runs, isLoadingRuns, refreshRuns, triggerManualBatch } = usePartnerDataUpdateBatch(undefined, page, pageSize);
+  const sortParam = sortModel && sortModel.length > 0 ? `${sortModel[0].field},${sortModel[0].sort}` : undefined;
+  const { runs, isLoadingRuns, refreshRuns, triggerManualBatch } = usePartnerDataUpdateBatch(undefined, page, pageSize, sortParam);
   const rows = runs?.content as BatchRunDto[] ?? [];
 
   // refresh when paging changes to ensure data is reloaded
   React.useEffect(() => {
     void refreshRuns();
   }, [page, pageSize, refreshRuns]);
+
+  // refresh when sort changes; reset to first page
+  React.useEffect(() => {
+    setPage(0);
+    void refreshRuns();
+  }, [sortParam]);
 
   const columns = [
     { field: 'startTime', headerName: 'Start Time', flex: 1, renderCell: (params: any) => new Date(params.row.startTime).toLocaleString() },
@@ -85,6 +93,9 @@ export const BatchView = () => {
           paginationMode="server"
           paginationModel={{ page, pageSize }}
           onPaginationModelChange={(model: any) => { setPage(model.page); setPageSize(model.pageSize); }}
+          sortingMode="server"
+          sortModel={sortModel}
+          onSortModelChange={(model) => { setSortModel(model); }}
           pageSizeOptions={[5, 10, 20, 50]}
           onSelection={(ids) => setSelected((ids && ids.length > 0) ? (ids[0] as string) : null)}
           onRowClick={(params: any) => {
