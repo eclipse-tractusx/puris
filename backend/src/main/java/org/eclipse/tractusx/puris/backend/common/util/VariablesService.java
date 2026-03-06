@@ -162,6 +162,21 @@ public class VariablesService {
      */
     private String daysOfSupplySubmodelAssetId;
 
+    /**
+     * The url under which this application's anonymized delivery information request endpoint can
+     * be reached by external machines.
+     */
+    public String getDeliveryAnonymizedSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "delivery-information/anonymized/request";
+    }
+
+    @Value("${puris.deliveryanonymizedsubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the Anonymized Delivery Information request API
+     * during asset creation.
+     */
+    private String deliveryAnonymizedSubmodelApiAssetId;
+
     @Value("${puris.frameworkagreement.credential}")
     /**
      * The name of the framework agreement to be used.
@@ -334,6 +349,9 @@ public class VariablesService {
 
     public String getItemStockAnonymizedSubmodelApiAssetId() {
         return itemStockAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
+    
+    public String getDeliveryAnonymizedSubmodelApiAssetId() {
+        return deliveryAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
     }
 
     public String getNotificationApiAssetId() {

@@ -32,6 +32,7 @@ public enum AssetType {
     DAYS_OF_SUPPLY("urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply", "$value", "DaysOfSupply", "2.0"),
     PART_TYPE_INFORMATION_SUBMODEL("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value", "none", "1.0"),
     ITEM_STOCK_ANONYMIZED_SUBMODEL("urn:samm:io.catenax.item_stock_anonymized:1.0.0#ItemStockAnonymized", "$value", "none", "1.0");
+    DELIVERY_ANONYMIZED_SUBMODEL("urn:samm:io.catenax.delivery_information_anonymized:1.0.0#DeliveryInformationAnonymized", "$value", "none", "1.0");
 
     public final String URN_SEMANTIC_ID;
     public final String REPRESENTATION;
@@ -53,6 +54,8 @@ public enum AssetType {
                 AssetType.PART_TYPE_INFORMATION_SUBMODEL;
             case "urn:samm:io.catenax.item_stock_anonymized:1.0.0#ItemStockAnonymized" ->
                 AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL;
+            case "urn:samm:io.catenax.delivery_information_anonymized:1.0.0#DeliveryInformationAnonymized" ->
+                AssetType.DELIVERY_ANONYMIZED_SUBMODEL;
             default -> AssetType.DTR; // Handle unknown URN by returning a default enum value
         };
     }

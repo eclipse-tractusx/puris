@@ -199,6 +199,11 @@ public class EdcAdapterService {
             variablesService.getItemStockAnonymizedSubmodelEndpoint(),
             AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID
         )));
+        log.info("Registration of Anonymized Delivery Information 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getDeliveryAnonymizedSubmodelApiAssetId(),
+            variablesService.getDeliveryAnonymizedSubmodelEndpoint(),
+            AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID
+        )));
         log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
         result &= assetRegistration;
         return result;
@@ -628,6 +633,7 @@ public class EdcAdapterService {
             case NOTIFICATION -> throw new IllegalArgumentException("DemandAndCapacityNotification not supported");
             case DAYS_OF_SUPPLY -> fetchSubmodelDataByDirection(mpr, AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, direction);
             case ITEM_STOCK_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
         };
         boolean failed = true;
@@ -1063,6 +1069,7 @@ public class EdcAdapterService {
             case NOTIFICATION -> throw new IllegalArgumentException("DemandAndCapacityNotification not supported");
             case DAYS_OF_SUPPLY -> fetchSubmodelDataByDirection(mpr, AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, direction);
             case ITEM_STOCK_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
         };
         Map<String, String> equalFilters = new HashMap<>();

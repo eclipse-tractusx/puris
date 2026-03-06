@@ -19,6 +19,20 @@
 databaseChangeLog:
   - changeSet:
         id: "1"
+        author: ReneSchroederLJ
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: delivery_anonymized_contract_mapping_pkey
+                    name: partner_bpnl
+                    type: VARCHAR(255)
+              tableName: delivery_anonymized_contract_mapping
+   - changeSet:
+        id: "2"
         author: OlgaIvkovic
         changes:
           - createTable:
