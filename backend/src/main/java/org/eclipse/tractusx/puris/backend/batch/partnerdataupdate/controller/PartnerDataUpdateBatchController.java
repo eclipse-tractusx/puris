@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/admin/batch/partner-data-update")
+@RequestMapping("/batch/partner-data-update")
 @Slf4j
 public class PartnerDataUpdateBatchController {
 

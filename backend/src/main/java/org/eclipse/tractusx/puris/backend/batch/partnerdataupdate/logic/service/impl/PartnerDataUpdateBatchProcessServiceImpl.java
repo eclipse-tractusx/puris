@@ -219,7 +219,6 @@ public class PartnerDataUpdateBatchProcessServiceImpl implements PartnerDataUpda
         try {
             PartnerDataUpdateBatchRunEntry entry = new PartnerDataUpdateBatchRunEntry();
             entry.setBatchRun(this.currentRun);
-            entry.setPartnerId(partner.getUuid());
             entry.setOwnMaterialNumber(material.getOwnMaterialNumber());
             entry.setPartnerBpnl(partner.getBpnl());
             entry.setPartnerName(partner.getName());

@@ -83,14 +83,14 @@ public class PartnerDataUpdateBatchControllerTest {
         Page<PartnerDataUpdateBatchRun> mockPage = new PageImpl<>(list, pageable, list.size());
 
         when(batchService.findAll(any(Pageable.class))).thenReturn(mockPage);
-        mockMvc.perform(get("/admin/batch/partner-data-update"))
+        mockMvc.perform(get("/batch/partner-data-update"))
             .andExpect(status().isOk());
     }
 
     @Test
     void history_AsUser_Returns401() throws Exception {
         // no api key header -> unauthorized/forbidden
-        mockMvc.perform(get("/admin/batch/partner-data-update")).andExpect(status().is(401));
+        mockMvc.perform(get("/batch/partner-data-update")).andExpect(status().is(401));
     }
 }
 
