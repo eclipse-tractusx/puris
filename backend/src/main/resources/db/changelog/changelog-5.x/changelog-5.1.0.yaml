@@ -31,7 +31,7 @@ databaseChangeLog:
                     name: partner_bpnl
                     type: VARCHAR(255)
               tableName: delivery_anonymized_contract_mapping
-   - changeSet:
+  - changeSet:
         id: "2"
         author: OlgaIvkovic
         changes:
