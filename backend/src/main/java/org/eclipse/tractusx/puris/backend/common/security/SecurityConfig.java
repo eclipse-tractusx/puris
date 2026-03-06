@@ -122,7 +122,8 @@ public class SecurityConfig {
                         "/edc/**",
                         "/erp-adapter/**",
                         "/parttypeinformation/**",
-                        "/files/**"
+                        "/files/**",
+                        "/admin/**"
                     )
                     .authenticated()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/health/**").permitAll()
