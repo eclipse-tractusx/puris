@@ -35,6 +35,7 @@ import { MaterialListView } from '@views/MaterialListView';
 import { MaterialDetailView } from '@views/MaterialDetailView';
 import { ImportExportView } from '@views/ImportExportView';
 import { MasterDataView } from '@features/master-data/components/MasterDataView';
+import BatchView from '@features/partner-data-update/components/BatchView';
 
 export const router = createBrowserRouter([
     {
@@ -78,6 +79,10 @@ export const router = createBrowserRouter([
                     {
                         path: 'import',
                         element: <ImportExportView />,
+                    },
+                    {
+                        path: 'admin/partner-data-batch',
+                        element: <BatchView />,
                     },
                     {
                         path: 'master-data',

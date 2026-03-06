@@ -48,6 +48,7 @@ import {
     ModeEditOutlineOutlined,
     NotificationsOutlined,
     SyncAltOutlined,
+    LoopOutlined as LoopIcon,
 } from '@mui/icons-material';
 import { visuallyHidden } from '@mui/utils';
 import { Link, useLocation } from 'react-router-dom';
@@ -129,6 +130,7 @@ const sideBarItems: SideBarItemProps[] = [
     { name: 'Transfers', icon: <SyncAltOutlined />, path: '/transfers', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'User Guide', icon: <HelpOutlineOutlined />, path: '/user-guide' },
     { name: 'About License', icon: <InfoOutlined/>, path: '/about-license'},
+    { name: 'Partner Data Batch', icon: <LoopIcon />, path: '/admin/partner-data-batch', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'Logout', icon: <LogoutOutlined />, action: AuthenticationService.logout, variant: 'button' },
 ];
 
