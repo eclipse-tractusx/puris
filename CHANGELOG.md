@@ -24,6 +24,7 @@ The **need for configuration updates** is **marked bold**.
 - Added update flow to Material Details View buttons ([#1034](https://github.com/eclipse-tractusx/puris/pull/1034))
 - Add Update Partner Data Batch
   - Prepare backend for batch ([#1105](https://github.com/eclipse-tractusx/puris/pull/1105))
+  - Incorporate scheduling service, controllers and test ([#1106](https://github.com/eclipse-tractusx/puris/pull/1106))
 
 ### Changed
 
