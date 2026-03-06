@@ -349,6 +349,7 @@ public class VariablesService {
 
     public String getItemStockAnonymizedSubmodelApiAssetId() {
         return itemStockAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
+    }
     
     public String getDeliveryAnonymizedSubmodelApiAssetId() {
         return deliveryAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
