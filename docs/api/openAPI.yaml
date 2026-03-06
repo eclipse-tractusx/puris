@@ -89,6 +89,26 @@ components:
       - plannedProductionQuantity
       - productionSiteBpns
       type: object
+    AllocatedStockAnonymized:
+      additionalProperties: false
+      properties:
+        isBlocked:
+          type: boolean
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        quantityOnAllocatedStock:
+          $ref: '#/components/schemas/ItemQuantityEntity'
+        stockLocationBPNSAnonymized:
+          maxItems: 50
+          type: string
+      required:
+      - isBlocked
+      - lastUpdatedOnDateTime
+      - quantityOnAllocatedStock
+      - stockLocationBPNSAnonymized
+      type: object
     Classification:
       additionalProperties: false
       properties:
@@ -659,6 +679,29 @@ components:
       required:
       - unit
       - value
+      type: object
+    ItemStockAnonymizedSamm:
+      additionalProperties: false
+      properties:
+        allocatedStocksAnonymized:
+          items:
+            $ref: '#/components/schemas/AllocatedStockAnonymized'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        direction:
+          enum:
+          - INBOUND
+          - OUTBOUND
+          maxItems: 50
+          type: string
+        materialGlobalAssetIdAnonymized:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+      required:
+      - allocatedStocksAnonymized
+      - direction
       type: object
     ItemStockSamm:
       additionalProperties: false
@@ -2656,6 +2699,7 @@ paths:
           - NOTIFICATION
           - DAYS_OF_SUPPLY
           - PART_TYPE_INFORMATION_SUBMODEL
+          - ITEM_STOCK_ANONYMIZED_SUBMODEL
           - DELIVERY_ANONYMIZED_SUBMODEL
           maxItems: 50
           type: string
@@ -2749,6 +2793,66 @@ paths:
       summary: Import data via excel file -- ADMIN ONLY
       tags:
       - file-controller
+  /item-stock/anonymized/request/{materialnumber}/{direction}/submodel/{representation}:
+    get:
+      operationId: getAnonymizedItemStockMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: header
+        name: edc-contract-agreement-id
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: materialnumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: direction
+        required: true
+        schema:
+          additionalProperties: false
+          enum:
+          - INBOUND
+          - OUTBOUND
+          maxItems: 50
+          type: string
+      - in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ItemStockAnonymizedSamm'
+                additionalProperties: false
+          description: Ok
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '501':
+          description: Unsupported representation
+      summary: 'This endpoint receives the ItemStockAnonymized Submodel 1.0.0 requests.
+        This endpoint is meant to be accessed by partners via EDC only. '
+      tags:
+      - item-stock-request-api-controller
   /item-stock/request/{materialnumber}/{direction}/submodel/{representation}:
     get:
       operationId: getMappingItemStock2

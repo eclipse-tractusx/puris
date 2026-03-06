@@ -20,9 +20,6 @@
 
 package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,11 +33,18 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ItemStockSammMapper;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockAnonymizedSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -72,64 +76,111 @@ public class ItemStockRequestApiService {
     private ObjectMapper objectMapper;
 
     public ItemStockSamm handleItemStockSubmodelRequest(String bpnl, String materialNumber, DirectionCharacteristic direction) {
-        Partner partner = partnerService.findByBpnl(bpnl);
-        if (partner == null) {
-            log.error("Unknown Partner BPNL " + bpnl);
+        ItemStockRequestData data = getItemStockRequestData(bpnl, materialNumber, direction, true);
+        if (data == null) {
             return null;
         }
+
+        return switch (direction) {
+            case OUTBOUND -> sammMapper.productItemStocksToItemStockSamm(data.productStocks(), data.partner(), data.material());
+            case INBOUND -> sammMapper.materialItemStocksToItemStockSamm(data.materialStocks(), data.partner(), data.material());
+            default -> null;
+        };
+
+    }
+
+    public ItemStockAnonymizedSamm handleItemStockAnonymizedSubmodelRequest(String bpnl, String materialNumber, DirectionCharacteristic direction, String contractAgreementId) {
+        ItemStockRequestData data = getItemStockRequestData(bpnl, materialNumber, direction, false);
+        if (data == null) {
+            return null;
+        }
+
+        return switch (direction) {
+            case OUTBOUND -> sammMapper.productItemStocksToItemStockAnonymizedSamm(data.productStocks(), data.partner(), data.material(), contractAgreementId);
+            case INBOUND -> sammMapper.materialItemStocksToItemStockAnonymizedSamm(data.materialStocks(), data.partner(), data.material(), contractAgreementId);
+            default -> null;
+        };
+
+    }
+
+    private ItemStockRequestData getItemStockRequestData(String bpnl, String materialNumber, DirectionCharacteristic direction, boolean notifyPartnerRequest) {
+        Partner partner = partnerService.findByBpnl(bpnl);
+        if (partner == null) {
+            log.error("Unknown Partner BPNL {}", bpnl);
+            return null;
+        }
+
         switch (direction) {
             case OUTBOUND -> {
                 // Partner is customer, requesting our ProductItemStocks for him
-                // materialNumber is own CX id:
+                // materialNumber is own CX id
                 Material material = materialService.findByMaterialNumberCx(materialNumber);
-                if (material != null && mprService.find(material, partner).isPartnerBuysMaterial()) {
-                    // only send an answer if partner is registered as customer
-                    var currentStocks = productItemStockService.findByPartnerAndMaterial(partner, material);
-
-                    erpAdapterTriggerService.notifyPartnerRequest(bpnl, material.getOwnMaterialNumber(), AssetType.ITEM_STOCK_SUBMODEL, direction);
-
-                    return sammMapper.productItemStocksToItemStockSamm(currentStocks, partner, material);
-                }
-                return null;
-            }
-            case INBOUND -> {
-                // Partner is supplier, requesting our MaterialItemStocks from him
-                // materialNumber is partner's CX id:
-                Material material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber).getMaterial();
                 if (material == null) {
-                    // Could not identify partner cx number. I.e. we do not have that partner's
-                    // CX id in one of our MaterialPartnerRelation entities. Try to fix this by
-                    // looking for MPR's, where that partner is a supplier and where we don't have
-                    // a partnerCXId yet. Of course this can only work if there was previously an MPR
-                    // created, but for some unforeseen reason, the initial PartTypeRetrieval didn't succeed.
-                    log.warn("Could not find " + materialNumber + " from partner " + partner.getBpnl());
-                    mprService.triggerPartTypeRetrievalTask(partner);
-                    material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber).getMaterial();
-                }
-
-                if (material == null) {
-                    log.error("Unknown Material");
                     return null;
                 }
+
                 var mpr = mprService.find(material, partner);
-                if (mpr == null || !mpr.isPartnerSuppliesMaterial()) {
+                if (mpr == null || !mpr.isPartnerBuysMaterial()) {
+                    return null;
+                }
+
+                if (notifyPartnerRequest) {
+                    erpAdapterTriggerService.notifyPartnerRequest(bpnl, material.getOwnMaterialNumber(), AssetType.ITEM_STOCK_SUBMODEL, direction);
+                }
+
+                var currentStocks = productItemStockService.findByPartnerAndMaterial(partner, material);
+                return new ItemStockRequestData(partner, material, currentStocks, null);
+            }
+
+            case INBOUND -> {
+                // Partner is supplier, requesting our MaterialItemStocks from him
+                // materialNumber is partner's CX id
+                var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber);
+
+                if (mpr == null) {
+                    log.warn("Could not find partner CX number {} from partner {}", materialNumber, partner.getBpnl());
+                    mprService.triggerPartTypeRetrievalTask(partner);
+                    mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber);
+                }
+
+                if (mpr == null) {
+                    log.error("Unknown MaterialPartnerRelation for partner {} and partner CX number {}", partner.getBpnl(), materialNumber);
+                    return null;
+                }
+
+                if (!mpr.isPartnerSuppliesMaterial()) {
                     // only send an answer if partner is registered as supplier
                     return null;
                 }
 
-                // request looks valid
-                erpAdapterTriggerService.notifyPartnerRequest(bpnl, material.getOwnMaterialNumber(), AssetType.ITEM_STOCK_SUBMODEL, direction);
+                Material material = mpr.getMaterial();
+
+                if (notifyPartnerRequest) {
+                    // request looks valid
+                    erpAdapterTriggerService.notifyPartnerRequest(
+                            bpnl,
+                            material.getOwnMaterialNumber(),
+                            AssetType.ITEM_STOCK_SUBMODEL,
+                            direction
+                    );
+                }
+
                 var currentStocks = materialItemStockService.findByPartnerAndMaterial(partner, material);
-
-                return sammMapper.materialItemStocksToItemStockSamm(currentStocks, partner, material);
-
+                return new ItemStockRequestData(partner, material, null, currentStocks);
             }
+
             default -> {
                 return null;
             }
         }
-
     }
+
+    private record ItemStockRequestData(
+            Partner partner,
+            Material material,
+            List<ProductItemStock> productStocks,
+            List<MaterialItemStock> materialStocks
+    ) {}
 
     public RefreshResult doItemStockSubmodelReportedMaterialItemStockRequest(Partner partner, Material material) {
         List<RefreshError> errors = new ArrayList<>();
