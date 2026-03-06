@@ -22,7 +22,6 @@ import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.domain.model.P
 import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.domain.model.PartnerDataUpdateBatchRunEntry;
 import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.logic.dto.PartnerDataUpdateBatchRunDto;
 import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.logic.dto.PartnerDataUpdateBatchRunEntryDto;
-import org.eclipse.tractusx.puris.backend.batch.domain.model.BatchRunEntryStatusEnum;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.config.Configuration.AccessLevel;
@@ -51,13 +50,8 @@ public class ModelMapperConfig {
             long duration = 0;
             if (src.getStartTime() != null && src.getEndTime() != null) {
                 duration = Duration.between(src.getStartTime(), src.getEndTime()).getSeconds();
-            }else{
-
-                log.warn("Start or end time is null.");
             }
-            // int totalEntries = src.getEntries() == null ? 0 : src.getEntries().size();
-            // int errors = src.getEntries() == null ? 0 : (int) src.getEntries().stream().filter(e -> e.getStatus() == BatchRunEntryStatusEnum.ERROR).count();
-
+            
             return PartnerDataUpdateBatchRunDto.builder()
                     .id(src.getId())
                     .startTime(src.getStartTime())
