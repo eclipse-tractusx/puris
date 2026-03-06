@@ -25,6 +25,7 @@ The **need for configuration updates** is **marked bold**.
 - Add Update Partner Data Batch
   - Prepare backend for batch ([#1105](https://github.com/eclipse-tractusx/puris/pull/1105))
   - Incorporate scheduling service, controllers and test ([#1106](https://github.com/eclipse-tractusx/puris/pull/1106))
+  - Implement frontend, cleanup scheduler and documentation ([#1107](https://github.com/eclipse-tractusx/puris/pull/1107))
 
 ### Changed
 

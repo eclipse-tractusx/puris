@@ -55,7 +55,7 @@ services:
       - ENDPOINT_ALL_MATERIALS=materials
       - ENDPOINT_ALL_PARTNERS=partners
       - ENDPOINT_MATERIAL_PARTNER_RELATIONS=materialpartnerrelations      
-      - ENDPOINT_PARNTER_DATA_UPDATE_BATCH=admin/batch/partner-data-update
+      - ENDPOINT_PARNTER_DATA_UPDATE_BATCH=batch/partner-data-update
       - IDP_URL=http://127.0.0.1:10081/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-customer
@@ -252,7 +252,7 @@ services:
       - ENDPOINT_ALL_MATERIALS=materials
       - ENDPOINT_ALL_PARTNERS=partners
       - ENDPOINT_MATERIAL_PARTNER_RELATIONS=materialpartnerrelations
-      - ENDPOINT_PARNTER_DATA_UPDATE_BATCH=admin/batch/partner-data-update
+      - ENDPOINT_PARNTER_DATA_UPDATE_BATCH=batch/partner-data-update
       - IDP_URL=http://127.0.0.1:10081/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-supplier
