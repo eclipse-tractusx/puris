@@ -76,11 +76,6 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: partner_id
-                  type: UUID
-                  constraints:
-                    nullable: false
-              - column:
                   name: own_material_number
                   type: VARCHAR(255)
                   constraints:

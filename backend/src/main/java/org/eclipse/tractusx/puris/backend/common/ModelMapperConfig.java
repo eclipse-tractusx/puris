@@ -74,7 +74,6 @@ public class ModelMapperConfig {
             if (src == null) return null;
             return PartnerDataUpdateBatchRunEntryDto.builder()
                     .id(src.getId())
-                    .partnerId(src.getPartnerId())
                     .ownMaterialNumber(src.getOwnMaterialNumber())
                     .partnerBpnl(src.getPartnerBpnl())
                     .partnerName(src.getPartnerName())

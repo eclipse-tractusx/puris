@@ -48,10 +48,6 @@ public class PartnerDataUpdateBatchRunEntry {
 
     @NotNull
     @Column(nullable = false)
-    private UUID partnerId;
-
-    @NotNull
-    @Column(nullable = false)
     private String ownMaterialNumber;
 
     @NotNull

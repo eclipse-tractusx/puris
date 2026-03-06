@@ -39,9 +39,6 @@ public class PartnerDataUpdateBatchRunEntryDto {
     private UUID id;
 
     @NotNull
-    private UUID materialId;
-
-    @NotNull
     private UUID partnerId;
 
     @NotNull
