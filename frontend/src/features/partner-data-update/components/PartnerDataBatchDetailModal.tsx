@@ -19,8 +19,8 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 import { useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, Tooltip } from '@mui/material';
-import { GridColDef } from '@mui/x-data-grid';
+import { Dialog, DialogTitle, DialogContent, Tooltip, Theme } from '@mui/material';
+import { GridColDef, GridPaginationModel, GridRowClassNameParams, GridRowModel } from '@mui/x-data-grid';
 import { Table } from '@catena-x/portal-shared-components';
 import usePartnerDataUpdateBatch from '../hooks/usePartnerDataUpdateBatch';
 import { BatchRunEntryDto } from '@models/types/data/batch';
@@ -38,7 +38,7 @@ const PartnerDataBatchDetailModal = ({ open, onClose, runId }: Props) => {
   const { entries, isLoadingEntries, refreshEntries } = usePartnerDataUpdateBatch(runId ?? undefined, page, pageSize);
 
   const rows = entries?.content as BatchRunEntryDto[] ?? [];
-  const total = entries?.totalElements ?? 0;
+  const total = entries?.page.totalElements ?? 0;
 
   const columns: GridColDef[] = [
     { field: 'ownMaterialNumber', headerName: 'Material', flex: 1 },
@@ -66,17 +66,17 @@ const PartnerDataBatchDetailModal = ({ open, onClose, runId }: Props) => {
             pagination
             paginationMode="server"
             paginationModel={{ page, pageSize }}
-            onPaginationModelChange={(model: any) => { setPage(model.page); setPageSize(model.pageSize); }}
+            onPaginationModelChange={(model: GridPaginationModel) => { setPage(model.page); setPageSize(model.pageSize); }}
             pageSizeOptions={[5, 10, 20, 50]}
-            getRowId={(r: any) => r.id}
-            getRowClassName={(params: any) => params.row?.status === 'ERROR' ? 'error-row' : ''}
+            getRowId={(r: GridRowModel) => r.id}
+            getRowClassName={(params: GridRowClassNameParams) => params.row?.status === 'ERROR' ? 'error-row' : ''}
             sx={{
               '& .error-row': {
                 bgcolor: 'transparent',
-                borderLeft: (theme: any) => `4px solid ${theme.palette.error.main}`,
+                borderLeft: (theme: Theme) => `4px solid ${theme.palette.error.main}`,
               },
               '& .error-row .MuiDataGrid-cell': {
-                color: (theme: any) => theme.palette.error.main,
+                color: (theme: Theme) => theme.palette.error.main,
               },
               '& .error-text': {
                 color: 'inherit',

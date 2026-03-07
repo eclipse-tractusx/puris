@@ -1006,8 +1006,6 @@ components:
           - IN_PROGRESS
           - COMPLETED
           - COMPLETED_WITH_ERRORS
-          - FAILED
-          - CANCELLED
           maxItems: 50
           type: string
         totalEntries:
@@ -1066,7 +1064,6 @@ components:
           enum:
           - SUCCESS
           - ERROR
-          - SKIPPED
           maxItems: 50
           type: string
       required:

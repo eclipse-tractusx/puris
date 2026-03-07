@@ -20,11 +20,10 @@ SPDX-License-Identifier: Apache-2.0
 */
 import React, { useState } from 'react';
 import { Box, Button, Chip, Stack } from '@mui/material';
-import { GridRenderCellParams } from '@mui/x-data-grid';
+import { GridPaginationModel, GridRenderCellParams, GridRowParams, GridSortModel } from '@mui/x-data-grid';
 import { Table } from '@catena-x/portal-shared-components';
 import usePartnerDataUpdateBatch from '../hooks/usePartnerDataUpdateBatch';
 import PartnerDataBatchDetailModal from './PartnerDataBatchDetailModal';
-import { BatchRunDto } from '@models/types/data/batch';
 
 const statusColor = (status: string) => {
   switch (status) {
@@ -98,13 +97,11 @@ export const BatchView = () => {
           onSortModelChange={(model) => { setSortModel(model); }}
           pageSizeOptions={[5, 10, 20, 50]}
           onSelection={(ids) => setSelected((ids && ids.length > 0) ? (ids[0] as string) : null)}
-          onRowClick={(params: any) => {
-            const id = params?.id ?? params?.row?.id ?? (params?.row && params.row[0]);
-            setSelected(id ?? null);
+          onRowClick={(params: GridRowParams) => {
+            setSelected(params?.id.toString() ?? null);
           }}
-          onRowDoubleClick={(params: any) => {
-            const id = params?.id ?? params?.row?.id ?? null;
-            setSelected(id);
+          onRowDoubleClick={(params: GridRowParams) => {
+            setSelected(params?.id.toString() ?? null);
           }}
         />
       </div>

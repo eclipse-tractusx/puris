@@ -22,6 +22,7 @@ import { useFetch } from '@hooks/useFetch';
 import { config } from '@models/constants/config';
 import AuthenticationService from '@services/authentication-service';
 import { BatchRunDto, BatchRunEntryDto } from '@models/types/data/batch';
+import { Pagination } from '@models/types/data/pagination';
 
 export const usePartnerDataUpdateBatch = (runId?: string, page?: number, size?: number, sort?: string) => {
   const base = config.app.BACKEND_BASE_URL;

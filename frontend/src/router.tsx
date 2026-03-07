@@ -81,7 +81,7 @@ export const router = createBrowserRouter([
                         element: <ImportExportView />,
                     },
                     {
-                        path: 'admin/partner-data-batch',
+                        path: 'batch/partner-data-batch',
                         element: <BatchView />,
                     },
                     {
