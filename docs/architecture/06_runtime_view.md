@@ -48,6 +48,8 @@ Central Services, such as the `Credential Service` and `Secure Token Service` ar
 
 ![Overview of Submodel Request through the EDC including Digital Twin determination](img/06-api-flow-detailed.svg)
 
+The `PartnerDataUpdateBatch`
+
 ## Scenario: Create Digital Twins for Material or Product
 
 A Digital Twin is created for partners as soon as at least one buyer or supplier is known.
