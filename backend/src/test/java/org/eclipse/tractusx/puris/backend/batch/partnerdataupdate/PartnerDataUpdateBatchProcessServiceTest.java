@@ -47,8 +47,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -101,7 +99,7 @@ class PartnerDataUpdateBatchProcessServiceTest {
         supplier = new Partner();
         supplier.setUuid(UUID.randomUUID());
         supplier.setBpnl(SUPPLIER_BPNL);
-        supplier.setName("Partner 1");
+        supplier.setName("Partner 2");
     }
 
     @Test

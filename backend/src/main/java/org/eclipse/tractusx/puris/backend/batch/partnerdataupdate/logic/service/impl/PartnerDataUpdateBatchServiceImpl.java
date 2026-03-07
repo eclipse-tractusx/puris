@@ -24,14 +24,10 @@ import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.domain.model.P
 import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.domain.model.PartnerDataUpdateBatchRunEntry;
 import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.domain.repository.PartnerDataUpdateBatchRunEntryRepository;
 import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.domain.repository.PartnerDataUpdateBatchRunRepository;
-import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.logic.dto.PartnerDataUpdateBatchRunDto;
-import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.logic.dto.PartnerDataUpdateBatchRunEntryDto;
 import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.logic.service.PartnerDataUpdateBatchService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -51,8 +47,6 @@ public class PartnerDataUpdateBatchServiceImpl implements PartnerDataUpdateBatch
     private final PartnerDataUpdateBatchRunRepository runRepository;
     @Autowired
     private final PartnerDataUpdateBatchRunEntryRepository entryRepository;
-    @Autowired
-    private final ModelMapper mapper;
 
     @Value("${puris.batch.partnerdataupdate.cleanup.retention-days:30}")
     private int retentionDays;

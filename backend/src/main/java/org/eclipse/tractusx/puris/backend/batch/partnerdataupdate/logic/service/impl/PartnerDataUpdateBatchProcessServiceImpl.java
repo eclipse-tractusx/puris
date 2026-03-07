@@ -43,7 +43,6 @@ import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -95,10 +94,9 @@ public class PartnerDataUpdateBatchProcessServiceImpl implements PartnerDataUpda
             var material = mpr.getMaterial();
             var partner = mpr.getPartner();
 
-            DirectionEnum dirEnum = mpr.isPartnerSuppliesMaterial() ? DirectionEnum.INBOUND : DirectionEnum.OUTBOUND;
-
             if (mpr.isPartnerSuppliesMaterial()) {
                 // INBOUND -> supplier provides material (call material item stock, production, delivery)
+                DirectionEnum dirEnum = DirectionEnum.INBOUND;
                 // Item Stock (Material)
                 try {
                     RefreshResult res = itemStockService.doItemStockSubmodelReportedMaterialItemStockRequest(partner, material);
@@ -153,6 +151,7 @@ public class PartnerDataUpdateBatchProcessServiceImpl implements PartnerDataUpda
             }
 
             if (mpr.isPartnerBuysMaterial()) {
+                DirectionEnum dirEnum = DirectionEnum.OUTBOUND;
                 // OUTBOUND -> partner buys product (call product item stock, demand, delivery)
                 try {
                     RefreshResult res = itemStockService.doItemStockSubmodelReportedProductItemStockRequest(partner, material);
