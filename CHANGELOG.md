@@ -31,6 +31,11 @@ The **need for configuration updates** is **marked bold**.
 
 - switch to ssi-dim-wallet-stub instead of own mock-util-service (now DCP 1.0 is used) ([#1066](https://github.com/eclipse-tractusx/puris/pull/1066))
 - parametrize business partner identifiers in local deployment ([#1073](https://github.com/eclipse-tractusx/puris/pull/1073))
+- Bump frontend dependencies ([#1107](https://github.com/eclipse-tractusx/puris/pull/1107))
+  - `rollup` from `4.28.0` to `4.59.0`
+  - `@remix-run/route` from `1.14.2` to `1.32.2`
+  - `minimatch` (eslint) from `3.1.2` to `3.15`
+  - `minimatch` (eslint-plugin) from `9.0.5` to `9.0.9`
 
 ### Fixes
 
