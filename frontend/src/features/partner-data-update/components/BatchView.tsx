@@ -44,11 +44,11 @@ const statusColor = (status: string) => {
 export const BatchView = () => {
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(0);
-  const [sortModel, setSortModel] = useState<any>([{ field: 'startTime', sort: 'desc' }]);
+  const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'startTime', sort: 'desc' }]);
   const [selected, setSelected] = useState<string | null>(null);
   const sortParam = sortModel && sortModel.length > 0 ? `${sortModel[0].field},${sortModel[0].sort}` : undefined;
   const { runs, isLoadingRuns, refreshRuns, triggerManualBatch } = usePartnerDataUpdateBatch(undefined, page, pageSize, sortParam);
-  const rows = runs?.content as BatchRunDto[] ?? [];
+  const rows = runs?.content ?? [];
 
   // refresh when paging changes to ensure data is reloaded
   React.useEffect(() => {
@@ -62,8 +62,8 @@ export const BatchView = () => {
   }, [sortParam]);
 
   const columns = [
-    { field: 'startTime', headerName: 'Start Time', flex: 1, renderCell: (params: any) => new Date(params.row.startTime).toLocaleString() },
-    { field: 'endTime', headerName: 'End Time', flex: 1, renderCell: (params: any) => params.row.endTime ? new Date(params.row.endTime).toLocaleString() : '-' },
+    { field: 'startTime', headerName: 'Start Time', flex: 1, renderCell: (params: GridRenderCellParams) => new Date(params.row.startTime).toLocaleString() },
+    { field: 'endTime', headerName: 'End Time', flex: 1, renderCell: (params: GridRenderCellParams) => params.row.endTime ? new Date(params.row.endTime).toLocaleString() : '-' },
     { field: 'durationInSeconds', headerName: 'Duration (s)', flex: 0.5 },
     { field: 'status', headerName: 'Status', flex: 0.5, renderCell: (params: GridRenderCellParams) => (
         <Chip label={params.value} color={statusColor(params.value)} size="small" />
@@ -86,13 +86,13 @@ export const BatchView = () => {
           title="Partner Data Update Runs"
           columns={columns}
           rows={rows}
-          rowCount={runs?.totalElements ?? 0}
+          rowCount={runs?.page.totalElements ?? 0}
           loading={isLoadingRuns}
           reload={() => refreshRuns()}
           pagination
           paginationMode="server"
           paginationModel={{ page, pageSize }}
-          onPaginationModelChange={(model: any) => { setPage(model.page); setPageSize(model.pageSize); }}
+          onPaginationModelChange={(model: GridPaginationModel) => { setPage(model.page); setPageSize(model.pageSize); }}
           sortingMode="server"
           sortModel={sortModel}
           onSortModelChange={(model) => { setSortModel(model); }}
