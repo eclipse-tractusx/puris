@@ -23,4 +23,3 @@ public enum BatchRunStatusEnum {
     COMPLETED,
     COMPLETED_WITH_ERRORS
 }
-
