@@ -547,7 +547,6 @@ backend:
       # -- Period since last received partner request after which no more new update requests to the
       # erp adapter will be sent (days)
       timelimit: 7
-    
     batch:
       partnerdataupdate:
         # -- if true, the partner data update is triggered for all materials and partners onboarded; else not.
