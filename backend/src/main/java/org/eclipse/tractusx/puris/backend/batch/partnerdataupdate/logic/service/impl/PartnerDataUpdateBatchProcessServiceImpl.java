@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshError;
@@ -74,139 +75,153 @@ public class PartnerDataUpdateBatchProcessServiceImpl implements PartnerDataUpda
     @Autowired
     private DaysOfSupplyRequestApiService daysOfSupplyService;
 
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
+
     private volatile PartnerDataUpdateBatchRun currentRun;
 
     @Override
     @Async
     public void executeFullBatch() {
-        PartnerDataUpdateBatchRun run = new PartnerDataUpdateBatchRun();
-        run.setStartTime(OffsetDateTime.now(ZoneOffset.UTC));
-        run.setStatus(BatchRunStatusEnum.IN_PROGRESS);
-        run = runRepository.save(run);
 
-        // remember current run for addEntry helper
-        this.currentRun = run;
-
-        boolean anyError = false;
-
-        List<MaterialPartnerRelation> mprs = mprService.findAll();
-        for (var mpr : mprs) {
-            var material = mpr.getMaterial();
-            var partner = mpr.getPartner();
-
-            if (mpr.isPartnerSuppliesMaterial()) {
-                // INBOUND -> supplier provides material (call material item stock, production, delivery)
-                DirectionEnum dirEnum = DirectionEnum.INBOUND;
-                // Item Stock (Material)
-                try {
-                    RefreshResult res = itemStockService.doItemStockSubmodelReportedMaterialItemStockRequest(partner, material);
-                    String errMsg = extractErrorMessage(res);
-                    boolean err = errMsg != null;
-                    addEntry(material, partner, dirEnum, InformationEnum.STOCK, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
-                    anyError = anyError || err;
-                } catch (Exception e) {
-                    anyError = true;
-                    log.error("Error during item stock request for " + material.getOwnMaterialNumber(), e);
-                    addEntry(material, partner, dirEnum, InformationEnum.STOCK, BatchRunEntryStatusEnum.ERROR, e.getMessage());
-                }
-
-                // Production
-                try {
-                    RefreshResult res = productionService.doReportedProductionRequest(partner, material);
-                    String errMsg = extractErrorMessage(res);
-                    boolean err = errMsg != null;
-                    addEntry(material, partner, dirEnum, InformationEnum.PRODUCTION, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
-                    anyError = anyError || err;
-                } catch (Exception e) {
-                    anyError = true;
-                    log.error("Error during production request for " + material.getOwnMaterialNumber(), e);
-                    addEntry(material, partner, dirEnum, InformationEnum.PRODUCTION, BatchRunEntryStatusEnum.ERROR, e.getMessage());
-                }
-
-                // Delivery
-                try {
-                    RefreshResult res = deliveryService.doReportedDeliveryRequest(partner, material);
-                    String errMsg = extractErrorMessage(res);
-                    boolean err = errMsg != null;
-                    addEntry(material, partner, dirEnum, InformationEnum.DELIVERY, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
-                    anyError = anyError || err;
-                } catch (Exception e) {
-                    anyError = true;
-                    log.error("Error during delivery request for " + material.getOwnMaterialNumber(), e);
-                    addEntry(material, partner, dirEnum, InformationEnum.DELIVERY, BatchRunEntryStatusEnum.ERROR, e.getMessage());
-                }
-
-                // Days of Supply
-                try {
-                    RefreshResult res = daysOfSupplyService.doReportedDaysOfSupplyRequest(partner, material, DirectionCharacteristic.OUTBOUND);
-                    String errMsg = extractErrorMessage(res);
-                    boolean err = errMsg != null;
-                    addEntry(material, partner, dirEnum, InformationEnum.DAYS_OF_SUPPLY, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
-                    anyError = anyError || err;
-                } catch (Exception e) {
-                    anyError = true;
-                    log.error("Error during days of supply request for " + material.getOwnMaterialNumber(), e);
-                    addEntry(material, partner, dirEnum, InformationEnum.DAYS_OF_SUPPLY, BatchRunEntryStatusEnum.ERROR, e.getMessage());
-                }
-            }
-
-            if (mpr.isPartnerBuysMaterial()) {
-                DirectionEnum dirEnum = DirectionEnum.OUTBOUND;
-                // OUTBOUND -> partner buys product (call product item stock, demand, delivery)
-                try {
-                    RefreshResult res = itemStockService.doItemStockSubmodelReportedProductItemStockRequest(partner, material);
-                    String errMsg = extractErrorMessage(res);
-                    boolean err = errMsg != null;
-                    addEntry(material, partner, dirEnum, InformationEnum.STOCK, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
-                    anyError = anyError || err;
-                } catch (Exception e) {
-                    anyError = true;
-                    log.error("Error during product item stock request for " + material.getOwnMaterialNumber(), e);
-                    addEntry(material, partner, dirEnum, InformationEnum.STOCK, BatchRunEntryStatusEnum.ERROR, e.getMessage());
-                }
-                try {
-                    RefreshResult res = demandService.doReportedDemandRequest(partner, material);
-                    String errMsg = extractErrorMessage(res);
-                    boolean err = errMsg != null;
-                    addEntry(material, partner, dirEnum, InformationEnum.DEMAND, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
-                    anyError = anyError || err;
-                } catch (Exception e) {
-                    anyError = true;
-                    log.error("Error during demand request for " + material.getOwnMaterialNumber(), e);
-                    addEntry(material, partner, dirEnum, InformationEnum.DEMAND, BatchRunEntryStatusEnum.ERROR, e.getMessage());
-                }
-                try {
-                    RefreshResult res = deliveryService.doReportedDeliveryRequest(partner, material);
-                    String errMsg = extractErrorMessage(res);
-                    boolean err = errMsg != null;
-                    addEntry(material, partner, dirEnum, InformationEnum.DELIVERY, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
-                    anyError = anyError || err;
-                } catch (Exception e) {
-                    anyError = true;
-                    log.error("Error during delivery request for " + material.getOwnMaterialNumber(), e);
-                    addEntry(material, partner, dirEnum, InformationEnum.DELIVERY, BatchRunEntryStatusEnum.ERROR, e.getMessage());
-                }
-
-                // Days of Supply
-                try {
-                    RefreshResult res = daysOfSupplyService.doReportedDaysOfSupplyRequest(partner, material, DirectionCharacteristic.INBOUND);
-                    String errMsg = extractErrorMessage(res);
-                    boolean err = errMsg != null;
-                    addEntry(material, partner, dirEnum, InformationEnum.DAYS_OF_SUPPLY, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
-                    anyError = anyError || err;
-                } catch (Exception e) {
-                    anyError = true;
-                    log.error("Error during days of supply request for " + material.getOwnMaterialNumber(), e);
-                    addEntry(material, partner, dirEnum, InformationEnum.DAYS_OF_SUPPLY, BatchRunEntryStatusEnum.ERROR, e.getMessage());
-                }
-            }
+        // Attempt to acquire the lock. If it's already true, return immediately.
+        if (!isRunning.compareAndSet(false, true)) {
+            log.warn("A Partner Data Update Batch run is already in progress. Skipping new execution.");
+            return;
         }
 
-        run.setEndTime(OffsetDateTime.now(ZoneOffset.UTC));
-        run.setStatus(anyError ? BatchRunStatusEnum.COMPLETED_WITH_ERRORS : BatchRunStatusEnum.COMPLETED);
-        runRepository.save(run);
-
-        this.currentRun = null;
+        try {
+            PartnerDataUpdateBatchRun run = new PartnerDataUpdateBatchRun();
+            run.setStartTime(OffsetDateTime.now(ZoneOffset.UTC));
+            run.setStatus(BatchRunStatusEnum.IN_PROGRESS);
+            run = runRepository.save(run);
+    
+            // remember current run for addEntry helper
+            this.currentRun = run;
+    
+            boolean anyError = false;
+    
+            List<MaterialPartnerRelation> mprs = mprService.findAll();
+            for (var mpr : mprs) {
+                var material = mpr.getMaterial();
+                var partner = mpr.getPartner();
+    
+                if (mpr.isPartnerSuppliesMaterial()) {
+                    // INBOUND -> supplier provides material (call material item stock, production, delivery)
+                    DirectionEnum dirEnum = DirectionEnum.INBOUND;
+                    // Item Stock (Material)
+                    try {
+                        RefreshResult res = itemStockService.doItemStockSubmodelReportedMaterialItemStockRequest(partner, material);
+                        String errMsg = extractErrorMessage(res);
+                        boolean err = errMsg != null;
+                        addEntry(material, partner, dirEnum, InformationEnum.STOCK, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
+                        anyError = anyError || err;
+                    } catch (Exception e) {
+                        anyError = true;
+                        log.error("Error during item stock request for " + material.getOwnMaterialNumber(), e);
+                        addEntry(material, partner, dirEnum, InformationEnum.STOCK, BatchRunEntryStatusEnum.ERROR, e.getMessage());
+                    }
+    
+                    // Production
+                    try {
+                        RefreshResult res = productionService.doReportedProductionRequest(partner, material);
+                        String errMsg = extractErrorMessage(res);
+                        boolean err = errMsg != null;
+                        addEntry(material, partner, dirEnum, InformationEnum.PRODUCTION, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
+                        anyError = anyError || err;
+                    } catch (Exception e) {
+                        anyError = true;
+                        log.error("Error during production request for " + material.getOwnMaterialNumber(), e);
+                        addEntry(material, partner, dirEnum, InformationEnum.PRODUCTION, BatchRunEntryStatusEnum.ERROR, e.getMessage());
+                    }
+    
+                    // Delivery
+                    try {
+                        RefreshResult res = deliveryService.doReportedDeliveryRequest(partner, material);
+                        String errMsg = extractErrorMessage(res);
+                        boolean err = errMsg != null;
+                        addEntry(material, partner, dirEnum, InformationEnum.DELIVERY, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
+                        anyError = anyError || err;
+                    } catch (Exception e) {
+                        anyError = true;
+                        log.error("Error during delivery request for " + material.getOwnMaterialNumber(), e);
+                        addEntry(material, partner, dirEnum, InformationEnum.DELIVERY, BatchRunEntryStatusEnum.ERROR, e.getMessage());
+                    }
+    
+                    // Days of Supply
+                    try {
+                        RefreshResult res = daysOfSupplyService.doReportedDaysOfSupplyRequest(partner, material, DirectionCharacteristic.OUTBOUND);
+                        String errMsg = extractErrorMessage(res);
+                        boolean err = errMsg != null;
+                        addEntry(material, partner, dirEnum, InformationEnum.DAYS_OF_SUPPLY, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
+                        anyError = anyError || err;
+                    } catch (Exception e) {
+                        anyError = true;
+                        log.error("Error during days of supply request for " + material.getOwnMaterialNumber(), e);
+                        addEntry(material, partner, dirEnum, InformationEnum.DAYS_OF_SUPPLY, BatchRunEntryStatusEnum.ERROR, e.getMessage());
+                    }
+                }
+    
+                if (mpr.isPartnerBuysMaterial()) {
+                    DirectionEnum dirEnum = DirectionEnum.OUTBOUND;
+                    // OUTBOUND -> partner buys product (call product item stock, demand, delivery)
+                    try {
+                        RefreshResult res = itemStockService.doItemStockSubmodelReportedProductItemStockRequest(partner, material);
+                        String errMsg = extractErrorMessage(res);
+                        boolean err = errMsg != null;
+                        addEntry(material, partner, dirEnum, InformationEnum.STOCK, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
+                        anyError = anyError || err;
+                    } catch (Exception e) {
+                        anyError = true;
+                        log.error("Error during product item stock request for " + material.getOwnMaterialNumber(), e);
+                        addEntry(material, partner, dirEnum, InformationEnum.STOCK, BatchRunEntryStatusEnum.ERROR, e.getMessage());
+                    }
+                    try {
+                        RefreshResult res = demandService.doReportedDemandRequest(partner, material);
+                        String errMsg = extractErrorMessage(res);
+                        boolean err = errMsg != null;
+                        addEntry(material, partner, dirEnum, InformationEnum.DEMAND, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
+                        anyError = anyError || err;
+                    } catch (Exception e) {
+                        anyError = true;
+                        log.error("Error during demand request for " + material.getOwnMaterialNumber(), e);
+                        addEntry(material, partner, dirEnum, InformationEnum.DEMAND, BatchRunEntryStatusEnum.ERROR, e.getMessage());
+                    }
+                    try {
+                        RefreshResult res = deliveryService.doReportedDeliveryRequest(partner, material);
+                        String errMsg = extractErrorMessage(res);
+                        boolean err = errMsg != null;
+                        addEntry(material, partner, dirEnum, InformationEnum.DELIVERY, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
+                        anyError = anyError || err;
+                    } catch (Exception e) {
+                        anyError = true;
+                        log.error("Error during delivery request for " + material.getOwnMaterialNumber(), e);
+                        addEntry(material, partner, dirEnum, InformationEnum.DELIVERY, BatchRunEntryStatusEnum.ERROR, e.getMessage());
+                    }
+    
+                    // Days of Supply
+                    try {
+                        RefreshResult res = daysOfSupplyService.doReportedDaysOfSupplyRequest(partner, material, DirectionCharacteristic.INBOUND);
+                        String errMsg = extractErrorMessage(res);
+                        boolean err = errMsg != null;
+                        addEntry(material, partner, dirEnum, InformationEnum.DAYS_OF_SUPPLY, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
+                        anyError = anyError || err;
+                    } catch (Exception e) {
+                        anyError = true;
+                        log.error("Error during days of supply request for " + material.getOwnMaterialNumber(), e);
+                        addEntry(material, partner, dirEnum, InformationEnum.DAYS_OF_SUPPLY, BatchRunEntryStatusEnum.ERROR, e.getMessage());
+                    }
+                }
+            }
+    
+            run.setEndTime(OffsetDateTime.now(ZoneOffset.UTC));
+            run.setStatus(anyError ? BatchRunStatusEnum.COMPLETED_WITH_ERRORS : BatchRunStatusEnum.COMPLETED);
+            runRepository.save(run);
+    
+            this.currentRun = null;
+        } finally {
+            // release lock
+            isRunning.set(false);
+        }
     }
 
     private void addEntry(Material material,

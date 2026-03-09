@@ -29,6 +29,8 @@ import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.logic.service.
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -51,7 +53,7 @@ public class PartnerDataUpdateBatchController {
 
     @GetMapping
     @PreAuthorize("hasRole('ROLE_PURIS_ADMIN')")
-    public Page<PartnerDataUpdateBatchRunDto> history(Pageable pageable) {
+    public Page<PartnerDataUpdateBatchRunDto> history(@PageableDefault(sort = "startTime", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<PartnerDataUpdateBatchRun> runs = batchService.findAll(pageable);
         return runs.map(r -> modelMapper.map(r, PartnerDataUpdateBatchRunDto.class));
     }

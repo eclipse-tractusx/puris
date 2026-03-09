@@ -48,7 +48,7 @@ public class PartnerDataUpdateBatchServiceImpl implements PartnerDataUpdateBatch
     @Autowired
     private final PartnerDataUpdateBatchRunEntryRepository entryRepository;
 
-    @Value("${puris.batch.partnerdataupdate.retention-days:30}")
+    @Value("${puris.batch.partnerdataupdate.cleanup.retention-days:30}")
     private int retentionDays;
 
     @Override

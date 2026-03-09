@@ -1006,8 +1006,6 @@ components:
           - IN_PROGRESS
           - COMPLETED
           - COMPLETED_WITH_ERRORS
-          - FAILED
-          - CANCELLED
           maxItems: 50
           type: string
         totalEntries:
@@ -1049,10 +1047,6 @@ components:
           - DELIVERY
           maxItems: 50
           type: string
-        materialId:
-          format: uuid
-          maxItems: 50
-          type: string
         ownMaterialNumber:
           maxItems: 50
           type: string
@@ -1070,14 +1064,12 @@ components:
           enum:
           - SUCCESS
           - ERROR
-          - SKIPPED
           maxItems: 50
           type: string
       required:
       - direction
       - id
       - informationType
-      - materialId
       - ownMaterialNumber
       - partnerBpnl
       - partnerId
@@ -1564,7 +1556,7 @@ info:
   version: 5.1.0
 openapi: 3.1.0
 paths:
-  /admin/batch/partner-data-update:
+  /batch/partner-data-update:
     get:
       operationId: history
       parameters:
@@ -1584,7 +1576,7 @@ paths:
           description: OK
       tags:
       - partner-data-update-batch-controller
-  /admin/batch/partner-data-update/run:
+  /batch/partner-data-update/run:
     post:
       operationId: triggerRun
       responses:
@@ -1598,7 +1590,7 @@ paths:
           description: OK
       tags:
       - partner-data-update-batch-controller
-  /admin/batch/partner-data-update/{id}:
+  /batch/partner-data-update/{id}:
     get:
       operationId: status
       parameters:
@@ -1620,7 +1612,7 @@ paths:
           description: OK
       tags:
       - partner-data-update-batch-controller
-  /admin/batch/partner-data-update/{id}/entries:
+  /batch/partner-data-update/{id}/entries:
     get:
       operationId: entries
       parameters:
