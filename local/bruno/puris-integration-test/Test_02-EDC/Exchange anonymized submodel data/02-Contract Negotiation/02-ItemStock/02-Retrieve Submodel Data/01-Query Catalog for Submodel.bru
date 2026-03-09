@@ -1,0 +1,101 @@
+meta {
+  name: 01-Query Catalog for Submodel
+  type: http
+  seq: 1
+  tags: [
+    exchange-anonymized-data
+  ]
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/catalog/request
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+    "@context": {
+      "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+    },
+    "@type": "CatalogRequest",
+    "protocol": "dataspace-protocol-http",
+    "counterPartyAddress": "{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+    "counterPartyId": "{{SUPPLIER_BPNL}}",
+    "querySpec": {
+      "offset": 0,
+      "limit": 100,
+      "filter": "",
+      "range": {
+        "from": 0,
+        "to": 100
+      },
+      "filterExpression": [
+        {
+          "@type": "CriterionDto",
+          "operandLeft": "https://w3id.org/catenax/ontology/common#version",
+          "operator": "=",
+          "operandRight": "3.0"
+        },
+        {
+          "@type": "CriterionDto",
+          "operandLeft": "'http://purl.org/dc/terms/type'.'@id'",
+          "operator": "=",
+          "operandRight": "https://w3id.org/catenax/taxonomy#Submodel"
+        }
+      ]
+    }
+  }
+}
+
+script:post-response {
+  let jsonData = res.getBody();
+  const semanticId = "urn:samm:io.catenax.item_stock_anonymized:1.0.0#ItemStockAnonymized";
+
+  let catalog = jsonData['dcat:dataset'];
+
+  const catalogEntry = catalog.find(ce => ce["https://admin-shell.io/aas/3/0/HasSemantics/semanticId"]["@id"] === semanticId)
+
+  let offer = catalogEntry["odrl:hasPolicy"]
+  const offerId = offer["@id"]
+  const assetId = catalogEntry.id
+
+  offer.offerId = offerId
+  delete offer["@id"]
+
+  offer.assetId = assetId
+
+  offer = {
+      "@context": "http://www.w3.org/ns/odrl.jsonld",
+      "@type": "odrl:Offer",
+      "@id": offerId,
+      "assigner": jsonData["dspace:participantId"],
+      "odrl:permission": {
+          "odrl:target": assetId,
+          "odrl:action": {
+              "odrl:type": "http://www.w3.org/ns/odrl/2/use"
+          },
+          "odrl:constraint": offer["odrl:permission"]["odrl:constraint"]
+      },
+      "odrl:prohibition": [],
+      "odrl:obligation": [],
+      "odrl:target": {
+          "@id": assetId
+      }
+  }
+
+  bru.setVar("SUBMODEL_CATALOG_OFFER", JSON.stringify(offer))
+  bru.setVar("SUBMODEL_CATALOG_OFFER_ID", offerId)
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
