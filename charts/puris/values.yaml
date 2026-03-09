@@ -223,6 +223,8 @@ frontend:
     endpointAllPartners: partners
     # -- The endpoint for interfacing with material partner relations
     endpointMaterialPartnerRelations: materialpartnerrelations
+    # -- The endpoint for interfacing with partner data update batch
+    endpointPartnerDataUpdateBatch: batch/partner-data-update
     rateLimiting:
       # -- Bucket zone limit for rate limiting in nginx.
       limit: 10m
