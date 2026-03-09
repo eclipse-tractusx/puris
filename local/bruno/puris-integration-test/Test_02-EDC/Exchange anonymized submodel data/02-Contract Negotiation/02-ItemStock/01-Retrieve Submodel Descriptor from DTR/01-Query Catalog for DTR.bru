@@ -56,44 +56,41 @@ body:json {
 
 script:post-response {
   const contractAgreementId = bru.getVar("DTR_CONTRACT_AGREEMENT_ID");
-  if (!contractAgreementId) {
-    let jsonData = res.getBody();
 
-    let catalog = jsonData['dcat:dataset'];
+  let jsonData = res.getBody();
 
-    let offer = catalog["odrl:hasPolicy"]
-    const offerId = offer["@id"]
-    const assetId = catalog.id
+  let catalog = jsonData['dcat:dataset'];
 
-    offer.offerId = offerId
-    delete offer["@id"]
+  let offer = catalog["odrl:hasPolicy"]
+  const offerId = offer["@id"]
+  const assetId = catalog.id
 
-    offer.assetId = assetId
+  offer.offerId = offerId
+  delete offer["@id"]
 
-    offer = {
-        "@context": "http://www.w3.org/ns/odrl.jsonld",
-        "@type": "odrl:Offer",
-        "@id": offerId,
-        "assigner": jsonData["dspace:participantId"],
-        "odrl:permission": {
-            "odrl:target": assetId,
-            "odrl:action": {
-                "odrl:type": "http://www.w3.org/ns/odrl/2/use"
-            },
-            "odrl:constraint": catalog["odrl:hasPolicy"]["odrl:permission"]["odrl:constraint"]
-        },
-        "odrl:prohibition": [],
-        "odrl:obligation": [],
-        "odrl:target": {
-            "@id": assetId
-        }
-    }
+  offer.assetId = assetId
 
-    bru.setVar("DTR_CATALOG_OFFER", JSON.stringify(offer))
-    bru.setVar("DTT_CATALOG_OFFER_ID", offerId)
-  } else {
-    bru.runner.setNextRequest("04-Initiate Transfer")
+  offer = {
+      "@context": "http://www.w3.org/ns/odrl.jsonld",
+      "@type": "odrl:Offer",
+      "@id": offerId,
+      "assigner": jsonData["dspace:participantId"],
+      "odrl:permission": {
+          "odrl:target": assetId,
+          "odrl:action": {
+              "odrl:type": "http://www.w3.org/ns/odrl/2/use"
+          },
+          "odrl:constraint": catalog["odrl:hasPolicy"]["odrl:permission"]["odrl:constraint"]
+      },
+      "odrl:prohibition": [],
+      "odrl:obligation": [],
+      "odrl:target": {
+          "@id": assetId
+      }
   }
+
+  bru.setVar("DTR_CATALOG_OFFER", JSON.stringify(offer))
+  bru.setVar("DTT_CATALOG_OFFER_ID", offerId)
 
 }
 
