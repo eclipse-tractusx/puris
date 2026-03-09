@@ -1,0 +1,101 @@
+meta {
+  name: 01-Query Catalog for DTR
+  type: http
+  seq: 1
+  tags: [
+    exchange-anonymized-data
+  ]
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/catalog/request
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+    "@context": {
+      "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+    },
+    "@type": "CatalogRequest",
+    "protocol": "dataspace-protocol-http",
+    "counterPartyAddress": "{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+    "counterPartyId": "{{SUPPLIER_BPNL}}",
+    "querySpec": {
+      "offset": 0,
+      "limit": 100,
+      "filter": "",
+      "range": {
+        "from": 0,
+        "to": 100
+      },
+      "filterExpression": [
+        {
+          "@type": "CriterionDto",
+          "operandLeft": "https://w3id.org/catenax/ontology/common#version",
+          "operator": "=",
+          "operandRight": "3.0"
+        },
+        {
+          "@type": "CriterionDto",
+          "operandLeft": "'http://purl.org/dc/terms/type'.'@id'",
+          "operator": "=",
+          "operandRight": "https://w3id.org/catenax/taxonomy#DigitalTwinRegistry"
+        }
+      ]
+    }
+  }
+}
+
+script:post-response {
+  const contractAgreementId = bru.getVar("DTR_CONTRACT_AGREEMENT_ID");
+
+  let jsonData = res.getBody();
+
+  let catalog = jsonData['dcat:dataset'];
+
+  let offer = catalog["odrl:hasPolicy"]
+  const offerId = offer["@id"]
+  const assetId = catalog.id
+
+  offer.offerId = offerId
+  delete offer["@id"]
+
+  offer.assetId = assetId
+
+  offer = {
+      "@context": "http://www.w3.org/ns/odrl.jsonld",
+      "@type": "odrl:Offer",
+      "@id": offerId,
+      "assigner": jsonData["dspace:participantId"],
+      "odrl:permission": {
+          "odrl:target": assetId,
+          "odrl:action": {
+              "odrl:type": "http://www.w3.org/ns/odrl/2/use"
+          },
+          "odrl:constraint": catalog["odrl:hasPolicy"]["odrl:permission"]["odrl:constraint"]
+      },
+      "odrl:prohibition": [],
+      "odrl:obligation": [],
+      "odrl:target": {
+          "@id": assetId
+      }
+  }
+
+  bru.setVar("DTR_CATALOG_OFFER", JSON.stringify(offer))
+  bru.setVar("DTT_CATALOG_OFFER_ID", offerId)
+
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

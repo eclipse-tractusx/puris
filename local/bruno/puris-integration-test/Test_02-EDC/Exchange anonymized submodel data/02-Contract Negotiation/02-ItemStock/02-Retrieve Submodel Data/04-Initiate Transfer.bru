@@ -1,0 +1,48 @@
+meta {
+  name: 04-Initiate Transfer
+  type: http
+  seq: 4
+  tags: [
+    exchange-anonymized-data
+  ]
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/transferprocesses
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+      "@context": {
+          "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+      },
+      "assetId": "itemstockanonymizedsubmodel-api-asset@{{SUPPLIER_BPNL}}",
+      "counterPartyAddress": "{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+      "connectorId": "{{SUPPLIER_BPNL}}",
+      "contractId": "{{SUBMODEL_CONTRACT_AGREEMENT_ID}}",
+      "transferType": "HttpData-PULL",
+      "dataDestination": {
+          "type": "HttpProxy"
+      },
+      "protocol": "dataspace-protocol-http"
+  }
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+  bru.setVar("SUBMODEL_TRANSFER_PROCESS_ID", jsonData["@id"]);
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

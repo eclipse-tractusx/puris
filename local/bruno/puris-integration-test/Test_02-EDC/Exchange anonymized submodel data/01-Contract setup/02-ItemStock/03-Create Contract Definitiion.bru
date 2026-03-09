@@ -18,15 +18,15 @@ body:json {
       "@context": {
           "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
       },
-      "@id": "AnonymizedDeliveryContractDefinition",
+      "@id": "AnonymizedItemStockContractDefinition",
       "@type": "ContractDefinition",
-      "accessPolicyId": "AnonyimizedDeliveryAccessPolicy",
-      "contractPolicyId": "AnonyimizedDeliveryContractPolicy",
+      "accessPolicyId": "AnonyimizedItemStockAccessPolicy",
+      "contractPolicyId": "AnonyimizedItemStockContractPolicy",
       "assetsSelector" : {
           "@type" : "CriterionDto",
           "operandLeft": "{{EDC_NAMESPACE}}id",
           "operator": "=",
-          "operandRight": "deliveryanonymizedsubmodel-api-asset@{{SUPPLIER_BPNL}}"
+          "operandRight": "itemstockanonymizedsubmodel-api-asset@{{SUPPLIER_BPNL}}"
       }
   }
 }
