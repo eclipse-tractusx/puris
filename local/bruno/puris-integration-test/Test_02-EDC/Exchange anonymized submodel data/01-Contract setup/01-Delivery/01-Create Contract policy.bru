@@ -45,3 +45,9 @@ settings {
   encodeUrl: true
   timeout: 0
 }
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

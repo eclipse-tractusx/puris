@@ -35,13 +35,7 @@ body:json {
       "privateProperties": {
           "receiverHttpEndpoint": "{{BACKEND_SERVICE}}"
       },
-      "protocol": "dataspace-protocol-http",
-      "callbackAddresses":{
-          "events": [
-              "transfer.process.started"
-          ],
-          "uri": "http://edr-service:80/edr-log"
-      }
+      "protocol": "dataspace-protocol-http"
   }
 }
 
