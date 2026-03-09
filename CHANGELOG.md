@@ -26,6 +26,8 @@ The **need for configuration updates** is **marked bold**.
   - Prepare backend for batch ([#1105](https://github.com/eclipse-tractusx/puris/pull/1105))
   - Incorporate scheduling service, controllers and test ([#1106](https://github.com/eclipse-tractusx/puris/pull/1106))
   - Implement frontend, cleanup scheduler and documentation ([#1107](https://github.com/eclipse-tractusx/puris/pull/1107))
+  - Add missing frontend endpoint path in chart ([#1112](https://github.com/eclipse-tractusx/puris/pull/1112))
+  - Fix typo in frontend endpoint path (in chart) ([#1114](https://github.com/eclipse-tractusx/puris/pull/1114))
 
 ### Changed
 

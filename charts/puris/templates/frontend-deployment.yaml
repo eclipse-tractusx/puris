@@ -103,7 +103,7 @@ spec:
               value: "{{ .Values.frontend.puris.endpointAllPartners | default "partners" }}"
             - name: ENDPOINT_MATERIAL_PARTNER_RELATIONS
               value: "{{ .Values.frontend.puris.endpointMaterialPartnerRelations | default "materialpartnerrelations" }}"
-            - name: VITE_ENDPOINT_PARNTER_DATA_UPDATE_BATCH
+            - name: ENDPOINT_PARTNER_DATA_UPDATE_BATCH
               value: "{{ .Values.frontend.puris.endpointPartnerDataUpdateBatch | default "batch/partner-data-update" }}"
             - name: IDP_URL
               value: "{{ .Values.idp.url }}"
