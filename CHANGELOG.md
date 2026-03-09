@@ -23,6 +23,7 @@ The **need for configuration updates** is **marked bold**.
 - Added version to about license ([#1067](https://github.com/eclipse-tractusx/puris/pull/1067))
 - Added update flow to Material Details View buttons ([#1034](https://github.com/eclipse-tractusx/puris/pull/1034))
 - Added backend implementation for material relations ([#1097](https://github.com/eclipse-tractusx/puris/pull/1096))
+- Added frontend implementation for material relations ([#1113](https://github.com/eclipse-tractusx/puris/pull/1113))
 
 ### Changed
 
