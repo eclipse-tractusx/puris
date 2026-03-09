@@ -160,6 +160,19 @@ backend:
             # -- secret of the client with write access (no vault alias). No default value will be created if empty.
             # Mandatory if backend.puris.dtr.idp.enabled = true.
             secret: <path:puris/data/supplier/dtr/keycloak#client-secret>
+    batch:
+      partnerdataupdate:
+        # -- if true, the partner data update is triggered for all materials and partners onboarded; else not.
+        enabled: false
+        # -- cron for spring @Scheduled batch, default daily at 9.00
+        cron: "0 0 9 * * *"
+        cleanup:
+          # -- toggle cleanup scheduler
+          enabled: false
+          # -- cron expression for cleanup (default: daily at 04:00)
+          cron: "0 0 4 * * *"
+          # -- number of days after which the old batch runs are removed
+          retentiondays: 30
     frameworkagreement: ## data sovereingty
       credential: DataExchangeGovernance
       version: "1.0"

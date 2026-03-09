@@ -8,7 +8,7 @@ global:
 frontend:
   # fullnameOverride: "customer-frontend"
   image:
-    # tag: "3.3.0-rc2"
+    tag: "3.3.0-rc2"
     # pullPolicy: Always
     pullPolicy: IfNotPresent
   ingress:
@@ -154,6 +154,19 @@ backend:
             # -- secret of the client with write access (no vault alias). No default value will be created if empty.
             # Mandatory if backend.puris.dtr.idp.enabled = true.
             secret: <path:puris/data/customer/dtr/keycloak#client-secret>
+    batch:
+      partnerdataupdate:
+        # -- if true, the partner data update is triggered for all materials and partners onboarded; else not.
+        enabled: true
+        # -- cron for spring @Scheduled batch, default daily at 9.00
+        cron: "0 0 9 * * *"
+        cleanup:
+          # -- toggle cleanup scheduler
+          enabled: true
+          # -- cron expression for cleanup (default: daily at 04:00)
+          cron: "0 0 4 * * *"
+          # -- number of days after which the old batch runs are removed
+          retentiondays: 30
     frameworkagreement: ## data sovereingty
       credential: DataExchangeGovernance
       version: "1.0"
