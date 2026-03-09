@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2025 Volkswagen AG
- * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2026 Volkswagen AG
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -42,11 +41,11 @@ public class MaterialRelationDto {
     
     @NotNull
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
-    private String parentMaterialNumber;
+    private String parentOwnMaterialNumber;
     
     @NotNull
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
-    private String childMaterialNumber;
+    private String childOwnMaterialNumber;
 
     @NotNull
     private double quantity;

@@ -1,0 +1,42 @@
+meta {
+  name: Update Material Relation
+  type: http
+  seq: 12
+}
+
+put {
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/material-relations
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+      "uuid": "{{MATERIAL_RELATION_ID}}",
+      "parentOwnMaterialNumber": "{{MATERIAL_NUMBER_CUSTOMER_2}}",
+      "childOwnMaterialNumber": "{{MATERIAL_NUMBER_CUSTOMER}}",
+      "quantity": 7.0,
+      "measurementUnit": "unit:piece"
+  }
+}
+
+script:pre-request {
+  const body = req.getBody();
+  const today = new Date();
+  const todayFormatted = today.toISOString().slice(0, 16);
+  today.setDate(today.getDate() + 30);
+  const endDateFormatted = today.toISOString().slice(0, 16);
+  body.validFrom = todayFormatted;
+  body.validTo = endDateFormatted;
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+}

@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2025 Volkswagen AG
- * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2026 Volkswagen AG
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,6 +19,7 @@
 package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
@@ -60,8 +60,12 @@ public class MaterialRelationController {
     
     @PreAuthorize("hasRole('PURIS_ADMIN')")
     @PostMapping
-    @Operation(summary = "Creates a Material Relation -- ADMIN ONLY", 
-               description = "Creates a new MaterialRelation entity with the data given in the request body.")
+    @Operation(
+        summary = "Creates a Material Relation -- ADMIN ONLY", 
+        description = 
+            "Creates a new MaterialRelation entity with the data given in the request body. The fields validFrom and validTo can optionally be set. "  +
+            "If validto is set, validFrom is also required and needs to be before validTo."
+    )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Successfully created a new MaterialRelation entity."),
         @ApiResponse(responseCode = "400", description = "Malformed request body."),
@@ -73,22 +77,22 @@ public class MaterialRelationController {
             return ResponseEntity.badRequest().body("MaterialRelation is invalid");
         }
 
-        Material parentMaterial = materialService.findByOwnMaterialNumber(materialRelationDto.getParentMaterialNumber());
-        Material childMaterial = materialService.findByOwnMaterialNumber(materialRelationDto.getChildMaterialNumber());
+        Material parentMaterial = materialService.findByOwnMaterialNumber(materialRelationDto.getParentOwnMaterialNumber());
+        Material childMaterial = materialService.findByOwnMaterialNumber(materialRelationDto.getChildOwnMaterialNumber());
         if (parentMaterial == null) {
-            log.warn("Parent material with ownMaterialNumber {} not found.", materialRelationDto.getParentMaterialNumber());
+            log.warn("Parent material with ownMaterialNumber {} not found.", materialRelationDto.getParentOwnMaterialNumber());
             return ResponseEntity.badRequest().body("Parent material not found");
         }
         if (childMaterial == null) {
-            log.warn("Child material with ownMaterialNumber {} not found.", materialRelationDto.getChildMaterialNumber());
+            log.warn("Child material with ownMaterialNumber {} not found.", materialRelationDto.getChildOwnMaterialNumber());
             return ResponseEntity.badRequest().body("Child material not found");
         }
         if (!parentMaterial.isProductFlag()) {
-            log.warn("Parent material with ownMaterialNumber {} is not a product.", materialRelationDto.getParentMaterialNumber());
+            log.warn("Parent material with ownMaterialNumber {} is not a product.", materialRelationDto.getParentOwnMaterialNumber());
             return ResponseEntity.badRequest().body("Parent material is not a product");
         }
         if (!childMaterial.isMaterialFlag()) {
-            log.warn("Child material with ownMaterialNumber {} is not a material.", materialRelationDto.getChildMaterialNumber());
+            log.warn("Child material with ownMaterialNumber {} is not a material.", materialRelationDto.getChildOwnMaterialNumber());
             return ResponseEntity.badRequest().body("Child material is not a material");
         }
         try {
@@ -101,7 +105,7 @@ public class MaterialRelationController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("MaterialRelation already exists");
         } catch (IllegalArgumentException e) {
             log.error("Error creating MaterialRelation", e);
-            return ResponseEntity.badRequest().body("MaterialRelation is invalid");
+            return ResponseEntity.badRequest().body("MaterialRelation is invalid: " + e.getMessage());
         } catch (Exception e) {
             log.error("Unexpected error creating MaterialRelation", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -110,8 +114,10 @@ public class MaterialRelationController {
     }
     
     @GetMapping()
-    @Operation(summary = "Gets all material relations", 
-               description = "Returns a list of all MaterialRelation entities.")
+    @Operation(
+        summary = "Gets all material relations", 
+        description = "Returns a list of all MaterialRelation entities."
+    )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved all MaterialRelation entities.")
     })
@@ -126,6 +132,37 @@ public class MaterialRelationController {
             log.error("Error retrieving all material relations", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(List.of());
+        }
+    }
+
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
+    @PutMapping
+    @Operation(
+        summary = "Updates an existing Material Relation -- ADMIN ONLY", 
+        description = 
+            "Updates an existing MaterialRelation entity with the data given in the request body. The fields validFrom and validTo can optionally be set." +
+            "If validto is set, validFrom is also required and needs to be before validTo"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully updated the MaterialRelation entity."),
+        @ApiResponse(responseCode = "400", description = "Malformed request body."),
+        @ApiResponse(responseCode = "500", description = "Internal Server error.")
+    })
+    public ResponseEntity<?> updateMaterialRelation(@RequestBody MaterialRelationDto materialRelationDto) {
+        try {
+            MaterialRelation entity = modelMapper.map(materialRelationDto, MaterialRelation.class);
+            MaterialRelationDto responseDto = modelMapper.map(materialRelationService.update(entity), MaterialRelationDto.class);
+            return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+        } catch (NoSuchElementException e) {
+            log.error("Could not find matching Material Relation");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Could not find matching Material Relation");
+        } catch (IllegalArgumentException e) {
+            log.error("Error updating MaterialRelation: ", e);
+            return ResponseEntity.badRequest().body("MaterialRelation could not be updated: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error creating MaterialRelation: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Internal Server Error: An error occurred while creating the material relation. Check the server logs for details");
         }
     }
 }
