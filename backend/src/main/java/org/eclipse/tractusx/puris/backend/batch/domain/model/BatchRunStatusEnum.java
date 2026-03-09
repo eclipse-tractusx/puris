@@ -21,8 +21,5 @@ package org.eclipse.tractusx.puris.backend.batch.domain.model;
 public enum BatchRunStatusEnum {
     IN_PROGRESS,
     COMPLETED,
-    COMPLETED_WITH_ERRORS,
-    FAILED,
-    CANCELLED
+    COMPLETED_WITH_ERRORS
 }
-

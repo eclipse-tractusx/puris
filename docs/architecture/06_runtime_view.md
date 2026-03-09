@@ -48,7 +48,14 @@ Central Services, such as the `Credential Service` and `Secure Token Service` ar
 
 ![Overview of Submodel Request through the EDC including Digital Twin determination](img/06-api-flow-detailed.svg)
 
-The `PartnerDataUpdateBatch`
+The `PartnerDataUpdateBatch` can be configured or executed manually. It performs this per partner per information flow based on the `MaterialPartnerRelationship`
+
+| Direction `INBOUND`                          | Direction `OUTBOUND`                         |
+| -------------------------------------------- | -------------------------------------------- |
+| `ItemStock` (`ReportedMaterialItemStock`)    | `ItemStock` (`ReportedProductItemStock`)     |
+| `PlannedProductionOutput`                    | `ShortTermMatialDemand`                      |
+| `DeliveryInformation` (specific `IncoTerms`) | `DeliveryInformation` (specific `IncoTerms`) |
+| `DaysOfSupply` (`INBOUND`)                   | `DaysOfSupply` (`OUTBOUND`)                  |
 
 ## Scenario: Create Digital Twins for Material or Product
 

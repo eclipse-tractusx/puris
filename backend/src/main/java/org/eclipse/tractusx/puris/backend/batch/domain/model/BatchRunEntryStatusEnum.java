@@ -20,8 +20,5 @@ package org.eclipse.tractusx.puris.backend.batch.domain.model;
 
 public enum BatchRunEntryStatusEnum {
     SUCCESS,
-    ERROR,
-    // if error in mad
-    SKIPPED
+    ERROR
 }
-
