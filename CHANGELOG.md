@@ -23,6 +23,7 @@ The **need for configuration updates** is **marked bold**.
 - Added version to about license ([#1067](https://github.com/eclipse-tractusx/puris/pull/1067))
 - Added update flow to Material Details View buttons ([#1034](https://github.com/eclipse-tractusx/puris/pull/1034))
 - Added submodel implementation for delivery information anyonymized ([#1095](https://github.com/eclipse-tractusx/puris/pull/1095))
+- Added submodel implementation for item stock anyonymized ([#1096](https://github.com/eclipse-tractusx/puris/pull/1096))
 - Added bruno tests for delivery information anonymized ([#1101](https://github.com/eclipse-tractusx/puris/pull/1101))
 
 ### Changed

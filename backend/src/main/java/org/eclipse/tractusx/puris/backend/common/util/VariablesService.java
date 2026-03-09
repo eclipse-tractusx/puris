@@ -21,9 +21,10 @@
  */
 package org.eclipse.tractusx.puris.backend.common.util;
 
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import lombok.Getter;
 
 @Getter
 @Service
@@ -182,6 +183,21 @@ public class VariablesService {
      */
     private String purisFrameworkAgreement;
 
+    /**
+     * The url under which this application's anonymized item stock request endpoint can
+     * be reached by external machines.
+     */
+    public String getItemStockAnonymizedSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "item-stock/anonymized/request";
+    }
+
+    @Value("${puris.itemstockanonymizedsubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the Anonymized Item Stock request API
+     * during asset creation.
+     */
+    private String itemStockAnonymizedSubmodelApiAssetId;
+
     @Value("${puris.frameworkagreement.version}")
     /**
      * The version of the framework agreement to be used.
@@ -331,6 +347,10 @@ public class VariablesService {
         return daysOfSupplySubmodelAssetId + "@" + ownBpnl;
     }
 
+    public String getItemStockAnonymizedSubmodelApiAssetId() {
+        return itemStockAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
+    }
+    
     public String getDeliveryAnonymizedSubmodelApiAssetId() {
         return deliveryAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
     }

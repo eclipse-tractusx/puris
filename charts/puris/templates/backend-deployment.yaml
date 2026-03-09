@@ -143,6 +143,8 @@ spec:
               value: "{{ .Values.idp.clientId }}"
             - name: PURIS_ITEMSTOCKSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.itemstocksubmodel.apiassetid }}"
+            - name: PURIS_ITEMSTOCKANONYMIZEDSUBMODEL_APIASSETID
+              value: "{{ .Values.backend.puris.itemstockanonymizedsubmodel.apiassetid }}"
             - name: PURIS_PRODUCTIONSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.productionsubmodel.apiassetid }}"
             - name: PURIS_DEMANDSUBMODEL_APIASSETID
