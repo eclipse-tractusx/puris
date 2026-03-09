@@ -7,9 +7,9 @@ global:
 # FRONTEND -----------
 frontend:
   image:
-    tag: "main"
-    pullPolicy: Always
-    # pullPolicy: IfNotPresent
+    # tag: "main"
+    # pullPolicy: Always
+    pullPolicy: IfNotPresent
   # fullnameOverride: "supplier-frontend"
   ingress:
     # -- Enable the Ingress
@@ -59,9 +59,9 @@ frontend:
 # BACKEND -----------
 backend:
   image:
-    tag: "main"
-    pullPolicy: Always
-    # pullPolicy: IfNotPresent
+    # tag: "main"
+    # pullPolicy: Always
+    pullPolicy: IfNotPresent
   # fullnameOverride: "supplier-backend"
   env:
     LOGGING_LEVEL_ORG_ECLIPSE_TRACTUSX_PURIS_BACKEND: DEBUG
