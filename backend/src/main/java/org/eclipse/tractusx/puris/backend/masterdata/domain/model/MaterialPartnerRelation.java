@@ -88,6 +88,7 @@ public class MaterialPartnerRelation {
             ", partnerSuppliesMaterial=" + partnerSuppliesMaterial +
             ", partnerBuysMaterial=" + partnerBuysMaterial +
             ", material=" + material.getOwnMaterialNumber() +
+            ", nameAtManufacturer=" + this.getNameAtManufacturer() +
             ", partner=" + partner.getBpnl() +
             '}';
     }
