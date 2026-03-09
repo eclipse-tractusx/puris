@@ -1,0 +1,53 @@
+meta {
+  name: 02-Create Access policy
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v3/policydefinitions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "@context" : [ "http://www.w3.org/ns/odrl.jsonld", {
+      "edc" : "https://w3id.org/edc/v0.0.1/ns/",
+      "cx-policy" : "https://w3id.org/catenax/policy/"
+    } ],
+    "@type" : "PolicyDefinitionRequestDto",
+    "@id" : "AnonyimizedDeliveryAccessPolicy",
+    "edc:policy" : {
+      "@type" : "Set",
+      "permission" : [ {
+        "action" : "use",
+        "constraint" : {
+          "@type" : "LogicalConstraint",
+          "and" : [ {
+            "@type" : "LogicalConstraint",
+            "leftOperand" : "cx-policy:Membership",
+            "operator" : "eq",
+            "rightOperand" : "active"
+          }, {
+            "@type" : "LogicalConstraint",
+            "leftOperand" : "BusinessPartnerNumber",
+            "operator" : "eq",
+            "rightOperand" : "{{CUSTOMER_BPNL}}"
+          } ]
+        }
+      } ]
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

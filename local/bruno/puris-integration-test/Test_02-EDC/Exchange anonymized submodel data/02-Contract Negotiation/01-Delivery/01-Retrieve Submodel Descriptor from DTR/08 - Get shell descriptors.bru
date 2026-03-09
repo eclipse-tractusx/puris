@@ -1,0 +1,49 @@
+meta {
+  name: 08 - Get shell descriptors
+  type: http
+  seq: 8
+  tags: [
+    exchange-anonymized-data
+  ]
+}
+
+get {
+  url: {{DTR_EDR_ENDPOINT}}/shell-descriptors/:aasIdentifier
+  body: none
+  auth: apikey
+}
+
+params:path {
+  aasIdentifier: {{AAS_IDENTIFIER}}
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{DTR_EDR_AUTH}}
+  placement: header
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+  const semanticId = "urn:samm:io.catenax.delivery_information_anonymized:1.0.0#DeliveryInformationAnonymized"
+  
+  const anonymizedDeliverySubmodelDescriptor = jsonData.submodelDescriptors.find(smd => smd.semanticId.keys.some(kv => kv.value === semanticId));
+  
+  if (anonymizedDeliverySubmodelDescriptor !== null) {
+    const submodelEndpoint = anonymizedDeliverySubmodelDescriptor.endpoints[0].protocolInformation.href;
+    const dspEndpoint = anonymizedDeliverySubmodelDescriptor.endpoints[0].protocolInformation.subprotocolBody.split("dspEndpoint=")[1];
+    bru.setVar("SUBMODEL_ENDPOINT", submodelEndpoint);
+    bru.setVar("DSP_ENDPOINT", dspEndpoint)
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,0 +1,51 @@
+meta {
+  name: 07-Look up shell at DTR
+  type: http
+  seq: 7
+  tags: [
+    exchange-anonymized-data
+  ]
+}
+
+get {
+  url: {{DTR_EDR_ENDPOINT}}/lookup/shells?assetIds={{ASSET_IDS_QUERY}}
+  body: none
+  auth: apikey
+}
+
+params:query {
+  assetIds: {{ASSET_IDS_QUERY}}
+}
+
+headers {
+  Authorization: {{EDR_AUTH}}
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{DTR_EDR_AUTH}}
+  placement: header
+}
+
+script:pre-request {
+  const btoa = require("btoa");
+  
+  let query = "{\"name\":\"manufacturerPartId\",\"value\":\"" + bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER") + "\"}";
+  query += ",{\"name\":\"digitalTwinType\",\"value\":\"PartType\"}";
+  query += ",{\"name\":\"manufacturerId\",\"value\":\"" + bru.getEnvVar("SUPPLIER_BPNS") + "\"}";
+  const encodedQuery = btoa(query)
+  bru.setVar("ASSET_IDS_QUERY", encodedQuery)
+}
+
+script:post-response {
+  const btoa = require("btoa");
+  const aasId = res.body.result[0];
+  const encodedAasId = btoa(aasId);
+  bru.setVar("AAS_IDENTIFIER", encodedAasId);
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
