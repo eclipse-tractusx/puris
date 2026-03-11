@@ -87,12 +87,6 @@ public class SingleLevelBomAsPlannedSammMapper {
                 log.warn("Child material {} not found in database, skipping", childMaterialNumber);
                 continue;
             }
-
-            if (childMaterial.getMaterialNumberCx() == null || childMaterial.getMaterialNumberCx().isEmpty()) {
-                log.warn("Child material {} has no CatenaX ID, skipping", childMaterialNumber);
-                continue;
-            }
-
             List<MaterialPartnerRelation> supplierRelations = materialPartnerRelationService
                     .findAllByOwnMaterialNumber(childMaterial.getOwnMaterialNumber()).stream()
                     .filter(MaterialPartnerRelation::isPartnerSuppliesMaterial)
