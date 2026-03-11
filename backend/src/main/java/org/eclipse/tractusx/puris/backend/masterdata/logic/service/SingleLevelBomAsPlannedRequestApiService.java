@@ -57,6 +57,6 @@ public class SingleLevelBomAsPlannedRequestApiService {
         }
 
         log.info("Self-request for SingleLevelBomAsPlanned on {}", materialNumberCx);
-        return sammMapper.materialToSamm(material);
+        return sammMapper.materialToSingleLevelBomAsplannedSamm(material);
     }
 }

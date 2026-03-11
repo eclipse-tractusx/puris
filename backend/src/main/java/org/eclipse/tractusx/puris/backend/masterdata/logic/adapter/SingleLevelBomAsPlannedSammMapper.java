@@ -62,7 +62,7 @@ public class SingleLevelBomAsPlannedSammMapper {
      * @param material the parent material whose BOM structure to convert
      * @return the SAMM representation of the single-level BOM as planned
      */
-    public SingleLevelBomAsPlanned materialToSamm(Material material) {
+    public SingleLevelBomAsPlanned materialToSingleLevelBomAsplannedSamm(Material material) {
 
         SingleLevelBomAsPlanned samm = new SingleLevelBomAsPlanned();
         samm.setCatenaXId(material.getMaterialNumberCx());
