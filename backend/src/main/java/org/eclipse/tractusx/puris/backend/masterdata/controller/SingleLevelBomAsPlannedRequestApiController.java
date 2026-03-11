@@ -41,7 +41,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * This class offers the endpoint for requesting the SingleLevelBomAsPlanned
- * Submodel 1.0.0
+ * Submodel 3.0.0
  */
 @RestController
 @RequestMapping("single-level-bom-as-planned")
