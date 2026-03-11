@@ -99,7 +99,7 @@ public class SingleLevelBomAsPlannedSammMapper {
 
             // Create one ChildData per supplier of this component
             for (MaterialPartnerRelation mpr : supplierRelations) {
-                ChildData childData = createChildData(childMaterial, materialRelation, mpr.getPartner().getBpnl());
+                ChildData childData = createChildData(materialRelation, mpr);
                 childItems.add(childData);
             }
         }
@@ -109,14 +109,13 @@ public class SingleLevelBomAsPlannedSammMapper {
     }
 
     /**
-     * Create a ChildData entry from a Material, MaterialRelation and supplier BPNL.
+     * Create a ChildData entry from a MaterialRelation and the supplier's MPR.
      *
-     * @param childMaterial    the child material
      * @param materialRelation the MaterialRelation containing quantity and validity info
-     * @param supplierBpnl     the BPNL of the partner that supplies the child component
+     * @param mpr              the MaterialPartnerRelation of the partner that supplies the child component
      * @return the ChildData representation
      */
-    private ChildData createChildData(Material childMaterial, MaterialRelation materialRelation, String supplierBpnl) {
+    private ChildData createChildData(MaterialRelation materialRelation, MaterialPartnerRelation mpr) {
         ChildData childData = new ChildData();
 
         Date createdOn = materialRelation.getCreatedOn() != null
@@ -142,8 +141,8 @@ public class SingleLevelBomAsPlannedSammMapper {
         }
         childData.setValidityPeriod(validityPeriod);
 
-        childData.setBusinessPartner(supplierBpnl);
-        childData.setCatenaXId(childMaterial.getMaterialNumberCx());
+        childData.setBusinessPartner(mpr.getPartner().getBpnl());
+        childData.setCatenaXId(mpr.getPartnerCXNumber());
 
         return childData;
     }
