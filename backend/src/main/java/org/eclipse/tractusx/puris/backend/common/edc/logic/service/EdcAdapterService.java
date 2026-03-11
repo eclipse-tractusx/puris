@@ -196,7 +196,7 @@ public class EdcAdapterService {
             AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
-        log.info("Registration of Single Level Bom As Planned 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+        log.info("Registration of Single Level Bom As Planned 3.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(),
             variablesService.getSingleLevelBomAsPlannedSubmodelEndpoint(),
             AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID
