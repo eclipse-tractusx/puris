@@ -832,6 +832,54 @@ components:
       - customerOrderId
       - customerOrderPositionId
       type: object
+    OwnDataExchangeRequest:
+      additionalProperties: false
+      properties:
+        criticality:
+          enum:
+          - high
+          - medium
+          - low
+          maxItems: 50
+          type: string
+        desiredEndDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        desiredStartDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        notification:
+          $ref: '#/components/schemas/ReportedDemandAndCapacityNotification'
+        requestedTypes:
+          items:
+            enum:
+            - n-tier
+            maxItems: 50
+            type: string
+          maxItems: 50
+          type: array
+        text:
+          maxItems: 50
+          type: string
+        timestamp:
+          format: date-time
+          maxItems: 50
+          type: string
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+      required:
+      - criticality
+      - desiredEndDateTime
+      - desiredStartDateTime
+      - notification
+      - requestedTypes
+      - text
+      - timestamp
+      type: object
     PageMetadata:
       additionalProperties: false
       properties:
@@ -1317,6 +1365,98 @@ components:
       - date
       - daysOfSupply
       type: object
+    ReportedDemandAndCapacityNotification:
+      additionalProperties: false
+      properties:
+        affectedSitesRecipient:
+          items:
+            $ref: '#/components/schemas/Site'
+          maxItems: 50
+          type: array
+        affectedSitesSender:
+          items:
+            $ref: '#/components/schemas/Site'
+          maxItems: 50
+          type: array
+        contentChangedAt:
+          format: date-time
+          maxItems: 50
+          type: string
+        effect:
+          enum:
+          - demand-reduction
+          - demand-increase
+          - capacity-reduction
+          - capacity-increase
+          maxItems: 50
+          type: string
+        expectedEndDateOfEffect:
+          format: date-time
+          maxItems: 50
+          type: string
+        leadingRootCause:
+          enum:
+          - strike
+          - natural-disaster
+          - production-incident
+          - pandemic-or-epidemic
+          - logistics-disruption
+          - war
+          - other
+          maxItems: 50
+          type: string
+        materials:
+          items:
+            $ref: '#/components/schemas/Material'
+          maxItems: 50
+          type: array
+        notificationId:
+          format: uuid
+          maxItems: 50
+          type: string
+        partner:
+          $ref: '#/components/schemas/Partner'
+        relatedNotificationIds:
+          items:
+            format: uuid
+            maxItems: 50
+            type: string
+          maxItems: 50
+          type: array
+        resolvingMeasureDescription:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        sourceDisruptionId:
+          format: uuid
+          maxItems: 50
+          type: string
+        startDateOfEffect:
+          format: date-time
+          maxItems: 50
+          type: string
+        status:
+          enum:
+          - resolved
+          - open
+          maxItems: 50
+          type: string
+        text:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+      required:
+      - contentChangedAt
+      - effect
+      - leadingRootCause
+      - partner
+      - startDateOfEffect
+      - status
+      type: object
     ReportedMaterialStockDto:
       additionalProperties: false
       properties:
@@ -1553,7 +1693,7 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 5.1.0
+  version: 6.0.0
 openapi: 3.1.0
 paths:
   /batch/partner-data-update:
@@ -1640,6 +1780,34 @@ paths:
           description: OK
       tags:
       - partner-data-update-batch-controller
+  /data-exchange-request:
+    post:
+      description: "Creates a new own data exchange request. \n"
+      operationId: createDataExchangeRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OwnDataExchangeRequest'
+              additionalProperties: false
+        required: true
+      responses:
+        '201':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OwnDataExchangeRequest'
+                additionalProperties: false
+          description: Own Data Exchange Request was created.
+        '400':
+          description: Malformed or invalid request body.
+        '409':
+          description: Own Data Exchange Request already exists.
+        '500':
+          description: Internal Server Error.
+      summary: Creates a new own data exchange request
+      tags:
+      - data-exchange-request-controller
   /days-of-supply/customer:
     get:
       description: Calculate days of supply for customer for given number of days.

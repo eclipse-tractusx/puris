@@ -19,8 +19,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 package org.eclipse.tractusx.puris.backend.common.security;
-
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
@@ -114,6 +112,7 @@ public class SecurityConfig {
                         "/production/**",
                         "/delivery/**",
                         "/demand/**",
+                        "/data-exchange-request/**",
                         "/demand-and-capacity-notification/**",
                         "/planned-production/**",
                         "/material-demand/**",
