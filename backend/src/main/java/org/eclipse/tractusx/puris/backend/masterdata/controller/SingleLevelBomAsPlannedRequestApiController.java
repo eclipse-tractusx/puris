@@ -47,8 +47,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RequestMapping("single-level-bom-as-planned")
 public class SingleLevelBomAsPlannedRequestApiController {
 
-    static Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
-    static Pattern materialNumberPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
+    private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
+    private final Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
+
 
     @Autowired
     private SingleLevelBomAsPlannedRequestApiService singleLevelBomAsPlannedRequestApiService;
@@ -72,7 +73,7 @@ public class SingleLevelBomAsPlannedRequestApiController {
     public ResponseEntity<SingleLevelBomAsPlanned> getSingleLevelBomAsPlannedMapping(@RequestHeader("edc-bpn") String bpnl,
             @Parameter(description = "The CatenaX material number (UUID) of the material in question") @PathVariable String materialnumber,
             @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
-        if (!bpnlPattern.matcher(bpnl).matches() || !materialNumberPattern.matcher(materialnumber).matches()) {
+        if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumber).matches()) {
             return ResponseEntity.badRequest().build();
         }
 
