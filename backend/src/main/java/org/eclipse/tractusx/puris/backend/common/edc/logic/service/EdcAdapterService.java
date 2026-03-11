@@ -134,7 +134,7 @@ public class EdcAdapterService {
     }
 
     /**
-         * Call this method at startup to register the necessary request and
+     * Call this method at startup to register the necessary request and
      * response apis. In case you are using the framework agreement feature,
      * the framework agreement policy will be registered as well here.
      *
