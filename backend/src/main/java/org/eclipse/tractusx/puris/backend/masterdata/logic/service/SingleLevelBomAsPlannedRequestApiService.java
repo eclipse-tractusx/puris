@@ -40,23 +40,15 @@ public class SingleLevelBomAsPlannedRequestApiService {
     @Autowired
     private SingleLevelBomAsPlannedSammMapper sammMapper;
 
-    @Autowired
-    private VariablesService variablesService;
-
     /**
      * Handles a SingleLevelBomAsPlanned submodel request.
      * This endpoint is meant for self-access only via EDC.
      *
-     * @param bpnl             the BPNL of the requesting partner (must match own BPNL)
      * @param materialNumberCx the CatenaX material number (UUID) of the product
      * @return the SingleLevelBomAsPlanned SAMM, or {@code null} if access is denied
      *         or the material is not found
      */
-    public SingleLevelBomAsPlanned handleSingleLevelBomAsPlannedSubmodelRequest(String bpnl, String materialNumberCx) {
-        if (!bpnl.equals(variablesService.getOwnBpnl())) {
-            log.warn("Access denied: {} attempted to access SingleLevelBomAsPlanned (self-access only)", bpnl);
-            return null;
-        }
+    public SingleLevelBomAsPlanned handleSingleLevelBomAsPlannedSubmodelRequest(String materialNumberCx) {
 
         Material material = materialService.findByMaterialNumberCx(materialNumberCx);
         if (material == null || !material.isProductFlag()) {

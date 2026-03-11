@@ -21,6 +21,7 @@ package org.eclipse.tractusx.puris.backend.masterdata.controller;
 import java.util.regex.Pattern;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.singlelevelbomasplanned.SingleLevelBomAsPlanned;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.SingleLevelBomAsPlannedRequestApiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,9 @@ public class SingleLevelBomAsPlannedRequestApiController {
 
 
     @Autowired
+    private VariablesService variablesService;
+
+    @Autowired
     private SingleLevelBomAsPlannedRequestApiService singleLevelBomAsPlannedRequestApiService;
 
     @RequestMapping(value = "/**")
@@ -69,19 +73,23 @@ public class SingleLevelBomAsPlannedRequestApiController {
         @ApiResponse(responseCode = "404", description = "Product not found for given parameters. ", content = @Content),
         @ApiResponse(responseCode = "501", description = "Unsupported representation requested. ", content = @Content)
     })
-    @GetMapping("/request/{materialnumber}/submodel/{representation}")
+    @GetMapping("/request/{materialNumberCx}/submodel/{representation}")
     public ResponseEntity<SingleLevelBomAsPlanned> getSingleLevelBomAsPlannedMapping(@RequestHeader("edc-bpn") String bpnl,
-            @Parameter(description = "The CatenaX material number (UUID) of the material in question") @PathVariable String materialnumber,
+            @Parameter(description = "The CatenaX material number (UUID) of the material in question") @PathVariable String materialNumberCx,
             @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
-        if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumber).matches()) {
+        if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialNumberCx).matches()) {
             return ResponseEntity.badRequest().build();
+        }
+
+        if (!variablesService.getOwnBpnl().equals(bpnl)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         if (!"$value".equals(representation)) {
             return ResponseEntity.status(501).build();
         }
 
-        var samm = singleLevelBomAsPlannedRequestApiService.handleSingleLevelBomAsPlannedSubmodelRequest(bpnl, materialnumber);
+        var samm = singleLevelBomAsPlannedRequestApiService.handleSingleLevelBomAsPlannedSubmodelRequest(materialNumberCx);
         if (samm == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
