@@ -22,9 +22,8 @@ import { UnitOfMeasurementKey } from "./uom";
 
 export type MaterialRelation = {
     uuid?: UUID;
-    ownMaterialNumber: string;
-    parentMaterialNumber: string;
-    childMaterialNumber: string;
+    parentOwnMaterialNumber: string;
+    childOwnMaterialNumber: string;
     quantity: number;
     measurementUnit: UnitOfMeasurementKey;
     validFrom: Date;

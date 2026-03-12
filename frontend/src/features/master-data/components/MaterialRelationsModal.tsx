@@ -29,9 +29,9 @@ import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { DateTime } from '@components/ui/DateTime';
 
 const isValidMr = (mr: Partial<MaterialRelation>) =>
-  !!mr.parentMaterialNumber?.trim() &&
-  !!mr.childMaterialNumber?.trim() &&
-  typeof mr.quantity === 'number' &&
+  !!mr.parentOwnMaterialNumber?.trim() &&
+  !!mr.childOwnMaterialNumber?.trim() &&
+  mr.quantity && 
   mr.quantity > 0 &&
   !!mr.measurementUnit &&
   (
@@ -56,17 +56,17 @@ export const MaterialRelationModal = ({ open, allMaterials, mrs, onClose, onSave
     const childBase  = allMaterials.filter(m => m.materialFlag);
 
     const validParentMaterials = parentBase.filter((mat) =>
-    !mrs.some((existingMr) =>
-        existingMr.parentMaterialNumber === mat.ownMaterialNumber &&
-        existingMr.childMaterialNumber === temporaryMr.childMaterialNumber
-    )
+        !mrs.some((existingMr) =>
+            existingMr.parentOwnMaterialNumber === mat.ownMaterialNumber &&
+            existingMr.childOwnMaterialNumber === temporaryMr.childOwnMaterialNumber
+        )
     );
 
     const validChildMaterials = childBase.filter((mat) =>
-    !mrs.some((existingMr) =>
-        existingMr.parentMaterialNumber === temporaryMr.parentMaterialNumber &&
-        existingMr.childMaterialNumber === mat.ownMaterialNumber
-    )
+        !mrs.some((existingMr) =>
+            existingMr.parentOwnMaterialNumber === temporaryMr.parentOwnMaterialNumber &&
+            existingMr.childOwnMaterialNumber === mat.ownMaterialNumber
+        )
     );
 
 
@@ -74,8 +74,8 @@ export const MaterialRelationModal = ({ open, allMaterials, mrs, onClose, onSave
         if (!open) return;
 
         setTemporaryMr({
-            parentMaterialNumber: '',
-            childMaterialNumber: '',
+            parentOwnMaterialNumber: '',
+            childOwnMaterialNumber: '',
             quantity: 0,
             measurementUnit: undefined,
         });
@@ -129,13 +129,13 @@ export const MaterialRelationModal = ({ open, allMaterials, mrs, onClose, onSave
                                 onChange={(_, value) =>
                                     setTemporaryMr({
                                         ...temporaryMr,
-                                        parentMaterialNumber: value?.ownMaterialNumber ?? '',
+                                        parentOwnMaterialNumber: value?.ownMaterialNumber ?? '',
                                     })
                                 }
-                                value={validParentMaterials.find((mat) => mat.ownMaterialNumber === temporaryMr.parentMaterialNumber) ?? null}
+                                value={validParentMaterials.find((mat) => mat.ownMaterialNumber === temporaryMr.parentOwnMaterialNumber) ?? null}
                                 label="Parent Material*"
                                 placeholder={validParentMaterials.length === 0 ? "No valid parent materials available" : "Select material"}
-                                error={formError && !temporaryMr.parentMaterialNumber?.trim()}
+                                error={formError && !temporaryMr.parentOwnMaterialNumber?.trim()}
                                 data-testid="material-relations-modal-parent-material"
                             />
                         </Grid>
@@ -149,13 +149,13 @@ export const MaterialRelationModal = ({ open, allMaterials, mrs, onClose, onSave
                                 onChange={(_, value) =>
                                     setTemporaryMr({
                                         ...temporaryMr,
-                                        childMaterialNumber: value?.ownMaterialNumber ?? '',
+                                        childOwnMaterialNumber: value?.ownMaterialNumber ?? '',
                                     })
                                 }
-                                value={validChildMaterials.find((p) => p.ownMaterialNumber === temporaryMr.childMaterialNumber) ?? null}
+                                value={validChildMaterials.find((p) => p.ownMaterialNumber === temporaryMr.childOwnMaterialNumber) ?? null}
                                 label="Child Material*"
                                 placeholder={validChildMaterials.length === 0 ? "No valid child materials available" : "Select child material"}
-                                error={formError && !temporaryMr.childMaterialNumber?.trim()}
+                                error={formError && !temporaryMr.childOwnMaterialNumber?.trim()}
                                 data-testid="material-relations-modal-child-material"
                             />
                         </Grid>
@@ -166,7 +166,7 @@ export const MaterialRelationModal = ({ open, allMaterials, mrs, onClose, onSave
                                 type="number"
                                 placeholder="Enter quantity"
                                 value={temporaryMr.quantity ?? ''}
-                                error={formError && !temporaryMr.quantity}
+                                error={formError && (!temporaryMr.quantity || temporaryMr.quantity <= 0)}
                                 onChange={(e) =>
                                     setTemporaryMr((curr) => ({
                                         ...curr,
@@ -203,7 +203,6 @@ export const MaterialRelationModal = ({ open, allMaterials, mrs, onClose, onSave
                                 error={
                                     formError &&
                                     (
-                                        (!!temporaryMr.validFrom && new Date(temporaryMr.validFrom) > new Date()) ||
                                         (!!temporaryMr.validFrom && !!temporaryMr.validTo &&
                                         new Date(temporaryMr.validTo) < new Date(temporaryMr.validFrom))
                                     )
@@ -222,7 +221,6 @@ export const MaterialRelationModal = ({ open, allMaterials, mrs, onClose, onSave
                                 error={
                                     formError &&
                                     (
-                                        (!!temporaryMr.validTo && new Date(temporaryMr.validTo) > new Date()) ||
                                         (!!temporaryMr.validFrom && !!temporaryMr.validTo &&
                                         new Date(temporaryMr.validTo) < new Date(temporaryMr.validFrom))
                                     )

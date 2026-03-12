@@ -273,15 +273,15 @@ export const MasterDataView = () => {
                 <Table
                     title="Material Relations"
                     columns={[
-                        { headerName: 'Parent Material Number', field: 'parentMaterialNumber', flex: 1 },
-                        { headerName: 'Child Material Number', field: 'childMaterialNumber', flex: 1 },
+                        { headerName: 'Parent Material Number', field: 'parentOwnMaterialNumber', flex: 1 },
+                        { headerName: 'Child Material Number', field: 'childOwnMaterialNumber', flex: 1 },
                         {
                             headerName: 'Quantity',
                             field: 'quantity',
                             flex: 1,
                             renderCell: (data: { row: MaterialRelation }) => {
                                 return (
-                                    <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                                    <Box display="flex" textAlign="center" alignItems="center" width="100%" height="100%">
                                         {`${data.row.quantity} ${getUnitOfMeasurement(data.row.measurementUnit)}`}
                                     </Box>
                                 );
@@ -294,10 +294,10 @@ export const MasterDataView = () => {
                             flex: 1.5,
                             renderCell: (data: { row: MaterialRelation }) => data.row.validFrom ? (
                                 <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                                    <Box>{new Date(data.row.validFrom).toLocaleDateString('de-DE')}</Box>
-                                    <Box>{new Date(data.row.validFrom).toLocaleTimeString('de-DE')}</Box>
+                                    <Box>{new Date(data.row.validFrom).toLocaleDateString('en-GB')}</Box>
+                                    <Box>{new Date(data.row.validFrom).toLocaleTimeString('en-GB')}</Box>
                                 </Stack>
-                            ) : null
+                            ) : <Typography variant="body2"> - </Typography>
                         },
                         {
                             headerName: 'Valid To',
@@ -306,10 +306,10 @@ export const MasterDataView = () => {
                             flex: 1.5,
                             renderCell: (data: { row: MaterialRelation }) => data.row.validTo ? (
                                 <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                                    <Box>{new Date(data.row.validTo).toLocaleDateString('de-DE')}</Box>
-                                    <Box>{new Date(data.row.validTo).toLocaleTimeString('de-DE')}</Box>
+                                    <Box>{new Date(data.row.validTo).toLocaleDateString('en-GB')}</Box>
+                                    <Box>{new Date(data.row.validTo).toLocaleTimeString('en-GB')}</Box>
                                 </Stack>
-                            ) : null
+                            ) : <Typography variant="body2"> - </Typography>
                         },
                     ]}
                     rows={mrs ?? []}
