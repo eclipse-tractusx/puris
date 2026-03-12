@@ -68,9 +68,9 @@ public class SingleLevelBomAsPlannedSammMapper {
         samm.setCatenaXId(material.getMaterialNumberCx());
 
         if (!material.isProductFlag()) {
-            log.error("Material {} is not marked as product, cannot generate SingleLevelBomAsPlanned",
+            log.warn("Material {} is not marked as product, cannot generate SingleLevelBomAsPlanned",
                     material.getOwnMaterialNumber());
-            throw new IllegalArgumentException("Material must be marked as product to generate SingleLevelBomAsPlanned");
+            return null;
         }
 
         Set<ChildData> childItems = new HashSet<>();

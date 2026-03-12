@@ -51,8 +51,8 @@ public class SingleLevelBomAsPlannedRequestApiService {
     public SingleLevelBomAsPlanned handleSingleLevelBomAsPlannedSubmodelRequest(String materialNumberCx) {
 
         Material material = materialService.findByMaterialNumberCx(materialNumberCx);
-        if (material == null || !material.isProductFlag()) {
-            log.warn("Material not found or not a product for CX number: {}", materialNumberCx);
+        if (material == null) {
+            log.warn("Material not found for CX number: {}", materialNumberCx);
             return null;
         }
 
