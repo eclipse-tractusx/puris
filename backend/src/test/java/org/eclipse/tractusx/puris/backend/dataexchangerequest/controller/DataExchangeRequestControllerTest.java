@@ -30,7 +30,6 @@ import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.m
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -54,14 +53,8 @@ public class DataExchangeRequestControllerTest {
     @Test
     void emptyRequest_testValidateWithDetails_returnsValidationErrors() {
         OwnDataExchangeRequest request = new OwnDataExchangeRequest();
-        List<String> errors = ownDataExchangeRequestService.validateWithDetails(request);
-        assertTrue(errors.contains("Missing criticality."));
-        assertTrue(errors.contains("Missing text."));
-        assertTrue(errors.contains("Missing timestamp."));
-        assertTrue(errors.contains("Missing desired start date and time."));
-        assertTrue(errors.contains("Missing desired end date and time."));
-        assertTrue(errors.contains("Missing reference to demand and capacity notification."));
-        assertTrue(errors.contains("Missing requested types."));
+        boolean validation = ownDataExchangeRequestService.validate(request);
+        assertEquals(false, validation);
     }
 
     @Test
@@ -97,7 +90,6 @@ public class DataExchangeRequestControllerTest {
         request.setDesiredEndDateTime(desiredEnd);
         request.setRequestedTypes(List.of(RequestedTypeEnumeration.values()[0]));
         request.setText("Please provide the requested data.");
-        request.setTimestamp(now);
         return request;
     }
 

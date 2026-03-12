@@ -17,7 +17,6 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -38,37 +37,41 @@ public abstract class  DataExchangeRequestService<T extends DataExchangeRequest>
         return repository.findById(uuid).orElse(null);
     }
 
-    protected List<String> basicValidation(DataExchangeRequest dataExchangeRequest) {
-        List<String> errors = new ArrayList<>();
-
-        addIfNull(errors, dataExchangeRequest.getCriticality(), "Missing criticality.");
-        addIfNull(errors, dataExchangeRequest.getText(), "Missing text.");
-        addIfNull(errors, dataExchangeRequest.getTimestamp(), "Missing timestamp.");
-        addIfNull(errors, dataExchangeRequest.getDesiredStartDateTime(), "Missing desired start date and time.");
-        addIfNull(errors, dataExchangeRequest.getDesiredEndDateTime(), "Missing desired end date and time.");
-        addIfNull(errors, dataExchangeRequest.getNotification(), "Missing reference to demand and capacity notification.");
-        if (dataExchangeRequest.getRequestedTypes() == null || dataExchangeRequest.getRequestedTypes().isEmpty()) {
-            errors.add("Missing requested types.");
-        }
-        validateDesiredDate(errors, dataExchangeRequest.getDesiredStartDateTime(), "Desired start date and time", dataExchangeRequest.getNotification());
-
-        validateDesiredDate(errors, dataExchangeRequest.getDesiredEndDateTime(), "Desired end date and time", dataExchangeRequest.getNotification());
-        return errors;
+    protected boolean basicValidation(DataExchangeRequest dataExchangeRequest) {
+        return dataExchangeRequest.getCriticality() != null &&
+            dataExchangeRequest.getText() != null &&
+            dataExchangeRequest.getDesiredStartDateTime() != null &&
+            dataExchangeRequest.getDesiredEndDateTime() != null &&
+            dataExchangeRequest.getNotification() != null &&
+            (dataExchangeRequest.getUuid() == null || dataExchangeRequest.getTimestamp() != null) &&
+            dataExchangeRequest.getRequestedTypes() != null &&
+            !dataExchangeRequest.getRequestedTypes().isEmpty() &&
+            validateDesiredDates(
+                    dataExchangeRequest.getDesiredStartDateTime(),
+                    dataExchangeRequest.getDesiredEndDateTime(),
+                    dataExchangeRequest.getNotification()
+            );
     }
-    private void addIfNull(List<String> errors, Object value, String message) {
-        if (value == null) {
-            errors.add(message);
+    private boolean validateDesiredDates(Date desiredStartDate, Date desiredEndDate, ReportedDemandAndCapacityNotification notification) {
+        if (!desiredStartDate.before(desiredEndDate)) {
+            return false;
         }
-    }
-    private void validateDesiredDate(List<String> errors, Date desiredDate, String fieldName, ReportedDemandAndCapacityNotification notification) {
-        if (desiredDate == null || notification == null) {
-            return;
+        if (notification.getStartDateOfEffect() != null) {
+            if (desiredStartDate.before(notification.getStartDateOfEffect())) {
+                return false;
+            }
+            if (desiredEndDate.before(notification.getStartDateOfEffect())) {
+                return false;
+            }
         }
-        if (notification.getStartDateOfEffect() != null && desiredDate.before(notification.getStartDateOfEffect())) {
-            errors.add(fieldName + " must be after start date of effect of the reference notification.");
+        if (notification.getExpectedEndDateOfEffect() != null) {
+            if (desiredStartDate.after(notification.getExpectedEndDateOfEffect())) {
+                return false;
+            }
+            if (desiredEndDate.after(notification.getExpectedEndDateOfEffect())) {
+                return false;
+            }
         }
-        if (notification.getExpectedEndDateOfEffect() != null && desiredDate.after(notification.getExpectedEndDateOfEffect())) {
-            errors.add(fieldName + " must be before expected end date of effect of the reference notification.");
-        }
+        return true;
     }
 }

@@ -82,9 +82,7 @@ public abstract class DataExchangeRequest {
 
     @PrePersist
     protected void onCreate() {
-        if (timestamp == null) {
-            timestamp = new Date();
-        }
+        timestamp = new Date();
     }
 
     @Override

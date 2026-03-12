@@ -20,11 +20,6 @@ script:pre-request {
   bru.setVar("DATA_EXCHANGE_TIMESTAMP", now.toISOString());
 }
 
-script:post-response {
-  console.log("STATUS:", res.getStatus());
-  console.log("BODY:", JSON.stringify(res.getBody(), null, 2));
-}
-
 body:json {
   {
     "criticality": "high",

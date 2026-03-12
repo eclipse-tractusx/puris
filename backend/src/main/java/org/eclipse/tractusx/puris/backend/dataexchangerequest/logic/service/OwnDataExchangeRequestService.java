@@ -17,8 +17,6 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
@@ -36,7 +34,7 @@ public class OwnDataExchangeRequestService extends DataExchangeRequestService<Ow
     }
 
     public final OwnDataExchangeRequest create(OwnDataExchangeRequest ownDataExchangeRequest) {
-        if (!validator.apply(ownDataExchangeRequest)) {    
+        if (ownDataExchangeRequest == null || !validator.apply(ownDataExchangeRequest)) {  
             throw new IllegalArgumentException("Invalid data exchange request");
         }
         if (repository.findAll().stream().filter(existing -> existing.equals(ownDataExchangeRequest)).findFirst().isPresent()) {
@@ -46,12 +44,6 @@ public class OwnDataExchangeRequestService extends DataExchangeRequestService<Ow
     }
 
     public boolean validate(OwnDataExchangeRequest dataExchangeRequest) {
-        return validateWithDetails(dataExchangeRequest).isEmpty();
-    }
-
-    public List<String> validateWithDetails(OwnDataExchangeRequest dataExchangeRequest) {
-        List<String> validationErrors = new ArrayList<>();
-        validationErrors.addAll(basicValidation(dataExchangeRequest));
-        return validationErrors;
+        return basicValidation(dataExchangeRequest);
     }
 }
