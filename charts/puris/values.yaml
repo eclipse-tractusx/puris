@@ -478,6 +478,9 @@ backend:
     daysofsupplysubmodel:
       # -- Asset ID for DaysOfSupplySubmodel API
       apiassetid: daysofsupply-api-asset
+    singlelevelbomasplannedsubmodel:
+      # -- Asset ID for SingleLevelBomAsPlannedSubmodel API
+      apiassetid: singlelevelbomasplannedsubmodel-api-asset
     notification:
       # -- Asset ID for Notification API
       apiassetid: notification-api-asset
