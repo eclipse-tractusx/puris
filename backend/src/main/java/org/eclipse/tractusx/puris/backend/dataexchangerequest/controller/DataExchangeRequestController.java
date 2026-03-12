@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.controller;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.DataExchangeRequestDto;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.OwnDataExchangeRequestService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
@@ -35,7 +36,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Validator;
 
 @RestController
 @RequestMapping("data-exchange-request")
@@ -43,8 +43,6 @@ public class DataExchangeRequestController {
 
     @Autowired
     private OwnDataExchangeRequestService ownDataExchangeRequestService;
-    @Autowired
-    private Validator validator;
     @Autowired
     private ReportedDemandAndCapacityNotificationService reportedDemandAndCapacityNotificationService;
 
@@ -58,24 +56,48 @@ public class DataExchangeRequestController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     @ResponseStatus(HttpStatus.CREATED)
-    public OwnDataExchangeRequest createDataExchangeRequest(@RequestBody OwnDataExchangeRequest ownDataExchangeRequest) {
-        if (!validator.validate(ownDataExchangeRequest).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-        if (ownDataExchangeRequest.getNotification() == null || ownDataExchangeRequest.getNotification().getNotificationId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Own Data Exchange Request misses notification identification.");
-        }
-        ReportedDemandAndCapacityNotification notification = reportedDemandAndCapacityNotificationService.findByNotificationId(ownDataExchangeRequest.getNotification().getNotificationId());
+    public DataExchangeRequestDto createDataExchangeRequest(@RequestBody DataExchangeRequestDto requestDto) {
+        ReportedDemandAndCapacityNotification notification =
+                reportedDemandAndCapacityNotificationService.findByNotificationId(requestDto.getNotificationId());
+
         if (notification == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referenced notification does not exist.");
         }
+
+        OwnDataExchangeRequest ownDataExchangeRequest = convertToEntity(requestDto);
         ownDataExchangeRequest.setNotification(notification);
+
         try {
-            return ownDataExchangeRequestService.create(ownDataExchangeRequest);
+            return convertToDto(ownDataExchangeRequestService.create(ownDataExchangeRequest));
         } catch (KeyAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Own Data Exchange Request already exists.");
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Own Data Exchange Request is invalid.");
         }
+    }
+
+    private OwnDataExchangeRequest convertToEntity(DataExchangeRequestDto dto) {
+        OwnDataExchangeRequest entity = new OwnDataExchangeRequest();
+        entity.setUuid(dto.getUuid());
+        entity.setCriticality(dto.getCriticality());
+        entity.setDesiredStartDateTime(dto.getDesiredStartDateTime());
+        entity.setDesiredEndDateTime(dto.getDesiredEndDateTime());
+        entity.setRequestedTypes(dto.getRequestedTypes());
+        entity.setText(dto.getText());
+        entity.setTimestamp(dto.getTimestamp());
+        return entity;
+    }
+
+    private DataExchangeRequestDto convertToDto(OwnDataExchangeRequest entity) {
+        DataExchangeRequestDto dto = new DataExchangeRequestDto();
+        dto.setUuid(entity.getUuid());
+        dto.setNotificationId(entity.getNotification().getNotificationId());
+        dto.setCriticality(entity.getCriticality());
+        dto.setDesiredStartDateTime(entity.getDesiredStartDateTime());
+        dto.setDesiredEndDateTime(entity.getDesiredEndDateTime());
+        dto.setRequestedTypes(entity.getRequestedTypes());
+        dto.setText(entity.getText());
+        dto.setTimestamp(entity.getTimestamp());
+        return dto;
     }
 }
