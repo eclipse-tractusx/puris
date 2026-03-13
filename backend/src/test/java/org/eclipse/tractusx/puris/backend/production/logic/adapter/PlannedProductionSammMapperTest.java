@@ -31,6 +31,7 @@ import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQu
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedProduction;
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
+import org.eclipse.tractusx.puris.backend.production.logic.dto.anonymizedplannedproductionsamm.AllocatedPlannedProductionOutputAnonymized;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproductionsamm.AllocatedPlannedProductionOutput;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproductionsamm.OrderPositionReference;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproductionsamm.PlannedProductionOutput;
@@ -122,6 +123,10 @@ class PlannedProductionSammMapperTest {
         assertEquals(1, pos.getAllocatedPlannedProductionOutputs().size());
         AllocatedPlannedProductionOutput p = pos.getAllocatedPlannedProductionOutputs().iterator().next();
         assertEquals("BPNS123456789012", p.getProductionSiteBpns());
+        assertEquals(5.0, p.getPlannedProductionQuantity().getValue());
+        assertEquals(ItemUnitEnumeration.UNIT_PIECE, p.getPlannedProductionQuantity().getUnit());
+        assertEquals(now, p.getEstimatedTimeOfCompletion());
+        assertEquals(now, p.getLastUpdatedOnDateTime());
     }
 
     @Test
@@ -154,6 +159,12 @@ class PlannedProductionSammMapperTest {
         assertTrue(samm.getMaterialGlobalAssetIdAnonymized().startsWith("enc:"));
         assertNotNull(samm.getAllocatedPlannedProductionOutputs());
         assertEquals(1, samm.getAllocatedPlannedProductionOutputs().size());
+        AllocatedPlannedProductionOutputAnonymized p = samm.getAllocatedPlannedProductionOutputs().iterator().next();
+        assertTrue(p.getProductionSiteBpnsAnonymized().startsWith("enc:"));
+        assertEquals(2.0, p.getPlannedProductionQuantity().getValue());
+        assertEquals(ItemUnitEnumeration.UNIT_PIECE, p.getPlannedProductionQuantity().getUnit());
+        assertEquals(now, p.getEstimatedTimeOfCompletion());
+        assertEquals(now, p.getLastUpdatedOnDateTime());
     }
 
     @Test

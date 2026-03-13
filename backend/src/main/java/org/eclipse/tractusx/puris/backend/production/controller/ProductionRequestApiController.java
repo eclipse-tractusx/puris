@@ -82,7 +82,7 @@ public class ProductionRequestApiController {
         return ResponseEntity.ok(samm);
     }
 
-    @Operation(summary = "This endpoint receives the Planned Production Submodel 2.0.0 requests. " +
+    @Operation(summary = "This endpoint receives the Anonymized Planned Production Submodel 1.0.0 requests. " +
         "This endpoint is meant to be accessed by partners via EDC only. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),

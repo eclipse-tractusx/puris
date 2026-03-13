@@ -22,9 +22,9 @@ The **need for configuration updates** is **marked bold**.
 - Added component to copy text to clipboard for puris frontend ([#1058](https://github.com/eclipse-tractusx/puris/pull/1058))
 - Added version to about license ([#1067](https://github.com/eclipse-tractusx/puris/pull/1067))
 - Added update flow to Material Details View buttons ([#1034](https://github.com/eclipse-tractusx/puris/pull/1034))
-- Added submodel implementation for delivery information anyonymized ([#1095](https://github.com/eclipse-tractusx/puris/pull/1095))
-- Added submodel implementation for item stock anyonymized ([#1096](https://github.com/eclipse-tractusx/puris/pull/1096))
-- Added submodel implementation for planned production output anyonymized ([#1099](https://github.com/eclipse-tractusx/puris/pull/1099))
+- Added submodel implementation for delivery information anonymized ([#1095](https://github.com/eclipse-tractusx/puris/pull/1095))
+- Added submodel implementation for item stock anonymized ([#1096](https://github.com/eclipse-tractusx/puris/pull/1096))
+- Added submodel implementation for planned production output anonymized ([#1099](https://github.com/eclipse-tractusx/puris/pull/1099))
 
 ### Changed
 
