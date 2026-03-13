@@ -44,6 +44,7 @@ const app = {
     GENERATE_MATERIAL_CATENAX_ID: (import.meta.env.VITE_GENERATE_MATERIAL_CATENAX_ID ?? "true").trim() === "true",
     ENDPOINT_ALL_PARTNERS: import.meta.env.VITE_ENDPOINT_ALL_PARTNERS.trim() as string,
     ENDPOINT_MATERIAL_PARTNER_RELATIONS: import.meta.env.VITE_ENDPOINT_MATERIAL_PARTNER_RELATIONS.trim() as string,
+    ENDPOINT_MATERIAL_RELATIONS: import.meta.env.VITE_ENDPOINT_MATERIAL_RELATIONS.trim() as string,
 };
 
 const auth = {
