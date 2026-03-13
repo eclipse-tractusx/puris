@@ -45,3 +45,18 @@ databaseChangeLog:
                     name: partner_bpnl
                     type: VARCHAR(255)
               tableName: item_stock_anonymized_contract_mapping
+  - changeSet:
+        id: "3"
+        author: jakoballgaier
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: production_anonymized_contract_mapping_pkey
+                    name: partner_bpnl
+                    type: VARCHAR(255)
+              tableName: production_anonymized_contract_mapping
+              

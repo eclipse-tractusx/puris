@@ -89,6 +89,28 @@ components:
       - plannedProductionQuantity
       - productionSiteBpns
       type: object
+    AllocatedPlannedProductionOutputAnonymized:
+      additionalProperties: false
+      properties:
+        estimatedTimeOfCompletion:
+          format: date-time
+          maxItems: 50
+          type: string
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        plannedProductionQuantity:
+          $ref: '#/components/schemas/ItemQuantityEntity'
+        productionSiteBpnsAnonymized:
+          maxItems: 50
+          type: string
+      required:
+      - estimatedTimeOfCompletion
+      - lastUpdatedOnDateTime
+      - plannedProductionQuantity
+      - productionSiteBpnsAnonymized
+      type: object
     AllocatedStockAnonymized:
       additionalProperties: false
       properties:
@@ -1064,6 +1086,23 @@ components:
       required:
       - materialGlobalAssetId
       - positions
+      type: object
+    PlannedProductionOutputAnonymized:
+      additionalProperties: false
+      properties:
+        allocatedPlannedProductionOutputs:
+          items:
+            $ref: '#/components/schemas/AllocatedPlannedProductionOutputAnonymized'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        materialGlobalAssetIdAnonymized:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+      required:
+      - allocatedPlannedProductionOutputs
+      - materialGlobalAssetIdAnonymized
       type: object
     Position:
       additionalProperties: false
@@ -2701,6 +2740,7 @@ paths:
           - PART_TYPE_INFORMATION_SUBMODEL
           - ITEM_STOCK_ANONYMIZED_SUBMODEL
           - DELIVERY_ANONYMIZED_SUBMODEL
+          - PRODUCTION_ANONYMIZED_SUBMODEL
           maxItems: 50
           type: string
       - in: query
@@ -3587,6 +3627,57 @@ paths:
           description: 'Unsupported representation requested. '
       tags:
       - part-type-information-controller
+  /planned-production/anonymized/request/{materialNumberCx}/submodel/{representation}:
+    get:
+      operationId: getAnonymizedProductionMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: header
+        name: edc-contract-agreement-id
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: materialNumberCx
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PlannedProductionOutputAnonymized'
+                additionalProperties: false
+          description: Ok
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '501':
+          description: Unsupported representation
+      summary: 'This endpoint receives the Anonymized Planned Production Submodel
+        1.0.0 requests. This endpoint is meant to be accessed by partners via EDC
+        only. '
+      tags:
+      - production-request-api-controller
   /planned-production/request/{materialnumbercx}/submodel/{representation}:
     get:
       operationId: getProductionMapping
