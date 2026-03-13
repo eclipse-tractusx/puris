@@ -1,0 +1,96 @@
+#
+# Copyright (c) 2026 Volkswagen AG
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+databaseChangeLog:
+  - changeSet:
+      id: "1"
+      author: OlgaIvkovic
+      changes:
+        - createTable:
+            tableName: own_data_exchange_request
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: own_data_exchange_request_pkey
+              - column:
+                  name: notification_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: criticality
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: requested_types
+                  type: SMALLINT[]
+                  constraints:
+                    nullable: false
+              - column:
+                  name: desired_start_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: desired_end_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: text
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timestamp
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: own_data_exchange_request_requested_types
+            columns:
+              - column:
+                  name: own_data_exchange_request_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: requested_type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: own_data_exchange_request
+            baseColumnNames: notification_uuid
+            referencedTableName: reported_demand_and_capacity_notification
+            referencedColumnNames: uuid
+            constraintName: fk_own_data_exchange_request_notification
+
+        - addForeignKeyConstraint:
+            baseTableName: own_data_exchange_request_requested_types
+            baseColumnNames: own_data_exchange_request_uuid
+            referencedTableName: own_data_exchange_request
+            referencedColumnNames: uuid
+            constraintName: fk_own_data_exchange_request_requested_types
