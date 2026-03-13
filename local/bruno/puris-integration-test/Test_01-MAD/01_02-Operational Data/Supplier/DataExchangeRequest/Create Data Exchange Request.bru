@@ -15,11 +15,6 @@ headers {
   X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
 }
 
-script:pre-request {
-  const now = new Date();
-  bru.setVar("DATA_EXCHANGE_TIMESTAMP", now.toISOString());
-}
-
 body:json {
   {
     "criticality": "high",
@@ -29,7 +24,6 @@ body:json {
       "n-tier"
     ],
     "text": "Please provide the requested data.",
-    "timestamp": "{{DATA_EXCHANGE_TIMESTAMP}}",
     "notificationId": "d9452f24-3bf3-4134-b3eb-68858f1b2362"
   }
 }

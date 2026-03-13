@@ -51,7 +51,7 @@ public class DataExchangeRequestControllerTest {
     }
 
     @Test
-    void emptyRequest_testValidateWithDetails_returnsValidationErrors() {
+    void emptyRequest_testValidate_returnsFalse() {
         OwnDataExchangeRequest request = new OwnDataExchangeRequest();
         boolean validation = ownDataExchangeRequestService.validate(request);
         assertEquals(false, validation);

@@ -23,6 +23,7 @@ import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.DataExch
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.OwnDataExchangeRequestService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,6 +46,8 @@ public class DataExchangeRequestController {
     private OwnDataExchangeRequestService ownDataExchangeRequestService;
     @Autowired
     private ReportedDemandAndCapacityNotificationService reportedDemandAndCapacityNotificationService;
+    @Autowired
+    private ModelMapper modelMapper;
 
     @PostMapping()
     @ResponseBody
@@ -64,40 +67,18 @@ public class DataExchangeRequestController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referenced notification does not exist.");
         }
 
-        OwnDataExchangeRequest ownDataExchangeRequest = convertToEntity(requestDto);
+        OwnDataExchangeRequest ownDataExchangeRequest = modelMapper.map(requestDto, OwnDataExchangeRequest.class);
         ownDataExchangeRequest.setNotification(notification);
 
         try {
-            return convertToDto(ownDataExchangeRequestService.create(ownDataExchangeRequest));
+            OwnDataExchangeRequest newEntity = ownDataExchangeRequestService.create(ownDataExchangeRequest);
+            DataExchangeRequestDto responseDto = modelMapper.map(newEntity, DataExchangeRequestDto.class);
+            responseDto.setNotificationId(notification.getNotificationId());
+            return responseDto;
         } catch (KeyAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Own Data Exchange Request already exists.");
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Own Data Exchange Request is invalid.");
         }
-    }
-
-    private OwnDataExchangeRequest convertToEntity(DataExchangeRequestDto dto) {
-        OwnDataExchangeRequest entity = new OwnDataExchangeRequest();
-        entity.setUuid(dto.getUuid());
-        entity.setCriticality(dto.getCriticality());
-        entity.setDesiredStartDateTime(dto.getDesiredStartDateTime());
-        entity.setDesiredEndDateTime(dto.getDesiredEndDateTime());
-        entity.setRequestedTypes(dto.getRequestedTypes());
-        entity.setText(dto.getText());
-        entity.setTimestamp(dto.getTimestamp());
-        return entity;
-    }
-
-    private DataExchangeRequestDto convertToDto(OwnDataExchangeRequest entity) {
-        DataExchangeRequestDto dto = new DataExchangeRequestDto();
-        dto.setUuid(entity.getUuid());
-        dto.setNotificationId(entity.getNotification().getNotificationId());
-        dto.setCriticality(entity.getCriticality());
-        dto.setDesiredStartDateTime(entity.getDesiredStartDateTime());
-        dto.setDesiredEndDateTime(entity.getDesiredEndDateTime());
-        dto.setRequestedTypes(entity.getRequestedTypes());
-        dto.setText(entity.getText());
-        dto.setTimestamp(entity.getTimestamp());
-        return dto;
     }
 }

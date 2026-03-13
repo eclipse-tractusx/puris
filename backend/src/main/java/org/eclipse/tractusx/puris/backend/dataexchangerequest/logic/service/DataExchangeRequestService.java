@@ -17,7 +17,6 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.DataExchangeRequest;
@@ -46,29 +45,23 @@ public abstract class  DataExchangeRequestService<T extends DataExchangeRequest>
             (dataExchangeRequest.getUuid() == null || dataExchangeRequest.getTimestamp() != null) &&
             dataExchangeRequest.getRequestedTypes() != null &&
             !dataExchangeRequest.getRequestedTypes().isEmpty() &&
-            validateDesiredDates(
-                    dataExchangeRequest.getDesiredStartDateTime(),
-                    dataExchangeRequest.getDesiredEndDateTime(),
-                    dataExchangeRequest.getNotification()
-            );
+            validateDesiredDates(dataExchangeRequest, dataExchangeRequest.getNotification());
     }
-    private boolean validateDesiredDates(Date desiredStartDate, Date desiredEndDate, ReportedDemandAndCapacityNotification notification) {
-        if (!desiredStartDate.before(desiredEndDate)) {
+    private boolean validateDesiredDates(DataExchangeRequest ownDataExchangeRequest, ReportedDemandAndCapacityNotification notification) {
+        if (!ownDataExchangeRequest.getDesiredStartDateTime().before(ownDataExchangeRequest.getDesiredEndDateTime())) {
             return false;
         }
-        if (notification.getStartDateOfEffect() != null) {
-            if (desiredStartDate.before(notification.getStartDateOfEffect())) {
-                return false;
-            }
-            if (desiredEndDate.before(notification.getStartDateOfEffect())) {
-                return false;
-            }
+        if (ownDataExchangeRequest.getDesiredStartDateTime().before(notification.getStartDateOfEffect())) {
+            return false;
+        }
+        if (ownDataExchangeRequest.getDesiredEndDateTime().before(notification.getStartDateOfEffect())) {
+            return false;
         }
         if (notification.getExpectedEndDateOfEffect() != null) {
-            if (desiredStartDate.after(notification.getExpectedEndDateOfEffect())) {
+            if (ownDataExchangeRequest.getDesiredStartDateTime().after(notification.getExpectedEndDateOfEffect())) {
                 return false;
             }
-            if (desiredEndDate.after(notification.getExpectedEndDateOfEffect())) {
+            if (ownDataExchangeRequest.getDesiredEndDateTime().after(notification.getExpectedEndDateOfEffect())) {
                 return false;
             }
         }
