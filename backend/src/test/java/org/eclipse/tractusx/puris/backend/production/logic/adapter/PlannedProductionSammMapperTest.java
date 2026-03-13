@@ -83,6 +83,9 @@ class PlannedProductionSammMapperTest {
     MaterialPartnerRelationService mprService;
 
     @Mock
+    MaterialPartnerRelation mpr;
+
+    @Mock
     MaterialService materialService;
 
     @Mock
@@ -163,7 +166,8 @@ class PlannedProductionSammMapperTest {
         Position pos = new Position(opr, now, new HashSet<>(Set.of(p)));
         PlannedProductionOutput prod = new PlannedProductionOutput(new HashSet<>(Set.of(pos)), MATERIAL_4.getMaterialNumberCx());
 
-        when(materialService.findByMaterialNumberCx(MATERIAL_4.getMaterialNumberCx())).thenReturn(MATERIAL_4);
+        when(mprService.findByPartnerAndPartnerCXNumber(PARTNER, MATERIAL_4.getMaterialNumberCx())).thenReturn(mpr);
+        when(mpr.getMaterial()).thenReturn(MATERIAL_4); 
 
         List<ReportedProduction> out = mapper.sammToReportedProduction(prod, PARTNER);
         assertEquals(1, out.size());
