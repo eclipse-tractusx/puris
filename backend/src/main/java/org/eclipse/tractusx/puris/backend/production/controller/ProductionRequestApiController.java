@@ -97,7 +97,6 @@ public class ProductionRequestApiController {
         @PathVariable String materialNumberCx,
         @PathVariable String representation
     ) {
-        log.info("Received request for Anonymized Planned Production with materialNumberCx: {} and representation: {} from bpnl: {}", materialNumberCx, representation, bpnl);
         if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialNumberCx).matches()) {
             log.warn("Rejecting request at Anonymized Planned Production Submodel request 1.0.0 endpoint");
             return ResponseEntity.badRequest().build();
