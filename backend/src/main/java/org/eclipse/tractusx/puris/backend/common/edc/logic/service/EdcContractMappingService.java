@@ -20,10 +20,12 @@
 
 package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
-import lombok.extern.slf4j.Slf4j;
+import java.lang.reflect.Constructor;
+
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.ContractMapping;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DtrContractMapping;
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DataExchangeRequestContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DaysOfSupplyContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DeliveryContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandAndCapacityNotificationContractMappingRepository;
@@ -37,7 +39,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Constructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -66,6 +68,9 @@ public class EdcContractMappingService {
 
     @Autowired
     private PartTypeContractMappingRepository partTypeContractMappingRepository;
+
+    @Autowired
+    private DataExchangeRequestContractMappingRepository dataExchangeRequestContractMappingRepository;
 
     private final String SEPARATOR = "\n@\n";
 
@@ -130,6 +135,7 @@ public class EdcContractMappingService {
             case NOTIFICATION -> demandAndCapacityNotificationContractMappingRepository;
             case DAYS_OF_SUPPLY -> daysOfSupplyContractMappingRepository;
             case PART_TYPE_INFORMATION_SUBMODEL -> partTypeContractMappingRepository;
+            case DATA_EXCHANGE_REQUEST -> dataExchangeRequestContractMappingRepository;
         };
         return repository;
     }

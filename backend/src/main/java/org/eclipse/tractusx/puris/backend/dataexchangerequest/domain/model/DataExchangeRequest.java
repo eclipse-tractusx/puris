@@ -22,7 +22,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -96,7 +98,6 @@ public abstract class DataExchangeRequest {
 
         final DataExchangeRequest that = (DataExchangeRequest) o;
         return this.getNotification().getUuid().equals(that.getNotification().getUuid()) &&
-        this.getNotification().getUuid().equals(that.getNotification().getUuid()) &&
             Objects.equals(this.getCriticality().getValue(), that.getCriticality().getValue()) &&
             Objects.equals(toInstant(this.getDesiredStartDateTime()), toInstant(that.getDesiredStartDateTime())) &&
             Objects.equals(toInstant(this.getDesiredEndDateTime()), toInstant(that.getDesiredEndDateTime())) &&

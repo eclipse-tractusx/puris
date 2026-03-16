@@ -16,25 +16,13 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-package org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model;
+package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
+
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.SuperBuilder;
 
 @Entity
-@SuperBuilder
-@NoArgsConstructor
-@Getter
-@Setter
 @ToString(callSuper = true)
-public class OwnDataExchangeRequest extends DataExchangeRequest {   
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "related_data_exchange_request_uuid")
-    @ToString.Exclude
-    private ReportedDataExchangeRequest relatedDataExchangeRequest;
+public class DataExchangeRequestContractMapping extends ContractMapping {
+    
 }

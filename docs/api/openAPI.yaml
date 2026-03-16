@@ -1717,6 +1717,25 @@ paths:
       summary: Creates a new own data exchange request
       tags:
       - data-exchange-request-controller
+  /data-exchange-request/request:
+    post:
+      operationId: postDataExchangeRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataExchangeRequestDto'
+              additionalProperties: false
+      responses:
+        '200':
+          description: Ok
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      summary: 'This endpoint receives the DataExchangeRequest requests. '
+      tags:
+      - data-exchange-request-api-controller
   /days-of-supply/customer:
     get:
       description: Calculate days of supply for customer for given number of days.
@@ -2850,6 +2869,7 @@ paths:
           - NOTIFICATION
           - DAYS_OF_SUPPLY
           - PART_TYPE_INFORMATION_SUBMODEL
+          - DATA_EXCHANGE_REQUEST
           maxItems: 50
           type: string
       - in: query
