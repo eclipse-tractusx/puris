@@ -1,0 +1,7 @@
+{
+    "id": "urn:uuid:2f1c9b6e-8c4a-4d5f-9a2b-1f3e7d8c6a10",
+    "dataExchangeRequestId": "urn:uuid:2f1c9b6e-8c4a-4d5f-9a2b-1f3e7d8c6a10",
+    "approvedTypes": ["n-tier"],
+    "isFinalized": true,
+    "timestamp": "2025-10-12T00:00:00.000000Z"
+}

@@ -1,0 +1,10 @@
+{
+    "id": "urn:uuid:2f1c9b6e-8c4a-4d5f-9a2b-1f3e7d8c6a10",
+    "sourceNotificationId": "urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e",
+    "criticality": "low",
+    "desiredStartDateTime": "2025-10-12T00:00:00.000000Z",
+    "text": "Request to exchange data related to an ongoing supply chain disruption.",
+    "requestedTypes": ["n-tier"],
+    "desiredEndDateTime": "2025-12-12T00:00:00.000000Z",
+    "timestamp": "2025-10-12T00:00:00.000000Z"
+}
