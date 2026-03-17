@@ -28,6 +28,7 @@ The **need for configuration updates** is **marked bold**.
   - Implement frontend, cleanup scheduler and documentation ([#1107](https://github.com/eclipse-tractusx/puris/pull/1107))
   - Add missing frontend endpoint path in chart ([#1112](https://github.com/eclipse-tractusx/puris/pull/1112))
   - Fix typo in frontend endpoint path (in chart) ([#1114](https://github.com/eclipse-tractusx/puris/pull/1114))
+- Add draft semantic models for data exchange requests & approvals ([#1118](https://github.com/eclipse-tractusx/puris/pull/1118))
 
 ### Changed
 
