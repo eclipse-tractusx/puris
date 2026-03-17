@@ -73,7 +73,7 @@ services:
       - ./keycloak/customer/Customer-realm.json:/opt/keycloak/data/import/Customer-realm.json
       - ./keycloak/customer/Customer-users-0.json:/opt/keycloak/data/import/Customer-users-0.json
     ports:
-      - "127.0.0.1:80:8080"
+      - "127.0.0.1:8080:8080"
     depends_on:
       - postgres
     networks:

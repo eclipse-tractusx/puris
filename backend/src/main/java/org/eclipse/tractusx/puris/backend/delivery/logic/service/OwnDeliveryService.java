@@ -26,6 +26,7 @@ import java.util.function.Function;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
+import org.eclipse.tractusx.puris.backend.common.util.DuplicateEntityException;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.repository.OwnDeliveryRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -59,8 +60,21 @@ public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
         if (!validator.apply(delivery)) {
             throw new IllegalArgumentException("Invalid delivery");
         }
-        if (delivery.getUuid() != null && repository.findById(delivery.getUuid()).isPresent()) {
-            throw new KeyAlreadyExistsException("Delivery already exists");
+        
+        if (delivery.getUuid() != null) {
+            var existingId = repository.findById(delivery.getUuid());
+            if (existingId.isPresent()) {
+                var e = existingId.get();
+                throw new DuplicateEntityException("Delivery already exists (same id).", e.getUuid(), e.getQuantity(), e.getMeasurementUnit());
+            }
+        }
+
+        var conflict = repository.findAll().stream().filter(existing -> existing.equals(delivery)).findFirst();
+        if (conflict.isPresent()) {
+            var e = conflict.get();
+            throw new DuplicateEntityException(
+                "Delivery already exists.", e.getUuid(), e.getQuantity(), e.getMeasurementUnit()
+            );
         }
         return repository.save(delivery);
     }

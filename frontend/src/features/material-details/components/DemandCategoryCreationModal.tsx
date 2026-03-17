@@ -19,7 +19,7 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     Box,
     Button,
@@ -41,6 +41,8 @@ import { postDemand, updateDemand } from '@services/demands-service';
 import { useNotifications } from '@contexts/notificationContext';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
+import { ConfirmUpdateDialog, ConfirmUpdateHandle } from './UpdateModal';
+import { UUID } from 'crypto';
 
 type DemandCategoryModalProps = {
     open: boolean;
@@ -68,6 +70,7 @@ export const DemandCategoryCreationModal = ({
     const { partners } = usePartners('material', demand?.ownMaterialNumber ?? null);
     const [temporaryDemand, setTemporaryDemand] = useState<Partial<Demand>>(demand ?? {});
     const [formError, setFormError] = useState(false);
+    const confirmRef = useRef<ConfirmUpdateHandle>(null);
     const [originalData, setOriginalData] = useState<Partial<Demand>>(demand ?? {});
     const mode = temporaryDemand?.uuid ? 'edit' : 'create';
     const isFormChanged = JSON.stringify(temporaryDemand) !== JSON.stringify(originalData);
@@ -98,14 +101,55 @@ export const DemandCategoryCreationModal = ({
                     description: successDescription,
                     severity: 'success'
                 });
+                handleClose();
             })
-            .catch((error) => {
-                notify({
-                    title: error.status === 409 ? 'Conflict' : 'Error requesting update',
-                    description: error.status === 409 ? 'Demand conflicting with an existing one' : error.error,
-                    severity: 'error',
-                });
-            }).finally(() => handleClose());
+            .catch(async (error) => {
+                if (error?.status === 409) {
+                    const existing: UUID | undefined = error?.existingId ?? undefined;
+                    if (!existing) {
+                        notify({
+                            title: 'Conflict',
+                            description: 'Date conflicting with another Demand',
+                            severity: 'error',
+                        });
+                        return;
+                    }
+                    const message =
+                        `There is already a demand matching your criteria with a quantity ` +
+                        `${error.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === error?.measurementUnit)?.value ?? error?.measurementUnit}. ` +
+                        `Do you want to update to ${temporaryDemand.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === temporaryDemand.measurementUnit)?.value ?? temporaryDemand.measurementUnit}?`;
+                    const confirmed = await confirmRef.current?.open({message});
+                    if (confirmed) {
+                        try {
+                            const updated = await updateDemand({
+                                ...temporaryDemand,
+                                uuid: existing,
+                                lastUpdatedOnDateTime: new Date(),
+                            });
+                            onSave(updated);
+                            notify({ 
+                                title: 'Demand Updated', 
+                                description: 'The Demand has been updated successfully', 
+                                severity: 'success' 
+                            });
+                            handleClose();
+                        } 
+                        catch (e: any) {
+                            notify({ 
+                                title: 'Error updating',
+                                description: e?.error ?? 'Unexpected error', severity: 'error' 
+                            });
+                        }
+                    }
+                } else {
+                    notify({
+                        title: 'Error requesting update',
+                        description: error.error,
+                        severity: 'error',
+                    });
+                }
+
+            });
     };
 
     const handleClose = () => {
@@ -271,6 +315,7 @@ export const DemandCategoryCreationModal = ({
                     </Button>
                 </Box>
             </Stack>
+            <ConfirmUpdateDialog ref={confirmRef} />
         </Dialog>
     );
 };

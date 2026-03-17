@@ -23,30 +23,22 @@ package org.eclipse.tractusx.puris.backend;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.config.Configuration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.context.annotation.Bean;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @SpringBootApplication
+@EnableScheduling
+@EnableAsync
 public class PurisApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(PurisApplication.class, args);
-    }
-
-    @Bean
-    public ModelMapper getModelMapper() {
-
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration()
-            .setFieldMatchingEnabled(true)
-            .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE);
-        return new ModelMapper();
     }
 
     @Bean
