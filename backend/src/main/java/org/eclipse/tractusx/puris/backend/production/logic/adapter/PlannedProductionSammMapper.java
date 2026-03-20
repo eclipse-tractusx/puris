@@ -26,7 +26,10 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedProduction;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproductionsamm.*;
+import org.eclipse.tractusx.puris.backend.production.logic.dto.anonymizedplannedproductionsamm.PlannedProductionOutputAnonymized;
+import org.eclipse.tractusx.puris.backend.production.logic.dto.anonymizedplannedproductionsamm.AllocatedPlannedProductionOutputAnonymized;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +43,9 @@ import java.util.stream.Collectors;
 public class PlannedProductionSammMapper {
     @Autowired
     private MaterialPartnerRelationService mprService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public PlannedProductionOutput ownProductionToSamm(List<OwnProduction> production, Partner partner, Material material) {
         if (production.stream().anyMatch(prod -> !prod.getPartner().equals(partner))) {
@@ -85,6 +91,31 @@ public class PlannedProductionSammMapper {
                         itemQuantityEntity, v.getProductionSiteBpns(), v.getEstimatedTimeOfCompletion(), v.getLastUpdatedOnDateTime());
                 allocatedProductionList.add(allocatedProduction);
             }
+        }
+        return samm;
+    }
+
+    public PlannedProductionOutputAnonymized ownProductionToAnonymizedSamm(List<OwnProduction> productionList, Partner partner, Material material, String salt) {
+        if (productionList.stream().anyMatch(prod -> !prod.getPartner().equals(partner))) {
+            log.warn("Can't map production list with different partners");
+            return null;
+        }
+
+        if (productionList.stream().anyMatch(prod -> !prod.getMaterial().equals(material))) {
+            log.warn("Can't map production list with different materials");
+            return null;
+        }
+        PlannedProductionOutputAnonymized samm = new PlannedProductionOutputAnonymized();
+        samm.setMaterialGlobalAssetIdAnonymized(passwordEncoder.encode(material.getMaterialNumberCx() + salt));
+        samm.setAllocatedPlannedProductionOutputs(new HashSet<>());
+        for (var production : productionList) {
+            var anonymizedAllocatedPlannedProductionOutput = new AllocatedPlannedProductionOutputAnonymized(
+                new ItemQuantityEntity(production.getQuantity(), production.getMeasurementUnit()),
+                passwordEncoder.encode(production.getProductionSiteBpns() + salt),
+                production.getEstimatedTimeOfCompletion(),
+                production.getLastUpdatedOnDateTime()
+            );
+            samm.getAllocatedPlannedProductionOutputs().add(anonymizedAllocatedPlannedProductionOutput);
         }
         return samm;
     }

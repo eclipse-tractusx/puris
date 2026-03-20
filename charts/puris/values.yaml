@@ -484,6 +484,9 @@ backend:
     deliveryanonymizedsubmodel:
       # -- Asset ID for DeliveryAnonymizedSubmodel API
       apiassetid: deliveryanonymizedsubmodel-api-asset
+    productionanonymizedsubmodel:
+      # -- Asset ID for ProductionAnonymizedSubmodel API
+      apiassetid: productionanonymizedsubmodel-api-asset
     notification:
       # -- Asset ID for Notification API
       apiassetid: notification-api-asset

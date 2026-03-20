@@ -27,6 +27,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.domain.model.ContractMappin
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DtrContractMapping;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DeliveryAnonymizedContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ProductionAnonymizedContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DaysOfSupplyContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DeliveryContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandAndCapacityNotificationContractMappingRepository;
@@ -73,6 +74,9 @@ public class EdcContractMappingService {
   
     @Autowired
     private DeliveryAnonymizedContractMappingRepository deliveryAnonymizedContractMappingRepository;
+
+    @Autowired
+    private ProductionAnonymizedContractMappingRepository productionAnonymizedContractMappingRepository;
 
     @Autowired
     private PartTypeContractMappingRepository partTypeContractMappingRepository;
@@ -141,6 +145,7 @@ public class EdcContractMappingService {
             case DAYS_OF_SUPPLY -> daysOfSupplyContractMappingRepository;
             case ITEM_STOCK_ANONYMIZED_SUBMODEL -> itemStockAnonymizedContractMappingRepository;
             case DELIVERY_ANONYMIZED_SUBMODEL -> deliveryAnonymizedContractMappingRepository;
+            case PRODUCTION_ANONYMIZED_SUBMODEL -> productionAnonymizedContractMappingRepository;
             case PART_TYPE_INFORMATION_SUBMODEL -> partTypeContractMappingRepository;
         };
         return repository;
