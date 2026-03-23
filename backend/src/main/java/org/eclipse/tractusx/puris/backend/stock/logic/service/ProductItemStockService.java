@@ -22,16 +22,17 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ProductItemStockRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -43,6 +44,27 @@ public class ProductItemStockService extends ItemStockService<ProductItemStock> 
                                    ProductItemStockRepository repository) {
         super(partnerService, mprService, repository);
         this.repository = repository;
+    }
+
+    public Optional<ProductItemStock> findByBusinessKey(
+        Material material,
+        Partner partner,
+        String locationBpns,
+        String locationBpna,
+        String customerOrderId,
+        String customerOrderPositionId,
+        String supplierOrderId
+    ) {
+        return repository
+            .findByMaterialOwnMaterialNumberAndPartnerUuidAndLocationBpnsAndLocationBpnaAndCustomerOrderIdAndCustomerOrderPositionIdAndSupplierOrderId(
+                material.getOwnMaterialNumber(),
+                partner.getUuid(),
+                locationBpns,
+                locationBpna,
+                customerOrderId,
+                customerOrderPositionId,
+                supplierOrderId
+            );
     }
 
     @Override

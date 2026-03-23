@@ -19,21 +19,7 @@
  */
 package org.eclipse.tractusx.puris.backend.file.logic.services;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.OwnDeliveryService;
@@ -51,19 +37,22 @@ import org.eclipse.tractusx.puris.backend.production.logic.service.OwnProduction
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.mockito.MockitoAnnotations;
 
 public class ExcelServiceTest {
 
@@ -249,18 +238,40 @@ public class ExcelServiceTest {
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
         when(ownDemandService.validateWithDetails(any(OwnDemand.class))).thenReturn(Collections.emptyList());
-        when(ownDemandService.findAll()).thenReturn(Collections.emptyList());
+        when(ownDemandService.findByBusinessKeyOwnMaterialNumber(any(Material.class), any(Partner.class), any(Date.class), any()))
+            .thenReturn(Optional.empty());
         when(ownDemandService.create(any(OwnDemand.class))).thenReturn(new OwnDemand());
 
         DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
-        assertEquals("Successfully imported demands", result.getMessage());
+        assertEquals("Successfully imported demands. Created: 1, Updated: 0", result.getMessage());
         assertTrue(result.getErrors().isEmpty());
         verify(materialService).findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber());
         verify(partnerService).findByBpnl(testPartner.getBpnl());
         verify(ownDemandService).validateWithDetails(any(OwnDemand.class));
         verify(ownDemandService).create(any(OwnDemand.class));
+    }
+
+    @Test
+    void testReadExcelFile_Demand_ExistingDemand_IsUpdated() throws IOException {
+        ByteArrayInputStream inputStream = createDemandExcelFile();
+
+        OwnDemand existing = new OwnDemand();
+        existing.setQuantity(50.0);
+
+        when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
+        when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
+        when(ownDemandService.validateWithDetails(any(OwnDemand.class))).thenReturn(Collections.emptyList());
+        when(ownDemandService.findByBusinessKeyOwnMaterialNumber(any(Material.class), any(Partner.class), any(Date.class), any()))
+            .thenReturn(Optional.of(existing));
+
+        DataImportResult result = excelService.readExcelFile(inputStream);
+
+        assertNotNull(result);
+        assertEquals("Successfully imported demands. Created: 0, Updated: 1", result.getMessage());
+        assertTrue(result.getErrors().isEmpty());
+        verify(ownDemandService).update(existing);
     }
 
     @Test
@@ -287,18 +298,40 @@ public class ExcelServiceTest {
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
         when(ownProductionService.validateWithDetails(any(OwnProduction.class))).thenReturn(Collections.emptyList());
-        when(ownProductionService.findAll()).thenReturn(Collections.emptyList());
+        when(ownProductionService.findByBusinessKey(any(Material.class), any(Partner.class), any(Date.class), any(String.class), any(String.class), any(String.class)))
+            .thenReturn(Optional.empty());
         when(ownProductionService.create(any(OwnProduction.class))).thenReturn(new OwnProduction());
 
         DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
-        assertEquals("Successfully imported productions", result.getMessage());
+        assertEquals("Successfully imported productions. Created: 1, Updated: 0", result.getMessage());
         assertTrue(result.getErrors().isEmpty());
         verify(materialService).findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber());
         verify(partnerService).findByBpnl(testPartner.getBpnl());
         verify(ownProductionService).validateWithDetails(any(OwnProduction.class));
         verify(ownProductionService).create(any(OwnProduction.class));
+    }
+
+    @Test
+    void testReadExcelFile_Production_ExistingProduction_IsUpdated() throws IOException {
+        ByteArrayInputStream inputStream = createProductionExcelFile();
+
+        OwnProduction existing = new OwnProduction();
+        existing.setQuantity(10.0);
+
+        when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
+        when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
+        when(ownProductionService.validateWithDetails(any(OwnProduction.class))).thenReturn(Collections.emptyList());
+        when(ownProductionService.findByBusinessKey(any(Material.class), any(Partner.class), any(Date.class), any(String.class), any(String.class), any(String.class)))
+            .thenReturn(Optional.of(existing));
+
+        DataImportResult result = excelService.readExcelFile(inputStream);
+
+        assertNotNull(result);
+        assertEquals("Successfully imported productions. Created: 0, Updated: 1", result.getMessage());
+        assertTrue(result.getErrors().isEmpty());
+        verify(ownProductionService).update(existing);
     }
 
     @Test
@@ -325,18 +358,40 @@ public class ExcelServiceTest {
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
         when(ownDeliveryService.validateWithDetails(any(OwnDelivery.class))).thenReturn(Collections.emptyList());
-        when(ownDeliveryService.findAll()).thenReturn(Collections.emptyList());
+        when(ownDeliveryService.findByBusinessKey(any(Material.class), any(Partner.class), any(String.class), any(String.class), any(Date.class), any(Date.class)))
+            .thenReturn(Optional.empty());
         when(ownDeliveryService.create(any(OwnDelivery.class))).thenReturn(new OwnDelivery());
 
         DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
-        assertEquals("Successfully imported deliveries", result.getMessage());
+        assertEquals("Successfully imported deliveries. Created: 1, Updated: 0", result.getMessage());
         assertTrue(result.getErrors().isEmpty());
         verify(materialService).findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber());
         verify(partnerService).findByBpnl(testPartner.getBpnl());
         verify(ownDeliveryService).validateWithDetails(any(OwnDelivery.class));
         verify(ownDeliveryService).create(any(OwnDelivery.class));
+    }
+
+    @Test
+    void testReadExcelFile_Delivery_ExistingDelivery_IsUpdated() throws IOException {
+        ByteArrayInputStream inputStream = createDeliveryExcelFile();
+
+        OwnDelivery existing = new OwnDelivery();
+        existing.setQuantity(10.0);
+
+        when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
+        when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
+        when(ownDeliveryService.validateWithDetails(any(OwnDelivery.class))).thenReturn(Collections.emptyList());
+        when(ownDeliveryService.findByBusinessKey(any(Material.class), any(Partner.class), any(String.class), any(String.class), any(Date.class), any(Date.class)))
+            .thenReturn(Optional.of(existing));
+
+        DataImportResult result = excelService.readExcelFile(inputStream);
+
+        assertNotNull(result);
+        assertEquals("Successfully imported deliveries. Created: 0, Updated: 1", result.getMessage());
+        assertTrue(result.getErrors().isEmpty());
+        verify(ownDeliveryService).update(existing);
     }
 
     @Test
@@ -363,19 +418,40 @@ public class ExcelServiceTest {
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
         when(materialItemStockService.validateWithDetails(any(MaterialItemStock.class))).thenReturn(Collections.emptyList());
-        when(materialItemStockService.findAll()).thenReturn(Collections.emptyList());
-        when(productItemStockService.findAll()).thenReturn(Collections.emptyList());
+        when(materialItemStockService.findByBusinessKey(any(Material.class), any(Partner.class), any(String.class), any(String.class), any(String.class), any(String.class), any(String.class)))
+            .thenReturn(Optional.empty());
         when(materialItemStockService.create(any(MaterialItemStock.class))).thenReturn(new MaterialItemStock());
 
         DataImportResult result = excelService.readExcelFile(inputStream);
 
         assertNotNull(result);
-        assertEquals("Successfully imported stocks", result.getMessage());
+        assertEquals("Successfully imported stocks. Created: 1, Updated: 0", result.getMessage());
         assertTrue(result.getErrors().isEmpty());
         verify(materialService).findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber());
         verify(partnerService).findByBpnl(testPartner.getBpnl());
         verify(materialItemStockService).validateWithDetails(any(MaterialItemStock.class));
         verify(materialItemStockService).create(any(MaterialItemStock.class));
+    }
+
+    @Test
+    void testReadExcelFile_Stock_ExistingMaterialStock_IsUpdated() throws IOException {
+        ByteArrayInputStream inputStream = createStockExcelFile();
+
+        MaterialItemStock existing = new MaterialItemStock();
+        existing.setQuantity(10.0);
+
+        when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
+        when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
+        when(materialItemStockService.validateWithDetails(any(MaterialItemStock.class))).thenReturn(Collections.emptyList());
+        when(materialItemStockService.findByBusinessKey(any(Material.class), any(Partner.class), any(String.class), any(String.class), any(String.class), any(String.class), any(String.class)))
+            .thenReturn(Optional.of(existing));
+
+        DataImportResult result = excelService.readExcelFile(inputStream);
+
+        assertNotNull(result);
+        assertEquals("Successfully imported stocks. Created: 0, Updated: 1", result.getMessage());
+        assertTrue(result.getErrors().isEmpty());
+        verify(materialItemStockService).update(existing);
     }
 
     @Test

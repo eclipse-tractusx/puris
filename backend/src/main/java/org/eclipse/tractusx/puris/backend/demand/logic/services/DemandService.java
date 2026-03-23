@@ -19,19 +19,15 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.demand.logic.services;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
-
 import org.eclipse.tractusx.puris.backend.common.util.DuplicateEntityException;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.Demand;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.*;
+import java.util.function.Function;
 
 public abstract class DemandService<TEntity extends Demand, TRepository extends JpaRepository<TEntity, UUID> >  {
     protected final TRepository repository;
@@ -45,6 +41,10 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
         this.partnerService = partnerService;
         this.mprService = mprService;
         this.validator = this::validate;
+    }
+
+    protected TRepository getRepository() {
+        return repository;
     }
 
     public final TEntity findById(UUID uuid) {
@@ -124,7 +124,7 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
         if (!mprService.partnerOrdersProduct(demand.getMaterial(), demand.getPartner())) {
             errors.add(String.format("Partner '%s' is not configured to buy your material '%s'.", demand.getPartner().getBpnl(), demand.getMaterial().getOwnMaterialNumber()));
         }
-        if ((demand.getSupplierLocationBpns() != null  && 
+        if ((demand.getSupplierLocationBpns() != null  &&
             ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns())))
             || demand.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns()))) {
             errors.add(String.format("Either supplier location '%s' is not configured as your site or demand location '%s' is not configured as site for customer partner '%s'.", demand.getSupplierLocationBpns(), demand.getDemandLocationBpns(), demand.getPartner().getBpnl()));
@@ -141,7 +141,7 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
         if (ownPartnerEntity.getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getDemandLocationBpns()))) {
             errors.add(String.format("Demand location BPNS '%s' must match to one site configured for your own partner '%s' .", demand.getDemandLocationBpns(), ownPartnerEntity.getBpnl()));
         }
-        if (demand.getSupplierLocationBpns() != null && 
+        if (demand.getSupplierLocationBpns() != null &&
             demand.getPartner().getSites().stream().noneMatch(site -> site.getBpns().equals(demand.getSupplierLocationBpns()))) {
             errors.add(String.format("Expected supplier location BPNS '%s' must match to one site of the partner '%s' .", demand.getSupplierLocationBpns(), demand.getPartner().getBpnl()));
         }

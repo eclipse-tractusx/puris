@@ -19,14 +19,7 @@
  */
 package org.eclipse.tractusx.puris.backend.file.logic.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.FormulaParseException;
 import org.apache.poi.ss.formula.eval.NotImplementedFunctionException;
 import org.apache.poi.ss.usermodel.*;
@@ -55,11 +48,19 @@ import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockS
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 @Service
 @Slf4j
+@Transactional
 public class ExcelService {
     private final List<String> demandColumns = List.of(
         "ownMaterialNumber",
@@ -133,7 +134,7 @@ public class ExcelService {
     private MaterialItemStockService materialItemStockService;
     @Autowired
     private ProductItemStockService productItemStockService;
-    
+
     public DataImportResult readExcelFile(InputStream is) throws IOException {
         Workbook workbook = WorkbookFactory.create(is);
         List<DataImportError> formulaErrors = evaluateWorkbook(workbook);
@@ -247,25 +248,47 @@ public class ExcelService {
             } catch(Exception e) {
                 return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
             }
-            List<OwnDemand> addedDemands = new ArrayList<>();
-            List<OwnDemand> existingDemands = ownDemandService.findAll();
+
+            int createdCount = 0;
+            int updatedCount = 0;
+
             for (var newDemand : demands) {
                 try {
-                    var added = ownDemandService.create(newDemand);
-                    if (added == null) {
-                        log.error("Failed to persist demand: {}", newDemand);
-                        throw new IllegalArgumentException("Invalid demand");
+                    var existingOpt = ownDemandService.findByBusinessKeyOwnMaterialNumber(
+                        newDemand.getMaterial(),
+                        newDemand.getPartner(),
+                        newDemand.getDay(),
+                        newDemand.getDemandCategoryCode()
+                    );
+
+                    if (existingOpt.isPresent()) {
+                        // Update existing demand
+                        OwnDemand existing = existingOpt.get();
+                        existing.setQuantity(newDemand.getQuantity());
+                        existing.setMeasurementUnit(newDemand.getMeasurementUnit());
+                        existing.setSupplierLocationBpns(newDemand.getSupplierLocationBpns());
+                        existing.setDemandLocationBpns(newDemand.getDemandLocationBpns());
+                        existing.setLastUpdatedOnDateTime(newDemand.getLastUpdatedOnDateTime());
+                        ownDemandService.update(existing);
+                        updatedCount++;
+                    } else {
+                        // Create new demand
+                        OwnDemand created = ownDemandService.create(newDemand);
+                        if (created == null) {
+                            log.error("Failed to persist demand: {}", newDemand);
+                            throw new IllegalArgumentException("Invalid demand");
+                        }
+                        createdCount++;
                     }
-                    addedDemands.add(added);
                 } catch (Exception e) {
                     int idx = demands.indexOf(newDemand);
-                    errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
-                    addedDemands.forEach(s -> ownDemandService.delete(s.getUuid()));
+                    errors.add(new DataImportError(idx + 2, List.of("Failed to persist row: " + e.getMessage())));
                     return new DataImportResult("Failed to persist demands", errors);
                 }
             }
-            existingDemands.forEach(d -> ownDemandService.delete(d.getUuid()));
-            return new DataImportResult("Successfully imported demands", errors);
+
+            String msg = String.format("Successfully imported demands. Created: %d, Updated: %d", createdCount, updatedCount);
+            return new DataImportResult(msg, errors);
         } else {
             log.info(errors.toString());
         }
@@ -351,22 +374,50 @@ public class ExcelService {
             } catch(Exception e) {
                 return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
             }
-            List<OwnProduction> addedProductions = new ArrayList<>();
-            List<OwnProduction> existingProductions = ownProductionService.findAll();
+            int createdCount = 0;
+            int updatedCount = 0;
+
             for (var newProduction : productions) {
                 try {
-                    var added = ownProductionService.create(newProduction);
-                    addedProductions.add(added);
+                    var existingOpt = ownProductionService.findByBusinessKey(
+                        newProduction.getMaterial(),
+                        newProduction.getPartner(),
+                        newProduction.getEstimatedTimeOfCompletion(),
+                        newProduction.getProductionSiteBpns(),
+                        newProduction.getCustomerOrderNumber(),
+                        newProduction.getCustomerOrderPositionNumber()
+                    );
+
+                    if (existingOpt.isPresent()) {
+                        OwnProduction existing = existingOpt.get();
+                        existing.setQuantity(newProduction.getQuantity());
+                        existing.setMeasurementUnit(newProduction.getMeasurementUnit());
+                        existing.setProductionSiteBpns(newProduction.getProductionSiteBpns());
+                        existing.setEstimatedTimeOfCompletion(newProduction.getEstimatedTimeOfCompletion());
+                        existing.setCustomerOrderNumber(newProduction.getCustomerOrderNumber());
+                        existing.setCustomerOrderPositionNumber(newProduction.getCustomerOrderPositionNumber());
+                        existing.setSupplierOrderNumber(newProduction.getSupplierOrderNumber());
+                        existing.setLastUpdatedOnDateTime(newProduction.getLastUpdatedOnDateTime());
+                        ownProductionService.update(existing);
+                        updatedCount++;
+                    } else {
+                        var added = ownProductionService.create(newProduction);
+                        if (added == null) {
+                            log.error("Failed to persist production: {}", newProduction);
+                            throw new IllegalArgumentException("Invalid production");
+                        }
+                        createdCount++;
+                    }
                 } catch (Exception e) {
                     log.error("Failed to persist production: {}", newProduction);
                     var idx = productions.indexOf(newProduction);
-                    errors.add(new DataImportError(idx + 2, List.of("Failed to persist")));
-                    addedProductions.forEach(p -> ownProductionService.delete(p.getUuid()));
+                    errors.add(new DataImportError(idx + 2, List.of("Failed to persist: " + e.getMessage())));
                     return new DataImportResult("Failed to persist Productions", errors);
                 }
             }
-            existingProductions.forEach(p -> ownProductionService.delete(p.getUuid()));
-            return new DataImportResult("Successfully imported productions", errors);
+
+            String msg = String.format("Successfully imported productions. Created: %d, Updated: %d", createdCount, updatedCount);
+            return new DataImportResult(msg, errors);
         } else {
             log.info(errors.toString());
         }
@@ -488,23 +539,57 @@ public class ExcelService {
             } catch(Exception e) {
                 return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
             }
-            List<OwnDelivery> addedDeliveries = new ArrayList<>();
-            List<OwnDelivery> existingDeliveries = ownDeliveryService.findAll();
+            int createdCount = 0;
+            int updatedCount = 0;
 
             for (var newDelivery : deliveries) {
                 try {
-                    var added = ownDeliveryService.create(newDelivery);
-                    addedDeliveries.add(added);
+                    var existingOpt = ownDeliveryService.findByBusinessKey(
+                        newDelivery.getMaterial(),
+                        newDelivery.getPartner(),
+                        newDelivery.getOriginBpns(),
+                        newDelivery.getDestinationBpns(),
+                        newDelivery.getDateOfDeparture(),
+                        newDelivery.getDateOfArrival()
+                    );
+
+                    if (existingOpt.isPresent()) {
+                        OwnDelivery existing = existingOpt.get();
+                        existing.setQuantity(newDelivery.getQuantity());
+                        existing.setMeasurementUnit(newDelivery.getMeasurementUnit());
+                        existing.setOriginBpns(newDelivery.getOriginBpns());
+                        existing.setOriginBpna(newDelivery.getOriginBpna());
+                        existing.setDestinationBpns(newDelivery.getDestinationBpns());
+                        existing.setDestinationBpna(newDelivery.getDestinationBpna());
+                        existing.setDepartureType(newDelivery.getDepartureType());
+                        existing.setDateOfDeparture(newDelivery.getDateOfDeparture());
+                        existing.setArrivalType(newDelivery.getArrivalType());
+                        existing.setDateOfArrival(newDelivery.getDateOfArrival());
+                        existing.setIncoterm(newDelivery.getIncoterm());
+                        existing.setCustomerOrderNumber(newDelivery.getCustomerOrderNumber());
+                        existing.setCustomerOrderPositionNumber(newDelivery.getCustomerOrderPositionNumber());
+                        existing.setSupplierOrderNumber(newDelivery.getSupplierOrderNumber());
+                        existing.setLastUpdatedOnDateTime(newDelivery.getLastUpdatedOnDateTime());
+                        ownDeliveryService.update(existing);
+                        updatedCount++;
+                    } else {
+                        var added = ownDeliveryService.create(newDelivery);
+                        if (added == null) {
+                            log.error("Failed to persist delivery: {}", newDelivery);
+                            throw new IllegalArgumentException("Invalid delivery");
+                        }
+                        createdCount++;
+                    }
                 } catch(Exception e) {
                     log.error("Failed to persist delivery: {}", newDelivery);
                     int idx = deliveries.indexOf(newDelivery);
-                    errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
-                    addedDeliveries.forEach(d -> ownDeliveryService.delete(d.getUuid()));
+                    errors.add(new DataImportError(idx + 2, List.of("Failed to persist: " + e.getMessage())));
                     return new DataImportResult("Failed to persist Deliveries", errors);
                 }
             }
-            existingDeliveries.forEach(d -> ownDeliveryService.delete(d.getUuid()));
-            return new DataImportResult("Successfully imported deliveries", errors);
+
+            String msg = String.format("Successfully imported deliveries. Created: %d, Updated: %d", createdCount, updatedCount);
+            return new DataImportResult(msg, errors);
         } else {
             log.info(errors.toString());
         }
@@ -620,49 +705,91 @@ public class ExcelService {
             } catch(Exception e) {
                 return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
             }
-            List<MaterialItemStock> addedMaterialStocks = new ArrayList<>();
-            List<ProductItemStock> addedProductStocks = new ArrayList<>();
-            List<MaterialItemStock> existingMaterialStocks = materialItemStockService.findAll();
-            List<ProductItemStock> existingProductStocks = productItemStockService.findAll();
+            int createdCount = 0;
+            int updatedCount = 0;
 
             for (var newStock : materialStocks) {
                 try {
-                    var added = materialItemStockService.create(newStock);
-                    if (added == null) {
-                        log.error("Failed to persist material stock: {}", newStock);
-                        throw new IllegalArgumentException("Invalid material stock");
+                    var existingOpt = materialItemStockService.findByBusinessKey(
+                        newStock.getMaterial(),
+                        newStock.getPartner(),
+                        newStock.getLocationBpns(),
+                        newStock.getLocationBpna(),
+                        newStock.getCustomerOrderId(),
+                        newStock.getCustomerOrderPositionId(),
+                        newStock.getSupplierOrderId()
+                    );
+
+                    if (existingOpt.isPresent()) {
+                        MaterialItemStock existing = existingOpt.get();
+                        existing.setQuantity(newStock.getQuantity());
+                        existing.setMeasurementUnit(newStock.getMeasurementUnit());
+                        existing.setLocationBpns(newStock.getLocationBpns());
+                        existing.setLocationBpna(newStock.getLocationBpna());
+                        existing.setCustomerOrderId(newStock.getCustomerOrderId());
+                        existing.setCustomerOrderPositionId(newStock.getCustomerOrderPositionId());
+                        existing.setSupplierOrderId(newStock.getSupplierOrderId());
+                        existing.setBlocked(newStock.isBlocked());
+                        existing.setLastUpdatedOnDateTime(newStock.getLastUpdatedOnDateTime());
+                        materialItemStockService.update(existing);
+                        updatedCount++;
+                    } else {
+                        var added = materialItemStockService.create(newStock);
+                        if (added == null) {
+                            log.error("Failed to persist material stock: {}", newStock);
+                            throw new IllegalArgumentException("Invalid material stock");
+                        }
+                        createdCount++;
                     }
-                    addedMaterialStocks.add(added);
                 } catch (Exception e) {
                     int idx = allStocks.indexOf(newStock);
-                    errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
-                    addedMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
-                    addedProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
+                    errors.add(new DataImportError(idx + 2, List.of("Failed to persist: " + e.getMessage())));
                     return new DataImportResult("Failed to persist stocks", errors);
                 }
             }
 
             for (var newStock : productStocks) {
                 try {
+                    var existingOpt = productItemStockService.findByBusinessKey(
+                        newStock.getMaterial(),
+                        newStock.getPartner(),
+                        newStock.getLocationBpns(),
+                        newStock.getLocationBpna(),
+                        newStock.getCustomerOrderId(),
+                        newStock.getCustomerOrderPositionId(),
+                        newStock.getSupplierOrderId()
+                    );
 
-                    var added = productItemStockService.create(newStock);
-                    if (added == null) {
-                        log.error("Failed to persist product stock: {}", newStock);
-                        throw new IllegalArgumentException("Invalid product stock");
+                    if (existingOpt.isPresent()) {
+                        ProductItemStock existing = existingOpt.get();
+                        existing.setQuantity(newStock.getQuantity());
+                        existing.setMeasurementUnit(newStock.getMeasurementUnit());
+                        existing.setLocationBpns(newStock.getLocationBpns());
+                        existing.setLocationBpna(newStock.getLocationBpna());
+                        existing.setCustomerOrderId(newStock.getCustomerOrderId());
+                        existing.setCustomerOrderPositionId(newStock.getCustomerOrderPositionId());
+                        existing.setSupplierOrderId(newStock.getSupplierOrderId());
+                        existing.setBlocked(newStock.isBlocked());
+                        existing.setLastUpdatedOnDateTime(newStock.getLastUpdatedOnDateTime());
+                        productItemStockService.update(existing);
+                        updatedCount++;
+                    } else {
+                        var added = productItemStockService.create(newStock);
+                        if (added == null) {
+                            log.error("Failed to persist product stock: {}", newStock);
+                            throw new IllegalArgumentException("Invalid product stock");
+                        }
+                        createdCount++;
                     }
-                    addedProductStocks.add(added);
                 } catch (Exception e) {
                     int idx = allStocks.indexOf(newStock);
-                    errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
-                    addedMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
-                    addedProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
+                    errors.add(new DataImportError(idx + 2, List.of("Failed to persist: " + e.getMessage())));
                     return new DataImportResult("Failed to persist stocks", errors);
                 }
             }
 
-            existingMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
-            existingProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
-            return new DataImportResult("Successfully imported stocks", errors);
+            String msg = String.format("Successfully imported stocks. Created: %d, Updated: %d", createdCount, updatedCount);
+            return new DataImportResult(msg, errors);
         } else {
             log.info(errors.toString());
         }

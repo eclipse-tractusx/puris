@@ -26,10 +26,22 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface MaterialItemStockRepository extends ItemStockRepository<MaterialItemStock> {
     List<MaterialItemStock> findByPartnerAndMaterial(Partner partner, Material material);
+
+    Optional<MaterialItemStock> findByMaterialOwnMaterialNumberAndPartnerUuidAndLocationBpnsAndLocationBpnaAndCustomerOrderIdAndCustomerOrderPositionIdAndSupplierOrderId(
+        String materialOwnMaterialNumber,
+        UUID partnerUuid,
+        String locationBpns,
+        String locationBpna,
+        String customerOrderId,
+        String customerOrderPositionId,
+        String supplierOrderId
+    );
 
     List<MaterialItemStock> findByPartner(Partner partner);
 
