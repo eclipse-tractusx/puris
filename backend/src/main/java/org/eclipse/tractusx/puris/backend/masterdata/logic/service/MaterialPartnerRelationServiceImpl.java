@@ -557,6 +557,11 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
             .collect(Collectors.toList());
     }
 
+    @Override
+    public List<MaterialPartnerRelation> findAllSupplierRelations(String ownMaterialNumber) {
+        return mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerSuppliesMaterialIsTrue(ownMaterialNumber);
+    }
+
     /**
      * Returns a list of all Materials, for which a MaterialPartnerRelation exists,
      * where the partner is using the given partnerMaterialNumber.

@@ -37,7 +37,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Service for mapping Material BOM structure to SingleLevelBomAsPlanned SAMM
@@ -85,10 +84,8 @@ public class SingleLevelBomAsPlannedSammMapper {
                 log.warn("Child material {} not found in database, skipping", childMaterialNumber);
                 continue;
             }
-            List<MaterialPartnerRelation> supplierRelations = materialPartnerRelationService
-                    .findAllByOwnMaterialNumber(childMaterial.getOwnMaterialNumber()).stream()
-                    .filter(MaterialPartnerRelation::isPartnerSuppliesMaterial)
-                    .collect(Collectors.toList());
+                List<MaterialPartnerRelation> supplierRelations = materialPartnerRelationService
+                    .findAllSupplierRelations(childMaterial.getOwnMaterialNumber());
 
             if (supplierRelations.isEmpty()) {
                 log.warn("No supplier MPR found for child material {}, skipping", childMaterialNumber);
