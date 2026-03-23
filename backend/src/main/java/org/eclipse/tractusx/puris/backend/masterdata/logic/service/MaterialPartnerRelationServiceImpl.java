@@ -551,10 +551,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
      */
     @Override
     public List<MaterialPartnerRelation> findAllByOwnMaterialNumber(String ownMaterialNumber) {
-        return mprRepository.findAll().stream()
-            .filter(mpr -> mpr.getMaterial() != null && 
-                          mpr.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber))
-            .collect(Collectors.toList());
+        return mprRepository.findAllByMaterial_OwnMaterialNumber(ownMaterialNumber);
     }
 
     @Override
