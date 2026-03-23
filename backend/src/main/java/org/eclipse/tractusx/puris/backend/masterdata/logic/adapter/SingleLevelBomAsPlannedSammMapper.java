@@ -75,9 +75,7 @@ public class SingleLevelBomAsPlannedSammMapper {
 
         Set<ChildData> childItems = new HashSet<>();
 
-        List<MaterialRelation> childRelations = materialRelationService.findAll().stream()
-                .filter(rel -> rel.getParentOwnMaterialNumber().equals(material.getOwnMaterialNumber()))
-                .collect(Collectors.toList());
+        List<MaterialRelation> childRelations = materialRelationService.findAllChildren(material.getOwnMaterialNumber());
 
         for (MaterialRelation materialRelation : childRelations) {
             String childMaterialNumber = materialRelation.getChildOwnMaterialNumber();

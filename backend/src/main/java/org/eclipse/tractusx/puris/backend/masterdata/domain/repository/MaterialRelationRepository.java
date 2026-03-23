@@ -19,11 +19,13 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.domain.repository;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MaterialRelationRepository extends JpaRepository<MaterialRelation, UUID> {
-    
+
+	List<MaterialRelation> findAllByParentOwnMaterialNumber(String parentOwnMaterialNumber);
 }
