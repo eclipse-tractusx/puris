@@ -119,6 +119,7 @@ public class SecurityConfig {
                         "/material-demand/**",
                         "/delivery-information/**",
                         "/days-of-supply/**",
+                        "/single-level-bom-as-planned/**",
                         "/edc/**",
                         "/erp-adapter/**",
                         "/parttypeinformation/**",

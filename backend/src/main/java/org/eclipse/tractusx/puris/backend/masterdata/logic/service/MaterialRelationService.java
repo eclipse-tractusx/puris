@@ -122,6 +122,16 @@ public class MaterialRelationService {
     }
 
     /**
+     * Retrieves all child relations for a given parent own material number.
+     *
+     * @param parentOwnMaterialNumber the parent own material number
+     * @return a list of child relations for the given parent material
+     */
+    public List<MaterialRelation> findAllChildren(String parentOwnMaterialNumber) {
+        return materialRelationRepository.findAllByParentOwnMaterialNumber(parentOwnMaterialNumber);
+    }
+
+    /**
      * Validates a given material relation
      * @param   materialRelation    the material relation entity to validate
      * @return                      a boolean value indication whether or not eh validation passes

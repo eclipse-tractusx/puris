@@ -89,6 +89,35 @@ components:
       - plannedProductionQuantity
       - productionSiteBpns
       type: object
+    ChildData:
+      additionalProperties: false
+      properties:
+        businessPartner:
+          maxItems: 50
+          pattern: ^BPNL[0-9a-zA-Z]{12}$
+          type: string
+        catenaXId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        createdOn:
+          format: date-time
+          maxItems: 50
+          type: string
+        lastModifiedOn:
+          format: date-time
+          maxItems: 50
+          type: string
+        quantity:
+          $ref: '#/components/schemas/ItemQuantity'
+        validityPeriod:
+          $ref: '#/components/schemas/ValidityPeriodEntity'
+      required:
+      - businessPartner
+      - catenaXId
+      - createdOn
+      - quantity
+      type: object
     Classification:
       additionalProperties: false
       properties:
@@ -564,6 +593,19 @@ components:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
+      type: object
+    ItemQuantity:
+      additionalProperties: false
+      properties:
+        measurementUnit:
+          maxItems: 50
+          type: string
+        quantityNumber:
+          format: double
+          type: number
+      required:
+      - measurementUnit
+      - quantityNumber
       type: object
     ItemQuantityEntity:
       additionalProperties: false
@@ -1427,6 +1469,22 @@ components:
       required:
       - demandSeries
       type: object
+    SingleLevelBomAsPlanned:
+      additionalProperties: false
+      properties:
+        catenaXId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        childItems:
+          items:
+            $ref: '#/components/schemas/ChildData'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+      required:
+      - catenaXId
+      type: object
     Site:
       additionalProperties: false
       properties:
@@ -1475,6 +1533,18 @@ components:
         daysOfSupply:
           format: double
           type: number
+      type: object
+    ValidityPeriodEntity:
+      additionalProperties: false
+      properties:
+        validFrom:
+          format: date-time
+          maxItems: 50
+          type: string
+        validTo:
+          format: date-time
+          maxItems: 50
+          type: string
       type: object
   securitySchemes:
     X-API-KEY:
@@ -2619,6 +2689,7 @@ paths:
           - NOTIFICATION
           - DAYS_OF_SUPPLY
           - PART_TYPE_INFORMATION_SUBMODEL
+          - SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL
           maxItems: 50
           type: string
       - in: query
@@ -3801,6 +3872,53 @@ paths:
       summary: Deletes a planned production by its UUID
       tags:
       - production-controller
+  /single-level-bom-as-planned/request/{materialNumberCx}/submodel/{representation}:
+    get:
+      description: 'Endpoint that delivers SingleLevelBomAsPlanned of own products.
+        This endpoint is meant for self-access only via EDC. '
+      operationId: getSingleLevelBomAsPlannedMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - description: The CatenaX material number (UUID) of the material in question
+        in: path
+        name: materialNumberCx
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - description: Must be set to '$value'
+        in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SingleLevelBomAsPlanned'
+                additionalProperties: false
+          description: Ok
+        '400':
+          description: 'Invalid request parameters. '
+        '403':
+          description: 'Access forbidden - self-access only. '
+        '404':
+          description: 'Product not found for given parameters. '
+        '501':
+          description: 'Unsupported representation requested. '
+      tags:
+      - single-level-bom-as-planned-request-api-controller
   /stockView/customer:
     get:
       description: Returns a list of all Partners that are ordering the given material
