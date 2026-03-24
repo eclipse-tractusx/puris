@@ -1,0 +1,14 @@
+meta {
+  name: 00-DTR-Contract-Setup
+  seq: 1
+}
+
+auth {
+  mode: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{SUPPLIER_EDC_API_KEY}}
+  placement: header
+}

@@ -1,0 +1,53 @@
+meta {
+  name: 08 - Get shell descriptors
+  type: http
+  seq: 8
+  tags: [
+    exchange-anonymized-data
+  ]
+}
+
+get {
+  url: {{DTR_EDR_ENDPOINT}}/shell-descriptors/:aasIdentifier
+  body: none
+  auth: apikey
+}
+
+params:path {
+  aasIdentifier: {{AAS_IDENTIFIER}}
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{DTR_EDR_AUTH}}
+  placement: header
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+  const semanticId = "urn:samm:io.catenax.single_level_bom_as_planned:3.0.0#SingleLevelBomAsPlanned"
+  
+  // Check if submodelDescriptors exists
+  if (!jsonData.submodelDescriptors || !Array.isArray(jsonData.submodelDescriptors) || jsonData.submodelDescriptors.length === 0) {
+    throw new Error("No submodelDescriptors found in DTR - SingleLevelBomAsPlanned submodel must be registered first");
+  }
+  
+  // Find SingleLevelBomAsPlanned submodel
+  const singleLevelBomSubmodelDescriptor = jsonData.submodelDescriptors.find(smd => 
+    smd.semanticId && smd.semanticId.keys && smd.semanticId.keys.some(kv => kv.value === semanticId)
+  );
+  
+  if (singleLevelBomSubmodelDescriptor) {
+    let submodelEndpoint = singleLevelBomSubmodelDescriptor.endpoints[0].protocolInformation.href;
+    const dspEndpoint = singleLevelBomSubmodelDescriptor.endpoints[0].protocolInformation.subprotocolBody.split("dspEndpoint=")[1];
+    bru.setVar("SUBMODEL_ENDPOINT", submodelEndpoint);
+    bru.setVar("DSP_ENDPOINT", dspEndpoint);
+  } else {
+    throw new Error("SingleLevelBomAsPlanned submodel not found in DTR - must be registered before running this test");
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,53 @@
+meta {
+  name: Create Material Relation - Semiconductor BOM
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/material-relations
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "parentOwnMaterialNumber": "{{MATERIAL_NUMBER_SUPPLIER}}",
+    "childOwnMaterialNumber": "{{MATERIAL_NUMBER_SUPPLIER_RAW}}",
+    "quantity": 1.0,
+    "measurementUnit": "unit:piece",
+    "validFrom": "2024-01-01T00:00:00.000Z",
+    "validTo": "2026-12-31T23:59:59.000Z"
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Verify created relation has correct parent", function() {
+      const response = res.getBody();
+      expect(response.parentOwnMaterialNumber).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
+  });
+  
+  test("Verify created relation has correct child", function() {
+      const response = res.getBody();
+      expect(response.childOwnMaterialNumber).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER_RAW"));
+  });
+  
+  test("Verify quantity is correct", function() {
+      const response = res.getBody();
+      expect(response.quantity).to.equal(1.0);
+  });
+  
+  test("Verify measurement unit is correct", function() {
+      const response = res.getBody();
+      expect(response.measurementUnit).to.equal("unit:piece");
+  });
+}
