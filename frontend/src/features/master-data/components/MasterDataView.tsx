@@ -34,12 +34,35 @@ import { Add } from '@mui/icons-material';
 import { MaterialPartnerRelation } from '@models/types/data/material-partner-relation';
 import { getAllMaterialPartnerRelations, postMaterialPartnerRelation } from '@services/material-partner-relation-service';
 import { MaterialPartnerRelationModal } from './MaterialpartnerRelationModal';
+import { BPNS } from '@models/types/edc/bpn';
 
 const getDirectionLabel = (row: Material): string => {
     if (row.materialFlag && row.productFlag) return 'Bidirectional';
     if (row.materialFlag) return 'Inbound';
     if (row.productFlag) return 'Outbound';
     return 'Unknown';
+};
+
+const renderSitesBpnsCell = (sitesBpns?: BPNS[]) => {
+    if (!sitesBpns || sitesBpns.length === 0) {
+        return ( <Box display="flex" alignItems="center" justifyContent="center" width="100%" height="100%">-</Box> );
+    }
+    return (
+        <Box
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            width="100%"
+            height="100%"
+            sx={{ whiteSpace: 'normal', wordBreak: 'break-word', py: 0.5 }}
+        >
+        {sitesBpns.map((siteBpn) => (
+            <Box key={siteBpn} sx={{ lineHeight: 1.2, mb: 0.5, '&:last-of-type': { mb: 0 } }}>
+                {siteBpn}
+            </Box>
+        ))}
+        </Box>
+    );
 };
 
 const createParnerColumns = () => {
@@ -235,6 +258,20 @@ export const MasterDataView = () => {
                             field: 'partnerBuysMaterial',
                             flex: 1,
                             valueGetter: (params) => (params.row.partnerBuysMaterial ? 'Yes' : 'No'),
+                        },
+                        {
+                            field: 'ownDemandingSiteBpnss',
+                            headerName: 'Demanding Sites',
+                            flex: 2,
+                            sortable: false,
+                            renderCell: (data: { row: MaterialPartnerRelation }) => renderSitesBpnsCell(data.row.ownDemandingSiteBpnss),
+                        },
+                        {
+                            field: 'ownProducingSiteBpnss',
+                            headerName: 'Producing Sites',
+                            flex: 2,
+                            sortable: false,
+                            renderCell: (data: { row: MaterialPartnerRelation }) => renderSitesBpnsCell(data.row.ownProducingSiteBpnss),
                         },
                     ]}
                     rows={mprs ?? []}
