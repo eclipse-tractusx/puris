@@ -88,7 +88,7 @@ export const MaterialPartnerRelationModal = ({ open, materials, partners, mprs, 
             ownMaterialNumber: value?.ownMaterialNumber ?? '',
             partnerSuppliesMaterial: value?.materialFlag,
             partnerBuysMaterial: value?.productFlag,
-            ...(supplies ? {} : { ownStockingSiteBpnss: [] }),
+            ...(supplies ? {} : { ownDemandingSiteBpnss: [] }),
             ...(buys ? {} : { ownProducingSiteBpnss: [] }),
         });
     };
@@ -160,7 +160,7 @@ export const MaterialPartnerRelationModal = ({ open, materials, partners, mprs, 
                                     setTemporaryMpr((prev) => ({
                                         ...prev,
                                         partnerBpnl: value?.bpnl ?? '',
-                                        ownStockingSiteBpnss: [],
+                                        ownDemandingSiteBpnss: [],
                                         ownProducingSiteBpnss: [],
                                     }))
                                 }
@@ -203,7 +203,7 @@ export const MaterialPartnerRelationModal = ({ open, materials, partners, mprs, 
                                             setTemporaryMpr((prev) => ({
                                                 ...prev,
                                                 partnerSuppliesMaterial: event.target.checked,
-                                                ...(event.target.checked ? {} : { ownStockingSiteBpnss: [] }),
+                                                ...(event.target.checked ? {} : { ownDemandingSiteBpnss: [] }),
                                             }))
                                         }
                                         data-testid="mpr-modal-partner-supplies-material"
