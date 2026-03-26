@@ -21,6 +21,7 @@
 
 # Define placeholders from legal-notice.json
 name_anchor='NAME_PLACEHOLDER'
+version_anchor='VERSION_PLACEHOLDER'
 license_anchor='LICENSE_PLACEHOLDER'
 commit_id_anchor='COMMIT_ID_PLACEHOLDER'
 server_url_anchor='SERVER_URL_PLACEHOLDER'
@@ -30,9 +31,13 @@ ref_anchor='REF_PLACEHOLDER'
 # Read values from package.json using jq
 name=$(jq -r '.name' package.json)
 license=$(jq -r '.license' package.json)
+version=$(jq -r '.version' package.json)
 
 # Get commit id
 commit_id=$(git rev-parse HEAD)
+
+# Get tag version
+tag_version=$(git tag --points-at HEAD | head -n 1)
 
 # Get GitHub context from environment variables
 server_url=$SERVER_URL
@@ -41,6 +46,9 @@ ref=$REF_NAME
 
 # Read legal-notice.json as reference
 legal_notice_reference=$(cat src/assets/aboutPage.json)
+
+# Replace the tag version with the package version if unavailable
+current_version=${tag_version:-${version}-untagged}
 
 # Function to check if placeholder substitution was successful
 check_substitution() {
@@ -55,7 +63,11 @@ legal_notice_name="${legal_notice_reference/$name_anchor/$name}"
 check_substitution "$legal_notice_name" "$name_anchor"
 echo "Replaced name"
 
-legal_notice_license="${legal_notice_name/$license_anchor/$license}"
+legal_notice_version="${legal_notice_name/$version_anchor/$current_version}"
+check_substitution "$legal_notice_version" "$version_anchor"
+echo "Replaced version"
+
+legal_notice_license="${legal_notice_version/$license_anchor/$license}"
 check_substitution "$legal_notice_license" "$license_anchor"
 echo "Replaced license"
 

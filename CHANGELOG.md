@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v5.1.0
+## v5.1.1
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
 
@@ -15,11 +15,93 @@ The **need for configuration updates** is **marked bold**.
 
 - /
 
+## Changed
+
+- implement [`v4alpha/connectordiscovery/dspaceversionparams`](https://eclipse-tractusx.github.io/api-hub/tractusx-edc/0.11.2/control-plane/swagger-ui/#/) for CX-0018 compliance ([#1068](https://github.com/eclipse-tractusx/puris/pull/1068))
+- switched from upstream edc titanium library to vanilla titanium library ([#1068](https://github.com/eclipse-tractusx/puris/pull/1068))
+
+### Fixes
+
+- /
+
+### Known Knowns
+
+#### Running With Shared DTR and EDC
+
+PURIS FOSS may not be run on a shared DTR and EDC with full scope. See [Admin Guide](docs/admin/Admin_Guide.md#running-the-puris-foss-application-on-shared-enablement-services) for more information of possible scenarios.
+
+#### Upgradeability
+
+Data base migrations are performed but assets.
+
+#### Data Sovereignty
+
+For productive use the following enhancements are encouraged
+
+* User FrontEnd available: Role Company Admin is able to query catalogue and see negotiations and transfers But company rules / policies need to be configured upfront in backend (via postman) to enable automatic contract negotiations, responsibility lies with Company Admin role  
+  --> add section in the User Manual describing this and the (legal) importance and responsibility behind defining these rules
+* Currently only one standard policy per reg. connector / customer instance is supported (more precisely one for DTR, one for all submodels), negotiation happens automatically based on this  
+  --> enhance option to select partner and define specific policies (to be planned in context of BPDM Integration)  
+  --> UI for specific configuration by dedicated role (e.g. Comp Admin) and more flexible policy configuration (withoutv code changes) is needed
+* As a non-Admin user I do not have ability to view policies in detail  
+  --> transparency for users when interacting with and requesting / consuming data via dashboard / views on underlying usage policies to be enhanced
+* ContractReference Constraint or configuration of policies specific to one partner only has notnot implemented  
+  --> clarification of potential reference to "PURIS standard contract" and enabling of ContractReference for 24.08.
+* unclear meaning of different stati in negotations  
+  --> add view of successfull contract agreeements wrt which data have been closed
+* current logging only done on info level  
+  --> enhance logging of policies (currently only available at debug level)
+* in case of non-matching policies (tested in various scenarios) no negotiation takes place  
+  --> enhance visualization or specific Error message to user
+* no validation of the Schema "profile": "cx-policy:profile2405" (required to ensure interop with other PURIS apps)
+
+#### Styleguide
+
+##### Overall
+
+* Brief description at the top of each page describing content would be nice for better user experience.
+
+##### Catalog
+
+* No action possible -> unclear to user when and how user will consume an offer
+
+##### Negotiations
+
+* Add filters for transparency (bpnl, state)
+
+## v5.1.0
+
+The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
+
+The **need for configuration updates** is **marked bold**.
+
+### Added
+
+- Feature: Added update logic for operational information ([#1069](https://github.com/eclipse-tractusx/puris/pull/1069/)):
+  - added update logic for Stock Modal ([#1022](https://github.com/eclipse-tractusx/puris/pull/1022/))
+  - added update logic for delivery information ([#1004](https://github.com/eclipse-tractusx/puris/pull/1004))
+  - added update logic for demand Modal ([#1028](https://github.com/eclipse-tractusx/puris/pull/1028))
+  - added update logic for production information ([#1037](https://github.com/eclipse-tractusx/puris/pull/1037))
+  - updated user guide ([#1070](https://github.com/eclipse-tractusx/puris/pull/1070))
+- Added component to copy text to clipboard for puris frontend ([#1058](https://github.com/eclipse-tractusx/puris/pull/1058))
+- Added version to about license ([#1067](https://github.com/eclipse-tractusx/puris/pull/1067))
+- Added update flow to Material Details View buttons ([#1034](https://github.com/eclipse-tractusx/puris/pull/1034))
+- Add Update Partner Data Batch
+  - Prepare backend for batch ([#1105](https://github.com/eclipse-tractusx/puris/pull/1105))
+  - Incorporate scheduling service, controllers and test ([#1106](https://github.com/eclipse-tractusx/puris/pull/1106))
+  - Implement frontend, cleanup scheduler and documentation ([#1107](https://github.com/eclipse-tractusx/puris/pull/1107))
+  - Add missing frontend endpoint path in chart ([#1112](https://github.com/eclipse-tractusx/puris/pull/1112))
+  - Fix typo in frontend endpoint path (in chart) ([#1114](https://github.com/eclipse-tractusx/puris/pull/1114))
+
 ### Changed
 
 - switch to ssi-dim-wallet-stub instead of own mock-util-service (now DCP 1.0 is used) ([#1066](https://github.com/eclipse-tractusx/puris/pull/1066))
-- implement [`v4alpha/connectordiscovery/dspaceversionparams`](https://eclipse-tractusx.github.io/api-hub/tractusx-edc/0.11.2/control-plane/swagger-ui/#/) for CX-0018 compliance ([#1068](https://github.com/eclipse-tractusx/puris/pull/1068))
-- switched from upstream edc titanium library to vanilla titanium library ([#1068](https://github.com/eclipse-tractusx/puris/pull/1068))
+- parametrize business partner identifiers in local deployment ([#1073](https://github.com/eclipse-tractusx/puris/pull/1073))
+- Bump frontend dependencies ([#1107](https://github.com/eclipse-tractusx/puris/pull/1107))
+  - `rollup` from `4.28.0` to `4.59.0`
+  - `@remix-run/route` from `1.14.2` to `1.32.2`
+  - `minimatch` (eslint) from `3.1.2` to `3.15`
+  - `minimatch` (eslint-plugin) from `9.0.5` to `9.0.9`
 
 ### Fixes
 

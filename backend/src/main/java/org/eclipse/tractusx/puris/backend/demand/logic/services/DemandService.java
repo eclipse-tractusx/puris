@@ -26,8 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.management.openmbean.KeyAlreadyExistsException;
-
+import org.eclipse.tractusx.puris.backend.common.util.DuplicateEntityException;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.Demand;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
@@ -153,8 +152,12 @@ public abstract class DemandService<TEntity extends Demand, TRepository extends 
         if (!validator.apply(demand)) {
             throw new IllegalArgumentException("Invalid demand");
         }
-        if (repository.findAll().stream().anyMatch(d -> d.equals(demand))) {
-            throw new KeyAlreadyExistsException("Demand already exists");
+        var existing = repository.findAll().stream()
+            .filter(d -> d.equals(demand))
+            .findFirst();
+        if (existing.isPresent()) {
+            var e = existing.get();
+            throw new DuplicateEntityException("Demand already exists for the same business key.", e.getUuid(), e.getQuantity(), e.getMeasurementUnit());
         }
         return repository.save(demand);
     }

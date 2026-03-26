@@ -22,10 +22,26 @@ import { Production } from '@models/types/data/production';
 import { UUID } from 'crypto';
 import AuthenticationService from './authentication-service';
 
-export const postProductionRange = async (range: Partial<Production>[]) => {
-  const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION_RANGE, {
+export const postProduction = async (range: Partial<Production>) => {
+  const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION, {
     method: 'POST',
     body: JSON.stringify(range),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
+    },
+  });
+  if(res.status >= 400) {
+    const error = await res.json();
+    throw error;
+  }
+  return res.json();
+}
+
+export const updateProduction = async (production: Partial<Production>) => {
+  const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION, {
+    method: 'PUT',
+    body: JSON.stringify(production),
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${AuthenticationService.getToken()}`
@@ -57,6 +73,21 @@ export const requestReportedProductions = async (materialNumber: string | null) 
   }
   const res = await fetch(`${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_PRODUCTION}/reported/refresh?ownMaterialNumber=${materialNumber}`, {
     method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${AuthenticationService.getToken()}`
+    },
+  });
+  if(res.status >= 400) {
+    const error = await res.json();
+    throw error;
+  }
+  return res.json();
+}
+export const putProduction = async (production: Partial<Production>) => {
+  const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_PRODUCTION , {
+    method: 'PUT',
+    body: JSON.stringify(production),
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${AuthenticationService.getToken()}`

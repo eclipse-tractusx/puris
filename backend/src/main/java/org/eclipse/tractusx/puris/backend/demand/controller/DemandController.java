@@ -19,12 +19,16 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.demand.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Validator;
+import java.util.Base64;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.eclipse.tractusx.puris.backend.common.util.DuplicateEntityException;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.OwnDemand;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.ReportedDemand;
@@ -42,19 +46,28 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.ErrorResponseException;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.management.openmbean.KeyAlreadyExistsException;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
 
 @RestController
 @RequestMapping("demand")
@@ -131,8 +144,14 @@ public class DemandController {
             var dto = convertToDto(ownDemandService.create(convertToEntity(demandDto)));
             materialService.updateTimestamp(demandDto.getOwnMaterialNumber());
             return dto;
-        } catch (KeyAlreadyExistsException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Demand already exists. Use PUT instead.");
+        } catch (DuplicateEntityException e) {
+            ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+            pd.setTitle("Demand already exists");
+            pd.setDetail("A Demand with the same natural key already exists. Use PUT instead.");
+            pd.setProperty("existingId", e.getConflictingId());
+            pd.setProperty("quantity", e.getQuantity());
+            pd.setProperty("measurementUnit", e.getMeasurementUnit());
+            throw new ErrorResponseException(HttpStatus.CONFLICT, pd, null);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Demand is invalid.");
         }

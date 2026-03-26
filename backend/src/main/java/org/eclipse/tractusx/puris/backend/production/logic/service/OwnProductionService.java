@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
+
+import org.eclipse.tractusx.puris.backend.common.util.DuplicateEntityException;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.eclipse.tractusx.puris.backend.production.domain.repository.OwnProductionRepository;
@@ -50,8 +52,13 @@ public class OwnProductionService extends ProductionService<OwnProduction> {
             
             throw new IllegalArgumentException("Invalid production");
         }
-        if (repository.findAll().stream().anyMatch(prod -> prod.equals(production))) {
-            throw new KeyAlreadyExistsException("Production already exists");
+        
+        var conflict = repository.findAll().stream().filter(existing -> existing.equals(production)).findFirst();
+        if (conflict.isPresent()) {
+            var e = conflict.get();
+            throw new DuplicateEntityException(
+                "Production already exists.", e.getUuid(), e.getQuantity(), e.getMeasurementUnit()
+            );
         }
         return repository.save(production);
     }

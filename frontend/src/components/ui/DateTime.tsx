@@ -40,10 +40,11 @@ type DateTimeProps = {
     locale: 'en' | 'de';
     error: boolean;
     value: Date | null;
+    disabled?: boolean;
     onValueChange: (date: Date | null) => void;
 };
 
-export const DateTime = ({ error, value, onValueChange, ...props }: DateTimeProps) => {
+export const DateTime = ({ error, value, onValueChange, disabled, ...props }: DateTimeProps) => {
     const [date, setDate] = useState<Date | null>(value ? new Date(value) : null);
     const [key, setKey] = useState(0);
     const timeRef = useRef<HTMLInputElement>(null);
@@ -105,6 +106,7 @@ export const DateTime = ({ error, value, onValueChange, ...props }: DateTimeProp
                             defaultValue={date}
                             readOnly={false}
                             onChangeItem={(event) => handleDateChange(event)}
+                            disabled={disabled}
                         />
                     </Box>
                     <input
@@ -114,6 +116,7 @@ export const DateTime = ({ error, value, onValueChange, ...props }: DateTimeProp
                         id={'time' + props.label.toLowerCase()}
                         name={'etoc' + props.label.toLowerCase()}
                         onChange={handleTimeChange}
+                        disabled={disabled}
                     />
                 </Box>
             </div>

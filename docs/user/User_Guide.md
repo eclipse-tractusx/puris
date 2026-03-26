@@ -185,6 +185,95 @@ To add a new item, the user:
 
 A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added stock reflected in their detailed material overview.
 
+### Updating or deleting data
+
+In addition to adding and viewing the user's own data, the user can also update and delete his data for the selected material. These actions are available for own data (not partner data received via the [refresh functionality](#updating-partner-data)).
+
+To update information,
+
+1. Follow the blue link reflecting your own summarized information (1 in image below).
+2. In the modal dialog, per row, the options to edit (pencil icon) and remove (trash bin icon) are offered (2 in image below).
+3. Triggering the edit functionality will open another information-specific modal dialog on top. These modal dialogs are explained information-wise in the sections below. After saving this dialog or directly after triggering the trash bin, the changes will be reflected in the tables and a notification will be shown in the upper right corner informing the user about success or failure of the operation (3 in image below).
+
+![Overview of edit and delete functionality](./img/materials_overview_update_delete_production.png)
+
+The user can update or edit demand for the customer role as well as production output for the supplier. Deliveries and stock can be updated or deleted for either role.
+
+> _**NOTE**: Updates are not allowed for all fields. If a user needs to change a field that may not be updated, then the user needs to delete the exisitng information and create it newly. Further updates of the allocated partner or sites are not allowed for all modal dialogs. Please find more information in the secions below._
+>
+
+#### Updating demand
+
+![Updating demand in the modal dialog](./img/materials_update_demand.png)
+
+Upon clicking the "edit" pencil button, a popup will demand the user to update the details for the demand. The dialog will be pre-filled for the user based on the selected demand.
+
+The following fields may be updated for a demand:
+
+1. Quanitity demanded
+2. Day of the demand
+3. Cateogy of the demand
+
+The user may confirm the changes using the "save" button or abort using the "close" button respectively "escape".
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the updated demand reflected in detailed material overview.
+
+#### Updating production
+
+![Updating production in the modal dialog](./img/materials_update_production.png)
+
+Upon clicking the "edit" pencil button, a popup will prompt the user to update the details for the production output. The dialog will be pre-filled for the user based on the selected production.
+
+The following fields may be updated for a production output:
+
+1. Estimated time of completion
+2. Quantity planned for production
+3. (optional) customer order number, customer position number and supplier order number
+
+The user may confirm the changes using the "save" button or abort using the "close" button respectively "escape".
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the updated production output reflected in their detailed material overview.
+
+#### Updating deliveries
+
+![Updating a delivery in the modal dialog](./img/materials_update_delivery.png)
+
+Unlike demand and production output, own deliveries can be updated regardless of the user's role. Upon clicking the "edit" pencil button, a popup will prompt the user to update the details for the selected delivery. The dialog will be pre-filled for the user based on the selected delivery.
+
+The following fields may be updated for a delivery:
+
+1. Departure and arrival type (if it has not been changed to type actual)
+2. Departure and arrival date and time (if the corresponding type has not been changed to actual)
+3. Quantity considered for delivery
+4. (optional) Tracking number
+5. (optional) customer order number, customer position number and supplier order number
+
+The user may confirm the changes using the "save" button or abort using the "close" button respectively "escape".
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the updated delivery reflected in their detailed material overview.
+
+_**Note:** When entering updating a delivery the user should make sure that:_
+
+- _a date can only be of type actual if it is in the past_
+- _arrival can only be of type actual if departure is as well_
+- _departure must be before arrival_
+
+#### Updating stock
+
+![Updating a stock in the modal dialog](./img/materials_update_stock.png)
+
+Upon clicking the "edit" pencil button, a popup will prompt the user to update the details for the selected stock. The dialog will be pre-filled for the user based on the selected delivery.
+
+The following fields may be updated for a stock:
+
+1. Quantity considered for delivery
+2. (optional) Tracking number
+3. Is Blocked
+
+The user may confirm the changes using the "save" button or abort using the "close" button respectively "escape".
+
+A notification in the top right of the user's screen will inform them, if saving was successful. Afterwards the user will see the newly added stock reflected in their detailed material overview.
+
 ## Demand and Capacity Notifications
 
 A user may use the page to send notifications to partners or read received notifications.
@@ -379,6 +468,43 @@ After each file has been uploaded, the user is notified on whether the upload wa
 
 ![Import file results example](img/import_result.png)
 
+## Partner Data Batch
+
+To not refresh partner data per material, you can use a batch to pull all data. This batch is configured during deployment (see [Admin Guide](https://github.com/eclipse-tractusx/puris/blob/main/docs/admin/Admin_Guide.md)).
+
+As an admin user, you can open a list view of runs of the batch view. You see the overall batch status AND via double click can see the status per partner, material, information and direction.
+
+![Batch View](img/batch_view.png)
+
+The information has the following meaning:
+
+- Start Time: date and time the batch started (UTC system time)
+- End Time: date and time the batch ended (UTC system time)
+- Duration: time in seconds the batch took to end
+- Status: status on batch level (see below)
+  - IN_PROGRESS: Batch is running
+  - COMPLETED: Batch completed with no errors (`Errors` = 0 on single information exchange level)
+  - COMPLETED_WITH_ERRORS: Batch completed with errors (`Errors` > 0 on single information exchange level)
+  - FAILED: Fatal error occured
+- Total: Number of information pulled (information is pulled per material, per partner, per information, per direction)
+- Erorrs: Number of errors when pulling information
+
+You can get detail information the success or failure of requests for the combination of material, partner, direction (Inbound for your suppliers, outbound for your customers) and information (stock, demand, production, delivery, days of supply). To do so, double click the batch of interest.
+
+- Material: Your own material number
+- Partner: Name of your Partner
+- Information Type: Information pulled
+- Direction: Inbound for suppliers, Outbound for customers
+- Status: status on entry / single information pulling level (see below)
+  - SUCCESS: data pulled successfully
+  - ERROR: data could not be pulled. Error message with tooltip provides further details.
+  - SKIPPED: data could not be pulled due to misconfiguration
+- Error: Label with error tooltip
+
+![Partner Data Update - Details](img/batch_details.png)
+
+All tables are paginated (you can walkthrough them). Also you can trigger an explicit partner update now via button "*Update Partner Data Now*".
+
 ## Catalog
 
 An admin may use the page to query offers available at a partner to check if the partner set up the information exchange
@@ -453,4 +579,5 @@ This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LIC
 
 - SPDX-License-Identifier: Apache-2.0
 - SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- SPDX-FileCopyrightText: 2026 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 - Source URL: [https://github.com/eclipse-tractusx/puris/blob/main/docs/user/User_Guide.md](https://github.com/eclipse-tractusx/puris/blob/main/docs/user/User_Guide.md)
