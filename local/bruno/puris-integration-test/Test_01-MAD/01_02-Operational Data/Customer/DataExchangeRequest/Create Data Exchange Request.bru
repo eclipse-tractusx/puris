@@ -5,14 +5,14 @@ meta {
 }
 
 post {
-  url: {{SUPPLIER_PURIS_BACKEND}}/catena/data-exchange-request
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/data-exchange-request
   body: json
   auth: none
 }
 
 headers {
   Content-Type: application/json
-  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
 }
 
 body:json {
