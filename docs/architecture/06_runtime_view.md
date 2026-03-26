@@ -37,13 +37,13 @@ sequenceDiagram
    end
    
    note over app_cons,edc_prov: Lookup Datasets in partner catalog
-   app_cons -->>+ edc_cons: call `vX/management/catalog` with determined parmaters
+   app_cons -->>+ edc_cons: call `vX/management/catalog` with determined parameters
    edc_cons <<-->> edc_prov: communicate via <br>data space protocol (DSP)<br>and decentralized claims protocol
    edc_cons -->>-app_cons: return catalog
 
    app_cons ->> app_cons: expand JsonLD
-   note over app_cons,edc_cons: The constraint evaluation is currently only<br>performed against submodel assets.<br>The DTR asset is not eveluated.
-   app_cons ->> app_cons: identify first matching dataset for<br>contract policy constraints<br>PURIS FOSS can handle<br>(see data sovereingy concepts)
+   note over app_cons,edc_cons: The constraint evaluation is currently only<br>performed against submodel assets.<br>The DTR asset is not evaluated.
+   app_cons ->> app_cons: identify first matching dataset for<br>contract policy constraints<br>PURIS FOSS can handle<br>(see data sovereignty concepts)
 
    break if no dataset found with contract policy that we can fulfill
       app_cons ->> app_cons: log error

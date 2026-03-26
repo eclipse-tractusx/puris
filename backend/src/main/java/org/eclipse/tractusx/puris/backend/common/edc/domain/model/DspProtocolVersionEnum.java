@@ -19,12 +19,10 @@
  */
 package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 public enum DspProtocolVersionEnum {
     
     // order assumes the publishing date, thus last entry is latest
-    V_0_8("dataspace-protocol-http:0_8"),
+    V_0_8("dataspace-protocol-http"),
     V_2025_01("dataspace-protocol-http:2025-1");
 
     private String version;

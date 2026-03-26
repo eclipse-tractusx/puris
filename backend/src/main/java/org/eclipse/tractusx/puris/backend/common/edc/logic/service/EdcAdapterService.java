@@ -415,70 +415,67 @@ public class EdcAdapterService {
      */
     public DspaceVersionParams getPartnerDspaceVersionParams(String partnerBpnl, String dspUrl) throws IOException{
         JsonNode dspaceVersionParmsRequest = edcRequestBodyBuilder.buildDspaceVersionParamsRequest(dspUrl, partnerBpnl);
-        try (Response response = this.sendPostRequest(dspaceVersionParmsRequest, List.of("v4alpha", "connectordiscovery", "dspaceversionparams"))){
+        Response response = this.sendPostRequest(dspaceVersionParmsRequest, List.of("v4alpha", "connectordiscovery", "dspaceversionparams"));
+        
+        DspaceVersionParams dspaceVersionParams = null;
+        final DspaceVersionParams fallback = new DspaceVersionParams(partnerBpnl, dspUrl, DspProtocolVersionEnum.V_0_8);
+        // if connector version < 0.10.x 404 is returned, then assemble default from dsp v0.8
+        if (response.code() == 404)
+        {
+            // Note: following swagger-ui counterPartyId should be a did - likely this is an upstream example bug
+            log.debug("Connector does not yet support endpoint /v4alpha/connectordiscovery/dspversionparams. Fallback to following parameters: {}", fallback.toString());
+            return fallback;
+        } else if (!response.isSuccessful()){
+            log.warn("Dspace version could not be determined and error was not expected. Status code {}; error: {}", response.code(), response.body());
+            log.debug("No supported version found, fallback: {}", fallback.toString());
+            return fallback;
+        }
+        JsonNode responseNode = objectMapper.readTree(response.body().string());
+        responseNode = jsonLdUtils.expand(responseNode);
             
-            DspaceVersionParams dspaceVersionParams = null;
-            final DspaceVersionParams fallback = new DspaceVersionParams(partnerBpnl, dspUrl, DspProtocolVersionEnum.V_0_8);
-            // if connector version < 0.10.x 404 is returned, then assemble default from dsp v0.8
-            if (response.code() == 404)
-            {
-                // Note: following swagger-ui counterPartyId should be a did - likely this is an upstream example bug
-                dspaceVersionParams = new DspaceVersionParams(partnerBpnl, dspUrl, DspProtocolVersionEnum.V_0_8);
-                log.debug("Connector does not yet support endpoint /v4alpha/connectordiscovery/dspversionparams. Fallback to following parameters: {}", dspaceVersionParams.toString());
-                return dspaceVersionParams;
-            } 
-            else if (!response.isSuccessful()){
-                log.warn("Dspace version could not be determined and error was not expected. Status code {}; error: {}", response.code(), response.body());
-                log.debug("No supported version found, fallback: {}", fallback.toString());
-                return fallback;
-            }
-            JsonNode responseNode = objectMapper.readTree(response.body().string());
-            responseNode = jsonLdUtils.expand(responseNode);
-                
-            log.debug("Got response from Dspace Version Params request: {}", responseNode.toPrettyString());
+        log.debug("Got response from Dspace Version Params request: {}", responseNode.toPrettyString());
 
-            ArrayNode responseArray = null;
-            // ensure it's an array
-            if (responseNode.isObject()){
-                responseArray = objectMapper.createArrayNode().add(responseNode);
-            } else {
-                responseArray = (ArrayNode) responseNode;
-            }
+        ArrayNode responseArray = null;
+        // ensure it's an array
+        if (responseNode.isObject()){
+            responseArray = objectMapper.createArrayNode().add(responseNode);
+        } else {
+            responseArray = (ArrayNode) responseNode;
+        }
 
-            // collect supported dspace versions
-            List<DspaceVersionParams> partnerSupportedDspaceVersions = new ArrayList<>();
-            for (JsonNode entry: responseArray){
-                // fallback to v.0.8 in case of missing information / issues
-                String counterPartyAddress = entry.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyAddress")
-                    .get(0)
-                    .get("@value")
-                    .asText(dspUrl);
-                String counterPartyId = entry.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyId")
-                    .get(0)
-                    .get("@value")
-                    .asText(partnerBpnl);
-                String protocolString = entry.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "protocol")
-                    .get(0)
-                    .get("@value")
-                    .asText(DspProtocolVersionEnum.V_0_8.getVersion());
-                DspProtocolVersionEnum dspProtocolVersion = DspProtocolVersionEnum.fromVersion(protocolString);
-                dspaceVersionParams = new DspaceVersionParams(counterPartyId, counterPartyAddress, dspProtocolVersion);
-                log.debug("Partner supports the following dsp version: {}", dspaceVersionParams.toString());
-                partnerSupportedDspaceVersions.add(dspaceVersionParams);
-            }
+        // collect supported dspace versions
+        List<DspaceVersionParams> partnerSupportedDspaceVersions = new ArrayList<>();
+        for (JsonNode entry: responseArray){
+            // fallback to v.0.8 in case of missing information / issues
+            String counterPartyAddress = entry.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyAddress")
+                .get(0)
+                .get("@value")
+                .asText(dspUrl);
+            String counterPartyId = entry.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyId")
+                .get(0)
+                .get("@value")
+                .asText(partnerBpnl);
+            String protocolString = entry.get(EdcRequestBodyBuilder.EDC_NAMESPACE + "protocol")
+                .get(0)
+                .get("@value")
+                .asText(DspProtocolVersionEnum.V_0_8.getVersion());
+            DspProtocolVersionEnum dspProtocolVersion = DspProtocolVersionEnum.fromVersion(protocolString);
+            dspaceVersionParams = new DspaceVersionParams(counterPartyId, counterPartyAddress, dspProtocolVersion);
+            log.debug("Partner supports the following dsp version: {}", dspaceVersionParams.toString());
+            partnerSupportedDspaceVersions.add(dspaceVersionParams);
+        }
 
-            // Identify the highest enum in the list of supported versions based on natural order (youngest -> latest)
-            Optional<DspaceVersionParams> latest = partnerSupportedDspaceVersions.stream()
-                .max(Comparator.comparingInt(p -> p.protocol().ordinal()));
+        // Identify the highest enum in the list of supported versions based on natural order (youngest -> latest)
+        Optional<DspaceVersionParams> latest = partnerSupportedDspaceVersions.stream()
+            .max(Comparator.comparingInt(p -> p.protocol().ordinal()));
 
-            // If found any is given / latest found return it or use fallback
-            if (latest.isPresent()) {
-                log.debug("Will use the following dsp version information for partner: {}", latest.get().toString());
-                return latest.get();
-            } else {
-                log.debug("No supported version found, fallback: {}", fallback.toString());
-                return fallback;
-            }
+        // If found any is given / latest found return it or use fallback
+        if (latest.isPresent()) {
+            log.debug("Will use the following dsp version information for partner: {}", latest.get().toString());
+            return latest.get();
+        } else {
+            log.debug("No supported version found, fallback: {}", fallback.toString());
+            return fallback;
         }
     }
 
