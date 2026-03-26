@@ -108,6 +108,36 @@ components:
       - classificationID
       - classificationStandard
       type: object
+    DataExchangeApprovalDto:
+      additionalProperties: false
+      properties:
+        approvedTypes:
+          items:
+            enum:
+            - n-tier
+            maxItems: 50
+            type: string
+          maxItems: 50
+          type: array
+        dataExchangeRequestId:
+          format: uuid
+          maxItems: 50
+          type: string
+        isFinalized:
+          type: boolean
+        timestamp:
+          format: date-time
+          maxItems: 50
+          type: string
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+      required:
+      - approvedTypes
+      - dataExchangeRequestId
+      - isFinalized
+      type: object
     DataExchangeRequestDto:
       additionalProperties: false
       properties:
@@ -1736,6 +1766,42 @@ paths:
       summary: 'This endpoint receives the DataExchangeRequest requests. '
       tags:
       - data-exchange-request-api-controller
+  /data-exchange-request/{id}/approval:
+    post:
+      description: "Creates a new own data exchange approval. \n"
+      operationId: createDataExchangeApproval
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataExchangeApprovalDto'
+              additionalProperties: false
+      responses:
+        '201':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DataExchangeApprovalDto'
+                additionalProperties: false
+          description: Own Data Exchange Approval was created.
+        '400':
+          description: Malformed or invalid request body.
+        '409':
+          description: Own Data Exchange Approval already exists.
+        '500':
+          description: Internal Server Error.
+      summary: Creates a new own data exchange approval
+      tags:
+      - data-exchange-approval-controller
   /days-of-supply/customer:
     get:
       description: Calculate days of supply for customer for given number of days.
