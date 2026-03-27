@@ -65,6 +65,26 @@ public class EdcRequestBodyBuilder {
     public static final String DSPACE_NAMESPACE = "https://w3id.org/dspace/v0.8/";
     public static final String CX_POLICY_CONTEXT = "https://w3id.org/tractusx/policy/v1.0.0";
 
+
+    /**
+     * Creates a request body for determing the dspace version parameters of a partner connector.
+     * <p>
+     * Feature has been added with Tractus-X Connector Version 0.11.x and allows to determine the correct
+     * counterPartyAddress (including dsp version), counterPartyId and protocol.
+     *
+     * @param counterPartyDspUrl The protocol url of the other party
+     * @param counterPartyBpnl   The bpnl of the other party
+     * @return The request body
+     */
+    public ObjectNode buildDspaceVersionParamsRequest(String counterPartyDspUrl, String counterPartyBpnl) {
+        var objectNode = getConnectorDiscoveryContextObject();
+        objectNode.put("@type", "tx:ConnectorParamsDiscoveryRequest");
+        objectNode.put("edc:counterPartyAddress", counterPartyDspUrl);
+        objectNode.put("tx:bpnl", counterPartyBpnl);
+        log.debug("Built Dspace Version Params Request: \n" + objectNode.toPrettyString());
+        return objectNode;
+    }
+
     /**
      * helper class to encapsulate PolicyConstraint
      **/
@@ -512,6 +532,21 @@ public class EdcRequestBodyBuilder {
         ObjectNode node = MAPPER.createObjectNode();
         var context = MAPPER.createObjectNode();
         context.put(VOCAB_KEY, EDC_NAMESPACE);
+        node.set("@context", context);
+        return node;
+    }
+
+    /**
+     * A helper method returning a basic request object meant for connectordiscovery interactions to be used to build other
+     * specific request bodies.
+     *
+     * @return A request body stub
+     */
+    private ObjectNode getConnectorDiscoveryContextObject() {
+        ObjectNode node = MAPPER.createObjectNode();
+        var context = MAPPER.createObjectNode();
+        context.put("edc", EDC_NAMESPACE);
+        context.put("tx", TX_NAMESPACE);
         node.set("@context", context);
         return node;
     }
