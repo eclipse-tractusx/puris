@@ -3,14 +3,14 @@ meta {
   type: http
   seq: 7
   tags: [
-    exchange-anonymized-data
+    single-level-bom-as-planned
   ]
 }
 
 get {
   url: {{DTR_EDR_ENDPOINT}}/lookup/shells?assetIds={{ASSET_IDS_QUERY}}
   body: none
-  auth: apikey
+  auth: inherit
 }
 
 params:query {
@@ -18,13 +18,7 @@ params:query {
 }
 
 headers {
-  Authorization: {{EDR_AUTH}}
-}
-
-auth:apikey {
-  key: Authorization
-  value: {{DTR_EDR_AUTH}}
-  placement: header
+  Authorization: {{DTR_EDR_AUTH}}
 }
 
 script:pre-request {
