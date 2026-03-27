@@ -21,16 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { useEffect, useRef, useState } from 'react';
-import {
-    Dialog,
-    DialogTitle,
-    Grid,
-    Button,
-    Stack,
-    FormLabel,
-    Box,
-    capitalize,
-} from '@mui/material';
+import { Dialog, DialogTitle, Grid, Button, Stack, FormLabel, Box, capitalize } from '@mui/material';
 import { Input } from '@catena-x/portal-shared-components';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { DateTime } from '@components/ui/DateTime';
@@ -43,6 +34,7 @@ import { useSites } from '@features/stock-view/hooks/useSites';
 import { postProduction, putProduction, updateProduction } from '@services/productions-service';
 import { useNotifications } from '@contexts/notificationContext';
 import { GridItem } from '@components/ui/GridItem';
+import { withDefaultProductionTime } from '@util/production-helpers';
 import { ConfirmUpdateDialog, ConfirmUpdateHandle } from './UpdateModal';
 import { UUID } from 'crypto';
 
@@ -57,17 +49,13 @@ const isValidProduction = (production: Partial<Production>) =>
     production &&
     production.productionSiteBpns &&
     production.estimatedTimeOfCompletion &&
-    typeof production.quantity === 'number' && production.quantity >= 0 &&
+    typeof production.quantity === 'number' &&
+    production.quantity >= 0 &&
     production.measurementUnit &&
     production.partner &&
     isValidOrderReference(production);
 
-export const PlannedProductionCreationModal = ({
-    open,
-    production,
-    onClose,
-    onSave,
-}: ProductionCategoryCreationModalProps) => {
+export const PlannedProductionCreationModal = ({ open, production, onClose, onSave }: ProductionCategoryCreationModalProps) => {
     const [temporaryProduction, setTemporaryProduction] = useState<Partial<Production>>(production ?? {});
     const { partners } = usePartners('product', temporaryProduction?.material?.materialNumberSupplier ?? null);
     const { sites } = useSites();
@@ -123,9 +111,9 @@ export const PlannedProductionCreationModal = ({
                     }
                     const message =
                         `There is already a production matching your criteria with a quantity ` +
-                        `${error?.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === error?.measurementUnit)?.value ?? error?.measurementUnit}. ` +
-                        `Do you want to update to ${temporaryProduction.quantity} ${UNITS_OF_MEASUREMENT.find(u => u.key === temporaryProduction.measurementUnit)?.value ?? temporaryProduction.measurementUnit}?`;
-                    const confirmed = await confirmRef.current?.open({message});
+                        `${error?.quantity} ${UNITS_OF_MEASUREMENT.find((u) => u.key === error?.measurementUnit)?.value ?? error?.measurementUnit}. ` +
+                        `Do you want to update to ${temporaryProduction.quantity} ${UNITS_OF_MEASUREMENT.find((u) => u.key === temporaryProduction.measurementUnit)?.value ?? temporaryProduction.measurementUnit}?`;
+                    const confirmed = await confirmRef.current?.open({ message });
                     if (confirmed) {
                         try {
                             const updated = await putProduction({
@@ -134,17 +122,17 @@ export const PlannedProductionCreationModal = ({
                                 lastUpdatedOnDateTime: new Date().toISOString(),
                             });
                             onSave(updated);
-                            notify({ 
-                                title: 'Production Updated', 
-                                description: 'The production has been updated successfully', 
-                                severity: 'success' 
+                            notify({
+                                title: 'Production Updated',
+                                description: 'The production has been updated successfully',
+                                severity: 'success',
                             });
                             handleClose();
-                        } 
-                        catch (e: any) {
-                            notify({ 
+                        } catch (e: any) {
+                            notify({
                                 title: 'Error updating',
-                                description: e?.error ?? 'Unexpected error', severity: 'error' 
+                                description: e?.error ?? 'Unexpected error',
+                                severity: 'error',
                             });
                         }
                     }
@@ -155,13 +143,12 @@ export const PlannedProductionCreationModal = ({
                         severity: 'error',
                     });
                 }
-
             });
     };
 
     const handleClose = () => {
         setFormError(false);
-        setTemporaryProduction({})
+        setTemporaryProduction({});
         onClose();
     };
 
@@ -197,7 +184,13 @@ export const PlannedProductionCreationModal = ({
                             error={formError}
                             value={temporaryProduction.estimatedTimeOfCompletion ?? null}
                             onValueChange={(date) =>
-                                setTemporaryProduction({ ...temporaryProduction, estimatedTimeOfCompletion: date ?? undefined })
+                                setTemporaryProduction({
+                                    ...temporaryProduction,
+                                    estimatedTimeOfCompletion:
+                                        temporaryProduction.estimatedTimeOfCompletion == null
+                                            ? withDefaultProductionTime(date)
+                                            : (date ?? undefined),
+                                })
                             }
                         />
                     </Grid>
@@ -245,7 +238,10 @@ export const PlannedProductionCreationModal = ({
                             onChange={(_, value) => setTemporaryProduction((curr) => ({ ...curr, measurementUnit: value?.key }))}
                             value={
                                 temporaryProduction.measurementUnit
-                                    ? { key: temporaryProduction.measurementUnit, value: getUnitOfMeasurement(temporaryProduction.measurementUnit) }
+                                    ? {
+                                          key: temporaryProduction.measurementUnit,
+                                          value: getUnitOfMeasurement(temporaryProduction.measurementUnit),
+                                      }
                                     : null
                             }
                             isOptionEqualToValue={(option, value) => option?.key === value?.key}
@@ -271,7 +267,9 @@ export const PlannedProductionCreationModal = ({
                             type="text"
                             error={formError && !isValidOrderReference(temporaryProduction)}
                             value={temporaryProduction.customerOrderPositionNumber ?? ''}
-                            onChange={(e) => setTemporaryProduction({ ...temporaryProduction, customerOrderPositionNumber: e.target.value })}
+                            onChange={(e) =>
+                                setTemporaryProduction({ ...temporaryProduction, customerOrderPositionNumber: e.target.value })
+                            }
                             data-testid="production-customer-order-position-field"
                         />
                     </Grid>
