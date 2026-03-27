@@ -161,6 +161,7 @@ public class EdcAdapterService {
     public boolean registerAssetsInitially() {
         boolean result;
         log.info("Registration of framework agreement policy successful {}", (result = createContractPolicy()));
+        log.info("Registration of DTR contract policy successful {}", (result &= createDtrContractPolicy()));
         boolean assetRegistration;
 
         // In future one may detect DTR Asset
@@ -302,7 +303,33 @@ public class EdcAdapterService {
      * @return true, if registration ran successfully
      */
     private boolean createContractPolicy() {
-        var body = edcRequestBodyBuilder.buildFrameworkPolicy();
+        var body = edcRequestBodyBuilder.buildPurisFrameworkPolicy();
+        try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
+            if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("Framework agreement policy definition already existed");
+                    return true;
+                }
+                log.warn("Framework Policy Registration failed");
+                if (response.body() != null) {
+                    log.warn("Response: \n" + response.body().string());
+                }
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to register Framework Policy", e);
+            return false;
+        }
+    }
+
+    /**
+     * Registers the framework agreement policy definition
+     *
+     * @return true, if registration ran successfully
+     */
+    private boolean createDtrContractPolicy() {
+        var body = edcRequestBodyBuilder.buildDtrFrameworkPolicy();
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
                 if (response.code() == 409) {
@@ -374,7 +401,7 @@ public class EdcAdapterService {
      */
     public Response getCatalogResponse(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException {
         DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partnerBpnl, dspUrl);
-        return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspaceVersionParams.counterPartyAddress, dspaceVersionParams.counterPartyId, filter), List.of("v3", "catalog", "request"));
+        return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspaceVersionParams, filter), List.of("v3", "catalog", "request"));
     }
 
     /**
@@ -1347,7 +1374,7 @@ public class EdcAdapterService {
             result = result && testSingleConstraint(
                 purposeConstraint,
                 EdcRequestBodyBuilder.CX_POLICY_NAMESPACE + "UsagePurpose",
-                EdcRequestBodyBuilder.ODRL_NAMESPACE + "eq",
+                EdcRequestBodyBuilder.ODRL_NAMESPACE + "isAnyOf",
                 variablesService.getPurisPurposeWithVersion()
             );
 
