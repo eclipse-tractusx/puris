@@ -1,7 +1,7 @@
 meta {
   name: Create Data Exchange Request
   type: http
-  seq: 5
+  seq: 2
 }
 
 post {
@@ -24,8 +24,13 @@ body:json {
       "n-tier"
     ],
     "text": "Please provide the requested data.",
-    "notificationId": "d9452f24-3bf3-4134-b3eb-68858f1b2362"
+    "notificationId": "be63823a-39ae-4f4d-9962-6941376267c3"
   }
+}
+
+script:pre-request {
+  console.log("Waiting 5 seconds");
+  await (new Promise(resolve => setTimeout(resolve, 5000)));
 }
 
 tests {
