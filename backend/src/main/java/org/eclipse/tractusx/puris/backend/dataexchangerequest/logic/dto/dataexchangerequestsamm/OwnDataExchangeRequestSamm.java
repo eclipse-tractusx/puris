@@ -21,6 +21,7 @@ package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexc
 import java.sql.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.CriticalityEnumeration;
@@ -47,7 +48,7 @@ public class OwnDataExchangeRequestSamm extends DataExchangeRequestSamm {
 
     @JsonCreator
     public OwnDataExchangeRequestSamm(
-            @JsonProperty(value = "notificationId") String notificationId,
+            @JsonProperty(value = "notificationId") UUID notificationId,
             @JsonProperty(value = "criticality") CriticalityEnumeration criticality,
             @JsonProperty(value = "desiredStartDateTime") Date desiredStartDateTime,
             @JsonProperty(value = "desiredEndDateTime") Date desiredEndDateTime,

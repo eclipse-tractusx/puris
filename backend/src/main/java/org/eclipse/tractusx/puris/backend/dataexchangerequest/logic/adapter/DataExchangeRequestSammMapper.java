@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.OwnDataExchangeRequestSamm;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.ReportedDataExchangeRequestService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
@@ -41,7 +42,7 @@ public class DataExchangeRequestSammMapper {
         var builder = OwnDataExchangeRequestSamm.builder();
 
         return builder
-                .notificationId(request.getNotification().getNotificationId().toString())
+                .notificationId(request.getNotification().getNotificationId())
                 .criticality(request.getCriticality())
                 .desiredStartDateTime(request.getDesiredStartDateTime())
                 .desiredEndDateTime(request.getDesiredEndDateTime())
@@ -52,8 +53,8 @@ public class DataExchangeRequestSammMapper {
                 .build();
     }
 
-    public ReportedDataExchangeRequest sammToReportedDataExchangeRequest(OwnDataExchangeRequestSamm samm) {
-        var notification = reportedDemandAndCapacityNotificationService.findByNotificationId(UUID.fromString(samm.getNotificationId()));
+    public ReportedDataExchangeRequest sammToReportedDataExchangeRequest(DataExchangeRequestSamm samm) {
+        var notification = reportedDemandAndCapacityNotificationService.findByNotificationId(samm.getNotificationId());
 
         if (notification == null) {
             throw new IllegalArgumentException("Referenced notification does not exist: " + samm.getNotificationId());

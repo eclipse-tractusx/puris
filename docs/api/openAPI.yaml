@@ -1724,7 +1724,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DataExchangeRequestDto'
+              $ref: '#/components/schemas/JsonNode'
               additionalProperties: false
       responses:
         '200':
@@ -1733,7 +1733,8 @@ paths:
           description: Bad Request
         '500':
           description: Internal Server Error
-      summary: 'This endpoint receives the DataExchangeRequest requests. '
+      summary: 'This endpoint receives the DemandAndCapacityNotification 2.0.0 requests.
+        This endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - data-exchange-request-api-controller
   /days-of-supply/customer:

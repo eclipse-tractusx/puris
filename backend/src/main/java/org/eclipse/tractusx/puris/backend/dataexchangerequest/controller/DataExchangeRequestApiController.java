@@ -17,21 +17,17 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.controller;
-
-import javax.management.openmbean.KeyAlreadyExistsException;
-
-import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
-import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.DataExchangeRequestDto;
-import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.ReportedDataExchangeRequestService;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.DataExchangeRequestApiService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -44,42 +40,35 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("data-exchange-request")
 @Slf4j
 public class DataExchangeRequestApiController {
-
-    @Autowired
-    private ReportedDataExchangeRequestService reportedDataExchangeRequestService;
-    @Autowired
-    private ReportedDemandAndCapacityNotificationService reportedDemandAndCapacityNotificationService;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private DataExchangeRequestApiService dataExchangeRequestApiService;
+    @Autowired
+    private ObjectMapper objectMapper;
     
-    @Operation(summary = "This endpoint receives the DataExchangeRequest requests. ")
+    @Operation(summary = "This endpoint receives the DemandAndCapacityNotification 2.0.0 requests. " +
+        "This endpoint is meant to be accessed by partners via EDC only. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok", content = @Content),
         @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
     @PostMapping("request")
-    public DataExchangeRequestDto postDataExchangeRequest(@RequestBody DataExchangeRequestDto requestDto)
+    public ResponseEntity<?> postDataExchangeRequest(@RequestBody JsonNode body)
     {
-        ReportedDemandAndCapacityNotification notification =
-                reportedDemandAndCapacityNotificationService.findByNotificationId(requestDto.getNotificationId());
-
-        if (notification == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referenced notification does not exist.");
-        }
-
-        ReportedDataExchangeRequest reportedDataExchangeRequest = modelMapper.map(requestDto, ReportedDataExchangeRequest.class);
-        reportedDataExchangeRequest.setNotification(notification);
-
+        
         try {
-            ReportedDataExchangeRequest newEntity = reportedDataExchangeRequestService.create(reportedDataExchangeRequest);
-            DataExchangeRequestDto responseDto = modelMapper.map(newEntity, DataExchangeRequestDto.class);
-            responseDto.setNotificationId(notification.getNotificationId());
-            return responseDto;
-        } catch (KeyAlreadyExistsException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Reported Data Exchange Request already exists.");
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reported Data Exchange Request is invalid.");
+            log.info("Received POST request for DataExchangeRequest");
+            var request = objectMapper.readValue(
+                body.get("content").get("dataExchangeRequest").toString(),
+                DataExchangeRequestSamm.class);
+            var notificationId = request.getNotificationId();
+            dataExchangeRequestApiService.handleIncomingDataExchangeRequest(notificationId, request);
+        } catch (Exception e) {
+            log.warn("Rejecting invalid request body at DataExchangeRequest request 2.0.0 endpoint");
+            return ResponseEntity.badRequest().build();
         }
+        return ResponseEntity.ok(null);
     }
 }

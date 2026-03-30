@@ -46,6 +46,16 @@ public class ReportedDataExchangeRequestService  extends DataExchangeRequestServ
         return repository.save(reportedDataExchangeRequest);
     }
 
+    public final ReportedDataExchangeRequest update(ReportedDataExchangeRequest reportedDataExchangeRequest) {
+        if (!validator.apply(reportedDataExchangeRequest)) {
+            throw new IllegalArgumentException("Invalid request");
+        }
+        if (reportedDataExchangeRequest.getUuid() == null || repository.findById(reportedDataExchangeRequest.getUuid()).isEmpty()) {
+            return null;
+        }
+        return repository.save(reportedDataExchangeRequest);
+    }
+
     public boolean validate(ReportedDataExchangeRequest dataExchangeRequest) {
         return basicValidation(dataExchangeRequest);
     }

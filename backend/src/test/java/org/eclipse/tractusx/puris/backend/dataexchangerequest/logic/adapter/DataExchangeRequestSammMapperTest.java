@@ -114,7 +114,7 @@ class DataExchangeRequestSammMapperTest {
         Date timestamp = new Date(1710172800000L);
 
         OwnDataExchangeRequestSamm samm = OwnDataExchangeRequestSamm.builder()
-                .notificationId(notificationId.toString())
+                .notificationId(notificationId)
                 .criticality(CriticalityEnumeration.LOW)
                 .desiredStartDateTime(desiredStart)
                 .desiredEndDateTime(desiredEnd)
