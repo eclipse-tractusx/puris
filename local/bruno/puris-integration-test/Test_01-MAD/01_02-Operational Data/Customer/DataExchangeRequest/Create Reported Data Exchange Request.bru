@@ -1,13 +1,13 @@
 meta {
-  name: Create Data Exchange Request
+  name: Create Reported Data Exchange Request
   type: http
-  seq: 5
+  seq: 2
 }
 
 post {
-  url: {{SUPPLIER_PURIS_BACKEND}}/catena/data-exchange-request
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/data-exchange-request/request
   body: json
-  auth: none
+  auth: inherit
 }
 
 headers {
@@ -24,7 +24,7 @@ body:json {
       "n-tier"
     ],
     "text": "Please provide the requested data.",
-    "notificationId": "d9452f24-3bf3-4134-b3eb-68858f1b2362"
+    "notificationId": "d2b99c75-838a-4d99-8633-5c423fe6b43b"
   }
 }
 
