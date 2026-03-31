@@ -1760,6 +1760,7 @@ paths:
             schema:
               $ref: '#/components/schemas/JsonNode'
               additionalProperties: false
+        required: true
       responses:
         '200':
           description: Ok

@@ -45,13 +45,13 @@ class DataExchangeRequestSammMapperTest {
 
     @Test
     void testOwnDataExchangeRequestToSamm() {
-        UUID notificationId = UUID.randomUUID();
+        UUID sourceDisruptionId = UUID.randomUUID();
         UUID relatedRequestUuid = UUID.randomUUID();
         Date desiredStart = new Date(1710000000000L);
         Date desiredEnd = new Date(1710086400000L);
         Date timestamp = new Date(1710172800000L);
 
-        ReportedDemandAndCapacityNotification notification = ReportedDemandAndCapacityNotification.builder().notificationId(notificationId).build();
+        ReportedDemandAndCapacityNotification notification = ReportedDemandAndCapacityNotification.builder().sourceDisruptionId(sourceDisruptionId).build();
 
         ReportedDataExchangeRequest relatedRequest = ReportedDataExchangeRequest.builder().uuid(relatedRequestUuid).build();
 
@@ -70,7 +70,7 @@ class DataExchangeRequestSammMapperTest {
 
         DataExchangeRequestSamm samm = dataExchangeRequestSammMapper.ownDataExchangeRequestToSamm(request);
 
-        Assertions.assertEquals(notificationId.toString(), samm.getNotificationId());
+        Assertions.assertEquals(sourceDisruptionId.toString(), samm.getSourceDisruptionId());
         Assertions.assertEquals(CriticalityEnumeration.HIGH, samm.getCriticality());
         Assertions.assertEquals(desiredStart, samm.getDesiredStartDateTime());
         Assertions.assertEquals(desiredEnd, samm.getDesiredEndDateTime());
@@ -81,12 +81,12 @@ class DataExchangeRequestSammMapperTest {
 
     @Test
     void testOwnDataExchangeRequestToSammWithoutRelatedRequest() {
-        UUID notificationId = UUID.randomUUID();
+        UUID sourceDisruptionId = UUID.randomUUID();
         Date desiredStart = new Date(1710000000000L);
         Date desiredEnd = new Date(1710086400000L);
         Date timestamp = new Date(1710172800000L);
 
-        ReportedDemandAndCapacityNotification notification = ReportedDemandAndCapacityNotification.builder().notificationId(notificationId).build();
+        ReportedDemandAndCapacityNotification notification = ReportedDemandAndCapacityNotification.builder().sourceDisruptionId(sourceDisruptionId).build();
 
         OwnDataExchangeRequest request = OwnDataExchangeRequest.builder()
                 .notification(notification)
@@ -101,18 +101,19 @@ class DataExchangeRequestSammMapperTest {
 
         DataExchangeRequestSamm samm = dataExchangeRequestSammMapper.ownDataExchangeRequestToSamm(request);
 
-        Assertions.assertEquals(notificationId.toString(), samm.getNotificationId());
+        Assertions.assertEquals(sourceDisruptionId.toString(), samm.getSourceDisruptionId());
     }
 
     @Test
     void testSammToReportedDataExchangeRequest() {
-        UUID notificationId = UUID.randomUUID();
+        UUID sourceDisruptionId = UUID.randomUUID();
         Date desiredStart = new Date(1710000000000L);
         Date desiredEnd = new Date(1710086400000L);
         Date timestamp = new Date(1710172800000L);
+        String bpnl = "BPNL123";
 
         DataExchangeRequestSamm samm = DataExchangeRequestSamm.builder()
-                .notificationId(notificationId)
+                .sourceDisruptionId(sourceDisruptionId)
                 .criticality(CriticalityEnumeration.LOW)
                 .desiredStartDateTime(desiredStart)
                 .desiredEndDateTime(desiredEnd)
@@ -121,11 +122,11 @@ class DataExchangeRequestSammMapperTest {
                 .timestamp(timestamp)
                 .build();
 
-        ReportedDemandAndCapacityNotification notification = ReportedDemandAndCapacityNotification.builder().notificationId(notificationId).build();
+        ReportedDemandAndCapacityNotification notification = ReportedDemandAndCapacityNotification.builder().sourceDisruptionId(sourceDisruptionId).build();
 
-        when(reportedDemandAndCapacityNotificationService.findByNotificationId(notificationId)).thenReturn(notification);
+        when(reportedDemandAndCapacityNotificationService.findByBpnlAndSourceDisruptionId(bpnl, sourceDisruptionId)).thenReturn(notification);
 
-        ReportedDataExchangeRequest request = dataExchangeRequestSammMapper.sammToReportedDataExchangeRequest(samm);
+        ReportedDataExchangeRequest request = dataExchangeRequestSammMapper.sammToReportedDataExchangeRequest(bpnl, samm);
 
         Assertions.assertEquals(notification, request.getNotification());
         Assertions.assertEquals(CriticalityEnumeration.LOW, request.getCriticality());

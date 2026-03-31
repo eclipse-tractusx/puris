@@ -25,6 +25,7 @@ import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.Data
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,7 +35,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
@@ -72,6 +72,7 @@ public class DataExchangeRequestApiController {
             dataExchangeRequestApiService.handleIncomingDataExchangeRequest(bpnl, request);
         } catch (Exception e) {
             log.warn("Rejecting invalid request body at DataExchangeRequest request 1.0.0 endpoint");
+            log.error("Error while processing incoming DataExchangeRequest", e);
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(null);

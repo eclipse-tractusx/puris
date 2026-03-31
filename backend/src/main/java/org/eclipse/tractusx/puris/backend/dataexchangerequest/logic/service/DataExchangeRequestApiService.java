@@ -29,8 +29,6 @@ import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDa
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.adapter.DataExchangeRequestSammMapper;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,8 +44,6 @@ import lombok.extern.slf4j.Slf4j;
 public class DataExchangeRequestApiService {
     @Autowired
     private PartnerService partnerService;
-    @Autowired
-    private ReportedDemandAndCapacityNotificationService reportedDemandAndCapacityNotificationService;
     @Autowired
     private ReportedDataExchangeRequestService reportedDataExchangeRequestService;
     @Autowired
@@ -66,13 +62,12 @@ public class DataExchangeRequestApiService {
             log.error("Unknown Partner BPNL");
             return null;
         }
-        ReportedDemandAndCapacityNotification notification =
-                reportedDemandAndCapacityNotificationService.findByNotificationId(samm.getNotificationId());
-        if (notification == null) {
-            log.error("Referenced notification does not exist.");
+        var request = sammMapper.sammToReportedDataExchangeRequest(bpnl, samm);
+        log.info("my request: " + request);
+        if (request == null) {
+            log.error("Error mapping incoming Request");
             return null;
         }
-        var request = sammMapper.sammToReportedDataExchangeRequest(samm);
         var existingRequest = reportedDataExchangeRequestService.findById(request.getUuid());
         if (existingRequest != null) {
             log.info("Updating existing Request");

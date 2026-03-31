@@ -23,20 +23,24 @@ import java.util.ArrayList;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.OwnDemandAndCapacityNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class DataExchangeRequestSammMapper {
     @Autowired
-    private ReportedDemandAndCapacityNotificationService reportedDemandAndCapacityNotificationService;
+    private OwnDemandAndCapacityNotificationService ownDemandAndCapacityNotificationService;
 
     public DataExchangeRequestSamm ownDataExchangeRequestToSamm(OwnDataExchangeRequest request) {
         var builder = DataExchangeRequestSamm.builder();
 
         return builder
-                .notificationId(request.getNotification().getNotificationId())
+                .id(request.getUuid())
+                .sourceDisruptionId(request.getNotification().getSourceDisruptionId())
                 .criticality(request.getCriticality())
                 .desiredStartDateTime(request.getDesiredStartDateTime())
                 .desiredEndDateTime(request.getDesiredEndDateTime())
@@ -46,21 +50,23 @@ public class DataExchangeRequestSammMapper {
                 .build();
     }
 
-    public ReportedDataExchangeRequest sammToReportedDataExchangeRequest(DataExchangeRequestSamm samm) {
-        var notification = reportedDemandAndCapacityNotificationService.findByNotificationId(samm.getNotificationId());
-
+    public ReportedDataExchangeRequest sammToReportedDataExchangeRequest(String bpnl,DataExchangeRequestSamm samm) {
+        var notification = ownDemandAndCapacityNotificationService.findByBpnlAndSourceDisruptionId(bpnl, samm.getSourceDisruptionId());
         if (notification == null) {
-            throw new IllegalArgumentException("Referenced notification does not exist: " + samm.getNotificationId());
+            log.error("No matching notification found for BPNL {} and source disruption ID {}", bpnl, samm.getSourceDisruptionId());
+            return null;
         }
-
+        log.info("Found matching notification with ID {} for BPNL {} and source disruption ID {}", samm.getId(), bpnl, samm.getSourceDisruptionId());
         var builder = ReportedDataExchangeRequest.builder();
         return builder
+                .uuid(samm.getId())
                 .notification(notification)
                 .criticality(samm.getCriticality())
                 .desiredStartDateTime(samm.getDesiredStartDateTime())
                 .desiredEndDateTime(samm.getDesiredEndDateTime())
                 .requestedTypes(samm.getRequestedTypes() != null ? new ArrayList<>(samm.getRequestedTypes()) : null)
                 .text(samm.getText())
+                .timestamp(samm.getTimestamp())
                 .build();
     }
 }

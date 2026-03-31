@@ -64,6 +64,11 @@ public abstract class DemandAndCapacityNotificationService<TEntity extends Deman
                 .toList();
     }
 
+    public final TEntity findByBpnlAndSourceDisruptionId(String bpnl, UUID sourceDisruptionId) {
+        return repository.findAll().stream().filter(demand -> demand.getPartner().getBpnl().equals(bpnl) && demand.getSourceDisruptionId().equals(sourceDisruptionId))
+                .findFirst().orElse(null);
+    }
+
     public final TEntity create(TEntity notification) {
         if (!validator.apply(notification)) {
             throw new IllegalArgumentException("Invalid notification");
