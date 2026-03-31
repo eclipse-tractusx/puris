@@ -24,6 +24,7 @@ The **need for configuration updates** is **marked bold**.
 - Added update flow to Material Details View buttons ([#1034](https://github.com/eclipse-tractusx/puris/pull/1034))
 - Added backend implementation for material relations ([#1097](https://github.com/eclipse-tractusx/puris/pull/1097))
 - Added EDC offering for SingleLevelBomAsPlanned ([#1102](https://github.com/eclipse-tractusx/puris/pull/1102))
+- Added unit tests for SingleLevelBomAsPlanned ([#1121](https://github.com/eclipse-tractusx/puris/pull/1121))
 - Added frontend implementation for material relations ([#1113](https://github.com/eclipse-tractusx/puris/pull/1113))
 
 ### Changed
