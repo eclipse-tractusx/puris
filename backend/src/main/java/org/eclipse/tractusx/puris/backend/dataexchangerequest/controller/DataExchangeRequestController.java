@@ -60,16 +60,13 @@ public class DataExchangeRequestController {
     })
     @ResponseStatus(HttpStatus.CREATED)
     public DataExchangeRequestDto createDataExchangeRequest(@RequestBody DataExchangeRequestDto requestDto) {
-        ReportedDemandAndCapacityNotification notification =
-                reportedDemandAndCapacityNotificationService.findByNotificationId(requestDto.getNotificationId());
+        ReportedDemandAndCapacityNotification notification = reportedDemandAndCapacityNotificationService.findByNotificationId(requestDto.getNotificationId());
 
         if (notification == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referenced notification does not exist.");
         }
-
         OwnDataExchangeRequest ownDataExchangeRequest = modelMapper.map(requestDto, OwnDataExchangeRequest.class);
         ownDataExchangeRequest.setNotification(notification);
-
         try {
             OwnDataExchangeRequest newEntity = ownDataExchangeRequestService.create(ownDataExchangeRequest);
             DataExchangeRequestDto responseDto = modelMapper.map(newEntity, DataExchangeRequestDto.class);

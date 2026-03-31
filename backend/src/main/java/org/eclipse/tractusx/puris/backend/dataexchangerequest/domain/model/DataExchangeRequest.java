@@ -22,15 +22,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -54,12 +52,6 @@ public abstract class DataExchangeRequest {
     @Id
     @GeneratedValue
     private UUID uuid;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "notification_uuid", nullable = false, unique = true)
-    @ToString.Exclude
-    @NotNull
-    protected ReportedDemandAndCapacityNotification notification;
 
     @NotNull
     private CriticalityEnumeration criticality;
@@ -95,9 +87,7 @@ public abstract class DataExchangeRequest {
         }
 
         final DataExchangeRequest that = (DataExchangeRequest) o;
-        return this.getNotification().getUuid().equals(that.getNotification().getUuid()) &&
-        this.getNotification().getUuid().equals(that.getNotification().getUuid()) &&
-            Objects.equals(this.getCriticality().getValue(), that.getCriticality().getValue()) &&
+        return Objects.equals(this.getCriticality().getValue(), that.getCriticality().getValue()) &&
             Objects.equals(toInstant(this.getDesiredStartDateTime()), toInstant(that.getDesiredStartDateTime())) &&
             Objects.equals(toInstant(this.getDesiredEndDateTime()), toInstant(that.getDesiredEndDateTime())) &&
             Objects.equals(this.getRequestedTypes(), that.getRequestedTypes()) && Objects.equals(this.getText(), that.getText());
@@ -105,7 +95,7 @@ public abstract class DataExchangeRequest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(notification, criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text);
+        return Objects.hash(criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text);
     }
 
     private static Instant toInstant(Date d) {

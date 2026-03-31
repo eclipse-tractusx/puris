@@ -41,30 +41,8 @@ public abstract class  DataExchangeRequestService<T extends DataExchangeRequest>
             dataExchangeRequest.getText() != null &&
             dataExchangeRequest.getDesiredStartDateTime() != null &&
             dataExchangeRequest.getDesiredEndDateTime() != null &&
-            dataExchangeRequest.getNotification() != null &&
             (dataExchangeRequest.getUuid() == null || dataExchangeRequest.getTimestamp() != null) &&
             dataExchangeRequest.getRequestedTypes() != null &&
-            !dataExchangeRequest.getRequestedTypes().isEmpty() &&
-            validateDesiredDates(dataExchangeRequest);
-    }
-    private boolean validateDesiredDates(DataExchangeRequest ownDataExchangeRequest) {
-        if (!ownDataExchangeRequest.getDesiredStartDateTime().before(ownDataExchangeRequest.getDesiredEndDateTime())) {
-            return false;
-        }
-        if (ownDataExchangeRequest.getDesiredStartDateTime().before(ownDataExchangeRequest.getNotification().getStartDateOfEffect())) {
-            return false;
-        }
-        if (ownDataExchangeRequest.getDesiredEndDateTime().before(ownDataExchangeRequest.getNotification().getStartDateOfEffect())) {
-            return false;
-        }
-        if (ownDataExchangeRequest.getNotification().getExpectedEndDateOfEffect() != null) {
-            if (ownDataExchangeRequest.getDesiredStartDateTime().after(ownDataExchangeRequest.getNotification().getExpectedEndDateOfEffect())) {
-                return false;
-            }
-            if (ownDataExchangeRequest.getDesiredEndDateTime().after(ownDataExchangeRequest.getNotification().getExpectedEndDateOfEffect())) {
-                return false;
-            }
-        }
-        return true;
+            !dataExchangeRequest.getRequestedTypes().isEmpty();
     }
 }
