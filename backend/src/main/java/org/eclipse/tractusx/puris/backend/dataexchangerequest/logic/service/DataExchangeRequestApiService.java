@@ -63,12 +63,15 @@ public class DataExchangeRequestApiService {
             return null;
         }
         var request = sammMapper.sammToReportedDataExchangeRequest(bpnl, samm);
-        log.info("my request: " + request);
         if (request == null) {
             log.error("Error mapping incoming Request");
             return null;
         }
-        var existingRequest = reportedDataExchangeRequestService.findById(request.getUuid());
+        ReportedDataExchangeRequest existingRequest = null;
+        if (request.getUuid() != null) {
+            existingRequest = reportedDataExchangeRequestService.findById(request.getUuid());
+        }
+
         if (existingRequest != null) {
             log.info("Updating existing Request");
             request.setUuid(existingRequest.getUuid());

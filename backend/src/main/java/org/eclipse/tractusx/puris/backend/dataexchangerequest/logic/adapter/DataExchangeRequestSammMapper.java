@@ -39,7 +39,6 @@ public class DataExchangeRequestSammMapper {
         var builder = DataExchangeRequestSamm.builder();
 
         return builder
-                .id(request.getUuid())
                 .sourceDisruptionId(request.getNotification().getSourceDisruptionId())
                 .criticality(request.getCriticality())
                 .desiredStartDateTime(request.getDesiredStartDateTime())
@@ -56,10 +55,8 @@ public class DataExchangeRequestSammMapper {
             log.error("No matching notification found for BPNL {} and source disruption ID {}", bpnl, samm.getSourceDisruptionId());
             return null;
         }
-        log.info("Found matching notification with ID {} for BPNL {} and source disruption ID {}", samm.getId(), bpnl, samm.getSourceDisruptionId());
         var builder = ReportedDataExchangeRequest.builder();
         return builder
-                .uuid(samm.getId())
                 .notification(notification)
                 .criticality(samm.getCriticality())
                 .desiredStartDateTime(samm.getDesiredStartDateTime())

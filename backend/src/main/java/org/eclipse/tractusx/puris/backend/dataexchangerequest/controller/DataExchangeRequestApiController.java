@@ -70,6 +70,7 @@ public class DataExchangeRequestApiController {
                 body.get("content").get("dataExchangeRequest").toString(),
                 DataExchangeRequestSamm.class);
             dataExchangeRequestApiService.handleIncomingDataExchangeRequest(bpnl, request);
+            log.info("Created ReportedDataExchangeRequest from incoming request");
         } catch (Exception e) {
             log.warn("Rejecting invalid request body at DataExchangeRequest request 1.0.0 endpoint");
             log.error("Error while processing incoming DataExchangeRequest", e);

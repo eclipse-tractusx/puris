@@ -51,9 +51,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.constraints.Pattern;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("data-exchange-request")
+@Slf4j
 public class DataExchangeRequestController {
 
     @Autowired
@@ -110,6 +112,7 @@ public class DataExchangeRequestController {
     @ResponseBody
     @Operation(summary = "Get all reported data exchange requests", description = "Get all reported data exchange requests.")
     public List<DataExchangeRequestDto> getAllReportedDataExchangeRequest(Optional<@Pattern(regexp = PatternStore.BPNL_STRING) String> partnerBpnl) {
+        log.info("Received request to get all reported data exchange requests with partner BPNL filter: " + partnerBpnl.orElse("none"));
         return reportedDataExchangeRequestService.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
     }
 

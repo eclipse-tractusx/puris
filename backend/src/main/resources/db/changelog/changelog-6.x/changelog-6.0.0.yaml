@@ -165,3 +165,17 @@ databaseChangeLog:
               referencedTableName: reported_demand_and_capacity_notification
               referencedColumnNames: uuid
               constraintName: fk_reported_data_exchange_request_notification
+  - changeSet:
+      id: "3"
+      author: OlgaIvkovic
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: reported_data_exchange_request
+            constraintName: fk_reported_data_exchange_request_notification
+
+        - addForeignKeyConstraint:
+            baseTableName: reported_data_exchange_request
+            baseColumnNames: notification_uuid
+            referencedTableName: own_demand_and_capacity_notification
+            referencedColumnNames: uuid
+            constraintName: fk_reported_data_exchange_request_notification
