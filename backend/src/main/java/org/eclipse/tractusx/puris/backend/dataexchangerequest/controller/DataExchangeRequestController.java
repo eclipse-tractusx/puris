@@ -17,15 +17,27 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.controller;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
+
 import javax.management.openmbean.KeyAlreadyExistsException;
+
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.DataExchangeRequestDto;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.DataExchangeRequestApiService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.OwnDataExchangeRequestService;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.ReportedDataExchangeRequestService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,10 +45,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.constraints.Pattern;
 
 @RestController
 @RequestMapping("data-exchange-request")
@@ -47,7 +61,13 @@ public class DataExchangeRequestController {
     @Autowired
     private ReportedDemandAndCapacityNotificationService reportedDemandAndCapacityNotificationService;
     @Autowired
+    private ReportedDataExchangeRequestService reportedDataExchangeRequestService;
+    @Autowired
+    private DataExchangeRequestApiService dataExchangeRequestApiService;
+    @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private ExecutorService executorService;
 
     @PostMapping()
     @ResponseBody
@@ -67,18 +87,38 @@ public class DataExchangeRequestController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referenced notification does not exist.");
         }
 
+        Partner partner = notification.getPartner();
+         if (partner == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referenced notification has no associated partner.");
+        }
+
         OwnDataExchangeRequest ownDataExchangeRequest = modelMapper.map(requestDto, OwnDataExchangeRequest.class);
         ownDataExchangeRequest.setNotification(notification);
 
         try {
             OwnDataExchangeRequest newEntity = ownDataExchangeRequestService.create(ownDataExchangeRequest);
-            DataExchangeRequestDto responseDto = modelMapper.map(newEntity, DataExchangeRequestDto.class);
-            responseDto.setNotificationId(notification.getNotificationId());
-            return responseDto;
+            executorService.submit(() -> dataExchangeRequestApiService.sendDataExchangeRequest(newEntity, partner));
+            DataExchangeRequestDto dto = modelMapper.map(newEntity, DataExchangeRequestDto.class);
+            dto.setNotificationId(newEntity.getNotification().getNotificationId());
+            return dto;
         } catch (KeyAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Own Data Exchange Request already exists.");
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Own Data Exchange Request is invalid.");
         }
     }
+
+    @GetMapping("reported")
+    @ResponseBody
+    @Operation(summary = "Get all reported data exchange requests", description = "Get all reported data exchange requests.")
+    public List<DataExchangeRequestDto> getAllReportedDataExchangeRequest(Optional<@Pattern(regexp = PatternStore.BPNL_STRING) String> partnerBpnl) {
+        return reportedDataExchangeRequestService.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    private DataExchangeRequestDto convertToDto(ReportedDataExchangeRequest entity) {
+        DataExchangeRequestDto dto = modelMapper.map(entity, DataExchangeRequestDto.class);
+        dto.setNotificationId(entity.getNotification().getNotificationId());
+        return dto;
+    }
+
 }

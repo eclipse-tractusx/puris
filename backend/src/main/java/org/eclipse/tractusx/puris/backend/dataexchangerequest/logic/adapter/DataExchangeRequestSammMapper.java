@@ -19,13 +19,10 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.adapter;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
-import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.OwnDataExchangeRequestSamm;
-import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.ReportedDataExchangeRequestService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,11 +32,8 @@ public class DataExchangeRequestSammMapper {
     @Autowired
     private ReportedDemandAndCapacityNotificationService reportedDemandAndCapacityNotificationService;
 
-    @Autowired
-    private ReportedDataExchangeRequestService reportedDataExchangeRequestService;
-
-    public OwnDataExchangeRequestSamm ownDataExchangeRequestToSamm(OwnDataExchangeRequest request) {
-        var builder = OwnDataExchangeRequestSamm.builder();
+    public DataExchangeRequestSamm ownDataExchangeRequestToSamm(OwnDataExchangeRequest request) {
+        var builder = DataExchangeRequestSamm.builder();
 
         return builder
                 .notificationId(request.getNotification().getNotificationId())
@@ -49,7 +43,6 @@ public class DataExchangeRequestSammMapper {
                 .requestedTypes(request.getRequestedTypes() != null ? new ArrayList<>(request.getRequestedTypes()): null)
                 .text(request.getText())
                 .timestamp(request.getTimestamp())
-                .relatedDataExchangeRequestId(request.getRelatedDataExchangeRequest() != null ? request.getRelatedDataExchangeRequest().getUuid().toString() : null)
                 .build();
     }
 
@@ -69,12 +62,5 @@ public class DataExchangeRequestSammMapper {
                 .requestedTypes(samm.getRequestedTypes() != null ? new ArrayList<>(samm.getRequestedTypes()) : null)
                 .text(samm.getText())
                 .build();
-    }
-
-    public ReportedDataExchangeRequest findRelatedReportedDataExchangeRequest(OwnDataExchangeRequestSamm samm) {
-        if (samm.getRelatedDataExchangeRequestId() == null) {
-            return null;
-        }
-        return reportedDataExchangeRequestService.findById(UUID.fromString(samm.getRelatedDataExchangeRequestId()));
     }
 }

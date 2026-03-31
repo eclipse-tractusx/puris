@@ -18,17 +18,26 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 
+import java.util.Date;
 import java.util.UUID;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.adapter.DataExchangeRequestSammMapper;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,17 +45,31 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DataExchangeRequestApiService {
     @Autowired
+    private PartnerService partnerService;
+    @Autowired
     private ReportedDemandAndCapacityNotificationService reportedDemandAndCapacityNotificationService;
     @Autowired
     private ReportedDataExchangeRequestService reportedDataExchangeRequestService;
     @Autowired
+    private EdcAdapterService edcAdapterService;
+    @Autowired
     private DataExchangeRequestSammMapper sammMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    public ReportedDataExchangeRequest handleIncomingDataExchangeRequest(UUID notificationId, DataExchangeRequestSamm samm) {
-        ReportedDemandAndCapacityNotification notification =
-                reportedDemandAndCapacityNotificationService.findByNotificationId(notificationId);
-        if (notification == null) {
+    public static final String DATA_EXCHANGE_REQUEST_CONTEXT = "CX-DataExchangeRequestReceiveAPI-Receive:1.0.0";
+    public static final String MESSAGE_HEADER_VERSION = "1.0.0";
+
+    public ReportedDataExchangeRequest handleIncomingDataExchangeRequest(String bpnl, DataExchangeRequestSamm samm) {
+        Partner partner = partnerService.findByBpnl(bpnl);
+        if (partner == null) {
             log.error("Unknown Partner BPNL");
+            return null;
+        }
+        ReportedDemandAndCapacityNotification notification =
+                reportedDemandAndCapacityNotificationService.findByNotificationId(samm.getNotificationId());
+        if (notification == null) {
+            log.error("Referenced notification does not exist.");
             return null;
         }
         var request = sammMapper.sammToReportedDataExchangeRequest(samm);
@@ -70,6 +93,34 @@ public class DataExchangeRequestApiService {
             log.error("Invalid Request: {}", request.toString());
             return null;
         }
+    }
+
+    public void sendDataExchangeRequest(OwnDataExchangeRequest request, Partner partner) {
+        var body = createDataExchangeRequestBody(request);
+        try {
+            edcAdapterService.doDataExchangePostRequest(AssetType.DATA_EXCHANGE_REQUEST, partner, body, 1);
+            log.info("Successfully sent Data Exchange Request to partner " + partner.getBpnl()); 
+        } catch (Exception e) {
+            log.error("Error in ReportedDataExchangeRequest for partner " + partner.getBpnl(), e);
+        }
+    }
+
+    private JsonNode createDataExchangeRequestBody(OwnDataExchangeRequest request) {
+        var ownPartnerEntity = partnerService.getOwnPartnerEntity();
+        var body = objectMapper.createObjectNode();
+        var header = objectMapper.createObjectNode();
+        body.set("header", header);
+        header.put("senderBpn", ownPartnerEntity.getBpnl());
+        header.put("receiverBpn", request.getNotification().getPartner().getBpnl());
+        header.put("context", DATA_EXCHANGE_REQUEST_CONTEXT);
+        header.put("messageId", UUID.randomUUID().toString());
+        header.put("sentDateTime", new Date().toString());
+        header.put("version", MESSAGE_HEADER_VERSION);
+        var content = objectMapper.createObjectNode();
+        body.set("content", content);
+        var samm = sammMapper.ownDataExchangeRequestToSamm(request);
+        content.set("dataExchangeRequest", objectMapper.convertValue(samm, JsonNode.class));
+        return body;
     }
     
 }

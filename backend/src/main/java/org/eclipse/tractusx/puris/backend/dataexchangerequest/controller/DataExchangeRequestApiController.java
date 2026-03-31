@@ -17,12 +17,15 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.controller;
+import java.util.regex.Pattern;
+
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.DataExchangeRequestApiService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,13 +44,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DataExchangeRequestApiController {
     @Autowired
-    private ModelMapper modelMapper;
-    @Autowired
     private DataExchangeRequestApiService dataExchangeRequestApiService;
     @Autowired
     private ObjectMapper objectMapper;
+
+    private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
     
-    @Operation(summary = "This endpoint receives the DemandAndCapacityNotification 2.0.0 requests. " +
+    @Operation(summary = "This endpoint receives the DataExchangeRequest 1.0.0 requests. " +
         "This endpoint is meant to be accessed by partners via EDC only. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok", content = @Content),
@@ -55,18 +58,20 @@ public class DataExchangeRequestApiController {
         @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
     @PostMapping("request")
-    public ResponseEntity<?> postDataExchangeRequest(@RequestBody JsonNode body)
+    public ResponseEntity<?> postDataExchangeRequest(@RequestHeader("edc-bpn") String bpnl, @RequestBody JsonNode body)
     {
-        
+        if (!bpnlPattern.matcher(bpnl).matches()) {
+            log.warn("Rejecting request at DataExchangeRequest request 1.0.0 endpoint. Invalid BPNL");
+            return ResponseEntity.badRequest().build();
+        }
         try {
             log.info("Received POST request for DataExchangeRequest");
             var request = objectMapper.readValue(
                 body.get("content").get("dataExchangeRequest").toString(),
                 DataExchangeRequestSamm.class);
-            var notificationId = request.getNotificationId();
-            dataExchangeRequestApiService.handleIncomingDataExchangeRequest(notificationId, request);
+            dataExchangeRequestApiService.handleIncomingDataExchangeRequest(bpnl, request);
         } catch (Exception e) {
-            log.warn("Rejecting invalid request body at DataExchangeRequest request 2.0.0 endpoint");
+            log.warn("Rejecting invalid request body at DataExchangeRequest request 1.0.0 endpoint");
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(null);

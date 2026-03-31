@@ -26,7 +26,7 @@ import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.Criti
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.RequestedTypeEnumeration;
-import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.OwnDataExchangeRequestSamm;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
 import org.junit.Test;
@@ -68,7 +68,7 @@ class DataExchangeRequestSammMapperTest {
                 .relatedDataExchangeRequest(relatedRequest)
                 .build();
 
-        OwnDataExchangeRequestSamm samm = dataExchangeRequestSammMapper.ownDataExchangeRequestToSamm(request);
+        DataExchangeRequestSamm samm = dataExchangeRequestSammMapper.ownDataExchangeRequestToSamm(request);
 
         Assertions.assertEquals(notificationId.toString(), samm.getNotificationId());
         Assertions.assertEquals(CriticalityEnumeration.HIGH, samm.getCriticality());
@@ -77,7 +77,6 @@ class DataExchangeRequestSammMapperTest {
         Assertions.assertEquals(List.of(RequestedTypeEnumeration.N_TIER), samm.getRequestedTypes());
         Assertions.assertEquals("Please share data", samm.getText());
         Assertions.assertEquals(timestamp, samm.getTimestamp());
-        Assertions.assertEquals(relatedRequestUuid.toString(), samm.getRelatedDataExchangeRequestId());
     }
 
     @Test
@@ -100,10 +99,9 @@ class DataExchangeRequestSammMapperTest {
                 .relatedDataExchangeRequest(null)
                 .build();
 
-        OwnDataExchangeRequestSamm samm = dataExchangeRequestSammMapper.ownDataExchangeRequestToSamm(request);
+        DataExchangeRequestSamm samm = dataExchangeRequestSammMapper.ownDataExchangeRequestToSamm(request);
 
         Assertions.assertEquals(notificationId.toString(), samm.getNotificationId());
-        Assertions.assertNull(samm.getRelatedDataExchangeRequestId());
     }
 
     @Test
@@ -113,7 +111,7 @@ class DataExchangeRequestSammMapperTest {
         Date desiredEnd = new Date(1710086400000L);
         Date timestamp = new Date(1710172800000L);
 
-        OwnDataExchangeRequestSamm samm = OwnDataExchangeRequestSamm.builder()
+        DataExchangeRequestSamm samm = DataExchangeRequestSamm.builder()
                 .notificationId(notificationId)
                 .criticality(CriticalityEnumeration.LOW)
                 .desiredStartDateTime(desiredStart)
@@ -121,7 +119,6 @@ class DataExchangeRequestSammMapperTest {
                 .requestedTypes(List.of(RequestedTypeEnumeration.N_TIER))
                 .text("Incoming SAMM request")
                 .timestamp(timestamp)
-                .relatedDataExchangeRequestId(UUID.randomUUID().toString())
                 .build();
 
         ReportedDemandAndCapacityNotification notification = ReportedDemandAndCapacityNotification.builder().notificationId(notificationId).build();
