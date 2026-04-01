@@ -10,11 +10,7 @@ meta {
 get {
   url: {{DTR_EDR_ENDPOINT}}/lookup/shells?assetIds={{ASSET_IDS_QUERY}}
   body: none
-  auth: inherit
-}
-
-params:query {
-  assetIds: {{ASSET_IDS_QUERY}}
+  auth: none
 }
 
 headers {

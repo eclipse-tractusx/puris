@@ -26,6 +26,7 @@ The **need for configuration updates** is **marked bold**.
 - Added EDC offering for SingleLevelBomAsPlanned ([#1102](https://github.com/eclipse-tractusx/puris/pull/1102))
 - Added frontend implementation for material relations ([#1113](https://github.com/eclipse-tractusx/puris/pull/1113))
 - Added Bruno tests for SingleLevelBomAsPlanned ([#1124](https://github.com/eclipse-tractusx/puris/pull/1124))
+
 ### Changed
 
 - switch to ssi-dim-wallet-stub instead of own mock-util-service (now DCP 1.0 is used) ([#1066](https://github.com/eclipse-tractusx/puris/pull/1066))
