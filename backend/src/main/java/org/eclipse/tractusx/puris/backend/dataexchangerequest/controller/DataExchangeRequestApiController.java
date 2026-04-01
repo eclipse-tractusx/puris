@@ -69,7 +69,11 @@ public class DataExchangeRequestApiController {
             var request = objectMapper.readValue(
                 body.get("content").get("dataExchangeRequest").toString(),
                 DataExchangeRequestSamm.class);
-            dataExchangeRequestApiService.handleIncomingDataExchangeRequest(bpnl, request);
+            var result = dataExchangeRequestApiService.handleIncomingDataExchangeRequest(bpnl, request);
+            if (result == null) {
+                log.warn("Failed to create ReportedDataExchangeRequest from incoming request");
+                return ResponseEntity.badRequest().build();
+            }
             log.info("Created ReportedDataExchangeRequest from incoming request");
         } catch (Exception e) {
             log.warn("Rejecting invalid request body at DataExchangeRequest request 1.0.0 endpoint");

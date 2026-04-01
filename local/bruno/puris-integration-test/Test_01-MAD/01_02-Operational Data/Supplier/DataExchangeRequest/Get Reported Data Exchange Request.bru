@@ -5,13 +5,13 @@ meta {
 }
 
 get {
-  url: {{CUSTOMER_PURIS_BACKEND}}/catena/data-exchange-request/reported
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/data-exchange-request/reported
   body: none
   auth: none
 }
 
 headers {
-  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
 }
 
 script:pre-request {
