@@ -104,7 +104,7 @@ databaseChangeLog:
                     constraints:
                       nullable: false
                       primaryKey: true
-                      primaryKeyName: item_stock_anonymized_contract_mapping_pkey
+                      primaryKeyName: data_exchange_request_contract_mapping_pkey
                     name: partner_bpnl
                     type: VARCHAR(255)
               tableName: data_exchange_request_contract_mapping
@@ -162,20 +162,6 @@ databaseChangeLog:
           - addForeignKeyConstraint:
               baseTableName: reported_data_exchange_request
               baseColumnNames: notification_uuid
-              referencedTableName: reported_demand_and_capacity_notification
+              referencedTableName: own_demand_and_capacity_notification
               referencedColumnNames: uuid
               constraintName: fk_reported_data_exchange_request_notification
-  - changeSet:
-      id: "3"
-      author: OlgaIvkovic
-      changes:
-        - dropForeignKeyConstraint:
-            baseTableName: reported_data_exchange_request
-            constraintName: fk_reported_data_exchange_request_notification
-
-        - addForeignKeyConstraint:
-            baseTableName: reported_data_exchange_request
-            baseColumnNames: notification_uuid
-            referencedTableName: own_demand_and_capacity_notification
-            referencedColumnNames: uuid
-            constraintName: fk_reported_data_exchange_request_notification

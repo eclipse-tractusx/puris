@@ -38,7 +38,7 @@ public class ReportedDataExchangeRequestService  extends DataExchangeRequestServ
             throw new IllegalArgumentException("Invalid data exchange request");
         }
         if (repository.findAll().stream().filter(existing -> existing.equals(reportedDataExchangeRequest)).findFirst().isPresent()) {
-            throw new KeyAlreadyExistsException("Notification already exists");
+            throw new KeyAlreadyExistsException("Data exchange request already exists");
         }
         return repository.save(reportedDataExchangeRequest);
     }

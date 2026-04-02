@@ -49,7 +49,7 @@ public class DataExchangeRequestApiService {
     private ObjectMapper objectMapper;
 
     public static final String DATA_EXCHANGE_REQUEST_CONTEXT = "CX-DataExchangeRequestReceiveAPI-Receive:1.0.0";
-    public static final String MESSAGE_HEADER_VERSION = "1.0.0";
+    public static final String MESSAGE_HEADER_VERSION = "3.0.0";
 
     public ReportedDataExchangeRequest handleIncomingDataExchangeRequest(String bpnl, DataExchangeRequestSamm samm) {
         Partner partner = partnerService.findByBpnl(bpnl);
@@ -109,10 +109,8 @@ public class DataExchangeRequestApiService {
         header.put("messageId", UUID.randomUUID().toString());
         header.put("sentDateTime", new Date().toString());
         header.put("version", MESSAGE_HEADER_VERSION);
-        var content = objectMapper.createObjectNode();
-        body.set("content", content);
         var samm = sammMapper.ownDataExchangeRequestToSamm(request);
-        content.set("dataExchangeRequest", objectMapper.convertValue(samm, JsonNode.class));
+        body.set("content", objectMapper.convertValue(samm, JsonNode.class));
         return body;
     }
     

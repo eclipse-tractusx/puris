@@ -1721,14 +1721,6 @@ paths:
     get:
       description: Get all reported data exchange requests.
       operationId: getAllReportedDataExchangeRequest
-      parameters:
-      - in: query
-        name: partnerBpnl
-        required: false
-        schema:
-          additionalProperties: false
-          maxItems: 50
-          type: string
       responses:
         '200':
           content:

@@ -18,13 +18,11 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.controller;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
-import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.DataExchangeRequestDto;
@@ -50,7 +48,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -89,9 +86,6 @@ public class DataExchangeRequestController {
         }
 
         Partner partner = notification.getPartner();
-         if (partner == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referenced notification has no associated partner.");
-        }
 
         OwnDataExchangeRequest ownDataExchangeRequest = modelMapper.map(requestDto, OwnDataExchangeRequest.class);
         ownDataExchangeRequest.setNotification(notification);
@@ -111,8 +105,7 @@ public class DataExchangeRequestController {
     @GetMapping("reported")
     @ResponseBody
     @Operation(summary = "Get all reported data exchange requests", description = "Get all reported data exchange requests.")
-    public List<DataExchangeRequestDto> getAllReportedDataExchangeRequest(Optional<@Pattern(regexp = PatternStore.BPNL_STRING) String> partnerBpnl) {
-        log.info("Received request to get all reported data exchange requests with partner BPNL filter: " + partnerBpnl.orElse("none"));
+    public List<DataExchangeRequestDto> getAllReportedDataExchangeRequest() {
         return reportedDataExchangeRequestService.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
     }
 

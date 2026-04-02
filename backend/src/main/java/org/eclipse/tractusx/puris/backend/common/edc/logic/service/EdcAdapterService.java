@@ -19,7 +19,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +39,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
@@ -563,102 +564,72 @@ public class EdcAdapterService {
     }
 
     private JsonNode postNotificationToPartner(Partner partner, AssetType type, JsonNode payload, int retries) {
-        if (retries < 0) {
-            return null;
-        }
-        boolean failed = true;
-        String partnerDspUrl = partner.getEdcUrl();
-        var assetId = switch (type) {
-            case NOTIFICATION -> variablesService.getNotificationApiAssetId();
-            default -> throw new IllegalArgumentException("Unsupported type " + type);
-        };
-        try {
-            String contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
-            if (contractId == null) {
-                log.info("Need Contract for " + type + " with " + partner.getBpnl());
-                if (negotiateContractForNotification(partner, type)) {
-                    contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
-                } else {
-                    log.error("Failed to contract for " + type + " with " + partner.getBpnl());
-                    return postNotificationToPartner(partner, type, payload, --retries);
-                }
-            }
-            // Request EdrToken
-            var transferResp = initiateProxyPullTransfer(partner, contractId, partnerDspUrl);
-            log.debug("Transfer Request {}", transferResp.toPrettyString());
-            String transferId = transferResp.get("@id").asText();
-            // try proxy pull and terminate request
-            try {
-                EdrDto edrDto = getAndAwaitEdrDto(transferId);
-                log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
-                if (edrDto == null) {
-                    log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
-                    return doNotificationPostRequest(type, partner, payload, --retries);
-                }
-                try (var response = postProxyPullRequest(edrDto.endpoint(), edrDto.authKey(), edrDto.authCode(), new ObjectMapper().writeValueAsString(payload))) {
-                    if (response.isSuccessful()) {
-                        String responseString = response.body().string();
-                        failed = false;
-                        return objectMapper.readTree(responseString);
-                    }
-                    log.info("Failed to post Notification to Partner.");
-                }
-            } finally {
-                if (transferId != null) {
-                    terminateTransfer(transferId);
-                }
-            }
-        } catch (Exception e) {
-            log.error("Error in Transfer Request for " + type + " at " + partner.getBpnl(), e);
-        } finally {
-            if (failed) {
-                log.warn("Invalidating Contract data for " + type + " with " + partner.getBpnl());
-                edcContractMappingService.putContractId(partner, type, assetId, partnerDspUrl, null);
-            }
-        }
-        return postNotificationToPartner(partner, type, payload, --retries);
+        return postToPartner(partner, type, payload, retries,
+            () -> switch (type) {
+                case NOTIFICATION -> variablesService.getNotificationApiAssetId();
+                default -> throw new IllegalArgumentException("Unsupported type " + type);
+            },
+            () -> negotiateContractForNotification(partner, type),
+            nextRetries -> doNotificationPostRequest(type, partner, payload, nextRetries),
+            "Failed to post Notification to Partner."
+        );
     }
 
     private JsonNode postDataExchangeRequestToPartner(Partner partner, AssetType type, JsonNode payload, int retries) {
+        return postToPartner(partner, type, payload, retries,
+            () -> switch (type) {
+                case DATA_EXCHANGE_REQUEST -> variablesService.getDataExchangeRequestReceiveApiAssetId();
+                default -> throw new IllegalArgumentException("Unsupported type " + type);
+            },
+            () -> negotiateContractForDataExchangeRequest(partner, type),
+            nextRetries -> doDataExchangePostRequest(type, partner, payload, nextRetries),
+            "Failed to post Data Exchange Request to Partner."
+        );
+    }
+
+    private JsonNode postToPartner(Partner partner, AssetType type, JsonNode payload, int retries, Supplier<String> assetIdSupplier, Supplier<Boolean> negotiateContract, Function<Integer, JsonNode> fallbackRequest, String postFailureMessage) {
         if (retries < 0) {
             return null;
         }
+
         boolean failed = true;
         String partnerDspUrl = partner.getEdcUrl();
-        var assetId = switch (type) {
-            case DATA_EXCHANGE_REQUEST -> variablesService.getDataExchangeRequestReceiveApiAssetId();
-            default -> throw new IllegalArgumentException("Unsupported type " + type);
-        };
+        String assetId = assetIdSupplier.get();
+
         try {
             String contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
+
             if (contractId == null) {
-                log.info("Need Contract for " + type + " with " + partner.getBpnl());
-                if (negotiateContractForDataExchangeRequest(partner, type)) {
+                log.info("Need Contract for {} with {}", type, partner.getBpnl());
+                if (negotiateContract.get()) {
                     contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
                 } else {
-                    log.error("Failed to contract for " + type + " with " + partner.getBpnl());
-                    return postDataExchangeRequestToPartner(partner, type, payload, --retries);
+                    log.error("Failed to contract for {} with {}", type, partner.getBpnl());
+                    return postToPartner(partner, type, payload, retries - 1, assetIdSupplier, negotiateContract, fallbackRequest, postFailureMessage);
                 }
             }
-            // Request EdrToken
+
             var transferResp = initiateProxyPullTransfer(partner, contractId, partnerDspUrl);
             log.debug("Transfer Request {}", transferResp.toPrettyString());
             String transferId = transferResp.get("@id").asText();
-            // try proxy pull and terminate request
+
             try {
                 EdrDto edrDto = getAndAwaitEdrDto(transferId);
-                log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
+                log.info("Received EDR data for {} with {}", assetId, partner.getEdcUrl());
+
                 if (edrDto == null) {
-                    log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
-                    return doDataExchangePostRequest(type, partner, payload, --retries);
+                    log.error("Failed to obtain EDR data for {} with {}", assetId, partner.getEdcUrl());
+                    return fallbackRequest.apply(retries - 1);
                 }
-                try (var response = postProxyPullRequest(edrDto.endpoint(), edrDto.authKey(), edrDto.authCode(), new ObjectMapper().writeValueAsString(payload))) {
+
+                try (var response = postProxyPullRequest(edrDto.endpoint(), edrDto.authKey(), edrDto.authCode(), objectMapper.writeValueAsString(payload))) {
                     if (response.isSuccessful()) {
                         String responseString = response.body().string();
                         failed = false;
                         return objectMapper.readTree(responseString);
                     }
-                    log.info("Failed to post Data Exchange Request to Partner.");
+
+                    log.info(postFailureMessage);
                 }
             } finally {
                 if (transferId != null) {
@@ -666,14 +637,15 @@ public class EdcAdapterService {
                 }
             }
         } catch (Exception e) {
-            log.error("Error in Transfer Request for " + type + " at " + partner.getBpnl(), e);
+            log.error("Error in Transfer Request for {} at {}", type, partner.getBpnl(), e);
         } finally {
             if (failed) {
-                log.warn("Invalidating Contract data for " + type + " with " + partner.getBpnl());
+                log.warn("Invalidating Contract data for {} with {}", type, partner.getBpnl());
                 edcContractMappingService.putContractId(partner, type, assetId, partnerDspUrl, null);
             }
         }
-        return postDataExchangeRequestToPartner(partner, type, payload, --retries);
+
+        return postToPartner(partner, type, payload, retries - 1, assetIdSupplier, negotiateContract, fallbackRequest, postFailureMessage);
     }
 
     private JsonNode getSubmodelFromPartner(MaterialPartnerRelation mpr, AssetType type, DirectionCharacteristic direction, int retries) {
