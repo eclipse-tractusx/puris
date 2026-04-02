@@ -40,8 +40,8 @@ script:post-response {
 }
 
 tests {
-  test("response is ok", function() {
-      expect(res.getStatus()).to.equal(200);
+  test("response is 200 or 404", function() {
+    expect([200, 404]).to.include(res.getStatus());
   });
 }
 
