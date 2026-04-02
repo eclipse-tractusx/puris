@@ -82,7 +82,7 @@ public class EdcRequestBodyBuilder {
         var objectNode = getConnectorDiscoveryContextObject();
         objectNode.put("@type", "tx:ConnectorParamsDiscoveryRequest");
         objectNode.put("edc:counterPartyAddress", counterPartyDspUrl);
-        objectNode.put("edc:counterPartyId", counterPartyBpnl);
+        objectNode.put("tx:bpnl", counterPartyBpnl);
         log.debug("Built Dspace Version Params Request: \n" + objectNode.toPrettyString());
         return objectNode;
     }
