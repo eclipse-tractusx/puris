@@ -1747,15 +1747,50 @@ paths:
       summary: Creates a new own data exchange request
       tags:
       - data-exchange-request-controller
+  /data-exchange-request/reported:
+    get:
+      description: Get all reported data exchange requests.
+      operationId: getAllReportedDataExchangeRequest
+      parameters:
+      - in: query
+        name: partnerBpnl
+        required: false
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DataExchangeRequestDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all reported data exchange requests
+      tags:
+      - data-exchange-request-controller
   /data-exchange-request/request:
     post:
       operationId: postDataExchangeRequest
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/JsonNode'
               additionalProperties: false
+        required: true
       responses:
         '200':
           description: Ok
@@ -1763,8 +1798,8 @@ paths:
           description: Bad Request
         '500':
           description: Internal Server Error
-      summary: 'This endpoint receives the DemandAndCapacityNotification 2.0.0 requests.
-        This endpoint is meant to be accessed by partners via EDC only. '
+      summary: 'This endpoint receives the DataExchangeRequest 1.0.0 requests. This
+        endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - data-exchange-request-api-controller
   /data-exchange-request/{id}/approval:

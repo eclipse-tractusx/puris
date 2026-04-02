@@ -205,7 +205,7 @@ public class EdcAdapterService {
             variablesService.getDaysOfSupplySubmodelEndpoint(),
             AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID
         )));
-        log.info("Registration of DataExchangeRequest 2.0.0 asset successful {}", (assetRegistration = registerDataExchangeRequestAsset(
+        log.info("Registration of DataExchangeRequest 1.0.0 asset successful {}", (assetRegistration = registerDataExchangeRequestAsset(
             variablesService.getDataExchangeRequestReceiveApiAssetId(),
             variablesService.getDataExchangeRequestEndpoint()
         )));
@@ -233,6 +233,7 @@ public class EdcAdapterService {
         result &= createSubmodelContractDefinitionForPartner(AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDemandSubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDeliverySubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.NOTIFICATION.URN_SEMANTIC_ID, variablesService.getNotificationApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner(AssetType.DATA_EXCHANGE_REQUEST.URN_SEMANTIC_ID, variablesService.getDataExchangeRequestReceiveApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
         return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
     }
@@ -629,6 +630,63 @@ public class EdcAdapterService {
         return postNotificationToPartner(partner, type, payload, --retries);
     }
 
+    private JsonNode postDataExchangeRequestToPartner(Partner partner, AssetType type, JsonNode payload, int retries) {
+        if (retries < 0) {
+            return null;
+        }
+        boolean failed = true;
+        String partnerDspUrl = partner.getEdcUrl();
+        var assetId = switch (type) {
+            case DATA_EXCHANGE_REQUEST -> variablesService.getDataExchangeRequestReceiveApiAssetId();
+            default -> throw new IllegalArgumentException("Unsupported type " + type);
+        };
+        try {
+            String contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
+            if (contractId == null) {
+                log.info("Need Contract for " + type + " with " + partner.getBpnl());
+                if (negotiateContractForDataExchangeRequest(partner, type)) {
+                    contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
+                } else {
+                    log.error("Failed to contract for " + type + " with " + partner.getBpnl());
+                    return postDataExchangeRequestToPartner(partner, type, payload, --retries);
+                }
+            }
+            // Request EdrToken
+            var transferResp = initiateProxyPullTransfer(partner, contractId, partnerDspUrl);
+            log.debug("Transfer Request {}", transferResp.toPrettyString());
+            String transferId = transferResp.get("@id").asText();
+            // try proxy pull and terminate request
+            try {
+                EdrDto edrDto = getAndAwaitEdrDto(transferId);
+                log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
+                if (edrDto == null) {
+                    log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
+                    return doDataExchangePostRequest(type, partner, payload, --retries);
+                }
+                try (var response = postProxyPullRequest(edrDto.endpoint(), edrDto.authKey(), edrDto.authCode(), new ObjectMapper().writeValueAsString(payload))) {
+                    if (response.isSuccessful()) {
+                        String responseString = response.body().string();
+                        failed = false;
+                        return objectMapper.readTree(responseString);
+                    }
+                    log.info("Failed to post Data Exchange Request to Partner.");
+                }
+            } finally {
+                if (transferId != null) {
+                    terminateTransfer(transferId);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error in Transfer Request for " + type + " at " + partner.getBpnl(), e);
+        } finally {
+            if (failed) {
+                log.warn("Invalidating Contract data for " + type + " with " + partner.getBpnl());
+                edcContractMappingService.putContractId(partner, type, assetId, partnerDspUrl, null);
+            }
+        }
+        return postDataExchangeRequestToPartner(partner, type, payload, --retries);
+    }
+
     private JsonNode getSubmodelFromPartner(MaterialPartnerRelation mpr, AssetType type, DirectionCharacteristic direction, int retries) {
         if (retries < 0) {
             return null;
@@ -749,6 +807,17 @@ public class EdcAdapterService {
         var data = postNotificationToPartner(partner, type, body, retries);
         if (data == null) {
             return doNotificationPostRequest(type, partner, body, --retries);
+        }
+        return data;
+    }
+
+    public JsonNode doDataExchangePostRequest(AssetType type, Partner partner, JsonNode body, int retries) {
+        if (retries < 0) {
+            return null;
+        }
+        var data = postDataExchangeRequestToPartner(partner, type, body, retries);
+        if (data == null) {
+            return doDataExchangePostRequest(type, partner, body, --retries);
         }
         return data;
     }
@@ -1099,6 +1168,16 @@ public class EdcAdapterService {
             EdcRequestBodyBuilder.CX_TAXO_NAMESPACE + "DemandAndCapacityNotificationApi"
         );
         return negotiateContract(partner, variablesService.getNotificationApiAssetId(), type, partner.getEdcUrl(), equalFilters);
+    }
+
+    public boolean negotiateContractForDataExchangeRequest(Partner partner, AssetType type) {
+        Map<String, String> equalFilters = new HashMap<>();
+        equalFilters.put(EdcRequestBodyBuilder.CX_COMMON_NAMESPACE + "version", "1.0");
+        equalFilters.put(
+            "'" + EdcRequestBodyBuilder.DCT_NAMESPACE + "type'.'@id'",
+            EdcRequestBodyBuilder.CX_TAXO_NAMESPACE + "DataExchangeRequestReceiveApi"
+        );
+        return negotiateContract(partner, variablesService.getDataExchangeRequestReceiveApiAssetId(), type, partner.getEdcUrl(), equalFilters);
     }
 
     public boolean negotiateContract(Partner partner, String assetId, AssetType type, String dspUrl, Map<String, String> equalFilters) {
