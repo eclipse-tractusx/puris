@@ -26,6 +26,7 @@ The **need for configuration updates** is **marked bold**.
 - Added EDC offering for SingleLevelBomAsPlanned ([#1102](https://github.com/eclipse-tractusx/puris/pull/1102))
 - Added unit tests for SingleLevelBomAsPlanned ([#1121](https://github.com/eclipse-tractusx/puris/pull/1121))
 - Added frontend implementation for material relations ([#1113](https://github.com/eclipse-tractusx/puris/pull/1113))
+- Added Bruno tests for SingleLevelBomAsPlanned ([#1124](https://github.com/eclipse-tractusx/puris/pull/1124))
 
 ### Changed
 
