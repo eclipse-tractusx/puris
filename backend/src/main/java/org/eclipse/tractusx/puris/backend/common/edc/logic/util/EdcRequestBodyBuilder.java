@@ -294,12 +294,12 @@ public class EdcRequestBodyBuilder {
             case POLICY_PROFILE_2405 -> constraints.add(new PolicyConstraint(
                 profileVersion.getConstants().CX_POLICY_NAMESPACE + "UsagePurpose",
                 "eq",
-                variablesService.getPurisPurposeWithVersion()
+                purpose
             ));
             case POLICY_PROFILE_2509 -> constraints.add(new PolicyConstraint(
                 CX_POLICY_NAMESPACE + "UsagePurpose",
                 "isAnyOf",
-                List.of(variablesService.getPurisPurposeWithVersion())
+                List.of(purpose)
             ));
         }
 

@@ -32,6 +32,7 @@ import okhttp3.ResponseBody;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DspProtocolVersionEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.DspaceVersionParams;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
+import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
@@ -77,6 +78,12 @@ public class EdcAdapterServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
+        edcRequestBodyBuilder = new EdcRequestBodyBuilder(
+            new DtrSecurityConfiguration(),
+            variablesService,
+            objectMapper
+        );
 
         edcAdapterService = new EdcAdapterService(
             objectMapper,
@@ -223,7 +230,6 @@ public class EdcAdapterServiceTest {
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
-        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
         when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         // then
@@ -280,11 +286,6 @@ public class EdcAdapterServiceTest {
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
         invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
 
-        // when
-        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
-        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
-        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
-
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
@@ -303,11 +304,6 @@ public class EdcAdapterServiceTest {
         JsonNode invalidJsonNode = objectMapper.readTree(input);
         invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
         System.out.println(invalidJsonNode.toPrettyString());
-
-        // when
-        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
-        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
-        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
@@ -363,9 +359,6 @@ public class EdcAdapterServiceTest {
             .when(edcAdapterService)
             .sendPostRequest(any(), any());
 
-        when(edcRequestBodyBuilder.buildDspaceVersionParamsRequest(any(), any()))
-        .thenReturn(objectMapper.createObjectNode());
-
         // then
         DspaceVersionParams actualDspaceVersionParams = edcAdapterService.getPartnerDspaceVersionParams(partnerBpnl, partnerDspUrl);
 
@@ -395,9 +388,6 @@ public class EdcAdapterServiceTest {
         doReturn(mockResponse)
             .when(edcAdapterService)
             .sendPostRequest(any(), any());
-
-        when(edcRequestBodyBuilder.buildDspaceVersionParamsRequest(any(), any()))
-        .thenReturn(objectMapper.createObjectNode());
 
         // then
         DspaceVersionParams actualDspaceVersionParams = edcAdapterService.getPartnerDspaceVersionParams(partnerBpnl, partnerDspUrl);
