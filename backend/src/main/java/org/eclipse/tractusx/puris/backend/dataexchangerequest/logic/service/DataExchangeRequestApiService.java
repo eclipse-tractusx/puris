@@ -17,12 +17,9 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
-
 import java.util.Date;
 import java.util.UUID;
-
 import javax.management.openmbean.KeyAlreadyExistsException;
-
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
@@ -33,10 +30,8 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -54,7 +49,7 @@ public class DataExchangeRequestApiService {
     private ObjectMapper objectMapper;
 
     public static final String DATA_EXCHANGE_REQUEST_CONTEXT = "CX-DataExchangeRequestReceiveAPI-Receive:1.0.0";
-    public static final String MESSAGE_HEADER_VERSION = "1.0.0";
+    public static final String MESSAGE_HEADER_VERSION = "3.0.0";
 
     public ReportedDataExchangeRequest handleIncomingDataExchangeRequest(String bpnl, DataExchangeRequestSamm samm) {
         Partner partner = partnerService.findByBpnl(bpnl);
@@ -114,10 +109,8 @@ public class DataExchangeRequestApiService {
         header.put("messageId", UUID.randomUUID().toString());
         header.put("sentDateTime", new Date().toString());
         header.put("version", MESSAGE_HEADER_VERSION);
-        var content = objectMapper.createObjectNode();
-        body.set("content", content);
         var samm = sammMapper.ownDataExchangeRequestToSamm(request);
-        content.set("dataExchangeRequest", objectMapper.convertValue(samm, JsonNode.class));
+        body.set("content", objectMapper.convertValue(samm, JsonNode.class));
         return body;
     }
     

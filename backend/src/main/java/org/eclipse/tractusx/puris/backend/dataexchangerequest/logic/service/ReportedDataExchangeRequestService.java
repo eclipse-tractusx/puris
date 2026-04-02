@@ -18,9 +18,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 import java.util.function.Function;
-
 import javax.management.openmbean.KeyAlreadyExistsException;
-
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.ReportedDataExchangeRequestRepository;
 import org.springframework.stereotype.Service;
@@ -40,7 +38,7 @@ public class ReportedDataExchangeRequestService  extends DataExchangeRequestServ
             throw new IllegalArgumentException("Invalid data exchange request");
         }
         if (repository.findAll().stream().filter(existing -> existing.equals(reportedDataExchangeRequest)).findFirst().isPresent()) {
-            throw new KeyAlreadyExistsException("Notification already exists");
+            throw new KeyAlreadyExistsException("Data exchange request already exists");
         }
         return repository.save(reportedDataExchangeRequest);
     }
