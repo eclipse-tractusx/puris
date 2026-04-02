@@ -80,7 +80,7 @@ public class DataExchangeApprovalControllerTest {
         OwnDataExchangeApproval approval = new OwnDataExchangeApproval();
         approval.setDataExchangeRequest(reportedRequest);
         approval.setApprovedTypes(List.of(RequestedTypeEnumeration.values()[0]));
-        approval.setIsFinalized(true);
+        approval.setFinalized(true);
         return approval;
     }
     

@@ -17,7 +17,6 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -58,7 +57,7 @@ public abstract class DataExchangeApproval {
 
     @NotNull
     @Column(name = "is_finalized", nullable = false)
-    private Boolean isFinalized;
+    private boolean isFinalized;
 
     @NotNull
     protected List<RequestedTypeEnumeration> approvedTypes;
@@ -89,7 +88,7 @@ public abstract class DataExchangeApproval {
 
         final DataExchangeApproval that = (DataExchangeApproval) o;
         return this.getDataExchangeRequest().getUuid().equals(that.getDataExchangeRequest().getUuid()) &&
-            this.getIsFinalized().equals(that.getIsFinalized()) &&
+            this.isFinalized() == that.isFinalized() &&
             Objects.equals(this.getApprovedTypes(), that.getApprovedTypes());
     }
 

@@ -40,7 +40,7 @@ public class DataExchangeApprovalDto implements Serializable {
     private UUID uuid;
 
     @NotNull
-    private Boolean isFinalized;
+    private boolean isFinalized;
 
     private Date timestamp;
 

@@ -17,7 +17,6 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangeapproval.controller;
-
 import java.util.UUID;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
@@ -32,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -40,12 +40,13 @@ import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("data-exchange-request")
+@Slf4j
 public class DataExchangeApprovalController {
 
     @Autowired
@@ -82,9 +83,9 @@ public class DataExchangeApprovalController {
             responseDto.setDataExchangeRequestId(reportedRequest.getUuid());
             return responseDto;
         } catch (KeyAlreadyExistsException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Own Data Exchange Approval already exists.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Own Data Exchange Approval already exists." + e.getMessage());
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Own Data Exchange Approval is invalid.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Own Data Exchange Approval is invalid." + e.getMessage());
         }
     }
     
