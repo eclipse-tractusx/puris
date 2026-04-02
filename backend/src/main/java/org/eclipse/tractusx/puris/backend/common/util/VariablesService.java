@@ -21,10 +21,9 @@
  */
 package org.eclipse.tractusx.puris.backend.common.util;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import lombok.Getter;
 
 @Getter
 @Service

@@ -18,9 +18,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 import java.util.function.Function;
-
 import javax.management.openmbean.KeyAlreadyExistsException;
-
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.ReportedDataExchangeRequestRepository;
 import org.springframework.stereotype.Service;
