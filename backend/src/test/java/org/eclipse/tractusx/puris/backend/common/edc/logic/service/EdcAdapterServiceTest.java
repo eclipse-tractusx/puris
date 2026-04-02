@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -24,52 +26,67 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DspProtocolVersionEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.DspaceVersionParams;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.lang.reflect.Field;
+import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class EdcAdapterServiceTest {
 
     @Mock
     private VariablesService variablesService;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     @Mock
     private EdcRequestBodyBuilder edcRequestBodyBuilder;
 
     @Mock
     private EdcContractMappingService edcContractMappingService;
 
-    @InjectMocks
+    // use setup to inject mocks on our own
     private EdcAdapterService edcAdapterService;
+
+    @Mock
+    private VariablesService variableService;
 
     private final JsonLdUtils jsonLdUtils = new JsonLdUtils();
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
 
-        // make variablesService mockable
-        Field field = EdcAdapterService.class.getDeclaredField("variablesService");
-        field.setAccessible(true);
-        field.set(edcAdapterService, variablesService);
-        Field field2 = EdcAdapterService.class.getDeclaredField("edcRequestBodyBuilder");
-        field2.setAccessible(true);
-        field2.set(edcAdapterService, edcRequestBodyBuilder);
+        edcAdapterService = new EdcAdapterService(
+            objectMapper,
+            variablesService,
+            edcRequestBodyBuilder,
+            edcContractMappingService,
+            jsonLdUtils
+        );
+
+        edcAdapterService = org.mockito.Mockito.spy(edcAdapterService);
     }
 
     /**
@@ -126,6 +143,10 @@ public class EdcAdapterServiceTest {
         validJsonNode = jsonLdUtils.expand(validJsonNode);
         System.out.println(validJsonNode.toPrettyString());
 
+        // per specifciation jsonLd wraps into an array if multiple entries, thus take it.
+        if (validJsonNode.isArray()) {
+            validJsonNode = validJsonNode.get(0);
+        }
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
@@ -170,7 +191,7 @@ public class EdcAdapterServiceTest {
             "              \"@id\" : \"cx-policy:UsagePurpose\"\n" +
             "            },\n" +
             "            \"odrl:operator\" : {\n" +
-            "              \"@id\" : \"odrl:eq\"\n" +
+            "              \"@id\" : \"odrl:isAnyOf\"\n" +
             "            },\n" +
             "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
             "          } ]\n" +
@@ -194,6 +215,11 @@ public class EdcAdapterServiceTest {
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
         invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
+
+        // per specifciation jsonLd wraps into an array if multiple entries, thus take it.
+        if (invalidJsonNode.isArray()) {
+            invalidJsonNode = invalidJsonNode.get(0);
+        }
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
@@ -229,7 +255,7 @@ public class EdcAdapterServiceTest {
             "              \"@id\" : \"cx-policy:FrameworkAgreement\"\n" +
             "            },\n" +
             "            \"odrl:operator\" : {\n" +
-            "              \"@id\" : \"odrl:eq\"\n" +
+            "              \"@id\" : \"odrl:isAnyOf\"\n" +
             "            },\n" +
             "            \"odrl:rightOperand\" : \"DataExchangeGovernance:1.0\"\n" +
             "          }\n" +
@@ -288,6 +314,96 @@ public class EdcAdapterServiceTest {
         assertFalse(result);
     }
 
+    /**
+     * checks whether the dspaceVersionParams is correctly built based on jsonLd
+     *
+     * @throws IoException if request fails
+     */
+    @Test
+    public void dspaceVersionParamsEndpointGiven_getDspaceVersionParams_returnsEndpointInformation() throws IOException {
+        // given
+        String expectedCounterPartyAddress = "https://provider.domain.com/api/dsp/2025-1";
+        String expectedProtocolString = "dataspace-protocol-http:2025-1";
+        String expectedCounterPartyId = "did:web:one-example.com"; 
+        DspaceVersionParams expectedDspaceVerstionParams = new DspaceVersionParams(
+            expectedCounterPartyId, 
+            expectedCounterPartyAddress,
+            DspProtocolVersionEnum.fromVersion(expectedProtocolString));
+
+        String validJsonLd = "[{\n" + //
+                        "  \"@context\": {\n" + //
+                        "    \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" + //
+                        "    \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\"\n" + //
+                        "  },\n" + //
+                        "  \"edc:counterPartyId\": \"" + expectedCounterPartyId + "\",\n" + //
+                        "  \"edc:counterPartyAddress\": \"" + expectedCounterPartyAddress + "\",\n" + //
+                        "  \"edc:protocol\": \"" + expectedProtocolString + "\"\n" + //
+                        "}, {\n" + //
+                        "  \"@context\": {\n" + //
+                        "    \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" + //
+                        "    \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\"\n" + //
+                        "  },\n" + //
+                        "  \"edc:counterPartyId\": \"http://other-ignored-connector.com/v1/dsp\",\n" + //
+                        "  \"edc:counterPartyAddress\": \"BPNL1111111111XX\",\n" + //
+                        "  \"edc:protocol\": \"" + DspProtocolVersionEnum.V_0_8.getVersion() + "\"\n" + //
+                        "}]";
+
+        String partnerBpnl = "BPNL4444444444XX";
+        String partnerDspUrl = "http://customer-control-plane:8184/api/v1/dsp"; 
+
+        // when
+        Response mockResponse = mock(Response.class);
+        ResponseBody mockBody = mock(ResponseBody.class);
+        when(mockResponse.code()).thenReturn(200);
+        when(mockResponse.isSuccessful()).thenReturn(true);
+        when(mockResponse.body()).thenReturn(mockBody);
+        when(mockBody.string()).thenReturn(validJsonLd);
+
+        doReturn(mockResponse)
+            .when(edcAdapterService)
+            .sendPostRequest(any(), any());
+
+        when(edcRequestBodyBuilder.buildDspaceVersionParamsRequest(any(), any()))
+        .thenReturn(objectMapper.createObjectNode());
+
+        // then
+        DspaceVersionParams actualDspaceVersionParams = edcAdapterService.getPartnerDspaceVersionParams(partnerBpnl, partnerDspUrl);
+
+        assertEquals(expectedDspaceVerstionParams, actualDspaceVersionParams);
+    }
+
+    /**
+     * checks whether the dspaceVersionParams is correctly built as fallback when no endpoint is given
+     *
+     * @throws IoException if request fails
+     */
+    @Test
+    public void dspaceVersionParamsEndpointNotGiven_getDspaceVersionParams_returnsFallbackInformation() throws IOException {
+        
+        String partnerBpnl = "BPNL4444444444XX";
+        String partnerDspUrl = "http://customer-control-plane:8184/api/v1/dsp"; 
+
+        DspaceVersionParams expectedDspaceVerstionParams = new DspaceVersionParams(
+            partnerBpnl,
+            partnerDspUrl,
+            DspProtocolVersionEnum.V_0_8);
+
+        // when
+        Response mockResponse = mock(Response.class);
+        when(mockResponse.code()).thenReturn(404);
+
+        doReturn(mockResponse)
+            .when(edcAdapterService)
+            .sendPostRequest(any(), any());
+
+        when(edcRequestBodyBuilder.buildDspaceVersionParamsRequest(any(), any()))
+        .thenReturn(objectMapper.createObjectNode());
+
+        // then
+        DspaceVersionParams actualDspaceVersionParams = edcAdapterService.getPartnerDspaceVersionParams(partnerBpnl, partnerDspUrl);
+
+        assertEquals(expectedDspaceVerstionParams, actualDspaceVersionParams);
+    }
 
     private final static String unexpectedProhibition = "{\n" +
         "    \"@id\" : \"PartTypeInformationSubmodelApi@BPNL00000007RXRX\",\n" +
@@ -309,7 +425,7 @@ public class EdcAdapterServiceTest {
         "          }, {\n" +
         "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:UsagePurpose\"},\n" +
         "            \"odrl:operator\" : {\n" +
-        "              \"@id\" : \"odrl:eq\"\n" +
+        "              \"@id\" : \"odrl:isAnyOf\"\n" +
         "            },\n" +
         "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
         "          } ]\n" +
@@ -351,7 +467,7 @@ public class EdcAdapterServiceTest {
         "          }, {\n" +
         "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:UsagePurpose\"},\n" +
         "            \"odrl:operator\" : {\n" +
-        "              \"@id\" : \"odrl:eq\"\n" +
+        "              \"@id\" : \"odrl:isAnyOf\"\n" +
         "            },\n" +
         "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
         "          } ]\n" +

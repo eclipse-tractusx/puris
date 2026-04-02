@@ -22,11 +22,17 @@ package org.eclipse.tractusx.puris.backend.stock.logic.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ErpAdapterTriggerService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshError;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -125,7 +131,8 @@ public class ItemStockRequestApiService {
 
     }
 
-    public void doItemStockSubmodelReportedMaterialItemStockRequest(Partner partner, Material material) {
+    public RefreshResult doItemStockSubmodelReportedMaterialItemStockRequest(Partner partner, Material material) {
+        List<RefreshError> errors = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
             var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL, mpr, DirectionCharacteristic.OUTBOUND, 1);
@@ -135,10 +142,26 @@ public class ItemStockRequestApiService {
                 var stockPartner = stock.getPartner();
                 var stockMaterial = stock.getMaterial();
                 if (!partner.equals(stockPartner) || !material.equals(stockMaterial)) {
-                    log.warn("Received inconsistent data from " + partner.getBpnl() + "\n" + stocks);
-                    return;
+                    errors.add(new RefreshError(List.of("Received inconsistent data: partner or material mismatch (expected bpnl=%s, ownMaterialNumber=%s; received bpnl=%s, ownMaterialNumber=%s)".formatted(
+                        partner.getBpnl(),
+                        material.getOwnMaterialNumber(),
+                        stockPartner.getBpnl(),
+                        stockMaterial.getOwnMaterialNumber()
+                    ))));
+                    continue;
+                }
+
+                List<String> validationErrors = reportedMaterialItemStockService.validateWithDetails(stock);
+                if (!validationErrors.isEmpty()) {
+                    errors.add(new RefreshError(validationErrors));
                 }
             }
+            if (!errors.isEmpty()) {
+                log.warn("Validation errors found for ReportedMaterialItemStock request from partner {}: {}", 
+                        partner.getBpnl(), errors);
+                return new RefreshResult("Validation failed for reported materials", errors);
+            }
+            // delete older data:
             var oldStocks = reportedMaterialItemStockService.findByPartnerAndMaterial(partner, material);
             for (var oldStock : oldStocks) {
                 reportedMaterialItemStockService.delete(oldStock.getUuid());
@@ -149,12 +172,16 @@ public class ItemStockRequestApiService {
             log.info("Updated ReportedMaterialItemStocks for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
 
             materialService.updateTimestamp(material.getOwnMaterialNumber());
+            return new RefreshResult("Updated ReportedMaterialItemStocks for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), errors);
         } catch (Exception e) {
             log.error("Error in ReportedMaterialItemStockRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
+            errors.add(new RefreshError(List.of("System error: " + e.getMessage())));
+            return new RefreshResult("Error in ReportedMaterialItemStockRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), errors);
         }
     }
 
-    public void doItemStockSubmodelReportedProductItemStockRequest(Partner partner, Material material) {
+    public RefreshResult doItemStockSubmodelReportedProductItemStockRequest(Partner partner, Material material) {
+        List<RefreshError> errors = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
             if (mpr.getPartnerCXNumber() == null) {
@@ -168,9 +195,20 @@ public class ItemStockRequestApiService {
                 var stockPartner = stock.getPartner();
                 var stockMaterial = stock.getMaterial();
                 if (!partner.equals(stockPartner) || !material.equals(stockMaterial)) {
-                    log.warn("Received inconsistent data from " + partner.getBpnl() + "\n" + stocks);
-                    return;
+                    errors.add(new RefreshError(List.of("Received inconsistent data from " + partner.getBpnl() + "\n" + stocks)));
+                    continue;
                 }
+
+                List<String> validationErrors = reportedProductItemStockService.validateWithDetails(stock);
+                if (!validationErrors.isEmpty()) {
+                    errors.add(new RefreshError(validationErrors));
+                }
+            }
+
+            if (!errors.isEmpty()) {
+                log.warn("Validation errors found for ReportedProductItemStock request from partner {}: {}", 
+                        partner.getBpnl(), errors);
+                return new RefreshResult("Validation failed for reported item stocks", errors);
             }
             // delete older data:
             var oldStocks = reportedProductItemStockService.findByPartnerAndMaterial(partner, material);
@@ -183,8 +221,11 @@ public class ItemStockRequestApiService {
             log.info("Updated ReportedProductItemStocks for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
 
             materialService.updateTimestamp(material.getOwnMaterialNumber());
+            return new RefreshResult("Updated ReportedProductItemStocks for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), errors);
         } catch (Exception e) {
             log.error("Error in ReportedProductItemStockRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
+            errors.add(new RefreshError(List.of("System error: " + e.getMessage())));
+            return new RefreshResult("Error in ReportedProductItemStockRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), errors);
         }
     }
 

@@ -24,9 +24,9 @@ import { Box, capitalize, Stack, Typography } from '@mui/material';
 import { MaterialDetailsHeader } from './MaterialDetailsHeader';
 import { OwnSummaryPanel } from './SummaryPanel';
 import { CollapsibleSummary } from './CollapsibleSummary';
-import { DataCategory, useMaterialDetails } from '../hooks/useMaterialDetails';
+import { useMaterialDetails } from '../hooks/useMaterialDetails';
 import { useNotifications } from '@contexts/notificationContext';
-import { useDataModal } from '@contexts/dataModalContext';
+import { DataCategory, useDataModal } from '@contexts/dataModalContext';
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { groupBy } from '@util/helpers';
 import { DirectionType } from '@models/types/erp/directionType';
@@ -36,8 +36,9 @@ import { scheduleErpUpdateStocks } from '@services/stocks-service';
 import { NotFoundView } from '@views/errors/NotFoundView';
 import { Material } from '@models/types/data/stock';
 import { BPNS } from '@models/types/edc/bpn';
-import { useSubscription } from 'react-stomp-hooks';
+import { IMessage, useSubscription } from 'react-stomp-hooks';
 import { refreshPartnerData } from '@services/refresh-service';
+import { TextToClipboard } from '@components/ui/TextToClipboard';
 
 type SummaryContainerProps = {
     children: ReactNode;
@@ -56,6 +57,61 @@ function SummaryContainer({ children }: SummaryContainerProps) {
             <Stack sx={{ overflowX: 'auto', position: 'relative' }}>{children}</Stack>
         </Box>
     );
+}
+
+function makeErrorDownload(payloadText: string, materialNo: string) {
+  let contents: string;
+  try {
+    contents = JSON.stringify(JSON.parse(payloadText), null, 2);
+  } catch {
+    contents = JSON.stringify(
+      { material: materialNo, errors: [payloadText] },
+      null,
+      2
+    );
+  }
+
+  const blob = new Blob([contents], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const ts = new Date().toISOString().replace(/[:.]/g, '-');
+  const filename = `material-${materialNo}-refresh-errors-${ts}.json`;
+
+  return { url, filename };
+}
+
+function parseRefreshWsMessage(msg?: string): { ok: boolean; errors: string[] } {
+  const text = (msg ?? '').trim();
+  if (!text || text === 'SUCCESS') return { ok: true, errors: [] };
+
+  try {
+    const arr = JSON.parse(text) as unknown;
+    if (Array.isArray(arr)) {
+      const a = arr as any[];
+
+      const hasMessage = a.some(e => e && typeof e === 'object' && 'message' in e);
+      const errors = hasMessage
+        ? a.flatMap(entry => {
+            const msg = typeof entry?.message === 'string' ? entry.message.trim() : '';
+            const prefix = msg ? `${msg}: ` : '';
+            const errs = Array.isArray(entry?.errors) ? entry.errors : [];
+            return errs.flatMap((e: any) => {
+              if (Array.isArray(e?.errors)) {
+                return e.errors.filter((s: any) => typeof s === 'string' && s.length > 0)
+                               .map((s: string) => prefix + s);
+              }
+              return typeof e === 'string' && e.length > 0 ? [prefix + e] : [];
+            });
+          })
+        : (a as { errors?: string[] }[])
+            .flatMap(e => Array.isArray(e?.errors) ? e.errors! : [])
+            .filter(s => typeof s === 'string' && s.length > 0);
+      return { ok: errors.length === 0, errors: errors.length ? errors : [text] };
+    }
+    return { ok: false, errors: [text] };
+  } catch {
+    return { ok: false, errors: [text] };
+  }
 }
 
 type MaterialDetailsProps = {
@@ -131,25 +187,44 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
         };
     }, {}), [createSummaryByPartnerAndDirection, direction, expandablePartners]);
 
-    const handleRefresh = async () => {
-        refresh(['partner-data'])
-            .then(() => {
+    const handleRefreshMessage = async (message?: string) => {
+        const raw = (message ?? '').trim();
+        const { ok, errors } = parseRefreshWsMessage(raw);
+        try {
+            await refresh(['partner-data']);
+
+            if (ok) {
                 notify({
                     title: 'Partner data updated',
-                    description: `The partner data for ${material.name} was updated as requested`,
-                    severity: 'success'
-                })
-            })
-            .catch(() => {
+                    description: `The partner data for ${material.name} was updated as requested.`,
+                    severity: 'success',
+                });
+            } else {
+                const { url, filename } = makeErrorDownload(raw, material.ownMaterialNumber || '');
                 notify({
-                    title: 'Partner data refresh error',
-                    description: `There was an error refreshing the requested partner data. Please try manually reloading the page`,
-                    severity: 'error'
-                })
-            });
-        setIsRefreshing(false);
+                    title: 'Partner data updated with errors',
+                   description: (
+                        <span>
+                        Found {errors.length} issue{errors.length === 1 ? '' : 's'}.{' '}
+                        <a
+                            href={url}
+                            download={filename}
+                            onClick={() => {
+                                setTimeout(() => URL.revokeObjectURL(url), 3000);
+                            }}
+                        >
+                            Download error details
+                        </a>
+                        </span>
+                    ) as unknown as string,
+                    severity: 'error',
+                });
+            }
+        } finally {
+            setIsRefreshing(false);
+        }
     };
-    useSubscription('/topic/material/' + material.ownMaterialNumber, handleRefresh);
+    useSubscription('/topic/material/' + material.ownMaterialNumber, (msg: IMessage) => handleRefreshMessage(msg?.body));
     
     useEffect(() => {
         const callback = (category: DataCategory) => refresh([category]);
@@ -246,7 +321,9 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                 renderTitle={() => (
                                     <>
                                         <Typography variant="body1">{partner.name}</Typography>
-                                        <Typography variant="body3" color="#ccc">({partner.bpnl})</Typography>
+                                        <Typography variant="body3" color="#ccc">
+                                            ({<TextToClipboard text={partner.bpnl} variant="light"/>})
+                                        </Typography>
                                     </>
                                 )}
                             >
@@ -262,7 +339,9 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                             <>
                                                 <Typography variant="body2" color="#ccc" data-testid="partner-site-owner">{partner.name}/</Typography>
                                                 <Typography variant="body1" data-testid="partner-site-name">{site.name}</Typography>
-                                                <Typography variant="body3" color="#ccc" data-testid="partner-site-bpns">({site.bpns})</Typography>
+                                                <Typography variant="body3" color="#ccc" data-testid="partner-site-bpns">
+                                                    ({<TextToClipboard text={site.bpns} variant="light"/>})
+                                                </Typography>
                                             </>
                                         )}
                                         includeDaysOfSupply
@@ -306,7 +385,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                         <>
                                             <Typography variant="body1">{partner.name}</Typography>
                                             <Typography variant="body3" color="#ccc">
-                                                ({partner.bpnl})
+                                                ({<TextToClipboard text={partner.bpnl} variant="light"/>})
                                             </Typography>
                                         </>
                                     )}
@@ -326,7 +405,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                                                     </Typography>
                                                     <Typography variant="body1">{partnerSite.name}</Typography>
                                                     <Typography variant="body3" color="#ccc">
-                                                        ({partnerSite.bpns})
+                                                        ({<TextToClipboard text={partnerSite.bpns} variant="light"/>})
                                                     </Typography>
                                                 </>
                                             )}

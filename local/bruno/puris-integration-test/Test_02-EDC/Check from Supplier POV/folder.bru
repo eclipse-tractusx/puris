@@ -1,0 +1,13 @@
+meta {
+  name: Check from Supplier POV
+}
+
+auth {
+  mode: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{SUPPLIER_EDC_API_KEY}}
+  placement: header
+}

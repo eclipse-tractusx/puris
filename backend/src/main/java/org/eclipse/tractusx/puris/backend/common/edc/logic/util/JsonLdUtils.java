@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,57 +22,55 @@
 
 package org.eclipse.tractusx.puris.backend.common.edc.logic.util;
 
+import com.apicatalog.jsonld.JsonLd;
+import com.apicatalog.jsonld.JsonLdError;
+import com.apicatalog.jsonld.JsonLdErrorCode;
+import com.apicatalog.jsonld.JsonLdOptions;
+import com.apicatalog.jsonld.document.Document;
+import com.apicatalog.jsonld.document.JsonDocument;
+import com.apicatalog.jsonld.loader.DocumentLoader;
+import com.apicatalog.jsonld.loader.DocumentLoaderOptions;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+import jakarta.json.JsonStructure;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.edc.jsonld.TitaniumJsonLd;
-import org.eclipse.edc.spi.monitor.Monitor;
+
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 @Slf4j
 @Service
 public class JsonLdUtils {
 
     private final ObjectMapper MAPPER = new ObjectMapper();
+    private final DocumentLoader CACHED_LOADER_2405;
+    private final DocumentLoader CACHED_LOADER_2509;
+    private final JsonDocument DEFAULT_CONTEXT_DOCUMENT_2405;
+    private final JsonDocument DEFAULT_CONTEXT_DOCUMENT_2509;
     private final VariablesService variablesService = new VariablesService();
-    private final TitaniumJsonLd TITANIUM_JSON_LD = new TitaniumJsonLd(new MonitorAdapter());
-    private final TitaniumJsonLd TITANIUM_JSON_LD_2509 = new TitaniumJsonLd(new MonitorAdapter());
 
-   {
+    /**
+     * JsonLd processor having preloaded Eclipse Tractus-X related jsonLd documents.
+     */
+    public JsonLdUtils() {
+        // Map of contexts to load
+        final String prefix = "json-ld" + File.separator;
         var profile2405 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.getConstants();
         var profile2509 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2509.getConstants();
-        // register contexts for profile 24.05
-        TITANIUM_JSON_LD.registerContext(profile2405.CX_POLICY_CONTEXT);
-        TITANIUM_JSON_LD.registerContext(profile2405.ODRL_REMOTE_CONTEXT);
-        TITANIUM_JSON_LD.registerContext(profile2405.DCAT_NAMESPACE);
-        TITANIUM_JSON_LD.registerContext(profile2405.DSPACE_NAMESPACE);
-        TITANIUM_JSON_LD.registerContext(profile2405.EDC_NAMESPACE);
-        TITANIUM_JSON_LD.registerContext(profile2405.TX_AUTH_NAMESPACE);
-        TITANIUM_JSON_LD.registerContext(profile2405.TX_NAMESPACE);
-        // register contexts for profile 25.09
-        TITANIUM_JSON_LD_2509.registerContext(profile2509.CX_POLICY_CONTEXT);
-        TITANIUM_JSON_LD_2509.registerContext(profile2509.ODRL_REMOTE_CONTEXT);
-        TITANIUM_JSON_LD_2509.registerContext(profile2509.DCAT_NAMESPACE);
-        TITANIUM_JSON_LD_2509.registerContext(profile2509.DSPACE_NAMESPACE);
-        TITANIUM_JSON_LD_2509.registerContext(profile2509.EDC_NAMESPACE);
-        TITANIUM_JSON_LD_2509.registerContext(profile2509.TX_AUTH_NAMESPACE);
-        TITANIUM_JSON_LD_2509.registerContext(profile2509.TX_NAMESPACE);
-
-        final String prefix = "json-ld" + File.separator;
-        Map<String, String> filesMap = Map.of(
+        Map<String, String> filesMap2405 = Map.of(
             profile2405.CX_POLICY_CONTEXT, prefix + "cx-policy-2405.jsonld",
             profile2405.ODRL_REMOTE_CONTEXT, prefix + "odrl.jsonld",
             profile2405.DCAT_NAMESPACE, prefix + "dcat.jsonld",
@@ -89,100 +89,164 @@ public class JsonLdUtils {
             profile2509.TX_NAMESPACE, prefix + "tx-v1.jsonld"
         );
 
-        Function<String, URI> uriFunction = fileName -> {
-            Resource resource = new ClassPathResource(fileName);
-            try {
-                return resource.getURI();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        };
+        // Load only internal documments
+        this.CACHED_LOADER_2405 = new CachingDocumentLoader(filesMap2405);
 
-        for (var entry : filesMap.entrySet()) {
-            TITANIUM_JSON_LD.registerCachedDocument(entry.getKey(), uriFunction.apply(entry.getValue()));
-        }
-        for (var entry : filesMap2509.entrySet()) {
-            TITANIUM_JSON_LD_2509.registerCachedDocument(entry.getKey(), uriFunction.apply(entry.getValue()));
-        }
+        JsonObject contextObject2405 = Json.createObjectBuilder()
+            .add("edc", profile2405.EDC_NAMESPACE)
+            .add("dcat", profile2405.DCAT_NAMESPACE)
+            .add("odrl", profile2405.ODRL_REMOTE_CONTEXT)
+            .add("dspace", profile2405.DSPACE_NAMESPACE)
+            .add("tx", profile2405.TX_NAMESPACE)
+            .add("cx-policy", profile2405.CX_POLICY_CONTEXT)
+            .build();
+
+        JsonObject rootContext2405 = Json.createObjectBuilder()
+            .add("@context", contextObject2405)
+            .build();
+
+        this.DEFAULT_CONTEXT_DOCUMENT_2405 = JsonDocument.of(rootContext2405);
+
+        // Load only internal documments
+        this.CACHED_LOADER_2509 = new CachingDocumentLoader(filesMap2509);
+
+        JsonObject contextObject2509 = Json.createObjectBuilder()
+            .add("edc", profile2509.EDC_NAMESPACE)
+            .add("dcat", profile2509.DCAT_NAMESPACE)
+            .add("odrl", profile2509.ODRL_REMOTE_CONTEXT)
+            .add("dspace", profile2509.DSPACE_NAMESPACE)
+            .add("tx", profile2509.TX_NAMESPACE)
+            .add("cx-policy", profile2509.CX_POLICY_CONTEXT)
+            .build();
+
+        JsonObject rootContext2509 = Json.createObjectBuilder()
+            .add("@context", contextObject2509)
+            .build();
+
+        this.DEFAULT_CONTEXT_DOCUMENT_2509 = JsonDocument.of(rootContext2509);
     }
 
-    public ObjectNode expand(JsonNode node) {
+    public JsonNode expand(JsonNode node) {
         return expand(node, variablesService.getEdcProfileVersion());
     }
 
-    public ObjectNode expand(JsonNode node, PolicyProfileVersionEnumeration profile) {
-        var JSON_LD = switch (profile) {
-            case POLICY_PROFILE_2405 -> TITANIUM_JSON_LD;
-            case POLICY_PROFILE_2509 -> TITANIUM_JSON_LD_2509;
-        };
-        JsonReader jsonReader = Json.createReader(new StringReader(node.toString()));
-        var jakartaJson = jsonReader.readObject();
-        var expandedJakartaJson = JSON_LD.expand(jakartaJson).getContent();
-        try {
-            return (ObjectNode) MAPPER.readTree(expandedJakartaJson.toString());
+    
+    public JsonNode expand(JsonNode node, PolicyProfileVersionEnumeration profileVersion) {
+        try (JsonReader jsonReader = Json.createReader(new StringReader(node.toString()))){
+            
+            // transform from jackson to jakarta
+            JsonStructure jakartaJson = jsonReader.read();
+            JsonDocument document = JsonDocument.of(jakartaJson);
+
+            JsonLdOptions options = new JsonLdOptions();
+            var loader = profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405 ? CACHED_LOADER_2405 : CACHED_LOADER_2509;
+            options.setDocumentLoader(loader);
+
+            var expandedJakartaJson = JsonLd.expand(document)
+                .options(options)
+                .get();
+
+            // transform back from jakarto to jackson
+            return MAPPER.readTree(expandedJakartaJson.toString());
         } catch (Exception e) {
             log.error("Failure expanding json node: \n{}", node.toPrettyString(), e);
-            return null;
         }
+        return null;
     }
 
-    public ObjectNode compact(JsonNode node) {
+    /**
+     * compacts JSON-LD using the default context
+     * 
+     * @param node JsonNode (jackson) to compact
+     */
+    public JsonNode compact(JsonNode node) {
         return compact(node, variablesService.getEdcProfileVersion());
     }
 
-    public ObjectNode compact(JsonNode node, PolicyProfileVersionEnumeration profile) {
-        var JSON_LD = switch (profile) {
-            case POLICY_PROFILE_2405 -> TITANIUM_JSON_LD;
-            case POLICY_PROFILE_2509 -> TITANIUM_JSON_LD_2509;
-        };
-        JsonReader jsonReader = Json.createReader(new StringReader(node.toString()));
-        var jakartaJson = jsonReader.readObject();
-        var expandedJakartaJson = JSON_LD.compact(jakartaJson).getContent();
-        try {
-            return (ObjectNode) MAPPER.readTree(expandedJakartaJson.toString());
-        } catch (Exception e) {
-            log.error("Failure compacting json node: \n{}", node.toPrettyString(), e);
-            return null;
+    public JsonNode compact(JsonNode node, PolicyProfileVersionEnumeration profileVersion) {
+        var contextDocument = profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405 ? DEFAULT_CONTEXT_DOCUMENT_2405 : DEFAULT_CONTEXT_DOCUMENT_2509;
+        return compact(node, contextDocument, profileVersion);
+    }
+
+    /**
+     * compacts JSON-LD using a specific context
+     * 
+     * @param node JsonNode (jackson) to compact
+     * @param contextNode JsonNode (jackson) to use as context during compaction
+     */
+    public JsonNode compact(JsonNode node, JsonNode contextNode) {
+        return compact(node, contextNode, variablesService.getEdcProfileVersion());
+    }
+
+    /**
+     * compacts JSON-LD using a specific context
+     * 
+     * @param node JsonNode (jackson) to compact
+     * @param contextNode JsonNode (jackson) to use as context during compaction
+     */
+    public JsonNode compact(JsonNode node, JsonNode contextNode, PolicyProfileVersionEnumeration profileVersion) {
+        try (JsonReader contextReader = Json.createReader(new StringReader(contextNode.toString()))) {
+            JsonDocument contextDocument = JsonDocument.of(contextReader.read());
+            return compact(node, contextDocument, profileVersion);
         }
     }
 
-    private static class MonitorAdapter implements Monitor {
+    /**
+     * compacts a JsonNode
+     * 
+     * @param node JsonNode (Jackson) to compact
+     * @param contextDocument JsonDocument (jakarta) to use as context during compaction
+     */
+    private JsonNode compact(JsonNode node, JsonDocument contextDocument, PolicyProfileVersionEnumeration profileVersion) {
+        try (JsonReader jsonReader = Json.createReader(new StringReader(node.toString()))) {
+            JsonStructure jakartaJson = jsonReader.read();
+            JsonDocument document = JsonDocument.of(jakartaJson);
 
-        @Override
-        public void severe(Supplier<String> supplier, Throwable... errors) {
-            log.error(supplier.get());
-            if (errors != null) {
-                for (var error : errors) {
-                    log.error("{} \n{}", error.getMessage(), error.getStackTrace());
+            JsonLdOptions options = new JsonLdOptions();
+            var loader = profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405 ? CACHED_LOADER_2405 : CACHED_LOADER_2509;
+            options.setDocumentLoader(loader);
+
+            var compactedObject = JsonLd.compact(document, contextDocument)
+                .options(options)
+                .get();
+
+            return MAPPER.readTree(compactedObject.toString());
+        } catch (JsonLdError | IOException e) {
+            log.error("Failure compacting json node", e);
+        }
+        return null;
+    }
+
+    /**
+     * Internal Custom Loader that serves Contexts from ClassPath (memory)
+     * and falls back to HTTP for everything else.
+     */
+    private static class CachingDocumentLoader implements DocumentLoader {
+        private final Map<URI, Document> cache = new HashMap<>();
+
+        public CachingDocumentLoader(Map<String, String> filesMap) {
+            for (Map.Entry<String, String> entry : filesMap.entrySet()) {
+                try {
+                    URI uri = URI.create(entry.getKey());
+                    ClassPathResource resource = new ClassPathResource(entry.getValue());
+                    try (InputStream is = resource.getInputStream()) {
+                        // Parse the local file immediately into a JsonDocument
+                        JsonDocument doc = JsonDocument.of(Json.createReader(is).read());
+                        cache.put(uri, doc);
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to load cached JSON-LD context: {}", entry.getKey(), e);
                 }
             }
         }
 
         @Override
-        public void severe(Map<String, Object> data) {
-            for(var entry : data.entrySet()){
-                log.error(entry.getKey(), entry.getValue());
+        public Document loadDocument(URI url, DocumentLoaderOptions options) throws JsonLdError {
+            // Return cached document, if loaded
+            if (cache.containsKey(url)) {
+                return cache.get(url);
             }
-        }
-
-        @Override
-        public void warning(Supplier<String> supplier, Throwable... errors) {
-            log.warn(supplier.get());
-            if (errors != null) {
-                for (var error : errors) {
-                    log.warn("{} \n{}", error.getMessage(), error.getStackTrace());
-                }
-            }
-        }
-
-        @Override
-        public void info(Supplier<String> supplier, Throwable... errors) {
-            log.info(supplier.get(), (Object[]) errors);
-        }
-
-        @Override
-        public void debug(Supplier<String> supplier, Throwable... errors) {
-            log.debug(supplier.get(), (Object[]) errors);
-        }
+            throw new JsonLdError(JsonLdErrorCode.LOADING_DOCUMENT_FAILED, String.format("Document \"%s\" has not been found in cache. Due to security concerns, no remote file has been loaded.", url.toString()));
+          }
     }
 }

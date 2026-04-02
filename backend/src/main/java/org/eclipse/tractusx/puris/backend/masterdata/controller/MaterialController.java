@@ -21,13 +21,14 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Validator;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Base64;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import javax.management.openmbean.KeyAlreadyExistsException;
+
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialEntityDto;
@@ -35,15 +36,26 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRefre
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Base64;
-import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("materials")
@@ -71,31 +83,32 @@ public class MaterialController {
         @ApiResponse(responseCode = "409", description = "Material with the given ownMaterialNumber already exists."),
         @ApiResponse(responseCode = "500", description = "Internal Server error.")
     })
-    public ResponseEntity<?> createMaterial(@RequestBody MaterialEntityDto materialDto) {
+    public MaterialEntityDto createMaterial(@RequestBody MaterialEntityDto materialDto) {
         if(!validator.validate(materialDto).isEmpty()) {
             log.warn("Rejected invalid message body.");
-            return ResponseEntity.status(400).build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material is invalid.");
         }
         if (materialDto.getOwnMaterialNumber() == null || materialDto.getOwnMaterialNumber().isEmpty()) {
             // Cannot create material without ownMaterialNumber
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material information misses material identification.");
         }
         if (materialService.findByOwnMaterialNumber(materialDto.getOwnMaterialNumber()) != null) {
             // Cannot create material, ownMaterialNumber is already assigned
-            return new ResponseEntity<>(HttpStatusCode.valueOf(409));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Material already exists. Use PUT instead.");
         }
         Material createdMaterial;
         try {
-            createdMaterial = modelMapper.map(materialDto, Material.class);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
+            Material entity = modelMapper.map(materialDto, Material.class);
+            createdMaterial = materialService.create(entity);
+        } catch (KeyAlreadyExistsException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Material already exists. Use PUT instead.");
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material is invalid.");
+        } catch (IllegalStateException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
-        createdMaterial = materialService.create(createdMaterial);
-        if (createdMaterial == null) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(500));
-        }
-        return new ResponseEntity<>(HttpStatusCode.valueOf(200));
+        return modelMapper.map(createdMaterial, MaterialEntityDto.class);
     }
 
     @PreAuthorize("hasRole('PURIS_ADMIN')")
@@ -107,32 +120,29 @@ public class MaterialController {
         @ApiResponse(responseCode = "404", description = "No existing Material Entity found, no update was performed."),
         @ApiResponse(responseCode = "500", description = "Internal Server Error.")
     })
-    public ResponseEntity<?> updateMaterial(@RequestBody MaterialEntityDto materialDto) {
+    public MaterialEntityDto updateMaterial(@RequestBody MaterialEntityDto materialDto) {
         if(!validator.validate(materialDto).isEmpty()) {
             log.warn("Rejected invalid message body.");
-            return ResponseEntity.status(400).build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material is invalid.");
         }
         if (materialDto.getOwnMaterialNumber() == null || materialDto.getOwnMaterialNumber().isEmpty()) {
             // Cannot update material without ownMaterialNumber
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
-        }
-        Material existingMaterial = materialService.findByOwnMaterialNumber(materialDto.getOwnMaterialNumber());
-        if (existingMaterial == null) {
-            // Cannot update non-existent Material
-            return new ResponseEntity<>(HttpStatusCode.valueOf(404));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material information misses material identification.");
         }
         Material updatedMaterial;
         try {
-            updatedMaterial = modelMapper.map(materialDto, Material.class);
+            Material entity = modelMapper.map(materialDto, Material.class);
+            updatedMaterial = materialService.update(entity);
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(400));
-        }
-        updatedMaterial = materialService.update(updatedMaterial);
-        if (updatedMaterial == null) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(500));
+            log.error("Unexpected error while updating material", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
         }
 
-        return new ResponseEntity<>(HttpStatusCode.valueOf(200));
+        return modelMapper.map(updatedMaterial, MaterialEntityDto.class);
     }
 
     @GetMapping

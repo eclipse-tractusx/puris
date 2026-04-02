@@ -11,7 +11,7 @@ The subchapters give you an overview of needed configurations and how to get the
 respective deployment scenarios for further information.
 
 | Deployment Scenario                  | File                                                                              |
-|--------------------------------------|-----------------------------------------------------------------------------------|
+| ------------------------------------ | --------------------------------------------------------------------------------- |
 | Local / Spring                       | [application.properties](../../backend/src/main/resources/application.properties) |
 | Local / Docker Compose (Integration) | [docker-compose.yaml](../../local/docker-compose.yaml)                            |
 | Kubernetes / Helm                    | [README.md](../../charts/puris/README.md)                                         |
@@ -99,8 +99,8 @@ manage (all rights) client used by PURIS FOSS to create and manage digital twins
 In practice, the DTR reference implementation allows only one user, resulting in the following configuration:
 
 | Helm                       | Value to set                                                              |
-|----------------------------|---------------------------------------------------------------------------|
-| `clients.puris.id`        | ID of the manage client                                                   |
+| -------------------------- | ------------------------------------------------------------------------- |
+| `clients.puris.id`         | ID of the manage client                                                   |
 | `clients.puris.secret`     | Secret of the manage client                                               |
 | `clients.edc.id`           | ID of the manage client                                                   |
 | `clients.edc.secret.alias` | **Path to secret in the vault** accessed by the edc for the manage client |
@@ -155,7 +155,7 @@ The table contains
 the puris defaults for release R24.05.
 
 | Helm                                        | Docker                              | Configuration          |
-|---------------------------------------------|-------------------------------------|------------------------|
+| ------------------------------------------- | ----------------------------------- | ---------------------- |
 | backend.puris.frameworkagreement.credential | PURIS_FRAMEWORKAGREEMENT_CREDENTIAL | DataExchangeGovernance |
 | backend.puris.frameworkagreement.version    | PURIS_FRAMEWORKAGREEMENT_VERSION    | 1.0                    |
 
@@ -174,7 +174,7 @@ in [ARC42 - Chapter 8](../architecture/08_concepts.md)),
 the following properties need to be configured. The table contains the puris defaults for release R24.05.
 
 | Helm                          | Docker                | Configuration |
-|-------------------------------|-----------------------|---------------|
+| ----------------------------- | --------------------- | ------------- |
 | backend.puris.purpose.name    | PURIS_PURPOSE_NAME    | cx.puris.base |
 | backend.puris.purpose.version | PURIS_PURPOSE_VERSION | 1             |
 
@@ -187,7 +187,7 @@ of the current release._
 To use an ERP Adapter, you need to configure the information below `backend.puris.erpadapter`:
 
 | Helm                                     | Docker                           |
-|------------------------------------------|----------------------------------|
+| ---------------------------------------- | -------------------------------- |
 | backend.puris.erpadapter.enabled         | PURIS_ERPADAPTER_ENABLED         |
 | backend.puris.erpadapter.url             | PURIS_ERPADAPTER_URL             |
 | backend.puris.erpadapter.authkey         | PURIS_ERPADAPTER_AUTHKEY         |
@@ -201,6 +201,20 @@ whenever triggered. Thus, no further update will be done after n days of no trig
 - refreshinterval: defines in minutes after which time an update is performed for the scheduled updates.
 
 Refer to the [helm chart's README](../../charts/puris/README.md) for further information.
+
+## Configure Batch Update of Partner Related Data
+
+To use a batch to update the partner related data, you need to configure the information below `backend.puris.batch.partnerdataupdate`:
+
+| Helm                                                  | Docker                                               |
+| ----------------------------------------------------- | ---------------------------------------------------- |
+| backend.puris.batch.partnerdataupdate.enabled         | PURIS_BATCH_PARTNERDATAUPDATE_ENABLED                |
+| backend.puris.batch.partnerdataupdate.cron            | PURIS_BATCH_PARTNERDATAUPDATE_CRON                   |
+| backend.puris.batch.partnerdataupdate.cleanup.enabled | PURIS_BATCH_PARTNERDATAUPDATE_CLEANUP_ENABLED        |
+| backend.puris.batch.partnerdataupdate.cleanup.cron    | PURIS_BATCH_PARTNERDATAUPDATE_CLEANUP_CRON           |
+| backend.puris.batch.partnerdataupdate.retentiondays   | PURIS_BATCH_PARTNERDATAUPDATE_CLEANUP_RETENTION_DAYS |
+
+Please refer to helm charts [README.md](../../charts/puris/README.md) for further information. Cron definitions follow the common [crontab](https://www.manpagez.com/man/5/crontab/) definition.
 
 ## Rate Limiting using nginx
 
@@ -377,8 +391,8 @@ manually.
 You can use this collection as an example for the REST API calls.
 
 | Interface                       | Route                     | Purpose                                                                                                        |
-|---------------------------------|---------------------------|----------------------------------------------------------------------------------------------------------------|
-| Material                        | /materials                | Add materials that are flagged as material or product with your material number                                | 
+| ------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Material                        | /materials                | Add materials that are flagged as material or product with your material number                                |
 | Partner                         | /partner                  | Add partners (customers / suppliers) with sites and addresses and edc Urls                                     |
 | Site                            | /partners/putSite         | Adds a site to a partner including addresses                                                                   |
 | Relationship Partner & Material | /materialpartnerrelations | Connect material and partner incl. partner-related material numbers and wether they supply or buy the material |
@@ -400,7 +414,7 @@ One may use the `StockView` related respectively the operational interfaces list
 adding the master data to e.g. regularly update / overwrite the existing data.
 
 | Interface                  | Route                      | Purpose                                                                       |
-|----------------------------|----------------------------|-------------------------------------------------------------------------------|
+| -------------------------- | -------------------------- | ----------------------------------------------------------------------------- |
 | Product Stock              | /stockView/product-stocks  | Add stocks allocated to your customer                                         |
 | Material Stock             | /stockView/material-stocks | Add stocks allocated to your supplier                                         |
 | Short-Term Material Demand | /demand                    | Add allocated demands for your supplier                                       |

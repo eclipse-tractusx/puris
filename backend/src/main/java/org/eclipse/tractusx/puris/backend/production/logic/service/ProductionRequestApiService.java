@@ -26,15 +26,20 @@ import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshError;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedProduction;
 import org.eclipse.tractusx.puris.backend.production.logic.adapter.PlannedProductionSammMapper;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproductionsamm.PlannedProductionOutput;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -77,7 +82,8 @@ public class ProductionRequestApiService {
         return sammMapper.ownProductionToSamm(currentProduction, partner, material);
     }
 
-    public void doReportedProductionRequest(Partner partner, Material material) {
+    public RefreshResult doReportedProductionRequest(Partner partner, Material material) {
+        List<RefreshError> errors = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
             var data = edcAdapterService.doSubmodelRequest(AssetType.PRODUCTION_SUBMODEL, mpr, DirectionCharacteristic.OUTBOUND, 1);
@@ -87,10 +93,27 @@ public class ProductionRequestApiService {
                 var productionPartner = production.getPartner();
                 var productionMaterial = production.getMaterial();
                 if (!partner.equals(productionPartner) || !material.equals(productionMaterial)) {
-                    log.warn("Received inconsistent data from " + partner.getBpnl());
-                    return;
+                    errors.add(new RefreshError(List.of("Received inconsistent data: partner or material mismatch (expected bpnl=%s, ownMaterialNumber=%s; received bpnl=%s, ownMaterialNumber=%s)".formatted(
+                        partner.getBpnl(),
+                        material.getOwnMaterialNumber(),
+                        productionPartner.getBpnl(),
+                        productionMaterial.getOwnMaterialNumber()
+                    ))));
+                    continue;
+                }
+
+                List<String> validationErrors = reportedProductionService.validateWithDetails(production);
+                if (!validationErrors.isEmpty()) {
+                    errors.add(new RefreshError(validationErrors));
                 }
             }
+
+            if (!errors.isEmpty()) {
+                log.warn("Validation errors found for ReportedProduction request from partner {} for material {}: {}", 
+                        partner.getBpnl(), material.getOwnMaterialNumber(), errors);
+                return new RefreshResult("Validation failed for reported productions", errors);
+            }
+   
             // delete older data:
             var oldProductions = reportedProductionService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty(), Optional.empty());
             for (var oldProduction : oldProductions) {
@@ -99,11 +122,14 @@ public class ProductionRequestApiService {
             for (var newProduction : productions) {
                 reportedProductionService.create(newProduction);
             }
-            log.info("Updated ReportedProduction for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
-
+            log.info("Successfully updated ReportedProduction for {} and partner {}", 
+                        material.getOwnMaterialNumber(), partner.getBpnl());
             materialService.updateTimestamp(material.getOwnMaterialNumber());
+            return new RefreshResult("Successfully processed all reported productions", errors);
         } catch (Exception e) {
             log.error("Error in ReportedProductionRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
+            errors.add(new RefreshError(List.of("System error: " + e.getMessage())));
+            return new RefreshResult("System error occurred during processing", errors);
         }
     }
 }

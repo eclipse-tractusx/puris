@@ -1,5 +1,13 @@
 # Creating a local testing and development setup via Docker
 
+> [!NOTE] Disclaimer
+>
+> This setup is not secure. It also uses minimum identity:
+>
+> - keycloak has default users `puris_admin` and `puris_user` with password equal to name and is used for both roles
+> - the wallet is mocked by either [ssi-dim-wallet-stub](https://github.com/eclipse-tractusx/ssi-dim-wallet-stub/) (DCP >= 1.0) or local [mock-iam](./iam-mock/README.md) (DCP = 0.8)
+>
+
 This guide helps you to run PURIS for local demonstration and testing purposes. You can either choose to use
 the "Extended Run Instructions" or to use the "Run with simplified Deployment Script".
 
@@ -31,19 +39,7 @@ npm install
 
 ### Build PURIS
 
-Same as for the extended run build PURIS manually.
-
-```shell
-cd ../backend
-docker build -t puris-backend:dev .
-
-cd ../frontend
-docker build -t puris-frontend:dev .
-
-cd ../local
-```
-
-Then use the deployment script to fulfill common scenarios:
+Use the deployment script to run build PURIS and fulfill common scenarios:
 
 ```shell
 cd local
@@ -71,8 +67,11 @@ sh deploy.sh -i
 # redeploy puris but keep infrastructure and show logs of EDC, DTR, PURIS
 sh deploy.sh -l
 
-
+# Preserve existing images (skip backend/frontend rebuild)
+sh deploy.sh -p
 ```
+
+For local testing and development you will typically log in as either `puris_admin` or `puris_user` (username and password are identical).
 
 The script also checks if the respective services are healthy (sometimes simplified).
 

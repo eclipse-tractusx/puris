@@ -1,0 +1,139 @@
+#
+# Copyright (c) 2026 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: partner_data_update_batch_run
+      changes:
+        - createTable:
+            tableName: partner_data_update_batch_run
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: partner_data_update_batch_run_pkey
+              - column:
+                  name: start_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 2
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: partner_data_update_batch_run_entry
+      changes:
+        - createTable:
+            tableName: partner_data_update_batch_run_entry
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: partner_data_update_batch_run_entry_pkey
+              - column:
+                  name: batch_run_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: own_material_number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: partner_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: direction
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: information_type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: error_message
+                  type: TEXT
+  - changeSet:
+      id: 3
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: partner_data_update_batch_run_entry
+                - param:
+                    name: columnName
+                    value: batch_run_id
+                - param:
+                    name: foreignTableName
+                    value: partner_data_update_batch_run
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: partner_data_update_batch_run_entry
+            baseColumnNames: batch_run_id
+            referencedTableName: partner_data_update_batch_run
+            referencedColumnNames: id
+            constraintName: fk_partner_data_update_batch_run_entry_to_partner_data_update_batch_run
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            deferrable: false
+            initiallyDeferred: false
+            validate: true

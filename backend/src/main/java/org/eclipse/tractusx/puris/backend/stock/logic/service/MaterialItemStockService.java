@@ -45,8 +45,7 @@ public class MaterialItemStockService extends ItemStockService<MaterialItemStock
 
     @Override
     public boolean validate(MaterialItemStock materialItemStock) {
-        return basicValidation(materialItemStock).isEmpty() && validateLocalStock(materialItemStock).isEmpty()
-            && validateMaterialItemStock(materialItemStock).isEmpty();
+        return validateWithDetails(materialItemStock).isEmpty();
     }
 
     public List<String> validateWithDetails(MaterialItemStock materialItemStock) {

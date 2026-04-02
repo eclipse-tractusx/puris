@@ -175,4 +175,35 @@ public abstract class SupplyService<T extends Supply, TReported extends Supply, 
         }
         return daysOfSupply;
     }
+
+    protected List<String> basicValidation(Supply supply) {
+        List<String> errors = new ArrayList<>();
+        Partner ownPartnerEntity = partnerService.getOwnPartnerEntity();
+
+        if (supply.getMaterial() == null) {
+            errors.add("Missing Material.");
+        }
+        if (supply.getPartner() == null) {
+            errors.add("Missing Partner.");
+        }
+        if (supply.getDate() == null) {
+            errors.add("Missing date.");
+        }
+        if (supply.getStockLocationBPNS() == null) {
+            errors.add("Missing stock location BPNS.");
+        }
+        if (supply.getStockLocationBPNA() == null) {
+            errors.add("Missing stock location BPNA.");
+        }
+        if (supply.getPartner().equals(ownPartnerEntity)) {
+            errors.add(String.format("Partner cannot be the same as own partner entity '%s'.", supply.getPartner().getBpnl()));
+        }
+        if (supply.getPartner().getSites().stream().noneMatch(site ->
+                site.getBpns().equals(supply.getStockLocationBPNS()) ||
+                site.getAddresses().stream().noneMatch(address -> address.getBpna().equals(supply.getStockLocationBPNA()))
+            )) {
+            errors.add(String.format("Stock location '%s' and or stock address '%s' don't belong to each other or partner '%s'.", supply.getStockLocationBPNS(), supply.getStockLocationBPNA(), supply.getPartner().getBpnl()));
+        }
+        return errors;
+    }
 }

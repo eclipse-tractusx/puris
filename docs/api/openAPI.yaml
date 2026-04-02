@@ -711,9 +711,31 @@ components:
         productFlag:
           type: boolean
       type: object
+    MaterialPartnerRelationDto:
+      additionalProperties: false
+      properties:
+        ownMaterialNumber:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        partnerBpnl:
+          maxItems: 50
+          pattern: ^BPNL[0-9a-zA-Z]{12}$
+          type: string
+        partnerBuysMaterial:
+          type: boolean
+        partnerMaterialNumber:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        partnerSuppliesMaterial:
+          type: boolean
+      type: object
     MaterialStockDto:
       additionalProperties: false
       properties:
+        blocked:
+          type: boolean
         customerOrderNumber:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
@@ -810,6 +832,62 @@ components:
       - customerOrderId
       - customerOrderPositionId
       type: object
+    PageMetadata:
+      additionalProperties: false
+      properties:
+        number:
+          format: int64
+          type: integer
+        size:
+          format: int64
+          type: integer
+        totalElements:
+          format: int64
+          type: integer
+        totalPages:
+          format: int64
+          type: integer
+      type: object
+    Pageable:
+      additionalProperties: false
+      properties:
+        page:
+          format: int32
+          minimum: 0
+          type: integer
+        size:
+          format: int32
+          minimum: 1
+          type: integer
+        sort:
+          items:
+            maxItems: 50
+            type: string
+          maxItems: 50
+          type: array
+      type: object
+    PagedModelPartnerDataUpdateBatchRunDto:
+      additionalProperties: false
+      properties:
+        content:
+          items:
+            $ref: '#/components/schemas/PartnerDataUpdateBatchRunDto'
+          maxItems: 50
+          type: array
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      type: object
+    PagedModelPartnerDataUpdateBatchRunEntryDto:
+      additionalProperties: false
+      properties:
+        content:
+          items:
+            $ref: '#/components/schemas/PartnerDataUpdateBatchRunEntryDto'
+          maxItems: 50
+          type: array
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      type: object
     PartSitesInformationAsPlanned:
       additionalProperties: false
       properties:
@@ -894,6 +972,12 @@ components:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
+        policyProfileVersion:
+          enum:
+          - profile2405
+          - profile2509
+          maxItems: 50
+          type: string
         sites:
           items:
             $ref: '#/components/schemas/Site'
@@ -904,6 +988,99 @@ components:
           format: uuid
           maxItems: 50
           type: string
+      type: object
+    PartnerDataUpdateBatchRunDto:
+      additionalProperties: false
+      properties:
+        durationInSeconds:
+          format: int64
+          type: integer
+        endTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        id:
+          format: uuid
+          maxItems: 50
+          type: string
+        startTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        status:
+          enum:
+          - IN_PROGRESS
+          - COMPLETED
+          - COMPLETED_WITH_ERRORS
+          maxItems: 50
+          type: string
+        totalEntries:
+          format: int32
+          type: integer
+        totalErrorCount:
+          format: int32
+          type: integer
+      required:
+      - durationInSeconds
+      - id
+      - startTime
+      - status
+      - totalEntries
+      - totalErrorCount
+      type: object
+    PartnerDataUpdateBatchRunEntryDto:
+      additionalProperties: false
+      properties:
+        direction:
+          enum:
+          - INBOUND
+          - OUTBOUND
+          maxItems: 50
+          type: string
+        errorMessage:
+          maxItems: 50
+          type: string
+        id:
+          format: uuid
+          maxItems: 50
+          type: string
+        informationType:
+          enum:
+          - STOCK
+          - DEMAND
+          - PRODUCTION
+          - DAYS_OF_SUPPLY
+          - DELIVERY
+          maxItems: 50
+          type: string
+        ownMaterialNumber:
+          maxItems: 50
+          type: string
+        partnerBpnl:
+          maxItems: 50
+          type: string
+        partnerId:
+          format: uuid
+          maxItems: 50
+          type: string
+        partnerName:
+          maxItems: 50
+          type: string
+        status:
+          enum:
+          - SUCCESS
+          - ERROR
+          maxItems: 50
+          type: string
+      required:
+      - direction
+      - id
+      - informationType
+      - ownMaterialNumber
+      - partnerBpnl
+      - partnerId
+      - partnerName
+      - status
       type: object
     PartnerDto:
       additionalProperties: false
@@ -925,6 +1102,12 @@ components:
         name:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        policyProfileVersion:
+          enum:
+          - profile2405
+          - profile2509
+          maxItems: 50
           type: string
         sites:
           items:
@@ -976,6 +1159,8 @@ components:
     ProductStockDto:
       additionalProperties: false
       properties:
+        blocked:
+          type: boolean
         customerOrderNumber:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
@@ -1147,6 +1332,8 @@ components:
     ReportedMaterialStockDto:
       additionalProperties: false
       properties:
+        blocked:
+          type: boolean
         customerOrderNumber:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
@@ -1227,6 +1414,8 @@ components:
     ReportedProductStockDto:
       additionalProperties: false
       properties:
+        blocked:
+          type: boolean
         customerOrderNumber:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
@@ -1376,9 +1565,93 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 3.3.0
+  version: 5.2.0
 openapi: 3.1.0
 paths:
+  /batch/partner-data-update:
+    get:
+      operationId: history
+      parameters:
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+          additionalProperties: false
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PagedModelPartnerDataUpdateBatchRunDto'
+                additionalProperties: false
+          description: OK
+      tags:
+      - partner-data-update-batch-controller
+  /batch/partner-data-update/run:
+    post:
+      operationId: triggerRun
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                maxItems: 50
+                type: string
+          description: OK
+      tags:
+      - partner-data-update-batch-controller
+  /batch/partner-data-update/{id}:
+    get:
+      operationId: status
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PartnerDataUpdateBatchRunDto'
+                additionalProperties: false
+          description: OK
+      tags:
+      - partner-data-update-batch-controller
+  /batch/partner-data-update/{id}/entries:
+    get:
+      operationId: entries
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+          additionalProperties: false
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PagedModelPartnerDataUpdateBatchRunEntryDto'
+                additionalProperties: false
+          description: OK
+      tags:
+      - partner-data-update-batch-controller
   /days-of-supply/customer:
     get:
       description: Calculate days of supply for customer for given number of days.
@@ -2096,13 +2369,14 @@ paths:
                   leadingRootCause: strike
                   materialsAffected: []
                   notificationId: urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362
-                  relatedNotificationIds: 
+                  relatedNotificationIds:
                   - urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04
+                  resolvingMeasureDescription: An agreement was found and the strike
+                    was ended.
                   sourceDisruptionId: urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e
                   startDateOfEffect: '2023-12-13T15:00:00+01:00'
                   status: resolved
                   text: Capacity reduction due to ongoing strike.
-                  resolvingMeasureDescription: An agreement was found and the strike was ended.
               header:
                 context: CX-DemandAndCapacityNotificationAPI-Receive:2.0
                 messageId: 3b4edc05-e214-47a1-b0c2-1d831cdd9ba9
@@ -2700,75 +2974,45 @@ paths:
       tags:
       - demand-request-api-controller
   /materialpartnerrelations:
+    get:
+      description: Returns a list of all MaterialPartnerRelations as DTOs.
+      operationId: getAllMaterialPartnerRelations
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/MaterialPartnerRelationDto'
+                maxItems: 50
+                type: array
+          description: Successfully retrieved all MaterialPartnerRelations.
+        '500':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/MaterialPartnerRelationDto'
+                maxItems: 50
+                type: array
+          description: Internal Server Error.
+      summary: Get all Material Partner Relations -- ADMIN ONLY
+      tags:
+      - material-partner-relations-controller
     post:
       description: 'Creates a new MaterialPartnerRelation with the given parameter
         data. Please note that this is only possible, if the designated Material and
         Partner entities have already been created before this request. '
       operationId: createMaterialPartnerRelation
-      parameters:
-      - description: The Material Number that is used in your own company to identify
-          the Material, encoded in base64
-        in: query
-        name: ownMaterialNumber
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialPartnerRelationDto'
+              additionalProperties: false
         required: true
-        schema:
-          additionalProperties: false
-          maxItems: 50
-          type: string
-      - description: The unique BPNL that was assigned to that Partner.
-        example: BPNL2222222222RR
-        in: query
-        name: partnerBpnl
-        required: true
-        schema:
-          additionalProperties: false
-          maxItems: 50
-          type: string
-      - description: The Material Number that this Partner is using in his own company
-          to identify the Material, encoded in base64
-        in: query
-        name: partnerMaterialNumber
-        required: true
-        schema:
-          additionalProperties: false
-          maxItems: 50
-          type: string
-      - description: The CatenaX Number that this Partner uses
-        example: 860fb504-b884-4009-9313-c6fb6cdc776b
-        in: query
-        name: partnerCXNumber
-        required: false
-        schema:
-          additionalProperties: false
-          maxItems: 50
-          type: string
-      - description: The informal name that this Partner uses
-        example: Semiconductor
-        in: query
-        name: nameAtManufacturer
-        required: false
-        schema:
-          additionalProperties: false
-          maxItems: 50
-          type: string
-      - description: This boolean flag indicates whether this Partner is a potential
-          supplier of the given Material.
-        example: true
-        in: query
-        name: partnerSupplies
-        required: true
-        schema:
-          additionalProperties: false
-          type: boolean
-      - description: This boolean flag indicates whether this Partner is a potential
-          customer of this Material.
-        example: true
-        in: query
-        name: partnerBuys
-        required: true
-        schema:
-          additionalProperties: false
-          type: boolean
       responses:
         '200':
           content:
@@ -2947,29 +3191,29 @@ paths:
           content:
             '*/*':
               schema:
+                $ref: '#/components/schemas/MaterialEntityDto'
                 additionalProperties: false
-                type: object
           description: Successfully created a new Material entity.
         '400':
           content:
             '*/*':
               schema:
+                $ref: '#/components/schemas/MaterialEntityDto'
                 additionalProperties: false
-                type: object
           description: Malformed request body.
         '409':
           content:
             '*/*':
               schema:
+                $ref: '#/components/schemas/MaterialEntityDto'
                 additionalProperties: false
-                type: object
           description: Material with the given ownMaterialNumber already exists.
         '500':
           content:
             '*/*':
               schema:
+                $ref: '#/components/schemas/MaterialEntityDto'
                 additionalProperties: false
-                type: object
           description: Internal Server error.
       summary: Creates a Material -- ADMIN ONLY
       tags:
@@ -2990,29 +3234,29 @@ paths:
           content:
             '*/*':
               schema:
+                $ref: '#/components/schemas/MaterialEntityDto'
                 additionalProperties: false
-                type: object
           description: Update was accepted.
         '400':
           content:
             '*/*':
               schema:
+                $ref: '#/components/schemas/MaterialEntityDto'
                 additionalProperties: false
-                type: object
           description: Malformed request body.
         '404':
           content:
             '*/*':
               schema:
+                $ref: '#/components/schemas/MaterialEntityDto'
                 additionalProperties: false
-                type: object
           description: No existing Material Entity found, no update was performed.
         '500':
           content:
             '*/*':
               schema:
+                $ref: '#/components/schemas/MaterialEntityDto'
                 additionalProperties: false
-                type: object
           description: Internal Server Error.
       summary: Updates a Material -- ADMIN ONLY
       tags:
@@ -3661,8 +3905,17 @@ paths:
       - stock-view-controller
   /stockView/material-stocks:
     get:
-      description: Returns a list of all material-stocks
+      description: Get all material stocks for the given material number.
       operationId: getMaterialStocks
+      parameters:
+      - description: encoded in base64
+        in: query
+        name: ownMaterialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
       responses:
         '200':
           content:
@@ -3674,6 +3927,7 @@ paths:
                 maxItems: 50
                 type: array
           description: OK
+      summary: Get all material stocks for the given Material
       tags:
       - stock-view-controller
     post:
@@ -3805,8 +4059,17 @@ paths:
       - stock-view-controller
   /stockView/product-stocks:
     get:
-      description: Returns a list of all product-stocks
+      description: Get all material stocks for the given material number.
       operationId: getProductStocks
+      parameters:
+      - description: encoded in base64
+        in: query
+        name: ownMaterialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
       responses:
         '200':
           content:
@@ -3818,6 +4081,7 @@ paths:
                 maxItems: 50
                 type: array
           description: OK
+      summary: Get all material stocks for the given Material
       tags:
       - stock-view-controller
     post:

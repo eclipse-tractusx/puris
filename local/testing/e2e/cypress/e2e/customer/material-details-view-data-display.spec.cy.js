@@ -42,7 +42,9 @@ describe('material details view', () => {
                     cy.getByTestId('back-button').should('exist');
 
                     const informationType = direction === 'Inbound' ? 'Demand' : 'Production';
-                    cy.contains(`${informationType} Information for ${material.name} (${direction})`).should('exist');
+                    cy.get('h1')
+                        .invoke('text')
+                        .should('eq', `${informationType} Information for ${material.name} (${material.ownMaterialNumber}, ${direction})`);
 
                     // check if the correct action buttons are visible
                     let applicablePartners = [];

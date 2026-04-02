@@ -14,8 +14,8 @@ Beside the dependencies provided in the Helm Chart, the following dependencies h
 
 | Application                                                                                                       | App Version | Chart Version |
 | ----------------------------------------------------------------------------------------------------------------- | ----------- | ------------- |
-| [Tractus-X Connector](https://github.com/eclipse-tractusx/tractusx-edc/tree/main/charts/tractusx-connector)       | 0.10.0      | 0.10.0        |
-| [Digital Twin Registry](https://github.com/eclipse-tractusx/sldt-digital-twin-registry/tree/main/charts/registry) | 0.9.0       | 0.9.0         |
+| [Tractus-X Connector](https://github.com/eclipse-tractusx/tractusx-edc/tree/main/charts/tractusx-connector)       | 0.12.0      | 0.12.0        |
+| [Digital Twin Registry](https://github.com/eclipse-tractusx/sldt-digital-twin-registry/tree/main/charts/registry) | 0.11.0      | 0.11.0        |
 
 ## Overview of Implemented Standards
 
@@ -29,6 +29,12 @@ The application follows the following Catena-X standards (business-wise) to the 
 | [CX-0122 Item Stock Exchange 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0122-ItemStockExchange)                                    | Compliant.              |
 | [CX-0145 Days of Supply Exchange 1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0145-DaysofsupplyExchange)                             | Compliant.              |
 | [CX-0146 Supply Chain Disruption Notifications 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0146-SupplyChainDisruptionNotifications) | Compliant.              |
+| [CX-0018 Dataspace Connectivity v.4.1.1](https://catenax-ev.github.io/docs/next/standards/CX-0018-DataspaceConnectivity)                           | Compliant.              |
+
+> [!NOTE]
+>
+> [CX-0152, v1.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0152-PolicyConstrainsForDataExchange) compliance with policy profile 25.09 has not yet been assured. PURIS FOSS relies on policy profile [24.05](https://github.com/catenax-eV/cx-odrl-profile/tree/2405).
+>
 
 ## Known Knows
 

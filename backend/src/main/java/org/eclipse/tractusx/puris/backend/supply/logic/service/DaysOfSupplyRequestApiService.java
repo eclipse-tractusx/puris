@@ -27,6 +27,8 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterSer
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshError;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
@@ -110,7 +112,8 @@ public class DaysOfSupplyRequestApiService {
         }
     }
 
-    public void doReportedDaysOfSupplyRequest(Partner partner, Material material, DirectionCharacteristic direction) {
+    public RefreshResult doReportedDaysOfSupplyRequest(Partner partner, Material material, DirectionCharacteristic direction) {
+        List<RefreshError> errors = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
             if (mpr.getPartnerCXNumber() == null) {
@@ -125,10 +128,24 @@ public class DaysOfSupplyRequestApiService {
                     var supplyPartner = reportedCustomerSupply.getPartner();
                     var supplyMaterial = reportedCustomerSupply.getMaterial();
                     if (!partner.equals(supplyPartner) || !material.equals(supplyMaterial)) {
-                        log.warn("Received inconsistent data from " + partner.getBpnl() + "\n"
-                                + reportedCustomerSupplies);
-                        return;
+                        errors.add(new RefreshError(List.of("Received inconsistent data: partner or material mismatch (expected bpnl=%s, ownMaterialNumber=%s; received bpnl=%s, ownMaterialNumber=%s)".formatted(
+                            partner.getBpnl(),
+                            material.getOwnMaterialNumber(),
+                            supplyPartner.getBpnl(),
+                            supplyMaterial.getOwnMaterialNumber()
+                        ))));
+                        continue;
                     }
+
+                    List<String> validationErrors = customerSupplyService.validateWithDetails(reportedCustomerSupply);
+                    if (!validationErrors.isEmpty()) {
+                        errors.add(new RefreshError(validationErrors));
+                    }
+                }
+                if (!errors.isEmpty()) {
+                    log.warn("Validation errors found for ReportedSupply request from partner {}: {}", 
+                            partner.getBpnl(), errors);
+                    return new RefreshResult("Validation failed for reported supplies", errors);
                 }
                 var oldSupplies = customerSupplyService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
                 for (var oldSupply : oldSupplies) {
@@ -143,9 +160,13 @@ public class DaysOfSupplyRequestApiService {
                     var supplyPartner = reportedSupplierSupply.getPartner();
                     var supplyMaterial = reportedSupplierSupply.getMaterial();
                     if (!partner.equals(supplyPartner) || !material.equals(supplyMaterial)) {
-                        log.warn("Received inconsistent data from " + partner.getBpnl() + "\n"
-                                + reportedSupplierSupplies);
-                        return;
+                        errors.add(new RefreshError(List.of("Received inconsistent data from " + partner.getBpnl())));
+                        continue;
+                    }
+
+                    List<String> validationErrors = supplierSupplyService.validateWithDetails(reportedSupplierSupply);
+                    if (!validationErrors.isEmpty()) {
+                        errors.add(new RefreshError(validationErrors));
                     }
                 }
                 var oldSupplies = supplierSupplyService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
@@ -157,8 +178,11 @@ public class DaysOfSupplyRequestApiService {
                 }
             }
             log.info("Updated ReportedSupply for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl());
+            return new RefreshResult("Updated ReportedSupply for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), errors);
         } catch (Exception e) {
             log.error("Error in ReportedDaysOfSupply request for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);
+            errors.add(new RefreshError(List.of("System error: " + e.getMessage())));
+            return new RefreshResult("Error in ReportedDaysOfSupply request for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), errors);
         }
     }
 }

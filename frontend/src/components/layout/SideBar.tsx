@@ -45,13 +45,16 @@ import {
     InfoOutlined,
     LogoutOutlined,
     MenuOutlined,
+    ModeEditOutlineOutlined,
     NotificationsOutlined,
     SyncAltOutlined,
+    LoopOutlined as LoopIcon,
 } from '@mui/icons-material';
 import { visuallyHidden } from '@mui/utils';
 import { Link, useLocation } from 'react-router-dom';
 import { useOwnPartner } from '@hooks/useOwnPartner';
 import { useNotifications } from '@contexts/notificationContext';
+import { TextToClipboard } from '@components/ui/TextToClipboard';
 
 const openedMixin = (theme: Theme): CSSObject => ({
     width: theme.sidebarWidth,
@@ -120,12 +123,14 @@ type SideBarItemProps = (
 const sideBarItems: SideBarItemProps[] = [
     { name: 'Materials', icon: <HomeOutlined />, path: '/materials' },
     { name: 'Notifications', icon: <NotificationsOutlined />, path: '/notifications' },
+    { name: 'Master data', icon: <ModeEditOutlineOutlined />, path: '/master-data', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'Import', icon: <ExitToAppOutlined />, path: '/import', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'Catalog', icon: <AutoStoriesOutlined />, path: '/catalog', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'Negotiations', icon: <HandshakeOutlined />, path: '/negotiations', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'Transfers', icon: <SyncAltOutlined />, path: '/transfers', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'User Guide', icon: <HelpOutlineOutlined />, path: '/user-guide' },
     { name: 'About License', icon: <InfoOutlined/>, path: '/about-license'},
+    { name: 'Partner Data Batch', icon: <LoopIcon />, path: '/batch/partner-data-batch', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'Logout', icon: <LogoutOutlined />, action: AuthenticationService.logout, variant: 'button' },
 ];
 
@@ -219,15 +224,6 @@ export default function MiniDrawer() {
 
 function CompanyInfo() {
     const { ownPartner } = useOwnPartner();
-    const { notify } = useNotifications();
-    const handleCopyBpnl = async () => {
-        await navigator.clipboard.writeText(ownPartner?.bpnl ?? '');
-        notify({
-            title: 'Copied to Clipboard',
-            description: 'Your company BPNL was copied to the clipboard',
-            severity: 'success'
-        });
-    };
     return (
         <Stack gap="0.25rem" paddingInline=".5rem" paddingBlock="1rem" marginTop="auto" data-testid="sidebar-item-license">
             <Typography
@@ -238,9 +234,11 @@ function CompanyInfo() {
             >
                 {ownPartner?.name}
             </Typography>
-            <Button variant="text" sx={{ padding: 0, justifyContent: 'start', width: 'fit-content'}} onClick={handleCopyBpnl}>
-                <Typography variant="body3">{ownPartner?.bpnl} <ContentCopyOutlined /></Typography>
-            </Button>
+            {
+                ownPartner?.bpnl 
+                    ? <TextToClipboard text={ownPartner?.bpnl}></TextToClipboard>
+                    : null
+            }
         </Stack>
     )
 }

@@ -31,6 +31,7 @@ public class PolicyProfileConstants {
     public String DCT_NAMESPACE;
     public String AAS_SEMANTICS_NAMESPACE;
     public String CONTRACT_POLICY_ID;
+    public String DTR_CONTRACT_POLICY_ID;
     public String TX_NAMESPACE;
     public String TX_AUTH_NAMESPACE;
     public String DCAT_NAMESPACE;
@@ -40,6 +41,7 @@ public class PolicyProfileConstants {
     public PolicyProfileConstants(String CX_POLICY_NAMESPACE, String CX_POLICY_CONTEXT, String Contract_Policy) {
         this.CX_POLICY_NAMESPACE = CX_POLICY_NAMESPACE;
         this.CONTRACT_POLICY_ID = Contract_Policy;
+        this.DTR_CONTRACT_POLICY_ID = Contract_Policy + "_DTR";
         this.CX_POLICY_CONTEXT = CX_POLICY_CONTEXT;
         this.EDC_NAMESPACE = "https://w3id.org/edc/v0.0.1/ns/";
         this.VOCAB_KEY = "@vocab";
@@ -58,8 +60,9 @@ public class PolicyProfileConstants {
     public PolicyProfileConstants(
         String EDC_NAMESPACE, String VOCAB_KEY, String ODRL_NAMESPACE, String ODRL_REMOTE_CONTEXT,
         String CX_TAXO_NAMESPACE, String CX_COMMON_NAMESPACE, String CX_POLICY_NAMESPACE,
-        String DCT_NAMESPACE, String AAS_SEMANTICS_NAMESPACE, String CONTRACT_POLICY_ID, String TX,
-        String TX_AUTH_NAMESPACE, String DCAT_NAMESPACE, String DSPACE_NAMESPACE, String CX_POLICY_CONTEXT
+        String DCT_NAMESPACE, String AAS_SEMANTICS_NAMESPACE, String CONTRACT_POLICY_ID, 
+        String DTR_CONTRACT_POLICY_ID, String TX, String TX_AUTH_NAMESPACE, String DCAT_NAMESPACE,
+        String DSPACE_NAMESPACE, String CX_POLICY_CONTEXT
     ) {
         this.EDC_NAMESPACE = EDC_NAMESPACE;
         this.VOCAB_KEY = VOCAB_KEY;
@@ -71,6 +74,7 @@ public class PolicyProfileConstants {
         this.DCT_NAMESPACE = DCT_NAMESPACE;
         this.AAS_SEMANTICS_NAMESPACE = AAS_SEMANTICS_NAMESPACE;
         this.CONTRACT_POLICY_ID = CONTRACT_POLICY_ID;
+        this.DTR_CONTRACT_POLICY_ID = DTR_CONTRACT_POLICY_ID;
         this.TX_NAMESPACE = TX;
         this.TX_AUTH_NAMESPACE = TX_AUTH_NAMESPACE;
         this.DCAT_NAMESPACE = DCAT_NAMESPACE;

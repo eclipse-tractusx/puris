@@ -38,9 +38,9 @@ ES256_PUBLIC_KEY = read_file(Path("keys/public_key.pem"))
 CUSTOMER_PRIVATE_KEY = read_file(Path("keys/customer.key"))
 SUPPLIER_PRIVATE_KEY = read_file(Path("keys/supplier.key"))
 
-DID_CUSTOMER = "did:web:mock-util-service/customer"
-DID_SUPPLIER = "did:web:mock-util-service/supplier"
-DID_TRUSTED_ISSUER = "did:web:mock-util-service/trusted-issuer"
+DID_CUSTOMER = "did:web:wallet/customer"
+DID_SUPPLIER = "did:web:wallet/supplier"
+DID_TRUSTED_ISSUER = "did:web:wallet/trusted-issuer"
 
 # note: kid_vault = alias used for public key, set in edc.transer.proxy.token.verifier.publickey.alias
 DID_DICT = {
