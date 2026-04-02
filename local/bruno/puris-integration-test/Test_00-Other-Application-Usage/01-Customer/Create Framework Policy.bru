@@ -34,7 +34,7 @@ body:json {
       "@id": "{{CONTRACT_POLICY_ID}}",
       "edc:policy": {
           "@type": "Set",
-          "profile": "cx-policy:profile2405",
+          "profile": "cx-policy:profile2509",
           "permission": [
               {
                   "action": "use",
@@ -47,7 +47,7 @@ body:json {
                           },
                           {
                               "leftOperand": "cx-policy:UsagePurpose",
-                              "operator": "eq",
+                              "operator": "isAnyOf",
                               "rightOperand": "cx.puris.base:1"
                           }
                       ]

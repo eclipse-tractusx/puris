@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v5.1.1
+## v5.2.0
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
 
@@ -19,6 +19,8 @@ The **need for configuration updates** is **marked bold**.
 
 - implement [`v4alpha/connectordiscovery/dspaceversionparams`](https://eclipse-tractusx.github.io/api-hub/tractusx-edc/0.11.2/control-plane/swagger-ui/#/) for CX-0018 compliance ([#1068](https://github.com/eclipse-tractusx/puris/pull/1068))
 - switched from upstream edc titanium library to vanilla titanium library ([#1068](https://github.com/eclipse-tractusx/puris/pull/1068))
+- upgraded to EDC version 0.12.0 and DTR version 0.11.0 ([#1125](https://github.com/eclipse-tractusx/puris/pull/1125))
+- migrated to policy profile 2509 and adapted support for DSP 1.0 ([#1125](https://github.com/eclipse-tractusx/puris/pull/1125))
 
 ### Fixes
 
