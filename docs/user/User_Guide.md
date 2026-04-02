@@ -468,6 +468,43 @@ After each file has been uploaded, the user is notified on whether the upload wa
 
 ![Import file results example](img/import_result.png)
 
+## Partner Data Batch
+
+To not refresh partner data per material, you can use a batch to pull all data. This batch is configured during deployment (see [Admin Guide](https://github.com/eclipse-tractusx/puris/blob/main/docs/admin/Admin_Guide.md)).
+
+As an admin user, you can open a list view of runs of the batch view. You see the overall batch status AND via double click can see the status per partner, material, information and direction.
+
+![Batch View](img/batch_view.png)
+
+The information has the following meaning:
+
+- Start Time: date and time the batch started (UTC system time)
+- End Time: date and time the batch ended (UTC system time)
+- Duration: time in seconds the batch took to end
+- Status: status on batch level (see below)
+  - IN_PROGRESS: Batch is running
+  - COMPLETED: Batch completed with no errors (`Errors` = 0 on single information exchange level)
+  - COMPLETED_WITH_ERRORS: Batch completed with errors (`Errors` > 0 on single information exchange level)
+  - FAILED: Fatal error occured
+- Total: Number of information pulled (information is pulled per material, per partner, per information, per direction)
+- Erorrs: Number of errors when pulling information
+
+You can get detail information the success or failure of requests for the combination of material, partner, direction (Inbound for your suppliers, outbound for your customers) and information (stock, demand, production, delivery, days of supply). To do so, double click the batch of interest.
+
+- Material: Your own material number
+- Partner: Name of your Partner
+- Information Type: Information pulled
+- Direction: Inbound for suppliers, Outbound for customers
+- Status: status on entry / single information pulling level (see below)
+  - SUCCESS: data pulled successfully
+  - ERROR: data could not be pulled. Error message with tooltip provides further details.
+  - SKIPPED: data could not be pulled due to misconfiguration
+- Error: Label with error tooltip
+
+![Partner Data Update - Details](img/batch_details.png)
+
+All tables are paginated (you can walkthrough them). Also you can trigger an explicit partner update now via button "*Update Partner Data Now*".
+
 ## Catalog
 
 An admin may use the page to query offers available at a partner to check if the partner set up the information exchange

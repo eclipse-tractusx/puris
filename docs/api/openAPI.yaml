@@ -832,6 +832,62 @@ components:
       - customerOrderId
       - customerOrderPositionId
       type: object
+    PageMetadata:
+      additionalProperties: false
+      properties:
+        number:
+          format: int64
+          type: integer
+        size:
+          format: int64
+          type: integer
+        totalElements:
+          format: int64
+          type: integer
+        totalPages:
+          format: int64
+          type: integer
+      type: object
+    Pageable:
+      additionalProperties: false
+      properties:
+        page:
+          format: int32
+          minimum: 0
+          type: integer
+        size:
+          format: int32
+          minimum: 1
+          type: integer
+        sort:
+          items:
+            maxItems: 50
+            type: string
+          maxItems: 50
+          type: array
+      type: object
+    PagedModelPartnerDataUpdateBatchRunDto:
+      additionalProperties: false
+      properties:
+        content:
+          items:
+            $ref: '#/components/schemas/PartnerDataUpdateBatchRunDto'
+          maxItems: 50
+          type: array
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      type: object
+    PagedModelPartnerDataUpdateBatchRunEntryDto:
+      additionalProperties: false
+      properties:
+        content:
+          items:
+            $ref: '#/components/schemas/PartnerDataUpdateBatchRunEntryDto'
+          maxItems: 50
+          type: array
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      type: object
     PartSitesInformationAsPlanned:
       additionalProperties: false
       properties:
@@ -926,6 +982,99 @@ components:
           format: uuid
           maxItems: 50
           type: string
+      type: object
+    PartnerDataUpdateBatchRunDto:
+      additionalProperties: false
+      properties:
+        durationInSeconds:
+          format: int64
+          type: integer
+        endTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        id:
+          format: uuid
+          maxItems: 50
+          type: string
+        startTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        status:
+          enum:
+          - IN_PROGRESS
+          - COMPLETED
+          - COMPLETED_WITH_ERRORS
+          maxItems: 50
+          type: string
+        totalEntries:
+          format: int32
+          type: integer
+        totalErrorCount:
+          format: int32
+          type: integer
+      required:
+      - durationInSeconds
+      - id
+      - startTime
+      - status
+      - totalEntries
+      - totalErrorCount
+      type: object
+    PartnerDataUpdateBatchRunEntryDto:
+      additionalProperties: false
+      properties:
+        direction:
+          enum:
+          - INBOUND
+          - OUTBOUND
+          maxItems: 50
+          type: string
+        errorMessage:
+          maxItems: 50
+          type: string
+        id:
+          format: uuid
+          maxItems: 50
+          type: string
+        informationType:
+          enum:
+          - STOCK
+          - DEMAND
+          - PRODUCTION
+          - DAYS_OF_SUPPLY
+          - DELIVERY
+          maxItems: 50
+          type: string
+        ownMaterialNumber:
+          maxItems: 50
+          type: string
+        partnerBpnl:
+          maxItems: 50
+          type: string
+        partnerId:
+          format: uuid
+          maxItems: 50
+          type: string
+        partnerName:
+          maxItems: 50
+          type: string
+        status:
+          enum:
+          - SUCCESS
+          - ERROR
+          maxItems: 50
+          type: string
+      required:
+      - direction
+      - id
+      - informationType
+      - ownMaterialNumber
+      - partnerBpnl
+      - partnerId
+      - partnerName
+      - status
       type: object
     PartnerDto:
       additionalProperties: false
@@ -1407,6 +1556,90 @@ info:
   version: 5.1.0
 openapi: 3.1.0
 paths:
+  /batch/partner-data-update:
+    get:
+      operationId: history
+      parameters:
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+          additionalProperties: false
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PagedModelPartnerDataUpdateBatchRunDto'
+                additionalProperties: false
+          description: OK
+      tags:
+      - partner-data-update-batch-controller
+  /batch/partner-data-update/run:
+    post:
+      operationId: triggerRun
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                maxItems: 50
+                type: string
+          description: OK
+      tags:
+      - partner-data-update-batch-controller
+  /batch/partner-data-update/{id}:
+    get:
+      operationId: status
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PartnerDataUpdateBatchRunDto'
+                additionalProperties: false
+          description: OK
+      tags:
+      - partner-data-update-batch-controller
+  /batch/partner-data-update/{id}/entries:
+    get:
+      operationId: entries
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+          additionalProperties: false
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PagedModelPartnerDataUpdateBatchRunEntryDto'
+                additionalProperties: false
+          description: OK
+      tags:
+      - partner-data-update-batch-controller
   /days-of-supply/customer:
     get:
       description: Calculate days of supply for customer for given number of days.
