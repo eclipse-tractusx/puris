@@ -28,7 +28,7 @@ import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -140,7 +140,7 @@ class DtrRequestBodyBuilderTest {
      * Asserts the correct creation of a ShellDescriptor for a material (shared copy of the twin)
      * <p>
      * Performs the following CX-0002 compliance checks:
-     * <li>SubmodelDescriptor via {@linkplain #assertSubmodelDescriptor(JsonNode, AssetType, DirectionCharacteristic, String)} including semanticId</li>
+     * <li>SubmodelDescriptor via {@linkplain #assertSubmodelDescriptor(JsonNode, AssetType, DirectionEnum, String)} including semanticId</li>
      * <li>SpecificAssetIds via {@linkplain #assertSpecificAssetIds(JsonNode, String, List)}</li>
      * </p>
      * Only checks for the customer side of information shared.
@@ -182,13 +182,13 @@ class DtrRequestBodyBuilderTest {
 
             switch (AssetType.fromUrn(semanticId.get("value").asText())) {
                 case AssetType.ITEM_STOCK_SUBMODEL ->
-                    assertSubmodelDescriptor(submodelDescriptor, AssetType.ITEM_STOCK_SUBMODEL, DirectionCharacteristic.INBOUND, MPR.getPartnerCXNumber());
+                    assertSubmodelDescriptor(submodelDescriptor, AssetType.ITEM_STOCK_SUBMODEL, DirectionEnum.INBOUND, MPR.getPartnerCXNumber());
                 case AssetType.PRODUCTION_SUBMODEL ->
-                    assertSubmodelDescriptor(submodelDescriptor, AssetType.PRODUCTION_SUBMODEL, DirectionCharacteristic.INBOUND, MPR.getPartnerCXNumber());
+                    assertSubmodelDescriptor(submodelDescriptor, AssetType.PRODUCTION_SUBMODEL, DirectionEnum.INBOUND, MPR.getPartnerCXNumber());
                 case AssetType.DAYS_OF_SUPPLY ->
-                    assertSubmodelDescriptor(submodelDescriptor, AssetType.DAYS_OF_SUPPLY, DirectionCharacteristic.INBOUND, MPR.getPartnerCXNumber());
+                    assertSubmodelDescriptor(submodelDescriptor, AssetType.DAYS_OF_SUPPLY, DirectionEnum.INBOUND, MPR.getPartnerCXNumber());
                 case AssetType.DELIVERY_SUBMODEL ->
-                    assertSubmodelDescriptor(submodelDescriptor, AssetType.DELIVERY_SUBMODEL, DirectionCharacteristic.INBOUND, MPR.getPartnerCXNumber());
+                    assertSubmodelDescriptor(submodelDescriptor, AssetType.DELIVERY_SUBMODEL, DirectionEnum.INBOUND, MPR.getPartnerCXNumber());
             }
         }
     }
@@ -208,7 +208,7 @@ class DtrRequestBodyBuilderTest {
      * @param direction          that is associated with the submodel type and may be used in the <code>href</code> field, must not be null
      * @param materialNumberCx   that is used for exposure in the <code>href</code> field, must not be null
      */
-    private void assertSubmodelDescriptor(JsonNode submodelDescriptor, AssetType submodel, DirectionCharacteristic direction, String materialNumberCx) {
+    private void assertSubmodelDescriptor(JsonNode submodelDescriptor, AssetType submodel, DirectionEnum direction, String materialNumberCx) {
 
         JsonNode endpoints = submodelDescriptor.get("endpoints");
 
@@ -244,9 +244,9 @@ class DtrRequestBodyBuilderTest {
         boolean needsDirection = submodel.URN_SEMANTIC_ID.equals(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID)
             || submodel.URN_SEMANTIC_ID.equals(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID);
 
-        if (needsDirection && direction == DirectionCharacteristic.INBOUND) {
+        if (needsDirection && direction == DirectionEnum.INBOUND) {
             Assertions.assertEquals(href, ENV_VAR_EDC_DATA_PLANE_PUBLIC_URL + materialNumberCx + "/INBOUND/submodel");
-        } else if (needsDirection && direction == DirectionCharacteristic.OUTBOUND) {
+        } else if (needsDirection && direction == DirectionEnum.OUTBOUND) {
             Assertions.assertEquals(href, ENV_VAR_EDC_DATA_PLANE_PUBLIC_URL + materialNumberCx + "/OUTBOUND/submodel");
         } else if (!needsDirection) {
             System.out.println("href: " + href);
@@ -293,7 +293,7 @@ class DtrRequestBodyBuilderTest {
      * asserts the correct creation of a ShellDescriptor for a product with two customers (you create the twin)
      * <p>
      * Performs the following CX-0002 compliance checks:
-     * <li>SubmodelDescriptor via {@linkplain #assertSubmodelDescriptor(JsonNode, AssetType, DirectionCharacteristic, String)} including semanticId</li>
+     * <li>SubmodelDescriptor via {@linkplain #assertSubmodelDescriptor(JsonNode, AssetType, DirectionEnum, String)} including semanticId</li>
      * <li>SpecificAssetIds via {@linkplain #assertSpecificAssetIds(JsonNode, String, List)} considering multiple partners to see a specificAssetId or not</li>
      * </p>
      * Only checks for the supplier side of information shared.
@@ -352,15 +352,15 @@ class DtrRequestBodyBuilderTest {
 
             switch (AssetType.fromUrn(semanticId.get("value").asText())) {
                 case AssetType.ITEM_STOCK_SUBMODEL ->
-                    assertSubmodelDescriptor(submodelDescriptor, AssetType.ITEM_STOCK_SUBMODEL, DirectionCharacteristic.OUTBOUND, MATERIAL.getMaterialNumberCx());
+                    assertSubmodelDescriptor(submodelDescriptor, AssetType.ITEM_STOCK_SUBMODEL, DirectionEnum.OUTBOUND, MATERIAL.getMaterialNumberCx());
                 case AssetType.DEMAND_SUBMODEL ->
-                    assertSubmodelDescriptor(submodelDescriptor, AssetType.DEMAND_SUBMODEL, DirectionCharacteristic.OUTBOUND, MATERIAL.getMaterialNumberCx());
+                    assertSubmodelDescriptor(submodelDescriptor, AssetType.DEMAND_SUBMODEL, DirectionEnum.OUTBOUND, MATERIAL.getMaterialNumberCx());
                 case AssetType.DELIVERY_SUBMODEL ->
-                    assertSubmodelDescriptor(submodelDescriptor, AssetType.DELIVERY_SUBMODEL, DirectionCharacteristic.OUTBOUND, MATERIAL.getMaterialNumberCx());
+                    assertSubmodelDescriptor(submodelDescriptor, AssetType.DELIVERY_SUBMODEL, DirectionEnum.OUTBOUND, MATERIAL.getMaterialNumberCx());
                 case AssetType.DAYS_OF_SUPPLY ->
-                    assertSubmodelDescriptor(submodelDescriptor, AssetType.DAYS_OF_SUPPLY, DirectionCharacteristic.OUTBOUND, MATERIAL.getMaterialNumberCx());
+                    assertSubmodelDescriptor(submodelDescriptor, AssetType.DAYS_OF_SUPPLY, DirectionEnum.OUTBOUND, MATERIAL.getMaterialNumberCx());
                 case AssetType.PART_TYPE_INFORMATION_SUBMODEL ->
-                    assertSubmodelDescriptor(submodelDescriptor, AssetType.PART_TYPE_INFORMATION_SUBMODEL, DirectionCharacteristic.OUTBOUND, Base64.getEncoder().encodeToString(MATERIAL.getOwnMaterialNumber().getBytes(StandardCharsets.UTF_8)));
+                    assertSubmodelDescriptor(submodelDescriptor, AssetType.PART_TYPE_INFORMATION_SUBMODEL, DirectionEnum.OUTBOUND, Base64.getEncoder().encodeToString(MATERIAL.getOwnMaterialNumber().getBytes(StandardCharsets.UTF_8)));
             }
         }
     }

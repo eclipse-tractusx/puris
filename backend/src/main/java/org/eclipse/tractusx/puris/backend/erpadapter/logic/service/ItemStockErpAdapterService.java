@@ -32,6 +32,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialServi
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ItemStockSammMapper;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
@@ -81,6 +82,8 @@ public class ItemStockErpAdapterService {
         try {
             ItemStockSamm samm = mapper.treeToValue(dto.body(), ItemStockSamm.class);
             ErpAdapterRequest request = erpAdapterRequestService.get(dto.requestId());
+            DirectionEnum sammDirectionEnum = DirectionEnum.valueOf(samm.getDirection().name());
+
             if (request == null) {
                 log.error("Unknown request-id {}", dto.requestId());
                 return 404;
@@ -98,9 +101,9 @@ public class ItemStockErpAdapterService {
                     request.getPartnerBpnl(), dto.partnerBpnl());
                 return 400;
             }
-            if (!request.getDirectionCharacteristic().equals(samm.getDirection())) {
+            if (!request.getDirectionEnum().equals(sammDirectionEnum)) {
                 log.error("Direction mismatch! request direction: {}, message direction: {}",
-                    request.getDirectionCharacteristic(), samm.getDirection());
+                    request.getDirectionEnum(), samm.getDirection());
                 return 400;
             }
             if (!SUPPORTEDSAMMVERSION.equals(dto.sammVersion()) || !SUPPORTEDSAMMVERSION.equals(request.getSammVersion())) {

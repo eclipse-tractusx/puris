@@ -39,7 +39,7 @@ import org.eclipse.tractusx.puris.backend.delivery.domain.repository.DeliveryRep
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class DeliveryService<T extends Delivery> {
@@ -64,7 +64,7 @@ public abstract class DeliveryService<T extends Delivery> {
         Optional<String> bpns,
         Optional<String> bpnl,
         Optional<Date> day,
-        Optional<DirectionCharacteristic> direction) {
+        Optional<DirectionEnum> direction) {
         Stream<T> stream = repository.findAll().stream();
         if (ownMaterialNumber.isPresent()) {
             stream = stream.filter(delivery -> delivery.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber.get()));
@@ -73,7 +73,7 @@ public abstract class DeliveryService<T extends Delivery> {
             if (ownPartnerEntity == null) {
                 ownPartnerEntity = partnerService.getOwnPartnerEntity();
             }
-            if (direction.get() == DirectionCharacteristic.INBOUND) {
+            if (direction.get() == DirectionEnum.INBOUND) {
                 stream = stream.filter(delivery -> ownPartnerEntity.getSites().stream().anyMatch(site -> delivery.getDestinationBpns().equals(site.getBpns())));
             } else {
                 stream = stream.filter(delivery -> ownPartnerEntity.getSites().stream().anyMatch(site -> delivery.getOriginBpns().equals(site.getBpns())));
@@ -90,7 +90,7 @@ public abstract class DeliveryService<T extends Delivery> {
                 .atOffset(ZoneOffset.UTC)
                 .toLocalDate();
             stream = stream.filter(delivery -> {
-                long time = direction.get() == DirectionCharacteristic.INBOUND
+                long time = direction.get() == DirectionEnum.INBOUND
                     ? delivery.getDateOfArrival().getTime()
                     : delivery.getDateOfDeparture().getTime();
                 LocalDate deliveryDayDate = Instant.ofEpochMilli(time)
@@ -110,7 +110,7 @@ public abstract class DeliveryService<T extends Delivery> {
         return sum;
     }
 
-    public final List<Double> getQuantityForDays(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, DirectionCharacteristic direction, int numberOfDays) {
+    public final List<Double> getQuantityForDays(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, DirectionEnum direction, int numberOfDays) {
         List<Double> deliveryQtys = new ArrayList<>();
         LocalDate localDate = LocalDate.now();
 

@@ -37,7 +37,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ItemStockSammMapper;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -71,7 +71,7 @@ public class ItemStockRequestApiService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public ItemStockSamm handleItemStockSubmodelRequest(String bpnl, String materialNumber, DirectionCharacteristic direction) {
+    public ItemStockSamm handleItemStockSubmodelRequest(String bpnl, String materialNumber, DirectionEnum direction) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
             log.error("Unknown Partner BPNL " + bpnl);
@@ -135,7 +135,7 @@ public class ItemStockRequestApiService {
         List<RefreshError> errors = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
-            var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL, mpr, DirectionCharacteristic.OUTBOUND, 1);
+            var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL, mpr, DirectionEnum.OUTBOUND, 1);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedMaterialItemStock(samm, partner);
             for (var stock : stocks) {
@@ -188,7 +188,7 @@ public class ItemStockRequestApiService {
                 mprService.triggerPartTypeRetrievalTask(partner);
                 mpr = mprService.find(material, partner);
             }
-            var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL ,mpr, DirectionCharacteristic.INBOUND, 1);
+            var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL ,mpr, DirectionEnum.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedProductItemStock(samm, partner);
             for (var stock : stocks) {

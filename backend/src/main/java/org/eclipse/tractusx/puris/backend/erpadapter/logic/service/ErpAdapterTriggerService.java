@@ -28,7 +28,7 @@ import org.eclipse.tractusx.puris.backend.erpadapter.ErpAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
 import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterTriggerDataset;
 import org.eclipse.tractusx.puris.backend.erpadapter.domain.repository.ErpAdapterTriggerDatasetRepository;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -106,9 +106,9 @@ public class ErpAdapterTriggerService {
                         request.setOwnMaterialNumber(dataset.getOwnMaterialNumber());
                         request.setPartnerBpnl(dataset.getPartnerBpnl());
                         request.setRequestDate(new Date(now));
-                        DirectionCharacteristic directionCharacteristic = dataset.getDirectionCharacteristic().isEmpty() ?
-                            null : DirectionCharacteristic.valueOf(dataset.getDirectionCharacteristic());
-                        request.setDirectionCharacteristic(directionCharacteristic);
+                        DirectionEnum directionEnum = dataset.getDirectionEnum().isEmpty() ?
+                            null : DirectionEnum.valueOf(dataset.getDirectionEnum());
+                        request.setDirectionEnum(directionEnum);
                         request.setRequestType(dataset.getAssetType());
                         request.setSammVersion(dataset.getAssetType().ERP_SAMM_VERSION);
                         executorService.submit(() -> erpAdapterRequestService.createAndSend(request));
@@ -138,7 +138,7 @@ public class ErpAdapterTriggerService {
      * @param type                  the Asset/Submodel type of the request
      * @param direction             the direction characteristic (if applicable for the given asset type, may be null)
      */
-    public void notifyPartnerRequest(String partnerBpnl, String ownMaterialNumber, AssetType type, DirectionCharacteristic direction) {
+    public void notifyPartnerRequest(String partnerBpnl, String ownMaterialNumber, AssetType type, DirectionEnum direction) {
         if (!erpAdapterConfiguration.isErpAdapterEnabled()) {
             return;
         }
@@ -155,7 +155,7 @@ public class ErpAdapterTriggerService {
             erpAdapterRequest.setRequestDate(new Date(now));
             erpAdapterRequest.setPartnerBpnl(partnerBpnl);
             erpAdapterRequest.setOwnMaterialNumber(ownMaterialNumber);
-            erpAdapterRequest.setDirectionCharacteristic(direction);
+            erpAdapterRequest.setDirectionEnum(direction);
             erpAdapterRequest.setRequestType(type);
             erpAdapterRequest.setSammVersion(type.ERP_SAMM_VERSION);
             executorService.submit(() -> erpAdapterRequestService.createAndSend(erpAdapterRequest));
