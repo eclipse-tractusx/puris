@@ -29,6 +29,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.persistence.*;
 import lombok.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
@@ -79,6 +80,7 @@ public class ErpAdapterRequest {
     @NotNull
     private String ownMaterialNumber;
 
+    @Enumerated(EnumType.STRING)
     private DirectionEnum directionEnum;
 
     // AssetType validation helpers:
