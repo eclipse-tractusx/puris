@@ -20,33 +20,16 @@ databaseChangeLog:
   - changeSet:
       id: 1
       author: jakoballgaier
-      preConditions:
-        - onFail: MARK_RAN
-        - and:
-            - tableExists:
-              tableName: erp_adapter_request
-            - columnExists:
-                tableName: erp_adapter_request
-                columnName: direction_characteristic
       changes:
         - renameColumn:
             tableName: erp_adapter_request
             oldColumnName: direction_characteristic
             newColumnName: direction_enum
-            columnDataType: VARCHAR(255)
-  - changeSet:
-      id: 2
-      author: jakoballgaier
-      preConditions:
-        - onFail: MARK_RAN
-        - and:
-            - tableExists:
-                tableName: erp_adapter_trigger_dataset
-            - columnExists:
-                tableName: erp_adapter_trigger_dataset
-                columnName: direction_characteristic
-      changes:
         - renameColumn:
             tableName: erp_adapter_trigger_dataset
             oldColumnName: direction_characteristic
             newColumnName: direction_enum
+        - modifyDataType:
+            tableName: erp_adapter_request
+            columnName: direction_enum
+            newDataType: VARCHAR(255)
