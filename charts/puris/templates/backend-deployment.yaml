@@ -154,7 +154,7 @@ spec:
             - name: PURIS_NOTIFICATION_APIASSETID
               value: "{{ .Values.backend.puris.notification.apiassetid }}"
             - name: PURIS_DATAEXCHANGEREQUESTRECEIVEAPI_APIASSETID
-              value: "{{ .Values.backend.puris.dataExchangeRequestReceiveApi.apiassetid }}"
+              value: "{{ .Values.backend.puris.dataexchangerequestreceiveapi.apiassetid }}"
             - name: PURIS_FRAMEWORKAGREEMENT_CREDENTIAL
               value: "{{ .Values.backend.puris.frameworkagreement.credential }}"
             - name: PURIS_FRAMEWORKAGREEMENT_VERSION

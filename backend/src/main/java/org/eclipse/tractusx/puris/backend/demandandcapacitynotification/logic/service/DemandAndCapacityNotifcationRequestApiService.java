@@ -26,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Date;
 import java.util.UUID;
 import javax.management.openmbean.KeyAlreadyExistsException;
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
@@ -87,7 +86,7 @@ public class DemandAndCapacityNotifcationRequestApiService {
         var partner = notification.getPartner();
         var body = createNotificationRequestBody(notification);
         try {
-            edcAdapterService.doNotificationPostRequest(AssetType.NOTIFICATION, partner, body, 1);
+            edcAdapterService.doNotificationPostRequest(partner, body);
             log.info("Successfully sent Notification to partner " + partner.getBpnl()); 
         } catch (Exception e) {
             log.error("Error in ReportedNotificationRequest for partner " + partner.getBpnl(), e);

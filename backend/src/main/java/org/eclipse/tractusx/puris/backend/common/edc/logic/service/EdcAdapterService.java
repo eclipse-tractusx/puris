@@ -563,49 +563,37 @@ public class EdcAdapterService {
         }
     }
 
-    private JsonNode postNotificationToPartner(Partner partner, AssetType type, JsonNode payload, int retries) {
-        return postToPartner(partner, type, payload, retries,
-            () -> switch (type) {
-                case NOTIFICATION -> variablesService.getNotificationApiAssetId();
-                default -> throw new IllegalArgumentException("Unsupported type " + type);
-            },
-            () -> negotiateContractForNotification(partner, type),
-            nextRetries -> doNotificationPostRequest(type, partner, payload, nextRetries),
-            "Failed to post Notification to Partner."
-        );
-    }
-
-    private JsonNode postDataExchangeRequestToPartner(Partner partner, AssetType type, JsonNode payload, int retries) {
-        return postToPartner(partner, type, payload, retries,
-            () -> switch (type) {
-                case DATA_EXCHANGE_REQUEST -> variablesService.getDataExchangeRequestReceiveApiAssetId();
-                default -> throw new IllegalArgumentException("Unsupported type " + type);
-            },
-            () -> negotiateContractForDataExchangeRequest(partner, type),
-            nextRetries -> doDataExchangePostRequest(type, partner, payload, nextRetries),
-            "Failed to post Data Exchange Request to Partner."
-        );
-    }
-
-    private JsonNode postToPartner(Partner partner, AssetType type, JsonNode payload, int retries, Supplier<String> assetIdSupplier, Supplier<Boolean> negotiateContract, Function<Integer, JsonNode> fallbackRequest, String postFailureMessage) {
+    private JsonNode postAssetToPartner(Partner partner, AssetType type, JsonNode payload, int retries) {
         if (retries < 0) {
             return null;
         }
 
         boolean failed = true;
         String partnerDspUrl = partner.getEdcUrl();
-        String assetId = assetIdSupplier.get();
+
+        String assetId = switch (type) {
+            case NOTIFICATION -> variablesService.getNotificationApiAssetId();
+            case DATA_EXCHANGE_REQUEST -> variablesService.getDataExchangeRequestReceiveApiAssetId();
+            default -> throw new IllegalArgumentException("Unsupported type " + type);
+        };
 
         try {
             String contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
 
             if (contractId == null) {
                 log.info("Need Contract for {} with {}", type, partner.getBpnl());
-                if (negotiateContract.get()) {
+
+                boolean negotiated = switch (type) {
+                    case NOTIFICATION -> negotiateContractForNotification(partner, type);
+                    case DATA_EXCHANGE_REQUEST -> negotiateContractForDataExchangeRequest(partner, type);
+                    default -> throw new IllegalArgumentException("Unsupported type " + type);
+                };
+
+                if (negotiated) {
                     contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
                 } else {
                     log.error("Failed to contract for {} with {}", type, partner.getBpnl());
-                    return postToPartner(partner, type, payload, retries - 1, assetIdSupplier, negotiateContract, fallbackRequest, postFailureMessage);
+                    return postAssetToPartner(partner, type, payload, retries - 1);
                 }
             }
 
@@ -619,17 +607,27 @@ public class EdcAdapterService {
 
                 if (edrDto == null) {
                     log.error("Failed to obtain EDR data for {} with {}", assetId, partner.getEdcUrl());
-                    return fallbackRequest.apply(retries - 1);
+
+                    return postAssetToPartner(partner, type, payload, retries - 1);
                 }
 
-                try (var response = postProxyPullRequest(edrDto.endpoint(), edrDto.authKey(), edrDto.authCode(), objectMapper.writeValueAsString(payload))) {
+                try (var response = postProxyPullRequest(
+                    edrDto.endpoint(),
+                    edrDto.authKey(),
+                    edrDto.authCode(),
+                    objectMapper.writeValueAsString(payload)
+                )) {
                     if (response.isSuccessful()) {
                         String responseString = response.body().string();
                         failed = false;
                         return objectMapper.readTree(responseString);
                     }
 
-                    log.info(postFailureMessage);
+                    switch (type) {
+                        case NOTIFICATION -> log.info("Failed to post Notification to Partner.");
+                        case DATA_EXCHANGE_REQUEST -> log.info("Failed to post Data Exchange Request to Partner.");
+                        default -> throw new IllegalArgumentException("Unsupported type " + type);
+                    }
                 }
             } finally {
                 if (transferId != null) {
@@ -645,7 +643,7 @@ public class EdcAdapterService {
             }
         }
 
-        return postToPartner(partner, type, payload, retries - 1, assetIdSupplier, negotiateContract, fallbackRequest, postFailureMessage);
+        return postAssetToPartner(partner, type, payload, retries - 1);
     }
 
     private JsonNode getSubmodelFromPartner(MaterialPartnerRelation mpr, AssetType type, DirectionCharacteristic direction, int retries) {
@@ -761,26 +759,12 @@ public class EdcAdapterService {
         return data;
     }
 
-    public JsonNode doNotificationPostRequest(AssetType type, Partner partner, JsonNode body, int retries) {
-        if (retries < 0) {
-            return null;
-        }
-        var data = postNotificationToPartner(partner, type, body, retries);
-        if (data == null) {
-            return doNotificationPostRequest(type, partner, body, --retries);
-        }
-        return data;
+    public JsonNode doNotificationPostRequest(Partner partner, JsonNode body) {
+        return postAssetToPartner(partner, AssetType.NOTIFICATION, body, 2);
     }
 
-    public JsonNode doDataExchangePostRequest(AssetType type, Partner partner, JsonNode body, int retries) {
-        if (retries < 0) {
-            return null;
-        }
-        var data = postDataExchangeRequestToPartner(partner, type, body, retries);
-        if (data == null) {
-            return doDataExchangePostRequest(type, partner, body, --retries);
-        }
-        return data;
+    public JsonNode doDataExchangePostRequest(Partner partner, JsonNode body) {
+        return postAssetToPartner(partner, AssetType.DATA_EXCHANGE_REQUEST, body, 2);
     }
 
     private boolean negotiateForPartnerDtr(Partner partner) {
