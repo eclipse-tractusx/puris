@@ -36,11 +36,11 @@ script:post-response {
   const rawSubmodelData = bru.getVar("SUBMODEL_DATA")
   const rawSubmodelIndex = bru.getVar("CURRENT_SUBMODEL_INDEX")
 
-  if (!rawSubmodelData)
+  if (rawSubmodelData == null)
   {
     throw new Error("SUBMODEL_DATA not set!")
   }
-  if (!rawSubmodelIndex)
+  if (rawSubmodelIndex == null)
   {
     throw new Error("CURRENT_SUBMODEL_INDEX not set!")
   }
