@@ -20,7 +20,6 @@ package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 import java.util.Date;
 import java.util.UUID;
 import javax.management.openmbean.KeyAlreadyExistsException;
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
@@ -91,7 +90,7 @@ public class DataExchangeRequestApiService {
     public void sendDataExchangeRequest(OwnDataExchangeRequest request, Partner partner) {
         var body = createDataExchangeRequestBody(request);
         try {
-            edcAdapterService.doDataExchangePostRequest(AssetType.DATA_EXCHANGE_REQUEST, partner, body, 1);
+            edcAdapterService.doDataExchangePostRequest(partner, body);
             log.info("Successfully sent Data Exchange Request to partner " + partner.getBpnl()); 
         } catch (Exception e) {
             log.error("Error in ReportedDataExchangeRequest for partner " + partner.getBpnl(), e);
