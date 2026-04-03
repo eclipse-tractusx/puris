@@ -571,12 +571,11 @@ public class EdcAdapterService {
         boolean failed = true;
         String partnerDspUrl = partner.getEdcUrl();
 
-        String assetId;
-        switch (type) {
-            case NOTIFICATION -> assetId = variablesService.getNotificationApiAssetId();
-            case DATA_EXCHANGE_REQUEST -> assetId = variablesService.getDataExchangeRequestReceiveApiAssetId();
+        String assetId = switch (type) {
+            case NOTIFICATION -> variablesService.getNotificationApiAssetId();
+            case DATA_EXCHANGE_REQUEST -> variablesService.getDataExchangeRequestReceiveApiAssetId();
             default -> throw new IllegalArgumentException("Unsupported type " + type);
-        }
+        };
 
         try {
             String contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
@@ -584,12 +583,11 @@ public class EdcAdapterService {
             if (contractId == null) {
                 log.info("Need Contract for {} with {}", type, partner.getBpnl());
 
-                boolean negotiated;
-                switch (type) {
-                    case NOTIFICATION -> negotiated = negotiateContractForNotification(partner, type);
-                    case DATA_EXCHANGE_REQUEST -> negotiated = negotiateContractForDataExchangeRequest(partner, type);
+                boolean negotiated = switch (type) {
+                    case NOTIFICATION -> negotiateContractForNotification(partner, type);
+                    case DATA_EXCHANGE_REQUEST -> negotiateContractForDataExchangeRequest(partner, type);
                     default -> throw new IllegalArgumentException("Unsupported type " + type);
-                }
+                };
 
                 if (negotiated) {
                     contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
@@ -610,11 +608,7 @@ public class EdcAdapterService {
                 if (edrDto == null) {
                     log.error("Failed to obtain EDR data for {} with {}", assetId, partner.getEdcUrl());
 
-                    return switch (type) {
-                        case NOTIFICATION -> doNotificationPostRequest(partner, payload);
-                        case DATA_EXCHANGE_REQUEST -> doDataExchangePostRequest(partner, payload);
-                        default -> throw new IllegalArgumentException("Unsupported type " + type);
-                    };
+                    return postAssetToPartner(partner, type, payload, retries - 1);
                 }
 
                 try (var response = postProxyPullRequest(
