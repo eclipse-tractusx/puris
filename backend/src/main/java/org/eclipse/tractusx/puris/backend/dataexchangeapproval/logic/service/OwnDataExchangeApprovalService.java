@@ -47,6 +47,8 @@ public class OwnDataExchangeApprovalService extends DataExchangeApprovalService<
     }
 
     public boolean validate(OwnDataExchangeApproval dataExchangeApproval) {
-        return basicValidation(dataExchangeApproval);
+        return dataExchangeApproval != null &&
+        basicValidation(dataExchangeApproval) &&
+        dataExchangeApproval.getDataExchangeRequest() != null;
     }
 }

@@ -38,8 +38,7 @@ public abstract class DataExchangeApprovalService<T extends DataExchangeApproval
     }
 
     protected boolean basicValidation(DataExchangeApproval dataExchangeApproval) {
-        return dataExchangeApproval.getDataExchangeRequest() != null &&
-            (dataExchangeApproval.getUuid() == null || dataExchangeApproval.getTimestamp() != null) &&
+        return (dataExchangeApproval.getUuid() == null || dataExchangeApproval.getTimestamp() != null) &&
             dataExchangeApproval.getApprovedTypes() != null &&
             !dataExchangeApproval.getApprovedTypes().isEmpty();
     }

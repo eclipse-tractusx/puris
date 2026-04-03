@@ -17,7 +17,12 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,5 +36,9 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString(callSuper = true)
 public class OwnDataExchangeApproval extends DataExchangeApproval {
-    
+    @NotNull
+    @OneToOne(optional = true)
+    @JoinColumn(name = "data_exchange_request_uuid", nullable = false, unique = true)
+    @ToString.Exclude
+    protected ReportedDataExchangeRequest dataExchangeRequest;
 }

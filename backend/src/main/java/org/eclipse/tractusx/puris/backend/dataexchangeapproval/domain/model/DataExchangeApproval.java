@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.RequestedTypeEnumeration;
 
 import jakarta.persistence.Column;
@@ -31,8 +30,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -65,12 +62,6 @@ public abstract class DataExchangeApproval {
     @NotNull
     @Column(nullable = false, updatable = false)
     private Date timestamp;
-    
-    @NotNull
-    @OneToOne(optional = true)
-    @JoinColumn(name = "data_exchange_request_uuid", nullable = false, unique = true)
-    @ToString.Exclude
-    protected ReportedDataExchangeRequest dataExchangeRequest;
 
     @PrePersist
     protected void onCreate() {
@@ -87,13 +78,12 @@ public abstract class DataExchangeApproval {
         }
 
         final DataExchangeApproval that = (DataExchangeApproval) o;
-        return this.getDataExchangeRequest().getUuid().equals(that.getDataExchangeRequest().getUuid()) &&
-            this.isFinalized() == that.isFinalized() &&
+        return this.isFinalized() == that.isFinalized() &&
             Objects.equals(this.getApprovedTypes(), that.getApprovedTypes());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(dataExchangeRequest, isFinalized, approvedTypes);
+        return Objects.hash(isFinalized, approvedTypes);
     }
 }
