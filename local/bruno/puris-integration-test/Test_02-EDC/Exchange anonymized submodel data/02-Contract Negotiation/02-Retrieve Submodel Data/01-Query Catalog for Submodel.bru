@@ -55,12 +55,33 @@ body:json {
 }
 
 script:post-response {
-  let jsonData = res.getBody();
-  const semanticId = "urn:samm:io.catenax.delivery_information_anonymized:1.0.0#DeliveryInformationAnonymized";
+  let jsonData = res.getBody()
+
+  const rawSubmodelData = bru.getVar("SUBMODEL_DATA")
+  const rawSubmodelIndex = bru.getVar("CURRENT_SUBMODEL_INDEX")
+
+  if (!rawSubmodelData)
+  {
+    throw new Error("SUBMODEL_DATA not set!")
+  }
+  if (!rawSubmodelIndex)
+  {
+    throw new Error("CURRENT_SUBMODEL_INDEX not set!")
+  }
+
+  const submodelData = JSON.parse(rawSubmodelData)
+  const submodelIndex = Number(rawSubmodelIndex)
+
+  if (submodelIndex < 0 || submodelIndex >= submodelData.length)
+  {
+    throw new Error("CURRENT_SUBMODEL_INDEX out of bounds!")
+  }
+
+  const currentSubmodelData = submodelData[submodelIndex]
   
-  let catalog = jsonData['dcat:dataset'];
+  let catalog = jsonData['dcat:dataset']
   
-  const catalogEntry = catalog.find(ce => ce["https://admin-shell.io/aas/3/0/HasSemantics/semanticId"]["@id"] === semanticId)
+  const catalogEntry = catalog.find(ce => ce["https://admin-shell.io/aas/3/0/HasSemantics/semanticId"]["@id"] === currentSubmodelData.semanticId)
   
   let offer = catalogEntry["odrl:hasPolicy"]
   const offerId = offer["@id"]
@@ -89,7 +110,10 @@ script:post-response {
           "@id": assetId
       }
   }
-  
+
+  bru.setVar("SUBMODEL_ENDPOINT", currentSubmodelData.submodelEndpoint)
+  bru.setVar("SUBMODEL_DSP_ENDPOINT", currentSubmodelData.dspEndpoint)
+  bru.setVar("SUBMODEL_ASSET", currentSubmodelData.asset)
   bru.setVar("SUBMODEL_CATALOG_OFFER", JSON.stringify(offer))
   bru.setVar("SUBMODEL_CATALOG_OFFER_ID", offerId)
 }

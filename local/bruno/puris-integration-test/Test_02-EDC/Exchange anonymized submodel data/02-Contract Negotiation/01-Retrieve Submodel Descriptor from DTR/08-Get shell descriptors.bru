@@ -1,0 +1,68 @@
+meta {
+  name: 08-Get shell descriptors
+  type: http
+  seq: 8
+  tags: [
+    exchange-anonymized-data
+  ]
+}
+
+get {
+  url: {{DTR_EDR_ENDPOINT}}/shell-descriptors/:aasIdentifier
+  body: none
+  auth: apikey
+}
+
+params:path {
+  aasIdentifier: {{AAS_IDENTIFIER}}
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{DTR_EDR_AUTH}}
+  placement: header
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+  const submodelData = [
+    {
+      semanticId: "urn:samm:io.catenax.delivery_information_anonymized:1.0.0#DeliveryInformationAnonymized",
+      asset: "deliveryanonymizedsubmodel-api-asset"
+    },
+    {
+      semanticId: "urn:samm:io.catenax.planned_production_output_anonymized:1.0.0#PlannedProductionOutputAnonymized",
+      asset: "productionanonymizedsubmodel-api-asset"
+    },
+    {
+      semanticId: "urn:samm:io.catenax.item_stock_anonymized:1.0.0#ItemStockAnonymized",
+      asset: "itemstockanonymizedsubmodel-api-asset"
+    }
+  ];
+
+  for (const data of submodelData)
+  {
+    const anonymizedSubmodelDescriptor = jsonData.submodelDescriptors.find(smd => smd.semanticId.keys.some(kv => kv.value === data.semanticId));
+    
+    if (anonymizedSubmodelDescriptor) {
+      const submodelEndpoint = anonymizedSubmodelDescriptor.endpoints[0].protocolInformation.href;
+      const dspEndpoint = anonymizedSubmodelDescriptor.endpoints[0].protocolInformation.subprotocolBody.split("dspEndpoint=")[1];
+      data.submodelEndpoint = submodelEndpoint;
+      data.dspEndpoint = dspEndpoint;
+    }
+  }
+
+  bru.setVar("SUBMODEL_DATA", JSON.stringify(submodelData));
+  bru.setVar("CURRENT_SUBMODEL_INDEX", 0);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
