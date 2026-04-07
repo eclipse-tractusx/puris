@@ -34,7 +34,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedProduction;
 import org.eclipse.tractusx.puris.backend.production.logic.adapter.PlannedProductionSammMapper;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproductionsamm.PlannedProductionOutput;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -86,7 +86,7 @@ public class ProductionRequestApiService {
         List<RefreshError> errors = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
-            var data = edcAdapterService.doSubmodelRequest(AssetType.PRODUCTION_SUBMODEL, mpr, DirectionCharacteristic.OUTBOUND, 1);
+            var data = edcAdapterService.doSubmodelRequest(AssetType.PRODUCTION_SUBMODEL, mpr, DirectionEnum.OUTBOUND, 1);
             var samm = objectMapper.treeToValue(data, PlannedProductionOutput.class);
             var productions = sammMapper.sammToReportedProduction(samm, partner);
             for (var production : productions) {

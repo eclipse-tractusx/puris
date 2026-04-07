@@ -36,7 +36,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.production.logic.service.OwnProductionService;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.MaterialItemStockRepository;
 import org.eclipse.tractusx.puris.backend.stock.domain.repository.ProductItemStockRepository;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.OwnCustomerSupply;
@@ -216,7 +216,7 @@ public class SupplyServiceTest {
             TEST_MATERIAL.getOwnMaterialNumber(),
             Optional.of(BPNL_SUPPLIER),
             Optional.empty(),
-            DirectionCharacteristic.INBOUND,
+            DirectionEnum.INBOUND,
             numberOfDays
         )).thenReturn(inboundDeliveryQuantities);
 
@@ -224,7 +224,7 @@ public class SupplyServiceTest {
             TEST_MATERIAL.getOwnMaterialNumber(),
             Optional.of(BPNL_SUPPLIER),
             Optional.empty(),
-            DirectionCharacteristic.INBOUND,
+            DirectionEnum.INBOUND,
             numberOfDays
         )).thenReturn(reportedInboundDeliveryQuantities);
 
@@ -298,7 +298,7 @@ public class SupplyServiceTest {
             TEST_PRODUCT.getOwnMaterialNumber(),
             Optional.of(BPNL_CUSTOMER),
             Optional.empty(),
-            DirectionCharacteristic.OUTBOUND,
+            DirectionEnum.OUTBOUND,
             numberOfDays
         )).thenReturn(outboundDeliveryQuantities);
 
@@ -306,7 +306,7 @@ public class SupplyServiceTest {
             TEST_PRODUCT.getOwnMaterialNumber(),
             Optional.of(BPNL_CUSTOMER),
             Optional.empty(),
-            DirectionCharacteristic.OUTBOUND,
+            DirectionEnum.OUTBOUND,
             numberOfDays
         )).thenReturn(reportedOutboundDeliveryQuantities);
 

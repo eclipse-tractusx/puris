@@ -37,7 +37,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -156,7 +156,7 @@ public class DeliveryRequestApiService {
                 mprService.triggerPartTypeRetrievalTask(partner);
                 mpr = mprService.find(material, partner);
             }
-            var direction = material.isMaterialFlag() ? DirectionCharacteristic.OUTBOUND : DirectionCharacteristic.INBOUND;
+            var direction = material.isMaterialFlag() ? DirectionEnum.OUTBOUND : DirectionEnum.INBOUND;
             var data = edcAdapterService.doSubmodelRequest(AssetType.DELIVERY_SUBMODEL, mpr, direction, 1);
             var samm = objectMapper.treeToValue(data, DeliveryInformation.class);
             var deliveries = sammMapper.sammToReportedDeliveries(samm, partner);

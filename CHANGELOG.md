@@ -17,7 +17,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Changed
 
-- /
+- Refactor usage of direction-characteristics ([#1128](https://github.com/eclipse-tractusx/puris/pull/1128))
 
 ### Fixes
 

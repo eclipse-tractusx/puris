@@ -28,7 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockRequestApiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +71,7 @@ public class ItemStockRequestApiController {
     @GetMapping("request/{materialnumber}/{direction}/submodel/{representation}")
     public ResponseEntity<ItemStockSamm> getMappingItemStock2(@RequestHeader("edc-bpn") String bpnl,
                                                               @PathVariable String materialnumber,
-                                                              @PathVariable DirectionCharacteristic direction,
+                                                              @PathVariable DirectionEnum direction,
                                                               @PathVariable String representation) {
         if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumber).matches() || direction == null) {
             log.warn("Rejecting request at ItemStock Submodel request 2.0.0 endpoint");

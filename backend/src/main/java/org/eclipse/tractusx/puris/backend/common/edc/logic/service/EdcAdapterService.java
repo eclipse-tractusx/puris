@@ -31,7 +31,7 @@ import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -609,7 +609,7 @@ public class EdcAdapterService {
         return postNotificationToPartner(partner, type, payload, --retries);
     }
 
-    private JsonNode getSubmodelFromPartner(MaterialPartnerRelation mpr, AssetType type, DirectionCharacteristic direction, int retries) {
+    private JsonNode getSubmodelFromPartner(MaterialPartnerRelation mpr, AssetType type, DirectionEnum direction, int retries) {
         if (retries < 0) {
             return null;
         }
@@ -710,7 +710,7 @@ public class EdcAdapterService {
         return edrDto;
     }
 
-    public JsonNode doSubmodelRequest(AssetType type, MaterialPartnerRelation mpr, DirectionCharacteristic direction, int retries) {
+    public JsonNode doSubmodelRequest(AssetType type, MaterialPartnerRelation mpr, DirectionEnum direction, int retries) {
         if (retries < 0) {
             return null;
         }
@@ -790,7 +790,7 @@ public class EdcAdapterService {
         }
     }
 
-    private SubmodelData fetchSubmodelDataByDirection(MaterialPartnerRelation mpr, String semanticId, DirectionCharacteristic direction) {
+    private SubmodelData fetchSubmodelDataByDirection(MaterialPartnerRelation mpr, String semanticId, DirectionEnum direction) {
         String manufacturerPartId = switch (direction) {
             case INBOUND -> mpr.getMaterial().getOwnMaterialNumber();
             case OUTBOUND -> mpr.getPartnerMaterialNumber();
@@ -1046,7 +1046,7 @@ public class EdcAdapterService {
      * @return true, if a contract was successfully negotiated
      */
 
-    private boolean negotiateContractForSubmodel(MaterialPartnerRelation mpr, AssetType type, DirectionCharacteristic direction) {
+    private boolean negotiateContractForSubmodel(MaterialPartnerRelation mpr, AssetType type, DirectionEnum direction) {
         Partner partner = mpr.getPartner();
         SubmodelData submodelData = switch (type) {
             case DTR -> throw new IllegalArgumentException("DTR not supported");

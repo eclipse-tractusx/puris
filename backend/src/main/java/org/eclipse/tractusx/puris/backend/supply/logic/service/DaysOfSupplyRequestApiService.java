@@ -31,7 +31,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshError;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.OwnCustomerSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.OwnSupplierSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.ReportedCustomerSupply;
@@ -66,7 +66,7 @@ public class DaysOfSupplyRequestApiService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public DaysOfSupply handleDaysOfSupplySubmodelRequest(String bpnl, String materialNumberCx, DirectionCharacteristic direction) {
+    public DaysOfSupply handleDaysOfSupplySubmodelRequest(String bpnl, String materialNumberCx, DirectionEnum direction) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
             log.error("Unknown Partner BPNL");
@@ -85,7 +85,7 @@ public class DaysOfSupplyRequestApiService {
         Material material = mpr.getMaterial();
 
         var sites = partnerService.getOwnPartnerEntity().getSites();
-        if (direction == DirectionCharacteristic.OUTBOUND) {
+        if (direction == DirectionEnum.OUTBOUND) {
             List<List<OwnSupplierSupply>> suppliesBySite = new ArrayList<>();
             for (var site : sites) {
                 var supplierSupply = supplierSupplyService.calculateSupplierDaysOfSupply(
@@ -112,7 +112,7 @@ public class DaysOfSupplyRequestApiService {
         }
     }
 
-    public RefreshResult doReportedDaysOfSupplyRequest(Partner partner, Material material, DirectionCharacteristic direction) {
+    public RefreshResult doReportedDaysOfSupplyRequest(Partner partner, Material material, DirectionEnum direction) {
         List<RefreshError> errors = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
@@ -122,7 +122,7 @@ public class DaysOfSupplyRequestApiService {
             }
             var data = edcAdapterService.doSubmodelRequest(AssetType.DAYS_OF_SUPPLY, mpr, direction, 1);
             var samm = objectMapper.treeToValue(data, DaysOfSupply.class);
-            if (direction == DirectionCharacteristic.INBOUND) {
+            if (direction == DirectionEnum.INBOUND) {
                 var reportedCustomerSupplies = sammMapper.sammToReportedCustomerSupply(samm, partner);
                 for (var reportedCustomerSupply : reportedCustomerSupplies) {
                     var supplyPartner = reportedCustomerSupply.getPartner();

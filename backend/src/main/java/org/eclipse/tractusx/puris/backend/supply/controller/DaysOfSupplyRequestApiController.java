@@ -27,7 +27,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.supply.logic.dto.daysofsupplysamm.DaysOfSupply;
 import org.eclipse.tractusx.puris.backend.supply.logic.service.DaysOfSupplyRequestApiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +69,7 @@ public class DaysOfSupplyRequestApiController {
     public ResponseEntity<DaysOfSupply> getDaysOfSupplyMapping(
             @RequestHeader("edc-bpn") String bpnl,
             @PathVariable String materialnumbercx,
-            @PathVariable DirectionCharacteristic direction,
+            @PathVariable DirectionEnum direction,
             @PathVariable String representation) {
         if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumbercx).matches()) {
             log.warn("Rejecting request at DaysOfSupply Submodel request 2.0.0 endpoint");

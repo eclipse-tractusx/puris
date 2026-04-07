@@ -31,7 +31,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -98,7 +98,7 @@ public class DtrRequestBodyBuilder {
         href += materialPartnerRelation.getPartnerCXNumber() + "/";
 
         // all api definitions follow the same syntax, but some need to be direction specific
-        String directionHref = href + DirectionCharacteristic.INBOUND + "/submodel";
+        String directionHref = href + DirectionEnum.INBOUND + "/submodel";
         href += "submodel";
 
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, directionHref, variablesService.getItemStockSubmodelApiAssetId()));
@@ -149,7 +149,7 @@ public class DtrRequestBodyBuilder {
         href += material.getMaterialNumberCx() + "/";
 
         // all api definitions follow the same syntax, but some need to be direction specific
-        String directionHref = href + DirectionCharacteristic.OUTBOUND + "/submodel";
+        String directionHref = href + DirectionEnum.OUTBOUND + "/submodel";
         href += "submodel";
 
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, directionHref, variablesService.getItemStockSubmodelApiAssetId()));
