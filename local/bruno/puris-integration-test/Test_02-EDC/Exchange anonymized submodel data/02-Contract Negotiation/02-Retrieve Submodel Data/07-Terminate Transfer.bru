@@ -30,9 +30,6 @@ body:json {
 }
 
 script:post-response {
-  const jsonData = res.getBody()
-  bru.setVar("SUBMODEL_EDR_AUTH", jsonData.authorization)
-
   const rawSubmodelData = bru.getVar("SUBMODEL_DATA")
   const rawSubmodelIndex = bru.getVar("CURRENT_SUBMODEL_INDEX")
 
