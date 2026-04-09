@@ -94,3 +94,74 @@ databaseChangeLog:
             referencedTableName: own_data_exchange_request
             referencedColumnNames: uuid
             constraintName: fk_own_data_exchange_request_requested_types
+  - changeSet:
+        id: "2"
+        author: OlgaIvkovic
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: data_exchange_request_contract_mapping_pkey
+                    name: partner_bpnl
+                    type: VARCHAR(255)
+              tableName: data_exchange_request_contract_mapping
+          - addColumn:
+              tableName: own_data_exchange_request
+              columns:
+                - column:
+                    name: related_data_exchange_request_uuid
+                    type: UUID
+          - createTable:
+              tableName: reported_data_exchange_request
+              columns:
+                - column:
+                    name: uuid
+                    type: UUID
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: reported_data_exchange_request_pkey
+                - column:
+                    name: notification_uuid
+                    type: UUID
+                    constraints:
+                      nullable: false
+                - column:
+                    name: criticality
+                    type: SMALLINT
+                    constraints:
+                      nullable: false
+                - column:
+                    name: requested_types
+                    type: SMALLINT[]
+                    constraints:
+                      nullable: false
+                - column:
+                    name: desired_start_date_time
+                    type: TIMESTAMP WITHOUT TIME ZONE
+                    constraints:
+                      nullable: false
+                - column:
+                    name: desired_end_date_time
+                    type: TIMESTAMP WITHOUT TIME ZONE
+                    constraints:
+                      nullable: false
+                - column:
+                    name: text
+                    type: VARCHAR(255)
+                    constraints:
+                      nullable: false
+                - column:
+                    name: timestamp
+                    type: TIMESTAMP WITHOUT TIME ZONE
+                    constraints:
+                      nullable: false
+          - addForeignKeyConstraint:
+              baseTableName: reported_data_exchange_request
+              baseColumnNames: notification_uuid
+              referencedTableName: own_demand_and_capacity_notification
+              referencedColumnNames: uuid
+              constraintName: fk_reported_data_exchange_request_notification

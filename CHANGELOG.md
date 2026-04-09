@@ -13,6 +13,7 @@ The **need for configuration updates** is **marked bold**.
 ### Added
 
 - Added backend implementation for data exchange request ([#1116](https://github.com/eclipse-tractusx/puris/pull/1116))
+- Added Data exchange request edc integration ([#1126](https://github.com/eclipse-tractusx/puris/pull/1126))
 
 ### Changed
 

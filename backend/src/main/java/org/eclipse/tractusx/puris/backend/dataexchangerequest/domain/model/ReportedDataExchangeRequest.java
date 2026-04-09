@@ -17,7 +17,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -28,7 +28,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 /**
- * Own request represents a request sent to a partner
+ * Reported request represents a Request received from the partner
  */
 @Entity
 @SuperBuilder
@@ -36,18 +36,10 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @ToString(callSuper = true)
-public class OwnDataExchangeRequest extends DataExchangeRequest {
+public class ReportedDataExchangeRequest extends DataExchangeRequest {
     @ManyToOne(optional = false)
     @JoinColumn(name = "notification_uuid", nullable = false, unique = true)
     @ToString.Exclude
     @NotNull
-    protected ReportedDemandAndCapacityNotification notification;
-    
-    /**
-     * Related data exchange request is used when forwarding requests
-     */
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "related_data_exchange_request_uuid")
-    @ToString.Exclude
-    private ReportedDataExchangeRequest relatedDataExchangeRequest;
+    protected OwnDemandAndCapacityNotification notification;
 }

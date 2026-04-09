@@ -27,6 +27,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DaysOfSupplyContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DeliveryContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandAndCapacityNotificationContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DataExchangeRequestContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DtrContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.GeneralContractMappingRepository;
@@ -66,6 +67,9 @@ public class EdcContractMappingService {
 
     @Autowired
     private PartTypeContractMappingRepository partTypeContractMappingRepository;
+
+    @Autowired
+    private DataExchangeRequestContractMappingRepository dataExchangeRequestContractMappingRepository;
 
     private final String SEPARATOR = "\n@\n";
 
@@ -130,6 +134,7 @@ public class EdcContractMappingService {
             case NOTIFICATION -> demandAndCapacityNotificationContractMappingRepository;
             case DAYS_OF_SUPPLY -> daysOfSupplyContractMappingRepository;
             case PART_TYPE_INFORMATION_SUBMODEL -> partTypeContractMappingRepository;
+            case DATA_EXCHANGE_REQUEST -> dataExchangeRequestContractMappingRepository;
         };
         return repository;
     }

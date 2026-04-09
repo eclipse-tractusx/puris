@@ -1,6 +1,5 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2026 Volkswagen AG
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -17,12 +16,13 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
+package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
-package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
-import org.springframework.stereotype.Repository;
+import jakarta.persistence.Entity;
+import lombok.ToString;
 
-@Repository
-public interface OwnDemandAndCapacityNotificationRepository extends DemandAndCapacityNotificationRepository<OwnDemandAndCapacityNotification>{
-
+@Entity
+@ToString(callSuper = true)
+public class DataExchangeRequestContractMapping extends ContractMapping {
+    
 }

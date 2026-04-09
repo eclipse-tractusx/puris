@@ -437,6 +437,19 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+    public JsonNode buildDataExchangeRequestRegistrationBody(String assetId, String endpoint) {
+        var body = getAssetRegistrationContext();
+        body.put("@id", assetId);
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", "cx-taxo:DataExchangeRequestReceiveApi");
+        propertiesObject.put("cx-common:version", "1.0");
+        body.set("dataAddress", createDataAddressObject(endpoint, "true"));
+        return body;
+    }
+
     public JsonNode createDataAddressObject(String endpoint, String proxyMethodAndBody) {
         var dataAddress = MAPPER.createObjectNode();
         dataAddress.put("@type", "DataAddress");

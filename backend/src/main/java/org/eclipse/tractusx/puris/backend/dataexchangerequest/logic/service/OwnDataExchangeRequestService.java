@@ -17,6 +17,8 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
@@ -46,30 +48,39 @@ public class OwnDataExchangeRequestService extends DataExchangeRequestService<Ow
     }
 
     public boolean validate(OwnDataExchangeRequest dataExchangeRequest) {
-        return dataExchangeRequest != null
-            && basicValidation(dataExchangeRequest)
-            && dataExchangeRequest.getNotification() != null
-            && validateDesiredDates(dataExchangeRequest);
+        return validateWithDetails(dataExchangeRequest).isEmpty();
     }
 
-    private boolean validateDesiredDates(OwnDataExchangeRequest ownDataExchangeRequest) {
+    public List<String> validateWithDetails(OwnDataExchangeRequest dataExchangeRequest) {
+        List<String> errors = new ArrayList<>();
+        errors.addAll(basicValidation(dataExchangeRequest));
+        if (dataExchangeRequest.getNotification() == null) {
+            errors.add("Missing notification.");
+        }
+        errors.addAll(validateDesiredDates(dataExchangeRequest));
+
+        return errors;
+    }
+
+    private List<String> validateDesiredDates(OwnDataExchangeRequest ownDataExchangeRequest) {
+        List<String> errors = new ArrayList<>();
         if (!ownDataExchangeRequest.getDesiredStartDateTime().before(ownDataExchangeRequest.getDesiredEndDateTime())) {
-            return false;
+            errors.add("desiredStartDateTime must be before desiredEndDateTime.");
         }
         if (ownDataExchangeRequest.getDesiredStartDateTime().before(ownDataExchangeRequest.getNotification().getStartDateOfEffect())) {
-            return false;
+            errors.add("desiredStartDateTime must not be before notification startDateOfEffect.");
         }
         if (ownDataExchangeRequest.getDesiredEndDateTime().before(ownDataExchangeRequest.getNotification().getStartDateOfEffect())) {
-            return false;
+            errors.add("desiredEndDateTime must not be before notification startDateOfEffect.");
         }
         if (ownDataExchangeRequest.getNotification().getExpectedEndDateOfEffect() != null) {
             if (ownDataExchangeRequest.getDesiredStartDateTime().after(ownDataExchangeRequest.getNotification().getExpectedEndDateOfEffect())) {
-                return false;
+                errors.add("desiredStartDateTime must not be after notification expectedEndDateOfEffect.");
             }
             if (ownDataExchangeRequest.getDesiredEndDateTime().after(ownDataExchangeRequest.getNotification().getExpectedEndDateOfEffect())) {
-                return false;
+                errors.add("desiredEndDateTime must not be after notification expectedEndDateOfEffect.");
             }
         }
-        return true;
+        return errors;
     }
 }

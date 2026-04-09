@@ -161,6 +161,21 @@ public class VariablesService {
      */
     private String daysOfSupplySubmodelAssetId;
 
+    /**
+     * The url under which this application's anonymized item stock request endpoint can
+     * be reached by external machines.
+     */
+    public String getDataExchangeRequestEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "data-exchange-request/request";
+    }
+
+    @Value("${puris.dataExchangeRequestReceiveApi.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the Data Exchange Request request API
+     * during asset creation.
+     */
+    private String dataExchangeRequestReceiveApi;
+
     @Value("${puris.frameworkagreement.credential}")
     /**
      * The name of the framework agreement to be used.
@@ -318,6 +333,10 @@ public class VariablesService {
 
     public String getNotificationApiAssetId() {
         return notificationAssetId + "@" + ownBpnl;
+    }
+
+    public String getDataExchangeRequestReceiveApiAssetId() {
+        return dataExchangeRequestReceiveApi + "@" + ownBpnl;
     }
 
     public String getPartTypeSubmodelApiAssetId() {

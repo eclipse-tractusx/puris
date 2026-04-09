@@ -483,6 +483,9 @@ backend:
     notification:
       # -- Asset ID for Notification API
       apiassetid: notification-api-asset
+    dataexchangerequestreceiveapi:
+      # -- Asset ID for Data Exchange Request Receive API
+      apiassetid: dataexchangerequestreceiveapi-api-asset
     frameworkagreement:
       # -- The name of the framework agreement. Starting with Uppercase and using CamelCase.
       credential: DataExchangeGovernance
