@@ -52,14 +52,6 @@ public class VariablesService {
         return purisBaseUrl.endsWith("/") ? purisBaseUrl : purisBaseUrl + "/";
     }
 
-    @Value("${puris.demonstrator.role}")
-    /**
-     * Must be set to "CUSTOMER" or "SUPPLIER" if
-     * you want to start with some initial settings
-     * defined in the DataInjectionCommandLineRunner
-     */
-    private String demoRole;
-
     @Value("${server.servlet.context-path}")
     private String contextPath;
 

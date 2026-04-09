@@ -455,10 +455,6 @@ backend:
       zipcodeandcity: "12345 Musterhausen"
       # -- Own name (self-description)
       name: "YOUR-COMPANY-NAME"
-    demonstrator:
-      # -- Current role of the PURIS demonstrator. Default value should be empty.
-      # Can be set to "customer" or "supplier" to enable demonstration setup
-      role:
     jpa:
       hibernate:
         # -- Initialises SQL database with Hibernate property "update" to allow Hibernate to add things to schema so that it doesn't drop tables. Since 3.2.0 migrations are provided via liquibase; if you want to use that feature, set to validate or none.

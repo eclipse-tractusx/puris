@@ -123,8 +123,6 @@ spec:
                 secretKeyRef:
                   name: "{{ .Values.backend.puris.existingSecret }}"
                   key: "puris-api-key"
-            - name: PURIS_DEMONSTRATOR_ROLE
-              value: "{{ .Values.backend.puris.demonstrator.role }}"
             - name: PURIS_BASEURL
                 # remove backslash if given and later ensure (must end with trailing slash)
               value: "{{- include "puris.backend.baseUrlWithProtocol" . -}}"

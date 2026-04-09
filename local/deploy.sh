@@ -139,16 +139,8 @@ fi
 echo "Removing the PURIS + EDCs with their DTR and Database..."
 docker compose down -v
 
-if [ $int_seed -eq 1 ]; then
-  # overwrite role to enable the local integration test
-  # don't register customer dtr asset as we simulate the sceanrio in which another application has been onboarded before
-  echo "Starting PURIS demonstrator containers without demonstration role..."
-  CUSTOMER_DEMONSTRATOR_ROLE="" SUPPLIER_DEMONSTRATOR_ROLE="" CUSTOMER_PURIS_DTR_EDC_ASSET_REGISTER="false" docker compose up -d
-else
-  # Start the PURIS demonstrator containers
-  echo "Starting PURIS demonstrator containers..."
-  docker compose up -d
-fi
+echo "Starting PURIS demonstrator containers..."
+docker compose up -d
 
 # Prepare the following asset data:
 # 1. DTR
