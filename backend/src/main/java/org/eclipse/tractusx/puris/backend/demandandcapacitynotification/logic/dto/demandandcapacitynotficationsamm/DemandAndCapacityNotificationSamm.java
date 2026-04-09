@@ -30,16 +30,18 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@SuperBuilder
+@AllArgsConstructor
+@Builder
 @ToString
 public class DemandAndCapacityNotificationSamm {
     @NotNull

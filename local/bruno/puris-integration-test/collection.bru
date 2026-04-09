@@ -1,0 +1,24 @@
+script:pre-request {
+  const customerProfileVersion = bru.getEnvVar("CUSTOMER_POLICY_PROFILE_VERSION");
+  const supplierProfileVersion = bru.getEnvVar("SUPPLIER_POLICY_PROFILE_VERSION");
+  
+  if (customerProfileVersion === "profile2405") {
+    bru.setVar("CUSTOMER_POLICY_NAMESPACE", "https://w3id.org/catenax/policy/")
+    bru.setVar("CUSTOMER_POLICY_OPERATOR", "eq")
+    bru.setVar("CUSTOMER_POLICY_ACTION", "odrl:use")
+  } else {
+    bru.setVar("CUSTOMER_POLICY_NAMESPACE", "https://w3id.org/catenax/2025/9/policy/")
+    bru.setVar("CUSTOMER_POLICY_OPERATOR", "isAnyOf")
+    bru.setVar("CUSTOMER_POLICY_ACTION", "cx-policy:access")
+  }
+  
+  if (supplierProfileVersion === "profile2405") {
+    bru.setVar("SUPPLIER_POLICY_NAMESPACE", "https://w3id.org/catenax/policy/")
+    bru.setVar("SUPPLIER_POLICY_OPERATOR", "eq")
+    bru.setVar("SUPPLIER_POLICY_ACTION", "odrl:use")
+  } else {
+    bru.setVar("SUPPLIER_POLICY_NAMESPACE", "https://w3id.org/catenax/2025/9/policy/")
+    bru.setVar("SUPPLIER_POLICY_OPERATOR", "isAnyOf")
+    bru.setVar("SUPPLIER_POLICY_ACTION", "cx-policy:access")
+  }
+}

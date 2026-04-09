@@ -30,14 +30,17 @@ import com.apicatalog.jsonld.document.Document;
 import com.apicatalog.jsonld.document.JsonDocument;
 import com.apicatalog.jsonld.loader.DocumentLoader;
 import com.apicatalog.jsonld.loader.DocumentLoaderOptions;
-import com.apicatalog.jsonld.loader.SchemeRouter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonStructure;
 import lombok.extern.slf4j.Slf4j;
+
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.PolicyProfileConstants;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import java.io.File;
@@ -53,8 +56,10 @@ import java.util.Map;
 public class JsonLdUtils {
 
     private final ObjectMapper MAPPER = new ObjectMapper();
-    private final DocumentLoader CACHED_LOADER;
-    private final JsonDocument DEFAULT_CONTEXT_DOCUMENT;
+    private final DocumentLoader CACHED_LOADER_2405;
+    private final DocumentLoader CACHED_LOADER_2509;
+    private final JsonDocument DEFAULT_CONTEXT_DOCUMENT_2405;
+    private final JsonDocument DEFAULT_CONTEXT_DOCUMENT_2509;
 
     /**
      * JsonLd processor having preloaded Eclipse Tractus-X related jsonLd documents.
@@ -62,36 +67,71 @@ public class JsonLdUtils {
     public JsonLdUtils() {
         // Map of contexts to load
         final String prefix = "json-ld" + File.separator;
-        Map<String, String> filesMap = Map.of(
-            EdcRequestBodyBuilder.CX_POLICY_CONTEXT, prefix + "cx-policy-v1.jsonld",
-            EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT, prefix + "odrl.jsonld",
-            EdcRequestBodyBuilder.DCAT_NAMESPACE, prefix + "dcat.jsonld",
-            EdcRequestBodyBuilder.DSPACE_NAMESPACE, prefix + "dspace.jsonld",
-            EdcRequestBodyBuilder.EDC_NAMESPACE, prefix + "edc-v1.jsonld",
-            EdcRequestBodyBuilder.TX_AUTH_NAMESPACE, prefix + "tx-auth-v1.jsonld",
-            EdcRequestBodyBuilder.TX_NAMESPACE, prefix + "tx-v1.jsonld"
+        PolicyProfileConstants profile2405 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.getConstants();
+        PolicyProfileConstants profile2509 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2509.getConstants();
+        Map<String, String> filesMap2405 = Map.of(
+            profile2405.CX_POLICY_CONTEXT, prefix + "cx-policy-2405.jsonld",
+            profile2405.ODRL_REMOTE_CONTEXT, prefix + "odrl.jsonld",
+            profile2405.DCAT_NAMESPACE, prefix + "dcat.jsonld",
+            profile2405.DSPACE_NAMESPACE, prefix + "dspace.jsonld",
+            profile2405.EDC_NAMESPACE, prefix + "edc-v1.jsonld",
+            profile2405.TX_AUTH_NAMESPACE, prefix + "tx-auth-v1.jsonld",
+            profile2405.TX_NAMESPACE, prefix + "tx-v1.jsonld"
+        );
+        Map<String, String> filesMap2509 = Map.of(
+            profile2509.CX_POLICY_CONTEXT, prefix + "cx-policy-2509.jsonld",
+            profile2509.ODRL_REMOTE_CONTEXT, prefix + "odrl.jsonld",
+            profile2509.DCAT_NAMESPACE, prefix + "dcat.jsonld",
+            profile2509.DSPACE_NAMESPACE, prefix + "dspace.jsonld",
+            profile2509.EDC_NAMESPACE, prefix + "edc-v1.jsonld",
+            profile2509.TX_AUTH_NAMESPACE, prefix + "tx-auth-v1.jsonld",
+            profile2509.TX_NAMESPACE, prefix + "tx-v1.jsonld"
         );
 
         // Load only internal documments
-        this.CACHED_LOADER = new CachingDocumentLoader(filesMap);
+        this.CACHED_LOADER_2405 = new CachingDocumentLoader(filesMap2405);
 
-        JsonObject contextObject = Json.createObjectBuilder()
-            .add("edc", EdcRequestBodyBuilder.EDC_NAMESPACE)
-            .add("dcat", EdcRequestBodyBuilder.DCAT_NAMESPACE)
-            .add("odrl", EdcRequestBodyBuilder.ODRL_REMOTE_CONTEXT)
-            .add("dspace", EdcRequestBodyBuilder.DSPACE_NAMESPACE)
-            .add("tx", EdcRequestBodyBuilder.TX_NAMESPACE)
-            .add("cx-policy", EdcRequestBodyBuilder.CX_POLICY_CONTEXT)
+        JsonObject contextObject2405 = Json.createObjectBuilder()
+            .add("edc", profile2405.EDC_NAMESPACE)
+            .add("dcat", profile2405.DCAT_NAMESPACE)
+            .add("odrl", profile2405.ODRL_REMOTE_CONTEXT)
+            .add("dspace", profile2405.DSPACE_NAMESPACE)
+            .add("tx", profile2405.TX_NAMESPACE)
+            .add("cx-policy", profile2405.CX_POLICY_CONTEXT)
             .build();
 
-        JsonObject rootContext = Json.createObjectBuilder()
-            .add("@context", contextObject)
+        JsonObject rootContext2405 = Json.createObjectBuilder()
+            .add("@context", contextObject2405)
             .build();
 
-        this.DEFAULT_CONTEXT_DOCUMENT = JsonDocument.of(rootContext);
+        this.DEFAULT_CONTEXT_DOCUMENT_2405 = JsonDocument.of(rootContext2405);
+
+        // Load only internal documments
+        this.CACHED_LOADER_2509 = new CachingDocumentLoader(filesMap2509);
+
+        JsonObject contextObject2509 = Json.createObjectBuilder()
+            .add("edc", profile2509.EDC_NAMESPACE)
+            .add("dcat", profile2509.DCAT_NAMESPACE)
+            .add("odrl", profile2509.ODRL_REMOTE_CONTEXT)
+            .add("dspace", profile2509.DSPACE_NAMESPACE)
+            .add("tx", profile2509.TX_NAMESPACE)
+            .add("cx-policy", profile2509.CX_POLICY_CONTEXT)
+            .build();
+
+        JsonObject rootContext2509 = Json.createObjectBuilder()
+            .add("@context", contextObject2509)
+            .build();
+
+        this.DEFAULT_CONTEXT_DOCUMENT_2509 = JsonDocument.of(rootContext2509);
     }
 
-    public JsonNode expand(JsonNode node) {
+    /**
+     * expands JSON-LD using the default context and the specified policy profile
+     * 
+     * @param node JsonNode (jackson) to expand
+     * @param profileVersion PolicyProfileVersionEnumeration to determine which default context and docuement loader to use during expansion
+     */
+    public JsonNode expand(JsonNode node, PolicyProfileVersionEnumeration profileVersion) {
         try (JsonReader jsonReader = Json.createReader(new StringReader(node.toString()))){
             
             // transform from jackson to jakarta
@@ -99,7 +139,8 @@ public class JsonLdUtils {
             JsonDocument document = JsonDocument.of(jakartaJson);
 
             JsonLdOptions options = new JsonLdOptions();
-            options.setDocumentLoader(CACHED_LOADER);
+            var loader = profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405 ? CACHED_LOADER_2405 : CACHED_LOADER_2509;
+            options.setDocumentLoader(loader);
 
             var expandedJakartaJson = JsonLd.expand(document)
                 .options(options)
@@ -114,40 +155,45 @@ public class JsonLdUtils {
     }
 
     /**
-     * compacts JSON-LD using the default context
+     * compacts JSON-LD using the default context and the specified policy profile
      * 
      * @param node JsonNode (jackson) to compact
+     * @param profileVersion PolicyProfileVersionEnumeration to determine which default context and docuement loader to use during compaction
      */
-    public JsonNode compact(JsonNode node) {
-        return compact(node, DEFAULT_CONTEXT_DOCUMENT);
+    public JsonNode compact(JsonNode node, PolicyProfileVersionEnumeration profileVersion) {
+        var contextDocument = profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405 ? DEFAULT_CONTEXT_DOCUMENT_2405 : DEFAULT_CONTEXT_DOCUMENT_2509;
+        return compact(node, contextDocument, profileVersion);
     }
 
     /**
-     * compacts JSON-LD using a specific context
+     * compacts JSON-LD using a specific context and the specified policy profile
      * 
      * @param node JsonNode (jackson) to compact
      * @param contextNode JsonNode (jackson) to use as context during compaction
+     * @param profileVersion PolicyProfileVersionEnumeration to determine which document loader to use during compaction
      */
-    public JsonNode compact(JsonNode node, JsonNode contextNode) {
+    public JsonNode compact(JsonNode node, JsonNode contextNode, PolicyProfileVersionEnumeration profileVersion) {
         try (JsonReader contextReader = Json.createReader(new StringReader(contextNode.toString()))) {
             JsonDocument contextDocument = JsonDocument.of(contextReader.read());
-            return compact(node, contextDocument);
+            return compact(node, contextDocument, profileVersion);
         }
     }
 
     /**
-     * compacts a JsonNode
+     * compacts a JsonNode using a given context document and the specified policy profile
      * 
      * @param node JsonNode (Jackson) to compact
      * @param contextDocument JsonDocument (jakarta) to use as context during compaction
+     * @param profileVersion PolicyProfileVersionEnumeration to determine which document loader to use during compaction
      */
-    private JsonNode compact(JsonNode node, JsonDocument contextDocument) {
+    private JsonNode compact(JsonNode node, JsonDocument contextDocument, PolicyProfileVersionEnumeration profileVersion) {
         try (JsonReader jsonReader = Json.createReader(new StringReader(node.toString()))) {
             JsonStructure jakartaJson = jsonReader.read();
             JsonDocument document = JsonDocument.of(jakartaJson);
 
             JsonLdOptions options = new JsonLdOptions();
-            options.setDocumentLoader(CACHED_LOADER);
+            var loader = profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405 ? CACHED_LOADER_2405 : CACHED_LOADER_2509;
+            options.setDocumentLoader(loader);
 
             var compactedObject = JsonLd.compact(document, contextDocument)
                 .options(options)
@@ -166,7 +212,6 @@ public class JsonLdUtils {
      */
     private static class CachingDocumentLoader implements DocumentLoader {
         private final Map<URI, Document> cache = new HashMap<>();
-        private final DocumentLoader defaultLoader = SchemeRouter.defaultInstance();
 
         public CachingDocumentLoader(Map<String, String> filesMap) {
             for (Map.Entry<String, String> entry : filesMap.entrySet()) {

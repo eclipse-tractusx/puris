@@ -30,6 +30,7 @@ import org.eclipse.tractusx.puris.backend.delivery.logic.service.ReportedDeliver
 import org.eclipse.tractusx.puris.backend.demand.logic.services.OwnDemandService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -142,7 +143,8 @@ public class SupplyServiceTest {
             BPNA_CUSTOMER,
             "Street 10",
             "40468 Testdorf",
-            "DE"
+            "DE",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
         );
         CUSTOMER_PARTNER.setUuid(UUID.randomUUID());
 
@@ -155,7 +157,8 @@ public class SupplyServiceTest {
             BPNA_SUPPLIER,
             "Street 10",
             "40468 Testdorf",
-            "DE"
+            "DE",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
         );
         SUPPLIER_PARTNER.setUuid(UUID.randomUUID());
     }

@@ -26,16 +26,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DspProtocolVersionEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.DspaceVersionParams;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
+import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
-import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +45,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -58,7 +57,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class EdcAdapterServiceTest {
 
-    private static final OkHttpClient CLIENT = new OkHttpClient();
     @Mock
     private VariablesService variablesService;
 
@@ -76,12 +74,16 @@ public class EdcAdapterServiceTest {
     @Mock
     private VariablesService variableService;
 
-    private final Pattern urlPattern = PatternStore.URL_PATTERN;
-
     private final JsonLdUtils jsonLdUtils = new JsonLdUtils();
 
     @BeforeEach
     void setUp() throws Exception {
+        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
+        edcRequestBodyBuilder = new EdcRequestBodyBuilder(
+            new DtrSecurityConfiguration(),
+            variablesService,
+            objectMapper
+        );
 
         edcAdapterService = new EdcAdapterService(
             objectMapper,
@@ -145,7 +147,7 @@ public class EdcAdapterServiceTest {
             "}";
 
         JsonNode validJsonNode = objectMapper.readTree(validJson);
-        validJsonNode = jsonLdUtils.expand(validJsonNode);
+        validJsonNode = jsonLdUtils.expand(validJsonNode, variableService.getEdcProfileVersion());
         System.out.println(validJsonNode.toPrettyString());
 
         // per specifciation jsonLd wraps into an array if multiple entries, thus take it.
@@ -158,7 +160,7 @@ public class EdcAdapterServiceTest {
         when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         assertTrue(result);
     }
@@ -218,7 +220,7 @@ public class EdcAdapterServiceTest {
             "}";
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
-        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
 
         // per specifciation jsonLd wraps into an array if multiple entries, thus take it.
         if (invalidJsonNode.isArray()) {
@@ -229,7 +231,7 @@ public class EdcAdapterServiceTest {
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         assertFalse(result);
     }
@@ -259,7 +261,7 @@ public class EdcAdapterServiceTest {
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:isAnyOf\"\n" +
             "            },\n" +
-            "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
+            "            \"odrl:rightOperand\" : \"DataExchangeGovernance:1.0\"\n" +
             "          }\n" +
             "        }\n" +
             "      },\n" +
@@ -280,10 +282,10 @@ public class EdcAdapterServiceTest {
             "}";
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
-        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         assertFalse(result);
     }
@@ -298,11 +300,11 @@ public class EdcAdapterServiceTest {
     public void unexpectedRule_testContractPolicyConstraints_fails(String input) throws JsonProcessingException {
         // given
         JsonNode invalidJsonNode = objectMapper.readTree(input);
-        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
         System.out.println(invalidJsonNode.toPrettyString());
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         assertFalse(result);
     }
 
@@ -355,9 +357,6 @@ public class EdcAdapterServiceTest {
             .when(edcAdapterService)
             .sendPostRequest(any(), any());
 
-        when(edcRequestBodyBuilder.buildDspaceVersionParamsRequest(any(), any()))
-        .thenReturn(objectMapper.createObjectNode());
-
         // then
         DspaceVersionParams actualDspaceVersionParams = edcAdapterService.getPartnerDspaceVersionParams(partnerBpnl, partnerDspUrl);
 
@@ -387,9 +386,6 @@ public class EdcAdapterServiceTest {
         doReturn(mockResponse)
             .when(edcAdapterService)
             .sendPostRequest(any(), any());
-
-        when(edcRequestBodyBuilder.buildDspaceVersionParamsRequest(any(), any()))
-        .thenReturn(objectMapper.createObjectNode());
 
         // then
         DspaceVersionParams actualDspaceVersionParams = edcAdapterService.getPartnerDspaceVersionParams(partnerBpnl, partnerDspUrl);
