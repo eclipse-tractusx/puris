@@ -20,73 +20,29 @@
  */
 package org.eclipse.tractusx.puris.backend;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedMaterialItemStockService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedProductItemStockService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import java.lang.reflect.Field;
+import org.mockito.Mockito; 
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class DataInjectionCommandLineRunnerTest {
-
-    @Mock
-    private MaterialService materialService;
 
     @Mock
     private PartnerService partnerService;
 
     @Mock
-    private MaterialPartnerRelationService mprService;
-
-    @Mock
-    private MaterialItemStockService materialItemStockService;
-
-    @Mock
-    private ProductItemStockService productItemStockService;
-
-    @Mock
-    private ReportedMaterialItemStockService reportedMaterialItemStockService;
-
-    @Mock
-    private ReportedProductItemStockService reportedProductItemStockService;
-
-    @Mock
     private VariablesService variablesService;
 
     @InjectMocks
-    private ObjectMapper objectMapper;
-
-    @InjectMocks
     DataInjectionCommandLineRunner dataInjectionCommandLineRunner;
-
-    @BeforeEach
-    void setUp() throws NoSuchFieldException, IllegalAccessException {
-        MockitoAnnotations.openMocks(this);
-
-        // make variablesService mockable
-        Field field = DataInjectionCommandLineRunner.class.getDeclaredField("variablesService");
-        field.setAccessible(true);
-        field.set(dataInjectionCommandLineRunner, variablesService);
-
-        // make partnerService mockable
-        Field partnerField = DataInjectionCommandLineRunner.class.getDeclaredField("partnerService");
-        partnerField.setAccessible(true);
-        partnerField.set(dataInjectionCommandLineRunner, partnerService);
-    }
 
     @Test
     void whenNoOwnPartnerGiven_testCreateOwnPartnerEntity_thenCreate() {
@@ -140,7 +96,7 @@ public class DataInjectionCommandLineRunnerTest {
         // Call method
         dataInjectionCommandLineRunner.createOwnPartnerEntity();
 
-        // Verify create was called
+        // Verify create was not called
         Mockito.verify(partnerService, Mockito.never()).create(Mockito.any(Partner.class));
     }
 }
