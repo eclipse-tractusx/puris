@@ -17,7 +17,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Changed
 
-- Remove demonstrator data injection via command line runner ([#1032](https://github.com/eclipse-tractusx/puris/pull/1032))
+- Remove demonstrator data injection via command line runner ([#1132](https://github.com/eclipse-tractusx/puris/pull/1132))
 
 ### Fixes
 
