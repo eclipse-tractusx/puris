@@ -124,10 +124,11 @@ public class Partner {
      * @param zipCodeAndCity  zip code and city of this BPNA
      * @param country         country of this BPNA
      */
-    public Partner(String name, String edcUrl, String bpnl, String bpna, String streetAndNumber, String zipCodeAndCity, String country) {
+    public Partner(String name, String edcUrl, String bpnl, String bpna, String streetAndNumber, String zipCodeAndCity, String country, PolicyProfileVersionEnumeration policyProfileVersion) {
         this.name = name;
         this.edcUrl = edcUrl;
         this.bpnl = bpnl;
+        this.policyProfileVersion = policyProfileVersion;
         addresses.add(new Address(bpna, streetAndNumber, zipCodeAndCity, country));
     }
 

@@ -147,7 +147,7 @@ public class EdcAdapterServiceTest {
             "}";
 
         JsonNode validJsonNode = objectMapper.readTree(validJson);
-        validJsonNode = jsonLdUtils.expand(validJsonNode);
+        validJsonNode = jsonLdUtils.expand(validJsonNode, variableService.getEdcProfileVersion());
         System.out.println(validJsonNode.toPrettyString());
 
         // per specifciation jsonLd wraps into an array if multiple entries, thus take it.
@@ -158,7 +158,6 @@ public class EdcAdapterServiceTest {
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
         when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
-        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
@@ -221,7 +220,7 @@ public class EdcAdapterServiceTest {
             "}";
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
-        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
 
         // per specifciation jsonLd wraps into an array if multiple entries, thus take it.
         if (invalidJsonNode.isArray()) {
@@ -229,8 +228,7 @@ public class EdcAdapterServiceTest {
         }
 
         // when
-        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
-        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
+        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
@@ -284,7 +282,7 @@ public class EdcAdapterServiceTest {
             "}";
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
-        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
@@ -302,7 +300,7 @@ public class EdcAdapterServiceTest {
     public void unexpectedRule_testContractPolicyConstraints_fails(String input) throws JsonProcessingException {
         // given
         JsonNode invalidJsonNode = objectMapper.readTree(input);
-        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
         System.out.println(invalidJsonNode.toPrettyString());
 
         // then

@@ -192,7 +192,7 @@ public class VariablesService {
      */
     private String apiKey;
 
-    @Value("${puris.edc.profile-version}")
+    @Value("${puris.edc.profile.version}")
     /**
      * The EDC profile version to be used. Valid values are profile2405, profile2509.
      * Defaults to the latest supported profile of the application.

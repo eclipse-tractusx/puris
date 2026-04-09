@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DspProtocolVersionEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.PolicyProfileConstants;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
@@ -465,7 +466,7 @@ public class EdcAdapterService {
             return fallback;
         }
         JsonNode responseNode = objectMapper.readTree(response.body().string());
-        responseNode = jsonLdUtils.expand(responseNode);
+        responseNode = jsonLdUtils.expand(responseNode, variablesService.getEdcProfileVersion());
             
         log.debug("Got response from Dspace Version Params request: {}", responseNode.toPrettyString());
 
@@ -1316,7 +1317,7 @@ public class EdcAdapterService {
      * @return true, if the policy matches yours, otherwise false
      */
     public boolean testContractPolicyConstraints(JsonNode catalogEntry, PolicyProfileVersionEnumeration policyProfileVersion) {
-        var policyProfile = policyProfileVersion.getConstants();
+        PolicyProfileConstants policyProfile = policyProfileVersion.getConstants();
         log.debug("Testing constraints in the following catalogEntry: \n{}", catalogEntry.toPrettyString());
         var constraint = Optional.ofNullable(catalogEntry.get(policyProfile.ODRL_NAMESPACE + "hasPolicy"))
             .filter(policy -> policy.isArray() && policy.size() == 1)

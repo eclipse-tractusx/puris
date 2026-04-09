@@ -39,7 +39,7 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonStructure;
 import lombok.extern.slf4j.Slf4j;
 
-import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.PolicyProfileConstants;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -60,7 +60,6 @@ public class JsonLdUtils {
     private final DocumentLoader CACHED_LOADER_2509;
     private final JsonDocument DEFAULT_CONTEXT_DOCUMENT_2405;
     private final JsonDocument DEFAULT_CONTEXT_DOCUMENT_2509;
-    private final VariablesService variablesService = new VariablesService();
 
     /**
      * JsonLd processor having preloaded Eclipse Tractus-X related jsonLd documents.
@@ -68,8 +67,8 @@ public class JsonLdUtils {
     public JsonLdUtils() {
         // Map of contexts to load
         final String prefix = "json-ld" + File.separator;
-        var profile2405 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.getConstants();
-        var profile2509 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2509.getConstants();
+        PolicyProfileConstants profile2405 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.getConstants();
+        PolicyProfileConstants profile2509 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2509.getConstants();
         Map<String, String> filesMap2405 = Map.of(
             profile2405.CX_POLICY_CONTEXT, prefix + "cx-policy-2405.jsonld",
             profile2405.ODRL_REMOTE_CONTEXT, prefix + "odrl.jsonld",
@@ -126,11 +125,12 @@ public class JsonLdUtils {
         this.DEFAULT_CONTEXT_DOCUMENT_2509 = JsonDocument.of(rootContext2509);
     }
 
-    public JsonNode expand(JsonNode node) {
-        return expand(node, variablesService.getEdcProfileVersion());
-    }
-
-    
+    /**
+     * expands JSON-LD using the default context and the specified policy profile
+     * 
+     * @param node JsonNode (jackson) to expand
+     * @param profileVersion PolicyProfileVersionEnumeration to determine which default context and docuement loader to use during expansion
+     */
     public JsonNode expand(JsonNode node, PolicyProfileVersionEnumeration profileVersion) {
         try (JsonReader jsonReader = Json.createReader(new StringReader(node.toString()))){
             
@@ -155,34 +155,22 @@ public class JsonLdUtils {
     }
 
     /**
-     * compacts JSON-LD using the default context
+     * compacts JSON-LD using the default context and the specified policy profile
      * 
      * @param node JsonNode (jackson) to compact
+     * @param profileVersion PolicyProfileVersionEnumeration to determine which default context and docuement loader to use during compaction
      */
-    public JsonNode compact(JsonNode node) {
-        return compact(node, variablesService.getEdcProfileVersion());
-    }
-
     public JsonNode compact(JsonNode node, PolicyProfileVersionEnumeration profileVersion) {
         var contextDocument = profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405 ? DEFAULT_CONTEXT_DOCUMENT_2405 : DEFAULT_CONTEXT_DOCUMENT_2509;
         return compact(node, contextDocument, profileVersion);
     }
 
     /**
-     * compacts JSON-LD using a specific context
+     * compacts JSON-LD using a specific context and the specified policy profile
      * 
      * @param node JsonNode (jackson) to compact
      * @param contextNode JsonNode (jackson) to use as context during compaction
-     */
-    public JsonNode compact(JsonNode node, JsonNode contextNode) {
-        return compact(node, contextNode, variablesService.getEdcProfileVersion());
-    }
-
-    /**
-     * compacts JSON-LD using a specific context
-     * 
-     * @param node JsonNode (jackson) to compact
-     * @param contextNode JsonNode (jackson) to use as context during compaction
+     * @param profileVersion PolicyProfileVersionEnumeration to determine which document loader to use during compaction
      */
     public JsonNode compact(JsonNode node, JsonNode contextNode, PolicyProfileVersionEnumeration profileVersion) {
         try (JsonReader contextReader = Json.createReader(new StringReader(contextNode.toString()))) {
@@ -192,10 +180,11 @@ public class JsonLdUtils {
     }
 
     /**
-     * compacts a JsonNode
+     * compacts a JsonNode using a given context document and the specified policy profile
      * 
      * @param node JsonNode (Jackson) to compact
      * @param contextDocument JsonDocument (jakarta) to use as context during compaction
+     * @param profileVersion PolicyProfileVersionEnumeration to determine which document loader to use during compaction
      */
     private JsonNode compact(JsonNode node, JsonDocument contextDocument, PolicyProfileVersionEnumeration profileVersion) {
         try (JsonReader jsonReader = Json.createReader(new StringReader(node.toString()))) {

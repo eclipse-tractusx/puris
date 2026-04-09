@@ -137,8 +137,8 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
                 variablesService.getOwnDefaultBpna(),
                 variablesService.getOwnDefaultStreetAndNumber(),
                 variablesService.getOwnDefaultZipCodeAndCity(),
-                variablesService.getOwnDefaultCountry()
-            );
+                variablesService.getOwnDefaultCountry(),
+                variablesService.getEdcProfileVersion());
         }
         mySelf = partnerService.create(mySelf);
         log.info("Successfully created own Partner Entity: " + mySelf);

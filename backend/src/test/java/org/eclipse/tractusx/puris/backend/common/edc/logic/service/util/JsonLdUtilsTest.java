@@ -23,12 +23,15 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockitoAnnotations;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.List;
 
 @Slf4j
 public class JsonLdUtilsTest {
@@ -48,16 +51,21 @@ public class JsonLdUtilsTest {
         var catalogJson = objectMapper.readTree(input);
         log.info("Input:\n" + catalogJson.toPrettyString());
 
-        //WHEN
-        var expanded = util.expand(catalogJson);
-        log.info("Expanded first time:\n"+ expanded.toPrettyString());
-        var compacted = util.compact(expanded);
-        log.info("Compacted:\n" + compacted.toPrettyString());
-        var expandedAgain = util.expand(compacted);
-        log.info("Expanded again:\n" + expandedAgain.toPrettyString());
+        List<PolicyProfileVersionEnumeration> profiles = List.of(PolicyProfileVersionEnumeration.values());
 
-        // THEN
-        assertEquals(expandedAgain, expanded);
+        for (PolicyProfileVersionEnumeration profile : profiles) {
+            log.info("Using profile: " + profile.getValue());
+            //WHEN
+            var expanded = util.expand(catalogJson, profile);
+            log.info("Expanded first time:\n"+ expanded.toPrettyString());
+            var compacted = util.compact(expanded, profile);
+            log.info("Compacted:\n" + compacted.toPrettyString());
+            var expandedAgain = util.expand(compacted, profile);
+            log.info("Expanded again:\n" + expandedAgain.toPrettyString());
+
+            // THEN
+            assertEquals(expandedAgain, expanded);
+        }
     }
 
     final static String test0 = "{\n" +
