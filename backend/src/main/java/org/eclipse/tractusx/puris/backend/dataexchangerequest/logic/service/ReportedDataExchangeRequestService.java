@@ -17,8 +17,12 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
+
 import javax.management.openmbean.KeyAlreadyExistsException;
+
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.ReportedDataExchangeRequestRepository;
 import org.springframework.stereotype.Service;
@@ -54,30 +58,39 @@ public class ReportedDataExchangeRequestService  extends DataExchangeRequestServ
     }
 
     public boolean validate(ReportedDataExchangeRequest dataExchangeRequest) {
-        return dataExchangeRequest != null
-            && basicValidation(dataExchangeRequest)
-            && dataExchangeRequest.getNotification() != null
-            && validateDesiredDates(dataExchangeRequest);
+        return validateWithDetails(dataExchangeRequest).isEmpty();
     }
 
-    private boolean validateDesiredDates(ReportedDataExchangeRequest ownDataExchangeRequest) {
-        if (!ownDataExchangeRequest.getDesiredStartDateTime().before(ownDataExchangeRequest.getDesiredEndDateTime())) {
-            return false;
+    public List<String> validateWithDetails(ReportedDataExchangeRequest dataExchangeRequest) {
+        List<String> errors = new ArrayList<>();
+        errors.addAll(basicValidation(dataExchangeRequest));
+        if (dataExchangeRequest.getNotification() == null) {
+            errors.add("Missing notification.");
         }
-        if (ownDataExchangeRequest.getDesiredStartDateTime().before(ownDataExchangeRequest.getNotification().getStartDateOfEffect())) {
-            return false;
+        errors.addAll(validateDesiredDates(dataExchangeRequest));
+
+        return errors;
+    }
+
+    private List<String> validateDesiredDates(ReportedDataExchangeRequest reportedDataExchangeRequest) {
+        List<String> errors = new ArrayList<>();
+        if (!reportedDataExchangeRequest.getDesiredStartDateTime().before(reportedDataExchangeRequest.getDesiredEndDateTime())) {
+            errors.add("desiredStartDateTime must be before desiredEndDateTime.");
         }
-        if (ownDataExchangeRequest.getDesiredEndDateTime().before(ownDataExchangeRequest.getNotification().getStartDateOfEffect())) {
-            return false;
+        if (reportedDataExchangeRequest.getDesiredStartDateTime().before(reportedDataExchangeRequest.getNotification().getStartDateOfEffect())) {
+            errors.add("desiredStartDateTime must not be before notification startDateOfEffect.");
         }
-        if (ownDataExchangeRequest.getNotification().getExpectedEndDateOfEffect() != null) {
-            if (ownDataExchangeRequest.getDesiredStartDateTime().after(ownDataExchangeRequest.getNotification().getExpectedEndDateOfEffect())) {
-                return false;
+        if (reportedDataExchangeRequest.getDesiredEndDateTime().before(reportedDataExchangeRequest.getNotification().getStartDateOfEffect())) {
+            errors.add("desiredEndDateTime must not be before notification startDateOfEffect.");
+        }
+        if (reportedDataExchangeRequest.getNotification().getExpectedEndDateOfEffect() != null) {
+            if (reportedDataExchangeRequest.getDesiredStartDateTime().after(reportedDataExchangeRequest.getNotification().getExpectedEndDateOfEffect())) {
+                errors.add("desiredStartDateTime must not be after notification expectedEndDateOfEffect.");
             }
-            if (ownDataExchangeRequest.getDesiredEndDateTime().after(ownDataExchangeRequest.getNotification().getExpectedEndDateOfEffect())) {
-                return false;
+            if (reportedDataExchangeRequest.getDesiredEndDateTime().after(reportedDataExchangeRequest.getNotification().getExpectedEndDateOfEffect())) {
+                errors.add("desiredEndDateTime must not be after notification expectedEndDateOfEffect.");
             }
         }
-        return true;
+        return errors;
     }
 }

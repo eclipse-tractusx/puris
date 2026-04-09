@@ -27,7 +27,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-
+/**
+ * Own request represents a request sent to a partner
+ */
 @Entity
 @SuperBuilder
 @NoArgsConstructor
@@ -40,7 +42,10 @@ public class OwnDataExchangeRequest extends DataExchangeRequest {
     @ToString.Exclude
     @NotNull
     protected ReportedDemandAndCapacityNotification notification;
-       
+    
+    /**
+     * Related data exchange request is used when forwarding requests
+     */
     @ManyToOne(optional = true)
     @JoinColumn(name = "related_data_exchange_request_uuid")
     @ToString.Exclude

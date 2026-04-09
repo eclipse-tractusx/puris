@@ -20,6 +20,7 @@ package org.eclipse.tractusx.puris.backend.dataexchangerequest.controller;
 import java.util.regex.Pattern;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.DataExchangeRequestApiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +70,7 @@ public class DataExchangeRequestApiController {
             var request = objectMapper.readValue(
                 body.get("content").toString(),
                 DataExchangeRequestSamm.class);
-            var result = dataExchangeRequestApiService.handleIncomingDataExchangeRequest(bpnl, request);
+            ReportedDataExchangeRequest result = dataExchangeRequestApiService.handleIncomingDataExchangeRequest(bpnl, request);
             if (result == null) {
                 log.warn("Failed to create ReportedDataExchangeRequest from incoming request");
                 return ResponseEntity.badRequest().build();

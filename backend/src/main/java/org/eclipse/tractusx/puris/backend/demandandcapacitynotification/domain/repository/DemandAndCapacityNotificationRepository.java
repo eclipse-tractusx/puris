@@ -1,6 +1,5 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2026 Volkswagen AG
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -19,10 +18,15 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
-import org.springframework.stereotype.Repository;
 
-@Repository
-public interface OwnDemandAndCapacityNotificationRepository extends DemandAndCapacityNotificationRepository<OwnDemandAndCapacityNotification>{
+import java.util.Optional;
+import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.DemandAndCapacityNotification;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.NoRepositoryBean;
+
+@NoRepositoryBean
+public interface DemandAndCapacityNotificationRepository<TEntity extends DemandAndCapacityNotification> extends JpaRepository<TEntity, UUID> {
+    Optional<TEntity> findByPartnerBpnlAndSourceDisruptionId(String bpnl, UUID sourceDisruptionId);
 }
