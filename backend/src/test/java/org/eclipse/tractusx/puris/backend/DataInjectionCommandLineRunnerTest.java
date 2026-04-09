@@ -23,7 +23,6 @@ package org.eclipse.tractusx.puris.backend;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedMaterialItemStockService;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -74,7 +73,7 @@ public class DataInjectionCommandLineRunnerTest {
         // Call method
         dataInjectionCommandLineRunner.createOwnPartnerEntity();
 
-        // Verify create was called
+        // Verify create was not called
         Mockito.verify(partnerService).create(Mockito.any(Partner.class));
     }
 

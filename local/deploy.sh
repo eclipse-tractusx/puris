@@ -140,7 +140,7 @@ echo "Removing the PURIS + EDCs with their DTR and Database..."
 docker compose down -v
 
 echo "Starting PURIS demonstrator containers..."
-docker compose up -d
+CUSTOMER_PURIS_DTR_EDC_ASSET_REGISTER="false" docker compose up -d
 
 # Prepare the following asset data:
 # 1. DTR
