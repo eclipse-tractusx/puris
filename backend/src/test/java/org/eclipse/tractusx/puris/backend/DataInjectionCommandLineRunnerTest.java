@@ -73,7 +73,7 @@ public class DataInjectionCommandLineRunnerTest {
         // Call method
         dataInjectionCommandLineRunner.createOwnPartnerEntity();
 
-        // Verify create was not called
+        // Verify create was called
         Mockito.verify(partnerService).create(Mockito.any(Partner.class));
     }
 
@@ -96,7 +96,7 @@ public class DataInjectionCommandLineRunnerTest {
         // Call method
         dataInjectionCommandLineRunner.createOwnPartnerEntity();
 
-        // Verify create was called
+        // Verify create was not called
         Mockito.verify(partnerService, Mockito.never()).create(Mockito.any(Partner.class));
     }
 }
