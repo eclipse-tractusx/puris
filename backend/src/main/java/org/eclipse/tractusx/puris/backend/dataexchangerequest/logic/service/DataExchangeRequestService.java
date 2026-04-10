@@ -17,6 +17,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,13 +37,28 @@ public abstract class  DataExchangeRequestService<T extends DataExchangeRequest>
         return repository.findById(uuid).orElse(null);
     }
 
-    protected boolean basicValidation(DataExchangeRequest dataExchangeRequest) {
-        return dataExchangeRequest.getCriticality() != null &&
-            dataExchangeRequest.getText() != null &&
-            dataExchangeRequest.getDesiredStartDateTime() != null &&
-            dataExchangeRequest.getDesiredEndDateTime() != null &&
-            (dataExchangeRequest.getUuid() == null || dataExchangeRequest.getTimestamp() != null) &&
-            dataExchangeRequest.getRequestedTypes() != null &&
-            !dataExchangeRequest.getRequestedTypes().isEmpty();
+    protected List<String> basicValidation(DataExchangeRequest dataExchangeRequest) {
+        List<String> errors = new ArrayList<>();
+        if (dataExchangeRequest.getCriticality() == null) {
+            errors.add("Missing criticality.");
+        }
+        if (dataExchangeRequest.getText() == null) {
+            errors.add("Missing text.");
+        }
+        if (dataExchangeRequest.getDesiredStartDateTime() == null) {
+            errors.add("Missing desiredStartDateTime.");
+        }
+        if (dataExchangeRequest.getDesiredEndDateTime() == null) {
+            errors.add("Missing desiredEndDateTime.");
+        }
+        if (dataExchangeRequest.getUuid() != null && dataExchangeRequest.getTimestamp() == null) {
+            errors.add("timestamp must be set when uuid is present.");
+        }
+        if (dataExchangeRequest.getRequestedTypes() == null) {
+            errors.add("Missing requestedTypes.");
+        } else if (dataExchangeRequest.getRequestedTypes().isEmpty()) {
+            errors.add("requestedTypes must not be empty.");
+        }
+        return errors;
     }
 }

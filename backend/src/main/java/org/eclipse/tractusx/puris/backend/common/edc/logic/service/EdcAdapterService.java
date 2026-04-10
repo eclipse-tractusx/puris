@@ -624,8 +624,8 @@ public class EdcAdapterService {
                     }
 
                     switch (type) {
-                        case NOTIFICATION -> log.info("Failed to post Notification to Partner.");
-                        case DATA_EXCHANGE_REQUEST -> log.info("Failed to post Data Exchange Request to Partner.");
+                        case NOTIFICATION -> log.error("Failed to post Notification to Partner.");
+                        case DATA_EXCHANGE_REQUEST -> log.error("Failed to post Data Exchange Request to Partner.");
                         default -> throw new IllegalArgumentException("Unsupported type " + type);
                     }
                 }

@@ -28,11 +28,11 @@ import java.util.function.Function;
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.DemandAndCapacityNotification;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.DemandAndCapacityNotificationRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public abstract class DemandAndCapacityNotificationService<TEntity extends DemandAndCapacityNotification, TRepository extends JpaRepository<TEntity, UUID>> {
+public abstract class DemandAndCapacityNotificationService<TEntity extends DemandAndCapacityNotification, TRepository extends DemandAndCapacityNotificationRepository<TEntity>> {
     protected final TRepository repository;
     protected final PartnerService partnerService;
     protected final MaterialPartnerRelationService mprService;
@@ -65,8 +65,7 @@ public abstract class DemandAndCapacityNotificationService<TEntity extends Deman
     }
 
     public final TEntity findByBpnlAndSourceDisruptionId(String bpnl, UUID sourceDisruptionId) {
-        return repository.findAll().stream().filter(demand -> demand.getPartner().getBpnl().equals(bpnl) && demand.getSourceDisruptionId().equals(sourceDisruptionId))
-                .findFirst().orElse(null);
+        return repository.findByPartnerBpnlAndSourceDisruptionId(bpnl, sourceDisruptionId).orElse(null);
     }
 
     public final TEntity create(TEntity notification) {

@@ -52,8 +52,7 @@ public class DataExchangeRequestSammMapper {
             log.error("No matching notification found for BPNL {} and source disruption ID {}", bpnl, samm.getSourceDisruptionId());
             return null;
         }
-        var builder = ReportedDataExchangeRequest.builder();
-        return builder
+        return ReportedDataExchangeRequest.builder()
                 .notification(notification)
                 .criticality(samm.getCriticality())
                 .desiredStartDateTime(samm.getDesiredStartDateTime())

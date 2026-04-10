@@ -27,7 +27,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-
+/**
+ * Reported request represents a Request received from the partner
+ */
 @Entity
 @SuperBuilder
 @NoArgsConstructor
