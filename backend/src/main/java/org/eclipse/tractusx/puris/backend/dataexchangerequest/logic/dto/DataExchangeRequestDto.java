@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.CriticalityEnumeration;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.RequestedTypeEnumeration;
 
@@ -38,6 +39,7 @@ import lombok.ToString;
 @ToString
 public class DataExchangeRequestDto implements Serializable {
     private UUID uuid;
+    private UUID requestId;
 
     @NotNull
     private UUID notificationId;

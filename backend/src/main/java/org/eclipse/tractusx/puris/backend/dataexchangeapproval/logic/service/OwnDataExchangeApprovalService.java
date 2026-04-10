@@ -41,7 +41,7 @@ public class OwnDataExchangeApprovalService extends DataExchangeApprovalService<
             throw new IllegalArgumentException("Invalid data exchange approval");
         }
         if (repository.findAll().stream().filter(existing -> existing.equals(ownDataExchangeApproval)).findFirst().isPresent()) {
-            throw new KeyAlreadyExistsException("Notification already exists");
+            throw new KeyAlreadyExistsException("Data exchange approval already exists");
         }
         return repository.save(ownDataExchangeApproval);
     }

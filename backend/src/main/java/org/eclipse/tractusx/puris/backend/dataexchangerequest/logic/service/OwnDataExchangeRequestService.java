@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
@@ -43,6 +44,12 @@ public class OwnDataExchangeRequestService extends DataExchangeRequestService<Ow
         }
         if (repository.findAll().stream().filter(existing -> existing.equals(ownDataExchangeRequest)).findFirst().isPresent()) {
             throw new KeyAlreadyExistsException("Data exchange request already exists");
+        }
+        if (repository.findAll().stream().anyMatch(d -> d.getRequestId().equals(ownDataExchangeRequest.getRequestId()))) {
+            throw new KeyAlreadyExistsException("Data exchange request already exists");
+        }
+        if (ownDataExchangeRequest.getRequestId() == null) {
+            ownDataExchangeRequest.setRequestId(UUID.randomUUID());
         }
         return repository.save(ownDataExchangeRequest);
     }

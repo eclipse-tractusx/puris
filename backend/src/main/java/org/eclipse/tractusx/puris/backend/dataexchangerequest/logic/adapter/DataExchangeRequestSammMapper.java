@@ -18,12 +18,15 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.adapter;
 import java.util.ArrayList;
+import java.util.UUID;
+
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.OwnDemandAndCapacityNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -36,6 +39,7 @@ public class DataExchangeRequestSammMapper {
         var builder = DataExchangeRequestSamm.builder();
 
         return builder
+                .requestId(request.getRequestId() != null ? request.getRequestId().toString() : null)
                 .sourceDisruptionId(request.getNotification().getSourceDisruptionId())
                 .criticality(request.getCriticality())
                 .desiredStartDateTime(request.getDesiredStartDateTime())
@@ -53,6 +57,7 @@ public class DataExchangeRequestSammMapper {
             return null;
         }
         return ReportedDataExchangeRequest.builder()
+                .requestId(UUID.fromString(samm.getRequestId()))
                 .notification(notification)
                 .criticality(samm.getCriticality())
                 .desiredStartDateTime(samm.getDesiredStartDateTime())

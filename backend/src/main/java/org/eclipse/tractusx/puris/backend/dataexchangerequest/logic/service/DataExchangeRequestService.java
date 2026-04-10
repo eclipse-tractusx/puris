@@ -37,6 +37,11 @@ public abstract class  DataExchangeRequestService<T extends DataExchangeRequest>
         return repository.findById(uuid).orElse(null);
     }
 
+    public final T findByRequestId(UUID requestId) {
+        return repository.findAll().stream().filter(request -> request.getRequestId().equals(requestId))
+                .findFirst().orElse(null);
+    }
+
     protected List<String> basicValidation(DataExchangeRequest dataExchangeRequest) {
         List<String> errors = new ArrayList<>();
         if (dataExchangeRequest.getCriticality() == null) {

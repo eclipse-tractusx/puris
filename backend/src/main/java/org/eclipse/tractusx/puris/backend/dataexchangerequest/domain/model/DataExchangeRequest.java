@@ -51,7 +51,8 @@ import lombok.experimental.SuperBuilder;
 public abstract class DataExchangeRequest {
     @Id
     @GeneratedValue
-    private UUID uuid;
+    protected UUID uuid;
+    protected UUID requestId;
 
     @NotNull
     private CriticalityEnumeration criticality;
@@ -87,7 +88,8 @@ public abstract class DataExchangeRequest {
         }
 
         final DataExchangeRequest that = (DataExchangeRequest) o;
-        return Objects.equals(this.getCriticality().getValue(), that.getCriticality().getValue()) &&
+        return Objects.equals(this.getRequestId(), that.getRequestId()) &&
+            Objects.equals(this.getCriticality().getValue(), that.getCriticality().getValue()) &&
             Objects.equals(toInstant(this.getDesiredStartDateTime()), toInstant(that.getDesiredStartDateTime())) &&
             Objects.equals(toInstant(this.getDesiredEndDateTime()), toInstant(that.getDesiredEndDateTime())) &&
             Objects.equals(this.getRequestedTypes(), that.getRequestedTypes()) && Objects.equals(this.getText(), that.getText());
@@ -95,7 +97,7 @@ public abstract class DataExchangeRequest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text);
+        return Objects.hash(requestId, criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text);
     }
 
     private static Instant toInstant(Date d) {

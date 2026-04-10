@@ -32,6 +32,11 @@ databaseChangeLog:
                     primaryKey: true
                     primaryKeyName: own_data_exchange_request_pkey
               - column:
+                  name: request_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
                   name: notification_uuid
                   type: UUID
                   constraints:
@@ -124,6 +129,11 @@ databaseChangeLog:
                       nullable: false
                       primaryKey: true
                       primaryKeyName: reported_data_exchange_request_pkey
+                - column:
+                    name: request_id
+                    type: UUID
+                    constraints:
+                      nullable: false
                 - column:
                     name: notification_uuid
                     type: UUID

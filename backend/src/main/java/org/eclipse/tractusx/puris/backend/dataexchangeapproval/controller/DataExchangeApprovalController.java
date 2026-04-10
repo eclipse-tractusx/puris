@@ -56,7 +56,7 @@ public class DataExchangeApprovalController {
     @Autowired
     private ModelMapper modelMapper;
 
-    @PostMapping("/{id}/approval")
+    @PostMapping("/{requestId}/approval")
     @ResponseBody
     @Operation(summary = "Creates a new own data exchange approval", description = "Creates a new own data exchange approval. \n")
     @ApiResponses(value = {
@@ -66,9 +66,9 @@ public class DataExchangeApprovalController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     @ResponseStatus(HttpStatus.CREATED)
-    public DataExchangeApprovalDto createDataExchangeApproval(@PathVariable UUID id, @RequestBody DataExchangeApprovalDto requestDto) {
+    public DataExchangeApprovalDto createDataExchangeApproval(@PathVariable UUID requestId, @RequestBody DataExchangeApprovalDto requestDto) {
         ReportedDataExchangeRequest reportedRequest =
-                reportedDataExchangeRequestService.findById(id);
+                reportedDataExchangeRequestService.findByRequestId(requestId);
 
         if (reportedRequest == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referenced reported data exchange request does not exist.");

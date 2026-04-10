@@ -159,6 +159,10 @@ components:
           format: uuid
           maxItems: 50
           type: string
+        requestId:
+          format: uuid
+          maxItems: 50
+          type: string
         requestedTypes:
           items:
             enum:
@@ -1793,13 +1797,13 @@ paths:
         endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - data-exchange-request-api-controller
-  /data-exchange-request/{id}/approval:
+  /data-exchange-request/{requestId}/approval:
     post:
       description: "Creates a new own data exchange approval. \n"
       operationId: createDataExchangeApproval
       parameters:
       - in: path
-        name: id
+        name: requestId
         required: true
         schema:
           additionalProperties: false

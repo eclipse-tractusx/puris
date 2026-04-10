@@ -21,13 +21,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.CriticalityEnumeration;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.RequestedTypeEnumeration;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -43,10 +44,8 @@ import lombok.experimental.SuperBuilder;
 @ToString
 public class DataExchangeRequestSamm {
     @NotNull
-    @Id
-    @GeneratedValue
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
-    private UUID id;
+    private String requestId;
 
     @NotNull
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
@@ -72,7 +71,7 @@ public class DataExchangeRequestSamm {
 
     @JsonCreator
     public DataExchangeRequestSamm(
-            @JsonProperty(value = "id") UUID id,
+            @JsonProperty(value = "requestId") String requestId,
             @JsonProperty(value = "sourceDisruptionId") UUID sourceDisruptionId,
             @JsonProperty(value = "criticality") CriticalityEnumeration criticality,
             @JsonProperty(value = "desiredStartDateTime") Date desiredStartDateTime,
@@ -80,7 +79,7 @@ public class DataExchangeRequestSamm {
             @JsonProperty(value = "requestedTypes") List<RequestedTypeEnumeration> requestedTypes,
             @JsonProperty(value = "text") String text,
             @JsonProperty(value = "timestamp") Date timestamp) {
-        this.id = id;
+        this.requestId = requestId;
         this.sourceDisruptionId = sourceDisruptionId;
         this.criticality = criticality;
         this.desiredStartDateTime = desiredStartDateTime;
@@ -99,7 +98,7 @@ public class DataExchangeRequestSamm {
             return false;
         }
         final DataExchangeRequestSamm that = (DataExchangeRequestSamm) o;
-        return Objects.equals(id, that.id)
+        return Objects.equals(requestId, that.requestId)
                 && Objects.equals(sourceDisruptionId, that.sourceDisruptionId)
                 && Objects.equals(criticality, that.criticality)
                 && Objects.equals(desiredStartDateTime, that.desiredStartDateTime)
@@ -111,6 +110,6 @@ public class DataExchangeRequestSamm {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, sourceDisruptionId, criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text, timestamp);
+        return Objects.hash(requestId, sourceDisruptionId, criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text, timestamp);
     }
 }
