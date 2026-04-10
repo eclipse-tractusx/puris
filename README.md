@@ -10,7 +10,7 @@ information about prerequirements and getting started guides.
 
 ## Dependencies
 
-Beside the dependencies provided in the Helm Chart, the following dependencies have been tested for R24.05 to run PURIS:
+Beside the dependencies provided in the Helm Chart, the following dependencies have been tested for R26.06 to run PURIS:
 
 | Application                                                                                                       | App Version | Chart Version |
 | ----------------------------------------------------------------------------------------------------------------- | ----------- | ------------- |

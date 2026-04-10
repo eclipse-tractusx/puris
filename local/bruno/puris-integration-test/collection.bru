@@ -1,24 +1,28 @@
 script:pre-request {
   const customerProfileVersion = bru.getEnvVar("CUSTOMER_POLICY_PROFILE_VERSION");
   const supplierProfileVersion = bru.getEnvVar("SUPPLIER_POLICY_PROFILE_VERSION");
+
+  const policyProfileVersionMapping = {
+    "profile2405": {
+      namespace: "https://w3id.org/catenax/policy/",
+      operator: "eq",
+      action: "odrl:use"
+    },
+    "profile2509": {
+      namespace: "https://w3id.org/catenax/2025/9/policy/",
+      operator: "isAnyOf",
+      action: "cx-policy:access"
+    }
+
+  };
   
-  if (customerProfileVersion === "profile2405") {
-    bru.setVar("CUSTOMER_POLICY_NAMESPACE", "https://w3id.org/catenax/policy/")
-    bru.setVar("CUSTOMER_POLICY_OPERATOR", "eq")
-    bru.setVar("CUSTOMER_POLICY_ACTION", "odrl:use")
-  } else {
-    bru.setVar("CUSTOMER_POLICY_NAMESPACE", "https://w3id.org/catenax/2025/9/policy/")
-    bru.setVar("CUSTOMER_POLICY_OPERATOR", "isAnyOf")
-    bru.setVar("CUSTOMER_POLICY_ACTION", "cx-policy:access")
-  }
-  
-  if (supplierProfileVersion === "profile2405") {
-    bru.setVar("SUPPLIER_POLICY_NAMESPACE", "https://w3id.org/catenax/policy/")
-    bru.setVar("SUPPLIER_POLICY_OPERATOR", "eq")
-    bru.setVar("SUPPLIER_POLICY_ACTION", "odrl:use")
-  } else {
-    bru.setVar("SUPPLIER_POLICY_NAMESPACE", "https://w3id.org/catenax/2025/9/policy/")
-    bru.setVar("SUPPLIER_POLICY_OPERATOR", "isAnyOf")
-    bru.setVar("SUPPLIER_POLICY_ACTION", "cx-policy:access")
-  }
+  // in case of mixed versions, use the older version for compatibility
+  const commonVersion = (customerProfileVersion === supplierProfileVersion) ? customerProfileVersion : "profile2405";
+
+  bru.setVar("CUSTOMER_POLICY_NAMESPACE", policyProfileVersionMapping[customerProfileVersion].namespace)
+  bru.setVar("CUSTOMER_POLICY_OPERATOR", policyProfileVersionMapping[customerProfileVersion].operator)
+  bru.setVar("CUSTOMER_POLICY_ACTION", policyProfileVersionMapping[customerProfileVersion].action)
+  bru.setVar("COMMON_POLICY_PROFILE_VERSION", commonVersion)
+  bru.setVar("COMMON_POLICY_NAMESPACE", policyProfileVersionMapping[commonVersion].namespace)
+  bru.setVar("COMMON_POLICY_OPERATOR", policyProfileVersionMapping[commonVersion].operator)
 }
