@@ -53,6 +53,8 @@ export const NegotiationView = () => {
                 ]}
                 rows={negotiations ?? []}
                 getRowId={(row) => row['@id']}
+                getRowHeight={() => "auto"}
+                disableRowSelectionOnClick
             />
         </Box>
     );

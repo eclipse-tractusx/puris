@@ -269,7 +269,8 @@ export const StockModal = ({
                         getRowId={(row) => row.uuid}
                         columns={createStockColumns(!isReported ? handleDelete : undefined, !isReported ? handleEdit : undefined)}
                         rows={stocks}
-                        density="standard"
+                        getRowHeight={() => "auto"}
+                        disableRowSelectionOnClick
                         hideFooter
                     />
                     <Box display="flex" justifyContent="flex-end" marginTop="2rem">

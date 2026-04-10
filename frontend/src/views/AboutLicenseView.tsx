@@ -58,10 +58,12 @@ export const AboutLicenseView = () => {
                 <Table
                     columnHeaderHeight={0}
                     title='License Information'
-                    hideFooter={true}
                     columns={aboutPageColumns}
                     getRowId={(row) => row.header}
                     rows={aboutPage}
+                    getRowHeight={() => "auto"}
+                    disableRowSelectionOnClick
+                    hideFooter
                 />
             </Box>
         </Stack>

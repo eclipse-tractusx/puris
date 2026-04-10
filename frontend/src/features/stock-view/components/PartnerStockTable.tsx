@@ -103,8 +103,10 @@ export const PartnerStockTable = <T extends StockType>({
                 columns={partnerStockTableColumns}
                 rows={partnerStocks ?? []}
                 getRowId={(row) => row.uuid}
-                hideFooter={true}
                 sx={{flexGrow: 1, flexShrink: 1}}
+                getRowHeight={() => "auto"}
+                disableRowSelectionOnClick
+                hideFooter
             ></Table>
         </Stack>
     );
