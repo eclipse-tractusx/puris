@@ -1,7 +1,7 @@
 meta {
-  name: 02-Create Access policy
+  name: 01-Create Contract policy
   type: http
-  seq: 2
+  seq: 1
   tags: [
     exchange-anonymized-data
   ]
@@ -20,7 +20,7 @@ body:json {
       "cx-policy" : "https://w3id.org/catenax/policy/"
     } ],
     "@type" : "PolicyDefinitionRequestDto",
-    "@id" : "AnonymizedDeliveryAccessPolicy",
+    "@id" : "AnonymizedItemStockContractPolicy",
     "edc:policy" : {
       "@type" : "Set",
       "permission" : [ {
@@ -29,14 +29,14 @@ body:json {
           "@type" : "LogicalConstraint",
           "and" : [ {
             "@type" : "LogicalConstraint",
-            "leftOperand" : "cx-policy:Membership",
+            "leftOperand" : "cx-policy:FrameworkAgreement",
             "operator" : "eq",
-            "rightOperand" : "active"
+            "rightOperand" : "DataExchangeGovernance:1.0"
           }, {
             "@type" : "LogicalConstraint",
-            "leftOperand" : "BusinessPartnerNumber",
+            "leftOperand" : "cx-policy:UsagePurpose",
             "operator" : "eq",
-            "rightOperand" : "{{CUSTOMER_BPNL}}"
+            "rightOperand" : "cx.puris.base:1"
           } ]
         }
       } ]

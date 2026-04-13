@@ -29,11 +29,22 @@ auth:apikey {
 
 script:pre-request {
   const btoa = require("btoa");
-  
-  let query = "{\"name\":\"manufacturerPartId\",\"value\":\"" + bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER") + "\"}";
-  query += ",{\"name\":\"digitalTwinType\",\"value\":\"PartType\"}";
-  query += ",{\"name\":\"manufacturerId\",\"value\":\"" + bru.getEnvVar("SUPPLIER_BPNS") + "\"}";
-  const encodedQuery = btoa(query)
+  const queries = [
+    {
+      name: "manufacturerPartId",
+      value: bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER")
+    },
+    {
+      name: "digitalTwinType",
+      value: "PartType"
+    },
+    {
+      name: "manufacturerId",
+      value: bru.getEnvVar("SUPPLIER_BPNS")
+    }
+  ]
+  const queryString = JSON.stringify(queries).slice(1,-1)
+  const encodedQuery = btoa(queryString)
   bru.setVar("ASSET_IDS_QUERY", encodedQuery)
 }
 

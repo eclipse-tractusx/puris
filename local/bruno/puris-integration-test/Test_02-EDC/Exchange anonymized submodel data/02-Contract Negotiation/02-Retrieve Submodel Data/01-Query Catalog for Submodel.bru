@@ -54,13 +54,58 @@ body:json {
   }
 }
 
-script:post-response {
-  let jsonData = res.getBody();
-  const semanticId = "urn:samm:io.catenax.delivery_information_anonymized:1.0.0#DeliveryInformationAnonymized";
+script:pre-request {
+  const rawSubmodelData = bru.getVar("SUBMODEL_DATA")
+  const rawSubmodelIndex = bru.getVar("CURRENT_SUBMODEL_INDEX")
+
+  if (rawSubmodelData == null)
+  {
+    throw new Error("SUBMODEL_DATA not set!")
+  }
+  if (rawSubmodelIndex == null)
+  {
+    throw new Error("CURRENT_SUBMODEL_INDEX not set!")
+  }
+
+  const submodelData = JSON.parse(rawSubmodelData)
+  const submodelIndex = Number(rawSubmodelIndex)
+
+  if (submodelIndex < 0 || submodelIndex >= submodelData.length)
+  {
+    throw new Error("CURRENT_SUBMODEL_INDEX out of bounds!")
+  }
+
+  const currentSubmodelData = submodelData[submodelIndex]
   
-  let catalog = jsonData['dcat:dataset'];
+  bru.setVar("SUBMODEL_SEMANTIC_ID", currentSubmodelData.semanticId)
+  bru.setVar("SUBMODEL_ENDPOINT", currentSubmodelData.submodelEndpoint)
+  bru.setVar("SUBMODEL_DSP_ENDPOINT", currentSubmodelData.dspEndpoint)
+  bru.setVar("SUBMODEL_ASSET", currentSubmodelData.asset)
+
+  const align = (text) => text.padEnd(20, " ")
+
+  console.log("---------------------------------------------------------------------------------------------------------------------")
+  console.log(`Testing submodel data transfer ${submodelIndex + 1}/${submodelData.length}`)
+  console.log(`${align("Submodel name:")} ${currentSubmodelData.name}`)
+  console.log(`${align("Semantic id:")} ${currentSubmodelData.semanticId}`)
+  console.log(`${align("Submodel endpoint:")} ${currentSubmodelData.submodelEndpoint}`)
+  console.log("---------------------------------------------------------------------------------------------------------------------")
+}
+
+script:post-response { 
+  let jsonData = res.getBody()
+  let catalog = jsonData['dcat:dataset']
   
-  const catalogEntry = catalog.find(ce => ce["https://admin-shell.io/aas/3/0/HasSemantics/semanticId"]["@id"] === semanticId)
+  if (!catalog || catalog.length === 0) {
+    throw new Error("Catalog response contains no datasets!")
+  }
+
+  const submodelSemanticId = bru.getVar("SUBMODEL_SEMANTIC_ID")
+  const catalogEntry = catalog.find(ce => ce["https://admin-shell.io/aas/3/0/HasSemantics/semanticId"]["@id"] === submodelSemanticId)
+
+  if (!catalogEntry) {
+    throw new Error(`No catalog entry found for semanticId: ${submodelSemanticId}`)
+  }
   
   let offer = catalogEntry["odrl:hasPolicy"]
   const offerId = offer["@id"]
@@ -89,7 +134,6 @@ script:post-response {
           "@id": assetId
       }
   }
-  
   bru.setVar("SUBMODEL_CATALOG_OFFER", JSON.stringify(offer))
   bru.setVar("SUBMODEL_CATALOG_OFFER_ID", offerId)
 }

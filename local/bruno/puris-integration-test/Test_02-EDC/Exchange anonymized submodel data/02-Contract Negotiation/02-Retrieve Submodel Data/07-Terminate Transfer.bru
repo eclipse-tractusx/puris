@@ -29,8 +29,37 @@ body:json {
   }
 }
 
+script:post-response {
+  const rawSubmodelData = bru.getVar("SUBMODEL_DATA")
+  const rawSubmodelIndex = bru.getVar("CURRENT_SUBMODEL_INDEX")
+
+  if (rawSubmodelData == null)
+  {
+    throw new Error("SUBMODEL_DATA not set!")
+  }
+  if (rawSubmodelIndex == null)
+  {
+    throw new Error("CURRENT_SUBMODEL_INDEX not set!")
+  }
+
+  const submodelData = JSON.parse(rawSubmodelData)
+  let submodelIndex = Number(rawSubmodelIndex)
+
+  submodelIndex++;
+
+  if (submodelIndex >= 0 && submodelIndex < submodelData.length)
+  {
+    bru.setVar("CURRENT_SUBMODEL_INDEX", submodelIndex)
+    bru.runner.setNextRequest("01-Query Catalog for Submodel")
+  }
+  else
+  {
+    bru.setVar("CURRENT_SUBMODEL_INDEX", 0)
+  }
+}
+
 tests {
   test("Status code is 204", function () {
-      expect(res.getStatus()).to.equal(204);
+      expect(res.getStatus()).to.equal(204)
   });
 }
