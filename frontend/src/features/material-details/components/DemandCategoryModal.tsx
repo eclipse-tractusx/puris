@@ -226,7 +226,7 @@ export const DemandCategoryModal = ({ open, onClose, onRemove, demand, demands }
                         columns={createDemandColumns(!isReported ? handleDelete : undefined, !isReported ? handleEdit : undefined)}
                         rows={dailyDemands ?? []}
                         getRowHeight={() => "auto"}
-                        disableRowSelectionOnClick
+                        rowSelection={false}
                         hideFooter
                     />
 

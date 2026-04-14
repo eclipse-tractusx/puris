@@ -381,7 +381,7 @@ export const DeliveryInformationModal = ({
                             columns={createDeliveryColumns(handleDelete, handleEdit)}
                             rows={dailyDeliveries}
                             getRowHeight={() => "auto"}
-                            disableRowSelectionOnClick
+                            rowSelection={false}
                             hideFooter
                         />
                     </Grid>

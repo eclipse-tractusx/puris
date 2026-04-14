@@ -45,7 +45,7 @@ export function MaterialList({ materials, onRowClick }: MaterialListProps) {
             onRowClick={(row) => onRowClick(row.row)}
             noRowsMsg='No materials found'
             getRowHeight={() => "auto"}
-            disableRowSelectionOnClick
+            rowSelection={false}
         />
     );
 }

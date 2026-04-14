@@ -268,7 +268,7 @@ export const PlannedProductionModal = ({ open, onClose, onRemove, production, pr
                         columns={createProductionColumns(!isReported ? handleDelete : undefined, !isReported ? handleEdit : undefined)}
                         rows={dailyProductions}
                         getRowHeight={() => "auto"}
-                        disableRowSelectionOnClick
+                        rowSelection={false}
                         hideFooter
                     />
 

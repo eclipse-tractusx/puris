@@ -99,7 +99,7 @@ export const StockTable = ({ onSelection, type, stocks }: StockTableProps) => {
             getRowId={(row) => row.uuid}
             onRowClick={(e) => onSelection(e.row)}
             getRowHeight={() => "auto"}
-            disableRowSelectionOnClick
+            rowSelection={false}
             hideFooter
         ></Table>
     );

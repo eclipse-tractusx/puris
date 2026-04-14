@@ -193,7 +193,7 @@ export const MasterDataView = () => {
                     getRowId={(row) => row.ownMaterialNumber}
                     noRowsMsg='No materials found'
                     getRowHeight={() => "auto"}
-                    disableRowSelectionOnClick
+                    rowSelection={false}
                 />
 
                 <Stack width='100%' direction="row" justifyContent="end" alignItems="center">
@@ -211,7 +211,7 @@ export const MasterDataView = () => {
                     getRowId={(row) => row.uuid}
                     noRowsMsg='No partners found'
                     getRowHeight={() => "auto"}
-                    disableRowSelectionOnClick
+                    rowSelection={false}
                 />
 
                 <Stack width='100%' direction="row" justifyContent="end" alignItems="center">
@@ -245,7 +245,7 @@ export const MasterDataView = () => {
                     getRowId={(row) => row.ownMaterialNumber + '-' + row.partnerBpnl}
                     noRowsMsg='No material partner relations found.'
                     getRowHeight={() => "auto"}
-                    disableRowSelectionOnClick
+                    rowSelection={false}
                 />
             </Stack>
 

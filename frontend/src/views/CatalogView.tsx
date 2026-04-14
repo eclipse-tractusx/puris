@@ -96,7 +96,7 @@ const CatalogList = ({ catalog, title }: CatalogListProps) => {
             rows={catalog}
             getRowId={(row) => row.assetId}
             getRowHeight={() => "auto"}
-            disableRowSelectionOnClick
+            rowSelection={false}
         ></Table>
     );
 };

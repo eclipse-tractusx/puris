@@ -62,7 +62,7 @@ export const AboutLicenseView = () => {
                     getRowId={(row) => row.header}
                     rows={aboutPage}
                     getRowHeight={() => "auto"}
-                    disableRowSelectionOnClick
+                    rowSelection={false}
                     hideFooter
                 />
             </Box>

@@ -50,8 +50,8 @@ export const TransferView = () => {
                 rows={transfers ?? []}
                 getRowId={(row) => row['@id']}
                 noRowsMsg="No transfers found"
-                getRowHeight={() => "auto"}
-                disableRowSelectionOnClick
+                getRowHeight={() => 'auto'}
+                rowSelection={false}
             />
         </Box>
     );
