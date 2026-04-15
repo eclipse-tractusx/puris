@@ -112,7 +112,6 @@ components:
       additionalProperties: false
       properties:
         approvalId:
-          format: uuid
           maxItems: 50
           type: string
         approvedTypes:
@@ -164,7 +163,6 @@ components:
           maxItems: 50
           type: string
         requestId:
-          format: uuid
           maxItems: 50
           type: string
         requestedTypes:

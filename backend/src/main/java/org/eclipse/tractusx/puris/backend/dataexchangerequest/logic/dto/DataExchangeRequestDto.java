@@ -39,7 +39,7 @@ import lombok.ToString;
 @ToString
 public class DataExchangeRequestDto implements Serializable {
     private UUID uuid;
-    private UUID requestId;
+    private String requestId;
 
     @NotNull
     private UUID notificationId;
