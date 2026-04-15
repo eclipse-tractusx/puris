@@ -1,11 +1,11 @@
 meta {
-  name: Create Data Exchange Approval
+  name: Create Data Exchange Approval as Supplier
   type: http
-  seq: 1
+  seq: 3
 }
 
 post {
-  url: {{SUPPLIER_PURIS_BACKEND}}/catena/data-exchange-request/6ede86dc-7e16-4d46-8c41-c40bc26b28fe/approval
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/data-exchange-request/{{reportedRequestUuid}}/approval
   body: json
   auth: none
 }
@@ -17,6 +17,7 @@ headers {
 
 body:json {
   {
+    "approvalId": "54b1b097-d73c-4d50-83ca-f386d98c4100",
     "isFinalized": true,
     "timestamp": "2025-12-17T08:00:00+01:00",
     "approvedTypes": [

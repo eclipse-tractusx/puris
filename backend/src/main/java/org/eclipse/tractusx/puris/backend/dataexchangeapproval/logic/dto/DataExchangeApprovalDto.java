@@ -38,6 +38,7 @@ import lombok.ToString;
 @ToString
 public class DataExchangeApprovalDto implements Serializable {
     private UUID uuid;
+    private UUID approvalId;
 
     @NotNull
     private boolean isFinalized;

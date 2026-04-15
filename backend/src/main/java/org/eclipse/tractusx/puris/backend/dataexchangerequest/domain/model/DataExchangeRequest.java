@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -33,6 +35,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,10 +52,16 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @ToString
 public abstract class DataExchangeRequest {
+    /** 
+     * uuid = internally generated unique identifier
+     * requestId = stable UUID reference for communication with partner, expected to be used in SAMM   
+     */
     @Id
     @GeneratedValue
     protected UUID uuid;
-    protected UUID requestId;
+    @NotNull
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
+    protected String requestId;
 
     @NotNull
     private CriticalityEnumeration criticality;

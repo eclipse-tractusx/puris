@@ -111,6 +111,10 @@ components:
     DataExchangeApprovalDto:
       additionalProperties: false
       properties:
+        approvalId:
+          format: uuid
+          maxItems: 50
+          type: string
         approvedTypes:
           items:
             enum:
@@ -1797,13 +1801,14 @@ paths:
         endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - data-exchange-request-api-controller
-  /data-exchange-request/{requestId}/approval:
+  /data-exchange-request/{id}/approval:
     post:
-      description: "Creates a new own data exchange approval. \n"
+      description: "Creates a new own data exchange approval in response to an existing\
+        \ ReportedDataExchangeRequest. \n"
       operationId: createDataExchangeApproval
       parameters:
       - in: path
-        name: requestId
+        name: id
         required: true
         schema:
           additionalProperties: false
@@ -1833,7 +1838,7 @@ paths:
           description: Internal Server Error.
       summary: Creates a new own data exchange approval
       tags:
-      - data-exchange-approval-controller
+      - data-exchange-request-controller
   /days-of-supply/customer:
     get:
       description: Calculate days of supply for customer for given number of days.

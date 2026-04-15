@@ -33,7 +33,7 @@ databaseChangeLog:
                     primaryKeyName: own_data_exchange_request_pkey
               - column:
                   name: request_id
-                  type: UUID
+                  type: VARCHAR(255)
                   constraints:
                     nullable: false
               - column:
@@ -131,7 +131,7 @@ databaseChangeLog:
                       primaryKeyName: reported_data_exchange_request_pkey
                 - column:
                     name: request_id
-                    type: UUID
+                    type: VARCHAR(255)
                     constraints:
                       nullable: false
                 - column:
@@ -189,6 +189,11 @@ databaseChangeLog:
                     nullable: false
                     primaryKey: true
                     primaryKeyName: own_data_exchange_approval_pkey
+              - column:
+                    name: approval_id
+                    type: VARCHAR(255)
+                    constraints:
+                      nullable: false
               - column:
                   name: is_finalized
                   type: BOOLEAN

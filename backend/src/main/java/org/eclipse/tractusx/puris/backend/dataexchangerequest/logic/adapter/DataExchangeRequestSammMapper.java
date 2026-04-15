@@ -18,7 +18,6 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.adapter;
 import java.util.ArrayList;
-import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
@@ -39,7 +38,7 @@ public class DataExchangeRequestSammMapper {
         var builder = DataExchangeRequestSamm.builder();
 
         return builder
-                .requestId(request.getRequestId() != null ? request.getRequestId().toString() : null)
+                .requestId(request.getRequestId())
                 .sourceDisruptionId(request.getNotification().getSourceDisruptionId())
                 .criticality(request.getCriticality())
                 .desiredStartDateTime(request.getDesiredStartDateTime())
@@ -57,7 +56,7 @@ public class DataExchangeRequestSammMapper {
             return null;
         }
         return ReportedDataExchangeRequest.builder()
-                .requestId(UUID.fromString(samm.getRequestId()))
+                .requestId(samm.getRequestId())
                 .notification(notification)
                 .criticality(samm.getCriticality())
                 .desiredStartDateTime(samm.getDesiredStartDateTime())

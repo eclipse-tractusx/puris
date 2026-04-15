@@ -20,7 +20,6 @@ package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
@@ -29,13 +28,10 @@ import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.
 import org.springframework.stereotype.Service;
 
 @Service
-public class ReportedDataExchangeRequestService  extends DataExchangeRequestService<ReportedDataExchangeRequest> {
-    private final ReportedDataExchangeRequestRepository repository;
-    protected final Function<ReportedDataExchangeRequest, Boolean> validator;
+public class ReportedDataExchangeRequestService extends DataExchangeRequestService<ReportedDataExchangeRequest, ReportedDataExchangeRequestRepository> {
 
     public ReportedDataExchangeRequestService(ReportedDataExchangeRequestRepository repository) {
-        this.repository = repository;
-        this.validator = this::validate;
+        super(repository);
     }
 
     public final ReportedDataExchangeRequest create(ReportedDataExchangeRequest reportedDataExchangeRequest) {
@@ -45,11 +41,11 @@ public class ReportedDataExchangeRequestService  extends DataExchangeRequestServ
         if (repository.findAll().stream().filter(existing -> existing.equals(reportedDataExchangeRequest)).findFirst().isPresent()) {
             throw new KeyAlreadyExistsException("Data exchange request already exists");
         }
-        if (repository.findAll().stream().anyMatch(d -> d.getRequestId().equals(reportedDataExchangeRequest.getRequestId()))) {
-            throw new KeyAlreadyExistsException("Data exchange request already exists");
+        if (repository.findByRequestId(reportedDataExchangeRequest.getRequestId()).isPresent()) {
+            throw new KeyAlreadyExistsException("A reported data exchange request for this request id already exists");
         }
         if (reportedDataExchangeRequest.getRequestId() == null) {
-            reportedDataExchangeRequest.setRequestId(UUID.randomUUID());
+            reportedDataExchangeRequest.setRequestId(UUID.randomUUID().toString());
         }
         return repository.save(reportedDataExchangeRequest);
     }
@@ -63,7 +59,8 @@ public class ReportedDataExchangeRequestService  extends DataExchangeRequestServ
         }
         return repository.save(reportedDataExchangeRequest);
     }
-
+    
+    @Override
     public boolean validate(ReportedDataExchangeRequest dataExchangeRequest) {
         return validateWithDetails(dataExchangeRequest).isEmpty();
     }
