@@ -20,21 +20,29 @@ package org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.DataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.repository.DataExchangeApprovalRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class DataExchangeApprovalService<T extends DataExchangeApproval> {
-    @Autowired
-    protected DataExchangeApprovalRepository<T> repository;
+public abstract class DataExchangeApprovalService<TEntity extends DataExchangeApproval, TRepository extends DataExchangeApprovalRepository<TEntity>> {
+    protected final TRepository repository;
+    protected final Function<TEntity, Boolean> validator;
+    public DataExchangeApprovalService(TRepository repository) {
+        this.repository = repository;
+        this.validator = this::validate;
+    }
 
-    public final List<T> findAll() {
+    public final List<TEntity> findAll() {
         return repository.findAll();
     }
 
-    public final T findById(UUID uuid) {
+    public final TEntity findById(UUID uuid) {
         return repository.findById(uuid).orElse(null);
+    }
+
+    public final TEntity findByDataExchangeRequest_Uuid(UUID requestId) {
+        return repository.findByDataExchangeRequest_Uuid(requestId).orElse(null);
     }
 
     protected boolean basicValidation(DataExchangeApproval dataExchangeApproval) {
@@ -42,5 +50,7 @@ public abstract class DataExchangeApprovalService<T extends DataExchangeApproval
             dataExchangeApproval.getApprovedTypes() != null &&
             !dataExchangeApproval.getApprovedTypes().isEmpty();
     }
+
+    public abstract boolean validate(TEntity approval);
     
 }

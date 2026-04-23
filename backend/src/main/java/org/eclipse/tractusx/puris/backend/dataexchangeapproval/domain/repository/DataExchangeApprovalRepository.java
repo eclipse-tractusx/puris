@@ -18,11 +18,14 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.DataExchangeApproval;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.NoRepositoryBean;
 
-public interface DataExchangeApprovalRepository<T extends DataExchangeApproval> extends JpaRepository<T, UUID> {
-    
+@NoRepositoryBean
+public interface DataExchangeApprovalRepository<TEntity extends DataExchangeApproval> extends JpaRepository<TEntity, UUID> {
+    Optional<TEntity> findByDataExchangeRequest_Uuid(UUID requestId);
 }
