@@ -21,20 +21,17 @@ SPDX-License-Identifier: Apache-2.0
 
 package org.eclipse.tractusx.puris.backend.production.logic.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
+import javax.management.openmbean.KeyAlreadyExistsException;
+
 import org.eclipse.tractusx.puris.backend.common.util.DuplicateEntityException;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.eclipse.tractusx.puris.backend.production.domain.repository.OwnProductionRepository;
 import org.springframework.stereotype.Service;
-
-import javax.management.openmbean.KeyAlreadyExistsException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 
 @Service
 public class OwnProductionService extends ProductionService<OwnProduction> {
@@ -48,25 +45,6 @@ public class OwnProductionService extends ProductionService<OwnProduction> {
         this.repository = repository;
         this.partnerService = partnerService;
         this.validator = this::validate;
-    }
-
-    public Optional<OwnProduction> findByBusinessKey(
-        Material material,
-        Partner partner,
-        Date estimatedTimeOfCompletion,
-        String productionSiteBpns,
-        String customerOrderNumber,
-        String customerOrderPositionNumber
-    ) {
-        return repository
-            .findByMaterialOwnMaterialNumberAndPartnerUuidAndProductionSiteBpnsAndEstimatedTimeOfCompletionAndCustomerOrderNumberAndCustomerOrderPositionNumber(
-                material.getOwnMaterialNumber(),
-                partner.getUuid(),
-                productionSiteBpns,
-                estimatedTimeOfCompletion,
-                customerOrderNumber,
-                customerOrderPositionNumber
-            );
     }
 
     public final OwnProduction create(OwnProduction production) {

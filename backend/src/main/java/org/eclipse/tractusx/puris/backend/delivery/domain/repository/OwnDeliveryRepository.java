@@ -22,18 +22,6 @@ package org.eclipse.tractusx.puris.backend.delivery.domain.repository;
 
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
-
 public interface OwnDeliveryRepository extends DeliveryRepository<OwnDelivery> {
     
-    Optional<OwnDelivery> findByMaterialOwnMaterialNumberAndPartnerUuidAndOriginBpnsAndDestinationBpnsAndDateOfDepartureAndDateOfArrival(
-        String materialOwnMaterialNumber,
-        UUID partnerUuid,
-        String originBpns,
-        String destinationBpns,
-        Date dateOfDeparture,
-        Date dateOfArrival
-    );
 }

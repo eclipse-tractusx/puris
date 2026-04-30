@@ -20,20 +20,17 @@
 
 package org.eclipse.tractusx.puris.backend.delivery.logic.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
+import javax.management.openmbean.KeyAlreadyExistsException;
+
 import org.eclipse.tractusx.puris.backend.common.util.DuplicateEntityException;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.repository.OwnDeliveryRepository;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.stereotype.Service;
-
-import javax.management.openmbean.KeyAlreadyExistsException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 
 @Service
 public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
@@ -47,24 +44,6 @@ public class OwnDeliveryService extends DeliveryService<OwnDelivery> {
         this.repository = repository;
         this.partnerService = partnerService;
         this.validator = this::validate;
-    }
-
-    public Optional<OwnDelivery> findByBusinessKey(
-        Material material,
-        Partner partner,
-        String originBpns,
-        String destinationBpns,
-        Date dateOfDeparture,
-        Date dateOfArrival
-    ) {
-        return repository.findByMaterialOwnMaterialNumberAndPartnerUuidAndOriginBpnsAndDestinationBpnsAndDateOfDepartureAndDateOfArrival(
-            material.getOwnMaterialNumber(),
-            partner.getUuid(),
-            originBpns,
-            destinationBpns,
-            dateOfDeparture,
-            dateOfArrival
-        );
     }
 
     public final List<OwnDelivery> findAllByBpnl(String bpnl) {

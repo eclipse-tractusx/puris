@@ -20,16 +20,6 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.demand.logic.services;
 
-import lombok.extern.slf4j.Slf4j;
-import org.eclipse.tractusx.puris.backend.demand.domain.model.DemandCategoryEnumeration;
-import org.eclipse.tractusx.puris.backend.demand.domain.model.OwnDemand;
-import org.eclipse.tractusx.puris.backend.demand.domain.repository.OwnDemandRepository;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -38,26 +28,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import org.eclipse.tractusx.puris.backend.demand.domain.model.OwnDemand;
+import org.eclipse.tractusx.puris.backend.demand.domain.repository.OwnDemandRepository;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 public class OwnDemandService extends DemandService<OwnDemand, OwnDemandRepository> {
     public OwnDemandService(OwnDemandRepository repository, PartnerService partnerService, MaterialPartnerRelationService mprService) {
         super(repository, partnerService, mprService);
-    }
-
-    public Optional<OwnDemand> findByBusinessKeyOwnMaterialNumber(
-        Material material,
-        Partner partner,
-        Date day,
-        DemandCategoryEnumeration category
-    ) {
-        return getRepository().findByMaterialOwnMaterialNumberAndPartnerUuidAndDayAndDemandCategoryCode(
-            material.getOwnMaterialNumber(),
-            partner.getUuid(),
-            day,
-            category
-        );
     }
 
     public final List<Double> getQuantityForDays(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {

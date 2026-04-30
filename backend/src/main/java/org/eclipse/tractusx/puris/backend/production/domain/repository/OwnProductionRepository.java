@@ -23,19 +23,7 @@ package org.eclipse.tractusx.puris.backend.production.domain.repository;
 import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
-
 @Repository
 public interface OwnProductionRepository extends ProductionRepository<OwnProduction> {
 
-    Optional<OwnProduction> findByMaterialOwnMaterialNumberAndPartnerUuidAndProductionSiteBpnsAndEstimatedTimeOfCompletionAndCustomerOrderNumberAndCustomerOrderPositionNumber(
-        String materialOwnMaterialNumber,
-        UUID partnerUuid,
-        String productionSiteBpns,
-        Date estimatedTimeOfCompletion,
-        String customerOrderNumber,
-        String customerOrderPositionNumber
-    );
 }

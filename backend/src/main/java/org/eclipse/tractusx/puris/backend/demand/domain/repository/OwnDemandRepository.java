@@ -19,22 +19,13 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.demand.domain.repository;
 
-import org.eclipse.tractusx.puris.backend.demand.domain.model.DemandCategoryEnumeration;
+import java.util.UUID;
+
 import org.eclipse.tractusx.puris.backend.demand.domain.model.OwnDemand;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
-
 @Repository
 public interface OwnDemandRepository extends JpaRepository<OwnDemand, UUID> {
   
-    Optional<OwnDemand> findByMaterialOwnMaterialNumberAndPartnerUuidAndDayAndDemandCategoryCode(
-        String materialOwnMaterialNumber,
-        UUID partnerUuid,
-        Date day,
-        DemandCategoryEnumeration demandCategoryCode
-    );
 }
