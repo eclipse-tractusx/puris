@@ -21,7 +21,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- Prevent demand, delivery, production and stock imports from overwriting existing rows by using create-or-update logic ([#1120](https://github.com/eclipse-tractusx/puris/pull/1120/))
+- deletes present data before creating new rows([#1120](https://github.com/eclipse-tractusx/puris/pull/1120/))
 
 ### Known Knowns
 
