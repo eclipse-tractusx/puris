@@ -21,7 +21,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- deletes present data before creating new rows([#1120](https://github.com/eclipse-tractusx/puris/pull/1120/))
+- deletes present data before creating new rows with rollback functionality([#1120](https://github.com/eclipse-tractusx/puris/pull/1120/))
 
 ### Known Knowns
 

@@ -55,6 +55,9 @@ import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockS
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -134,6 +137,7 @@ public class ExcelService {
     @Autowired
     private ProductItemStockService productItemStockService;
     
+    @Transactional(rollbackFor = Exception.class)
     public DataImportResult readExcelFile(InputStream is) throws IOException {
         Workbook workbook = WorkbookFactory.create(is);
         List<DataImportError> formulaErrors = evaluateWorkbook(workbook);
@@ -261,6 +265,7 @@ public class ExcelService {
                 } catch (Exception e) {
                     int idx = demands.indexOf(newDemand);
                     errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
+                    markCurrentTransactionForRollback();
                     return new DataImportResult("Failed to persist demands", errors);
                 }
             }
@@ -361,6 +366,7 @@ public class ExcelService {
                     log.error("Failed to persist production: {}", newProduction);
                     var idx = productions.indexOf(newProduction);
                     errors.add(new DataImportError(idx + 2, List.of("Failed to persist")));
+                    markCurrentTransactionForRollback();
                     return new DataImportResult("Failed to persist Productions", errors);
                 }
             }
@@ -497,6 +503,7 @@ public class ExcelService {
                     log.error("Failed to persist delivery: {}", newDelivery);
                     int idx = deliveries.indexOf(newDelivery);
                     errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
+                    markCurrentTransactionForRollback();
                     return new DataImportResult("Failed to persist Deliveries", errors);
                 }
             }
@@ -633,6 +640,7 @@ public class ExcelService {
                 } catch (Exception e) {
                     int idx = allStocks.indexOf(newStock);
                     errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
+                    markCurrentTransactionForRollback();
                     return new DataImportResult("Failed to persist stocks", errors);
                 }
             }
@@ -649,6 +657,7 @@ public class ExcelService {
                 } catch (Exception e) {
                     int idx = allStocks.indexOf(newStock);
                     errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
+                    markCurrentTransactionForRollback();
                     return new DataImportResult("Failed to persist stocks", errors);
                 }
             }
@@ -659,6 +668,12 @@ public class ExcelService {
         }
 
         return new DataImportResult("Failed to process stock rows", errors);
+    }
+
+    private void markCurrentTransactionForRollback() {
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        }
     }
 
     private DataDocumentTypeEnumeration validateHeaders(Sheet sheet) {
