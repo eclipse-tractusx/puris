@@ -23,6 +23,7 @@ import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.DataExchangeRequestApiService;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.MessageHeaderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,9 +48,12 @@ public class DataExchangeRequestApiController {
     @Autowired
     private DataExchangeRequestApiService dataExchangeRequestApiService;
     @Autowired
+    private MessageHeaderService messageHeaderService;
+    @Autowired
     private ObjectMapper objectMapper;
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
+    public static final String DATA_EXCHANGE_REQUEST_CONTEXT = "CX-DataExchangeRequestReceiveAPI-Receive:1.0.0";
     
     @Operation(summary = "This endpoint receives the DataExchangeRequest 1.0.0 requests. " +
         "This endpoint is meant to be accessed by partners via EDC only. ")
@@ -65,6 +69,7 @@ public class DataExchangeRequestApiController {
             log.warn("Rejecting request at DataExchangeRequest request 1.0.0 endpoint. Invalid BPNL");
             return ResponseEntity.badRequest().build();
         }
+        messageHeaderService.validate( body.get("header"), DATA_EXCHANGE_REQUEST_CONTEXT, bpnl);
         try {
             log.info("Received POST request for DataExchangeRequest");
             var request = objectMapper.readValue(

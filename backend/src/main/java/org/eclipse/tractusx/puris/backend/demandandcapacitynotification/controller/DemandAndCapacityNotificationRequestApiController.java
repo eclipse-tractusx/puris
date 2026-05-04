@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.demandandcapacitynotficationsamm.DemandAndCapacityNotificationSamm;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.DemandAndCapacityNotifcationRequestApiService;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.MessageHeaderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,8 +46,12 @@ public class DemandAndCapacityNotificationRequestApiController {
 
     @Autowired
     private DemandAndCapacityNotifcationRequestApiService demandAndCapacityNotificationRequestApiService;
+    @Autowired
+    private MessageHeaderService messageHeaderService;
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
+
+    public static final String DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT = "CX-DemandAndCapacityNotificationAPI-Receive:2.0.0";
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -70,6 +75,7 @@ public class DemandAndCapacityNotificationRequestApiController {
             log.warn("Rejecting request at DemandAndCapacityNotification request 2.0.0 endpoint. Invalid BPNL");
             return ResponseEntity.badRequest().build();
         }
+        messageHeaderService.validate( body.get("header"), DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT, bpnl);
         try {
             log.info("Received POST request for DemandAndCapacityNotification 2.0.0 with BPNL: " + bpnl);
             var notification = objectMapper.readValue(
