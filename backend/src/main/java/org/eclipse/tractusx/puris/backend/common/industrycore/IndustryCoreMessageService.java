@@ -81,7 +81,7 @@ public class IndustryCoreMessageService {
         if (body == null || body.isMissingNode() || body.isNull()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Body is missing");
         }
-        validate(body.get("header"), expectedContext, edcBpnHeader);
+        validate(body.get("header"), edcBpnHeader);
         return parseContent(body.get("content"), expectedContext, contentType);
     }
 
@@ -100,15 +100,18 @@ public class IndustryCoreMessageService {
         }
     }
 
-    public void validate(JsonNode header, MessageContext expectedContext, String edcBpnHeader) {
+    public void validate(JsonNode header, String edcBpnHeader) {
         if (header == null || header.isMissingNode() || header.isNull()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Header is missing");
         }
 
         String senderBpn = textOrThrow(header, "senderBpn");
         String receiverBpn = textOrThrow(header, "receiverBpn");
-        String context = textOrThrow(header, "context");
         String version = textOrThrow(header, "version");
+
+        if (header.get("context") == null || !header.get("context").isTextual() || header.get("context").asText().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing/invalid header field: " + header.get("context"));
+        }
 
         if (!partnerService.getOwnPartnerEntity().getBpnl().equals(receiverBpn)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "receiverBpn does not match own BPNL");
