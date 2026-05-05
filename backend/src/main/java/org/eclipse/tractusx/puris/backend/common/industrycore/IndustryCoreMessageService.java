@@ -16,7 +16,7 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service;
+package org.eclipse.tractusx.puris.backend.common.industrycore;
 import java.util.Date;
 import java.util.UUID;
 
@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -34,21 +35,38 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class MessageHeaderService {
+public class IndustryCoreMessageService {
     public static final String MESSAGE_HEADER_VERSION = "3.0.0";
 
     private final PartnerService partnerService;
     private final ObjectMapper objectMapper;
 
-    public ObjectNode createHeader(Partner receiver, String context) {
-        return createHeader(receiver, context, null);
+    public JsonNode createMessage(Partner receiver, MessageContext context, Object samm) {
+        return createMessage(receiver, context, samm, null);
     }
 
-    public ObjectNode createHeader(Partner receiver, String context, UUID relatedMessageId) {
+    public JsonNode createMessage(Partner receiver, MessageContext context, Object samm, UUID relatedMessageId) {
+        var body = objectMapper.createObjectNode();
+        body.set("header", createHeader(receiver, context, relatedMessageId));
+        body.set("content", buildContent(context, samm));
+        return body;
+    }
+
+    private JsonNode buildContent(MessageContext context, Object samm) {
+        JsonNode sammNode = objectMapper.convertValue(samm, JsonNode.class);
+        if (context.getContentKey() == null) {
+            return sammNode;
+        }
+        var wrapper = objectMapper.createObjectNode();
+        wrapper.set(context.getContentKey(), sammNode);
+        return wrapper;
+    }
+
+    public ObjectNode createHeader(Partner receiver, MessageContext context, UUID relatedMessageId) {
         var ownBpnl = partnerService.getOwnPartnerEntity().getBpnl();
         var header = objectMapper.createObjectNode();
         header.put("messageId", UUID.randomUUID().toString());
-        header.put("context", context);
+        header.put("context", context.getValue());
         header.put("sentDateTime", new Date().toString());
         header.put("senderBpn", ownBpnl);
         header.put("receiverBpn", receiver.getBpnl());
@@ -59,7 +77,30 @@ public class MessageHeaderService {
         return header;
     }
 
-    public void validate(JsonNode header, String expectedContext, String edcBpnHeader) {
+    public <T> T validateAndParse(JsonNode body, MessageContext expectedContext, String edcBpnHeader, Class<T> contentType) {
+        if (body == null || body.isMissingNode() || body.isNull()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Body is missing");
+        }
+        validate(body.get("header"), expectedContext, edcBpnHeader);
+        return parseContent(body.get("content"), expectedContext, contentType);
+    }
+
+    private <T> T parseContent(JsonNode content, MessageContext context, Class<T> contentType) {
+        if (content == null || content.isMissingNode() || content.isNull()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Content is missing");
+        }
+        JsonNode payload = context.getContentKey() == null ? content : content.get(context.getContentKey());
+        if (payload == null || payload.isNull()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing content payload");
+        }
+        try {
+            return objectMapper.treeToValue(payload, contentType);
+        } catch (JsonProcessingException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid content payload");
+        }
+    }
+
+    public void validate(JsonNode header, MessageContext expectedContext, String edcBpnHeader) {
         if (header == null || header.isMissingNode() || header.isNull()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Header is missing");
         }

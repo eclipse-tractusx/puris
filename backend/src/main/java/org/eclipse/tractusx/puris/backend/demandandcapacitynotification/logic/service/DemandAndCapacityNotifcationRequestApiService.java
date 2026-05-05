@@ -23,6 +23,8 @@ package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.s
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageService;
+import org.eclipse.tractusx.puris.backend.common.industrycore.MessageContext;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.adapter.DemandAndCapacityNotificationSammMapper;
@@ -33,7 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,15 +46,11 @@ public class DemandAndCapacityNotifcationRequestApiService {
     @Autowired
     private ReportedDemandAndCapacityNotificationService reportedDemandAndCapacityNotificationService;
     @Autowired
-    private MessageHeaderService messageHeaderService;
+    private IndustryCoreMessageService messageService;
     @Autowired
     private EdcAdapterService edcAdapterService;
     @Autowired
     private DemandAndCapacityNotificationSammMapper sammMapper;
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    public static final String DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT = "CX-DemandAndCapacityNotificationAPI-Receive:2.0.0";
 
     public ReportedDemandAndCapacityNotification handleIncomingNotification(String bpnl, DemandAndCapacityNotificationSamm samm) {
         Partner partner = partnerService.findByBpnl(bpnl);
@@ -96,12 +93,7 @@ public class DemandAndCapacityNotifcationRequestApiService {
     }
 
     private JsonNode createNotificationRequestBody(OwnDemandAndCapacityNotification notification) {
-        var body = objectMapper.createObjectNode();
-        body.set("header", messageHeaderService.createHeader(notification.getPartner(), DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT));
-        var content = objectMapper.createObjectNode();
-        body.set("content", content);
         var samm = sammMapper.ownNotificationToSamm(notification);
-        content.set("demandAndCapacityNotification", objectMapper.convertValue(samm, JsonNode.class));
-        return body;
+        return messageService.createMessage(notification.getPartner(), MessageContext.DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT, samm);
     }
 }

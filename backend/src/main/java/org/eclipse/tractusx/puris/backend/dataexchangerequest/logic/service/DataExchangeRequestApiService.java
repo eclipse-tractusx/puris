@@ -21,18 +21,18 @@ package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageService;
+import org.eclipse.tractusx.puris.backend.common.industrycore.MessageContext;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.adapter.DataExchangeRequestSammMapper;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.MessageHeaderService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,15 +44,11 @@ public class DataExchangeRequestApiService {
     @Autowired
     private ReportedDataExchangeRequestService reportedDataExchangeRequestService;
     @Autowired
-    private MessageHeaderService messageHeaderService;
+    private IndustryCoreMessageService messageService;
     @Autowired
     private EdcAdapterService edcAdapterService;
     @Autowired
     private DataExchangeRequestSammMapper sammMapper;
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    public static final String DATA_EXCHANGE_REQUEST_CONTEXT = "CX-DataExchangeRequestReceiveAPI-Receive:1.0.0";
 
     public ReportedDataExchangeRequest handleIncomingDataExchangeRequest(String bpnl, DataExchangeRequestSamm samm) {
         Partner partner = partnerService.findByBpnl(bpnl);
@@ -102,11 +98,8 @@ public class DataExchangeRequestApiService {
     }
 
     private JsonNode createDataExchangeRequestBody(OwnDataExchangeRequest request) {
-        var body = objectMapper.createObjectNode();
-        body.set("header", messageHeaderService.createHeader(request.getNotification().getPartner(), DATA_EXCHANGE_REQUEST_CONTEXT));
         var samm = sammMapper.ownDataExchangeRequestToSamm(request);
-        body.set("content", objectMapper.convertValue(samm, JsonNode.class));
-        return body;
+        return messageService.createMessage(request.getNotification().getPartner(), MessageContext.DATA_EXCHANGE_REQUEST_CONTEXT, samm);
     }
     
 }
