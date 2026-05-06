@@ -19,14 +19,14 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.common.industrycore;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum MessageContext {
+public enum IndustryCoreMessageContext {
     DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT("CX-DemandAndCapacityNotificationAPI-Receive:2.0.0", "demandAndCapacityNotification"),
     DATA_EXCHANGE_REQUEST_CONTEXT("CX-DataExchangeRequestAPI-RequestReceive:1.0.0", null);
 
     private final String value;
     private final String contentKey;
 
-    MessageContext(String value, String contentKey) {
+    IndustryCoreMessageContext(String value, String contentKey) {
         this.value = value;
         this.contentKey = contentKey;
     }

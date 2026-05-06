@@ -27,8 +27,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 
+import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageContext;
 import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageService;
-import org.eclipse.tractusx.puris.backend.common.industrycore.MessageContext;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.demandandcapacitynotficationsamm.DemandAndCapacityNotificationSamm;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.DemandAndCapacityNotifcationRequestApiService;
@@ -73,8 +73,11 @@ public class DemandAndCapacityNotificationRequestApiController {
         }
         try {
             log.info("Received POST request for DemandAndCapacityNotification 2.0.0 with BPNL: " + bpnl);
-            DemandAndCapacityNotificationSamm notification = messageService.validateAndParse(body, MessageContext.DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT, bpnl, DemandAndCapacityNotificationSamm.class);
+            DemandAndCapacityNotificationSamm notification = messageService.validateAndParse(body, IndustryCoreMessageContext.DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT, bpnl, DemandAndCapacityNotificationSamm.class);
             demandAndCapacityNotificationRequestApiService.handleIncomingNotification(bpnl, notification);
+        } catch (IllegalArgumentException e) {
+            log.warn("Rejecting DemandAndCapacityNotification: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             log.warn("Rejecting invalid request body at DemandAndCapacityNotification request 2.0.0 endpoint");
             return ResponseEntity.badRequest().build();

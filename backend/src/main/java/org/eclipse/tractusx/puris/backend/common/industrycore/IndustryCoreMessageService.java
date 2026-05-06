@@ -22,9 +22,7 @@ import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,18 +39,18 @@ public class IndustryCoreMessageService {
     private final PartnerService partnerService;
     private final ObjectMapper objectMapper;
 
-    public JsonNode createMessage(Partner receiver, MessageContext context, Object samm) {
+    public JsonNode createMessage(Partner receiver, IndustryCoreMessageContext context, Object samm) {
         return createMessage(receiver, context, samm, null);
     }
 
-    public JsonNode createMessage(Partner receiver, MessageContext context, Object samm, UUID relatedMessageId) {
+    public JsonNode createMessage(Partner receiver, IndustryCoreMessageContext context, Object samm, UUID relatedMessageId) {
         var body = objectMapper.createObjectNode();
         body.set("header", createHeader(receiver, context, relatedMessageId));
         body.set("content", buildContent(context, samm));
         return body;
     }
 
-    private JsonNode buildContent(MessageContext context, Object samm) {
+    private JsonNode buildContent(IndustryCoreMessageContext context, Object samm) {
         JsonNode sammNode = objectMapper.convertValue(samm, JsonNode.class);
         if (context.getContentKey() == null) {
             return sammNode;
@@ -62,7 +60,7 @@ public class IndustryCoreMessageService {
         return wrapper;
     }
 
-    public ObjectNode createHeader(Partner receiver, MessageContext context, UUID relatedMessageId) {
+    public ObjectNode createHeader(Partner receiver, IndustryCoreMessageContext context, UUID relatedMessageId) {
         var ownBpnl = partnerService.getOwnPartnerEntity().getBpnl();
         var header = objectMapper.createObjectNode();
         header.put("messageId", UUID.randomUUID().toString());
@@ -77,57 +75,58 @@ public class IndustryCoreMessageService {
         return header;
     }
 
-    public <T> T validateAndParse(JsonNode body, MessageContext expectedContext, String edcBpnHeader, Class<T> contentType) {
+    public <T> T validateAndParse(JsonNode body, IndustryCoreMessageContext expectedContext, String senderBpn, Class<T> contentType) {
         if (body == null || body.isMissingNode() || body.isNull()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Body is missing");
+            throw new IllegalArgumentException("Body is missing");
         }
-        validate(body.get("header"), edcBpnHeader);
+        validate(body.get("header"), senderBpn, expectedContext);
         return parseContent(body.get("content"), expectedContext, contentType);
     }
 
-    private <T> T parseContent(JsonNode content, MessageContext context, Class<T> contentType) {
+    private <T> T parseContent(JsonNode content, IndustryCoreMessageContext context, Class<T> contentType) {
         if (content == null || content.isMissingNode() || content.isNull()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Content is missing");
+            throw new IllegalArgumentException("Content is missing");
         }
         JsonNode payload = context.getContentKey() == null ? content : content.get(context.getContentKey());
         if (payload == null || payload.isNull()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing content payload");
+            throw new IllegalArgumentException("Missing content payload");
         }
         try {
             return objectMapper.treeToValue(payload, contentType);
         } catch (JsonProcessingException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid content payload");
+            throw new IllegalArgumentException("Invalid content payload", e);
         }
     }
 
-    public void validate(JsonNode header, String edcBpnHeader) {
+    public void validate(JsonNode header, String senderBpn, IndustryCoreMessageContext expectedContext) {
         if (header == null || header.isMissingNode() || header.isNull()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Header is missing");
+            throw new IllegalArgumentException("Header is missing");
         }
 
-        String senderBpn = textOrThrow(header, "senderBpn");
+        String sender = textOrThrow(header, "senderBpn");
         String receiverBpn = textOrThrow(header, "receiverBpn");
         String version = textOrThrow(header, "version");
+        String context = textOrThrow(header, "context");
 
-        if (header.get("context") == null || !header.get("context").isTextual() || header.get("context").asText().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing/invalid header field: " + header.get("context"));
+        if (!expectedContext.getValue().equals(context)) {
+            throw new IllegalArgumentException("Unexpected context: " + context);
         }
 
         if (!partnerService.getOwnPartnerEntity().getBpnl().equals(receiverBpn)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "receiverBpn does not match own BPNL");
+            throw new IllegalArgumentException("receiverBpn does not match own BPNL");
         }
-        if (edcBpnHeader == null || !edcBpnHeader.equals(senderBpn)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "senderBpn does not match edc-bpn header");
+        if (senderBpn == null || !senderBpn.equals(sender)) {
+            throw new IllegalArgumentException("senderBpn does not match edc-bpn header");
         }
         if (!MESSAGE_HEADER_VERSION.equals(version)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported header version: " + version);
+            throw new IllegalArgumentException("Unsupported header version: " + version);
         }
     }
 
     private static String textOrThrow(JsonNode header, String field) {
         var node = header.get(field);
         if (node == null || !node.isTextual() || node.asText().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing/invalid header field: " + field);
+            throw new IllegalArgumentException("Missing/invalid header field: " + field);
         }
         return node.asText();
     }

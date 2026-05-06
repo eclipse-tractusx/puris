@@ -21,8 +21,8 @@ package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageContext;
 import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageService;
-import org.eclipse.tractusx.puris.backend.common.industrycore.MessageContext;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.adapter.DataExchangeRequestSammMapper;
@@ -99,7 +99,7 @@ public class DataExchangeRequestApiService {
 
     private JsonNode createDataExchangeRequestBody(OwnDataExchangeRequest request) {
         var samm = sammMapper.ownDataExchangeRequestToSamm(request);
-        return messageService.createMessage(request.getNotification().getPartner(), MessageContext.DATA_EXCHANGE_REQUEST_CONTEXT, samm);
+        return messageService.createMessage(request.getNotification().getPartner(), IndustryCoreMessageContext.DATA_EXCHANGE_REQUEST_CONTEXT, samm);
     }
     
 }

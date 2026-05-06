@@ -23,8 +23,8 @@ package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.s
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageContext;
 import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageService;
-import org.eclipse.tractusx.puris.backend.common.industrycore.MessageContext;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.adapter.DemandAndCapacityNotificationSammMapper;
@@ -94,6 +94,6 @@ public class DemandAndCapacityNotifcationRequestApiService {
 
     private JsonNode createNotificationRequestBody(OwnDemandAndCapacityNotification notification) {
         var samm = sammMapper.ownNotificationToSamm(notification);
-        return messageService.createMessage(notification.getPartner(), MessageContext.DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT, samm);
+        return messageService.createMessage(notification.getPartner(), IndustryCoreMessageContext.DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT, samm);
     }
 }
