@@ -32,6 +32,11 @@ databaseChangeLog:
                     primaryKey: true
                     primaryKeyName: own_data_exchange_request_pkey
               - column:
+                  name: request_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
                   name: notification_uuid
                   type: UUID
                   constraints:
@@ -125,6 +130,11 @@ databaseChangeLog:
                       primaryKey: true
                       primaryKeyName: reported_data_exchange_request_pkey
                 - column:
+                    name: request_id
+                    type: VARCHAR(255)
+                    constraints:
+                      nullable: false
+                - column:
                     name: notification_uuid
                     type: UUID
                     constraints:
@@ -165,3 +175,65 @@ databaseChangeLog:
               referencedTableName: own_demand_and_capacity_notification
               referencedColumnNames: uuid
               constraintName: fk_reported_data_exchange_request_notification
+  - changeSet:
+      id: "3"
+      author: OlgaIvkovic
+      changes:
+        - createTable:
+            tableName: own_data_exchange_approval
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: own_data_exchange_approval_pkey
+              - column:
+                    name: approval_id
+                    type: VARCHAR(255)
+                    constraints:
+                      nullable: false
+              - column:
+                  name: is_finalized
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: approved_types
+                  type: SMALLINT[]
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timestamp
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: data_exchange_request_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_own_data_exchange_approval_data_exchange_request
+        - createTable:
+            tableName: data_exchange_approval_approved_types
+            columns:
+              - column:
+                  name: data_exchange_approval_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: approved_type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: own_data_exchange_approval
+            baseColumnNames: data_exchange_request_uuid
+            referencedTableName: reported_data_exchange_request
+            referencedColumnNames: uuid
+            constraintName: fk_own_data_exchange_approval_data_exchange_request

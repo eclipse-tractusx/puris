@@ -1,7 +1,7 @@
 meta {
-  name: Get Reported Data Exchange Request
+  name: Get Reported Data Exchange Request as Supplier
   type: http
-  seq: 1
+  seq: 2
 }
 
 get {
@@ -27,5 +27,8 @@ tests {
   test("Verify response contains one reported data exchange request object", function () {
       expect(res.getBody()).to.be.an("array").with.lengthOf(1);
   });
+
+  const firstUuid = res.getBody()[0].uuid;
+  bru.setVar("reportedRequestUuid", firstUuid);
   
 }

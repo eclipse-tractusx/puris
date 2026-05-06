@@ -19,7 +19,9 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 import java.util.Date;
 import java.util.UUID;
+
 import javax.management.openmbean.KeyAlreadyExistsException;
+
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
@@ -29,8 +31,10 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -62,9 +66,7 @@ public class DataExchangeRequestApiService {
             return null;
         }
         ReportedDataExchangeRequest existingRequest = null;
-        if (request.getUuid() != null) {
-            existingRequest = reportedDataExchangeRequestService.findById(request.getUuid());
-        }
+        existingRequest = reportedDataExchangeRequestService.findByRequestId(request.getRequestId());
 
         if (existingRequest != null) {
             log.info("Updating existing Request");

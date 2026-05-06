@@ -16,16 +16,15 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto;
+package org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.dto;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.CriticalityEnumeration;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.RequestedTypeEnumeration;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -37,27 +36,19 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString
-public class DataExchangeRequestDto implements Serializable {
+public class DataExchangeApprovalDto implements Serializable {
     private UUID uuid;
-    private String requestId;
+    private String approvalId;
 
     @NotNull
-    private UUID notificationId;
-
-    @NotNull
-    private CriticalityEnumeration criticality;
-
-    @NotNull
-    private Date desiredStartDateTime;
-
-    @NotNull
-    private Date desiredEndDateTime;
-
-    @NotEmpty
-    private List<RequestedTypeEnumeration> requestedTypes;
-
-    @NotBlank
-    private String text;
+    private boolean isFinalized;
 
     private Date timestamp;
+
+    @NotNull
+    private UUID dataExchangeRequestId;
+
+    @NotEmpty
+    private List<RequestedTypeEnumeration> approvedTypes;
+    
 }
