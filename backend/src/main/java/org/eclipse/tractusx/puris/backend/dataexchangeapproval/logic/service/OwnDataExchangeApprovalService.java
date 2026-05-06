@@ -39,7 +39,7 @@ public class OwnDataExchangeApprovalService extends DataExchangeApprovalService<
         }
         UUID requestUuid = ownDataExchangeApproval.getDataExchangeRequest().getUuid();
         if (repository.findByDataExchangeRequest_Uuid(requestUuid).isPresent()) {
-            throw new KeyAlreadyExistsException("Data exchange approval already exists: " + requestUuid);
+            throw new KeyAlreadyExistsException("Data exchange approval already exists for data exchange request with uuid: " + requestUuid);
         }
         return repository.save(ownDataExchangeApproval);
     }
