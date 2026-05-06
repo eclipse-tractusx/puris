@@ -28,4 +28,6 @@ import org.springframework.data.repository.NoRepositoryBean;
 @NoRepositoryBean
 public interface DataExchangeApprovalRepository<TEntity extends DataExchangeApproval> extends JpaRepository<TEntity, UUID> {
     Optional<TEntity> findByDataExchangeRequest_Uuid(UUID requestId);
+
+    Optional<TEntity> findByApprovalId(String approvalId);
 }

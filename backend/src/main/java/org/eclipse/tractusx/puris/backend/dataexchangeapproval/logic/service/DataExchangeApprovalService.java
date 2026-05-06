@@ -45,6 +45,10 @@ public abstract class DataExchangeApprovalService<TEntity extends DataExchangeAp
         return repository.findByDataExchangeRequest_Uuid(requestId).orElse(null);
     }
 
+    public final TEntity findByApprovalId(String approvalId) {
+        return repository.findByApprovalId(approvalId).orElse(null);
+    }
+
     protected boolean basicValidation(DataExchangeApproval dataExchangeApproval) {
         return (dataExchangeApproval.getUuid() == null || dataExchangeApproval.getTimestamp() != null) &&
             dataExchangeApproval.getApprovedTypes() != null &&

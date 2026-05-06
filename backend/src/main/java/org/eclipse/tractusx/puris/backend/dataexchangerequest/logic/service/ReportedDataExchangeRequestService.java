@@ -42,7 +42,7 @@ public class ReportedDataExchangeRequestService extends DataExchangeRequestServi
             throw new KeyAlreadyExistsException("Data exchange request already exists");
         }
         if (repository.findByRequestId(reportedDataExchangeRequest.getRequestId()).isPresent()) {
-            throw new KeyAlreadyExistsException("A reported data exchange request for this request id already exists");
+            throw new KeyAlreadyExistsException(String.format("A reported data exchange request for request id %s' already exists", reportedDataExchangeRequest.getRequestId()));
         }
         if (reportedDataExchangeRequest.getRequestId() == null) {
             reportedDataExchangeRequest.setRequestId(UUID.randomUUID().toString());

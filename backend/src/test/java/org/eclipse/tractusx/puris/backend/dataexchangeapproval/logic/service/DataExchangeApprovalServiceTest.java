@@ -16,7 +16,7 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-package org.eclipse.tractusx.puris.backend.dataexchangeapproval.controller;
+package org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +24,6 @@ import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.OwnDataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.repository.OwnDataExchangeApprovalRepository;
-import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.OwnDataExchangeApprovalService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.RequestedTypeEnumeration;
 import org.junit.Test;
@@ -40,7 +39,7 @@ import org.mockito.MockitoAnnotations;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class DataExchangeApprovalControllerTest {
+public class DataExchangeApprovalServiceTest {
     @Mock
     private OwnDataExchangeApprovalRepository repository;
     @InjectMocks
