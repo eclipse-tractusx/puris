@@ -16,14 +16,14 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-package org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model;
-import java.time.Instant;
+package org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.RequestedTypeEnumeration;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,8 +32,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.PrePersist;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -51,32 +49,23 @@ import lombok.experimental.SuperBuilder;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
 @ToString
-public abstract class DataExchangeRequest {
+public abstract class DataExchangeApproval {
     /** 
      * uuid = internally generated unique identifier
-     * requestId = stable UUID reference for communication with partner, expected to be used in SAMM   
+     * approvalId = stable UUID reference for communication with partner, expected to be used in SAMM   
      */
     @Id
     @GeneratedValue
     protected UUID uuid;
     @NotNull
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
-    protected String requestId;
+    protected String approvalId;
 
     @NotNull
-    private CriticalityEnumeration criticality;
+    private boolean isFinalized;
 
     @NotNull
-    private Date desiredStartDateTime;
-
-    @NotNull
-    private Date desiredEndDateTime;
-
-    @NotEmpty
-    protected List<RequestedTypeEnumeration> requestedTypes;
-
-    @NotBlank
-    private String text;
+    protected List<RequestedTypeEnumeration> approvedTypes;
 
     @NotNull
     @Column(nullable = false, updatable = false)
@@ -96,20 +85,14 @@ public abstract class DataExchangeRequest {
             return false;
         }
 
-        final DataExchangeRequest that = (DataExchangeRequest) o;
-        return Objects.equals(this.getRequestId(), that.getRequestId()) &&
-            Objects.equals(this.getCriticality().getValue(), that.getCriticality().getValue()) &&
-            Objects.equals(toInstant(this.getDesiredStartDateTime()), toInstant(that.getDesiredStartDateTime())) &&
-            Objects.equals(toInstant(this.getDesiredEndDateTime()), toInstant(that.getDesiredEndDateTime())) &&
-            Objects.equals(this.getRequestedTypes(), that.getRequestedTypes()) && Objects.equals(this.getText(), that.getText());
+        final DataExchangeApproval that = (DataExchangeApproval) o;
+        return this.getApprovalId().equals(that.getApprovalId()) &&
+            this.isFinalized() == that.isFinalized() &&
+            Objects.equals(this.getApprovedTypes(), that.getApprovedTypes());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId, criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text);
-    }
-
-    private static Instant toInstant(Date d) {
-        return d == null ? null : d.toInstant();
+        return Objects.hash(isFinalized, approvedTypes);
     }
 }

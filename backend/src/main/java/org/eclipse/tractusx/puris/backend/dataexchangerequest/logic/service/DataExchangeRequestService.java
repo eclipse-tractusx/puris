@@ -20,21 +20,30 @@ package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.DataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.DataExchangeRequestRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class  DataExchangeRequestService<T extends DataExchangeRequest> {
-    @Autowired
-    protected DataExchangeRequestRepository<T> repository;
+public abstract class  DataExchangeRequestService<TEntity extends DataExchangeRequest, TRepository extends DataExchangeRequestRepository<TEntity>> {
+    protected final TRepository repository;
+    protected final Function<TEntity, Boolean> validator;
 
-    public final List<T> findAll() {
+    public DataExchangeRequestService(TRepository repository) {
+        this.repository = repository;
+        this.validator = this::validate;
+    }
+
+    public final List<TEntity> findAll() {
         return repository.findAll();
     }
 
-    public final T findById(UUID uuid) {
+    public final TEntity findById(UUID uuid) {
         return repository.findById(uuid).orElse(null);
+    }
+
+    public final TEntity findByRequestId(String requestId) {
+        return repository.findByRequestId(requestId).orElse(null);
     }
 
     protected List<String> basicValidation(DataExchangeRequest dataExchangeRequest) {
@@ -61,4 +70,6 @@ public abstract class  DataExchangeRequestService<T extends DataExchangeRequest>
         }
         return errors;
     }
+    
+    public abstract boolean validate(TEntity request);
 }

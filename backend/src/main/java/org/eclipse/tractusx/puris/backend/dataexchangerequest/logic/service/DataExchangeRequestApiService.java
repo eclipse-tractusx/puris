@@ -62,9 +62,7 @@ public class DataExchangeRequestApiService {
             return null;
         }
         ReportedDataExchangeRequest existingRequest = null;
-        if (request.getUuid() != null) {
-            existingRequest = reportedDataExchangeRequestService.findById(request.getUuid());
-        }
+        existingRequest = reportedDataExchangeRequestService.findByRequestId(request.getRequestId());
 
         if (existingRequest != null) {
             log.info("Updating existing Request");

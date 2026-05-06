@@ -18,11 +18,15 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.controller;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
+import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.OwnDataExchangeApproval;
+import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.dto.DataExchangeApprovalDto;
+import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.OwnDataExchangeApprovalService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.DataExchangeRequestDto;
@@ -36,6 +40,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,6 +68,8 @@ public class DataExchangeRequestController {
     private ReportedDataExchangeRequestService reportedDataExchangeRequestService;
     @Autowired
     private DataExchangeRequestApiService dataExchangeRequestApiService;
+    @Autowired
+    private OwnDataExchangeApprovalService ownDataExchangeApprovalService;
     @Autowired
     private ModelMapper modelMapper;
     @Autowired
@@ -99,6 +106,39 @@ public class DataExchangeRequestController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Own Data Exchange Request already exists.");
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Own Data Exchange Request is invalid.");
+        }
+    }
+
+    @PostMapping("/{id}/approval")
+    @ResponseBody
+    @Operation(summary = "Creates a new own data exchange approval", description = "Creates a new own data exchange approval in response to an existing ReportedDataExchangeRequest. \n")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Own Data Exchange Approval was created."),
+            @ApiResponse(responseCode = "400", description = "Malformed or invalid request body.", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Own Data Exchange Approval already exists.", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
+    })
+    @ResponseStatus(HttpStatus.CREATED)
+    public DataExchangeApprovalDto createDataExchangeApproval(@PathVariable UUID id, @RequestBody DataExchangeApprovalDto requestDto) {
+        ReportedDataExchangeRequest reportedRequest =
+                reportedDataExchangeRequestService.findById(id);
+
+        if (reportedRequest == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referenced reported data exchange request does not exist.");
+        }
+
+        OwnDataExchangeApproval ownDataExchangeApproval = modelMapper.map(requestDto, OwnDataExchangeApproval.class);
+        ownDataExchangeApproval.setDataExchangeRequest(reportedRequest);
+
+        try {
+            OwnDataExchangeApproval newEntity = ownDataExchangeApprovalService.create(ownDataExchangeApproval);
+            DataExchangeApprovalDto responseDto = modelMapper.map(newEntity, DataExchangeApprovalDto.class);
+            responseDto.setDataExchangeRequestId(reportedRequest.getUuid());
+            return responseDto;
+        } catch (KeyAlreadyExistsException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Own Data Exchange Approval already exists." + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Own Data Exchange Approval is invalid." + e.getMessage());
         }
     }
 

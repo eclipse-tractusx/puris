@@ -1,0 +1,39 @@
+meta {
+  name: Create Data Exchange Approval as Supplier
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/data-exchange-request/{{reportedRequestUuid}}/approval
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+    "approvalId": "54b1b097-d73c-4d50-83ca-f386d98c4100",
+    "isFinalized": true,
+    "timestamp": "2025-12-17T08:00:00+01:00",
+    "approvedTypes": [
+      "n-tier"
+    ],
+    "dataExchangeRequestId": "6ede86dc-7e16-4d46-8c41-c40bc26b28fe"
+  }
+}
+
+script:pre-request {
+  console.log("Waiting 5 seconds");
+  await (new Promise(resolve => setTimeout(resolve, 5000)));
+}
+
+tests {
+  test("response is created", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

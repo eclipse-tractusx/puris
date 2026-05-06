@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.UUID;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
@@ -28,13 +28,10 @@ import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.
 import org.springframework.stereotype.Service;
 
 @Service
-public class OwnDataExchangeRequestService extends DataExchangeRequestService<OwnDataExchangeRequest> {
-    private final OwnDataExchangeRequestRepository repository;
-    protected final Function<OwnDataExchangeRequest, Boolean> validator;
+public class OwnDataExchangeRequestService extends DataExchangeRequestService<OwnDataExchangeRequest, OwnDataExchangeRequestRepository> {
 
     public OwnDataExchangeRequestService(OwnDataExchangeRequestRepository repository) {
-        this.repository = repository;
-        this.validator = this::validate;
+        super(repository);
     }
 
     public final OwnDataExchangeRequest create(OwnDataExchangeRequest ownDataExchangeRequest) {
@@ -44,9 +41,16 @@ public class OwnDataExchangeRequestService extends DataExchangeRequestService<Ow
         if (repository.findAll().stream().filter(existing -> existing.equals(ownDataExchangeRequest)).findFirst().isPresent()) {
             throw new KeyAlreadyExistsException("Data exchange request already exists");
         }
+        if (repository.findByRequestId(ownDataExchangeRequest.getRequestId()).isPresent()) {
+            throw new KeyAlreadyExistsException("Data exchange request already exists");
+        }
+        if (ownDataExchangeRequest.getRequestId() == null) {
+            ownDataExchangeRequest.setRequestId(UUID.randomUUID().toString());
+        }
         return repository.save(ownDataExchangeRequest);
     }
 
+    @Override
     public boolean validate(OwnDataExchangeRequest dataExchangeRequest) {
         return validateWithDetails(dataExchangeRequest).isEmpty();
     }
