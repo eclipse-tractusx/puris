@@ -19,6 +19,8 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.controller;
 import java.util.regex.Pattern;
 
+import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageContext;
+import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageService;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.dataexchangerequestsamm.DataExchangeRequestSamm;
@@ -32,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -47,7 +48,7 @@ public class DataExchangeRequestApiController {
     @Autowired
     private DataExchangeRequestApiService dataExchangeRequestApiService;
     @Autowired
-    private ObjectMapper objectMapper;
+    private IndustryCoreMessageService messageService;
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
     
@@ -65,11 +66,10 @@ public class DataExchangeRequestApiController {
             log.warn("Rejecting request at DataExchangeRequest request 1.0.0 endpoint. Invalid BPNL");
             return ResponseEntity.badRequest().build();
         }
+        
         try {
             log.info("Received POST request for DataExchangeRequest");
-            var request = objectMapper.readValue(
-                body.get("content").toString(),
-                DataExchangeRequestSamm.class);
+            DataExchangeRequestSamm request = messageService.validateAndParse(body, IndustryCoreMessageContext.DATA_EXCHANGE_REQUEST_CONTEXT, bpnl, DataExchangeRequestSamm.class);
             ReportedDataExchangeRequest result = dataExchangeRequestApiService.handleIncomingDataExchangeRequest(bpnl, request);
             if (result == null) {
                 log.warn("Failed to create ReportedDataExchangeRequest from incoming request");
@@ -77,6 +77,9 @@ public class DataExchangeRequestApiController {
             }
             log.info("Created ReportedDataExchangeRequest from incoming request");
             return ResponseEntity.ok(null);
+        } catch (IllegalArgumentException e) {
+            log.warn("Rejecting DataExchangeRequest: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             log.warn("Rejecting invalid request body at DataExchangeRequest request 1.0.0 endpoint");
             log.error("Error while processing incoming DataExchangeRequest", e);
