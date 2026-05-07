@@ -20,36 +20,44 @@
 
 package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.PolicyProfileConstants;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PolicyProfileVersionEnumeration {
-    POLICY_PROFILE_2405("profile2405", new PolicyProfileConstants(
+    POLICY_PROFILE_2405("profile2405",
             "https://w3id.org/catenax/policy/",
             "https://w3id.org/tractusx/policy/v1.0.0",
+            "http://www.w3.org/ns/odrl.jsonld",
+            "https://w3id.org/dspace/v0.8/",
             "Contract_Policy_for_Profile_2405"
-    )),
-    POLICY_PROFILE_2509("profile2509", new PolicyProfileConstants(
+    ),
+    POLICY_PROFILE_2509("profile2509",
             "https://w3id.org/catenax/2025/9/policy/",
             "https://w3id.org/catenax/2025/9/policy/context.jsonld",
+            "https://w3id.org/dspace/2025/1/odrl-profile.jsonld",
+            "https://w3id.org/edc/dspace/v0.0.1",
             "Contract_Policy_for_Profile_2509"
-    ));
+    );
 
     private String value;
-    private final PolicyProfileConstants constants;
+    public String CX_POLICY_NAMESPACE;
+    public String CX_POLICY_CONTEXT;
+    public String CONTRACT_POLICY_ID;
+    public String DTR_CONTRACT_POLICY_ID;
+    public String ODRL_REMOTE_CONTEXT;
+    public String DSPACE_NAMESPACE;
 
-    PolicyProfileVersionEnumeration(String value, PolicyProfileConstants constants) {
+    PolicyProfileVersionEnumeration(String value, String CX_POLICY_NAMESPACE, String CX_POLICY_CONTEXT, String ODRL_REMOTE_CONTEXT, String DSPACE_NAMESPACE, String Contract_Policy) {
         this.value = value;
-        this.constants = constants;
+        this.CX_POLICY_NAMESPACE = CX_POLICY_NAMESPACE;
+        this.CX_POLICY_CONTEXT = CX_POLICY_CONTEXT;
+        this.ODRL_REMOTE_CONTEXT = ODRL_REMOTE_CONTEXT;
+        this.DSPACE_NAMESPACE = DSPACE_NAMESPACE;
+        this.CONTRACT_POLICY_ID = Contract_Policy;
+        this.DTR_CONTRACT_POLICY_ID = Contract_Policy + "_DTR";
     }
 
     @JsonValue
     public String getValue() {
         return value;
-    }
-
-    public PolicyProfileConstants getConstants() {
-        return constants;
     }
 }

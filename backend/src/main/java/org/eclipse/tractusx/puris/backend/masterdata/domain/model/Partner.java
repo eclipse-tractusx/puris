@@ -104,11 +104,11 @@ public class Partner {
      * @param country         country of this BPNA
      */
     public Partner(String name, String edcUrl, String bpnl, String siteBpns, String siteName, String siteBpna, String streetAndNumber,
-                   String zipCodeAndCity, String country, PolicyProfileVersionEnumeration policyProfileVersion) {
+                   String zipCodeAndCity, String country, PolicyProfileVersionEnumeration profileVersion) {
         this.name = name;
         this.edcUrl = edcUrl;
         this.bpnl = bpnl;
-        this.policyProfileVersion = policyProfileVersion;
+        this.policyProfileVersion = profileVersion;
         Site site = new Site(siteBpns, siteName, siteBpna, streetAndNumber, zipCodeAndCity, country);
         sites.add(site);
     }
@@ -124,11 +124,11 @@ public class Partner {
      * @param zipCodeAndCity  zip code and city of this BPNA
      * @param country         country of this BPNA
      */
-    public Partner(String name, String edcUrl, String bpnl, String bpna, String streetAndNumber, String zipCodeAndCity, String country, PolicyProfileVersionEnumeration policyProfileVersion) {
+    public Partner(String name, String edcUrl, String bpnl, String bpna, String streetAndNumber, String zipCodeAndCity, String country, PolicyProfileVersionEnumeration profileVersion) {
         this.name = name;
         this.edcUrl = edcUrl;
         this.bpnl = bpnl;
-        this.policyProfileVersion = policyProfileVersion;
+        this.policyProfileVersion = profileVersion;
         addresses.add(new Address(bpna, streetAndNumber, zipCodeAndCity, country));
     }
 

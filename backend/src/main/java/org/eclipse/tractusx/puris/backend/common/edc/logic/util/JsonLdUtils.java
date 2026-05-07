@@ -39,7 +39,7 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonStructure;
 import lombok.extern.slf4j.Slf4j;
 
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.PolicyProfileConstants;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -67,37 +67,37 @@ public class JsonLdUtils {
     public JsonLdUtils() {
         // Map of contexts to load
         final String prefix = "json-ld" + File.separator;
-        PolicyProfileConstants profile2405 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.getConstants();
-        PolicyProfileConstants profile2509 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2509.getConstants();
+        PolicyProfileVersionEnumeration profile2405 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405;
+        PolicyProfileVersionEnumeration profile2509 = PolicyProfileVersionEnumeration.POLICY_PROFILE_2509;
         Map<String, String> filesMap2405 = Map.of(
             profile2405.CX_POLICY_CONTEXT, prefix + "cx-policy-2405.jsonld",
             profile2405.ODRL_REMOTE_CONTEXT, prefix + "odrl.jsonld",
-            profile2405.DCAT_NAMESPACE, prefix + "dcat.jsonld",
-            profile2405.DSPACE_NAMESPACE, prefix + "dspace.jsonld",
-            profile2405.EDC_NAMESPACE, prefix + "edc-v1.jsonld",
-            profile2405.TX_AUTH_NAMESPACE, prefix + "tx-auth-v1.jsonld",
-            profile2405.TX_NAMESPACE, prefix + "tx-v1.jsonld"
+            profile2405.DSPACE_NAMESPACE, prefix + "dspace-v08.jsonld",
+            JsonLdConstants.DCAT_NAMESPACE, prefix + "dcat.jsonld",
+            JsonLdConstants.EDC_NAMESPACE, prefix + "edc-v1.jsonld",
+            JsonLdConstants.TX_AUTH_NAMESPACE, prefix + "tx-auth-v1.jsonld",
+            JsonLdConstants.TX_NAMESPACE, prefix + "tx-v1.jsonld"
         );
         Map<String, String> filesMap2509 = Map.of(
             profile2509.CX_POLICY_CONTEXT, prefix + "cx-policy-2509.jsonld",
-            profile2509.ODRL_REMOTE_CONTEXT, prefix + "odrl.jsonld",
-            profile2509.DCAT_NAMESPACE, prefix + "dcat.jsonld",
-            profile2509.DSPACE_NAMESPACE, prefix + "dspace.jsonld",
-            profile2509.EDC_NAMESPACE, prefix + "edc-v1.jsonld",
-            profile2509.TX_AUTH_NAMESPACE, prefix + "tx-auth-v1.jsonld",
-            profile2509.TX_NAMESPACE, prefix + "tx-v1.jsonld"
+            profile2509.ODRL_REMOTE_CONTEXT, prefix + "odrl-2025-1.jsonld",
+            profile2509.DSPACE_NAMESPACE, prefix + "dspace-v1.jsonld",
+            JsonLdConstants.DCAT_NAMESPACE, prefix + "dcat.jsonld",
+            JsonLdConstants.EDC_NAMESPACE, prefix + "edc-v1.jsonld",
+            JsonLdConstants.TX_AUTH_NAMESPACE, prefix + "tx-auth-v1.jsonld",
+            JsonLdConstants.TX_NAMESPACE, prefix + "tx-v1.jsonld"
         );
 
         // Load only internal documments
         this.CACHED_LOADER_2405 = new CachingDocumentLoader(filesMap2405);
 
         JsonObject contextObject2405 = Json.createObjectBuilder()
-            .add("edc", profile2405.EDC_NAMESPACE)
-            .add("dcat", profile2405.DCAT_NAMESPACE)
+            .add("cx-policy", profile2405.CX_POLICY_CONTEXT)
             .add("odrl", profile2405.ODRL_REMOTE_CONTEXT)
             .add("dspace", profile2405.DSPACE_NAMESPACE)
-            .add("tx", profile2405.TX_NAMESPACE)
-            .add("cx-policy", profile2405.CX_POLICY_CONTEXT)
+            .add("edc", JsonLdConstants.EDC_NAMESPACE)
+            .add("dcat", JsonLdConstants.DCAT_NAMESPACE)
+            .add("tx", JsonLdConstants.TX_NAMESPACE)
             .build();
 
         JsonObject rootContext2405 = Json.createObjectBuilder()
@@ -110,12 +110,12 @@ public class JsonLdUtils {
         this.CACHED_LOADER_2509 = new CachingDocumentLoader(filesMap2509);
 
         JsonObject contextObject2509 = Json.createObjectBuilder()
-            .add("edc", profile2509.EDC_NAMESPACE)
-            .add("dcat", profile2509.DCAT_NAMESPACE)
+            .add("cx-policy", profile2509.CX_POLICY_CONTEXT)
             .add("odrl", profile2509.ODRL_REMOTE_CONTEXT)
             .add("dspace", profile2509.DSPACE_NAMESPACE)
-            .add("tx", profile2509.TX_NAMESPACE)
-            .add("cx-policy", profile2509.CX_POLICY_CONTEXT)
+            .add("edc", JsonLdConstants.EDC_NAMESPACE)
+            .add("dcat", JsonLdConstants.DCAT_NAMESPACE)
+            .add("tx", JsonLdConstants.TX_NAMESPACE)
             .build();
 
         JsonObject rootContext2509 = Json.createObjectBuilder()
@@ -217,6 +217,10 @@ public class JsonLdUtils {
             for (Map.Entry<String, String> entry : filesMap.entrySet()) {
                 try {
                     URI uri = URI.create(entry.getKey());
+                    if (entry.getValue() == null) {
+                        log.warn("No file mapped for URI {}, skipping caching for this entry.", entry.getKey());
+                        continue;
+                    }
                     ClassPathResource resource = new ClassPathResource(entry.getValue());
                     try (InputStream is = resource.getInputStream()) {
                         // Parse the local file immediately into a JsonDocument

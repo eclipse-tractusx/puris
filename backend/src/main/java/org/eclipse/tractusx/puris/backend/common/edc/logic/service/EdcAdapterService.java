@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DspProtocolVersionEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.PolicyProfileConstants;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
@@ -482,15 +482,15 @@ public class EdcAdapterService {
         List<DspaceVersionParams> partnerSupportedDspaceVersions = new ArrayList<>();
         for (JsonNode entry: responseArray){
             // fallback to v.0.8 in case of missing information / issues
-            String counterPartyAddress = entry.get(edcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyAddress")
+            String counterPartyAddress = entry.get(JsonLdConstants.EDC_NAMESPACE + "counterPartyAddress")
                 .get(0)
                 .get("@value")
                 .asText(dspUrl);
-            String counterPartyId = entry.get(edcRequestBodyBuilder.EDC_NAMESPACE + "counterPartyId")
+            String counterPartyId = entry.get(JsonLdConstants.EDC_NAMESPACE + "counterPartyId")
                 .get(0)
                 .get("@value")
                 .asText(partnerBpnl);
-            String protocolString = entry.get(edcRequestBodyBuilder.EDC_NAMESPACE + "protocol")
+            String protocolString = entry.get(JsonLdConstants.EDC_NAMESPACE + "protocol")
                 .get(0)
                 .get("@value")
                 .asText(DspProtocolVersionEnum.V_0_8.getVersion());
@@ -872,10 +872,10 @@ public class EdcAdapterService {
     private boolean negotiateForPartnerDtr(Partner partner) {
         try {
             Map<String, String> equalFilters = new HashMap<>();
-            equalFilters.put(edcRequestBodyBuilder.CX_COMMON_NAMESPACE + "version", "3.0");
+            equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "3.0");
             equalFilters.put(
-                "'" + edcRequestBodyBuilder.DCT_NAMESPACE + "type'.'@id'",
-                edcRequestBodyBuilder.CX_TAXO_NAMESPACE + "DigitalTwinRegistry"
+                "'" + JsonLdConstants.DCT_NAMESPACE + "type'.'@id'",
+                JsonLdConstants.CX_TAXO_NAMESPACE + "DigitalTwinRegistry"
             );
             var responseNode = getCatalog(partner.getEdcUrl(), partner.getBpnl(), equalFilters);
             responseNode = jsonLdUtils.expand(responseNode, partner.getPolicyProfileVersion());
@@ -886,7 +886,7 @@ public class EdcAdapterService {
                 responseNode = responseNode.get(0);
             }
 
-            var catalogArray = responseNode.get(partner.getPolicyProfileVersion().getConstants().DCAT_NAMESPACE + "dataset");
+            var catalogArray = responseNode.get(JsonLdConstants.DCAT_NAMESPACE + "dataset");
             // If there is exactly one asset, the catalogContent will be a JSON object.
             // In all other cases catalogContent will be a JSON array.
             // For the sake of uniformity we will embed a single object in an array.
@@ -1206,18 +1206,18 @@ public class EdcAdapterService {
         // - asset per asset type per material
         // - asset per asset type
         // - asset for submodel bundle
-        equalFilters.put(edcRequestBodyBuilder.CX_COMMON_NAMESPACE + "version", "3.0");
-        equalFilters.put(edcRequestBodyBuilder.EDC_NAMESPACE + "id", submodelData.assetId);
+        equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "3.0");
+        equalFilters.put(JsonLdConstants.EDC_NAMESPACE + "id", submodelData.assetId);
 
         return negotiateContract(partner, submodelData.assetId(), type, submodelData.dspUrl(), equalFilters);
     }
 
     public boolean negotiateContractForNotification(Partner partner, AssetType type) {
         Map<String, String> equalFilters = new HashMap<>();
-        equalFilters.put(edcRequestBodyBuilder.CX_COMMON_NAMESPACE + "version", "1.0");
+        equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "1.0");
         equalFilters.put(
-            "'" + edcRequestBodyBuilder.DCT_NAMESPACE + "type'.'@id'",
-            edcRequestBodyBuilder.CX_TAXO_NAMESPACE + "DemandAndCapacityNotificationApi"
+            "'" + JsonLdConstants.DCT_NAMESPACE + "type'.'@id'",
+            JsonLdConstants.CX_TAXO_NAMESPACE + "DemandAndCapacityNotificationApi"
         );
         return negotiateContract(partner, variablesService.getNotificationApiAssetId(), type, partner.getEdcUrl(), equalFilters);
     }
@@ -1232,7 +1232,7 @@ public class EdcAdapterService {
                 responseNode = responseNode.get(0);
             }
 
-            var catalogArray = responseNode.get(partner.getPolicyProfileVersion().getConstants().DCAT_NAMESPACE + "dataset");
+            var catalogArray = responseNode.get(JsonLdConstants.DCAT_NAMESPACE + "dataset");
             // If there is exactly one asset, the catalogContent will be a JSON object.
             // In all other cases catalogContent will be a JSON array.
             // For the sake of uniformity we will embed a single object in an array.
@@ -1316,27 +1316,26 @@ public class EdcAdapterService {
      * @param catalogEntry the catalog item containing the desired api asset in expanded form
      * @return true, if the policy matches yours, otherwise false
      */
-    public boolean testContractPolicyConstraints(JsonNode catalogEntry, PolicyProfileVersionEnumeration policyProfileVersion) {
-        PolicyProfileConstants policyProfile = policyProfileVersion.getConstants();
+    public boolean testContractPolicyConstraints(JsonNode catalogEntry, PolicyProfileVersionEnumeration profileVersion) {
         log.debug("Testing constraints in the following catalogEntry: \n{}", catalogEntry.toPrettyString());
-        var constraint = Optional.ofNullable(catalogEntry.get(policyProfile.ODRL_NAMESPACE + "hasPolicy"))
+        var constraint = Optional.ofNullable(catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy"))
             .filter(policy -> policy.isArray() && policy.size() == 1)
             .map(policy -> policy.get(0))
-            .map(policy -> policy.get(policyProfile.ODRL_NAMESPACE + "permission"))
+            .map(policy -> policy.get(JsonLdConstants.ODRL_NAMESPACE + "permission"))
             .filter(permission -> permission.isArray() && permission.size() == 1)
             .map(permission -> permission.get(0))
-            .map(permission -> permission.get(policyProfile.ODRL_NAMESPACE + "constraint"))
+            .map(permission -> permission.get(JsonLdConstants.ODRL_NAMESPACE + "constraint"))
             .filter(constr -> constr.isArray() && constr.size() == 1)
             .map(constr -> constr.get(0))
-            .map(con -> con.get(policyProfile.ODRL_NAMESPACE + "and"));
+            .map(con -> con.get(JsonLdConstants.ODRL_NAMESPACE + "and"));
         if (constraint.isEmpty()) {
             log.debug("Constraint mismatch: we expect to have a constraint in permission node.");
             return false;
         }
 
         for (String rule : new String[] {"obligation", "prohibition"}) {
-            var policy = catalogEntry.get(policyProfile.ODRL_NAMESPACE + "hasPolicy").get(0);
-            var ruleNode = policy.get(policyProfile.ODRL_NAMESPACE + rule);
+            var policy = catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy").get(0);
+            var ruleNode = policy.get(JsonLdConstants.ODRL_NAMESPACE + rule);
             boolean test = ruleNode == null || (ruleNode.isArray() && ruleNode.isEmpty());
             if (!test) {
                 log.warn("Unexpected {} found, rejecting: {}", rule, catalogEntry.toPrettyString());
@@ -1351,13 +1350,13 @@ public class EdcAdapterService {
             Optional<JsonNode> purposeConstraint = Optional.empty();
 
             for (JsonNode con : constraint.get()) { // Iterate over array elements and find the nodes
-                JsonNode leftOperandNode = con.get(policyProfile.ODRL_NAMESPACE + "leftOperand");
+                JsonNode leftOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "leftOperand");
                 leftOperandNode = leftOperandNode.get(0);
                 leftOperandNode = leftOperandNode.get("@id");
-                if (leftOperandNode != null && (policyProfile.CX_POLICY_NAMESPACE + "FrameworkAgreement").equals(leftOperandNode.asText())) {
+                if (leftOperandNode != null && (profileVersion.CX_POLICY_NAMESPACE + "FrameworkAgreement").equals(leftOperandNode.asText())) {
                     frameworkAgreementConstraint = Optional.of(con);
                 }
-                if (leftOperandNode != null && (policyProfile.CX_POLICY_NAMESPACE + "UsagePurpose").equals(leftOperandNode.asText())) {
+                if (leftOperandNode != null && (profileVersion.CX_POLICY_NAMESPACE + "UsagePurpose").equals(leftOperandNode.asText())) {
                     purposeConstraint = Optional.of(con);
                 }
             }
@@ -1374,21 +1373,21 @@ public class EdcAdapterService {
 
             result = result && testSingleConstraint(
                 frameworkAgreementConstraint,
-                policyProfile.CX_POLICY_NAMESPACE + "FrameworkAgreement",
-                policyProfile.ODRL_NAMESPACE + "eq",
+                profileVersion.CX_POLICY_NAMESPACE + "FrameworkAgreement",
+                JsonLdConstants.ODRL_NAMESPACE + "eq",
                 variablesService.getPurisFrameworkAgreementWithVersion()
             );
 
             result = result && testSingleConstraint(
                 purposeConstraint,
-                policyProfile.CX_POLICY_NAMESPACE + "UsagePurpose",
-                policyProfile.ODRL_NAMESPACE + (policyProfileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509 ? "isAnyOf" : "eq"),
+                profileVersion.CX_POLICY_NAMESPACE + "UsagePurpose",
+                JsonLdConstants.ODRL_NAMESPACE + (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509 ? "isAnyOf" : "eq"),
                 variablesService.getPurisPurposeWithVersion()
             );
 
-            JsonNode policy = catalogEntry.get(policyProfile.ODRL_NAMESPACE + "hasPolicy");
-            JsonNode prohibition = policy.get(policyProfile.ODRL_NAMESPACE + "prohibition");
-            JsonNode obligation = policy.get(policyProfile.ODRL_NAMESPACE + "obligation");
+            JsonNode policy = catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy");
+            JsonNode prohibition = policy.get(JsonLdConstants.ODRL_NAMESPACE + "prohibition");
+            JsonNode obligation = policy.get(JsonLdConstants.ODRL_NAMESPACE + "obligation");
             result = result && (prohibition == null || (prohibition.isArray() && prohibition.isEmpty()));
             result = result && (obligation == null || (obligation.isArray() && obligation.isEmpty()));
 
@@ -1409,7 +1408,7 @@ public class EdcAdapterService {
 
         JsonNode con = constraintToTest.get();
 
-        JsonNode leftOperandNode = con.get(variablesService.getEdcProfileVersion().getConstants().ODRL_NAMESPACE + "leftOperand");
+        JsonNode leftOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "leftOperand");
         leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get(0);
         leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get("@id");
         if (leftOperandNode == null || !targetLeftOperand.equals(leftOperandNode.asText())) {
@@ -1418,7 +1417,7 @@ public class EdcAdapterService {
             return false;
         }
 
-        JsonNode operatorNode = con.get(variablesService.getEdcProfileVersion().getConstants().ODRL_NAMESPACE + "operator");
+        JsonNode operatorNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "operator");
         operatorNode = operatorNode == null ? null : operatorNode.get(0);
         operatorNode = operatorNode == null ? null : operatorNode.get("@id");
         if (operatorNode == null || !targetOperator.equals(operatorNode.asText())) {
@@ -1427,7 +1426,7 @@ public class EdcAdapterService {
             return false;
         }
 
-        JsonNode rightOperandNode = con.get(variablesService.getEdcProfileVersion().getConstants().ODRL_NAMESPACE + "rightOperand");
+        JsonNode rightOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "rightOperand");
         rightOperandNode = rightOperandNode == null ? null : rightOperandNode.get(0);
         rightOperandNode = rightOperandNode == null ? null : rightOperandNode.get("@value");
         if (rightOperandNode == null || !targetRightOperand.equals(rightOperandNode.asText())) {
