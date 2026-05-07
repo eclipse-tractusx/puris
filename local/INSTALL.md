@@ -57,6 +57,10 @@ sh deploy.sh
 # deploy PURIS from scratch with a cleanup upfront
 sh deploy.sh -c
 
+# deploy PURIS in backwards compatibility mode
+# the consumer will use a legacy EDC version while supplier uses the current version
+sh deploy.sh -b
+
 # same as without any option, but attaches customer and supplier puris backends after successful startup
 sh deploy.sh -a
 

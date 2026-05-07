@@ -10,11 +10,11 @@ information about prerequirements and getting started guides.
 
 ## Dependencies
 
-Beside the dependencies provided in the Helm Chart, the following dependencies have been tested for R24.05 to run PURIS:
+Beside the dependencies provided in the Helm Chart, the following dependencies have been tested for R26.06 to run PURIS:
 
 | Application                                                                                                       | App Version | Chart Version |
 | ----------------------------------------------------------------------------------------------------------------- | ----------- | ------------- |
-| [Tractus-X Connector](https://github.com/eclipse-tractusx/tractusx-edc/tree/main/charts/tractusx-connector)       | 0.12.0      | 0.12.0        |
+| [Tractus-X Connector](https://github.com/eclipse-tractusx/tractusx-edc/tree/main/charts/tractusx-connector)       | 0.13.0-rc1  | 0.13.0-rc1    |
 | [Digital Twin Registry](https://github.com/eclipse-tractusx/sldt-digital-twin-registry/tree/main/charts/registry) | 0.11.0      | 0.11.0        |
 
 ## Overview of Implemented Standards
