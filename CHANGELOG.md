@@ -68,6 +68,8 @@ For productive use the following enhancements are encouraged
 
 - Add filters for transparency (bpnl, state)
 
+## v5.1.1
+
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
 
 The **need for configuration updates** is **marked bold**.
