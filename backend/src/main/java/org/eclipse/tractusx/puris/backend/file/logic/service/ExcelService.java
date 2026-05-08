@@ -253,15 +253,9 @@ public class ExcelService {
             }
             List<OwnDemand> existingDemands = ownDemandService.findAll();
             existingDemands.forEach(d -> ownDemandService.delete(d.getUuid()));
-            List<OwnDemand> addedDemands = new ArrayList<>();
             for (var newDemand : demands) {
                 try {
-                    var added = ownDemandService.create(newDemand);
-                    if (added == null) {
-                        log.error("Failed to persist demand: {}", newDemand);
-                        throw new IllegalArgumentException("Invalid demand");
-                    }
-                    addedDemands.add(added);
+                    ownDemandService.create(newDemand);
                 } catch (Exception e) {
                     int idx = demands.indexOf(newDemand);
                     errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
@@ -357,11 +351,9 @@ public class ExcelService {
             }
             List<OwnProduction> existingProductions = ownProductionService.findAll();
             existingProductions.forEach(p -> ownProductionService.delete(p.getUuid()));
-            List<OwnProduction> addedProductions = new ArrayList<>();
             for (var newProduction : productions) {
                 try {
-                    var added = ownProductionService.create(newProduction);
-                    addedProductions.add(added);
+                    ownProductionService.create(newProduction);
                 } catch (Exception e) {
                     log.error("Failed to persist production: {}", newProduction);
                     var idx = productions.indexOf(newProduction);
@@ -494,11 +486,9 @@ public class ExcelService {
             }
             List<OwnDelivery> existingDeliveries = ownDeliveryService.findAll();
             existingDeliveries.forEach(d -> ownDeliveryService.delete(d.getUuid()));
-            List<OwnDelivery> addedDeliveries = new ArrayList<>();
             for (var newDelivery : deliveries) {
                 try {
-                    var added = ownDeliveryService.create(newDelivery);
-                    addedDeliveries.add(added);
+                    ownDeliveryService.create(newDelivery);
                 } catch(Exception e) {
                     log.error("Failed to persist delivery: {}", newDelivery);
                     int idx = deliveries.indexOf(newDelivery);
@@ -627,16 +617,9 @@ public class ExcelService {
             List<ProductItemStock> existingProductStocks = productItemStockService.findAll();
             existingMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
             existingProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
-            List<MaterialItemStock> addedMaterialStocks = new ArrayList<>();
-            List<ProductItemStock> addedProductStocks = new ArrayList<>();
             for (var newStock : materialStocks) {
                 try {
-                    var added = materialItemStockService.create(newStock);
-                    if (added == null) {
-                        log.error("Failed to persist material stock: {}", newStock);
-                        throw new IllegalArgumentException("Invalid material stock");
-                    }
-                    addedMaterialStocks.add(added);
+                    materialItemStockService.create(newStock);
                 } catch (Exception e) {
                     int idx = allStocks.indexOf(newStock);
                     errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
@@ -648,12 +631,7 @@ public class ExcelService {
             for (var newStock : productStocks) {
                 try {
 
-                    var added = productItemStockService.create(newStock);
-                    if (added == null) {
-                        log.error("Failed to persist product stock: {}", newStock);
-                        throw new IllegalArgumentException("Invalid product stock");
-                    }
-                    addedProductStocks.add(added);
+                    productItemStockService.create(newStock);                    
                 } catch (Exception e) {
                     int idx = allStocks.indexOf(newStock);
                     errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
