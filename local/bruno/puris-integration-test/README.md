@@ -270,7 +270,7 @@ This section negotiates access to the anonymized submodel asset itself and retri
 
 ## Preparations
 
-To run integration tests import the collection and the environment file to postman.
+To run integration tests import the collection and the environment file to Bruno.
 The environment files has empty fields for the respective key information. The keys are set via environment variables
 on folder level.
 
