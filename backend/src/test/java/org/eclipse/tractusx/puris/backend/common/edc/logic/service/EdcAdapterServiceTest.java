@@ -78,7 +78,6 @@ public class EdcAdapterServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         edcRequestBodyBuilder = new EdcRequestBodyBuilder(
             new DtrSecurityConfiguration(),
             variablesService,
