@@ -179,6 +179,8 @@ frontend:
     appName: PURIS
     # -- The base URL for the backend base URL without further endpoints. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration.
     baseUrl: *domain
+    # -- The default production time for production creation
+    defaultProductionTime: 23:59
     # -- The endpoint for materials for the stock view
     endpointMaterials: stockView/materials
     # -- The endpoint for products for the stock view
