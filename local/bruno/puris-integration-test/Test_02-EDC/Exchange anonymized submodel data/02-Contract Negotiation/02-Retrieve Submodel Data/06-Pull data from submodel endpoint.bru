@@ -1,0 +1,30 @@
+meta {
+  name: 06-Pull data from submodel endpoint
+  type: http
+  seq: 6
+  tags: [
+    exchange-anonymized-data
+  ]
+}
+
+get {
+  url: {{SUBMODEL_ENDPOINT}}/$value
+  body: none
+  auth: apikey
+}
+
+headers {
+  Authorization: {{SUBMODEL_EDR_AUTH}}
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{SUBMODEL_EDR_AUTH}}
+  placement: header
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
