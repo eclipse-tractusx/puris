@@ -447,7 +447,7 @@ A notification will mention issues or success of the creation after triggering t
 
 ## Import
 
-An Admin can upload data in this page. Once the file is uploaded, all existing data for that type will be replaced by the newly uploaded data. This action only takes place if the file does NOT contain any invalid information. All infvalid rows are listed to the user with the respective validation error messages. Users can click and download one of pre-existing template files listed on the page:
+An Admin can upload data on this page. The import only starts if the file does NOT contain any invalid or conflicting information. All invalid rows are listed to the user with the respective validation error messages. Once the import starts, all existing data for that type is deleted before the newly uploaded data is created. If the persistence of the new data fails during this step, the import fails and the previously deleted data is restored automatically. Users can click and download one of the pre-existing template files listed on the page:
 
 - delivery-template.xlsx
 - demand-template.xlsx

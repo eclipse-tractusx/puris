@@ -60,7 +60,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
+import org.mockito.InOrder;
 import org.mockito.Mock;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
@@ -246,10 +248,12 @@ public class ExcelServiceTest {
     @Test
     void testReadExcelFile_Demand_ValidData_CallsServices() throws IOException {
         ByteArrayInputStream inputStream = createDemandExcelFile();
+        OwnDemand existingDemand = new OwnDemand();
+        existingDemand.setUuid(UUID.randomUUID());
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
         when(ownDemandService.validateWithDetails(any(OwnDemand.class))).thenReturn(Collections.emptyList());
-        when(ownDemandService.findAll()).thenReturn(Collections.emptyList());
+        when(ownDemandService.findAll()).thenReturn(List.of(existingDemand));
         when(ownDemandService.create(any(OwnDemand.class))).thenReturn(new OwnDemand());
 
         DataImportResult result = excelService.readExcelFile(inputStream);
@@ -260,7 +264,10 @@ public class ExcelServiceTest {
         verify(materialService).findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber());
         verify(partnerService).findByBpnl(testPartner.getBpnl());
         verify(ownDemandService).validateWithDetails(any(OwnDemand.class));
-        verify(ownDemandService).create(any(OwnDemand.class));
+        InOrder inOrder = inOrder(ownDemandService);
+        inOrder.verify(ownDemandService).findAll();
+        inOrder.verify(ownDemandService).delete(existingDemand.getUuid());
+        inOrder.verify(ownDemandService).create(any(OwnDemand.class));
     }
 
     @Test
@@ -284,10 +291,12 @@ public class ExcelServiceTest {
     @Test
     void testReadExcelFile_Production_ValidData_CallsServices() throws IOException {
         ByteArrayInputStream inputStream = createProductionExcelFile();
+        OwnProduction existingProduction = new OwnProduction();
+        existingProduction.setUuid(UUID.randomUUID());
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
         when(ownProductionService.validateWithDetails(any(OwnProduction.class))).thenReturn(Collections.emptyList());
-        when(ownProductionService.findAll()).thenReturn(Collections.emptyList());
+        when(ownProductionService.findAll()).thenReturn(List.of(existingProduction));
         when(ownProductionService.create(any(OwnProduction.class))).thenReturn(new OwnProduction());
 
         DataImportResult result = excelService.readExcelFile(inputStream);
@@ -298,7 +307,10 @@ public class ExcelServiceTest {
         verify(materialService).findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber());
         verify(partnerService).findByBpnl(testPartner.getBpnl());
         verify(ownProductionService).validateWithDetails(any(OwnProduction.class));
-        verify(ownProductionService).create(any(OwnProduction.class));
+        InOrder inOrder = inOrder(ownProductionService);
+        inOrder.verify(ownProductionService).findAll();
+        inOrder.verify(ownProductionService).delete(existingProduction.getUuid());
+        inOrder.verify(ownProductionService).create(any(OwnProduction.class));
     }
 
     @Test
@@ -322,10 +334,12 @@ public class ExcelServiceTest {
     @Test
     void testReadExcelFile_Delivery_ValidData_CallsServices() throws IOException {
         ByteArrayInputStream inputStream = createDeliveryExcelFile();
+        OwnDelivery existingDelivery = new OwnDelivery();
+        existingDelivery.setUuid(UUID.randomUUID());
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
         when(ownDeliveryService.validateWithDetails(any(OwnDelivery.class))).thenReturn(Collections.emptyList());
-        when(ownDeliveryService.findAll()).thenReturn(Collections.emptyList());
+        when(ownDeliveryService.findAll()).thenReturn(List.of(existingDelivery));
         when(ownDeliveryService.create(any(OwnDelivery.class))).thenReturn(new OwnDelivery());
 
         DataImportResult result = excelService.readExcelFile(inputStream);
@@ -336,7 +350,10 @@ public class ExcelServiceTest {
         verify(materialService).findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber());
         verify(partnerService).findByBpnl(testPartner.getBpnl());
         verify(ownDeliveryService).validateWithDetails(any(OwnDelivery.class));
-        verify(ownDeliveryService).create(any(OwnDelivery.class));
+        InOrder inOrder = inOrder(ownDeliveryService);
+        inOrder.verify(ownDeliveryService).findAll();
+        inOrder.verify(ownDeliveryService).delete(existingDelivery.getUuid());
+        inOrder.verify(ownDeliveryService).create(any(OwnDelivery.class));
     }
 
     @Test
@@ -360,10 +377,12 @@ public class ExcelServiceTest {
     @Test
     void testReadExcelFile_Stock_ValidData_CallsServices() throws IOException {
         ByteArrayInputStream inputStream = createStockExcelFile();
+        MaterialItemStock existingMaterialStock = new MaterialItemStock();
+        existingMaterialStock.setUuid(UUID.randomUUID());
         when(materialService.findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber())).thenReturn(testMaterial);
         when(partnerService.findByBpnl(testPartner.getBpnl())).thenReturn(testPartner);
         when(materialItemStockService.validateWithDetails(any(MaterialItemStock.class))).thenReturn(Collections.emptyList());
-        when(materialItemStockService.findAll()).thenReturn(Collections.emptyList());
+        when(materialItemStockService.findAll()).thenReturn(List.of(existingMaterialStock));
         when(productItemStockService.findAll()).thenReturn(Collections.emptyList());
         when(materialItemStockService.create(any(MaterialItemStock.class))).thenReturn(new MaterialItemStock());
 
@@ -375,7 +394,10 @@ public class ExcelServiceTest {
         verify(materialService).findByOwnMaterialNumber(testMaterial.getOwnMaterialNumber());
         verify(partnerService).findByBpnl(testPartner.getBpnl());
         verify(materialItemStockService).validateWithDetails(any(MaterialItemStock.class));
-        verify(materialItemStockService).create(any(MaterialItemStock.class));
+        InOrder inOrder = inOrder(materialItemStockService);
+        inOrder.verify(materialItemStockService).findAll();
+        inOrder.verify(materialItemStockService).delete(existingMaterialStock.getUuid());
+        inOrder.verify(materialItemStockService).create(any(MaterialItemStock.class));
     }
 
     @Test
