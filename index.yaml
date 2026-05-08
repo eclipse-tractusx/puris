@@ -20,6 +20,24 @@ entries:
     - https://github.com/eclipse-tractusx/puris/releases/download/puris-6.2.0/puris-6.2.0.tgz
     version: 6.2.0
   - apiVersion: v2
+    appVersion: 5.1.1
+    created: "2026-05-08T11:20:17.026727492Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.12.x
+    description: A helm chart for Kubernetes deployment of PURIS
+    digest: addab7d5a53c3f51f31128df9396d0c59d6d2be32bc569de9693668d0f78e513
+    home: https://github.com/eclipse-tractusx/puris
+    name: puris
+    sources:
+    - https://github.com/eclipse-tractusx/puris
+    type: application
+    urls:
+    - https://github.com/eclipse-tractusx/puris/releases/download/puris-6.1.1/puris-6.1.1.tgz
+    version: 6.1.1
+  - apiVersion: v2
     appVersion: 5.1.0
     created: "2026-03-09T10:41:42.104676374Z"
     dependencies:
@@ -397,4 +415,4 @@ entries:
     urls:
     - https://github.com/eclipse-tractusx/puris/releases/download/puris-1.0.0/puris-1.0.0.tgz
     version: 1.0.0
-generated: "2026-05-08T11:14:28.282540628Z"
+generated: "2026-05-08T11:20:17.026894414Z"
