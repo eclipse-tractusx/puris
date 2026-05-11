@@ -28,6 +28,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,6 +36,7 @@ import java.util.concurrent.Executors;
 @SpringBootApplication
 @EnableScheduling
 @EnableAsync
+@EnableTransactionManagement
 public class PurisApplication {
 
     public static void main(String[] args) {
