@@ -95,11 +95,11 @@ Details on the Web-Ui can be found in the [User Guide](../user/User_Guide.md).
 
 ## Scenario: Exchange anonymized data
 
-This features allows to facilitate data exchange across multiple tiers, and PURIS provides **anonymized versions** of selected PURIS data standards, so partners can consume production-related information without receiving sensitive identifiers.
+This features allows to facilitate data exchange across multiple tiers, and PURIS provides **anonymized versions** of selected PURIS data standards, so partners can consume and forward production-related information without receiving sensitive identifiers.
 
 ### Scope
 
-- Exchange direction for anonymized delivery information, production and item stock: **Customer → Provider**
+- Exchange direction for anonymized delivery information, production and item stock: **Supplier → Customer**
 - Supported anonymized standards:
   - Planned Production Output (anonymized)
   - Delivery Information (anonymized)

@@ -184,7 +184,7 @@ of the current release._
 
 ## Configure anonymized data exchange
 
-To facilitate data exchange across multiple tiers, PURIS provides **anonymized versions** of selected PURIS data standards. The anonymized variants are meant to be consumed by partners who receive the data indirectly through other partners, without exposing sensitive identifiers.
+To facilitate data exchange across multiple tiers, PURIS provides **anonymized versions** of selected PURIS data standards. The anonymized variants are meant to be consumed by third party participants who receive the data indirectly through your partners, without exposing sensitive identifiers.
 
 PURIS ensures that:
 

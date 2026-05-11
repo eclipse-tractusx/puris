@@ -255,7 +255,7 @@ This section retrieves the shell and submodel descriptor via the DTR, using an E
 
 ### Retrieval of submodel data
 
-This section negotiates access to anonymized submodel assets and retrieves the corresponding anonymized payloads from resolved submodel endpoints. The process is executed in a loop over multiple submodels defined in `SUBMODEL_DATA`.
+This section negotiates access to anonymized submodel assets and retrieves the corresponding anonymized payloads from resolved submodel endpoints. The process is executed in a loop over multiple submodels defined in `SUBMODEL_DATA`:
 
 1. Initialize the current submodel context from `SUBMODEL_DATA` by setting the runtime variables `SUBMODEL_SEMANTIC_ID`, `SUBMODEL_ENDPOINT`, `SUBMODEL_DSP_ENDPOINT`, and `SUBMODEL_ASSET` for the current iteration. The catalog is then queried for anonymized submodel assets, and the resulting response is used to select the catalog entry matching the configured anonymized `SUBMODEL_SEMANTIC_ID`.
 2. Build and store the ODRL offer as `SUBMODEL_CATALOG_OFFER` and `SUBMODEL_CATALOG_OFFER_ID`
