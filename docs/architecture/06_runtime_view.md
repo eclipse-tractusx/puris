@@ -95,7 +95,7 @@ Details on the Web-Ui can be found in the [User Guide](../user/User_Guide.md).
 
 ## Scenario: Exchange anonymized data
 
-This features allows to facilitate data exchange across multiple tiers, and PURIS provides **anonymized versions** of selected PURIS data standards, so partners can consume and forward production-related information without receiving sensitive identifiers.
+This features allows to facilitate data exchange across multiple tiers, and PURIS provides **anonymized versions** of selected PURIS data standards, so partners can consume and forward production-related information without sensitive identifiers.
 
 ### Scope
 
