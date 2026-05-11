@@ -123,7 +123,6 @@ components:
           maxItems: 50
           type: array
         dataExchangeRequestId:
-          format: uuid
           maxItems: 50
           type: string
         finalized:
@@ -1835,6 +1834,30 @@ paths:
         '500':
           description: Internal Server Error.
       summary: Creates a new own data exchange approval
+      tags:
+      - data-exchange-request-controller
+  /data-exchange-request/{id}/approved-reported:
+    get:
+      description: Get all reported data exchange approvals.
+      operationId: getReportedDataExchangeApproval
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DataExchangeApprovalDto'
+                additionalProperties: false
+          description: OK
+      summary: Get all reported data exchange approvals
       tags:
       - data-exchange-request-controller
   /days-of-supply/customer:

@@ -17,11 +17,10 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.repository;
-
-import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.OwnDataExchangeApproval;
+import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.ReportedDataExchangeApproval;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface OwnDataExchangeApprovalRepository extends DataExchangeApprovalRepository<OwnDataExchangeApproval> {
+public interface ReportedDataExchangeApprovalRepository extends DataExchangeApprovalRepository<ReportedDataExchangeApproval> {
     
 }

@@ -38,4 +38,7 @@ tests {
   test("response is created", function() {
     expect(res.getStatus()).to.equal(201);
   });
+  const firstUuid = res.getBody().uuid;
+  bru.setVar("ownRequestUuid", firstUuid);
+  console.log(firstUuid);
 }
