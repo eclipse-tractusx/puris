@@ -19,7 +19,7 @@ We provide the following test scenarios as mentioned in package.json:
 
 - EDC and DTR are shared (currently only shared DTR asset) -> `npm run <env>-test-prepare-existing-assets`
 - Common integration test to setup test including assertions -> `npm run <env>-test`
-- Anonymized data exchange test scenarios via Bruno collections tagged with `exchange-anonymized-data`
+- Anonymized data exchange test scenarios via Bruno collections tagged with `exchange-anonymized-data` and executed as part of the common integration test
 
 `<test>` supports the INT (bru environment file not included) and local test (environment created via deployment script, see [INSTALL.md](../INSTALL.md)).
 
@@ -250,23 +250,20 @@ This section retrieves the shell and submodel descriptor via the DTR, using an E
 5. Start a transfer process for the DTR asset (variable set `DTR_TRANSFER_PROCESS_ID`)
 6. Resolve the EDR endpoint and authorization token
 7. Look up the shell using encoded asset query parameters (runtime variables `ASSET_IDS_QUERY` and `AAS_IDENTIFIER`)
-8. The shell descriptor is retrieved and the anonymized submodel endpoint is extracted (runtime variables `SUBMODEL_ENDPOINT` and `DSP_ENDPOINT`). Note: This request resolves the actual endpoint of the anonymized data submodel that will be used in the next phase
+8. The shell descriptor is retrieved and all relevant anonymized submodel descriptors are extracted. Instead of resolving a single submodel endpoint, multiple submodels are processed based on a predefined list of semantic IDs. For each matching submodel, both the submodel endpoint and the corresponding dsp Endpoint are resolved and stored collectively in `SUBMODEL_DATA` for downstream processing. The iteration starts at `CURRENT_SUBMODEL_INDEX` to support sequential processing of the resolved entries.
 9. Terminate the DTR transfer process
 
 ### Retrieval of submodel data
 
-This section negotiates access to the anonymized submodel asset itself and retrieves the anonymized payload from the resolved submodel endpoint. The flow summary:
+This section negotiates access to anonymized submodel assets and retrieves the corresponding anonymized payloads from resolved submodel endpoints. The process is executed in a loop over multiple submodels defined in `SUBMODEL_DATA`.
 
-1. Query the catalog for the anonymized submodel asset
-2. Select the catalog entry with the configured anonymized submodel semantic ID
-3. Build and store the ODRL offer as `SUBMODEL_CATALOG_OFFER` and `SUBMODEL_CATALOG_OFFER_ID`
-4. Negotiate the submodel contract with the provider EDC (runtime variable set `DTR_NEGOTIATION_ID`)
-5. Poll the negotiation until `SUBMODEL_CONTRACT_AGREEMENT_ID` is available
-6. Start a transfer process for the submodel asset (runtime variable set `SUBMODEL_TRANSFER_PROCESS_ID`)
-7. Retrieve the EDR authorization token for the submodel transfer (as variable `SUBMODEL_EDR_AUTH`)
-8. The anonymized submodel payload is retrieved from the endpoint resolved in the DTR phase
-9. Terminate the transfer process after data retrieval
-
+1. Initialize the current submodel context from `SUBMODEL_DATA` by setting the runtime variables `SUBMODEL_SEMANTIC_ID`, `SUBMODEL_ENDPOINT`, `SUBMODEL_DSP_ENDPOINT`, and `SUBMODEL_ASSET` for the current iteration. The catalog is then queried for anonymized submodel assets, and the resulting response is used to select the catalog entry matching the configured anonymized `SUBMODEL_SEMANTIC_ID`.
+2. Build and store the ODRL offer as `SUBMODEL_CATALOG_OFFER` and `SUBMODEL_CATALOG_OFFER_ID`
+3. Negotiate the submodel contract with the provider EDC (runtime variable set `DTR_NEGOTIATION_ID`)
+4. Poll the negotiation until `SUBMODEL_CONTRACT_AGREEMENT_ID` is available and initiate the transfer process for the submodel asset, storing the resulting `SUBMODEL_TRANSFER_PROCESS_ID`.
+5. Retrieve the EDR authorization token for the submodel transfer (as variable `SUBMODEL_EDR_AUTH`)
+6. The anonymized submodel payload is retrieved from the endpoint resolved in the DTR phase
+7. Terminate the transfer process after data retrieval and increment the `CURRENT_SUBMODEL_INDEX`. If additional submodels remain, the workflow restarts at step 1 for the next iteration. Otherwise, the index is reset and the loop is completed.
 
 ## Preparations
 
