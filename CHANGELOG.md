@@ -21,6 +21,8 @@ The **need for configuration updates** is **marked bold**.
 - switched from upstream edc titanium library to vanilla titanium library ([#1068](https://github.com/eclipse-tractusx/puris/pull/1068))
 - upgraded to EDC version 0.12.0 and DTR version 0.11.0 ([#1125](https://github.com/eclipse-tractusx/puris/pull/1125))
 - migrated to policy profile 2509 and adapted support for DSP 1.0 ([#1125](https://github.com/eclipse-tractusx/puris/pull/1125))
+- implemented edc cross version communication support ([#1136](https://github.com/eclipse-tractusx/puris/pull/1136))
+- refactored EDC integration with better separation of concerns ([#1144](https://github.com/eclipse-tractusx/puris/pull/1144))
 
 ### Fixes
 

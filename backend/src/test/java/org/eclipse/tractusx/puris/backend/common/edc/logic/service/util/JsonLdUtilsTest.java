@@ -51,16 +51,16 @@ public class JsonLdUtilsTest {
         var catalogJson = objectMapper.readTree(input);
         log.info("Input:\n" + catalogJson.toPrettyString());
 
-        List<PolicyProfileVersionEnumeration> profiles = List.of(PolicyProfileVersionEnumeration.values());
+        List<PolicyProfileVersionEnumeration> profileVersions = List.of(PolicyProfileVersionEnumeration.values());
 
-        for (PolicyProfileVersionEnumeration profile : profiles) {
-            log.info("Using profile: " + profile.getValue());
+        for (PolicyProfileVersionEnumeration profileVersion : profileVersions) {
+            log.info("Using profile: " + profileVersion.getValue());
             //WHEN
-            var expanded = util.expand(catalogJson, profile);
+            var expanded = util.expand(catalogJson, profileVersion);
             log.info("Expanded first time:\n"+ expanded.toPrettyString());
-            var compacted = util.compact(expanded, profile);
+            var compacted = util.compact(expanded, profileVersion);
             log.info("Compacted:\n" + compacted.toPrettyString());
-            var expandedAgain = util.expand(compacted, profile);
+            var expandedAgain = util.expand(compacted, profileVersion);
             log.info("Expanded again:\n" + expandedAgain.toPrettyString());
 
             // THEN
