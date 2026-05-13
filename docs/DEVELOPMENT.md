@@ -405,7 +405,7 @@ Bruno allows to specify tags in the meta information per request. In the [integr
 | share-enablement-services | Use this tag in requests that create DTR entries and EDC Assets, Contracts and Transfers to simulate deployment scenarios of a shared environment.            |
 | admin                     | Use this tag in requests you use for debugging. This way we can include common requests in the bruno collection without running those during test automation. |
 
-All other requests are considered as common test to run during test automation (see [integration test documentation](../local/postman/README.md)).
+All other requests are considered as common test to run during test automation (see [integration test documentation](../local/bruno/puris-integration-test/README.md)).
 
 As of this release, `generate-keys.sh` automatically writes a `.env` file into the Bruno collection root (e.g. `local/bruno/.env`).  
 This file contains only sensitive API keys and client secrets required for running Bruno requests locally. The .env file is automatically added to .gitignore. Do not commit this file.
