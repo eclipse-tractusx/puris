@@ -19,6 +19,7 @@ The **need for configuration updates** is **marked bold**.
 - Added bruno tests for delivery information anonymized ([#1101](https://github.com/eclipse-tractusx/puris/pull/1101))
 - Added bruno tests for anonymized submodel data exchange ([#1130](https://github.com/eclipse-tractusx/puris/pull/1130))
 - Added documentation for anonymized data exchange ([#1146](https://github.com/eclipse-tractusx/puris/pull/1146))
+- Added Migration runner to automatically update digital twins with new submodels ([#1147](https://github.com/eclipse-tractusx/puris/pull/1147))
 
 ### Changed
 

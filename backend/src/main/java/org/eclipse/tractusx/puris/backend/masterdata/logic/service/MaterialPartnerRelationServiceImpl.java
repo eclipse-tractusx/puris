@@ -452,6 +452,15 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     }
 
     /**
+     * Returns a list of all MaterialPartnerRelations, that contain the given material entity.
+     * @param material
+     * @return
+     */
+    public List<MaterialPartnerRelation> findAllByMaterial(Material material) {
+        return mprRepository.findAllByMaterial_OwnMaterialNumber(material.getOwnMaterialNumber());
+    }
+
+    /**
      * Generates a Map of key-value-pairs. Each key represents the BPNL of a
      * partner (and yourself), each corresponding value is the materialNumber
      * that the owner of the BPNL is using in his own house to define the given Material.

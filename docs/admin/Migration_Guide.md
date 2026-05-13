@@ -4,6 +4,8 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 
 <!-- TOC -->
 - [Migration Guide](#migration-guide)
+  - [Version 6.0.x to 7.0.x](#version-60x-to-70x)
+    - [Introduction of new submodels](#introduction-of-new-submodels)
   - [Version 5.0.x to 6.0.x](#version-50x-to-60x)
     - [The endpoint for Material Partner Relations was changed](#the-endpoint-for-material-partner-relations-was-changed)
   - [Version 4.2.x to 5.0.x](#version-42x-to-50x)
@@ -57,6 +59,20 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 > 
 > - Deploying an older version of the software may have used an older postgresql version. This is NOT applicable for the PURIS charts.
 > - The community is working out on how to resolve the issue.
+
+## Version 6.0.x to 7.0.x
+
+### Introduction of new submodels
+
+With version 7.0.0 the following new submodels were introduced:
+
+- Delivery Information Anonymized
+- Planned Production Output Anonymized
+- Item Stock Anonymized
+
+The newly added "MigrationCommandLineRunner" should automatically handle the update of the affected Digital Twins on application start.
+
+> [!note] Please make sure to verify that the affected Digital Twins were successfully updated.
 
 ## Version 5.0.x to 6.0.x
 
