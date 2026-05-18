@@ -267,8 +267,9 @@ export const PlannedProductionModal = ({ open, onClose, onRemove, production, pr
                         getRowId={(row) => row.uuid}
                         columns={createProductionColumns(!isReported ? handleDelete : undefined, !isReported ? handleEdit : undefined)}
                         rows={dailyProductions}
+                        getRowHeight={() => "auto"}
+                        rowSelection={false}
                         hideFooter
-                        density="standard"
                     />
 
                     <Box display="flex" justifyContent="flex-end" marginTop="2rem">

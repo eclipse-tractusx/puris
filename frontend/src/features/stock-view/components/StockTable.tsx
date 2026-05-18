@@ -98,7 +98,9 @@ export const StockTable = ({ onSelection, type, stocks }: StockTableProps) => {
             noRowsMsg='No stocks available'
             getRowId={(row) => row.uuid}
             onRowClick={(e) => onSelection(e.row)}
-            hideFooter={true}
+            getRowHeight={() => "auto"}
+            rowSelection={false}
+            hideFooter
         ></Table>
     );
 }

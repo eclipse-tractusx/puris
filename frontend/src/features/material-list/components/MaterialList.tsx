@@ -44,6 +44,8 @@ export function MaterialList({ materials, onRowClick }: MaterialListProps) {
             getRowId={(row) => row.ownMaterialNumber + row.direction}
             onRowClick={(row) => onRowClick(row.row)}
             noRowsMsg='No materials found'
+            getRowHeight={() => "auto"}
+            rowSelection={false}
         />
     );
 }

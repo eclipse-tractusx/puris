@@ -86,6 +86,7 @@ export const BatchView = () => {
           columns={columns}
           rows={rows}
           rowCount={runs?.page.totalElements ?? 0}
+          getRowHeight={() => "auto"}
           loading={isLoadingRuns}
           reload={() => refreshRuns()}
           pagination
