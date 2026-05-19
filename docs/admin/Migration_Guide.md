@@ -4,6 +4,8 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 
 <!-- TOC -->
 - [Migration Guide](#migration-guide)
+  - [Version 6.1.x to 7.0.x](#version-61x-to-70x)
+    - [Helm chart migration to Cloudpirates and Postgres update](#helm-chart-migration-to-cloudpirates-and-postgres-update)
   - [Version 6.0.x to 6.1.x](#version-60x-to-61x)
     - [Partner Batch Update Database Migration and routes](#partner-batch-update-database-migration-and-routes)
     - [Create Endpoints for Operational Data return DuplicateEntry Exception](#create-endpoints-for-operational-data-return-duplicateentry-exception)
@@ -32,34 +34,13 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
   - [NOTICE](#notice)
 <!-- TOC -->
 
-> [!WARNING]
-> Bitnami does change their update and versioning policy starting with 2025-08-28. To install the existing charts with its bitnami dependencies, please consider to manually specify the properties `image.repository` and `image.tag` specifying for the following dependencies:
-> 
-> - postgresql (image: bitnamilegacy/postgresql:15.4.0-debian-11-r45)
-> 
-> You have the following options to specify the container image:
-> 
-> 1. Specify in `values.yaml` below `postgresql`.
-> 
-> ```yaml
-> postgresql: 
->   image: 
->     repository: bitnamilegacy/postgresql
->     tag: 15.4.0-debian-11-r45
-> ```
-> 
-> 2. Set during installation.
-> 
-> ```bash
-> helm install puris -n tractusx-dev/puris \
->   --set postgresql.image.repository=bitnamilegacy/postgresql
->   --set postgresql.image.tag=15.4.0-debian-11-r45
-> ```
-> 
-> Notes:
-> 
-> - Deploying an older version of the software may have used an older postgresql version. This is NOT applicable for the PURIS charts.
-> - The community is working out on how to resolve the issue.
+## Version 6.1.x to 7.0.x
+
+### Helm chart migration to Cloudpirates and Postgres update
+
+With release 7.0.0 the helm charts were updated to use cloudpirates instead of bitnami. This is breaking and prevents the use of helm upgrade. In addition the postgres version was upgraded to 18.0.0.
+
+Please consult the [community guide](https://github.com/eclipse-tractusx/tutorial-resources/blob/main/migration-guides/GENERIC_POSTGRESQL_MIGRATION_GUIDE.md) on how to manually migrate to the new chart version.
 
 ## Version 6.0.x to 6.1.x
 

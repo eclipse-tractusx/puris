@@ -135,7 +135,7 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   postgres-all:
-    image: postgres:15.4-alpine
+    image: postgres:18.0-alpine
     container_name: postgres-all
     environment:
       POSTGRES_DB: puris_customer # create puris db for customer, rest init script
