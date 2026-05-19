@@ -92,7 +92,7 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
                             log.info("Updated material ShellDescriptor at DTR for material number {} and supplier partner {}.", material.getOwnMaterialNumber(), mpr.getPartner().getBpnl());
                         } else {
                             String error = String.format(
-                                "Update failed for material ShellDescriptor at DTR for material number {} and supplier partner {} with status code {}.",
+                                "Update failed for material ShellDescriptor at DTR for material number %s and supplier partner %s with status code %s.",
                                 material.getOwnMaterialNumber(), mpr.getPartner().getBpnl(), result
                             );
                             log.warn(error);
@@ -111,7 +111,7 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
                         log.info("Updated product ShellDescriptor at DTR for material number {} and {} customer partners. Result: {}", material.getOwnMaterialNumber(), buyingMprs.size(), result);
                     } else {
                         String error = String.format(
-                            "Update failed for product ShellDescriptor at DTR for material number {} and {} customer partners with status code {}.",
+                            "Update failed for product ShellDescriptor at DTR for material number %s and %d customer partners with status code %d.",
                             material.getOwnMaterialNumber(), buyingMprs.size(), result
                         );
                         log.warn(error);
@@ -119,7 +119,7 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
                     }
                 }
             } catch (Exception e) {
-                String error = String.format("Error while updating digital twins at dDTR for material {}: {}", material.getOwnMaterialNumber(), e.getMessage());
+                String error = String.format("Error while updating digital twins at dDTR for material %s: %s", material.getOwnMaterialNumber(), e.getMessage());
                 log.error(error);
                 errors.add(error);
             }

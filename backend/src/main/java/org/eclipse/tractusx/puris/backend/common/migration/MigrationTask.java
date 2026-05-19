@@ -18,6 +18,7 @@
  */
 package org.eclipse.tractusx.puris.backend.common.migration;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.Entity;
@@ -80,6 +81,11 @@ public class MigrationTask implements Comparable<MigrationTask> {
         if (obj == null || getClass() != obj.getClass()) return false;
         MigrationTask other = (MigrationTask) obj;
         return targetVersion.equals(other.targetVersion);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, targetVersion);
     }
     
 }
