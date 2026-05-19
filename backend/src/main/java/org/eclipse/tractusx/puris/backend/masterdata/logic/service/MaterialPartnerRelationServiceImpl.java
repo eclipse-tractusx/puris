@@ -456,6 +456,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
      * @param material
      * @return
      */
+    @Override
     public List<MaterialPartnerRelation> findAllByMaterial(Material material) {
         return mprRepository.findAllByMaterial_OwnMaterialNumber(material.getOwnMaterialNumber());
     }
