@@ -596,6 +596,10 @@ postgresql:
     password: ""
     # -- Password for the database. Secret-key 'postgres-password'.
     passwordPostgres: ""
+    secretKeys:
+      # -- Must match the key used by the backend deployment (DATASOURCE_PASSWORD → 'password').
+      # The postgres subchart defaults to 'postgres-password', which would cause an auth mismatch.
+      passwordKey: "password"
 
 idp:
   # -- The URL to the IDP that should be used. Must contain protocol (http/https).
