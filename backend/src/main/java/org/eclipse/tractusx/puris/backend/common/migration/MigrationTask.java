@@ -73,5 +73,13 @@ public class MigrationTask implements Comparable<MigrationTask> {
         }
         return 0;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        MigrationTask other = (MigrationTask) obj;
+        return targetVersion.equals(other.targetVersion);
+    }
     
 }
