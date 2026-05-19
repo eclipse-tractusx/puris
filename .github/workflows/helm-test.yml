@@ -107,8 +107,8 @@ jobs:
 
             -   name: Run chart-testing (install)
                 run: |
-                    helm repo add bitnami https://charts.bitnami.com/bitnami
-                    helm repo add postgresql https://charts.bitnami.com/bitnami
+                    helm repo add cloudpirates oci://registry-1.docker.io/cloudpirates
+                    helm repo add postgresql oci://registry-1.docker.io/cloudpirates
                     ct install --charts charts/puris --helm-extra-set-args "--set backend.image.repository=${{ env.REGISTRY }}/${{ env.APP_BACKEND_NAME}} --set backend.image.tag=${{ env.TAG }} --set frontend.image.repository=${{ env.REGISTRY }}/${{ env.APP_FRONTEND_NAME }} --set frontend.image.tag=${{ env.TAG }}"
                 if: github.event_name != 'pull_request' || steps.list-changed.outputs.changed == 'true'
 
@@ -120,7 +120,7 @@ jobs:
             # https://docs.bitnami.com/general/how-to/troubleshoot-helm-chart-issues/#credential-errors-while-upgrading-chart-releases
             -   name: Run helm upgrade
                 run: |
-                    helm repo add bitnami https://charts.bitnami.com/bitnami
+                    helm repo add cloudpirates oci://registry-1.docker.io/cloudpirates
                     helm repo add tractusx-dev https://eclipse-tractusx.github.io/charts/dev
                     helm install puris tractusx-dev/puris --version ${{ github.event.inputs.upgrade_from || '1.0.0' }} --set postgresql.auth.existingSecret="secret-puris-postgres-init"
                     helm dependency update charts/puris
