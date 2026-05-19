@@ -70,7 +70,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: "{{ .Values.postgresql.auth.existingSecret }}"
-                  key: "password"
+                  key: "postgres-password"
             - name: ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
