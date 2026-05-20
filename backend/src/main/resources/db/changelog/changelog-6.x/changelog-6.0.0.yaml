@@ -59,4 +59,38 @@ databaseChangeLog:
                     name: partner_bpnl
                     type: VARCHAR(255)
               tableName: production_anonymized_contract_mapping
-              
+  - changeSet:
+        id: "4"
+        author: ReneSchroederLJ
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: migration_task_pkey
+                    name: id
+                    type: UUID
+                    defaultValueComputed: "gen_random_uuid()"
+                - column:
+                    name: target_version
+                    type: VARCHAR(255)
+                    constraints:
+                      nullable: false
+                - column:
+                    name: status
+                    type: SMALLINT
+                    defaultValue: "0"
+                    constraints:
+                      nullable: false
+                - column:
+                    name: errors
+                    type: VARCHAR(255)
+              tableName: migration_task
+          - insert:
+              columns:
+                - column:
+                    name: target_version
+                    value: "6.0.0"
+              tableName: migration_task

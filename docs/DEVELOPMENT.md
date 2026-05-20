@@ -369,6 +369,12 @@ In case the controller interfaces were changed during the update, you need to up
 python3 generate_open_api_yaml.py
 ```
 
+## Migrations
+
+If you make changes that have an impact on existing deployments please update the [Migration Guide](./admin/Migration_Guide.md) accordingly. The documentation should include what has changed and which steps, if any, have to be taken.
+
+When thinking about migrations please consider the option to automatically validate the current state and migrate if necessary using [MigrationTaskCommandLineRunner](/backend/src/main/java/org/eclipse/tractusx/puris/backend/MigrationTaskCommandLineRunner.java). If you do, please add a new `MigrationTask` to the liquibase changelog if none have been added for this version.
+
 # Notes on the release
 
 ## Run helm test locally for n kubernetes versions
