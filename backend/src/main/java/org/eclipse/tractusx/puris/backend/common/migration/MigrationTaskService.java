@@ -80,7 +80,7 @@ public class MigrationTaskService {
         for (String error : errors) {
             logs += error + "\n";
         }
-        task.setLogs(logs);
+        task.setErrors(logs);
         saveMigrationTask(task);
     }
 

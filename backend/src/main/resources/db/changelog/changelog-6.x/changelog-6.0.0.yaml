@@ -85,7 +85,7 @@ databaseChangeLog:
                     constraints:
                       nullable: false
                 - column:
-                    name: logs
+                    name: errors
                     type: VARCHAR(255)
               tableName: migration_task
           - insert:

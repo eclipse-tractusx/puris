@@ -41,7 +41,7 @@ public class MigrationTask implements Comparable<MigrationTask> {
     private String targetVersion;
     @NotNull
     private MigrationTaskStatusEnumeration status;
-    private String logs;
+    private String errors;
 
     /**
      * Compares this task to another by semantic version (MAJOR.MINOR.PATCH).
