@@ -89,6 +89,48 @@ components:
       - plannedProductionQuantity
       - productionSiteBpns
       type: object
+    AllocatedPlannedProductionOutputAnonymized:
+      additionalProperties: false
+      properties:
+        estimatedTimeOfCompletion:
+          format: date-time
+          maxItems: 50
+          type: string
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        plannedProductionQuantity:
+          $ref: '#/components/schemas/ItemQuantityEntity'
+        productionSiteBpnsAnonymized:
+          maxItems: 50
+          type: string
+      required:
+      - estimatedTimeOfCompletion
+      - lastUpdatedOnDateTime
+      - plannedProductionQuantity
+      - productionSiteBpnsAnonymized
+      type: object
+    AllocatedStockAnonymized:
+      additionalProperties: false
+      properties:
+        isBlocked:
+          type: boolean
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        quantityOnAllocatedStock:
+          $ref: '#/components/schemas/ItemQuantityEntity'
+        stockLocationBPNSAnonymized:
+          maxItems: 50
+          type: string
+      required:
+      - isBlocked
+      - lastUpdatedOnDateTime
+      - quantityOnAllocatedStock
+      - stockLocationBPNSAnonymized
+      type: object
     Classification:
       additionalProperties: false
       properties:
@@ -156,6 +198,35 @@ components:
       - allocatedDaysOfSupply
       - direction
       - materialGlobalAssetId
+      type: object
+    DeliveryAnonymized:
+      additionalProperties: false
+      properties:
+        deliveryQuantity:
+          $ref: '#/components/schemas/ItemQuantityEntity'
+        destinationBpnsAnonymized:
+          maxItems: 50
+          type: string
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        originBpnsAnonymized:
+          maxItems: 50
+          type: string
+        transitEvents:
+          items:
+            $ref: '#/components/schemas/TransitEvent'
+          maxItems: 2
+          minItems: 1
+          type: array
+          uniqueItems: true
+      required:
+      - deliveryQuantity
+      - destinationBpnsAnonymized
+      - lastUpdatedOnDateTime
+      - originBpnsAnonymized
+      - transitEvents
       type: object
     DeliveryDto:
       additionalProperties: false
@@ -308,6 +379,23 @@ components:
       required:
       - materialGlobalAssetId
       - positions
+      type: object
+    DeliveryInformationAnonymized:
+      additionalProperties: false
+      properties:
+        deliveries:
+          items:
+            $ref: '#/components/schemas/DeliveryAnonymized'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        materialGlobalAssetIdAnonymized:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+      required:
+      - deliveries
+      - materialGlobalAssetIdAnonymized
       type: object
     Demand:
       additionalProperties: false
@@ -613,6 +701,29 @@ components:
       required:
       - unit
       - value
+      type: object
+    ItemStockAnonymizedSamm:
+      additionalProperties: false
+      properties:
+        allocatedStocksAnonymized:
+          items:
+            $ref: '#/components/schemas/AllocatedStockAnonymized'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        direction:
+          enum:
+          - INBOUND
+          - OUTBOUND
+          maxItems: 50
+          type: string
+        materialGlobalAssetIdAnonymized:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+      required:
+      - allocatedStocksAnonymized
+      - direction
       type: object
     ItemStockSamm:
       additionalProperties: false
@@ -1125,6 +1236,23 @@ components:
       - materialGlobalAssetId
       - positions
       type: object
+    PlannedProductionOutputAnonymized:
+      additionalProperties: false
+      properties:
+        allocatedPlannedProductionOutputs:
+          items:
+            $ref: '#/components/schemas/AllocatedPlannedProductionOutputAnonymized'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        materialGlobalAssetIdAnonymized:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+      required:
+      - allocatedPlannedProductionOutputs
+      - materialGlobalAssetIdAnonymized
+      type: object
     Position:
       additionalProperties: false
       properties:
@@ -1546,6 +1674,25 @@ components:
           format: double
           type: number
       type: object
+    TransitEvent:
+      additionalProperties: false
+      properties:
+        dateTimeOfEvent:
+          format: date-time
+          maxItems: 50
+          type: string
+        eventType:
+          enum:
+          - estimated-departure
+          - actual-departure
+          - estimated-arrival
+          - actual-arrival
+          maxItems: 50
+          type: string
+      required:
+      - dateTimeOfEvent
+      - eventType
+      type: object
   securitySchemes:
     X-API-KEY:
       in: header
@@ -1553,7 +1700,7 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 5.2.0
+  version: 6.0.0
 openapi: 3.1.0
 paths:
   /batch/partner-data-update:
@@ -2041,6 +2188,57 @@ paths:
       summary: Updates a delivery by its UUID
       tags:
       - delivery-controller
+  /delivery-information/anonymized/request/{materialNumberCx}/submodel/{representation}:
+    get:
+      operationId: getAnonymizedDeliveryMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: header
+        name: edc-contract-agreement-id
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: materialNumberCx
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DeliveryInformationAnonymized'
+                additionalProperties: false
+          description: Ok
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '501':
+          description: Unsupported representation
+      summary: 'This endpoint receives the Delivery Information Anonymized Submodel
+        1.0.0 requests. This endpoint is meant to be accessed by partners via EDC
+        only. '
+      tags:
+      - delivery-request-api-controller
   /delivery-information/request/{materialNumberCx}/submodel/{representation}:
     get:
       operationId: getDeliveryMapping
@@ -2773,6 +2971,9 @@ paths:
           - NOTIFICATION
           - DAYS_OF_SUPPLY
           - PART_TYPE_INFORMATION_SUBMODEL
+          - ITEM_STOCK_ANONYMIZED_SUBMODEL
+          - DELIVERY_ANONYMIZED_SUBMODEL
+          - PRODUCTION_ANONYMIZED_SUBMODEL
           maxItems: 50
           type: string
       - in: query
@@ -2865,6 +3066,66 @@ paths:
       summary: Import data via excel file -- ADMIN ONLY
       tags:
       - file-controller
+  /item-stock/anonymized/request/{materialnumber}/{direction}/submodel/{representation}:
+    get:
+      operationId: getAnonymizedItemStockMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: header
+        name: edc-contract-agreement-id
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: materialnumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: direction
+        required: true
+        schema:
+          additionalProperties: false
+          enum:
+          - INBOUND
+          - OUTBOUND
+          maxItems: 50
+          type: string
+      - in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ItemStockAnonymizedSamm'
+                additionalProperties: false
+          description: Ok
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '501':
+          description: Unsupported representation
+      summary: 'This endpoint receives the ItemStockAnonymized Submodel 1.0.0 requests.
+        This endpoint is meant to be accessed by partners via EDC only. '
+      tags:
+      - item-stock-request-api-controller
   /item-stock/request/{materialnumber}/{direction}/submodel/{representation}:
     get:
       operationId: getMappingItemStock2
@@ -3599,6 +3860,57 @@ paths:
           description: 'Unsupported representation requested. '
       tags:
       - part-type-information-controller
+  /planned-production/anonymized/request/{materialNumberCx}/submodel/{representation}:
+    get:
+      operationId: getAnonymizedProductionMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: header
+        name: edc-contract-agreement-id
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: materialNumberCx
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PlannedProductionOutputAnonymized'
+                additionalProperties: false
+          description: Ok
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '501':
+          description: Unsupported representation
+      summary: 'This endpoint receives the Anonymized Planned Production Submodel
+        1.0.0 requests. This endpoint is meant to be accessed by partners via EDC
+        only. '
+      tags:
+      - production-request-api-controller
   /planned-production/request/{materialnumbercx}/submodel/{representation}:
     get:
       operationId: getProductionMapping

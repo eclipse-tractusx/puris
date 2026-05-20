@@ -32,7 +32,9 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedProduction;
+import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.eclipse.tractusx.puris.backend.production.logic.adapter.PlannedProductionSammMapper;
+import org.eclipse.tractusx.puris.backend.production.logic.dto.anonymizedplannedproductionsamm.PlannedProductionOutputAnonymized;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproductionsamm.PlannedProductionOutput;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +82,23 @@ public class ProductionRequestApiService {
         }
         var currentProduction = ownProductionService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty(), Optional.empty());
         return sammMapper.ownProductionToSamm(currentProduction, partner, material);
+    }
+
+    public PlannedProductionOutputAnonymized handleProductionAnonymizedSubmodelRequest(String bpnl, String materialNumberCx, String contractAgreementId) {
+        Partner partner = partnerService.findByBpnl(bpnl);
+        if (partner == null) {
+            return null;
+        }
+        Material material = materialService.findByMaterialNumberCx(materialNumberCx);
+        if (material == null) {
+            return null;
+        }
+        if (!mprService.find(material, partner).isPartnerBuysMaterial()) {
+            // only send an answer if partner is registered as customer
+            return null;
+        }
+        List<OwnProduction> currentProduction = ownProductionService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty(), Optional.empty());
+        return sammMapper.ownProductionToAnonymizedSamm(currentProduction, partner, material, contractAgreementId);
     }
 
     public RefreshResult doReportedProductionRequest(Partner partner, Material material) {

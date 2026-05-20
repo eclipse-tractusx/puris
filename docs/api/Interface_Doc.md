@@ -31,9 +31,9 @@ http://localhost:8081/catena/swagger-ui/index.html
 
 _Note: The port and the path depend on the configuration of the spring backend (`port` and `context path`)._
 
-## Postman
+## Bruno
 
-There is a [postman collection](../../local/postman/README.md) containing
+There is a [bruno collection](../../local/bruno/puris-integration-test/README.md) containing
 information on how to provide master data and some basic data to test the application.
 
 ## NOTICE
