@@ -14,6 +14,7 @@ package "<<system>> PURIS FOSS Backend"{
 
   [DTR] as dtr
   [Stock, Production, Demand,\nDelivery, Days of Supply\nInformation] as stock
+  [Batch] as batch
   [EDC] as edc
   [Notifications] as not
   [MAD] as mad
@@ -26,6 +27,8 @@ not -up- "use edc for communication" edc
 
 dtr -down- "Register and discover twins\n& submodels" stock
 data_interface -down- stock
+batch -right- "trigger partner\ndata update" stock
+batch -down- "query mad" mad
 stock -right- "query catalog &\nget data (via edc)" edc
 stock -down- mad
 edc -right-( edc_interface

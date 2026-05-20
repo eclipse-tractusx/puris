@@ -55,6 +55,7 @@ The building block view describes only the responsibilities of the components/ p
 | EDC                | The EDC component provides the EDC implementations to create assets, negotiate contracts and intialize transfers. query partners' DTR and consume Submodel data. |
 | MAD                | Stores the partner and material related information. They may only be added via REST interfaces.                                                                 |
 | Stock              | Stores and handles stock related data. It provides interfaces to create and read stock data. Also it allows to exchange stock information via the EDC.           |
+| Batch              | Retrieves all material, patners and their relationships. Updates all relevant partner related data.                                                              |
 | DTR                | The DTR component provides the DTR implementations to manage ShellDescriptors. May first need to get a OAuth 2 token for authentication.                         |
 | Notifications      | Allows to send and receive demand and capacity notifications.                                                                                                    |
 

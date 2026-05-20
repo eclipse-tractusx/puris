@@ -55,6 +55,9 @@ import org.eclipse.tractusx.puris.backend.stock.logic.service.MaterialItemStockS
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -134,6 +137,7 @@ public class ExcelService {
     @Autowired
     private ProductItemStockService productItemStockService;
     
+    @Transactional(rollbackFor = Exception.class)
     public DataImportResult readExcelFile(InputStream is) throws IOException {
         Workbook workbook = WorkbookFactory.create(is);
         List<DataImportError> formulaErrors = evaluateWorkbook(workbook);
@@ -247,24 +251,18 @@ public class ExcelService {
             } catch(Exception e) {
                 return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
             }
-            List<OwnDemand> addedDemands = new ArrayList<>();
             List<OwnDemand> existingDemands = ownDemandService.findAll();
+            existingDemands.forEach(d -> ownDemandService.delete(d.getUuid()));
             for (var newDemand : demands) {
                 try {
-                    var added = ownDemandService.create(newDemand);
-                    if (added == null) {
-                        log.error("Failed to persist demand: {}", newDemand);
-                        throw new IllegalArgumentException("Invalid demand");
-                    }
-                    addedDemands.add(added);
+                    ownDemandService.create(newDemand);
                 } catch (Exception e) {
                     int idx = demands.indexOf(newDemand);
                     errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
-                    addedDemands.forEach(s -> ownDemandService.delete(s.getUuid()));
+                    markCurrentTransactionForRollback();
                     return new DataImportResult("Failed to persist demands", errors);
                 }
             }
-            existingDemands.forEach(d -> ownDemandService.delete(d.getUuid()));
             return new DataImportResult("Successfully imported demands", errors);
         } else {
             log.info(errors.toString());
@@ -351,21 +349,19 @@ public class ExcelService {
             } catch(Exception e) {
                 return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
             }
-            List<OwnProduction> addedProductions = new ArrayList<>();
             List<OwnProduction> existingProductions = ownProductionService.findAll();
+            existingProductions.forEach(p -> ownProductionService.delete(p.getUuid()));
             for (var newProduction : productions) {
                 try {
-                    var added = ownProductionService.create(newProduction);
-                    addedProductions.add(added);
+                    ownProductionService.create(newProduction);
                 } catch (Exception e) {
                     log.error("Failed to persist production: {}", newProduction);
                     var idx = productions.indexOf(newProduction);
                     errors.add(new DataImportError(idx + 2, List.of("Failed to persist")));
-                    addedProductions.forEach(p -> ownProductionService.delete(p.getUuid()));
+                    markCurrentTransactionForRollback();
                     return new DataImportResult("Failed to persist Productions", errors);
                 }
             }
-            existingProductions.forEach(p -> ownProductionService.delete(p.getUuid()));
             return new DataImportResult("Successfully imported productions", errors);
         } else {
             log.info(errors.toString());
@@ -488,22 +484,19 @@ public class ExcelService {
             } catch(Exception e) {
                 return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
             }
-            List<OwnDelivery> addedDeliveries = new ArrayList<>();
             List<OwnDelivery> existingDeliveries = ownDeliveryService.findAll();
-
+            existingDeliveries.forEach(d -> ownDeliveryService.delete(d.getUuid()));
             for (var newDelivery : deliveries) {
                 try {
-                    var added = ownDeliveryService.create(newDelivery);
-                    addedDeliveries.add(added);
+                    ownDeliveryService.create(newDelivery);
                 } catch(Exception e) {
                     log.error("Failed to persist delivery: {}", newDelivery);
                     int idx = deliveries.indexOf(newDelivery);
                     errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
-                    addedDeliveries.forEach(d -> ownDeliveryService.delete(d.getUuid()));
+                    markCurrentTransactionForRollback();
                     return new DataImportResult("Failed to persist Deliveries", errors);
                 }
             }
-            existingDeliveries.forEach(d -> ownDeliveryService.delete(d.getUuid()));
             return new DataImportResult("Successfully imported deliveries", errors);
         } else {
             log.info(errors.toString());
@@ -620,24 +613,17 @@ public class ExcelService {
             } catch(Exception e) {
                 return new DataImportResult("Error while checking conflicts", List.of(new DataImportError(0, List.of(e.getMessage()))));
             }
-            List<MaterialItemStock> addedMaterialStocks = new ArrayList<>();
-            List<ProductItemStock> addedProductStocks = new ArrayList<>();
             List<MaterialItemStock> existingMaterialStocks = materialItemStockService.findAll();
             List<ProductItemStock> existingProductStocks = productItemStockService.findAll();
-
+            existingMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
+            existingProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
             for (var newStock : materialStocks) {
                 try {
-                    var added = materialItemStockService.create(newStock);
-                    if (added == null) {
-                        log.error("Failed to persist material stock: {}", newStock);
-                        throw new IllegalArgumentException("Invalid material stock");
-                    }
-                    addedMaterialStocks.add(added);
+                    materialItemStockService.create(newStock);
                 } catch (Exception e) {
                     int idx = allStocks.indexOf(newStock);
                     errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
-                    addedMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
-                    addedProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
+                    markCurrentTransactionForRollback();
                     return new DataImportResult("Failed to persist stocks", errors);
                 }
             }
@@ -645,29 +631,27 @@ public class ExcelService {
             for (var newStock : productStocks) {
                 try {
 
-                    var added = productItemStockService.create(newStock);
-                    if (added == null) {
-                        log.error("Failed to persist product stock: {}", newStock);
-                        throw new IllegalArgumentException("Invalid product stock");
-                    }
-                    addedProductStocks.add(added);
+                    productItemStockService.create(newStock);                    
                 } catch (Exception e) {
                     int idx = allStocks.indexOf(newStock);
                     errors.add(new DataImportError(idx + 2, List.of(e.getMessage())));
-                    addedMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
-                    addedProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
+                    markCurrentTransactionForRollback();
                     return new DataImportResult("Failed to persist stocks", errors);
                 }
             }
 
-            existingMaterialStocks.forEach(s -> materialItemStockService.delete(s.getUuid()));
-            existingProductStocks.forEach(s -> productItemStockService.delete(s.getUuid()));
             return new DataImportResult("Successfully imported stocks", errors);
         } else {
             log.info(errors.toString());
         }
 
         return new DataImportResult("Failed to process stock rows", errors);
+    }
+
+    private void markCurrentTransactionForRollback() {
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        }
     }
 
     private DataDocumentTypeEnumeration validateHeaders(Sheet sheet) {

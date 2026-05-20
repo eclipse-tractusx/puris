@@ -13,12 +13,14 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
+- Added environment variable for default production time ([#1072](https://github.com/eclipse-tractusx/puris/pull/1072))
 - Added submodel implementation for delivery information anonymized ([#1095](https://github.com/eclipse-tractusx/puris/pull/1095))
 - Added submodel implementation for item stock anonymized ([#1096](https://github.com/eclipse-tractusx/puris/pull/1096))
 - Added submodel implementation for planned production output anonymized ([#1099](https://github.com/eclipse-tractusx/puris/pull/1099))
 - Added bruno tests for delivery information anonymized ([#1101](https://github.com/eclipse-tractusx/puris/pull/1101))
 - Added bruno tests for anonymized submodel data exchange ([#1130](https://github.com/eclipse-tractusx/puris/pull/1130))
 - Added documentation for anonymized data exchange ([#1146](https://github.com/eclipse-tractusx/puris/pull/1146))
+- Added draft semantic models for anonymized data models ([#1089](https://github.com/eclipse-tractusx/puris/pull/1098))
 - Added Migration runner to automatically update digital twins with new submodels ([#1147](https://github.com/eclipse-tractusx/puris/pull/1147))
 
 ### Changed
@@ -91,12 +93,22 @@ The **need for configuration updates** is **marked bold**.
 - Added component to copy text to clipboard for puris frontend ([#1058](https://github.com/eclipse-tractusx/puris/pull/1058))
 - Added version to about license ([#1067](https://github.com/eclipse-tractusx/puris/pull/1067))
 - Added update flow to Material Details View buttons ([#1034](https://github.com/eclipse-tractusx/puris/pull/1034))
-- Added draft semantic models for anonymized data models ([[#1089](https://github.com/eclipse-tractusx/puris/pull/1098)])
+- Add Update Partner Data Batch
+  - Prepare backend for batch ([#1105](https://github.com/eclipse-tractusx/puris/pull/1105))
+  - Incorporate scheduling service, controllers and test ([#1106](https://github.com/eclipse-tractusx/puris/pull/1106))
+  - Implement frontend, cleanup scheduler and documentation ([#1107](https://github.com/eclipse-tractusx/puris/pull/1107))
+  - Add missing frontend endpoint path in chart ([#1112](https://github.com/eclipse-tractusx/puris/pull/1112))
+  - Fix typo in frontend endpoint path (in chart) ([#1114](https://github.com/eclipse-tractusx/puris/pull/1114))
 
 ### Changed
 
 - switch to ssi-dim-wallet-stub instead of own mock-util-service (now DCP 1.0 is used) ([#1066](https://github.com/eclipse-tractusx/puris/pull/1066))
 - parametrize business partner identifiers in local deployment ([#1073](https://github.com/eclipse-tractusx/puris/pull/1073))
+- Bump frontend dependencies ([#1107](https://github.com/eclipse-tractusx/puris/pull/1107))
+  - `rollup` from `4.28.0` to `4.59.0`
+  - `@remix-run/route` from `1.14.2` to `1.32.2`
+  - `minimatch` (eslint) from `3.1.2` to `3.15`
+  - `minimatch` (eslint-plugin) from `9.0.5` to `9.0.9`
 
 ### Fixes
 

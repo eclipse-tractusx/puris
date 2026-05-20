@@ -175,6 +175,33 @@ sudo vim /etc/hosts
 >> :wq! (save changes)
 ```
 
+Or as two lines
+
+```shell
+echo "$(minikube ip) your-frontend-host-address.com" | sudo tee -a /etc/hosts
+echo "$(minikube ip) your-backend-host-address.com" | sudo tee -a /etc/hosts
+```
+
+The following command may be used to install the application with a dev image
+
+```shell
+helm install puris tractusx-dev/puris \
+--namespace puris-test \
+--create-namespace \
+--set frontend.ingress.enabled=true \
+--set backend.ingress.enabled=true \
+--set backend.puris.existingSecret=puris-secret-backend-puris \
+--set postgresql.auth.existingSecret=puris-backend-postgresql \
+--set postgresql.auth.username=user \
+--set postgresql.auth.password=pass \
+--set postgresql.auth.passwordPostgress=passw \
+--set postgresql.auth.database=db \
+--set frontend.image.tag=dev \
+--set frontend.image.repository=puris-frontend \
+--set backend.image.tag=dev \
+--set backend.image.repository=puris-backend
+```
+
 Done! The applications should be available at:
 
 - (frontend) `http://your-frontend-host-address.com`
