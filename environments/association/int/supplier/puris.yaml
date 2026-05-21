@@ -64,7 +64,7 @@ backend:
     pullPolicy: IfNotPresent
   # fullnameOverride: "supplier-backend"
   # set to 0 for scaledown
-  replicaCount: 0
+  replicaCount: 1
   env:
     LOGGING_LEVEL_ORG_ECLIPSE_TRACTUSX_PURIS_BACKEND: DEBUG
   ingress:
