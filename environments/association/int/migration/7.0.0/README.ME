@@ -1,0 +1,174 @@
+# Migration of Chart 7.0.0 - Cloudpirates
+
+> [! prerequisite]
+>
+> You need argocd cli installed.
+>
+
+```shell
+argocd login argocd.int.catena-x.net --sso
+```
+
+Overall Flow:
+
+1. Scale down application
+2. Create migration-pvc and backup data
+3. Install new Chart
+4. Restore backup
+5. Scale up
+
+
+## Migrate PURIS (Supplier)
+
+### 1. Scale down applications
+
+Update your deployment to downscale the deployment. For puris at least the backend needs to be downscaled.
+
+```yaml
+backend:
+    autoscaling:
+        enabled: false
+    replicaCount: 0
+```
+
+Same should be done for all other backend applications
+
+DTR with keycloak
+
+```yaml
+registry:
+    replicaCount: 0
+keycloak:
+    autoscaling:
+        enabled: false
+    replicaCount: 0
+```
+
+EDC
+
+```yaml
+controlplane:
+    autoscaling:
+        enabled: false
+    replicaCount: 0
+dataplane:
+    autoscaling:
+        enabled: false
+    replicaCount: 0
+```
+
+Commit, push, sync
+
+```shell
+
+argocd app get supplier-edc --hard-refresh
+argocd app get supplier-dtr --hard-refresh
+argocd app get supplier-puris --hard-refresh
+argocd app sync supplier-edc
+argocd app sync supplier-dtr
+argocd app sync supplier-puris
+```
+
+### 2. Create migration-pvc and backup data
+
+Create migration pvc and backup data
+
+```shell
+argocd app create db-migration-puris-supplier \
+  --project project-puris \
+  --repo https://github.com/eclipse-tractusx/puris \
+  --revision feat/consortia-int-values \
+  --path environments/association/int/migration/7.0.0/supplier/01-backup \
+  --dest-server https://kubernetes.default.svc \
+  --dest-namespace product-puris \
+  --directory-recurse
+
+# Sync to create the PVC and run the Backup Job
+argocd app sync db-migration-puris-supplier
+```
+
+###  3. Install new chart
+
+Use e.g. fork as basis with feature branch. overwrite current image versions
+
+```yaml
+frontend:
+    image:
+        tag: "5.1.1"
+backend:
+    image:
+        tag: "5.1.1"
+```
+
+```shell
+
+```
+
+Remove the existing pvc?
+
+### 4. Restore Backup
+
+```shell
+
+argocd app create db-migration-puris-supplier \
+  --project project-puris \
+  --repo https://github.com/eclipse-tractusx/puris \
+  --revision feat/consortia-int-values \
+  --path environments/association/int/migration/7.0.0/supplier/01-backup \
+  --dest-server https://kubernetes.default.svc \
+  --dest-namespace product-puris \
+  --directory-recurse
+  --upsert
+
+# Sync to create the PVC and run the Backup Job
+argocd app sync db-migration-puris-supplier
+
+```
+
+
+### 5. Scale up Applications
+
+```yaml
+backend:
+    autoscaling:
+        enabled: false
+    replicaCount: 0
+```
+
+Same should be done for all other backend applications
+
+DTR with keycloak
+
+```yaml
+registry:
+    replicaCount: 0
+keycloak:
+    autoscaling:
+        enabled: false
+    replicaCount: 0
+```
+
+EDC
+
+```yaml
+controlplane:
+    autoscaling:
+        enabled: false
+    replicaCount: 0
+dataplane:
+    autoscaling:
+        enabled: false
+    replicaCount: 0
+```
+
+Commit, push, sync
+
+```shell
+
+argocd app get supplier-edc --hard-refresh
+argocd app get supplier-dtr --hard-refresh
+argocd app get supplier-puris --hard-refresh
+argocd app sync supplier-edc
+argocd app sync supplier-dtr
+argocd app sync supplier-puris
+```
