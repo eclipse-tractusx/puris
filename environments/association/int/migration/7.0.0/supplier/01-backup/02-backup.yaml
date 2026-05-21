@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pg-backup-job-supplier-puris
+  namespace: product-puris
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: backup
+        image: postgres:15
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Starting backup..."
+          pg_dump -h supplier-backend-postgresql -U postgres -d postgres -F c -f /migration/db.dump
+          echo "Backup complete. Verifying file size:"
+          ls -lh /migration/db.dump
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: supplier-secret-postgres-init
+              key: postgres-password
+        volumeMounts:
+        - name: storage
+          mountPath: /migration
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: migration-pvc-supplier-puris

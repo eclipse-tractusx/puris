@@ -7,6 +7,10 @@ participant:
   id: <path:puris/data/supplier#bpnl>
 
 controlplane:
+  # -- Scale to 0 for scaledown
+  autoscaling:
+      enabled: false
+  replicaCount: 0
   # -- endpoints of the control plane
   endpoints:
     management:
@@ -95,6 +99,10 @@ iatp:
         secret_alias: "SUPPLIER_EDC/CLIENT_SECRET"
 
 dataplane:
+  # -- Scale to 0 for scaledown
+  autoscaling:
+      enabled: false
+  replicaCount: 0
   endpoints:
     proxy:
       authKey: <path:puris/data/supplier/edc#api-key>
