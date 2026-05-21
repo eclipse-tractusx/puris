@@ -89,7 +89,10 @@ argocd app sync db-migration-puris-supplier
 
 ###  3. Install new chart
 
-Use e.g. fork as basis with feature branch. overwrite current image versions
+Update the manifest temporarily (UI):
+
+- fork url with feature branch of postgres update
+- overwrite current image versions in [./supplier/puris.yaml](./supplier/puris.yaml)
 
 ```yaml
 frontend:
@@ -100,11 +103,47 @@ backend:
         tag: "5.1.1"
 ```
 
-```shell
+> [! warning]
+> 
+> Before these steps ensure that the dump succeeded.
+> 
 
+To retain the old statefulSet and persistentVolumeClaim names, do the following:
+
+- delete the old postgres pvc (only possible via UI)
+- delete the old statefulSet
+- delete the old services
+- delete the old headless service
+
+```shell
+# to check if this step can be done via orphanage of the statefulSet, depends on retain policy
+argocd app delete-resource supplier-puris \
+  --kind PersistentVolumeClaim \
+  --resource-name data-supplier-backend-postgresql-0 \
+  --namespace product-puris
+
+argocd app delete-resource supplier-puris \
+  --kind StatefulSet \
+  --resource-name supplier-backend-postgresql \
+  --namespace product-puris
+
+argocd app delete-resource supplier-puris \
+  --kind Service \
+  --resource-name supplier-backend-postgresql \
+  --namespace product-puris
+
+argocd app delete-resource supplier-puris \
+  --kind Service \
+  --resource-name supplier-backend-postgresql-hl \
+  --namespace product-puris
 ```
 
-Remove the existing pvc?
+Then sync
+
+```shell
+argocd app get supplier-puris --hard-refresh
+argocd app sync supplier-puris
+```
 
 ### 4. Restore Backup
 
@@ -114,10 +153,10 @@ argocd app create db-migration-puris-supplier \
   --project project-puris \
   --repo https://github.com/eclipse-tractusx/puris \
   --revision feat/consortia-int-values \
-  --path environments/association/int/migration/7.0.0/supplier/01-backup \
+  --path environments/association/int/migration/7.0.0/supplier/02-restore \
   --dest-server https://kubernetes.default.svc \
   --dest-namespace product-puris \
-  --directory-recurse
+  --directory-recurse \
   --upsert
 
 # Sync to create the PVC and run the Backup Job

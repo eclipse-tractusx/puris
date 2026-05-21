@@ -16,7 +16,7 @@ spec:
         - -c
         - |
           echo "Starting restore..."
-          pg_restore -h supplier-backend-postgresql -U postgres -d postgres -c -1 /migration/db.dump
+          pg_restore -h supplier-backend-postgresql -U postgres -d postgres -c --if-exists -1 /migration/db.dump
           echo "Restore complete!"
         env:
         - name: PGPASSWORD
