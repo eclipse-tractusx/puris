@@ -103,7 +103,7 @@ public class ItemStockRequestApiService {
 
     }
 
-    private ItemStockRequestData getItemStockRequestData(String bpnl, String materialNumber, DirectionCharacteristic direction, boolean notifyPartnerRequest) {
+    private ItemStockRequestData getItemStockRequestData(String bpnl, String materialNumberCx, DirectionCharacteristic direction, boolean notifyPartnerRequest) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
             log.error("Unknown Partner BPNL {}", bpnl);
@@ -114,13 +114,15 @@ public class ItemStockRequestApiService {
             case OUTBOUND -> {
                 // Partner is customer, requesting our ProductItemStocks for him
                 // materialNumber is own CX id
-                Material material = materialService.findByMaterialNumberCx(materialNumber);
+                Material material = materialService.findByMaterialNumberCx(materialNumberCx);
                 if (material == null) {
+                    log.error("Unknown Material with Material Number CX {}", materialNumberCx);
                     return null;
                 }
 
                 var mpr = mprService.find(material, partner);
                 if (mpr == null || !mpr.isPartnerBuysMaterial()) {
+                    log.error("Partner with BPNL {} is not registered as customer for material {}", bpnl, materialNumberCx);
                     return null;
                 }
 
@@ -135,21 +137,21 @@ public class ItemStockRequestApiService {
             case INBOUND -> {
                 // Partner is supplier, requesting our MaterialItemStocks from him
                 // materialNumber is partner's CX id
-                var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber);
+                var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx);
 
                 if (mpr == null) {
-                    log.warn("Could not find partner CX number {} from partner {}", materialNumber, partner.getBpnl());
+                    log.warn("Could not find partner CX number {} from partner {}", materialNumberCx, partner.getBpnl());
                     mprService.triggerPartTypeRetrievalTask(partner);
-                    mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumber);
+                    mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx);
                 }
 
                 if (mpr == null) {
-                    log.error("Unknown MaterialPartnerRelation for partner {} and partner CX number {}", partner.getBpnl(), materialNumber);
+                    log.error("Unknown MaterialPartnerRelation for partner {} and partner CX number {}", partner.getBpnl(), materialNumberCx);
                     return null;
                 }
 
                 if (!mpr.isPartnerSuppliesMaterial()) {
-                    // only send an answer if partner is registered as supplier
+                    log.error("Partner with BPNL {} is not registered as supplier for material {}", bpnl, materialNumberCx);
                     return null;
                 }
 

@@ -87,14 +87,17 @@ public class ProductionRequestApiService {
     public PlannedProductionOutputAnonymized handleProductionAnonymizedSubmodelRequest(String bpnl, String materialNumberCx, String contractAgreementId) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
+            log.error("Unknown Partner with BPNL {}", bpnl);
             return null;
         }
         Material material = materialService.findByMaterialNumberCx(materialNumberCx);
         if (material == null) {
+            log.error("Unknown Material with Material Number CX {}", materialNumberCx);
             return null;
         }
         if (!mprService.find(material, partner).isPartnerBuysMaterial()) {
             // only send an answer if partner is registered as customer
+            log.error("Partner with BPNL {} is not registered as customer for material {}", bpnl, materialNumberCx);
             return null;
         }
         List<OwnProduction> currentProduction = ownProductionService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty(), Optional.empty());
