@@ -6,6 +6,7 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 - [Migration Guide](#migration-guide)
   - [Version 6.1.x to 7.0.x](#version-61x-to-70x)
     - [Helm chart migration to Cloudpirates and Postgres update](#helm-chart-migration-to-cloudpirates-and-postgres-update)
+    - [Defining a custom postgres user](#defining-a-custom-postgres-user)
   - [Version 6.0.x to 6.1.x](#version-60x-to-61x)
     - [Partner Batch Update Database Migration and routes](#partner-batch-update-database-migration-and-routes)
     - [Create Endpoints for Operational Data return DuplicateEntry Exception](#create-endpoints-for-operational-data-return-duplicateentry-exception)
@@ -41,6 +42,28 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 With release 7.0.0 the helm charts were updated to use cloudpirates instead of bitnami. This is breaking and prevents the use of helm upgrade. In addition the postgres version was upgraded to 18.0.0.
 
 Please consult the [community guide](https://github.com/eclipse-tractusx/tutorial-resources/blob/main/migration-guides/GENERIC_POSTGRESQL_MIGRATION_GUIDE.md) on how to manually migrate to the new chart version.
+
+> [!WARNING] 
+> The current iteration of the migration guide does not create a custom user. Instead the postgres super user is used. We recommend defining a customer user as explained in the following chapter.
+
+### Defining a custom postgres user
+
+In addition to the changes outlined in the linked migration guide, defining a custom user requires the following new values:
+
+```yaml
+postgresql:
+  customUser:
+    name: "puris" # needs to be different from the super user
+    database: "puris" # needs to be different from the default database name
+    password: "" # auto generated if left empty
+
+    # optional additional properties
+    existingSecret: "my-secret" # existing secret to use. can also use the same name as auth.existingSecret
+    secretKeys:
+      name: "name" # defaults to CUSTOM_USER
+      database: "database" # defaults to CUSTOM_DB
+      password: "password" # defaults to CUSTOM_PASSWORD
+```
 
 ## Version 6.0.x to 6.1.x
 

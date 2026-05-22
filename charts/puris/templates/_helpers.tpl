@@ -160,6 +160,9 @@ Create a default fully qualified app name for PostgreSQL.
 {{- end }}
 {{- end }}
 
+{{- define "puris.postgresql.custom-user-secret" -}}
+{{- printf "%s-custom-user-credentials" (include "puris.postgresql.fullname" .) -}}
+{{- end }}
 
 {{/*
 Create a URL with the correct protocol prefix depending on wheter to apply TLS or not.

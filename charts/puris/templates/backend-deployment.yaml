@@ -62,6 +62,20 @@ spec:
             - name: DATASOURCE_DRIVERCLASSNAME
               value: "{{ .Values.backend.puris.datasource.driverClassName }}"
             {{- if .Values.postgresql.enabled }}
+              {{- if .Values.postgresql.customUser }}
+            - name: DATASOURCE_URL
+              value: "jdbc:postgresql://{{ include "puris.postgresql.fullname" . }}:{{ .Values.postgresql.service.ports.postgresql }}/{{ .Values.postgresql.customUser.database}}"
+            - name: DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.customUser.existingSecret | default (include "puris.postgresql.custom-user-secret" .) | quote }}
+                  key: {{ .Values.postgresql.customUser | dig "secretKeys" "name" "CUSTOM_USER" }}
+            - name: DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.customUser.existingSecret | default (include "puris.postgresql.custom-user-secret" .) | quote }}
+                  key: {{ .Values.postgresql.customUser | dig "secretKeys" "password" "CUSTOM_PASSWORD" }}
+              {{- else }}
             - name: DATASOURCE_URL
               value: "jdbc:postgresql://{{ include "puris.postgresql.fullname" . }}:{{ .Values.postgresql.service.ports.postgresql }}/{{ .Values.postgresql.auth.database}}"
             - name: DATASOURCE_USERNAME
@@ -69,12 +83,13 @@ spec:
             - name: DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Values.postgresql.auth.existingSecret }}"
+                  name: {{ .Values.postgresql.auth.existingSecret | default (include "postgres.fullname" .) | quote}}
                   key: "postgres-password"
+              {{- end }}
             - name: ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Values.postgresql.auth.existingSecret }}"
+                  name: {{ .Values.postgresql.auth.existingSecret | default (include "postgres.fullname" .) | quote}}
                   key: "postgres-password"
             {{- else }}
             - name: DATASOURCE_URL

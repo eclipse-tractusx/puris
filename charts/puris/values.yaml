@@ -586,16 +586,20 @@ postgresql:
       # -- Port of postgres database.
       postgresql: 5432
   auth:
-    # -- Name of the database.
-    database: "postgres"
     # -- Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file.
     existingSecret: "secret-puris-postgres-init"
-    # -- Username for the custom database user.
-    username: "puris"
-    # -- Password for the custom database user. Secret-key 'password'
+    database: "postgres"
+    # -- Username of the root user
+    username: "postgres"
+    # -- Password of the root user
     password: ""
-    # -- Password for the database. Secret-key 'postgres-password'.
-    passwordPostgres: ""
+  customUser:
+    # -- Name of the custom user to be created
+    name: "puris"
+    # -- Name for the custom database to be created and assigned to the custom user
+    database: "puris"
+    # -- Password to be used for the custom user
+    password: ""
 
 idp:
   # -- The URL to the IDP that should be used. Must contain protocol (http/https).
