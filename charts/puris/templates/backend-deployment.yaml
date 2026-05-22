@@ -83,13 +83,13 @@ spec:
             - name: DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.postgresql.auth.existingSecret | default (include "postgres.fullname" .) | quote}}
+                  name: {{ .Values.postgresql.auth.existingSecret | default (include "puris.postgresql.fullname" .) | quote}}
                   key: "postgres-password"
               {{- end }}
             - name: ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.postgresql.auth.existingSecret | default (include "postgres.fullname" .) | quote}}
+                  name: {{ .Values.postgresql.auth.existingSecret | default (include "puris.postgresql.fullname" .) | quote}}
                   key: "postgres-password"
             {{- else }}
             - name: DATASOURCE_URL

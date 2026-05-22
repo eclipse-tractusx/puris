@@ -55,7 +55,7 @@ postgresql:
   customUser:
     name: "puris" # needs to be different from the super user
     database: "puris" # needs to be different from the default database name
-    password: "" # auto generated if left empty
+    password: "password" # auto generated if left empty
 
     # optional additional properties
     existingSecret: "my-secret" # existing secret to use. can also use the same name as auth.existingSecret
