@@ -165,6 +165,7 @@ postgresql:
     database: <path:puris/data/customer/edc/postgres#database>
     username: <path:puris/data/customer/edc/postgres#user>
     password: <path:puris/data/customer/edc/postgres#password>
+    postgresPassword: <path:puris/data/customer/edc/postgres#postgresPassword>
 
 vault:
   hashicorp:
