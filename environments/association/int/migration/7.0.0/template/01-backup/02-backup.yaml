@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pg-backup-job-${APPLICATION}
+  namespace: ${NS}
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: backup
+        image: postgres:${PG_VERSION_FROM}
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Starting backup..."
+          pg_dump -h ${PG_SERVICE_NAME} -U ${PG_ADMIN_USER} -d ${PG_DB} -F c -f /migration/db.dump
+          echo "Backup complete. Verifying file size:"
+          ls -lh /migration/db.dump
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ${PG_POSTGRES_PW_SECRET}
+              key: ${PG_POSTGRES_PW_SECRET_KEY}
+        volumeMounts:
+        - name: storage
+          mountPath: /migration
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: migration-pvc-${APPLICATION}

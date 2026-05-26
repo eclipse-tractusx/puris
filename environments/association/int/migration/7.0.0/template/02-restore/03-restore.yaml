@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pg-restore-job-${APPLICATION}
+  namespace: ${NS}
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: restore
+        image: postgres:${PG_VERSION_TO}
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Starting restore..."
+          pg_restore -h ${PG_SERVICE_NAME} -U ${PG_ADMIN_USER} -d ${PG_DB} -c --if-exists -1 /migration/db.dump
+          echo "Restore complete!"
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ${PG_POSTGRES_PW_SECRET}
+              key: ${PG_POSTGRES_PW_SECRET_KEY}
+        volumeMounts:
+        - name: storage
+          mountPath: /migration
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: migration-pvc-${APPLICATION}

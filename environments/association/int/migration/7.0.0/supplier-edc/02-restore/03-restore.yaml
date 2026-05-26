@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: pg-backup-job-customer-edc
+  name: pg-restore-job-supplier-edc
   namespace: product-puris
 spec:
   backoffLimit: 3
@@ -9,22 +9,20 @@ spec:
     spec:
       restartPolicy: OnFailure
       containers:
-      - name: backup
-        image: postgres:15
+      - name: restore
+        image: postgres:18
         command:
         - /bin/sh
         - -c
         - |
-          echo "Starting backup..."
-          echo $PGPASSWORD
-          pg_dump -h customer-edc-postgresql -U postgres -d database -F c -f /migration/db.dump
-          echo "Backup complete. Verifying file size:"
-          ls -lh /migration/db.dump
+          echo "Starting restore..."
+          pg_restore -h supplier-edc-postgresql -U postgres -d edc -c --if-exists -1 /migration/db.dump
+          echo "Restore complete!"
         env:
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
-              name: customer-edc-postgresql
+              name: supplier-edc-postgresql
               key: postgres-password
         volumeMounts:
         - name: storage
@@ -32,4 +30,4 @@ spec:
       volumes:
       - name: storage
         persistentVolumeClaim:
-          claimName: migration-pvc-customer-edc
+          claimName: migration-pvc-supplier-edc

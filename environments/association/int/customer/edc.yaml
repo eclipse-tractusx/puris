@@ -158,9 +158,10 @@ postgresql:
       limits:
         cpu: "200m"
         memory: "128Mi"
-    pgHbaConfiguration: |-
-      local all all trust
-      host all all all md5  
+    # emergency access restoration
+    # pgHbaConfiguration: |-
+    #   local all all trust
+    #   host all all all md5  
   readReplicas:
     persistence:
       enabled: true
