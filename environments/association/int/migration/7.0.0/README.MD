@@ -155,7 +155,7 @@ Create migration pvc and backup data
 
 ```shell
 argocd app create db-migration-$APPLICATION \
-  --project project-puris \
+  --project $ARGO_PROJECT \
   --repo https://github.com/eclipse-tractusx/puris \
   --revision $GIT_BRANCH \
   --path environments/association/int/migration/7.0.0/$APPLICATION/01-backup \
@@ -198,6 +198,24 @@ COMMIT;
 ```
 
 ###  3. Install new chart
+
+### EDC
+
+```bash
+argocd app create $APPLICATION \
+  --project $ARGO_PROJECT \
+  --repo https://github.com/eclipse-tractusx/tractusx-edc \
+  --path charts/tractusx-connector \
+  --revision 0.13.0-rc2 \
+  --dest-server https://kubernetes.default.svc \
+  --dest-namespace $NS \
+  --config-management-plugin argocd-vault-plugin-helm-args \
+  --plugin-env AVP_SECRET=vault-secret \
+  --plugin-env helm_args="-f https://raw.githubusercontent.com/eclipse-tractusx/puris/feat/consortia-int-values/environments/association/int/supplier/edc.yaml" \
+  --upsert
+```
+
+#### PURIS
 
 Update the manifest temporarily (UI):
 
