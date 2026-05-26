@@ -3,8 +3,12 @@ install:
   vault: false
 
 participant:
+  # migration 0.10.x -> 0.11.x: differ id and bpnl
+  id: <path:puris/data/supplier#did-url>
   # -- BPN Number
-  id: <path:puris/data/supplier#bpnl>
+  bpnl: <path:puris/data/supplier#bpnl>
+  # migration 0.11.x -> 0.12.x: add context id for multitenancy
+  contextId: <path:puris/data/supplier#context-id>
 
 controlplane:
   # -- Scale to 0 for scaledown
@@ -81,14 +85,14 @@ controlplane:
     EDC_CATALOG_CACHE_EXECUTION_ENABLED: false
     EDC_DCP_V08_FORCED: true
 
-iatp:
+dcp:
   # Decentralized IDentifier
   id: <path:puris/data/supplier#did-url>
   # -- Configures the trusted issuers for this runtime
   trustedIssuers: # array [] that needs to be expand but likely like (sorry unconfirmed on how this is done, as I also would need to check)
     - <path:puris/data/environment#trusted-issuer-1>
   sts:
-    dim: #TDO urls
+    div: #TDO urls
       url: <path:puris/data/environment#dim-url>
     oauth:
       token_url: <path:puris/data/supplier#dim-idp-token-url>
@@ -97,6 +101,18 @@ iatp:
         # not supported, see https://github.com/eclipse-edc/Connector/discussions/4135
         # secret_alias: "puris/data/supplier#dim-idp-client-secret"
         secret_alias: "SUPPLIER_EDC/CLIENT_SECRET"
+  # migration 0.11.x -> 0.12.x: cache verified credentials for a certain time to reduce load on the DIM
+  cache:
+    # -- Whether the Verifiable Presentation cache is enabled
+    enabled: false
+    # -- Validity of the Verifiable Presentation cache in seconds
+    validity: 0
+  # migration 0.11.x -> 0.12.x: add feature to register connector service in DID
+  didService:
+    selfRegistration:
+      enabled: false
+      # -- The URL of the BDRS to register the runtime's DID at
+      id: <path:puris/data/supplier#did-url>
 
 dataplane:
   # -- Scale to 0 for scaledown
