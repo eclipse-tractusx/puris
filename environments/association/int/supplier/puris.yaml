@@ -242,6 +242,7 @@ postgresql:
     # passwordPostgres: <path:puris/data/supplier/puris/postgres#postgres-password>
   # custom user (non root)
   customUser:
+    existingSecret: ""
     name: <path:puris/data/supplier/puris/postgres#username>
     database: <path:puris/data/supplier/puris/postgres#database>
     password: <path:puris/data/supplier/puris/postgres#password>
