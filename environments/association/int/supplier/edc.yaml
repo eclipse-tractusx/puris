@@ -168,7 +168,10 @@ postgresql:
         memory: "128Mi"
       limits:
         cpu: "200m"
-        memory: "128Mi"     
+        memory: "128Mi"
+    pgHbaConfiguration: |-
+      local all all trust
+      host all all all md5  
   readReplicas:
     persistence:
       enabled: true
@@ -176,6 +179,7 @@ postgresql:
     database: <path:puris/data/supplier/edc/postgres#database>
     username: <path:puris/data/supplier/edc/postgres#user>
     password: <path:puris/data/supplier/edc/postgres#password>
+    postgresPassword: <path:puris/data/supplier/edc/postgres#postgresPassword>
   resources:
     requests:
       cpu: "20m"
