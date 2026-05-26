@@ -45,6 +45,8 @@ public interface MaterialPartnerRelationService {
 
     List<MaterialPartnerRelation> findAll();
 
+    public List<MaterialPartnerRelation> findAllByMaterial(Material material);
+
     Map<String, String> getBPNL_To_MaterialNumberMap(String ownMaterialNumber);
 
     MaterialPartnerRelation find(String ownMaterialNumber, UUID partnerUuid);

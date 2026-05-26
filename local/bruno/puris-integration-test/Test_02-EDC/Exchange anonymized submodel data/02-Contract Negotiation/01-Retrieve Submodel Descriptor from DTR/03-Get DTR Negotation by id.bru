@@ -1,0 +1,36 @@
+meta {
+  name: 03-Get DTR Negotation by id
+  type: http
+  seq: 3
+  tags: [
+    exchange-anonymized-data
+  ]
+}
+
+get {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/contractnegotiations/{{DTR_NEGOTIATION_ID}}
+  body: none
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+script:pre-request {
+  console.log("Waiting 5 seconds to let negotiation terminate");
+  await (new Promise(resolve => setTimeout(resolve, 5000)));
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+  bru.setVar("DTR_CONTRACT_AGREEMENT_ID", jsonData.contractAgreementId);
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

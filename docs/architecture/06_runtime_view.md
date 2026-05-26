@@ -102,6 +102,48 @@ is performed, then the frontend hands over the request to the backend to perform
 
 Details on the Web-Ui can be found in the [User Guide](../user/User_Guide.md).
 
+## Scenario: Exchange anonymized data
+
+This features allows to facilitate data exchange across multiple tiers, and PURIS provides **anonymized versions** of selected PURIS data standards, so partners can consume and forward production-related information without sensitive identifiers.
+
+### Scope
+
+- Exchange direction for anonymized delivery information, production and item stock: **Supplier → Customer**
+- Supported anonymized standards:
+  - Planned Production Output (anonymized)
+  - Delivery Information (anonymized)
+  - Item Stock Exchange (anonymized)
+
+### What changes in the runtime flow
+
+The discovery and transfer mechanics remain the same as in “Scenario: Update partner-related data” (DTR → Shell lookup →
+SubmodelDescriptor → contract submodel asset → transfer → EDR → `$value`), but with the following adjustments:
+
+1. **Anonymized semantic IDs and AssetTypes**  
+   Each anonymized standard is registered as its own AssetType and submodel semantic ID (one asset per anonymized
+   submodel type). Example (production anonymized):  
+   `urn:samm:io.catenax.planned_production_output_anonymized:1.0.0#PlannedProductionOutputAnonymized`
+
+2. **Provider registers assets/submodels; operator provides contracts**  
+   PURIS registers the anonymized **EDC assets** and **DTR submodels**, but **does not create contract definitions or
+   policies** for the anonymized models. Operators must create those in the EDC (see Admin Guide).
+
+3. **Contract-scoped anonymization**  
+   Selected sensitive properties are replaced by hashed variants, and some are omitted entirely.
+   Hashing uses Spring Security’s `PasswordEncoder` with a **salt** to reduce correlation across agreements.
+   The salt is taken from the **contract agreement id** supplied in request header `contract-agreement-id`.
+
+4. **Dedicated provider endpoint(s) returning anonymized SAMM**  
+   The provider backend exposes endpoints that map “own” operational data to the anonymized SAMM.
+
+### Validation
+
+End-to-end behavior is covered by unit tests (mappers, DTO constraints) and Bruno integration tests that execute:
+
+1. contract setup (prepares the provider-side policies and contract definition for the anonymized submodel asset)
+2. DTR negotiation and submodel descriptor retrieval
+3. submodel asset negotiation + transfer + `$value` pull for anonymized data
+
 ## NOTICE
 
 This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
