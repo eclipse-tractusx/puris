@@ -235,7 +235,7 @@ postgresql:
           memory: "128Mi"
   # admin user
   auth:
-    existingSecret: "supplier-secret-postgres-init"
+    existingSecret: ""
     # database: <path:puris/data/supplier/puris/postgres#database>
     username: postgres
     password: <path:puris/data/supplier/puris/postgres#postgres-password>
