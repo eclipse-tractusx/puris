@@ -62,7 +62,7 @@ spec:
             - name: DATASOURCE_DRIVERCLASSNAME
               value: "{{ .Values.backend.puris.datasource.driverClassName }}"
             {{- if .Values.postgresql.enabled }}
-              {{- if .Values.postgresql.customUser }}
+              {{- if or .Values.postgresql.customUser.name .Values.postgresql.customUser.existingSecret }}
             - name: DATASOURCE_DB
               valueFrom:
                 secretKeyRef:
@@ -81,8 +81,8 @@ spec:
                   name: {{ .Values.postgresql.customUser.existingSecret | default (include "puris.postgresql.custom-user-secret" .) | quote }}
                   key: {{ .Values.postgresql.customUser | dig "secretKeys" "password" "CUSTOM_PASSWORD" }}
               {{- else }}
-            - name: DATASOURCE_DB:
-              value: "{{ .Values.postgresql.auth.database | default .Values.postgresql.auth.username | default "postgres" | quote }}"
+            - name: DATASOURCE_DB
+              value: {{ .Values.postgresql.auth.database | default .Values.postgresql.auth.username | default "postgres" | quote }}
             - name: DATASOURCE_URL
               value: "jdbc:postgresql://{{ include "puris.postgresql.fullname" . }}:{{ .Values.postgresql.service.ports.postgresql }}/$(DATASOURCE_DB)"
             - name: DATASOURCE_USERNAME
@@ -91,13 +91,13 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.postgresql.auth.existingSecret | default (include "puris.postgresql.fullname" .) | quote}}
-                  key: "postgres-password"
+                  key: {{ .Values.postgresql.auth | dig "secretKeys" "adminPasswordKey" "postgres-password" }}
               {{- end }}
             - name: ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.postgresql.auth.existingSecret | default (include "puris.postgresql.fullname" .) | quote}}
-                  key: "postgres-password"
+                  key: {{ .Values.postgresql.auth | dig "secretKeys" "adminPasswordKey" "postgres-password" }}
             {{- else }}
             - name: DATASOURCE_URL
               value: "{{ .Values.backend.puris.datasource.url }}"

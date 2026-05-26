@@ -31,7 +31,7 @@ dependencies:
     name: postgres
     alias: postgresql
     repository: oci://registry-1.docker.io/cloudpirates
-    version: 0.11.0
+    version: 0.18.3
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
