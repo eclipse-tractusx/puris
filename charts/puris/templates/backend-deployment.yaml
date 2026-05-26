@@ -63,8 +63,13 @@ spec:
               value: "{{ .Values.backend.puris.datasource.driverClassName }}"
             {{- if .Values.postgresql.enabled }}
               {{- if .Values.postgresql.customUser }}
+            - name: DATASOURCE_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.customUser.existingSecret | default (include "puris.postgresql.custom-user-secret" .) | quote }}
+                  key: {{ .Values.postgresql.customUser | dig "secretKeys" "database" "CUSTOM_DB" }}
             - name: DATASOURCE_URL
-              value: "jdbc:postgresql://{{ include "puris.postgresql.fullname" . }}:{{ .Values.postgresql.service.ports.postgresql }}/{{ .Values.postgresql.customUser.database}}"
+              value: "jdbc:postgresql://{{ include "puris.postgresql.fullname" . }}:{{ .Values.postgresql.service.ports.postgresql }}/$(DATASOURCE_DB)"
             - name: DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -76,8 +81,10 @@ spec:
                   name: {{ .Values.postgresql.customUser.existingSecret | default (include "puris.postgresql.custom-user-secret" .) | quote }}
                   key: {{ .Values.postgresql.customUser | dig "secretKeys" "password" "CUSTOM_PASSWORD" }}
               {{- else }}
+            - name: DATASOURCE_DB:
+              value: "{{ .Values.postgresql.auth.database | default .Values.postgresql.auth.username | default "postgres" | quote }}"
             - name: DATASOURCE_URL
-              value: "jdbc:postgresql://{{ include "puris.postgresql.fullname" . }}:{{ .Values.postgresql.service.ports.postgresql }}/{{ .Values.postgresql.auth.database}}"
+              value: "jdbc:postgresql://{{ include "puris.postgresql.fullname" . }}:{{ .Values.postgresql.service.ports.postgresql }}/$(DATASOURCE_DB)"
             - name: DATASOURCE_USERNAME
               value: "{{ .Values.postgresql.auth.username }}"
             - name: DATASOURCE_PASSWORD
