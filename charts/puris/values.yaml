@@ -582,9 +582,8 @@ postgresql:
   # -- Possibility to override the name
   #  nameOverride: ""
   service:
-    ports:
-      # -- Port of postgres database.
-      postgresql: 5432
+    # -- Port of postgres database.
+    port: 5432
   auth:
     # -- Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file.
     existingSecret: "secret-puris-postgres-init"

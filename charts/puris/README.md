@@ -397,8 +397,8 @@ Results in one secret (`existing`) that will be updated with the `postgres-passw
 | postgresql.image.registry | string | `"docker.io"` |  |
 | postgresql.image.repository | string | `"postgres"` |  |
 | postgresql.image.tag | string | `"18.0"` |  |
-| postgresql.service | object | `{"ports":{"postgresql":5432}}` | Possibility to override the name  nameOverride: "" |
-| postgresql.service.ports.postgresql | int | `5432` | Port of postgres database. |
+| postgresql.service | object | `{"port":5432}` | Possibility to override the name  nameOverride: "" |
+| postgresql.service.port | int | `5432` | Port of postgres database. |
 
 ## NOTICE
 

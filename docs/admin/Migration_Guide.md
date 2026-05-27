@@ -46,6 +46,23 @@ Please consult the [community guide](https://github.com/eclipse-tractusx/tutoria
 > [!WARNING] 
 > The current iteration of the migration guide does not create a custom user. Instead the postgres super user is used. We recommend defining a customer user as explained in the following chapter.
 
+Additionally, the new chart changed the configuration for the postgres port.
+
+previous configuration:
+
+```yaml
+service:
+  ports:
+    postgresql: 5432
+```
+
+new configuration:
+
+```yaml
+service:
+  port: 5432
+```
+
 ### Defining a custom postgres user
 
 In addition to the changes outlined in the linked migration guide, defining a custom user requires the following new values:
