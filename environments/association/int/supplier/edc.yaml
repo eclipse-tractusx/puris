@@ -12,9 +12,9 @@ participant:
 
 controlplane:
   # -- Scale to 0 for scaledown
-  autoscaling:
-      enabled: false
-  replicaCount: 0
+  # autoscaling:
+  #     enabled: false
+  # replicaCount: 0
   # -- endpoints of the control plane
   endpoints:
     management:
@@ -116,9 +116,9 @@ dcp:
 
 dataplane:
   # -- Scale to 0 for scaledown
-  autoscaling:
-      enabled: false
-  replicaCount: 0
+  # autoscaling:
+  #     enabled: false
+  # replicaCount: 0
   endpoints:
     proxy:
       authKey: <path:puris/data/supplier/edc#api-key>
