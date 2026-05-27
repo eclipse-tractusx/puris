@@ -377,12 +377,12 @@ export const DeliveryInformationModal = ({
                                         year: 'numeric',
                                     })
                             }`}
-                            density="standard"
                             getRowId={(row) => row.uuid}
                             columns={createDeliveryColumns(handleDelete, handleEdit)}
                             rows={dailyDeliveries}
+                            getRowHeight={() => "auto"}
+                            rowSelection={false}
                             hideFooter
-                            disableRowSelectionOnClick
                         />
                     </Grid>
                     <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="2rem">
