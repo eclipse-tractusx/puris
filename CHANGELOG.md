@@ -14,6 +14,15 @@ The **need for configuration updates** is **marked bold**.
 ### Added
 
 - Added environment variable for default production time ([#1072](https://github.com/eclipse-tractusx/puris/pull/1072))
+- Added anonymized data exchnge in upstream direction ([#1149](https://github.com/eclipse-tractusx/puris/pull/1149))
+  - Added submodel implementation for delivery information anonymized ([#1095](https://github.com/eclipse-tractusx/puris/pull/1095))
+  - Added submodel implementation for item stock anonymized ([#1096](https://github.com/eclipse-tractusx/puris/pull/1096))
+  - Added submodel implementation for planned production output anonymized ([#1099](https://github.com/eclipse-tractusx/puris/pull/1099))
+  - Added bruno tests for delivery information anonymized ([#1101](https://github.com/eclipse-tractusx/puris/pull/1101))
+  - Added bruno tests for anonymized submodel data exchange ([#1130](https://github.com/eclipse-tractusx/puris/pull/1130))
+  - Added documentation for anonymized data exchange ([#1146](https://github.com/eclipse-tractusx/puris/pull/1146))
+  - Added draft semantic models for anonymized data models ([#1089](https://github.com/eclipse-tractusx/puris/pull/1098))
+  - Added Migration runner to automatically update digital twins with new submodels ([#1147](https://github.com/eclipse-tractusx/puris/pull/1147))
 
 ### Changed
 
@@ -41,36 +50,36 @@ Data base migrations are performed but assets.
 
 For productive use the following enhancements are encouraged
 
-- User FrontEnd available: Role Company Admin is able to query catalogue and see negotiations and transfers But company rules / policies need to be configured upfront in backend (via postman) to enable automatic contract negotiations, responsibility lies with Company Admin role  
+* User FrontEnd available: Role Company Admin is able to query catalogue and see negotiations and transfers But company rules / policies need to be configured upfront in backend (via postman) to enable automatic contract negotiations, responsibility lies with Company Admin role  
   --> add section in the User Manual describing this and the (legal) importance and responsibility behind defining these rules
-- Currently only one standard policy per reg. connector / customer instance is supported (more precisely one for DTR, one for all submodels), negotiation happens automatically based on this  
+* Currently only one standard policy per reg. connector / customer instance is supported (more precisely one for DTR, one for all submodels), negotiation happens automatically based on this  
   --> enhance option to select partner and define specific policies (to be planned in context of BPDM Integration)  
   --> UI for specific configuration by dedicated role (e.g. Comp Admin) and more flexible policy configuration (withoutv code changes) is needed
-- As a non-Admin user I do not have ability to view policies in detail  
+* As a non-Admin user I do not have ability to view policies in detail  
   --> transparency for users when interacting with and requesting / consuming data via dashboard / views on underlying usage policies to be enhanced
-- ContractReference Constraint or configuration of policies specific to one partner only has notnot implemented  
+* ContractReference Constraint or configuration of policies specific to one partner only has notnot implemented  
   --> clarification of potential reference to "PURIS standard contract" and enabling of ContractReference for 24.08.
-- unclear meaning of different stati in negotations  
+* unclear meaning of different stati in negotations  
   --> add view of successfull contract agreeements wrt which data have been closed
-- current logging only done on info level  
+* current logging only done on info level  
   --> enhance logging of policies (currently only available at debug level)
-- in case of non-matching policies (tested in various scenarios) no negotiation takes place  
+* in case of non-matching policies (tested in various scenarios) no negotiation takes place  
   --> enhance visualization or specific Error message to user
-- no validation of the Schema "profile": "cx-policy:profile2405" (required to ensure interop with other PURIS apps)
+* no validation of the Schema "profile": "cx-policy:profile2405" (required to ensure interop with other PURIS apps)
 
 #### Styleguide
 
 ##### Overall
 
-- Brief description at the top of each page describing content would be nice for better user experience.
+* Brief description at the top of each page describing content would be nice for better user experience.
 
 ##### Catalog
 
-- No action possible -> unclear to user when and how user will consume an offer
+* No action possible -> unclear to user when and how user will consume an offer
 
 ##### Negotiations
 
-- Add filters for transparency (bpnl, state)
+* Add filters for transparency (bpnl, state)
 
 ## v5.1.1
 

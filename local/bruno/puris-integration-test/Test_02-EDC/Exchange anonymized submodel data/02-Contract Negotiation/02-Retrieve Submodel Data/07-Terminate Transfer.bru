@@ -1,0 +1,65 @@
+meta {
+  name: 07-Terminate Transfer
+  type: http
+  seq: 7
+  tags: [
+    exchange-anonymized-data
+  ]
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/transferprocesses/{{SUBMODEL_TRANSFER_PROCESS_ID}}/terminate
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+    "@context": {
+      "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+    },
+    "@type": "https://w3id.org/edc/v0.0.1/ns/TerminateTransfer",
+    "reason": "a reason to terminate"
+  }
+}
+
+script:post-response {
+  const rawSubmodelData = bru.getVar("SUBMODEL_DATA")
+  const rawSubmodelIndex = bru.getVar("CURRENT_SUBMODEL_INDEX")
+
+  if (rawSubmodelData == null)
+  {
+    throw new Error("SUBMODEL_DATA not set!")
+  }
+  if (rawSubmodelIndex == null)
+  {
+    throw new Error("CURRENT_SUBMODEL_INDEX not set!")
+  }
+
+  const submodelData = JSON.parse(rawSubmodelData)
+  let submodelIndex = Number(rawSubmodelIndex)
+
+  submodelIndex++;
+
+  if (submodelIndex >= 0 && submodelIndex < submodelData.length)
+  {
+    bru.setVar("CURRENT_SUBMODEL_INDEX", submodelIndex)
+    bru.runner.setNextRequest("01-Query Catalog for Submodel")
+  }
+  else
+  {
+    bru.setVar("CURRENT_SUBMODEL_INDEX", 0)
+  }
+}
+
+tests {
+  test("Status code is 204", function () {
+      expect(res.getStatus()).to.equal(204)
+  });
+}

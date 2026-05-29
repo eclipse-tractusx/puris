@@ -165,6 +165,8 @@ spec:
               value: "{{ .Values.idp.clientId }}"
             - name: PURIS_ITEMSTOCKSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.itemstocksubmodel.apiassetid }}"
+            - name: PURIS_ITEMSTOCKANONYMIZEDSUBMODEL_APIASSETID
+              value: "{{ .Values.backend.puris.itemstockanonymizedsubmodel.apiassetid }}"
             - name: PURIS_PRODUCTIONSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.productionsubmodel.apiassetid }}"
             - name: PURIS_DEMANDSUBMODEL_APIASSETID
@@ -173,6 +175,10 @@ spec:
               value: "{{ .Values.backend.puris.deliverysubmodel.apiassetid }}"
             - name: PURIS_DAYSOFSUPPLYSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.daysofsupplysubmodel.apiassetid }}"
+            - name: PURIS_DELIVERYANONYMIZEDSUBMODEL_APIASSETID
+              value: "{{ .Values.backend.puris.deliveryanonymizedsubmodel.apiassetid }}"
+            - name: PURIS_PRODUCTIONANONYMIZEDSUBMODEL_APIASSETID
+              value: "{{ .Values.backend.puris.productionanonymizedsubmodel.apiassetid }}"
             - name: PURIS_NOTIFICATION_APIASSETID
               value: "{{ .Values.backend.puris.notification.apiassetid }}"
             - name: PURIS_FRAMEWORKAGREEMENT_CREDENTIAL

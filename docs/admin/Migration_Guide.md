@@ -7,6 +7,7 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
   - [Version 6.1.x to 7.0.x](#version-61x-to-70x)
     - [Helm chart migration to Cloudpirates and Postgres update](#helm-chart-migration-to-cloudpirates-and-postgres-update)
     - [Defining a custom postgres user](#defining-a-custom-postgres-user)
+    - [Introduction of new submodels](#introduction-of-new-submodels)
   - [Version 6.0.x to 6.1.x](#version-60x-to-61x)
     - [Partner Batch Update Database Migration and routes](#partner-batch-update-database-migration-and-routes)
     - [Create Endpoints for Operational Data return DuplicateEntry Exception](#create-endpoints-for-operational-data-return-duplicateentry-exception)
@@ -81,6 +82,18 @@ postgresql:
       database: "database" # defaults to CUSTOM_DB
       password: "password" # defaults to CUSTOM_PASSWORD
 ```
+
+### Introduction of new submodels
+
+With version 7.0.0 the following new submodels were introduced:
+
+- Delivery Information Anonymized
+- Planned Production Output Anonymized
+- Item Stock Anonymized
+
+The newly added "MigrationCommandLineRunner" should automatically handle the update of the affected Digital Twins on application start.
+
+> [!note] Please make sure to verify that the affected Digital Twins were successfully updated.
 
 ## Version 6.0.x to 6.1.x
 
