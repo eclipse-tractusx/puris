@@ -21,7 +21,7 @@ version: "3"
 
 services:
   postgres-customer:
-    image: postgres:15.4-alpine
+    image: postgres:18.0-alpine
     container_name: postgres-customer
     environment:
       POSTGRES_DB: puris-db

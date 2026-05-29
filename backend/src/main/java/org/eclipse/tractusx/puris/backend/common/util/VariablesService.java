@@ -21,9 +21,10 @@
  */
 package org.eclipse.tractusx.puris.backend.common.util;
 
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import lombok.Getter;
 
 @Getter
 @Service
@@ -162,6 +163,36 @@ public class VariablesService {
     private String daysOfSupplySubmodelAssetId;
 
     /**
+     * The url under which this application's anonymized delivery information request endpoint can
+     * be reached by external machines.
+     */
+    public String getDeliveryAnonymizedSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "delivery-information/anonymized/request";
+    }
+
+    @Value("${puris.deliveryanonymizedsubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the Anonymized Delivery Information request API
+     * during asset creation.
+     */
+    private String deliveryAnonymizedSubmodelApiAssetId;
+
+    /**
+     * The url under which this application's anonymized planned production request endpoint can
+     * be reached by external machines.
+     */
+    public String getProductionAnonymizedSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "planned-production/anonymized/request";
+    }
+
+    @Value("${puris.productionanonymizedsubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the Anonymized Planned Production request API
+     * during asset creation.
+     */
+    private String productionAnonymizedSubmodelApiAssetId;
+
+    /**
      * The url under which this application's single level bom as planned request endpoint can
      * be reached by external machines.
      */
@@ -181,6 +212,21 @@ public class VariablesService {
      * The name of the framework agreement to be used.
      */
     private String purisFrameworkAgreement;
+
+    /**
+     * The url under which this application's anonymized item stock request endpoint can
+     * be reached by external machines.
+     */
+    public String getItemStockAnonymizedSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "item-stock/anonymized/request";
+    }
+
+    @Value("${puris.itemstockanonymizedsubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the Anonymized Item Stock request API
+     * during asset creation.
+     */
+    private String itemStockAnonymizedSubmodelApiAssetId;
 
     @Value("${puris.frameworkagreement.version}")
     /**
@@ -329,6 +375,18 @@ public class VariablesService {
 
     public String getDaysOfSupplySubmodelApiAssetId() {
         return daysOfSupplySubmodelAssetId + "@" + ownBpnl;
+    }
+
+    public String getItemStockAnonymizedSubmodelApiAssetId() {
+        return itemStockAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
+    }
+    
+    public String getDeliveryAnonymizedSubmodelApiAssetId() {
+        return deliveryAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
+    }
+
+    public String getProductionAnonymizedSubmodelApiAssetId() {
+        return productionAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
     }
 
     public String getSingleLevelBomAsPlannedSubmodelApiAssetId() {

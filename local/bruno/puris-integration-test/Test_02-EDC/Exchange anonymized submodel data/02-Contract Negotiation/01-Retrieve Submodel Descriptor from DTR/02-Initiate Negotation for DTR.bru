@@ -1,0 +1,45 @@
+meta {
+  name: 02-Initiate Negotation for DTR
+  type: http
+  seq: 2
+  tags: [
+    exchange-anonymized-data
+  ]
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/contractnegotiations
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+    "@context": {
+          "@vocab": "https://w3id.org/edc/v0.0.1/ns/",
+      "odrl": "http://www.w3.org/ns/odrl/2/",
+          "cx-policy": "https://w3id.org/catenax/policy/"
+    },
+    "@type": "ContractRequest",
+    "counterPartyAddress": "{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+    "protocol": "dataspace-protocol-http",
+    "policy": {{DTR_CATALOG_OFFER}}
+  }
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+  bru.setVar("DTR_NEGOTIATION_ID", jsonData["@id"]);
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

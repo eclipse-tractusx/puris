@@ -54,12 +54,14 @@ services:
       - ENDPOINT_IMPORT_FILES=files
       - ENDPOINT_ALL_MATERIALS=materials
       - ENDPOINT_ALL_PARTNERS=partners
-      - ENDPOINT_MATERIAL_PARTNER_RELATIONS=materialpartnerrelations
+      - ENDPOINT_MATERIAL_PARTNER_RELATIONS=materialpartnerrelations      
+      - ENDPOINT_PARTNER_DATA_UPDATE_BATCH=batch/partner-data-update
       - ENDPOINT_MATERIAL_RELATIONS=material-relations
       - IDP_URL=http://127.0.0.1:10081/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-customer
       - IDP_REDIRECT_URL_FRONTEND=http://localhost:3000
+      - DEFAULT_PRODUCTION_TIME=23:59
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
       - NGINX_RATE=10r/s
@@ -134,7 +136,7 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   postgres-all:
-    image: postgres:15.4-alpine
+    image: postgres:18.0-alpine
     container_name: postgres-all
     environment:
       POSTGRES_DB: puris_customer # create puris db for customer, rest init script
@@ -252,11 +254,13 @@ services:
       - ENDPOINT_ALL_MATERIALS=materials
       - ENDPOINT_ALL_PARTNERS=partners
       - ENDPOINT_MATERIAL_PARTNER_RELATIONS=materialpartnerrelations
+      - ENDPOINT_PARTNER_DATA_UPDATE_BATCH=batch/partner-data-update
       - ENDPOINT_MATERIAL_RELATIONS=material-relations
       - IDP_URL=http://127.0.0.1:10081/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-supplier
       - IDP_REDIRECT_URL_FRONTEND=http://localhost:3001
+      - DEFAULT_PRODUCTION_TIME=23:59
       - NGINX_RATE_LIMIT=10m
       - NGINX_BURST=30
       - NGINX_RATE=10r/s

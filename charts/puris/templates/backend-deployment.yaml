@@ -62,20 +62,42 @@ spec:
             - name: DATASOURCE_DRIVERCLASSNAME
               value: "{{ .Values.backend.puris.datasource.driverClassName }}"
             {{- if .Values.postgresql.enabled }}
+              {{- if or .Values.postgresql.customUser.name .Values.postgresql.customUser.existingSecret }}
+            - name: DATASOURCE_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.customUser.existingSecret | default (include "puris.postgresql.custom-user-secret" .) | quote }}
+                  key: {{ .Values.postgresql.customUser | dig "secretKeys" "database" "CUSTOM_DB" }}
             - name: DATASOURCE_URL
-              value: "jdbc:postgresql://{{ include "puris.postgresql.fullname" . }}:{{ .Values.postgresql.service.ports.postgresql }}/{{ .Values.postgresql.auth.database}}"
+              value: "jdbc:postgresql://{{ include "puris.postgresql.fullname" . }}:{{ .Values.postgresql.service.port }}/$(DATASOURCE_DB)"
+            - name: DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.customUser.existingSecret | default (include "puris.postgresql.custom-user-secret" .) | quote }}
+                  key: {{ .Values.postgresql.customUser | dig "secretKeys" "name" "CUSTOM_USER" }}
+            - name: DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.customUser.existingSecret | default (include "puris.postgresql.custom-user-secret" .) | quote }}
+                  key: {{ .Values.postgresql.customUser | dig "secretKeys" "password" "CUSTOM_PASSWORD" }}
+              {{- else }}
+            - name: DATASOURCE_DB
+              value: {{ .Values.postgresql.auth.database | default .Values.postgresql.auth.username | default "postgres" | quote }}
+            - name: DATASOURCE_URL
+              value: "jdbc:postgresql://{{ include "puris.postgresql.fullname" . }}:{{ .Values.postgresql.service.port }}/$(DATASOURCE_DB)"
             - name: DATASOURCE_USERNAME
               value: "{{ .Values.postgresql.auth.username }}"
             - name: DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Values.postgresql.auth.existingSecret }}"
-                  key: "password"
+                  name: {{ .Values.postgresql.auth.existingSecret | default (include "puris.postgresql.fullname" .) | quote}}
+                  key: {{ .Values.postgresql.auth | dig "secretKeys" "adminPasswordKey" "postgres-password" }}
+              {{- end }}
             - name: ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Values.postgresql.auth.existingSecret }}"
-                  key: "postgres-password"
+                  name: {{ .Values.postgresql.auth.existingSecret | default (include "puris.postgresql.fullname" .) | quote}}
+                  key: {{ .Values.postgresql.auth | dig "secretKeys" "adminPasswordKey" "postgres-password" }}
             {{- else }}
             - name: DATASOURCE_URL
               value: "{{ .Values.backend.puris.datasource.url }}"
@@ -143,6 +165,8 @@ spec:
               value: "{{ .Values.idp.clientId }}"
             - name: PURIS_ITEMSTOCKSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.itemstocksubmodel.apiassetid }}"
+            - name: PURIS_ITEMSTOCKANONYMIZEDSUBMODEL_APIASSETID
+              value: "{{ .Values.backend.puris.itemstockanonymizedsubmodel.apiassetid }}"
             - name: PURIS_PRODUCTIONSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.productionsubmodel.apiassetid }}"
             - name: PURIS_DEMANDSUBMODEL_APIASSETID
@@ -151,6 +175,10 @@ spec:
               value: "{{ .Values.backend.puris.deliverysubmodel.apiassetid }}"
             - name: PURIS_DAYSOFSUPPLYSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.daysofsupplysubmodel.apiassetid }}"
+            - name: PURIS_DELIVERYANONYMIZEDSUBMODEL_APIASSETID
+              value: "{{ .Values.backend.puris.deliveryanonymizedsubmodel.apiassetid }}"
+            - name: PURIS_PRODUCTIONANONYMIZEDSUBMODEL_APIASSETID
+              value: "{{ .Values.backend.puris.productionanonymizedsubmodel.apiassetid }}"
             - name: PURIS_SINGLELEVELBOMASPLANNEDSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.singlelevelbomasplannedsubmodel.apiassetid }}"
             - name: PURIS_NOTIFICATION_APIASSETID
@@ -199,6 +227,16 @@ spec:
               value: "{{ .Values.backend.puris.erpadapter.timelimit }}"
             - name: PURIS_ERPADAPTER_REFRESHINTERVAL
               value: "{{ .Values.backend.puris.erpadapter.refreshinterval }}"
+            - name: PURIS_BATCH_PARTNERDATAUPDATE_ENABLED
+              value: "{{ .Values.backend.puris.batch.partnerdataupdate.enabled }}"
+            - name: PURIS_BATCH_PARTNERDATAUPDATE_CRON
+              value: "{{ .Values.backend.puris.batch.partnerdataupdate.cron }}"
+            - name: PURIS_BATCH_PARTNERDATAUPDATE_CLEANUP_ENABLED
+              value: "{{ .Values.backend.puris.batch.partnerdataupdate.cleanup.enabled }}"
+            - name: PURIS_BATCH_PARTNERDATAUPDATE_CLEANUP_CRON
+              value: "{{ .Values.backend.puris.batch.partnerdataupdate.cleanup.cron }}"
+            - name: PURIS_BATCH_PARTNERDATAUPDATE_CLEANUP_RETENTION_DAYS
+              value: "{{ .Values.backend.puris.batch.partnerdataupdate.cleanup.retentiondays }}"
 
             ######################################
             ## Additional environment variables ##

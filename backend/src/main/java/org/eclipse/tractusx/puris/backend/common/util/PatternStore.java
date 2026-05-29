@@ -48,7 +48,6 @@ public class PatternStore {
      */
     public static final Pattern BPNA_PATTERN = Pattern.compile(BPNA_STRING);
 
-
     /**
      * Contains a Java-Regex-String that can be used to validate
      * BPNS numbers.
@@ -60,6 +59,12 @@ public class PatternStore {
      * It is constructed from the BPNS_STRING constant.
      */
     public static final Pattern BPNS_PATTERN = Pattern.compile(BPNS_STRING);
+
+    /**
+    * Contains a Java-Regex-String that can be used to validate
+    * that a string is not a valid BPNS number.
+    */
+    public static final String NOT_BPNS_STRING = "^(?!(?:" + BPNS_STRING + ")$).*";
 
     /**
      * Contains a Java-Regex-String that allows any combination of alphabetic characters,

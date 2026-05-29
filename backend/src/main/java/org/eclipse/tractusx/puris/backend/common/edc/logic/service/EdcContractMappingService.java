@@ -20,16 +20,21 @@
 
 package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 
-import lombok.extern.slf4j.Slf4j;
+import java.lang.reflect.Constructor;
+
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.ContractMapping;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DtrContractMapping;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DeliveryAnonymizedContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ProductionAnonymizedContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DaysOfSupplyContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DeliveryContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandAndCapacityNotificationContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DtrContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.GeneralContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ItemStockAnonymizedContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ItemStockContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.PartTypeContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ProductionContractMappingRepository;
@@ -38,7 +43,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Constructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -64,6 +69,15 @@ public class EdcContractMappingService {
 
     @Autowired
     private DaysOfSupplyContractMappingRepository daysOfSupplyContractMappingRepository;
+
+    @Autowired
+    private ItemStockAnonymizedContractMappingRepository itemStockAnonymizedContractMappingRepository;
+  
+    @Autowired
+    private DeliveryAnonymizedContractMappingRepository deliveryAnonymizedContractMappingRepository;
+
+    @Autowired
+    private ProductionAnonymizedContractMappingRepository productionAnonymizedContractMappingRepository;
 
     @Autowired
     private PartTypeContractMappingRepository partTypeContractMappingRepository;
@@ -133,6 +147,9 @@ public class EdcContractMappingService {
             case DELIVERY_SUBMODEL -> deliveryContractMappingRepository;
             case NOTIFICATION -> demandAndCapacityNotificationContractMappingRepository;
             case DAYS_OF_SUPPLY -> daysOfSupplyContractMappingRepository;
+            case ITEM_STOCK_ANONYMIZED_SUBMODEL -> itemStockAnonymizedContractMappingRepository;
+            case DELIVERY_ANONYMIZED_SUBMODEL -> deliveryAnonymizedContractMappingRepository;
+            case PRODUCTION_ANONYMIZED_SUBMODEL -> productionAnonymizedContractMappingRepository;
             case PART_TYPE_INFORMATION_SUBMODEL -> partTypeContractMappingRepository;
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> singleLevelBomAsPlannedContractMappingRepository;
         };

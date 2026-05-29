@@ -43,12 +43,14 @@ import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedMaterialIt
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ReportedProductItemStockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
 
 @Component
+@Order(1)
 @Slf4j
 public class DataInjectionCommandLineRunner implements CommandLineRunner {
 

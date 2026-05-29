@@ -4,6 +4,13 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 
 <!-- TOC -->
 - [Migration Guide](#migration-guide)
+  - [Version 6.1.x to 7.0.x](#version-61x-to-70x)
+    - [Helm chart migration to Cloudpirates and Postgres update](#helm-chart-migration-to-cloudpirates-and-postgres-update)
+    - [Defining a custom postgres user](#defining-a-custom-postgres-user)
+    - [Introduction of new submodels](#introduction-of-new-submodels)
+  - [Version 6.0.x to 6.1.x](#version-60x-to-61x)
+    - [Partner Batch Update Database Migration and routes](#partner-batch-update-database-migration-and-routes)
+    - [Create Endpoints for Operational Data return DuplicateEntry Exception](#create-endpoints-for-operational-data-return-duplicateentry-exception)
   - [Version 5.0.x to 6.0.x](#version-50x-to-60x)
     - [The endpoint for Material Partner Relations was changed](#the-endpoint-for-material-partner-relations-was-changed)
   - [Version 4.2.x to 5.0.x](#version-42x-to-50x)
@@ -29,34 +36,86 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
   - [NOTICE](#notice)
 <!-- TOC -->
 
-> [!WARNING]
-> Bitnami does change their update and versioning policy starting with 2025-08-28. To install the existing charts with its bitnami dependencies, please consider to manually specify the properties `image.repository` and `image.tag` specifying for the following dependencies:
-> 
-> - postgresql (image: bitnamilegacy/postgresql:15.4.0-debian-11-r45)
-> 
-> You have the following options to specify the container image:
-> 
-> 1. Specify in `values.yaml` below `postgresql`.
-> 
-> ```yaml
-> postgresql: 
->   image: 
->     repository: bitnamilegacy/postgresql
->     tag: 15.4.0-debian-11-r45
-> ```
-> 
-> 2. Set during installation.
-> 
-> ```bash
-> helm install puris -n tractusx-dev/puris \
->   --set postgresql.image.repository=bitnamilegacy/postgresql
->   --set postgresql.image.tag=15.4.0-debian-11-r45
-> ```
-> 
-> Notes:
-> 
-> - Deploying an older version of the software may have used an older postgresql version. This is NOT applicable for the PURIS charts.
-> - The community is working out on how to resolve the issue.
+## Version 6.1.x to 7.0.x
+
+### Helm chart migration to Cloudpirates and Postgres update
+
+With release 7.0.0 the helm charts were updated to use cloudpirates instead of bitnami. This is breaking and prevents the use of helm upgrade. In addition the postgres version was upgraded to 18.0.0.
+
+Please consult the [community guide](https://github.com/eclipse-tractusx/tutorial-resources/blob/main/migration-guides/GENERIC_POSTGRESQL_MIGRATION_GUIDE.md) on how to manually migrate to the new chart version.
+
+> [!WARNING] 
+> The current iteration of the migration guide does not create a custom user. Instead the postgres super user is used. We recommend defining a customer user as explained in the following chapter.
+
+Additionally, the new chart changed the configuration for the postgres port.
+
+previous configuration:
+
+```yaml
+service:
+  ports:
+    postgresql: 5432
+```
+
+new configuration:
+
+```yaml
+service:
+  port: 5432
+```
+
+### Defining a custom postgres user
+
+In addition to the changes outlined in the linked migration guide, defining a custom user requires the following new values:
+
+```yaml
+postgresql:
+  customUser:
+    name: "puris" # needs to be different from the super user
+    database: "puris" # needs to be different from the default database name
+    password: "password" # auto generated if left empty
+
+    # optional additional properties
+    existingSecret: "my-secret" # existing secret to use. can also use the same name as auth.existingSecret
+    secretKeys:
+      name: "name" # defaults to CUSTOM_USER
+      database: "database" # defaults to CUSTOM_DB
+      password: "password" # defaults to CUSTOM_PASSWORD
+```
+
+### Introduction of new submodels
+
+With version 7.0.0 the following new submodels were introduced:
+
+- Delivery Information Anonymized
+- Planned Production Output Anonymized
+- Item Stock Anonymized
+
+The newly added "MigrationCommandLineRunner" should automatically handle the update of the affected Digital Twins on application start.
+
+> [!note] Please make sure to verify that the affected Digital Twins were successfully updated.
+
+## Version 6.0.x to 6.1.x
+
+### Partner Batch Update Database Migration and routes
+
+In chart version `6.1.x` the app version is bumped to `5.1.x`. Version `5.1.0` introduced the [batch feature](https://github.com/eclipse-tractusx/puris/issues/1103). It persists batch runs and their entries to inform administrators about success and errors when mass pulling partner data for material, partners, information and direction.
+
+The provided chart and container perform a database migration following the liquibase file [changelog-5.1.0.yaml](/backend/src/main/resources/db/changelog/changelog-5.x/changelog-5.1.0.yaml). In case you use a custom image or other migration tools, derive changes from that file.
+
+Further the backend now additionally exposes an api for `batch/update-partner-data`. Refer to the [open-api definition](/docs/api/openAPI.yaml) for further information.
+
+### Create Endpoints for Operational Data return DuplicateEntry Exception
+
+To allow the frontend to handle duplicate data more interactively (see [feature 981](https://github.com/eclipse-tractusx/puris/issues/981)), the following `POST` endpoints will throw a DuplicateEntryException:
+
+- `demand`
+- `production`
+- `delivery`
+- `stockView/product-stocks`
+- `stockView/material-stocks`
+
+This is not breaking but may be considered.
 
 ## Version 5.0.x to 6.0.x
 

@@ -196,6 +196,24 @@ public class EdcAdapterService {
             AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
+        log.info("Registration of Anonymized Item Stock Information 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getItemStockAnonymizedSubmodelApiAssetId(),
+            variablesService.getItemStockAnonymizedSubmodelEndpoint(),
+            AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID
+        )));
+        result &= assetRegistration;
+        log.info("Registration of Anonymized Delivery Information 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getDeliveryAnonymizedSubmodelApiAssetId(),
+            variablesService.getDeliveryAnonymizedSubmodelEndpoint(),
+            AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID
+        )));
+        result &= assetRegistration;
+        log.info("Registration of Anonymized Planned Production 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getProductionAnonymizedSubmodelApiAssetId(),
+            variablesService.getProductionAnonymizedSubmodelEndpoint(),
+            AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID
+        )));
+        result &= assetRegistration;
         log.info("Registration of Single Level Bom As Planned 3.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(),
             variablesService.getSingleLevelBomAsPlannedSubmodelEndpoint(),
@@ -656,6 +674,9 @@ public class EdcAdapterService {
             case DELIVERY_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, direction);
             case NOTIFICATION -> throw new IllegalArgumentException("DemandAndCapacityNotification not supported");
             case DAYS_OF_SUPPLY -> fetchSubmodelDataByDirection(mpr, AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, direction);
+            case ITEM_STOCK_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
         };
@@ -1091,6 +1112,9 @@ public class EdcAdapterService {
             case DELIVERY_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, direction);
             case NOTIFICATION -> throw new IllegalArgumentException("DemandAndCapacityNotification not supported");
             case DAYS_OF_SUPPLY -> fetchSubmodelDataByDirection(mpr, AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, direction);
+            case ITEM_STOCK_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
         };

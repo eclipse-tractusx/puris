@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2026 Volkswagen AG
+# Copyright (c) 2026 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -16,69 +17,123 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+
 databaseChangeLog:
   - changeSet:
-      id: "1"
-      author: ReneSchroederLJ
+      id: 1
+      author: tom-rm-meyer-ISST
       preConditions:
         - onFail: MARK_RAN
         - not:
             - tableExists:
-                tableName: material_relation
+                tableName: partner_data_update_batch_run
       changes:
         - createTable:
-            tableName: material_relation
+            tableName: partner_data_update_batch_run
             columns:
               - column:
-                  name: uuid
+                  name: id
                   type: UUID
                   constraints:
                     nullable: false
                     primaryKey: true
-                    primaryKeyName: material_relation_pkey
+                    primaryKeyName: partner_data_update_batch_run_pkey
               - column:
-                  name: parent_own_material_number
+                  name: start_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: status
                   type: VARCHAR(255)
                   constraints:
                     nullable: false
-              - column:
-                  name: child_own_material_number
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: quantity
-                  type: FLOAT8
-                  constraints:
-                    nullable: false
-              - column:
-                  name: measurement_unit
-                  type: SMALLINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: valid_from
-                  type: TIMESTAMP WITHOUT TIME ZONE
-              - column:
-                  name: valid_to
-                  type: TIMESTAMP WITHOUT TIME ZONE
-              - column:
-                  name: created_on
-                  type: TIMESTAMP WITHOUT TIME ZONE
-              - column:
-                  name: last_modified_on
-                  type: TIMESTAMP WITHOUT TIME ZONE
   - changeSet:
-        id: "2"
-        author: gobica
-        changes:
-          - createTable:
-              columns:
-                - column:
-                    constraints:
-                      nullable: false
-                      primaryKey: true
-                      primaryKeyName: single_level_bom_as_planned_contract_mapping_pkey
-                    name: partner_bpnl
-                    type: VARCHAR(255)
-              tableName: single_level_bom_as_planned_contract_mapping
+      id: 2
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: partner_data_update_batch_run_entry
+      changes:
+        - createTable:
+            tableName: partner_data_update_batch_run_entry
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: partner_data_update_batch_run_entry_pkey
+              - column:
+                  name: batch_run_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: own_material_number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: partner_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: direction
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: information_type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: error_message
+                  type: TEXT
+  - changeSet:
+      id: 3
+      author: tom-rm-meyer-ISST
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - customPrecondition:
+                - className: org.eclipse.tractusx.puris.backend.common.migration.ForeignKeyNoNamePrecondition
+                - param:
+                    name: tableName
+                    value: partner_data_update_batch_run_entry
+                - param:
+                    name: columnName
+                    value: batch_run_id
+                - param:
+                    name: foreignTableName
+                    value: partner_data_update_batch_run
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: partner_data_update_batch_run_entry
+            baseColumnNames: batch_run_id
+            referencedTableName: partner_data_update_batch_run
+            referencedColumnNames: id
+            constraintName: fk_partner_data_update_batch_run_entry_to_partner_data_update_batch_run
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            deferrable: false
+            initiallyDeferred: false
+            validate: true
