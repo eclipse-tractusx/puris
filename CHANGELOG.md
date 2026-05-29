@@ -26,11 +26,15 @@ The **need for configuration updates** is **marked bold**.
 
 ### Changed
 
-- /
+- changed chart repository for postgres to cloudpirates ([#1148](https://github.com/eclipse-tractusx/puris/pull/1148))
 
 ### Fixes
 
 - /
+
+### Version Bumps
+
+- upgraded Postgresql to version 18 ([#1148](https://github.com/eclipse-tractusx/puris/pull/1148))
 
 ### Known Knowns
 

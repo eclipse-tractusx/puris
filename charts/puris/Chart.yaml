@@ -28,9 +28,10 @@ sources:
   - https://github.com/eclipse-tractusx/puris
 dependencies:
   - condition: postgresql.enabled
-    name: postgresql
-    repository: https://charts.bitnami.com/bitnami
-    version: 12.12.x
+    name: postgres
+    alias: postgresql
+    repository: oci://registry-1.docker.io/cloudpirates
+    version: 0.18.3
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
