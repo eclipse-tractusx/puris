@@ -60,6 +60,19 @@ export PG_POSTGRES_PW_SECRET=supplier-edc-postgresql
 export PG_POSTGRES_PW_SECRET_KEY=postgres-password
 ```
 
+```bash
+export ARGO_PROJECT=project-puris
+export NS=product-puris
+export APPLICATION=supplier-edc2
+export PG_VERSION_FROM=16
+export PG_VERSION_TO=18
+export PG_ADMIN_USER=postgres
+export PG_SERVICE_NAME=supplier-edc-postgresql
+export PG_DB=edc
+export PG_POSTGRES_PW_SECRET=supplier-edc-postgresql
+export PG_POSTGRES_PW_SECRET_KEY=postgres-password
+```
+
 
 ```bash
 export ARGO_PROJECT=project-puris
@@ -206,13 +219,44 @@ argocd app create $APPLICATION \
   --project $ARGO_PROJECT \
   --repo https://github.com/eclipse-tractusx/tractusx-edc \
   --path charts/tractusx-connector \
-  --revision 0.13.0-rc2 \
+  --revision feat/postgresql-custom-user \
   --dest-server https://kubernetes.default.svc \
   --dest-namespace $NS \
   --config-management-plugin argocd-vault-plugin-helm-args \
   --plugin-env AVP_SECRET=vault-secret \
   --plugin-env helm_args="-f https://raw.githubusercontent.com/eclipse-tractusx/puris/feat/consortia-int-values/environments/association/int/supplier/edc.yaml" \
   --upsert
+```
+
+
+```shell
+# to check if this step can be done via orphanage of the statefulSet, depends on retain policy
+argocd app delete-resource $APPLICATION \
+  --kind PersistentVolumeClaim \
+  --resource-name data-${APPLICATION}-postgresql-0 \
+  --namespace $NS
+
+argocd app delete-resource $APPLICATION \
+  --kind StatefulSet \
+  --resource-name ${APPLICATION}-postgresql \
+  --namespace $NS
+
+argocd app delete-resource $APPLICATION \
+  --kind Service \
+  --resource-name ${APPLICATION}-postgresql \
+  --namespace $NS
+
+argocd app delete-resource $APPLICATION \
+  --kind Service \
+  --resource-name ${APPLICATION}-postgresql-hl \
+  --namespace $NS
+```
+
+Then sync
+
+```shell
+argocd app get $APPLICATION --hard-refresh
+argocd app sync $APPLICATION
 ```
 
 #### PURIS
@@ -245,25 +289,25 @@ To retain the old statefulSet and persistentVolumeClaim names, do the following:
 
 ```shell
 # to check if this step can be done via orphanage of the statefulSet, depends on retain policy
-argocd app delete-resource supplier-puris \
+argocd app delete-resource $APPLICATION \
   --kind PersistentVolumeClaim \
   --resource-name data-supplier-backend-postgresql-0 \
-  --namespace product-puris
+  --namespace $NS
 
-argocd app delete-resource supplier-puris \
+argocd app delete-resource $APPLICATION \
   --kind StatefulSet \
   --resource-name supplier-backend-postgresql \
-  --namespace product-puris
+  --namespace $NS
 
-argocd app delete-resource supplier-puris \
+argocd app delete-resource $APPLICATION \
   --kind Service \
   --resource-name supplier-backend-postgresql \
-  --namespace product-puris
+  --namespace $NS
 
-argocd app delete-resource supplier-puris \
+argocd app delete-resource $APPLICATION \
   --kind Service \
   --resource-name supplier-backend-postgresql-hl \
-  --namespace product-puris
+  --namespace $NS
 ```
 
 Then sync
@@ -277,18 +321,18 @@ argocd app sync supplier-puris
 
 ```shell
 
-argocd app create db-migration-puris-supplier \
-  --project project-puris \
+argocd app create db-migration-$APPLICATION \
+  --project $ARGO_PROJECT \
   --repo https://github.com/eclipse-tractusx/puris \
   --revision feat/consortia-int-values \
-  --path environments/association/int/migration/7.0.0/supplier/puris/02-restore \
+  --path environments/association/int/migration/7.0.0/$APPLICATION/02-restore \
   --dest-server https://kubernetes.default.svc \
-  --dest-namespace product-puris \
+  --dest-namespace $NS \
   --directory-recurse \
   --upsert
 
 # Sync to create the PVC and run the Backup Job
-argocd app sync db-migration-puris-supplier
+argocd app sync db-migration-$APPLICATION
 
 ```
 
