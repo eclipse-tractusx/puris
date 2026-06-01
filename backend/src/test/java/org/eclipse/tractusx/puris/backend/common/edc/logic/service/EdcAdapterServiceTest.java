@@ -52,6 +52,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -390,6 +392,48 @@ public class EdcAdapterServiceTest {
         DspaceVersionParams actualDspaceVersionParams = edcAdapterService.getPartnerDspaceVersionParams(partnerBpnl, partnerDspUrl);
 
         assertEquals(expectedDspaceVerstionParams, actualDspaceVersionParams);
+    }
+
+    @Test
+    public void dspaceVersionParamsRequestedTwice_getDspaceVersionParams_usesCachedInformation() throws IOException {
+        String expectedCounterPartyAddress = "https://provider.domain.com/api/dsp/2025-1";
+        String expectedProtocolString = "dataspace-protocol-http:2025-1";
+        String expectedCounterPartyId = "did:web:one-example.com";
+        DspaceVersionParams expectedDspaceVerstionParams = new DspaceVersionParams(
+            expectedCounterPartyId,
+            expectedCounterPartyAddress,
+            DspProtocolVersionEnum.fromVersion(expectedProtocolString));
+
+        String validJsonLd = "[{\n" +
+            "  \"@context\": {\n" +
+            "    \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+            "    \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\"\n" +
+            "  },\n" +
+            "  \"edc:counterPartyId\": \"" + expectedCounterPartyId + "\",\n" +
+            "  \"edc:counterPartyAddress\": \"" + expectedCounterPartyAddress + "\",\n" +
+            "  \"edc:protocol\": \"" + expectedProtocolString + "\"\n" +
+            "}]";
+
+        String partnerBpnl = "BPNL4444444444XX";
+        String partnerDspUrl = "http://customer-control-plane:8184/api/v1/dsp";
+
+        Response mockResponse = mock(Response.class);
+        ResponseBody mockBody = mock(ResponseBody.class);
+        when(mockResponse.code()).thenReturn(200);
+        when(mockResponse.isSuccessful()).thenReturn(true);
+        when(mockResponse.body()).thenReturn(mockBody);
+        when(mockBody.string()).thenReturn(validJsonLd);
+
+        doReturn(mockResponse)
+            .when(edcAdapterService)
+            .sendPostRequest(any(), any());
+
+        DspaceVersionParams firstCall = edcAdapterService.getPartnerDspaceVersionParams(partnerBpnl, partnerDspUrl);
+        DspaceVersionParams secondCall = edcAdapterService.getPartnerDspaceVersionParams(partnerBpnl, partnerDspUrl);
+
+        assertEquals(expectedDspaceVerstionParams, firstCall);
+        assertEquals(expectedDspaceVerstionParams, secondCall);
+        verify(edcAdapterService, times(1)).sendPostRequest(any(), any());
     }
 
     private final static String unexpectedProhibition = "{\n" +

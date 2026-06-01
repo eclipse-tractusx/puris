@@ -32,5 +32,7 @@ public final class JsonLdConstants {
     public final static String AAS_SEMANTICS_NAMESPACE = "https://admin-shell.io/aas/3/0/HasSemantics/";
     public final static String TX_NAMESPACE = "https://w3id.org/tractusx/v0.0.1/ns/";
     public final static String TX_AUTH_NAMESPACE = "https://w3id.org/tractusx/auth/";
+    public final static String TX_AUTH_CONTEXT = "https://w3id.org/tractusx/auth/v1.0.0";
     public final static String DCAT_NAMESPACE = "http://www.w3.org/ns/dcat#";
+    public final static String DSPACE_CONTEXT_2025_1 = "https://w3id.org/dspace/2025/1/context.jsonld";
 }

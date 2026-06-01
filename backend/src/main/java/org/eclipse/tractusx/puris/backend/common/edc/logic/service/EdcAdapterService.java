@@ -44,6 +44,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 /**
@@ -54,6 +55,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class EdcAdapterService {
     private static final OkHttpClient CLIENT = new OkHttpClient();
+    private final Map<DspaceVersionCacheKey, DspaceVersionParams> dspaceVersionParamsCache = new ConcurrentHashMap<>();
     @Autowired
     private VariablesService variablesService;
     private final ObjectMapper objectMapper;
@@ -400,30 +402,27 @@ public class EdcAdapterService {
 
     /**
      * Retrieve the response to an unfiltered catalog request from the partner
-     * with the given dspUrl
+     * using the resolved DSP version parameters.
      *
-     * @param dspUrl      The dspUrl of your partner
-     * @param partnerBpnl The bpnl of your partner
-     * @param filter      Map of key (leftOperand) and values (rightOperand) to use as filterExpression with equal operand
+     * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of your partner
+     * @param filter              Map of key (leftOperand) and values (rightOperand) to use as filterExpression with equal operand
      * @return The response containing the full catalog, if successful
      */
-    public Response getCatalogResponse(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException {
-        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partnerBpnl, dspUrl);
+    public Response getCatalogResponse(DspaceVersionParams dspaceVersionParams, Map<String, String> filter) throws IOException {
         return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspaceVersionParams, filter), List.of("v3", "catalog", "request"));
     }
 
     /**
      * Retrieve an (unfiltered) catalog from the partner with the
-     * given dspUrl
+     * resolved DSP version parameters.
      *
-     * @param dspUrl      The dspUrl of your partner
-     * @param partnerBpnl The bpnl of your partner
-     * @param filter      Map of key (leftOperand) and values (rightOperand) to use as filterExpression with equal operand
+     * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of your partner
+     * @param filter              Map of key (leftOperand) and values (rightOperand) to use as filterExpression with equal operand
      * @return The full catalog
      * @throws IOException If the connection to the partners control plane fails
      */
-    public JsonNode getCatalog(String dspUrl, String partnerBpnl, Map<String, String> filter) throws IOException {
-        try (var response = getCatalogResponse(dspUrl, partnerBpnl, filter)) {
+    public JsonNode getCatalog(DspaceVersionParams dspaceVersionParams, Map<String, String> filter) throws IOException {
+        try (var response = getCatalogResponse(dspaceVersionParams, filter)) {
             JsonNode responseNode = objectMapper.readTree(response.body().string());
             log.debug("Got Catalog response {}", responseNode.toPrettyString());
             return responseNode;
@@ -441,76 +440,87 @@ public class EdcAdapterService {
      */
     public record DspaceVersionParams (String counterPartyId, String counterPartyAddress, DspProtocolVersionEnum protocol) {}
 
+    private record DspaceVersionCacheKey(String partnerBpnl, String dspUrl) {}
+
     /**
      * represents the latest version information from dspaceVersionParams endpoint
      *
      * @param partnerBpnl The bpnl of your partner used for identification and lookup of did 
      * @param dspUrl      The dsp url known from your partner (master data / discovery)
-     * @return the latest {@link DspaceVersionParams} of your partner or a fallback prior to TX Connector 0.10.0
+     * @return the cached or freshly resolved {@link DspaceVersionParams} of your partner, or a fallback prior to TX Connector 0.10.0
      */
     public DspaceVersionParams getPartnerDspaceVersionParams(String partnerBpnl, String dspUrl) throws IOException{
-        JsonNode dspaceVersionParmsRequest = edcRequestBodyBuilder.buildDspaceVersionParamsRequest(dspUrl, partnerBpnl);
-        Response response = this.sendPostRequest(dspaceVersionParmsRequest, List.of("v4alpha", "connectordiscovery", "dspaceversionparams"));
-        
-        DspaceVersionParams dspaceVersionParams = null;
+        DspaceVersionCacheKey cacheKey = new DspaceVersionCacheKey(partnerBpnl, dspUrl);
+        DspaceVersionParams cachedParams = dspaceVersionParamsCache.get(cacheKey);
+        if (cachedParams != null) {
+            log.debug("Using cached Dspace Version Params for partner {} and dspUrl {}", partnerBpnl, dspUrl);
+            return cachedParams;
+        }
+
+        JsonNode dspaceVersionParamsRequest = edcRequestBodyBuilder.buildDspaceVersionParamsRequest(dspUrl, partnerBpnl);
         final DspaceVersionParams fallback = new DspaceVersionParams(partnerBpnl, dspUrl, DspProtocolVersionEnum.V_0_8);
-        // if connector version < 0.10.x 404 is returned, then assemble default from dsp v0.8
-        if (response.code() == 404)
-        {
-            // Note: following swagger-ui counterPartyId should be a did - likely this is an upstream example bug
-            log.debug("Connector does not yet support endpoint /v4alpha/connectordiscovery/dspversionparams. Fallback to following parameters: {}", fallback.toString());
-            return fallback;
-        } else if (!response.isSuccessful()){
-            log.warn("Dspace version could not be determined and error was not expected. Status code {}; error: {}", response.code(), response.body());
-            log.debug("No supported version found, fallback: {}", fallback.toString());
-            return fallback;
-        }
-        JsonNode responseNode = objectMapper.readTree(response.body().string());
-        responseNode = jsonLdUtils.expand(responseNode, variablesService.getEdcProfileVersion());
-            
-        log.debug("Got response from Dspace Version Params request: {}", responseNode.toPrettyString());
+        try (Response response = this.sendPostRequest(dspaceVersionParamsRequest, List.of("v4alpha", "connectordiscovery", "dspversionparams"))) {
+            DspaceVersionParams dspaceVersionParams = null;
+            // if connector version < 0.10.x 404 is returned, then assemble default from dsp v0.8
+            if (response.code() == 404)
+            {
+                // Note: following swagger-ui counterPartyId should be a did - likely this is an upstream example bug
+                log.debug("Connector does not yet support endpoint /v4alpha/connectordiscovery/dspversionparams. Fallback to following parameters: {}", fallback.toString());
+                dspaceVersionParamsCache.put(cacheKey, fallback);
+                return fallback;
+            } else if (!response.isSuccessful()){
+                log.warn("Dspace version could not be determined and error was not expected. Status code {}; error: {}", response.code(), response.body());
+                log.debug("No supported version found, fallback: {}", fallback.toString());
+                return fallback;
+            }
+            JsonNode responseNode = objectMapper.readTree(response.body().string());
+            responseNode = jsonLdUtils.expand(responseNode, variablesService.getEdcProfileVersion());
+                
+            log.debug("Got response from Dspace Version Params request: {}", responseNode.toPrettyString());
 
-        ArrayNode responseArray = null;
-        // ensure it's an array
-        if (responseNode.isObject()){
-            responseArray = objectMapper.createArrayNode().add(responseNode);
-        } else {
-            responseArray = (ArrayNode) responseNode;
-        }
+            ArrayNode responseArray = null;
+            // ensure it's an array
+            if (responseNode.isObject()){
+                responseArray = objectMapper.createArrayNode().add(responseNode);
+            } else {
+                responseArray = (ArrayNode) responseNode;
+            }
 
-        // collect supported dspace versions
-        List<DspaceVersionParams> partnerSupportedDspaceVersions = new ArrayList<>();
-        for (JsonNode entry: responseArray){
-            // fallback to v.0.8 in case of missing information / issues
-            String counterPartyAddress = entry.get(JsonLdConstants.EDC_NAMESPACE + "counterPartyAddress")
-                .get(0)
-                .get("@value")
-                .asText(dspUrl);
-            String counterPartyId = entry.get(JsonLdConstants.EDC_NAMESPACE + "counterPartyId")
-                .get(0)
-                .get("@value")
-                .asText(partnerBpnl);
-            String protocolString = entry.get(JsonLdConstants.EDC_NAMESPACE + "protocol")
-                .get(0)
-                .get("@value")
-                .asText(DspProtocolVersionEnum.V_0_8.getVersion());
-            DspProtocolVersionEnum dspProtocolVersion = DspProtocolVersionEnum.fromVersion(protocolString);
-            dspaceVersionParams = new DspaceVersionParams(counterPartyId, counterPartyAddress, dspProtocolVersion);
-            log.debug("Partner supports the following dsp version: {}", dspaceVersionParams.toString());
-            partnerSupportedDspaceVersions.add(dspaceVersionParams);
-        }
+            // collect supported dspace versions
+            List<DspaceVersionParams> partnerSupportedDspaceVersions = new ArrayList<>();
+            for (JsonNode entry: responseArray){
+                // fallback to v.0.8 in case of missing information / issues
+                String counterPartyAddress = entry.get(JsonLdConstants.EDC_NAMESPACE + "counterPartyAddress")
+                    .get(0)
+                    .get("@value")
+                    .asText(dspUrl);
+                String counterPartyId = entry.get(JsonLdConstants.EDC_NAMESPACE + "counterPartyId")
+                    .get(0)
+                    .get("@value")
+                    .asText(partnerBpnl);
+                String protocolString = entry.get(JsonLdConstants.EDC_NAMESPACE + "protocol")
+                    .get(0)
+                    .get("@value")
+                    .asText(DspProtocolVersionEnum.V_0_8.getVersion());
+                DspProtocolVersionEnum dspProtocolVersion = DspProtocolVersionEnum.fromVersion(protocolString);
+                dspaceVersionParams = new DspaceVersionParams(counterPartyId, counterPartyAddress, dspProtocolVersion);
+                log.debug("Partner supports the following dsp version: {}", dspaceVersionParams.toString());
+                partnerSupportedDspaceVersions.add(dspaceVersionParams);
+            }
 
-        // Identify the highest enum in the list of supported versions based on natural order (youngest -> latest)
-        Optional<DspaceVersionParams> latest = partnerSupportedDspaceVersions.stream()
-            .max(Comparator.comparingInt(p -> p.protocol().ordinal()));
+            // Identify the highest enum in the list of supported versions based on natural order (youngest -> latest)
+            Optional<DspaceVersionParams> latest = partnerSupportedDspaceVersions.stream()
+                .max(Comparator.comparingInt(p -> p.protocol().ordinal()));
 
-        // If found any is given / latest found return it or use fallback
-        if (latest.isPresent()) {
-            log.debug("Will use the following dsp version information for partner: {}", latest.get().toString());
-            return latest.get();
-        } else {
-            log.debug("No supported version found, fallback: {}", fallback.toString());
-            return fallback;
+            // If found any is given / latest found return it or use fallback
+            if (latest.isPresent()) {
+                log.debug("Will use the following dsp version information for partner: {}", latest.get().toString());
+                dspaceVersionParamsCache.put(cacheKey, latest.get());
+                return latest.get();
+            } else {
+                log.debug("No supported version found, fallback: {}", fallback.toString());
+                return fallback;
+            }
         }
     }
 
@@ -526,23 +536,21 @@ public class EdcAdapterService {
      * @throws IOException If the connection to the partners control plane fails
      */
     private JsonNode initiateNegotiation(Partner partner, JsonNode catalogItem) throws IOException {
-        return initiateNegotiation(partner, catalogItem, null);
+        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partner.getEdcUrl());
+        return initiateNegotiation(catalogItem, dspaceVersionParams);
     }
 
     /**
-     * Helper method for contracting a certain asset as specified in the catalog item from
-     * a specific Partner.
+     * Helper method for negotiating a contract for a specific catalog item using
+     * already resolved DSP version parameters.
      *
-     * @param partner     The Partner to negotiate with
-     * @param catalogItem An excerpt from a catalog.
-     * @param dspUrl      The dspUrl if a specific (not from MAD Partner) needs to be used, if null, the partners edcUrl is taken
+     * @param catalogItem         An excerpt from a catalog
+     * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
      * @return The JSON response to your contract offer.
      * @throws IOException If the connection to the partners control plane fails
      */
-    private JsonNode initiateNegotiation(Partner partner, JsonNode catalogItem, String dspUrl) throws IOException {
-        // use dspUrl as provided, if set - else use partner
-        dspUrl = dspUrl != null && !dspUrl.isEmpty() ? dspUrl : partner.getEdcUrl();
-        var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(partner, catalogItem, dspUrl);
+    private JsonNode initiateNegotiation(JsonNode catalogItem, DspaceVersionParams dspaceVersionParams) throws IOException {
+        var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(catalogItem, dspaceVersionParams);
         try (Response response = sendPostRequest(requestBody, List.of("v3", "contractnegotiations"))) {
             JsonNode responseNode = objectMapper.readTree(response.body().string());
             log.debug("Result from negotiation {}", responseNode.toPrettyString());
@@ -582,13 +590,15 @@ public class EdcAdapterService {
      * Sends a request to the own control plane in order to initiate a transfer of
      * a previously negotiated asset.
      *
-     * @param partner    The partner
-     * @param contractId The contract id
+     * @param partner       The partner
+     * @param contractId    The contract id
+     * @param partnerEdcUrl The DSP URL to use for this transfer
      * @return The response object
      * @throws IOException If the connection to your control plane fails
      */
     public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String partnerEdcUrl) throws IOException {
-        var body = edcRequestBodyBuilder.buildProxyPullRequestBody(partner, contractId, partnerEdcUrl);
+        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partnerEdcUrl);
+        var body = edcRequestBodyBuilder.buildProxyPullRequestBody(contractId, dspaceVersionParams);
         try (var response = sendPostRequest(body, List.of("v3", "transferprocesses"))) {
             String data = response.body().string();
             JsonNode result = objectMapper.readTree(data);
@@ -877,7 +887,8 @@ public class EdcAdapterService {
                 "'" + JsonLdConstants.DCT_NAMESPACE + "type'.'@id'",
                 JsonLdConstants.CX_TAXO_NAMESPACE + "DigitalTwinRegistry"
             );
-            var responseNode = getCatalog(partner.getEdcUrl(), partner.getBpnl(), equalFilters);
+            DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partner.getEdcUrl());
+            var responseNode = getCatalog(dspaceVersionParams, equalFilters);
             responseNode = jsonLdUtils.expand(responseNode, partner.getPolicyProfileVersion());
             log.debug("Catalog response after expansion: {}", responseNode);
 
@@ -1224,7 +1235,8 @@ public class EdcAdapterService {
 
     public boolean negotiateContract(Partner partner, String assetId, AssetType type, String dspUrl, Map<String, String> equalFilters) {
         try {
-            var responseNode = getCatalog(dspUrl, partner.getBpnl(), equalFilters);
+            DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), dspUrl);
+            var responseNode = getCatalog(dspaceVersionParams, equalFilters);
             responseNode = jsonLdUtils.expand(responseNode, partner.getPolicyProfileVersion());
 
             // per specifciation jsonLd wraps into an array if multiple entries, thus take first entry as we get only one contract.
@@ -1265,7 +1277,7 @@ public class EdcAdapterService {
                 log.warn("CATALOG CONTENT \n" + catalogArray.toPrettyString());
                 return false;
             }
-            JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry, dspUrl);
+            JsonNode negotiationResponse = initiateNegotiation(targetCatalogEntry, dspaceVersionParams);
             String negotiationId = negotiationResponse.get("@id").asText();
             // Await confirmation of contract and contractId
             String contractId = null;
@@ -1313,7 +1325,8 @@ public class EdcAdapterService {
      * Helper method to check whether you and the contract offer from the other party have the
      * same framework agreement policy. The given catalogEntry must be expanded!
      *
-     * @param catalogEntry the catalog item containing the desired api asset in expanded form
+        * @param catalogEntry   the catalog item containing the desired api asset in expanded form
+        * @param profileVersion the policy profile version to validate against
      * @return true, if the policy matches yours, otherwise false
      */
     public boolean testContractPolicyConstraints(JsonNode catalogEntry, PolicyProfileVersionEnumeration profileVersion) {

@@ -23,6 +23,7 @@ The **need for configuration updates** is **marked bold**.
 - migrated to policy profile 2509 and adapted support for DSP 1.0 ([#1125](https://github.com/eclipse-tractusx/puris/pull/1125))
 - implemented edc cross version communication support ([#1136](https://github.com/eclipse-tractusx/puris/pull/1136))
 - refactored EDC integration with better separation of concerns ([#1144](https://github.com/eclipse-tractusx/puris/pull/1144))
+- updated negotiation and transfer logic to utilize latest DSP version ([#1153](https://github.com/eclipse-tractusx/puris/pull/1153))
 
 ### Fixes
 

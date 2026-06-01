@@ -100,9 +100,8 @@ public class EdcRequestBodyBuilder {
      * with nested catalog item properties, so it seems advisable to check
      * for the filter criteria programmatically.
      *
-     * @param counterPartyDspUrl The protocol url of the other party
-     * @param counterPartyBpnl   The bpnl of the other party
-     * @param filter             Key-value-pairs, may be empty or null
+     * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the other party
+     * @param filter              Key-value-pairs, may be empty or null
      * @return The request body
      */
     public ObjectNode buildBasicCatalogRequestBody(DspaceVersionParams dspaceVersionParams, Map<String, String> filter) {
@@ -234,6 +233,7 @@ public class EdcRequestBodyBuilder {
      * Creates a request body in order to register a contract policy that
      * allows only participants of the framework agreement.
      *
+     * @param profileVersion The policy profile version to encode in the policy
      * @return the request body
      */
     public JsonNode buildPurisFrameworkPolicy(PolicyProfileVersionEnumeration profileVersion) {
@@ -243,6 +243,8 @@ public class EdcRequestBodyBuilder {
     /**
      * Creates a request body in order to register a contract policy for the DTR that
      * allows only participants of the framework agreement to access the DTR asset.
+     *
+     * @param profileVersion The policy profile version to encode in the policy
      * @return the request body
      */
     public JsonNode buildDtrFrameworkPolicy(PolicyProfileVersionEnumeration profileVersion) {
@@ -341,20 +343,19 @@ public class EdcRequestBodyBuilder {
      * Creates the request body for initiating a negotiation in DSP protocol.
      * Will use the policy terms as specified in the catalog item.
      *
-     * @param partner         The Partner to negotiate with
-     * @param dcatCatalogItem The catalog entry that describes the target asset.
-     * @param dspUrl          The dspUrl if a specific (not from MAD Partner) needs to be used, not null
+        * @param dcatCatalogItem     The catalog entry that describes the target asset
+        * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
      * @return The request body
      */
-    public JsonNode buildAssetNegotiationBody(Partner partner, JsonNode dcatCatalogItem, String dspUrl) {
+    public JsonNode buildAssetNegotiationBody(JsonNode dcatCatalogItem, DspaceVersionParams dspaceVersionParams) {
         ObjectNode body = MAPPER.createObjectNode();
         ObjectNode contextNode = MAPPER.createObjectNode();
         contextNode.put(JsonLdConstants.VOCAB_KEY, JsonLdConstants.EDC_NAMESPACE);
         contextNode.put("odrl", JsonLdConstants.ODRL_NAMESPACE);
         body.set("@context", contextNode);
         body.put("@type", "ContractRequest");
-        body.put("counterPartyAddress", dspUrl);
-        body.put("protocol", "dataspace-protocol-http");
+        body.put("counterPartyAddress", dspaceVersionParams.counterPartyAddress());
+        body.put("protocol", dspaceVersionParams.protocol().getVersion());
 
         // extract policy and information from offer
         // framework agreement and co has been checked during catalog request
@@ -368,7 +369,7 @@ public class EdcRequestBodyBuilder {
         targetIdObject.put("@id", assetId);
         ((ObjectNode) policyNode).put("@context", "http://www.w3.org/ns/odrl.jsonld");
         ((ObjectNode) policyNode).set("target", targetIdObject);
-        ((ObjectNode) policyNode).put("assigner", partner.getBpnl());
+        ((ObjectNode) policyNode).put("assigner", dspaceVersionParams.counterPartyId());
 
         ObjectNode offerNode = MAPPER.createObjectNode();
         String offerId = policyNode.get("@id").asText();
@@ -386,17 +387,16 @@ public class EdcRequestBodyBuilder {
      * Creates the request body for requesting a proxy pull transfer using the
      * DSP protocol and the Tractus-X-EDC.
      *
-     * @param partner    The Partner who controls the target asset
-     * @param contractID The contractId
-     * @param assetId    The assetId
+        * @param contractID          The contract agreement id to transfer against
+        * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
      * @return The request body
      */
-    public JsonNode buildProxyPullRequestBody(Partner partner, String contractID, String partnerEdcUrl) {
+    public JsonNode buildProxyPullRequestBody(String contractID, DspaceVersionParams dspaceVersionParams) {
         var body = getEdcContextObject();
-        body.put("connectorId", partner.getBpnl());
-        body.put("counterPartyAddress", partnerEdcUrl);
+        body.put("connectorId", dspaceVersionParams.counterPartyId());
+        body.put("counterPartyAddress", dspaceVersionParams.counterPartyAddress());
         body.put("contractId", contractID);
-        body.put("protocol", "dataspace-protocol-http");
+        body.put("protocol", dspaceVersionParams.protocol().getVersion());
         body.put("managedResources", false);
         body.put("transferType", "HttpData-PULL");
 
