@@ -1,0 +1,50 @@
+meta {
+  name: 07-Look up shell at DTR
+  type: http
+  seq: 7
+  tags: [
+    single-level-bom-as-planned
+  ]
+}
+
+get {
+  url: {{DTR_EDR_ENDPOINT}}/lookup/shells?assetIds={{ASSET_IDS_QUERY}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: {{DTR_EDR_AUTH}}
+}
+
+script:pre-request {
+  const btoa = require("btoa");
+  
+  let query = "{\"name\":\"manufacturerPartId\",\"value\":\"" + bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER") + "\"}";
+  query += ",{\"name\":\"digitalTwinType\",\"value\":\"PartType\"}";
+  query += ",{\"name\":\"manufacturerId\",\"value\":\"" + bru.getEnvVar("SUPPLIER_BPNS") + "\"}";
+  const encodedQuery = btoa(query)
+  bru.setVar("ASSET_IDS_QUERY", encodedQuery)
+}
+
+script:post-response {
+  const btoa = require("btoa");
+  
+  if (res.status !== 200) {
+    throw new Error(`DTR returned status ${res.status}. The DTR service may not be ready or the shell doesn't exist yet.`);
+  }
+  
+  if (!res.body.result || res.body.result.length === 0) {
+    throw new Error("No shells found in DTR. You may need to create the material's Digital Twin shell first.");
+  }
+  
+  const aasId = res.body.result[0];
+  const encodedAasId = btoa(aasId);
+  bru.setVar("AAS_IDENTIFIER", encodedAasId);
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

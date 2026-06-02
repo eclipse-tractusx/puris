@@ -131,6 +131,35 @@ components:
       - quantityOnAllocatedStock
       - stockLocationBPNSAnonymized
       type: object
+    ChildData:
+      additionalProperties: false
+      properties:
+        businessPartner:
+          maxItems: 50
+          pattern: ^BPNL[0-9a-zA-Z]{12}$
+          type: string
+        catenaXId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        createdOn:
+          format: date-time
+          maxItems: 50
+          type: string
+        lastModifiedOn:
+          format: date-time
+          maxItems: 50
+          type: string
+        quantity:
+          $ref: '#/components/schemas/ItemQuantityEntity'
+        validityPeriod:
+          $ref: '#/components/schemas/ValidityPeriodEntity'
+      required:
+      - businessPartner
+      - catenaXId
+      - createdOn
+      - quantity
+      type: object
     Classification:
       additionalProperties: false
       properties:
@@ -841,6 +870,85 @@ components:
           type: string
         partnerSuppliesMaterial:
           type: boolean
+      type: object
+    MaterialRelationDto:
+      additionalProperties: false
+      properties:
+        childOwnMaterialNumber:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        createdOn:
+          format: date-time
+          maxItems: 50
+          type: string
+        lastModifiedOn:
+          format: date-time
+          maxItems: 50
+          type: string
+        measurementUnit:
+          enum:
+          - unit:piece
+          - unit:set
+          - unit:pair
+          - unit:page
+          - unit:cycle
+          - unit:kilowattHour
+          - unit:gram
+          - unit:kilogram
+          - unit:tonneMetricTon
+          - unit:tonUsOrShortTonUkorus
+          - unit:ounceAvoirdupois
+          - unit:pound
+          - unit:metre
+          - unit:centimetre
+          - unit:kilometre
+          - unit:inch
+          - unit:foot
+          - unit:yard
+          - unit:squareCentimetre
+          - unit:squareMetre
+          - unit:squareInch
+          - unit:squareFoot
+          - unit:squareYard
+          - unit:cubicCentimetre
+          - unit:cubicMetre
+          - unit:cubicInch
+          - unit:cubicFoot
+          - unit:cubicYard
+          - unit:litre
+          - unit:millilitre
+          - unit:hectolitre
+          - unit:secondUnitOfTime
+          - unit:minuteUnitOfTime
+          - unit:hourUnitOfTime
+          - unit:day
+          maxItems: 50
+          type: string
+        parentOwnMaterialNumber:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        quantity:
+          format: double
+          type: number
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+        validFrom:
+          format: date-time
+          maxItems: 50
+          type: string
+        validTo:
+          format: date-time
+          maxItems: 50
+          type: string
+      required:
+      - childOwnMaterialNumber
+      - measurementUnit
+      - parentOwnMaterialNumber
+      - quantity
       type: object
     MaterialStockDto:
       additionalProperties: false
@@ -1625,6 +1733,22 @@ components:
       required:
       - demandSeries
       type: object
+    SingleLevelBomAsPlanned:
+      additionalProperties: false
+      properties:
+        catenaXId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        childItems:
+          items:
+            $ref: '#/components/schemas/ChildData'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+      required:
+      - catenaXId
+      type: object
     Site:
       additionalProperties: false
       properties:
@@ -1692,6 +1816,18 @@ components:
       required:
       - dateTimeOfEvent
       - eventType
+      type: object
+    ValidityPeriodEntity:
+      additionalProperties: false
+      properties:
+        validFrom:
+          format: date-time
+          maxItems: 50
+          type: string
+        validTo:
+          format: date-time
+          maxItems: 50
+          type: string
       type: object
   securitySchemes:
     X-API-KEY:
@@ -2974,6 +3110,7 @@ paths:
           - ITEM_STOCK_ANONYMIZED_SUBMODEL
           - DELIVERY_ANONYMIZED_SUBMODEL
           - PRODUCTION_ANONYMIZED_SUBMODEL
+          - SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL
           maxItems: 50
           type: string
       - in: query
@@ -3222,6 +3359,98 @@ paths:
         requests. This endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - demand-request-api-controller
+  /material-relations:
+    get:
+      description: Returns a list of all MaterialRelation entities.
+      operationId: getAllMaterialRelations
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/MaterialRelationDto'
+                maxItems: 50
+                type: array
+          description: Successfully retrieved all MaterialRelation entities.
+      summary: Gets all material relations
+      tags:
+      - material-relation-controller
+    post:
+      description: Creates a new MaterialRelation entity with the data given in the
+        request body. The fields validFrom and validTo can optionally be set. If validto
+        is set, validFrom is also required and needs to be before validTo.
+      operationId: createMaterialRelation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialRelationDto'
+              additionalProperties: false
+        required: true
+      responses:
+        '201':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: Successfully created a new MaterialRelation entity.
+        '400':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: Malformed request body.
+        '500':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: Internal Server error.
+      summary: Creates a Material Relation -- ADMIN ONLY
+      tags:
+      - material-relation-controller
+    put:
+      description: Updates an existing MaterialRelation entity with the data given
+        in the request body. The fields validFrom and validTo can optionally be set.
+        If validto is set, validFrom is also required and needs to be before validTo
+      operationId: updateMaterialRelation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialRelationDto'
+              additionalProperties: false
+        required: true
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: Successfully updated the MaterialRelation entity.
+        '400':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: Malformed request body.
+        '500':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                type: object
+          description: Internal Server error.
+      summary: Updates an existing Material Relation -- ADMIN ONLY
+      tags:
+      - material-relation-controller
   /materialpartnerrelations:
     get:
       description: Returns a list of all MaterialPartnerRelations as DTOs.
@@ -4175,6 +4404,53 @@ paths:
       summary: Deletes a planned production by its UUID
       tags:
       - production-controller
+  /single-level-bom-as-planned/request/{materialNumberCx}/submodel/{representation}:
+    get:
+      description: 'Endpoint that delivers SingleLevelBomAsPlanned of own products.
+        This endpoint is meant for self-access only via EDC. '
+      operationId: getSingleLevelBomAsPlannedMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - description: The CatenaX material number (UUID) of the material in question
+        in: path
+        name: materialNumberCx
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - description: Must be set to '$value'
+        in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SingleLevelBomAsPlanned'
+                additionalProperties: false
+          description: Ok
+        '400':
+          description: 'Invalid request parameters. '
+        '403':
+          description: 'Access forbidden - self-access only. '
+        '404':
+          description: 'Product not found for given parameters. '
+        '501':
+          description: 'Unsupported representation requested. '
+      tags:
+      - single-level-bom-as-planned-request-api-controller
   /stockView/customer:
     get:
       description: Returns a list of all Partners that are ordering the given material

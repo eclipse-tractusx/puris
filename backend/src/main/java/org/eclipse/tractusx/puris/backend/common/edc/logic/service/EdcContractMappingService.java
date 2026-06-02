@@ -38,6 +38,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ItemStock
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ItemStockContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.PartTypeContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ProductionContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.SingleLevelBomAsPlannedContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -80,6 +81,9 @@ public class EdcContractMappingService {
 
     @Autowired
     private PartTypeContractMappingRepository partTypeContractMappingRepository;
+
+    @Autowired
+    private SingleLevelBomAsPlannedContractMappingRepository singleLevelBomAsPlannedContractMappingRepository;
 
     private final String SEPARATOR = "\n@\n";
 
@@ -147,6 +151,7 @@ public class EdcContractMappingService {
             case DELIVERY_ANONYMIZED_SUBMODEL -> deliveryAnonymizedContractMappingRepository;
             case PRODUCTION_ANONYMIZED_SUBMODEL -> productionAnonymizedContractMappingRepository;
             case PART_TYPE_INFORMATION_SUBMODEL -> partTypeContractMappingRepository;
+            case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> singleLevelBomAsPlannedContractMappingRepository;
         };
         return repository;
     }

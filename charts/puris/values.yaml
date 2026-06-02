@@ -227,6 +227,8 @@ frontend:
     endpointMaterialPartnerRelations: materialpartnerrelations
     # -- The endpoint for interfacing with partner data update batch
     endpointPartnerDataUpdateBatch: batch/partner-data-update
+    # -- The endpoint for interfacing with material relations
+    endpointMaterialRelations: material-relations
     rateLimiting:
       # -- Bucket zone limit for rate limiting in nginx.
       limit: 10m
@@ -491,6 +493,9 @@ backend:
     productionanonymizedsubmodel:
       # -- Asset ID for ProductionAnonymizedSubmodel API
       apiassetid: productionanonymizedsubmodel-api-asset
+    singlelevelbomasplannedsubmodel:
+      # -- Asset ID for SingleLevelBomAsPlannedSubmodel API
+      apiassetid: singlelevelbomasplannedsubmodel-api-asset
     notification:
       # -- Asset ID for Notification API
       apiassetid: notification-api-asset

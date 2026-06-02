@@ -192,6 +192,21 @@ public class VariablesService {
      */
     private String productionAnonymizedSubmodelApiAssetId;
 
+    /**
+     * The url under which this application's single level bom as planned request endpoint can
+     * be reached by external machines.
+     */
+    public String getSingleLevelBomAsPlannedSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "single-level-bom-as-planned/request";
+    }
+
+    @Value("${puris.singlelevelbomasplannedsubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the request API
+     * during asset creation.
+     */
+    private String singleLevelBomAsPlannedSubmodelAssetId;
+
     @Value("${puris.frameworkagreement.credential}")
     /**
      * The name of the framework agreement to be used.
@@ -372,6 +387,10 @@ public class VariablesService {
 
     public String getProductionAnonymizedSubmodelApiAssetId() {
         return productionAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
+    }
+
+    public String getSingleLevelBomAsPlannedSubmodelApiAssetId() {
+        return singleLevelBomAsPlannedSubmodelAssetId + "@" + ownBpnl;
     }
 
     public String getNotificationApiAssetId() {

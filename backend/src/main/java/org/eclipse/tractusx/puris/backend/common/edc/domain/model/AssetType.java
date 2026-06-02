@@ -33,8 +33,9 @@ public enum AssetType {
     PART_TYPE_INFORMATION_SUBMODEL("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value", "none", "1.0"),
     ITEM_STOCK_ANONYMIZED_SUBMODEL("urn:samm:io.catenax.item_stock_anonymized:1.0.0#ItemStockAnonymized", "$value", "none", "1.0"),
     DELIVERY_ANONYMIZED_SUBMODEL("urn:samm:io.catenax.delivery_information_anonymized:1.0.0#DeliveryInformationAnonymized", "$value", "none", "1.0"),
-    PRODUCTION_ANONYMIZED_SUBMODEL("urn:samm:io.catenax.planned_production_output_anonymized:1.0.0#PlannedProductionOutputAnonymized", "$value", "none", "1.0");
-
+    PRODUCTION_ANONYMIZED_SUBMODEL("urn:samm:io.catenax.planned_production_output_anonymized:1.0.0#PlannedProductionOutputAnonymized", "$value", "none", "1.0"),
+    SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL("urn:samm:io.catenax.single_level_bom_as_planned:3.0.0#SingleLevelBomAsPlanned", "$value", "SingleLevelBomAsPlanned", "3.0");
+    
     public final String URN_SEMANTIC_ID;
     public final String REPRESENTATION;
     public final String ERP_KEYWORD;
@@ -59,6 +60,8 @@ public enum AssetType {
                 AssetType.DELIVERY_ANONYMIZED_SUBMODEL;
             case "urn:samm:io.catenax.planned_production_output_anonymized:1.0.0#PlannedProductionOutputAnonymized" ->
                 AssetType.PRODUCTION_ANONYMIZED_SUBMODEL;
+            case "urn:samm:io.catenax.single_level_bom_as_planned:3.0.0#SingleLevelBomAsPlanned" ->
+                AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL;
             default -> AssetType.DTR; // Handle unknown URN by returning a default enum value
         };
     }

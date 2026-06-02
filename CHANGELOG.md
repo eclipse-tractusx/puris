@@ -23,6 +23,12 @@ The **need for configuration updates** is **marked bold**.
   - Added documentation for anonymized data exchange ([#1146](https://github.com/eclipse-tractusx/puris/pull/1146))
   - Added draft semantic models for anonymized data models ([#1089](https://github.com/eclipse-tractusx/puris/pull/1098))
   - Added Migration runner to automatically update digital twins with new submodels ([#1147](https://github.com/eclipse-tractusx/puris/pull/1147))
+- Added SingleLevelBomAsPlanned implementation ([#1152](https://github.com/eclipse-tractusx/puris/pull/1152))
+  - Added backend implementation for material relations ([#1097](https://github.com/eclipse-tractusx/puris/pull/1097))
+  - Added EDC offering for SingleLevelBomAsPlanned ([#1102](https://github.com/eclipse-tractusx/puris/pull/1102))
+  - Added unit tests for SingleLevelBomAsPlanned ([#1121](https://github.com/eclipse-tractusx/puris/pull/1121))
+  - Added frontend implementation for material relations ([#1113](https://github.com/eclipse-tractusx/puris/pull/1113))
+  - Added Bruno tests for SingleLevelBomAsPlanned ([#1124](https://github.com/eclipse-tractusx/puris/pull/1124))
 
 ### Changed
 

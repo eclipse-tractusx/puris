@@ -179,6 +179,8 @@ spec:
               value: "{{ .Values.backend.puris.deliveryanonymizedsubmodel.apiassetid }}"
             - name: PURIS_PRODUCTIONANONYMIZEDSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.productionanonymizedsubmodel.apiassetid }}"
+            - name: PURIS_SINGLELEVELBOMASPLANNEDSUBMODEL_APIASSETID
+              value: "{{ .Values.backend.puris.singlelevelbomasplannedsubmodel.apiassetid }}"
             - name: PURIS_NOTIFICATION_APIASSETID
               value: "{{ .Values.backend.puris.notification.apiassetid }}"
             - name: PURIS_FRAMEWORKAGREEMENT_CREDENTIAL

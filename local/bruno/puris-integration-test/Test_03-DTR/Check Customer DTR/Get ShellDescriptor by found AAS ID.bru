@@ -23,8 +23,8 @@ auth:bearer {
 }
 
 script:pre-request {
-  const materialNumberCustomer = bru.getEnvVar('MATERIAL_NUMBER_CUSTOMER');
-  const materialNumberSupplier = bru.getEnvVar('MATERIAL_NUMBER_SUPPLIER');
+  const materialNumberCustomer = bru.getEnvVar('SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER');
+  const materialNumberSupplier = bru.getEnvVar('SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER');
   
   const queryParam = '{"name":"customerPartId","value":"'+materialNumberCustomer+'"},{"name":"manufacturerPartId","value":"'+materialNumberSupplier+'"}';
   
@@ -40,9 +40,9 @@ tests {
   const jsonData = res.getBody();
   
   const expectedSpecificAssetIds = [
-      { name: "customerPartId", value: bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER") },
+      { name: "customerPartId", value: bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER") },
       { name: "digitalTwinType", value: "PartType" },
-      { name: "manufacturerPartId", value: bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER") },
+      { name: "manufacturerPartId", value: bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER") },
       { name: "manufacturerId", value: bru.getEnvVar("SUPPLIER_BPNL") }
   ];
   

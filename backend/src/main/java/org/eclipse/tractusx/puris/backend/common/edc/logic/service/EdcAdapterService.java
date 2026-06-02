@@ -189,27 +189,40 @@ public class EdcAdapterService {
             variablesService.getNotificationApiAssetId(),
             variablesService.getNotificationEndpoint()
         )));
+        result &= assetRegistration;
         log.info("Registration of Days of Supply 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getDaysOfSupplySubmodelApiAssetId(),
             variablesService.getDaysOfSupplySubmodelEndpoint(),
             AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID
         )));
+        result &= assetRegistration;
         log.info("Registration of Anonymized Item Stock Information 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getItemStockAnonymizedSubmodelApiAssetId(),
             variablesService.getItemStockAnonymizedSubmodelEndpoint(),
             AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID
         )));
+        result &= assetRegistration;
         log.info("Registration of Anonymized Delivery Information 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getDeliveryAnonymizedSubmodelApiAssetId(),
             variablesService.getDeliveryAnonymizedSubmodelEndpoint(),
             AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID
         )));
+        result &= assetRegistration;
         log.info("Registration of Anonymized Planned Production 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getProductionAnonymizedSubmodelApiAssetId(),
             variablesService.getProductionAnonymizedSubmodelEndpoint(),
             AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID
         )));
+        result &= assetRegistration;
+        log.info("Registration of Single Level Bom As Planned 3.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(),
+            variablesService.getSingleLevelBomAsPlannedSubmodelEndpoint(),
+            AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID
+        )));
+        result &= assetRegistration;
         log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
+        result &= assetRegistration;
+        log.info("Registration of self-contracts successful {}", (assetRegistration = createPolicyAndContractDefForSelf()));
         result &= assetRegistration;
         return result;
     }
@@ -235,6 +248,30 @@ public class EdcAdapterService {
         result &= createSubmodelContractDefinitionForPartner(AssetType.NOTIFICATION.URN_SEMANTIC_ID, variablesService.getNotificationApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
         return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
+    }
+
+    /**
+     * Register contract definitions for assets that should only be accessible by the own organization.
+     * Creates access policy restricted to own BPNL (with membership credential requirement).
+     * Contract policy uses standard Framework Agreement terms.
+     * 
+     * @return true if all registrations were successful, otherwise false
+     */
+    private boolean createPolicyAndContractDefForSelf() {
+        Partner self = new Partner();
+        self.setBpnl(variablesService.getOwnBpnl());
+        
+        boolean result = createBpnlAndMembershipPolicyDefinitionForPartner(self);
+        log.info("Self policy definition registration {}", result ? "successful" : "failed");
+        
+        boolean contractReg = createSubmodelContractDefinitionForPartner(
+            AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID,
+            variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(),
+            self
+        );
+        log.info("Self-contract for SingleLevelBomAsPlanned {}", contractReg ? "successful" : "failed");
+        
+        return result && contractReg;
     }
 
     private boolean createSubmodelContractDefinitionForPartner(String semanticId, String assetId, Partner partner) {
@@ -640,6 +677,7 @@ public class EdcAdapterService {
             case ITEM_STOCK_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
         };
         boolean failed = true;
@@ -1078,6 +1116,7 @@ public class EdcAdapterService {
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
+            case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
         };
         Map<String, String> equalFilters = new HashMap<>();
         // use only assetId and version (previously semanticId, submodel type, no assetId) to follow all conventions:
