@@ -74,6 +74,9 @@ public class EdcController {
             if (!PatternStore.URL_PATTERN.matcher(dspUrl).matches()) {
                 return ResponseEntity.badRequest().build();
             }
+            if (!PatternStore.BPNL_PATTERN.matcher(partnerBpnl).matches()) {
+                return ResponseEntity.badRequest().build();
+            }
             DspaceVersionParams dspaceVersionParams = edcAdapter.getPartnerDspaceVersionParams(partnerBpnl, dspUrl);
             var catalogResponse = edcAdapter.getCatalogResponse(dspaceVersionParams, null);
             if (catalogResponse != null && catalogResponse.isSuccessful()) {

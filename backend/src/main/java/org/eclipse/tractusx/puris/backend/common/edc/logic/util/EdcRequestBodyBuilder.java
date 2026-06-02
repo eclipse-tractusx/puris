@@ -343,8 +343,8 @@ public class EdcRequestBodyBuilder {
      * Creates the request body for initiating a negotiation in DSP protocol.
      * Will use the policy terms as specified in the catalog item.
      *
-        * @param dcatCatalogItem     The catalog entry that describes the target asset
-        * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
+     * @param dcatCatalogItem     The catalog entry that describes the target asset
+     * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
      * @return The request body
      */
     public JsonNode buildAssetNegotiationBody(JsonNode dcatCatalogItem, DspaceVersionParams dspaceVersionParams) {
@@ -387,8 +387,8 @@ public class EdcRequestBodyBuilder {
      * Creates the request body for requesting a proxy pull transfer using the
      * DSP protocol and the Tractus-X-EDC.
      *
-        * @param contractID          The contract agreement id to transfer against
-        * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
+     * @param contractID          The contract agreement id to transfer against
+     * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
      * @return The request body
      */
     public JsonNode buildProxyPullRequestBody(String contractID, DspaceVersionParams dspaceVersionParams) {

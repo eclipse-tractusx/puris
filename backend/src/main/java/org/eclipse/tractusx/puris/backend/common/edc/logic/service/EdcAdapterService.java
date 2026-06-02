@@ -1325,8 +1325,8 @@ public class EdcAdapterService {
      * Helper method to check whether you and the contract offer from the other party have the
      * same framework agreement policy. The given catalogEntry must be expanded!
      *
-        * @param catalogEntry   the catalog item containing the desired api asset in expanded form
-        * @param profileVersion the policy profile version to validate against
+     * @param catalogEntry   the catalog item containing the desired api asset in expanded form
+     * @param profileVersion the policy profile version to validate against
      * @return true, if the policy matches yours, otherwise false
      */
     public boolean testContractPolicyConstraints(JsonNode catalogEntry, PolicyProfileVersionEnumeration profileVersion) {
