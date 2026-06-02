@@ -84,6 +84,12 @@ feather (4.29)
 * SPDX-FileCopyrightText: https://github.com/International-Data-Spaces-Association/ids-specification/blob/main/LICENSE
 * Source URL: https://international-data-spaces-association.github.io/ids-specification/2024-1/common/schema/context.json
 
+#### dspace-2025-1 ([main](./backend/src/main/resources/json-ld/dspace-2025-1.jsonld), [test](./backend/src/test/resources/json-ld/dspace-2025-1.jsonld))
+
+* SPDX-License-Identifier: Apache-2.0
+* SPDX-FileCopyrightText: https://github.com/eclipse-dataspace-protocol-base/DataspaceProtocol/blob/main/LICENSE
+* Source URL: https://eclipse-dataspace-protocol-base.github.io/DataspaceProtocol/2025-1/message/schema/dspace.jsonld
+
 #### edc-v1 ([main](./backend/src/main/resources/json-ld/edc-v1.jsonld), [test](./backend/src/test/resources/json-ld/edc-v1.jsonld))
 
 * SPDX-License-Identifier: Apache-2.0
