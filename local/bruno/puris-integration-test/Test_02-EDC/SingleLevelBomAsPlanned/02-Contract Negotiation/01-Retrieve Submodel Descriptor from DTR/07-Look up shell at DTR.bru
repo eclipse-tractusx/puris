@@ -20,7 +20,7 @@ headers {
 script:pre-request {
   const btoa = require("btoa");
   
-  let query = "{\"name\":\"manufacturerPartId\",\"value\":\"" + bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER") + "\"}";
+  let query = "{\"name\":\"manufacturerPartId\",\"value\":\"" + bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER") + "\"}";
   query += ",{\"name\":\"digitalTwinType\",\"value\":\"PartType\"}";
   query += ",{\"name\":\"manufacturerId\",\"value\":\"" + bru.getEnvVar("SUPPLIER_BPNS") + "\"}";
   const encodedQuery = btoa(query)

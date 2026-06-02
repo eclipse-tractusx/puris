@@ -17,8 +17,8 @@ headers {
 
 body:json {
   {
-    "parentOwnMaterialNumber": "{{MATERIAL_NUMBER_SUPPLIER}}",
-    "childOwnMaterialNumber": "{{MATERIAL_NUMBER_SUPPLIER_RAW}}",
+    "parentOwnMaterialNumber": "{{SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER}}",
+    "childOwnMaterialNumber": "{{RAW_MATERIAL_MATERIAL_NUMBER_SUPPLIER}}",
     "quantity": 1.0,
     "measurementUnit": "unit:piece",
     "validFrom": "2024-01-01T00:00:00.000Z",
@@ -33,12 +33,12 @@ tests {
   
   test("Verify created relation has correct parent", function() {
       const response = res.getBody();
-      expect(response.parentOwnMaterialNumber).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
+      expect(response.parentOwnMaterialNumber).to.equal(bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER"));
   });
   
   test("Verify created relation has correct child", function() {
       const response = res.getBody();
-      expect(response.childOwnMaterialNumber).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER_RAW"));
+      expect(response.childOwnMaterialNumber).to.equal(bru.getEnvVar("RAW_MATERIAL_MATERIAL_NUMBER_SUPPLIER"));
   });
   
   test("Verify quantity is correct", function() {

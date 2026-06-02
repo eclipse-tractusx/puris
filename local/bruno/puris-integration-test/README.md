@@ -103,7 +103,7 @@ There are 5 Deliveries created for each collection. They all share the same
 
 #### Supplier deliveries
 
-- ownMaterialNumber (MATERIAL_NUMBER_SUPPLIER)
+- ownMaterialNumber (SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER)
 - partnerBpnl (CUSTOMER_BPNL)
 
 | Departure   | Type       | Arrival      | Type       | Quantity   | Incoterm       | Origin BPNA set | Destination BPNA set | Customer Order Number | Customer Position Number | Supplier Order Number |
@@ -116,7 +116,7 @@ There are 5 Deliveries created for each collection. They all share the same
 
 #### Customer deliveries
 
-- ownMaterialNumber (MATERIAL_NUMBER_CUSTOMER)
+- ownMaterialNumber (SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER)
 - partnerBpnl (SUPPLIER_BPNL)
 
 | Departure   | Type       | Arrival      | Type       | Quantity   | Incoterm       | Origin BPNA set | Destination BPNA set | Customer Order Number | Customer Position Number | Supplier Order Number |

@@ -29,6 +29,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 import java.util.Date;
@@ -45,7 +47,7 @@ public class ChildData {
 
     @NotNull
     @Valid
-    private ItemQuantity quantity;
+    private ItemQuantityEntity quantity;
 
     @Nullable
     private Date lastModifiedOn;
@@ -64,7 +66,7 @@ public class ChildData {
 
     @JsonCreator
     public ChildData(@JsonProperty(value = "createdOn") Date createdOn,
-                     @JsonProperty(value = "quantity") ItemQuantity quantity,
+                     @JsonProperty(value = "quantity") ItemQuantityEntity quantity,
                      @JsonProperty(value = "lastModifiedOn") Date lastModifiedOn,
                      @JsonProperty(value = "validityPeriod") ValidityPeriodEntity validityPeriod,
                      @JsonProperty(value = "businessPartner") String businessPartner,

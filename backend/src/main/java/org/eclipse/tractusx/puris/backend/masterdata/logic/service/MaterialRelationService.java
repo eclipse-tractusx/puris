@@ -54,11 +54,7 @@ public class MaterialRelationService {
         if (!validator.apply(materialRelation)) {
             throw new IllegalArgumentException("Invalid material relation");
         }
-        MaterialRelation existingRelation = materialRelationRepository.findAll().stream()
-                .filter(rel -> rel.getParentOwnMaterialNumber().equals(materialRelation.getParentOwnMaterialNumber())
-                        && rel.getChildOwnMaterialNumber().equals(materialRelation.getChildOwnMaterialNumber()))
-                .findFirst()
-                .orElse(null);
+        MaterialRelation existingRelation = findExistingRelation(materialRelation);
         if (existingRelation != null) {
             log.warn("MaterialRelation between parent '{}' and child '{}' already exists.",
                     materialRelation.getParentOwnMaterialNumber(), materialRelation.getChildOwnMaterialNumber());
@@ -131,6 +127,12 @@ public class MaterialRelationService {
         return materialRelationRepository.findAllByParentOwnMaterialNumber(parentOwnMaterialNumber);
     }
 
+    protected MaterialRelation findExistingRelation(MaterialRelation materialRelation) {
+        return materialRelationRepository.findByParentOwnMaterialNumberAndChildOwnMaterialNumber(
+            materialRelation.getParentOwnMaterialNumber(),
+            materialRelation.getChildOwnMaterialNumber());
+    }
+
     /**
      * Validates a given material relation
      * @param   materialRelation    the material relation entity to validate
@@ -143,11 +145,9 @@ public class MaterialRelationService {
             materialRelation.getQuantity() > 0 &&
             materialRelation.getMeasurementUnit() != null &&
             (
-                materialRelation.getValidTo() == null || 
-                (
-                    materialRelation.getValidFrom() != null &&
-                    materialRelation.getValidFrom().compareTo(materialRelation.getValidTo()) < 0
-                )
+                materialRelation.getValidFrom() == null ||
+                materialRelation.getValidTo() == null ||
+                materialRelation.getValidFrom().compareTo(materialRelation.getValidTo()) < 0
             );
     }
 }

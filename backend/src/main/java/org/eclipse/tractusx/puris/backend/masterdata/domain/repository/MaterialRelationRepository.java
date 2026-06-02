@@ -28,4 +28,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface MaterialRelationRepository extends JpaRepository<MaterialRelation, UUID> {
 
 	List<MaterialRelation> findAllByParentOwnMaterialNumber(String parentOwnMaterialNumber);
+
+	MaterialRelation findByParentOwnMaterialNumberAndChildOwnMaterialNumber(
+		String parentOwnMaterialNumber,
+		String childOwnMaterialNumber);
 }

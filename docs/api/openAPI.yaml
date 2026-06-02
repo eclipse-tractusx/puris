@@ -151,7 +151,7 @@ components:
           maxItems: 50
           type: string
         quantity:
-          $ref: '#/components/schemas/ItemQuantity'
+          $ref: '#/components/schemas/ItemQuantityEntity'
         validityPeriod:
           $ref: '#/components/schemas/ValidityPeriodEntity'
       required:
@@ -681,19 +681,6 @@ components:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
-      type: object
-    ItemQuantity:
-      additionalProperties: false
-      properties:
-        measurementUnit:
-          maxItems: 50
-          type: string
-        quantityNumber:
-          format: double
-          type: number
-      required:
-      - measurementUnit
-      - quantityNumber
       type: object
     ItemQuantityEntity:
       additionalProperties: false
@@ -3429,8 +3416,8 @@ paths:
       - material-relation-controller
     put:
       description: Updates an existing MaterialRelation entity with the data given
-        in the request body. The fields validFrom and validTo can optionally be set.If
-        validto is set, validFrom is also required and needs to be before validTo
+        in the request body. The fields validFrom and validTo can optionally be set.
+        If validto is set, validFrom is also required and needs to be before validTo
       operationId: updateMaterialRelation
       requestBody:
         content:

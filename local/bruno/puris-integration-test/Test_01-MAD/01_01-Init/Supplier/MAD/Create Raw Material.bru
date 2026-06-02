@@ -19,7 +19,7 @@ body:json {
   {
     "materialFlag": true,
     "productFlag": false,
-    "ownMaterialNumber": "{{MATERIAL_NUMBER_SUPPLIER_RAW}}",
+    "ownMaterialNumber": "{{RAW_MATERIAL_MATERIAL_NUMBER_SUPPLIER}}",
     "name": "Silicon Wafer "
   }
 }
@@ -31,7 +31,7 @@ tests {
   
   test("Verify material was created correctly", function() {
       const response = res.getBody();
-      expect(response.ownMaterialNumber).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER_RAW"));
+      expect(response.ownMaterialNumber).to.equal(bru.getEnvVar("RAW_MATERIAL_MATERIAL_NUMBER_SUPPLIER"));
       expect(response.materialFlag).to.equal(true);
       expect(response.productFlag).to.equal(false);
   });

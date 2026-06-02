@@ -59,10 +59,9 @@ const createParnerColumns = () => {
                 const { addresses } = data.row;
                 if (!addresses || addresses.length === 0) {
                     return (
-                        <Box display="flex" alignItems="center" justifyContent="center" width="100%" height="100%">-</Box>
+                        <Box display="flex" alignItems="center" width="100%" height="100%">-</Box>
                     );
                 }
-
                 return (
                     <Box
                         display="flex"
@@ -95,7 +94,6 @@ const createParnerColumns = () => {
                         <Box display="flex" alignItems="center" justifyContent="center" width="100%" height="100%">-</Box>
                     );
                 }
-
                 return (
                     <Box
                         display="flex"
@@ -290,26 +288,34 @@ export const MasterDataView = () => {
                         {
                             headerName: 'Valid From',
                             field: 'validFrom',
-                            headerAlign: 'center',
-                            flex: 1.5,
-                            renderCell: (data: { row: MaterialRelation }) => data.row.validFrom ? (
-                                <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                                    <Box>{new Date(data.row.validFrom).toLocaleDateString('en-GB')}</Box>
-                                    <Box>{new Date(data.row.validFrom).toLocaleTimeString('en-GB')}</Box>
-                                </Stack>
-                            ) : <Typography variant="body2"> - </Typography>
+                            flex: .5,
+                            renderCell: (data: { row: MaterialRelation }) => 
+                                <Box>
+                                    {
+                                        data.row.validFrom ? (
+                                            <Stack display="flex" width="100%" height="100%">
+                                                <Box>{new Date(data.row.validFrom).toLocaleDateString('en-GB')}</Box>
+                                                <Box>{new Date(data.row.validFrom).toLocaleTimeString('en-GB')}</Box>
+                                            </Stack>
+                                        ) : <Typography variant="body2"> - </Typography>
+                                    }
+                                </Box>
                         },
                         {
                             headerName: 'Valid To',
                             field: 'validTo',
-                            headerAlign: 'center',
-                            flex: 1.5,
-                            renderCell: (data: { row: MaterialRelation }) => data.row.validTo ? (
-                                <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                                    <Box>{new Date(data.row.validTo).toLocaleDateString('en-GB')}</Box>
-                                    <Box>{new Date(data.row.validTo).toLocaleTimeString('en-GB')}</Box>
-                                </Stack>
-                            ) : <Typography variant="body2"> - </Typography>
+                            flex: .5,
+                            renderCell: (data: { row: MaterialRelation }) => 
+                                <Box>
+                                    {
+                                        data.row.validTo ? (
+                                            <Stack display="flex" width="100%" height="100%">
+                                                <Box>{new Date(data.row.validTo).toLocaleDateString('en-GB')}</Box>
+                                                <Box>{new Date(data.row.validTo).toLocaleTimeString('en-GB')}</Box>
+                                            </Stack>
+                                        ) : <Typography variant="body2"> - </Typography>
+                                    }
+                                </Box>
                         },
                     ]}
                     rows={mrs ?? []}

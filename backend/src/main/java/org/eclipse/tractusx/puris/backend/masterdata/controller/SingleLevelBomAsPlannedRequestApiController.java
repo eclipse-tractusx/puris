@@ -51,7 +51,6 @@ public class SingleLevelBomAsPlannedRequestApiController {
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
     private final Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
 
-
     @Autowired
     private VariablesService variablesService;
 

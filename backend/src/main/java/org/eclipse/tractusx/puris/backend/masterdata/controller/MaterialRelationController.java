@@ -140,7 +140,7 @@ public class MaterialRelationController {
     @Operation(
         summary = "Updates an existing Material Relation -- ADMIN ONLY", 
         description = 
-            "Updates an existing MaterialRelation entity with the data given in the request body. The fields validFrom and validTo can optionally be set." +
+            "Updates an existing MaterialRelation entity with the data given in the request body. The fields validFrom and validTo can optionally be set. " +
             "If validto is set, validFrom is also required and needs to be before validTo"
     )
     @ApiResponses(value = {

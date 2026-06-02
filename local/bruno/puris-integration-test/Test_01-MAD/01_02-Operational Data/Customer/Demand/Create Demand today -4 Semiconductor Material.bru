@@ -17,7 +17,7 @@ headers {
 body:json {
   {
     "partnerBpnl": "{{SUPPLIER_BPNL}}",
-    "ownMaterialNumber": "{{MATERIAL_NUMBER_CUSTOMER}}",
+    "ownMaterialNumber": "{{SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER}}",
     "quantity": 400.00,
     "measurementUnit": "unit:piece",
     "day": "{{DATE_TIME_CALCULATED}}",
@@ -49,7 +49,7 @@ tests {
       expect(responseJson.uuid).to.not.undefined;
   
       expect(responseJson).to.have.property("ownMaterialNumber");
-      expect(responseJson.ownMaterialNumber).to.equal(bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER"));
+      expect(responseJson.ownMaterialNumber).to.equal(bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER"));
   
       expect(responseJson).to.have.property("partnerBpnl");
       expect(responseJson.partnerBpnl).to.equal(bru.getEnvVar("SUPPLIER_BPNL"));

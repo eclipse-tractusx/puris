@@ -122,8 +122,8 @@ class SingleLevelBomAsPlannedSammMapperTest {
     private void assertChildData(ChildData childData, String expectedBpnl, double expectedQuantity, String expectedUnit) {
         assertNotNull(childData);
         assertEquals(expectedBpnl, childData.getBusinessPartner());
-        assertEquals(expectedQuantity, childData.getQuantity().getQuantityNumber());
-        assertEquals(expectedUnit, childData.getQuantity().getMeasurementUnit());
+        assertEquals(expectedQuantity, childData.getQuantity().getValue());
+        assertEquals(expectedUnit, childData.getQuantity().getUnit().getValue());
     }
 
     private void setupSingleChildRelation() {
@@ -233,8 +233,8 @@ class SingleLevelBomAsPlannedSammMapperTest {
 
         ChildData childData = findChildByCxId(result, mpr1.getPartnerCXNumber());
         assertNotNull(childData.getQuantity());
-        assertEquals(2.5, childData.getQuantity().getQuantityNumber());
-        assertEquals("unit:piece", childData.getQuantity().getMeasurementUnit());
+        assertEquals(2.5, childData.getQuantity().getValue());
+        assertEquals("unit:piece", childData.getQuantity().getUnit().getValue());
         assertNotNull(childData.getCreatedOn());
         assertNotNull(childData.getLastModifiedOn());
         assertInstanceOf(Date.class, childData.getCreatedOn());

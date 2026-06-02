@@ -19,7 +19,7 @@ headers {
 }
 
 script:pre-request {
-  var plain = bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER")
+  var plain = bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER")
   var encoded = Buffer.from(plain).toString("base64")
   bru.setVar("B64_MNR_SUPPLIER", encoded)
 }
@@ -42,13 +42,13 @@ tests {
   
       expect(stockNy).to.have.property("material");
       expect(stockNy.material).to.have.property("materialNumberCustomer");
-      expect(stockNy.material.materialNumberCustomer).to.equal(bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER"));
+      expect(stockNy.material.materialNumberCustomer).to.equal(bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER"));
   
       expect(stockNy.material).to.have.property("materialNumberSupplier");
-      expect(stockNy.material.materialNumberSupplier).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
+      expect(stockNy.material.materialNumberSupplier).to.equal(bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER"));
   
       expect(stockNy.material).to.have.property("materialNumberCx");
-      expect(stockNy.material.materialNumberCx).to.equal(bru.getEnvVar("MATERIAL_NUMBER_CX"));
+      expect(stockNy.material.materialNumberCx).to.equal(bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_CX"));
   
       expect(stockNy.material).to.have.property("materialFlag");
       expect(stockNy.material.materialFlag).to.be.false;
@@ -74,7 +74,7 @@ tests {
   
       expect(stockLa).to.have.property("material");
       expect(stockLa.material).to.have.property("materialNumberSupplier");
-      expect(stockLa.material.materialNumberSupplier).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
+      expect(stockLa.material.materialNumberSupplier).to.equal(bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER"));
   
       expect(stockLa).to.have.property("stockLocationBpns");
       expect(stockLa.stockLocationBpns).to.equal(bru.getEnvVar("SUPPLIER_BPNS2"));

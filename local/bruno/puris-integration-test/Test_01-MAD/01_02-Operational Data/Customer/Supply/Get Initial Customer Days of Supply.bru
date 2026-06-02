@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{CUSTOMER_PURIS_BACKEND}}/catena/days-of-supply/customer?bpnl={{SUPPLIER_BPNL}}&siteBpns={{CUSTOMER_BPNS}}&numberOfDays=28&materialNumber={{MATERIAL_NUMBER_CUSTOMER_BASE64}}
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/days-of-supply/customer?bpnl={{SUPPLIER_BPNL}}&siteBpns={{CUSTOMER_BPNS}}&numberOfDays=28&materialNumber={{SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER_BASE64}}
   body: none
   auth: none
 }
@@ -14,7 +14,7 @@ params:query {
   bpnl: {{SUPPLIER_BPNL}}
   siteBpns: {{CUSTOMER_BPNS}}
   numberOfDays: 28
-  materialNumber: {{MATERIAL_NUMBER_CUSTOMER_BASE64}}
+  materialNumber: {{SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER_BASE64}}
 }
 
 headers {
