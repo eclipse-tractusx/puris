@@ -1,0 +1,93 @@
+{
+  "@context": {
+    "cx-policy": "https://w3id.org/catenax/2025/9/policy/",
+    "odrl": "https://w3id.org/catenax/2025/9/policy/odrl.jsonld",
+    "access": {
+      "@id": "cx-policy:access"
+    },
+    "AffiliatesBpnl": {
+      "@id": "cx-policy:AffiliatesBpnl"
+    },
+    "AffiliatesRegion": {
+      "@id": "cx-policy:AffiliatesRegion"
+    },
+    "BusinessPartnerGroup": {
+      "@id": "cx-policy:BusinessPartnerGroup"
+    },
+    "BusinessPartnerNumber": {
+      "@id": "cx-policy:BusinessPartnerNumber"
+    },
+    "ConfidentialInformationMeasures": {
+      "@id": "cx-policy:ConfidentialInformationMeasures"
+    },
+    "ConfidentialInformationSharing": {
+      "@id": "cx-policy:ConfidentialInformationSharing"
+    },
+    "ContractReference": {
+      "@id": "cx-policy:ContractReference"
+    },
+    "ContractTermination": {
+      "@id": "cx-policy:ContractTermination"
+    },
+    "DataFrequency": {
+      "@id": "cx-policy:DataFrequency"
+    },
+    "DataProvisioningEndDate": {
+      "@id": "cx-policy:DataProvisioningEndDate"
+    },
+    "DataProvisioningEndDurationDays": {
+      "@id": "cx-policy:DataProvisioningEndDurationDays"
+    },
+    "DataUsageEndDate": {
+      "@id": "cx-policy:DataUsageEndDate"
+    },
+    "DataUsageEndDurationDays": {
+      "@id": "cx-policy:DataUsageEndDurationDays"
+    },
+    "DataUsageEndDefinition": {
+      "@id": "cx-policy:DataUsageEndDefinition"
+    },
+    "ExclusiveUsage": {
+      "@id": "cx-policy:ExclusiveUsage"
+    },
+    "FrameworkAgreement": {
+      "@id": "cx-policy:FrameworkAgreement"
+    },
+    "JurisdictionLocation": {
+      "@id": "cx-policy:JurisdictionLocation"
+    },
+    "JurisdictionLocationReference": {
+      "@id": "cx-policy:JurisdictionLocationReference"
+    },
+    "Liability": {
+      "@id": "cx-policy:Liability"
+    },
+    "ManagedLegalEntityBpnl": {
+      "@id": "cx-policy:ManagedLegalEntityBpnl"
+    },
+    "ManagedLegalEntityRegion": {
+      "@id": "cx-policy:ManagedLegalEntityRegion"
+    },
+    "Membership": {
+      "@id": "cx-policy:Membership"
+    },
+    "Precedence": {
+      "@id": "cx-policy:Precedence"
+    },
+    "UsagePurpose": {
+      "@id": "cx-policy:UsagePurpose"
+    },
+    "UsageRestriction": {
+      "@id": "cx-policy:UsageRestriction"
+    },
+    "VersionChanges": {
+      "@id": "cx-policy:VersionChanges"
+    },
+    "Warranty": {
+      "@id": "cx-policy:Warranty"
+    },
+    "WarrantyDuration": {
+      "@id": "cx-policy:WarrantyDuration"
+    }
+  }
+}

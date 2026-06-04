@@ -159,3 +159,16 @@ databaseChangeLog:
                     name: partner_bpnl
                     type: VARCHAR(255)
               tableName: single_level_bom_as_planned_contract_mapping
+  - changeSet:
+      id: "7"
+      author: ReneSchroederLJ
+      changes:
+        - addColumn:
+            tableName: partner
+            columns:
+              - column:
+                  name: policy_profile_version
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+                  defaultValueNumeric: 0

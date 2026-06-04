@@ -62,7 +62,7 @@ Example Access Policy creation request used:
     "http://www.w3.org/ns/odrl.jsonld",
     {
       "edc": "https://w3id.org/edc/v0.0.1/ns/",
-      "cx-policy": "https://w3id.org/catenax/policy/"
+      "cx-policy": "https://w3id.org/catenax/2025/9/policy/"
     }
   ],
   "@type": "PolicyDefinitionRequestDto",
@@ -137,7 +137,7 @@ Example for Submodels based on following configurations:
     "http://www.w3.org/ns/odrl.jsonld",
     {
       "edc": "https://w3id.org/edc/v0.0.1/ns/",
-      "cx-policy": "https://w3id.org/catenax/policy/"
+      "cx-policy": "https://w3id.org/catenax/2025/9/policy/"
     }
   ],
   "@type": "PolicyDefinitionRequestDto",
@@ -153,13 +153,13 @@ Example for Submodels based on following configurations:
           "and": [
             {
               "@type": "LogicalConstraint",
-              "leftOperand": "https://w3id.org/catenax/policy/FrameworkAgreement",
+              "leftOperand": "https://w3id.org/catenax/2025/9/policy/FrameworkAgreement",
               "operator": "eq",
               "rightOperand": "Puris:1.0"
             },
             {
               "@type": "LogicalConstraint",
-              "leftOperand": "https://w3id.org/catenax/policy/UsagePurpose",
+              "leftOperand": "https://w3id.org/catenax/2025/9/policy/UsagePurpose",
               "operator": "eq",
               "rightOperand": "cx.puris.base:1"
             }

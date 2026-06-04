@@ -1191,6 +1191,12 @@ components:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
+        policyProfileVersion:
+          enum:
+          - profile2405
+          - profile2509
+          maxItems: 50
+          type: string
         sites:
           items:
             $ref: '#/components/schemas/Site'
@@ -1315,6 +1321,12 @@ components:
         name:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        policyProfileVersion:
+          enum:
+          - profile2405
+          - profile2509
+          maxItems: 50
           type: string
         sites:
           items:

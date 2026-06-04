@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2024 Volkswagen AG
+ * Copyright (c) 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
+ * (represented by Fraunhofer ISST)
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -23,54 +25,74 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.OkHttpClient;
+
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DspProtocolVersionEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.DspaceVersionParams;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
+import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
-import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.lang.reflect.Field;
-import java.util.regex.Pattern;
+import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class EdcAdapterServiceTest {
 
-    private static final OkHttpClient CLIENT = new OkHttpClient();
     @Mock
     private VariablesService variablesService;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     @Mock
     private EdcRequestBodyBuilder edcRequestBodyBuilder;
 
     @Mock
     private EdcContractMappingService edcContractMappingService;
 
-    @InjectMocks
+    // use setup to inject mocks on our own
     private EdcAdapterService edcAdapterService;
 
-    private final Pattern urlPattern = PatternStore.URL_PATTERN;
+    @Mock
+    private VariablesService variableService;
 
     private final JsonLdUtils jsonLdUtils = new JsonLdUtils();
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
+        edcRequestBodyBuilder = new EdcRequestBodyBuilder(
+            new DtrSecurityConfiguration(),
+            variablesService,
+            objectMapper
+        );
 
-        // make variablesService mockable
-        Field field = EdcAdapterService.class.getDeclaredField("variablesService");
-        field.setAccessible(true);
-        field.set(edcAdapterService, variablesService);
+        edcAdapterService = new EdcAdapterService(
+            objectMapper,
+            variablesService,
+            edcRequestBodyBuilder,
+            edcContractMappingService,
+            jsonLdUtils
+        );
+
+        edcAdapterService = org.mockito.Mockito.spy(edcAdapterService);
     }
 
     /**
@@ -97,11 +119,11 @@ public class EdcAdapterServiceTest {
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
-            "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
+            "            \"odrl:rightOperand\" : \"DataExchangeGovernance:1.0\"\n" +
             "          }, {\n" +
             "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:UsagePurpose\"},\n" +
             "            \"odrl:operator\" : {\n" +
-            "              \"@id\" : \"odrl:eq\"\n" +
+            "              \"@id\" : \"odrl:isAnyOf\"\n" +
             "            },\n" +
             "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
             "          } ]\n" +
@@ -115,7 +137,7 @@ public class EdcAdapterServiceTest {
             "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
             "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
             "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
-            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
             "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
             "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
             "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
@@ -124,16 +146,20 @@ public class EdcAdapterServiceTest {
             "}";
 
         JsonNode validJsonNode = objectMapper.readTree(validJson);
-        validJsonNode = jsonLdUtils.expand(validJsonNode);
+        validJsonNode = jsonLdUtils.expand(validJsonNode, variableService.getEdcProfileVersion());
         System.out.println(validJsonNode.toPrettyString());
 
+        // per specifciation jsonLd wraps into an array if multiple entries, thus take it.
+        if (validJsonNode.isArray()) {
+            validJsonNode = validJsonNode.get(0);
+        }
 
         // when
-        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
+        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
         when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         assertTrue(result);
     }
@@ -164,13 +190,13 @@ public class EdcAdapterServiceTest {
             "            \"odrl:operator\" : {\n" +
             "              \"@id\" : \"odrl:eq\"\n" +
             "            },\n" +
-            "            \"odrl:rightOperand\" : \"Puris:0.1\"\n" +
+            "            \"odrl:rightOperand\" : \"DataExchangeGovernance:0.1\"\n" +
             "          }, {\n" +
             "            \"odrl:leftOperand\" : {\n" +
             "              \"@id\" : \"cx-policy:UsagePurpose\"\n" +
             "            },\n" +
             "            \"odrl:operator\" : {\n" +
-            "              \"@id\" : \"odrl:eq\"\n" +
+            "              \"@id\" : \"odrl:isAnyOf\"\n" +
             "            },\n" +
             "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
             "          } ]\n" +
@@ -184,7 +210,7 @@ public class EdcAdapterServiceTest {
             "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
             "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
             "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
-            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
             "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
             "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
             "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
@@ -193,14 +219,18 @@ public class EdcAdapterServiceTest {
             "}";
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
-        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
+
+        // per specifciation jsonLd wraps into an array if multiple entries, thus take it.
+        if (invalidJsonNode.isArray()) {
+            invalidJsonNode = invalidJsonNode.get(0);
+        }
 
         // when
-        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
-        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         assertFalse(result);
     }
@@ -228,9 +258,9 @@ public class EdcAdapterServiceTest {
             "              \"@id\" : \"cx-policy:FrameworkAgreement\"\n" +
             "            },\n" +
             "            \"odrl:operator\" : {\n" +
-            "              \"@id\" : \"odrl:eq\"\n" +
+            "              \"@id\" : \"odrl:isAnyOf\"\n" +
             "            },\n" +
-            "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
+            "            \"odrl:rightOperand\" : \"DataExchangeGovernance:1.0\"\n" +
             "          }\n" +
             "        }\n" +
             "      },\n" +
@@ -242,7 +272,7 @@ public class EdcAdapterServiceTest {
             "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
             "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
             "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
-            "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+            "        \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
             "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
             "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
             "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
@@ -251,14 +281,10 @@ public class EdcAdapterServiceTest {
             "}";
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
-        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
-
-        // when
-        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
-        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         assertFalse(result);
     }
@@ -273,18 +299,98 @@ public class EdcAdapterServiceTest {
     public void unexpectedRule_testContractPolicyConstraints_fails(String input) throws JsonProcessingException {
         // given
         JsonNode invalidJsonNode = objectMapper.readTree(input);
-        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode);
+        invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
         System.out.println(invalidJsonNode.toPrettyString());
 
-        // when
-        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("Puris:1.0");
-        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
-
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode);
+        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         assertFalse(result);
     }
 
+    /**
+     * checks whether the dspaceVersionParams is correctly built based on jsonLd
+     *
+     * @throws IoException if request fails
+     */
+    @Test
+    public void dspaceVersionParamsEndpointGiven_getDspaceVersionParams_returnsEndpointInformation() throws IOException {
+        // given
+        String expectedCounterPartyAddress = "https://provider.domain.com/api/dsp/2025-1";
+        String expectedProtocolString = "dataspace-protocol-http:2025-1";
+        String expectedCounterPartyId = "did:web:one-example.com"; 
+        DspaceVersionParams expectedDspaceVerstionParams = new DspaceVersionParams(
+            expectedCounterPartyId, 
+            expectedCounterPartyAddress,
+            DspProtocolVersionEnum.fromVersion(expectedProtocolString));
+
+        String validJsonLd = "[{\n" + //
+                        "  \"@context\": {\n" + //
+                        "    \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" + //
+                        "    \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\"\n" + //
+                        "  },\n" + //
+                        "  \"edc:counterPartyId\": \"" + expectedCounterPartyId + "\",\n" + //
+                        "  \"edc:counterPartyAddress\": \"" + expectedCounterPartyAddress + "\",\n" + //
+                        "  \"edc:protocol\": \"" + expectedProtocolString + "\"\n" + //
+                        "}, {\n" + //
+                        "  \"@context\": {\n" + //
+                        "    \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" + //
+                        "    \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\"\n" + //
+                        "  },\n" + //
+                        "  \"edc:counterPartyId\": \"http://other-ignored-connector.com/v1/dsp\",\n" + //
+                        "  \"edc:counterPartyAddress\": \"BPNL1111111111XX\",\n" + //
+                        "  \"edc:protocol\": \"" + DspProtocolVersionEnum.V_0_8.getVersion() + "\"\n" + //
+                        "}]";
+
+        String partnerBpnl = "BPNL4444444444XX";
+        String partnerDspUrl = "http://customer-control-plane:8184/api/v1/dsp"; 
+
+        // when
+        Response mockResponse = mock(Response.class);
+        ResponseBody mockBody = mock(ResponseBody.class);
+        when(mockResponse.code()).thenReturn(200);
+        when(mockResponse.isSuccessful()).thenReturn(true);
+        when(mockResponse.body()).thenReturn(mockBody);
+        when(mockBody.string()).thenReturn(validJsonLd);
+
+        doReturn(mockResponse)
+            .when(edcAdapterService)
+            .sendPostRequest(any(), any());
+
+        // then
+        DspaceVersionParams actualDspaceVersionParams = edcAdapterService.getPartnerDspaceVersionParams(partnerBpnl, partnerDspUrl);
+
+        assertEquals(expectedDspaceVerstionParams, actualDspaceVersionParams);
+    }
+
+    /**
+     * checks whether the dspaceVersionParams is correctly built as fallback when no endpoint is given
+     *
+     * @throws IoException if request fails
+     */
+    @Test
+    public void dspaceVersionParamsEndpointNotGiven_getDspaceVersionParams_returnsFallbackInformation() throws IOException {
+        
+        String partnerBpnl = "BPNL4444444444XX";
+        String partnerDspUrl = "http://customer-control-plane:8184/api/v1/dsp"; 
+
+        DspaceVersionParams expectedDspaceVerstionParams = new DspaceVersionParams(
+            partnerBpnl,
+            partnerDspUrl,
+            DspProtocolVersionEnum.V_0_8);
+
+        // when
+        Response mockResponse = mock(Response.class);
+        when(mockResponse.code()).thenReturn(404);
+
+        doReturn(mockResponse)
+            .when(edcAdapterService)
+            .sendPostRequest(any(), any());
+
+        // then
+        DspaceVersionParams actualDspaceVersionParams = edcAdapterService.getPartnerDspaceVersionParams(partnerBpnl, partnerDspUrl);
+
+        assertEquals(expectedDspaceVerstionParams, actualDspaceVersionParams);
+    }
 
     private final static String unexpectedProhibition = "{\n" +
         "    \"@id\" : \"PartTypeInformationSubmodelApi@BPNL00000007RXRX\",\n" +
@@ -306,7 +412,7 @@ public class EdcAdapterServiceTest {
         "          }, {\n" +
         "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:UsagePurpose\"},\n" +
         "            \"odrl:operator\" : {\n" +
-        "              \"@id\" : \"odrl:eq\"\n" +
+        "              \"@id\" : \"odrl:isAnyOf\"\n" +
         "            },\n" +
         "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
         "          } ]\n" +
@@ -320,7 +426,7 @@ public class EdcAdapterServiceTest {
         "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
         "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
         "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
-        "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+        "        \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
         "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
         "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
         "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
@@ -348,7 +454,7 @@ public class EdcAdapterServiceTest {
         "          }, {\n" +
         "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:UsagePurpose\"},\n" +
         "            \"odrl:operator\" : {\n" +
-        "              \"@id\" : \"odrl:eq\"\n" +
+        "              \"@id\" : \"odrl:isAnyOf\"\n" +
         "            },\n" +
         "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
         "          } ]\n" +
@@ -362,7 +468,7 @@ public class EdcAdapterServiceTest {
         "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
         "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
         "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
-        "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+        "        \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
         "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
         "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
         "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +

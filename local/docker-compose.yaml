@@ -105,14 +105,14 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   dtr-customer:
-    image: tractusx/sldt-digital-twin-registry:0.10.0-RC1
+    image: tractusx/sldt-digital-twin-registry:0.11.0
     container_name: dtr-customer
     depends_on:
       postgres-all:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://dtr-customer:4243/actuator/health/readiness"]
-      interval: 4s
+      interval: 6s
       timeout: 3s
       retries: 40
     ports:
@@ -179,7 +179,7 @@ services:
       # edc.dcp.v08.forced: true
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://edc-customer-control-plane:8180/api/check/health"]
-      interval: 4s
+      interval: 6s
       timeout: 3s
       retries: 40
     ports:
@@ -206,7 +206,7 @@ services:
     container_name: customer-data-plane
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://edc-customer-data-plane:8280/api/check/health"]
-      interval: 4s
+      interval: 6s
       timeout: 3s
       retries: 40
     ports:
@@ -304,14 +304,14 @@ services:
       - "host.docker.internal:host-gateway" # Adjusts container's host file to allow for communication with docker-host machine
 
   dtr-supplier:
-    image: tractusx/sldt-digital-twin-registry:0.10.0-RC1
+    image: tractusx/sldt-digital-twin-registry:0.11.0
     container_name: dtr-supplier
     depends_on:
       postgres-all:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://dtr-supplier:4243/actuator/health/readiness"]
-      interval: 4s
+      interval: 6s
       timeout: 3s
       retries: 40
     ports:
@@ -345,7 +345,7 @@ services:
     container_name: supplier-control-plane
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://edc-supplier-control-plane:9180/api/check/health"]
-      interval: 4s
+      interval: 6s
       timeout: 3s
       retries: 40
     ports:
@@ -380,7 +380,7 @@ services:
     container_name: supplier-data-plane
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://edc-supplier-data-plane:9280/api/check/health"]
-      interval: 4s
+      interval: 6s
       timeout: 3s
       retries: 40
     ports:
