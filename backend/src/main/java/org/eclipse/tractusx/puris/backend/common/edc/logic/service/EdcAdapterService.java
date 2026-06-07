@@ -249,7 +249,7 @@ public class EdcAdapterService {
         result &= assetRegistration;
         log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
         result &= assetRegistration;
-        log.info("Registration of self-contracts successful {}", (assetRegistration = createPolicyAndContractDefForSelf()));
+        log.info("Registration of self-contracts successful {}", (assetRegistration = createPolicyAndContractDefForOwnPartner()));
         result &= assetRegistration;
         return result;
     }
@@ -284,17 +284,18 @@ public class EdcAdapterService {
      * 
      * @return true if all registrations were successful, otherwise false
      */
-    private boolean createPolicyAndContractDefForSelf() {
-        Partner self = new Partner();
-        self.setBpnl(variablesService.getOwnBpnl());
+    private boolean createPolicyAndContractDefForOwnPartner() {
+        Partner ownPartner = new Partner();
+        ownPartner.setPolicyProfileVersion(variablesService.getEdcProfileVersion());
+        ownPartner.setBpnl(variablesService.getOwnBpnl());
         
-        boolean result = createBpnlAndMembershipPolicyDefinitionForPartner(self);
+        boolean result = createBpnlAndMembershipPolicyDefinitionForPartner(ownPartner);
         log.info("Self policy definition registration {}", result ? "successful" : "failed");
         
         boolean contractReg = createSubmodelContractDefinitionForPartner(
             AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID,
             variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(),
-            self
+            ownPartner
         );
         log.info("Self-contract for SingleLevelBomAsPlanned {}", contractReg ? "successful" : "failed");
         
