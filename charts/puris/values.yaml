@@ -606,6 +606,7 @@ postgresql:
   auth:
     # -- Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file.
     existingSecret: "secret-puris-postgres-init"
+    # -- Database name of the root user. Must be different than customUser if provided.
     database: "postgres"
     # -- Username of the root user
     username: "postgres"
