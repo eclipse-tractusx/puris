@@ -75,16 +75,17 @@ public class JsonLdUtils {
             profile2405.DSPACE_NAMESPACE, prefix + "dspace-v08.jsonld",
             JsonLdConstants.DCAT_NAMESPACE, prefix + "dcat.jsonld",
             JsonLdConstants.EDC_NAMESPACE, prefix + "edc-v1.jsonld",
-            JsonLdConstants.TX_AUTH_NAMESPACE, prefix + "tx-auth-v1.jsonld",
+            JsonLdConstants.TX_AUTH_CONTEXT, prefix + "tx-auth-v1.jsonld",
             JsonLdConstants.TX_NAMESPACE, prefix + "tx-v1.jsonld"
         );
         Map<String, String> filesMap2509 = Map.of(
             profile2509.CX_POLICY_CONTEXT, prefix + "cx-policy-2509.jsonld",
             profile2509.ODRL_REMOTE_CONTEXT, prefix + "odrl-2025-1.jsonld",
             profile2509.DSPACE_NAMESPACE, prefix + "dspace-v1.jsonld",
+            JsonLdConstants.DSPACE_CONTEXT_2025_1, prefix + "dspace-2025-1.jsonld",
             JsonLdConstants.DCAT_NAMESPACE, prefix + "dcat.jsonld",
             JsonLdConstants.EDC_NAMESPACE, prefix + "edc-v1.jsonld",
-            JsonLdConstants.TX_AUTH_NAMESPACE, prefix + "tx-auth-v1.jsonld",
+            JsonLdConstants.TX_AUTH_CONTEXT, prefix + "tx-auth-v1.jsonld",
             JsonLdConstants.TX_NAMESPACE, prefix + "tx-v1.jsonld"
         );
 
