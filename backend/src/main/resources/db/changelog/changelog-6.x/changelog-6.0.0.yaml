@@ -1,6 +1,5 @@
 #
-# Copyright (c) 2025 Volkswagen AG
-# Copyright (c) 2025 Contributors to the Eclipse Foundation
+# Copyright (c) 2026 Volkswagen AG
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -19,7 +18,149 @@
 #
 databaseChangeLog:
   - changeSet:
-      id: "1"
+        id: "1"
+        author: ReneSchroederLJ
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: delivery_anonymized_contract_mapping_pkey
+                    name: partner_bpnl
+                    type: VARCHAR(255)
+              tableName: delivery_anonymized_contract_mapping
+  - changeSet:
+        id: "2"
+        author: OlgaIvkovic
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: item_stock_anonymized_contract_mapping_pkey
+                    name: partner_bpnl
+                    type: VARCHAR(255)
+              tableName: item_stock_anonymized_contract_mapping
+  - changeSet:
+        id: "3"
+        author: jakoballgaier
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: production_anonymized_contract_mapping_pkey
+                    name: partner_bpnl
+                    type: VARCHAR(255)
+              tableName: production_anonymized_contract_mapping
+  - changeSet:
+        id: "4"
+        author: ReneSchroederLJ
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: migration_task_pkey
+                    name: id
+                    type: UUID
+                    defaultValueComputed: "gen_random_uuid()"
+                - column:
+                    name: target_version
+                    type: VARCHAR(255)
+                    constraints:
+                      nullable: false
+                - column:
+                    name: status
+                    type: SMALLINT
+                    defaultValue: "0"
+                    constraints:
+                      nullable: false
+                - column:
+                    name: errors
+                    type: VARCHAR(255)
+              tableName: migration_task
+          - insert:
+              columns:
+                - column:
+                    name: target_version
+                    value: "6.0.0"
+              tableName: migration_task
+  - changeSet:
+      id: "5"
+      author: ReneSchroederLJ
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: material_relation
+      changes:
+        - createTable:
+            tableName: material_relation
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: material_relation_pkey
+              - column:
+                  name: parent_own_material_number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: child_own_material_number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: FLOAT8
+                  constraints:
+                    nullable: false
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: valid_from
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: valid_to
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: created_on
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: last_modified_on
+                  type: TIMESTAMP WITHOUT TIME ZONE
+  - changeSet:
+        id: "6"
+        author: gobica
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: single_level_bom_as_planned_contract_mapping_pkey
+                    name: partner_bpnl
+                    type: VARCHAR(255)
+              tableName: single_level_bom_as_planned_contract_mapping
+  - changeSet:
+      id: "7"
       author: ReneSchroederLJ
       changes:
         - addColumn:

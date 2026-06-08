@@ -1,0 +1,46 @@
+meta {
+  name: 05-Get Transfer By ID
+  type: http
+  seq: 5
+  tags: [
+    exchange-anonymized-data
+  ]
+}
+
+get {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/transferprocesses/{{DTR_TRANSFER_PROCESS_ID}}
+  body: none
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}
+
+body:json {
+  {
+      "@context": {
+          "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+      },
+      "assetId": "{{DTR_ASSET_ID}}",
+      "connectorAddress": "{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+      "connectorId": "{{SUPPLIER_BPNL}}",
+      "contractId": "{{DTR_CONTRACT_AGREEMENT_ID}}",
+      "transferType": "HttpData-PULL",
+      "dataDestination": {
+          "type": "HttpProxy"
+      },
+      "privateProperties": {
+          "receiverHttpEndpoint": "{{BACKEND_SERVICE}}"
+      },
+      "protocol": "dataspace-protocol-http"
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

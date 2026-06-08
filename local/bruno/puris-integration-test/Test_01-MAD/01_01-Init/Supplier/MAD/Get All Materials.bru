@@ -27,7 +27,7 @@ tests {
       const material = res.getBody()[0];
   
       expect(material).to.have.property("ownMaterialNumber");
-      expect(material.ownMaterialNumber).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
+      expect(material.ownMaterialNumber).to.equal(bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER"));
   });
   
 }

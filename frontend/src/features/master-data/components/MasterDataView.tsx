@@ -34,6 +34,10 @@ import { Add } from '@mui/icons-material';
 import { MaterialPartnerRelation } from '@models/types/data/material-partner-relation';
 import { getAllMaterialPartnerRelations, postMaterialPartnerRelation } from '@services/material-partner-relation-service';
 import { MaterialPartnerRelationModal } from './MaterialpartnerRelationModal';
+import { MaterialRelation } from '@models/types/data/material-relation';
+import { getAllMaterialRelations, postMaterialRelation } from '@services/material-relation-service';
+import { MaterialRelationModal } from './MaterialRelationsModal';
+import { getUnitOfMeasurement } from '@util/helpers';
 
 const getDirectionLabel = (row: Material): string => {
     if (row.materialFlag && row.productFlag) return 'Bidirectional';
@@ -55,10 +59,9 @@ const createParnerColumns = () => {
                 const { addresses } = data.row;
                 if (!addresses || addresses.length === 0) {
                     return (
-                        <Box display="flex" alignItems="center" justifyContent="center" width="100%" height="100%">-</Box>
+                        <Box display="flex" alignItems="center" width="100%" height="100%">-</Box>
                     );
                 }
-
                 return (
                     <Box
                         display="flex"
@@ -91,7 +94,6 @@ const createParnerColumns = () => {
                         <Box display="flex" alignItems="center" justifyContent="center" width="100%" height="100%">-</Box>
                     );
                 }
-
                 return (
                     <Box
                         display="flex"
@@ -117,9 +119,11 @@ export const MasterDataView = () => {
     const [materialModalOpen, setMaterialModalOpen] = useState<boolean>(false);
     const [partnerModalOpen, setPartnerModalOpen] = useState<boolean>(false);
     const [mprModalOpen, setMprModalOpen] = useState<boolean>(false);
+    const [mrModalOpen, setMrModalOpen] = useState<boolean>(false);
     const [materials, setMaterials] = useState<Material[]>([]);
     const [partners, setPartners] = useState<Partner[]>([]);
     const [mprs, setMprs] = useState<MaterialPartnerRelation[]>([]);
+    const [mrs, setMrs] = useState<MaterialRelation[]>([]);
     const { setTitle } = useTitle();
 
     const fetchMaterials = useCallback(async () => {
@@ -146,6 +150,14 @@ export const MasterDataView = () => {
         }
     }, []);
 
+    const fetchMrs = useCallback(async () => {
+        try {
+            setMrs(await getAllMaterialRelations());
+        } catch (error) {
+            console.error(error);
+        }
+    }, []);
+
     const handleSaveMaterial = async (material: Partial<Material>) => {
         await postMaterial(material);
         await fetchMaterials();
@@ -161,12 +173,18 @@ export const MasterDataView = () => {
         await fetchMprs();
     };
 
+    const handleSaveMr = async (mr: Partial<MaterialRelation>) => {
+        await postMaterialRelation(mr);
+        await fetchMrs();
+    };
+
     useEffect(() => {
         setTitle('Materials');
         fetchMaterials();
         fetchPartners();
         fetchMprs();
-    }, [setTitle, fetchMaterials, fetchPartners, fetchMprs]);
+        fetchMrs();
+    }, [setTitle, fetchMaterials, fetchPartners, fetchMprs, fetchMrs]);
 
     return (
         <>
@@ -241,6 +259,69 @@ export const MasterDataView = () => {
                     getRowId={(row) => row.ownMaterialNumber + '-' + row.partnerBpnl}
                     noRowsMsg='No material partner relations found.'
                 />
+
+                <Stack width='100%' direction="row" justifyContent="end" alignItems="center">
+                    {<Button variant="contained" sx={{ display: 'flex', gap: '.5rem' }} onClick={() => {
+                        setMrModalOpen(true);
+                    }}>
+                        <Add></Add> New Material Relation
+                    </Button>}
+                </Stack>
+
+                <Table
+                    title="Material Relations"
+                    columns={[
+                        { headerName: 'Parent Material Number', field: 'parentOwnMaterialNumber', flex: 1 },
+                        { headerName: 'Child Material Number', field: 'childOwnMaterialNumber', flex: 1 },
+                        {
+                            headerName: 'Quantity',
+                            field: 'quantity',
+                            flex: 1,
+                            renderCell: (data: { row: MaterialRelation }) => {
+                                return (
+                                    <Box display="flex" textAlign="center" alignItems="center" width="100%" height="100%">
+                                        {`${data.row.quantity} ${getUnitOfMeasurement(data.row.measurementUnit)}`}
+                                    </Box>
+                                );
+                            },
+                        },
+                        {
+                            headerName: 'Valid From',
+                            field: 'validFrom',
+                            flex: .5,
+                            renderCell: (data: { row: MaterialRelation }) => 
+                                <Box>
+                                    {
+                                        data.row.validFrom ? (
+                                            <Stack display="flex" width="100%" height="100%">
+                                                <Box>{new Date(data.row.validFrom).toLocaleDateString('en-GB')}</Box>
+                                                <Box>{new Date(data.row.validFrom).toLocaleTimeString('en-GB')}</Box>
+                                            </Stack>
+                                        ) : <Typography variant="body2"> - </Typography>
+                                    }
+                                </Box>
+                        },
+                        {
+                            headerName: 'Valid To',
+                            field: 'validTo',
+                            flex: .5,
+                            renderCell: (data: { row: MaterialRelation }) => 
+                                <Box>
+                                    {
+                                        data.row.validTo ? (
+                                            <Stack display="flex" width="100%" height="100%">
+                                                <Box>{new Date(data.row.validTo).toLocaleDateString('en-GB')}</Box>
+                                                <Box>{new Date(data.row.validTo).toLocaleTimeString('en-GB')}</Box>
+                                            </Stack>
+                                        ) : <Typography variant="body2"> - </Typography>
+                                    }
+                                </Box>
+                        },
+                    ]}
+                    rows={mrs ?? []}
+                    getRowId={(row) => row.parentMaterialNumber + '-' + row.childMaterialNumber}
+                    noRowsMsg='No material relations found.'
+                />
             </Stack>
 
             <MaterialInformationModal
@@ -263,6 +344,14 @@ export const MasterDataView = () => {
                 materials={materials}
                 partners={partners}
                 mprs={mprs}
+            />
+
+            <MaterialRelationModal
+                open={mrModalOpen}
+                onClose={() => setMrModalOpen(false)}
+                onSave={handleSaveMr}
+                allMaterials={materials}
+                mrs={mrs}
             />
         </>
     );

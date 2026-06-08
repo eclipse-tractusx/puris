@@ -6,12 +6,14 @@ script:pre-request {
     "profile2405": {
       namespace: "https://w3id.org/catenax/policy/",
       operator: "eq",
-      action: "odrl:use"
+      action: "odrl:use",
+      businessPartnerNumberRightOperand: "tx:BusinessPartnerNumber"
     },
     "profile2509": {
       namespace: "https://w3id.org/catenax/2025/9/policy/",
       operator: "isAnyOf",
-      action: "cx-policy:access"
+      action: "cx-policy:access",
+      businessPartnerNumberRightOperand: "cx-policy:BusinessPartnerNumber"
     }
 
   };
@@ -22,7 +24,14 @@ script:pre-request {
   bru.setVar("CUSTOMER_POLICY_NAMESPACE", policyProfileVersionMapping[customerProfileVersion].namespace)
   bru.setVar("CUSTOMER_POLICY_OPERATOR", policyProfileVersionMapping[customerProfileVersion].operator)
   bru.setVar("CUSTOMER_POLICY_ACTION", policyProfileVersionMapping[customerProfileVersion].action)
+  bru.setVar("SUPPLIER_POLICY_NAMESPACE", policyProfileVersionMapping[supplierProfileVersion].namespace)
+  bru.setVar("SUPPLIER_POLICY_OPERATOR", policyProfileVersionMapping[supplierProfileVersion].operator)
+  bru.setVar("SUPPLIER_POLICY_ACTION", policyProfileVersionMapping[supplierProfileVersion].action)
+  bru.setVar("SUPPLIER_BPN_RIGHTOPERAND", policyProfileVersionMapping[supplierProfileVersion].businessPartnerNumberRightOperand)
   bru.setVar("COMMON_POLICY_PROFILE_VERSION", commonVersion)
   bru.setVar("COMMON_POLICY_NAMESPACE", policyProfileVersionMapping[commonVersion].namespace)
   bru.setVar("COMMON_POLICY_OPERATOR", policyProfileVersionMapping[commonVersion].operator)
+}
+vars:pre-request {
+  EDC_NAMESPACE: https://w3id.org/edc/v0.0.1/ns/
 }

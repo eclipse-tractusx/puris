@@ -22,9 +22,9 @@ body:json {
     "material": {
       "materialFlag": false,
       "productFlag": true,
-      "materialNumberCustomer": "{{MATERIAL_NUMBER_CUSTOMER}}",
-      "materialNumberSupplier": "{{MATERIAL_NUMBER_SUPPLIER}}",
-      "materialNumberCx": "{{MATERIAL_NUMBER_CX}}",
+      "materialNumberCustomer": "{{SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER}}",
+      "materialNumberSupplier": "{{SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER}}",
+      "materialNumberCx": "{{SEMICONDUCTOR_MATERIAL_NUMBER_CX}}",
       "name": "Semiconductor"
     },
     "quantity": 1200,
@@ -61,7 +61,7 @@ tests {
   
       expect(responseJson).to.have.property("material");
       expect(responseJson.material).to.have.property("materialNumberSupplier");
-      expect(responseJson.material.materialNumberSupplier).to.equal(bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER"));
+      expect(responseJson.material.materialNumberSupplier).to.equal(bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER"));
   
       expect(responseJson).to.have.property("partner");
       expect(responseJson.partner).to.have.property("bpnl");

@@ -1,0 +1,38 @@
+meta {
+  name: Create Raw Material
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/materials
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+    "materialFlag": true,
+    "productFlag": false,
+    "ownMaterialNumber": "{{RAW_MATERIAL_MATERIAL_NUMBER_SUPPLIER}}",
+    "name": "Silicon Wafer "
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Verify material was created correctly", function() {
+      const response = res.getBody();
+      expect(response.ownMaterialNumber).to.equal(bru.getEnvVar("RAW_MATERIAL_MATERIAL_NUMBER_SUPPLIER"));
+      expect(response.materialFlag).to.equal(true);
+      expect(response.productFlag).to.equal(false);
+  });
+}

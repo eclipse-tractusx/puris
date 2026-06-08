@@ -179,6 +179,8 @@ frontend:
     appName: PURIS
     # -- The base URL for the backend base URL without further endpoints. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration.
     baseUrl: *domain
+    # -- The default production time for production creation
+    defaultProductionTime: 23:59
     # -- The endpoint for materials for the stock view
     endpointMaterials: stockView/materials
     # -- The endpoint for products for the stock view
@@ -225,6 +227,8 @@ frontend:
     endpointMaterialPartnerRelations: materialpartnerrelations
     # -- The endpoint for interfacing with partner data update batch
     endpointPartnerDataUpdateBatch: batch/partner-data-update
+    # -- The endpoint for interfacing with material relations
+    endpointMaterialRelations: material-relations
     rateLimiting:
       # -- Bucket zone limit for rate limiting in nginx.
       limit: 10m
@@ -468,6 +472,9 @@ backend:
     itemstocksubmodel:
       # -- Asset ID for ItemStockSubmodel API
       apiassetid: itemstocksubmodel-api-asset
+    itemstockanonymizedsubmodel:
+      # -- Asset ID for ItemStockAnonymizedSubmodel API
+      apiassetid: itemstockanonymizedsubmodel-api-asset
     productionsubmodel:
       # -- Asset ID for ProductionSubmodel API
       apiassetid: productionsubmodel-api-asset
@@ -480,6 +487,15 @@ backend:
     daysofsupplysubmodel:
       # -- Asset ID for DaysOfSupplySubmodel API
       apiassetid: daysofsupply-api-asset
+    deliveryanonymizedsubmodel:
+      # -- Asset ID for DeliveryAnonymizedSubmodel API
+      apiassetid: deliveryanonymizedsubmodel-api-asset
+    productionanonymizedsubmodel:
+      # -- Asset ID for ProductionAnonymizedSubmodel API
+      apiassetid: productionanonymizedsubmodel-api-asset
+    singlelevelbomasplannedsubmodel:
+      # -- Asset ID for SingleLevelBomAsPlannedSubmodel API
+      apiassetid: singlelevelbomasplannedsubmodel-api-asset
     notification:
       # -- Asset ID for Notification API
       apiassetid: notification-api-asset
@@ -575,10 +591,9 @@ backend:
 
 postgresql:
   image:
-    # -- workaround to use bitnamilegacy chart for version 12.12.x till committers align on new postgresql charts
-    repository: bitnamilegacy/postgresql
-    # -- workaround to use bitnamilegacy chart for version 12.12.x till committers align on new postgresql charts
-    tag: 15.4.0-debian-11-r45
+    registry: docker.io
+    repository: postgres
+    tag: "18.0"
   # -- Enable postgres by default, set to false to use existing postgres. Make sure to set
   # backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from
   # backend).
@@ -586,20 +601,24 @@ postgresql:
   # -- Possibility to override the name
   #  nameOverride: ""
   service:
-    ports:
-      # -- Port of postgres database.
-      postgresql: 5432
+    # -- Port of postgres database.
+    port: 5432
   auth:
-    # -- Name of the database.
-    database: "postgres"
     # -- Secret containing the password. For more information look into 'backend-secrets-postgres.yaml' file.
     existingSecret: "secret-puris-postgres-init"
-    # -- Username for the custom database user.
-    username: "puris"
-    # -- Password for the custom database user. Secret-key 'password'
+    # -- Database name of the root user. Must be different than customUser if provided.
+    database: "postgres"
+    # -- Username of the root user
+    username: "postgres"
+    # -- Password of the root user
     password: ""
-    # -- Password for the database. Secret-key 'postgres-password'.
-    passwordPostgres: ""
+  customUser:
+    # -- Name of the custom user to be created
+    name: "puris"
+    # -- Name for the custom database to be created and assigned to the custom user
+    database: "puris"
+    # -- Password to be used for the custom user
+    password: ""
 
 idp:
   # -- The URL to the IDP that should be used. Must contain protocol (http/https).
