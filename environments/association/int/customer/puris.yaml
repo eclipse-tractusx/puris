@@ -57,7 +57,7 @@ backend:
   # -- Scale to 0 for scaledown
   autoscaling:
     enabled: false
-  replicaCount: 0
+  replicaCount: 1
   env:
     LOGGING_LEVEL_ORG_ECLIPSE_TRACTUSX_PURIS_BACKEND: DEBUG
   ingress:
