@@ -16,7 +16,7 @@ spec:
         - -c
         - |
           echo "Starting backup..."
-          pg_dump -h customer-backend-postgresql -U postgres -d  -F c -f /migration/db.dump
+          pg_dump -h customer-backend-postgresql -U postgres -d postgres -F c -f /migration/db.dump
           echo "Backup complete. Verifying file size:"
           ls -lh /migration/db.dump
         env:
