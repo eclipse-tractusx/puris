@@ -31,6 +31,7 @@ The application follows the following Catena-X standards (business-wise) to the 
 | [CX-0146 Supply Chain Disruption Notifications 2.0.0](https://catenax-ev.github.io/docs/next/standards/CX-0146-SupplyChainDisruptionNotifications) | Compliant.              |
 | [CX-0018 Dataspace Connectivity v.4.1.1](https://catenax-ev.github.io/docs/next/standards/CX-0018-DataspaceConnectivity)                           | Compliant.              |
 
+
 ## Known Knows
 
 ### Data Sovereignty

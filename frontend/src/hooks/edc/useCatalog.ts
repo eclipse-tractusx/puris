@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import {config} from '@models/constants/config';
-import {RawCatalogData} from '@models/types/edc/catalog';
+import {CatalogConstraint, CatalogItem, CatalogOperation, CatalogPermission, RawCatalogData} from '@models/types/edc/catalog';
 import {useFetch} from '../useFetch';
 import {isErrorResponse} from '@util/helpers';
 import {Partner} from '@models/types/edc/partner';
@@ -32,22 +32,52 @@ export const useCatalog = (partner: Partner | null) => {
     } = useFetch<RawCatalogData>(partner ? config.app.BACKEND_BASE_URL +
         'edc/catalog?dspUrl=' + encodeURIComponent(partner.edcUrl) +
         '&partnerBpnl=' + encodeURIComponent(partner.bpnl) : undefined);
-    const catalog = data && !isErrorResponse(data)
-        ? (data['dcat:dataset']?.map((item) => {
-            return {
-                assetId: item['@id'],
-                assetType: item['dct:type']['@id'],
-                assetVersion: item['https://w3id.org/catenax/ontology/common#version'],
-                permission: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:permission'],
-                prohibitions: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:prohibition'],
-                obligations: item['odrl:hasPolicy'] && item['odrl:hasPolicy']['odrl:obligation'],
-            };
-        }) ?? null)
-        : null;
+    const catalog: CatalogItem[] | null = data && !isErrorResponse(data) ? normalizeCatalog(data) : null;
     const catalogError = error ?? (data && isErrorResponse(data) ? data : null);
     return {
         catalog,
         catalogError,
         isLoadingCatalog,
     };
+};
+
+const stripPrefixes = (raw: RawCatalogData): any => JSON.parse(JSON.stringify(raw).replace(/"(odrl|dcat):/g, '"'));
+
+const idOf = (ref: any): string => (typeof ref === 'string' ? ref : ref?.['@id'] ?? '');
+const localName = (value: string): string => value.split(/[/#:]/).pop() ?? value;
+const first = <T,>(v: T | T[] | undefined): T | undefined => (Array.isArray(v) ? v[0] : v);
+const toArray = <T,>(v: T | T[] | undefined | null): T[] => (v == null ? [] : Array.isArray(v) ? v : [v]);
+
+const parseExpr = (c: any): CatalogConstraint => ({
+    leftOperand: localName(idOf(c.leftOperand)),
+    operator: localName(idOf(c.operator)),
+    rightOperand: idOf(c.rightOperand),
+});
+const parseConstraints = (constraint: any): CatalogConstraint[] =>
+    toArray(constraint).flatMap((c) => {
+        if (c?.and) return c.and.map(parseExpr);
+        if (c?.or) return c.or.map(parseExpr);
+        return c?.leftOperand != null ? [parseExpr(c)] : [];
+    });
+const parsePermission = (permission: any): CatalogPermission | null => {
+    const p = first(permission);
+    return p == null ? null : { action: localName(idOf(p.action)), constraints: parseConstraints(p.constraint) };
+};
+const parseOps = (ops: any): CatalogOperation[] =>
+    toArray(ops).map((op) => ({ constraints: parseConstraints(op.constraint) }));
+
+export const normalizeCatalog = (raw: RawCatalogData): CatalogItem[] => {
+    const data = stripPrefixes(raw);
+    const datasets: any[] = data.dataset ?? [];
+    return datasets.map((item) => {
+        const policy = first(item.hasPolicy);
+        return {
+            assetId: item['@id'],
+            assetType: item['dct:type']?.['@id'] ?? '',
+            assetVersion: item['https://w3id.org/catenax/ontology/common#version'] ?? '',
+            permission: parsePermission(policy?.permission),
+            prohibitions: parseOps(policy?.prohibition),
+            obligations: parseOps(policy?.obligation),
+        };
+    });
 };
