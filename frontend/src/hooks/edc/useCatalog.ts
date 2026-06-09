@@ -41,15 +41,7 @@ export const useCatalog = (partner: Partner | null) => {
     };
 };
 
-const stripPrefixes = (value: unknown): any => {
-    if (Array.isArray(value)) return value.map(stripPrefixes);
-    if (value && typeof value === 'object') {
-        return Object.fromEntries(
-            Object.entries(value).map(([k, v]) => [k.replace(/^(odrl|dcat):/, ''), stripPrefixes(v)])
-        );
-    }
-    return value;
-};
+const stripPrefixes = (raw: RawCatalogData): any => JSON.parse(JSON.stringify(raw).replace(/"(odrl|dcat):/g, '"'));
 
 const idOf = (ref: any): string => (typeof ref === 'string' ? ref : ref?.['@id'] ?? '');
 const localName = (value: string): string => value.split(/[/#:]/).pop() ?? value;
