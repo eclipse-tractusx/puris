@@ -1,0 +1,51 @@
+meta {
+  name: Query supported DSP version
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v4alpha/connectordiscovery/dspversionparams
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "@context": {
+      "tx": "https://w3id.org/tractusx/v0.0.1/ns/",
+      "edc": "https://w3id.org/edc/v0.0.1/ns/"
+    },
+    "tx:bpnl": "{{SUPPLIER_BPNL}}",
+    "edc:counterPartyAddress": "{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}"
+  }
+}
+
+script:post-response {
+  const jsonResponse = res.getBody();
+  let params = {
+    counterPartyAddress: bru.getEnvVar("SUPPLIER_EDC_EXT_HOSTNAME") + '/' + bru.getEnvVar("PROTOCOL_PATH"),
+    counterPartyId: bru.getEnvVar("SUPPLIER_BPNL"),
+    protocol: "dataspace-protocol-http"
+  }
+  
+  if (res.getStatus() < 300) {
+    params = { ...params, ...jsonResponse}
+  }
+    
+  bru.setVar("CUSTOMER_COUNTERPARTY_ADDRESS", params.counterPartyAddress);
+  bru.setVar("CUSTOMER_COUNTERPARTY_ID", params.counterPartyId);
+  bru.setVar("CUSTOMER_COUNTERPARTY_PROTOCOL", params.protocol);
+  
+}
+
+tests {
+  test("response is 200 or 404", function() {
+    expect([200, 404]).to.include(res.getStatus());
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -39,6 +39,7 @@ import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproduction
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,21 +62,19 @@ class PlannedProductionSammMapperTest {
     private static final Material MATERIAL_2;
     private static final Material MATERIAL_3;
     private static final Material MATERIAL_4;
-    private static final Material MATERIAL_5;
 
     static {
-        PARTNER = new Partner("name", "http://example.com", "BPNL111111111111", "BPNS111111111111", "siteName", "BPNA111111111111", "street", "zip", "country");
+        PARTNER = new Partner("name", "http://example.com", "BPNL111111111111", "BPNS111111111111", "siteName", "BPNA111111111111", "street", "zip", "country", PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         PARTNER.setUuid(UUID.randomUUID());
-        PARTNER_A = new Partner("p1", "http://ex", "BPNL111111111111", "BPNS111111111111", "site", "BPNA111111111111", "s", "z", "c");
+        PARTNER_A = new Partner("p1", "http://ex", "BPNL111111111111", "BPNS111111111111", "site", "BPNA111111111111", "s", "z", "c", PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         PARTNER_A.setUuid(UUID.randomUUID());
-        PARTNER_B = new Partner("p2", "http://ex2", "BPNL222222222222", "BPNS222222222222", "site2", "BPNA222222222222", "s2", "z2", "c2");
+        PARTNER_B = new Partner("p2", "http://ex2", "BPNL222222222222", "BPNS222222222222", "site2", "BPNA222222222222", "s2", "z2", "c2", PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         PARTNER_B.setUuid(UUID.randomUUID());
 
         MATERIAL_1 = Material.builder().productFlag(true).materialNumberCx("urn:uuid:11111111-1111-1111-1111-111111111111").ownMaterialNumber("OWN1").build();
         MATERIAL_2 = Material.builder().productFlag(true).materialNumberCx("urn:uuid:22222222-2222-2222-2222-222222222222").ownMaterialNumber("OWN2").build();
         MATERIAL_3 = Material.builder().productFlag(true).materialNumberCx("urn:uuid:33333333-3333-3333-3333-333333333333").ownMaterialNumber("OWN3").build();
         MATERIAL_4 = Material.builder().productFlag(true).materialNumberCx("urn:uuid:44444444-4444-4444-4444-444444444444").ownMaterialNumber("OWN4").build();
-        MATERIAL_5 = Material.builder().materialFlag(true).productFlag(false).ownMaterialNumber("OWN5").build();
     }
 
     @InjectMocks

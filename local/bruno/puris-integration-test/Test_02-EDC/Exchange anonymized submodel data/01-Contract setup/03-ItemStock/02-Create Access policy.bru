@@ -17,14 +17,14 @@ body:json {
   {
     "@context" : [ "http://www.w3.org/ns/odrl.jsonld", {
       "edc" : "https://w3id.org/edc/v0.0.1/ns/",
-      "cx-policy" : "https://w3id.org/catenax/policy/"
+      "cx-policy" : "{{SUPPLIER_POLICY_NAMESPACE}}"
     } ],
     "@type" : "PolicyDefinitionRequestDto",
     "@id" : "AnonymizedItemStockAccessPolicy",
     "edc:policy" : {
       "@type" : "Set",
       "permission" : [ {
-        "action" : "use",
+        "action" : "{{SUPPLIER_POLICY_ACTION}}",
         "constraint" : {
           "@type" : "LogicalConstraint",
           "and" : [ {
@@ -34,8 +34,8 @@ body:json {
             "rightOperand" : "active"
           }, {
             "@type" : "LogicalConstraint",
-            "leftOperand" : "BusinessPartnerNumber",
-            "operator" : "eq",
+            "leftOperand" : "{{SUPPLIER_BPN_RIGHTOPERAND}}",
+            "operator" : "{{SUPPLIER_POLICY_OPERATOR}}",
             "rightOperand" : "{{CUSTOMER_BPNL}}"
           } ]
         }

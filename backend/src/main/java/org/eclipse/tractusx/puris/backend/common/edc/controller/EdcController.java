@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.DspaceVersionParams;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -73,7 +74,11 @@ public class EdcController {
             if (!PatternStore.URL_PATTERN.matcher(dspUrl).matches()) {
                 return ResponseEntity.badRequest().build();
             }
-            var catalogResponse = edcAdapter.getCatalogResponse(dspUrl, partnerBpnl, null);
+            if (!PatternStore.BPNL_PATTERN.matcher(partnerBpnl).matches()) {
+                return ResponseEntity.badRequest().build();
+            }
+            DspaceVersionParams dspaceVersionParams = edcAdapter.getPartnerDspaceVersionParams(partnerBpnl, dspUrl);
+            var catalogResponse = edcAdapter.getCatalogResponse(dspaceVersionParams, null);
             if (catalogResponse != null && catalogResponse.isSuccessful()) {
                 var responseString = catalogResponse.body().string();
                 catalogResponse.body().close();

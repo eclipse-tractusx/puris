@@ -32,6 +32,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.singlelevelbomasplanned.ChildData;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.singlelevelbomasplanned.SingleLevelBomAsPlanned;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
@@ -53,7 +54,7 @@ class SingleLevelBomAsPlannedSammMapperTest {
     private static final Material MATERIAL_3;
 
     static {
-        PARTNER = new Partner("Test Partner", "http://example.com", "BPNL1234567890AB", "BPNS1234567890AB", "Test Site", "BPNA1234567890AB", "Test Street", "12345", "Germany");
+        PARTNER = new Partner("Test Partner", "http://example.com", "BPNL1234567890AB", "BPNS1234567890AB", "Test Site", "BPNA1234567890AB", "Test Street", "12345", "Germany", PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         PARTNER.setUuid(UUID.randomUUID());
         MATERIAL_1 = Material.builder().productFlag(true).materialFlag(false).materialNumberCx("urn:uuid:parent-cx-123").ownMaterialNumber("MAT-PARENT-001").build();
         MATERIAL_2 = Material.builder().productFlag(false).materialFlag(true).materialNumberCx("urn:uuid:child1-cx-456").ownMaterialNumber("MAT-CHILD-001").build();
@@ -259,7 +260,7 @@ class SingleLevelBomAsPlannedSammMapperTest {
 
     @Test
     void materialToSingleLevelBomAsPlannedSamm_multipleSuppliers() {
-        Partner partner2 = new Partner("Second Supplier", "http://example.com", "BPNL9876543210XY", "BPNS9876543210XY", "Site 2", "BPNA9876543210XY", "Street 2", "67890", "Germany");
+        Partner partner2 = new Partner("Second Supplier", "http://example.com", "BPNL9876543210XY", "BPNS9876543210XY", "Site 2", "BPNA9876543210XY", "Street 2", "67890", "Germany", PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         partner2.setUuid(UUID.randomUUID());
         MaterialPartnerRelation mpr1b = new MaterialPartnerRelation();
         mpr1b.setMaterial(MATERIAL_2);

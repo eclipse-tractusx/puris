@@ -1,0 +1,13 @@
+meta {
+  name: Check from Customer POV
+}
+
+auth {
+  mode: apikey
+}
+
+auth:apikey {
+  key: X-API_KEY
+  value: {{CUSTOMER_EDC_API_KEY}}
+  placement: header
+}

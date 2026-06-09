@@ -17,7 +17,7 @@ body:json {
   {
     "@context" : [ "http://www.w3.org/ns/odrl.jsonld", {
       "edc" : "https://w3id.org/edc/v0.0.1/ns/",
-      "cx-policy" : "https://w3id.org/catenax/policy/"
+      "cx-policy" : "{{COMMON_POLICY_NAMESPACE}}"
     } ],
     "@type" : "PolicyDefinitionRequestDto",
     "@id" : "AnonymizedProductionContractPolicy",
@@ -35,7 +35,7 @@ body:json {
           }, {
             "@type" : "LogicalConstraint",
             "leftOperand" : "cx-policy:UsagePurpose",
-            "operator" : "eq",
+            "operator" : "{{COMMON_POLICY_OPERATOR}}",
             "rightOperand" : "cx.puris.base:1"
           } ]
         }

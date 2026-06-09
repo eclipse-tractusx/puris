@@ -42,6 +42,7 @@ import org.eclipse.tractusx.puris.backend.delivery.logic.dto.deliverysamm.Transi
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.junit.jupiter.api.Test;
@@ -51,6 +52,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,11 +68,11 @@ class DeliveryInformationSammMapperTest {
     private static final Material MATERIAL_5;
 
     static {
-        PARTNER = new Partner("name", "http://example.com", "BPNL111111111111", "BPNS111111111111", "siteName", "BPNA111111111111", "street", "zip", "country");
+        PARTNER = new Partner("name", "http://example.com", "BPNL111111111111", "BPNS111111111111", "siteName", "BPNA111111111111", "street", "zip", "country", PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         PARTNER.setUuid(UUID.randomUUID());
-        PARTNER_A = new Partner("p1", "http://ex", "BPNL111111111111", "BPNS111111111111", "site", "BPNA111111111111", "s", "z", "c");
+        PARTNER_A = new Partner("p1", "http://ex", "BPNL111111111111", "BPNS111111111111", "site", "BPNA111111111111", "s", "z", "c", PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         PARTNER_A.setUuid(UUID.randomUUID());
-        PARTNER_B = new Partner("p2", "http://ex2", "BPNL222222222222", "BPNS222222222222", "site2", "BPNA222222222222", "s2", "z2", "c2");
+        PARTNER_B = new Partner("p2", "http://ex2", "BPNL222222222222", "BPNS222222222222", "site2", "BPNA222222222222", "s2", "z2", "c2", PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         PARTNER_B.setUuid(UUID.randomUUID());
 
         MATERIAL_1 = Material.builder().productFlag(true).materialNumberCx("urn:uuid:11111111-1111-1111-1111-111111111111").ownMaterialNumber("OWN1").build();
