@@ -11,7 +11,6 @@ frontend:
     # tag: "main"
     # pullPolicy: Always
     pullPolicy: IfNotPresent
-    tag: "5.1.1"
   ingress:
     # -- Enable the Ingress
     enabled: true
@@ -53,7 +52,6 @@ backend:
     # tag: "main"
     # pullPolicy: Always
     pullPolicy: IfNotPresent
-    tag: "5.1.1"
   # -- Scale to 0 for scaledown
   autoscaling:
     enabled: false
