@@ -12,7 +12,8 @@ registry:
     # This version property overwrites the default image version.
     # The default image version is the appVersion of the Chart.yaml.
     version: ""
-  replicaCount: 1
+  # -- Scale to 0 for scaledown
+  replicaCount: 0
   imagePullPolicy: IfNotPresent
   containerPort: 4243
   host: <path:puris/data/customer/dtr#hostname>
@@ -104,6 +105,8 @@ keycloak:
   #   repository: bitnamilegacy/keycloak
   #   tag: 22.0.3-debian-11-r14
   type: NodePort
+  # -- Scale to 0 for scaledown
+  replicaCount: 0
   postgresql:
     image:
       repository: bitnamilegacy/postgresql

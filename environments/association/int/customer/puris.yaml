@@ -54,6 +54,10 @@ backend:
     # pullPolicy: Always
     pullPolicy: IfNotPresent
     tag: "5.1.1"
+  # -- Scale to 0 for scaledown
+  autoscaling:
+    enabled: false
+  replicaCount: 0
   env:
     LOGGING_LEVEL_ORG_ECLIPSE_TRACTUSX_PURIS_BACKEND: DEBUG
   ingress:
