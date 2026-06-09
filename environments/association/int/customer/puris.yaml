@@ -231,12 +231,19 @@ postgresql:
         limits:
           cpu: "200m"
           memory: "128Mi"     
+  # admin user
   auth:
-    existingSecret: "customer-secret-postgres-init"
+    existingSecret: ""
+    # database: <path:puris/data/customer/puris/postgres#database>
+    username: postgres
+    password: <path:puris/data/customer/puris/postgres#postgres-password>
+    # passwordPostgres: <path:puris/data/customer/puris/postgres#postgres-password>
+  # custom user (non root)
+  customUser:
+    existingSecret: ""
+    name: <path:puris/data/customer/puris/postgres#username>
     database: <path:puris/data/customer/puris/postgres#database>
-    username: <path:puris/data/customer/puris/postgres#username>
     password: <path:puris/data/customer/puris/postgres#password>
-    passwordPostgres: <path:puris/data/customer/puris/postgres#postgres-password>
   resources:
     requests:
       cpu: "20m"
