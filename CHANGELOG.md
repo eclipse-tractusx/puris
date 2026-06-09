@@ -40,6 +40,7 @@ The **need for configuration updates** is **marked bold**.
 - implemented edc cross version communication support ([#1136](https://github.com/eclipse-tractusx/puris/pull/1136))
 - refactored EDC integration with better separation of concerns ([#1144](https://github.com/eclipse-tractusx/puris/pull/1144))
 - updated negotiation and transfer logic to utilize latest DSP version ([#1153](https://github.com/eclipse-tractusx/puris/pull/1153))
+- Fixed frontend Catalog to handle both versions recieved by the backend ([#1157](https://github.com/eclipse-tractusx/puris/pull/1157))
 
 ### Fixes
 
