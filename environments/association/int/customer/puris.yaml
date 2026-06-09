@@ -11,6 +11,7 @@ frontend:
     # tag: "main"
     # pullPolicy: Always
     pullPolicy: IfNotPresent
+    tag: "5.1.1"
   ingress:
     # -- Enable the Ingress
     enabled: true
@@ -52,6 +53,7 @@ backend:
     # tag: "main"
     # pullPolicy: Always
     pullPolicy: IfNotPresent
+    tag: "5.1.1"
   env:
     LOGGING_LEVEL_ORG_ECLIPSE_TRACTUSX_PURIS_BACKEND: DEBUG
   ingress:

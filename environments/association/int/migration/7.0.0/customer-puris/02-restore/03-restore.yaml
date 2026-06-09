@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pg-restore-job-customer-puris
+  namespace: product-puris
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: restore
+        image: postgres:18
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Starting restore..."
+          pg_restore -h customer-backend-postgresql -U postgres -d  -c --if-exists -1 /migration/db.dump
+          echo "Restore complete!"
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: customer-secret-postgres-init
+              key: postgres-password
+        volumeMounts:
+        - name: storage
+          mountPath: /migration
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: migration-pvc-customer-puris
