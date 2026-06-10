@@ -125,6 +125,9 @@ backend:
       zipcodeandcity: "10011 New York"
       # -- Own name (self-description)
       name: "Control Unit Creator Inc."
+    policyprofile:
+      # -- The default policy profile to use for policy definitions and contract definitions.
+      version: profile2509
     jpa:
       hibernate:
         # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones
