@@ -12,7 +12,7 @@ registry:
     # This version property overwrites the default image version.
     # The default image version is the appVersion of the Chart.yaml.
     version: ""
-  replicaCount: 0
+  replicaCount: 1
   imagePullPolicy: IfNotPresent
   containerPort: 4243
   host: <path:puris/data/supplier/dtr#hostname>
