@@ -1,0 +1,107 @@
+#######################################################################
+# Copyright (c) 2026 Volkswagen AG
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This work is made available under the terms of the
+# Creative Commons Attribution 4.0 International (CC-BY-4.0) license,
+# which is available at
+# https://creativecommons.org/licenses/by/4.0/legalcode.
+#
+# SPDX-License-Identifier: CC-BY-4.0
+#######################################################################
+
+@prefix samm: <urn:samm:org.eclipse.esmf.samm:meta-model:2.1.0#>.
+@prefix samm-c: <urn:samm:org.eclipse.esmf.samm:characteristic:2.1.0#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix : <urn:samm:io.catenax.data_exchange_request:1.0.0#>.
+@prefix ext-uuid: <urn:samm:io.catenax.shared.uuid:2.0.0#>.
+
+:DataExchangeRequest a samm:Aspect;
+	samm:preferredName "Data Exchange Request"@en;
+	samm:description "This aspect model defines the standard for requesting the exchange of supply-chain related data between business partners. A data exchange request specifies urgency, requested timeframe, requested data types and accompanying notification content."@en;
+	samm:properties (:id :sourceNotificationId :criticality :desiredStartDateTime :desiredEndDateTime :requestedTypes :text :timestamp);
+	samm:operations ();
+	samm:events ().
+
+:id a samm:Property;
+	samm:preferredName "ID"@en;
+	samm:description "Unique ID identifying the data exchange request."@en;
+	samm:characteristic ext-uuid:UuidV4Trait;
+	samm:exampleValue "urn:uuid:2f1c9b6e-8c4a-4d5f-9a2b-1f3e7d8c6a10".
+
+:sourceNotificationId a samm:Property;
+	samm:preferredName "Source Notification ID"@en;
+	samm:description "Unique ID identifying the source notification from which this data exchange request is opened."@en;
+	samm:characteristic ext-uuid:UuidV4Trait;
+	samm:exampleValue "urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e".
+
+:criticality a samm:Property;
+	samm:preferredName "Criticality"@en;
+	samm:description "Business urgency level of the data exchange request."@en;
+	samm:characteristic :CriticalityEnumeration;
+	samm:exampleValue "high".
+
+:desiredStartDateTime a samm:Property;
+	samm:preferredName "Desired Start Date Time"@en;
+	samm:description "Desired start date and time for the requested data exchange period."@en;
+	samm:characteristic samm-c:Timestamp;
+	samm:exampleValue "2025-10-12T00:00:00.000000+00:00"^^xsd:dateTime.
+
+:desiredEndDateTime a samm:Property;
+	samm:preferredName "Desired End Date Time"@en;
+	samm:description "Desired end date and time for the requested data exchange period."@en;
+	samm:characteristic samm-c:Timestamp;
+	samm:exampleValue "2025-12-12T00:00:00.000000+00:00"^^xsd:dateTime.
+
+:requestedTypes a samm:Property;
+	samm:preferredName "Requested Types"@en;
+	samm:description "Requested data exchange types covered by this request."@en;
+	samm:characteristic :RequestedTypeSet.
+
+:text a samm:Property;
+	samm:preferredName "Text"@en;
+	samm:description "Free text describing the request context, the reason for the exchange and relevant supply-chain background information (max. 4000 characters)."@en;
+	samm:characteristic :UserInputTrait;
+	samm:exampleValue "Request to exchange data related to an ongoing supply chain disruption.".
+
+:timestamp a samm:Property;
+	samm:preferredName "Timestamp"@en;
+	samm:description "Timestamp of the creation of the data exchange request. Date and time are set according to a timezone."@en;
+	samm:characteristic samm-c:Timestamp;
+	samm:exampleValue "2025-10-12T00:00:00.000000+00:00"^^xsd:dateTime.
+
+:CriticalityEnumeration a samm-c:Enumeration;
+	samm:preferredName "Criticality enumeration"@en;
+	samm:description "Allowed criticality levels for a data exchange request."@en;
+	samm:dataType xsd:string;
+	samm-c:values ("low" "medium" "high").
+
+:RequestedTypeEnumeration a samm-c:Enumeration;
+	samm:preferredName "Requested type enumeration"@en;
+	samm:description "Enumeration of the available requested data exchange types."@en;
+	samm:dataType xsd:string;
+	samm-c:values ("n-tier" "single-tier").
+
+:RequestedTypeSet a samm-c:Set;
+	samm:preferredName "Requested type set"@en;
+	samm:description "Set of requested data exchange types."@en;
+	samm-c:elementCharacteristic :RequestedTypeEnumeration.
+
+:UserInputTrait a samm-c:Trait ;
+   samm:preferredName "User Input Trait"@en ;
+   samm:description "Trait to ensure correct values for the user input."@en ;
+   samm-c:baseCharacteristic :UserInputCharacteristic ;
+   samm-c:constraint :TextLengthConstraint .
+
+:UserInputCharacteristic a samm:Characteristic;
+	samm:preferredName "User input characteristic"@en;
+	samm:description "User input can be any string that is max. 4000 characters."@en;
+	samm:dataType xsd:string.
+
+:TextLengthConstraint a samm-c:LengthConstraint;
+	samm:preferredName "User input constraint"@en;
+	samm:description "Constraint for a string to be max. 4000 characters long."@en;
+	samm-c:maxValue "4000"^^xsd:nonNegativeInteger.

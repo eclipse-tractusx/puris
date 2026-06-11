@@ -1,0 +1,72 @@
+#######################################################################
+# Copyright (c) 2026 Volkswagen AG
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This work is made available under the terms of the
+# Creative Commons Attribution 4.0 International (CC-BY-4.0) license,
+# which is available at
+# https://creativecommons.org/licenses/by/4.0/legalcode.
+#
+# SPDX-License-Identifier: CC-BY-4.0
+#######################################################################
+
+@prefix samm: <urn:samm:org.eclipse.esmf.samm:meta-model:2.1.0#>.
+@prefix samm-c: <urn:samm:org.eclipse.esmf.samm:characteristic:2.1.0#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix : <urn:samm:io.catenax.data_exchange_approval:1.0.0#>.
+@prefix ext-uuid: <urn:samm:io.catenax.shared.uuid:2.0.0#>.
+
+:DataExchangeApproval a samm:Aspect;
+	samm:preferredName "Data Exchange Approval"@en;
+	samm:description "This aspect model defines the standard for approving a data exchange request between business partners. A data exchange approval identifies the related request, states whether the approval process is finalized and lists the approved data exchange types."@en;
+	samm:properties (:id :dataExchangeRequestId :isFinalized :approvedTypes :timestamp);
+	samm:operations ();
+	samm:events ().
+
+:id a samm:Property;
+	samm:preferredName "ID"@en;
+	samm:description "Unique ID identifying the data exchange approval."@en;
+	samm:characteristic ext-uuid:UuidV4Trait;
+	samm:exampleValue "urn:uuid:2f1c9b6e-8c4a-4d5f-9a2b-1f3e7d8c6a10".
+
+:dataExchangeRequestId a samm:Property;
+	samm:preferredName "Data Exchange Request ID"@en;
+	samm:description "Unique ID identifying the data exchange request to which this approval refers."@en;
+	samm:characteristic ext-uuid:UuidV4Trait;
+	samm:exampleValue "urn:uuid:2f1c9b6e-8c4a-4d5f-9a2b-1f3e7d8c6a10".
+
+:isFinalized a samm:Property;
+	samm:preferredName "Is Finalized"@en;
+	samm:description "Boolean flag indicating whether the approval process is finalized and no further downstream responses are expected."@en;
+	samm:characteristic :IsFinalizedCharacteristic;
+	samm:exampleValue "true"^^xsd:boolean.
+
+:approvedTypes a samm:Property;
+	samm:preferredName "Approved Types"@en;
+	samm:description "Set of approved data exchange types for the referenced request."@en;
+	samm:characteristic :ApprovedTypeSet.
+
+:timestamp a samm:Property;
+	samm:preferredName "Timestamp"@en;
+	samm:description "Timestamp of the creation of the data exchange approval. Date and time are set according to a timezone."@en;
+	samm:characteristic samm-c:Timestamp;
+	samm:exampleValue "2025-10-12T00:00:00.000000+00:00"^^xsd:dateTime.
+
+:IsFinalizedCharacteristic a samm:Characteristic;
+	samm:preferredName "Is finalized characteristic"@en;
+	samm:description "Boolean characteristic indicating whether the approval process is finalized and no further downstream responses are expected."@en;
+	samm:dataType xsd:boolean.
+
+:ApprovedTypeEnumeration a samm-c:Enumeration;
+	samm:preferredName "Approved type enumeration"@en;
+	samm:description "Enumeration of the available approved data exchange types."@en;
+	samm:dataType xsd:string;
+	samm-c:values ("n-tier" "single-tier").
+
+:ApprovedTypeSet a samm-c:Set;
+	samm:preferredName "Approved type set"@en;
+	samm:description "Set of approved data exchange types."@en;
+	samm-c:elementCharacteristic :ApprovedTypeEnumeration.
