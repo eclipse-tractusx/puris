@@ -105,7 +105,7 @@ keycloak:
   #   tag: 22.0.3-debian-11-r14
   type: NodePort
   # downscale if needed
-  replicaCount: 0
+  replicaCount: 1
   autoscaling:
     enabled: false
   postgresql:
