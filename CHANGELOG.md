@@ -29,7 +29,7 @@ The **need for configuration updates** is **marked bold**.
   - bump postcss from 8.5.8 to 8.5.15
   - bump vite from 7.3.1 to 8.0.16
   - bump flatted from 3.2.9 to 3.4.2
-  - bump react-router from 6.30.3 to 7.17.0
+  - bump react-router from 6.30.3 to 7.16.0
   - remove picomatch
 
 ### Known Knowns
