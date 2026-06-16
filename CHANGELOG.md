@@ -31,6 +31,9 @@ The **need for configuration updates** is **marked bold**.
   - bump flatted from 3.2.9 to 3.4.2
   - bump react-router from 6.30.3 to 7.16.0
   - remove picomatch
+- security vulnerability fixes for backend dependencies ([#1159](https://github.com/eclipse-tractusx/puris/pull/1159))
+  - bump org.bouncycastle:bcprov-jdk18on from 1.78 to 1.84
+  - bump org.postgresql:postgresql from 42.7.3 to 42.7.11
 
 ### Known Knowns
 
