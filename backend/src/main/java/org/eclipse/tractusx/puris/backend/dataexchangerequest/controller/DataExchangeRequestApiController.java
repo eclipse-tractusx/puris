@@ -71,13 +71,12 @@ public class DataExchangeRequestApiController {
             log.warn("Rejecting request at DataExchangeRequest request 1.0.0 endpoint. Invalid BPNL");
             return ResponseEntity.badRequest().build();
         }
-
         String context = body.path("header").path("context").asText(null);
         if (context == null || context.isBlank()) {
             log.warn("Rejecting request at DataExchange request 1.0.0 endpoint. Missing context in header");
             return ResponseEntity.badRequest().build();
         }
-        
+
         try {
             if (context.equals(IndustryCoreMessageContext.DATA_EXCHANGE_REQUEST_CONTEXT.getValue())) {
                 return handleRequest(bpnl, body);
@@ -87,8 +86,9 @@ public class DataExchangeRequestApiController {
                 log.warn("Rejecting request at DataExchange request 1.0.0 endpoint. Unknown context: {}", context);
                 return ResponseEntity.badRequest().build();
             }
+
         } catch (IllegalArgumentException e) {
-            log.warn("Rejecting DataExchange message: {}", e.getMessage());
+            log.warn("Rejecting DataExchangeRequest: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             log.warn("Rejecting invalid request body at DataExchange request 1.0.0 endpoint");
