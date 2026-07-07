@@ -184,37 +184,38 @@ of the current release._
 
 ## Configure anonymized data exchange
 
-To facilitate data exchange across multiple tiers, PURIS provides **anonymized versions** of selected PURIS data standards. The anonymized variants are meant to be consumed by third party participants who receive the data indirectly through your partners, without exposing sensitive identifiers.
+To facilitate data exchange across multiple tiers, PURIS provides **anonymized versions** of selected PURIS data standards. The anonymized variants are meant to be consumed only through **your own EDC**, so that another application acting on your behalf can retrieve and forward the data further, without exposing sensitive identifiers to your direct partners. Partners can no longer pull anonymized submodels directly through their own EDC.
 
 PURIS ensures that:
 
 - anonymized semantic models are provided in the repository as `.ttl` files with JSON examples
 - anonymized DTOs and mappers exist (reusing existing delivery/production/stock logic)
 - **assets and DTR submodels are registered** for each anonymized data model
+- the submodel descriptor `href` contains the respective partner's BPNL as a path segment, and the backend rejects any request whose `edc-bpn` header does not match its own BPNL with `403 Forbidden`
 
 However contract definitions and policies are NOT created by PURIS for anonymized models so the operator must:
 
-1. create the **access policy** and **contract policy** in the provider EDC
+1. create the **access policy** and **contract policy** in the provider EDC, **scoped to the provider's own BPNL** (not the partner's), since only the provider's own EDC is allowed to negotiate and pull these assets
 2. create a **contract definition** per anonymized asset (or however you group contracts in your environment)
 
 This mirrors the standard setup flow, but uses the anonymized asset IDs / semantic IDs. From an operator's point of view, the implementation combines the following building blocks:
 
-1. a DTR entry for the digital twin shell and its anonymized submodel descriptor,
+1. a DTR entry for the digital twin shell and its anonymized submodel descriptor, whose `href` embeds the requesting partner's BPNL,
 2. a provider-side EDC asset exposing the anonymized submodel endpoint,
-3. provider-side access and contract policies aligned with the configured Framework Agreement and Usage Purpose,
-4. a consumer-side contract negotiation and transfer process to first resolve the submodel descriptor and then pull the anonymized submodel data.
+3. provider-side access and contract policies restricted to the provider's own BPNL,
+4. a consumer-side contract negotiation and transfer process, performed by the provider's own EDC, to first resolve the submodel descriptor and then pull the anonymized submodel data.
 
 ### Backend endpoints
 
-For each anonymized standard, PURIS exposes an endpoint that returns the anonymized SAMM e.g. `planned-production-output/anonymized/request`
+For each anonymized standard, PURIS exposes an endpoint that returns the anonymized SAMM e.g. `planned-production-output/anonymized/request/{materialNumberCx}/{partnerBpnl}/submodel/{representation}`. The `partnerBpnl` path segment identifies which partner's data to serve, while the `edc-bpn` request header is validated against the provider's own BPNL to ensure only the provider's own EDC can call the endpoint.
 
 ### How to validate the setup
 
 Use the Bruno integration tests for anonymized exchange to validate:
 
 - provider catalog exposes anonymized assets
-- DTR contains anonymized submodel descriptors (by semantic ID)
-- contract negotiation + transfer succeed
+- DTR contains anonymized submodel descriptors (by semantic ID) with the partner BPNL embedded in the `href`
+- contract negotiation + transfer succeed when performed through the **provider's own EDC**, and are rejected (`403`) when attempted through a partner's EDC
 - `$value` pull returns anonymized payloads
 
 ## Configure ERP Update
