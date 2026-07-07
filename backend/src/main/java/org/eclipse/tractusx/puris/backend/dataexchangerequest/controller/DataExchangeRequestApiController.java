@@ -60,7 +60,7 @@ public class DataExchangeRequestApiController {
     @Operation(summary = "This endpoint receives the DataExchangeRequest 1.0.0 requests. " +
         "This endpoint is meant to be accessed by partners via EDC only. ")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Ok", content = @Content),
+        @ApiResponse(responseCode = "204", description = "No Content", content = @Content),
         @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
@@ -106,7 +106,7 @@ public class DataExchangeRequestApiController {
             return ResponseEntity.badRequest().build();
         }
         log.info("Created ReportedDataExchangeRequest from incoming request");
-        return ResponseEntity.ok(null);
+        return ResponseEntity.noContent().build();
     }
 
     private ResponseEntity<?> handleApproval(String bpnl, JsonNode body) {
@@ -118,6 +118,6 @@ public class DataExchangeRequestApiController {
             return ResponseEntity.badRequest().build();
         }
         log.info("Created ReportedDataExchangeApproval from incoming request");
-        return ResponseEntity.ok(null);
+        return ResponseEntity.noContent().build();
     }
 }

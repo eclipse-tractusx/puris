@@ -42,7 +42,7 @@ public class DataExchangeApprovalApiService {
     @Autowired
     private PartnerService partnerService;
     @Autowired
-    private ReportedDataExhcangeApprovalService reportedDataExchangeApprovalService;
+    private ReportedDataExchangeApprovalService reportedDataExchangeApprovalService;
     @Autowired
     private IndustryCoreMessageService messageService;
     @Autowired
@@ -56,7 +56,7 @@ public class DataExchangeApprovalApiService {
             log.error("Unknown Partner BPNL");
             return null;
         }
-        var approval = sammMapper.sammToReportedDataExchangeApproval(bpnl, samm);
+        var approval = sammMapper.sammToReportedDataExchangeApproval(samm);
         if (approval == null) {
             log.error("Error mapping incoming Approval");
             return null;

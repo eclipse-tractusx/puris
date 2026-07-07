@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{CUSTOMER_PURIS_BACKEND}}/catena/data-exchange-request/{{ownRequestUuid}}/approved-reported
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/data-exchange-request/{{ownRequestUuid}}/approvals
   body: none
   auth: none
 }
@@ -28,7 +28,5 @@ tests {
       expect(res.getBody()).to.be.an("object");
       expect(res.getBody()).to.have.property("uuid");
   });
-  const uuid = res.getBody().uuid;
-  bru.setVar("reportedApprovalUuid", uuid);
 
 }

@@ -47,7 +47,7 @@ public class DataExchangeApprovalSammMapper {
             .build();
     }
 
-    public ReportedDataExchangeApproval sammToReportedDataExchangeApproval (String bpnl, DataExchangeApprovalSamm samm) {
+    public ReportedDataExchangeApproval sammToReportedDataExchangeApproval (DataExchangeApprovalSamm samm) {
         var dataExchangeRequest = ownDataExchangeRequestService.findByRequestId(samm.getDataExchangeRequestId());
         if (dataExchangeRequest == null) {
             log.error("No matching data exchange request found for ID {}", samm.getDataExchangeRequestId());

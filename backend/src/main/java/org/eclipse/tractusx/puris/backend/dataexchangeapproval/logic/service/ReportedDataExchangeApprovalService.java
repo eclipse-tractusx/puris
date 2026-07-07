@@ -27,9 +27,9 @@ import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.repository
 import org.springframework.stereotype.Service;
 
 @Service
-public class ReportedDataExhcangeApprovalService extends DataExchangeApprovalService<ReportedDataExchangeApproval, ReportedDataExchangeApprovalRepository>{
+public class ReportedDataExchangeApprovalService extends DataExchangeApprovalService<ReportedDataExchangeApproval, ReportedDataExchangeApprovalRepository>{
     
-    public ReportedDataExhcangeApprovalService (ReportedDataExchangeApprovalRepository repository) {
+    public ReportedDataExchangeApprovalService (ReportedDataExchangeApprovalRepository repository) {
         super(repository);
     }
 
@@ -46,6 +46,8 @@ public class ReportedDataExhcangeApprovalService extends DataExchangeApprovalSer
         }
         if (reportedDataExchangeApproval.getApprovalId() == null) {
             reportedDataExchangeApproval.setApprovalId(UUID.randomUUID().toString());
+        } else if (repository.findByApprovalId(reportedDataExchangeApproval.getApprovalId()).isPresent()) {
+            throw new KeyAlreadyExistsException(String.format("A reported data exchange aproval for approval id %s' already exists", reportedDataExchangeApproval.getApprovalId()));
         }
 
         return repository.save(reportedDataExchangeApproval);

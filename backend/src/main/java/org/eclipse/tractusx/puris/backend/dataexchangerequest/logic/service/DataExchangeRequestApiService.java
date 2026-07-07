@@ -88,7 +88,7 @@ public class DataExchangeRequestApiService {
     public void sendDataExchangeRequest(OwnDataExchangeRequest request, Partner partner) {
         var body = createDataExchangeRequestBody(request);
         try {
-            edcAdapterService.doDataExchangePostRequest(partner, body);
+            edcAdapterService.doDataExchangeRequestPostRequest(partner, body);
             log.info("Successfully sent Data Exchange Request to partner " + partner.getBpnl()); 
         } catch (Exception e) {
             log.error("Error in ReportedDataExchangeRequest for partner " + partner.getBpnl(), e);

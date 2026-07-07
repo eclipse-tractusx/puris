@@ -29,7 +29,7 @@ import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.Repo
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.dto.DataExchangeApprovalDto;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.DataExchangeApprovalApiService;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.OwnDataExchangeApprovalService;
-import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.ReportedDataExhcangeApprovalService;
+import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.ReportedDataExchangeApprovalService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.DataExchangeRequestDto;
@@ -76,7 +76,7 @@ public class DataExchangeRequestController {
     @Autowired
     private OwnDataExchangeApprovalService ownDataExchangeApprovalService;
     @Autowired
-    private ReportedDataExhcangeApprovalService reportedDataExchangeApprovalService;
+    private ReportedDataExchangeApprovalService reportedDataExchangeApprovalService;
     @Autowired
     private ModelMapper modelMapper;
     @Autowired
@@ -119,7 +119,7 @@ public class DataExchangeRequestController {
         }
     }
 
-    @PostMapping("/{id}/approval")
+    @PostMapping("reported/{id}/approvals")
     @ResponseBody
     @Operation(summary = "Creates a new own data exchange approval", description = "Creates a new own data exchange approval in response to an existing ReportedDataExchangeRequest. \n")
     @ApiResponses(value = {
@@ -163,7 +163,7 @@ public class DataExchangeRequestController {
         return reportedDataExchangeRequestService.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}/approved-reported")
+    @GetMapping("{id}/approvals")
     @ResponseBody
     @Operation(summary = "Get all reported data exchange approvals", description = "Get all reported data exchange approvals.")
     public DataExchangeApprovalDto getReportedDataExchangeApproval(@PathVariable UUID id) {
