@@ -5,6 +5,77 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v6.1.0
+
+The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
+
+The **need for configuration updates** is **marked bold**.
+
+### Added
+
+- /
+
+### Changed
+
+- **restricted anonymized submodels (`DeliveryInformationAnonymized`, `PlannedProductionOutputAnonymized`, `ItemStockAnonymized`) to be consumable only via the provider's own EDC** ([#1174](https://github.com/eclipse-tractusx/puris/pull/1174))
+  - the partner's BPNL is now part of the submodel `href` as a path segment, used to identify which partner's data to serve
+  - the Controller now validates the `edc-bpn` header against the provider's own BPNL and rejects mismatches with `403 Forbidden`
+  - added a migration task that automatically updates existing Digital Twins with the new `href` format on next application start
+  - updated Bruno anonymized-submodel-exchange tests to negotiate and pull via the supplier's own EDC
+
+### Fixes
+
+- /
+
+### Version Bumps
+
+- /
+
+### Known Knowns
+
+#### Running With Shared DTR and EDC
+
+PURIS FOSS may not be run on a shared DTR and EDC with full scope. See [Admin Guide](docs/admin/Admin_Guide.md#running-the-puris-foss-application-on-shared-enablement-services) for more information of possible scenarios.
+
+#### Upgradeability
+
+Data base migrations are performed but assets.
+
+#### Data Sovereignty
+
+For productive use the following enhancements are encouraged
+
+* User FrontEnd available: Role Company Admin is able to query catalogue and see negotiations and transfers But company rules / policies need to be configured upfront in backend (via postman) to enable automatic contract negotiations, responsibility lies with Company Admin role  
+  --> add section in the User Manual describing this and the (legal) importance and responsibility behind defining these rules
+* Currently only one standard policy per reg. connector / customer instance is supported (more precisely one for DTR, one for all submodels), negotiation happens automatically based on this  
+  --> enhance option to select partner and define specific policies (to be planned in context of BPDM Integration)  
+  --> UI for specific configuration by dedicated role (e.g. Comp Admin) and more flexible policy configuration (withoutv code changes) is needed
+* As a non-Admin user I do not have ability to view policies in detail  
+  --> transparency for users when interacting with and requesting / consuming data via dashboard / views on underlying usage policies to be enhanced
+* ContractReference Constraint or configuration of policies specific to one partner only has notnot implemented  
+  --> clarification of potential reference to "PURIS standard contract" and enabling of ContractReference for 24.08.
+* unclear meaning of different stati in negotations  
+  --> add view of successfull contract agreeements wrt which data have been closed
+* current logging only done on info level  
+  --> enhance logging of policies (currently only available at debug level)
+* in case of non-matching policies (tested in various scenarios) no negotiation takes place  
+  --> enhance visualization or specific Error message to user
+* no validation of the Schema "profile": "cx-policy:profile2405" (required to ensure interop with other PURIS apps)
+
+#### Styleguide
+
+##### Overall
+
+* Brief description at the top of each page describing content would be nice for better user experience.
+
+##### Catalog
+
+* No action possible -> unclear to user when and how user will consume an offer
+
+##### Negotiations
+
+* Add filters for transparency (bpnl, state)
+
 ## v6.0.1
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
