@@ -19,34 +19,45 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { useState } from 'react';
 import { Box, Button, IconButton, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { Check, ChevronRightOutlined, Edit } from '@mui/icons-material';
-import { DemandCapacityNotification } from '@models/types/data/demand-capacity-notification';
+import { Check, ChevronRightOutlined, Edit, Visibility } from '@mui/icons-material';
+import { DemandCapacityNotification, EffectType } from '@models/types/data/demand-capacity-notification';
 import { Partner } from '@models/types/edc/partner';
 import { Table } from '@catena-x/portal-shared-components';
 import { LEADING_ROOT_CAUSE } from '@models/constants/leading-root-causes';
 import { EFFECTS } from '@models/constants/effects';
 import { STATUS } from '@models/constants/status';
+import { DataExchangeRequest } from '@models/types/data/data-exchange-request';
 
 type CollapsibleDemandNotificationProps = {
     disruptionId: string;
     notifications: DemandCapacityNotification[];
+    dataExchangeRequests: DataExchangeRequest[];
     partners: Partner[] | null;
     isResolved: boolean,
     onForwardClick: (id: string, notifications: DemandCapacityNotification[]) => void;
     onRowSelected: (notification: DemandCapacityNotification) => void;
     onEditClicked: (notification: DemandCapacityNotification) => void;
     onCheckClicked: (notification: DemandCapacityNotification) => void;
+    onViewRequestClicked?: (request: DataExchangeRequest) => void;
+    onCreateApprovalClicked?: (request: DataExchangeRequest) => void;
+    onViewApprovalClicked?: (request: DataExchangeRequest) => void;
+    onCreateRequestClicked?: (notification: DemandCapacityNotification) => void;
 };
 
 export function CollapsibleDisruptionPanel({
         disruptionId,
         notifications,
+        dataExchangeRequests,
         partners,
         isResolved,
         onForwardClick,
         onRowSelected,
         onEditClicked,
         onCheckClicked,
+        onViewRequestClicked,
+        onCreateApprovalClicked,
+        onViewApprovalClicked,
+        onCreateRequestClicked
     }: CollapsibleDemandNotificationProps) {
     const theme = useTheme();
     const [isExpanded, setIsExpanded] = useState(false);
@@ -54,6 +65,7 @@ export function CollapsibleDisruptionPanel({
     const incomingCount = notifications.filter(n => n.reported === true).length;
     const outgoingCount = notifications.filter(n => n.reported === false).length;
     const resolvedCount = notifications.filter(n => n.status === 'resolved').length;
+    
     return (
         <>
             <Box style={{ position: 'relative' }}>
@@ -102,23 +114,29 @@ export function CollapsibleDisruptionPanel({
                 </Button>
 
                 {!isResolved && (
-                    <Button
-                        variant="contained"
-                        sx={{position: 'absolute', top: '50%', right: '1rem', transform: 'translateY(-50%)', zIndex: 1}}
-                        onClick={() => onForwardClick(disruptionId, notifications)}
-                    >
-                        {notifications.some((n) =>!n.reported && (!n.relatedNotificationIds || n.relatedNotificationIds.length === 0)) ? 'New Notification' : 'Forward'}
-                    </Button>
+                    <Box sx={{ position: 'absolute', top: '50%', right: '1rem', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 2, zIndex: 1 }} >
+                        <Typography variant="body2" color={ dataExchangeRequests.some((request) => !request.dataExchangeApproval) ? 'error' : '#fff'}>
+                            <b>Data Exchange Requests:</b> {dataExchangeRequests.length}
+                        </Typography>
+                        <Button variant="contained" onClick={() => onForwardClick(disruptionId, notifications)}>
+                            {notifications.some((n) =>!n.reported && (!n.relatedNotificationIds || n.relatedNotificationIds.length === 0)) ? 'New Notification' : 'Forward'}
+                        </Button>
+                    </Box>
                 )}
             </Box>
 
             {isExpanded && (
                 <DemandCapacityNotificationTable
                     notifications={notifications}
+                    dataExchangeRequests={dataExchangeRequests}
                     partners={partners}
                     onRowSelected={onRowSelected}
                     onEditClicked={onEditClicked}
                     onCheckClicked={onCheckClicked}
+                    onViewRequestClicked={onViewRequestClicked}
+                    onCreateApprovalClicked={onCreateApprovalClicked}
+                    onViewApprovalClicked={onViewApprovalClicked}
+                    onCreateRequestClicked={onCreateRequestClicked}
                     showActionsColumn={!isResolved}
                     incomingCount={incomingCount}
                 />
@@ -129,15 +147,21 @@ export function CollapsibleDisruptionPanel({
 
 type NotificationTableProps = {
     notifications: DemandCapacityNotification[],
+    dataExchangeRequests: DataExchangeRequest[];
     partners: Partner[] | null,
     showActionsColumn?: boolean;
     incomingCount: number;
     onRowSelected: (notification: DemandCapacityNotification) => void;
     onEditClicked?: (notification: DemandCapacityNotification) => void;
     onCheckClicked?: (notification: DemandCapacityNotification) => void;
+    onViewRequestClicked?: (request: DataExchangeRequest) => void;
+    onCreateApprovalClicked?: (request: DataExchangeRequest) => void;
+    onViewApprovalClicked?: (request: DataExchangeRequest) => void;
+    onCreateRequestClicked?: (notification: DemandCapacityNotification) => void;
 }
 
-const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ notifications, partners, onRowSelected, onCheckClicked, onEditClicked, showActionsColumn = true, incomingCount}) => {
+const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ notifications, dataExchangeRequests, partners, onRowSelected, onCheckClicked, onEditClicked, onViewRequestClicked, onCreateApprovalClicked, onViewApprovalClicked, onCreateRequestClicked, showActionsColumn = true, incomingCount}) => {
+    const isCustomerEffect = (effect: EffectType): boolean => effect === 'capacity-reduction' || effect === 'capacity-increase';
     return (
         <Box width="100%" className="hide-title">
             <Table
@@ -167,30 +191,72 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                         </Stack>
                         ),
                     },
-                    { headerName: 'End date', field: 'expectedEndDateOfEffect', renderCell: (data: { row: DemandCapacityNotification }) =>
-                        data.row.expectedEndDateOfEffect ? (
-                        <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                            <Box>{new Date(data.row.expectedEndDateOfEffect).toLocaleDateString('en-GB')}</Box>
-                            <Box>{new Date(data.row.expectedEndDateOfEffect).toLocaleTimeString('en-GB')}</Box>
-                        </Stack>
-                        ) : null
-                    },
-                    { headerName: 'Last Updated', field: 'contentChangedAt', renderCell: (data: { row: DemandCapacityNotification }) => (
-                        <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                            <Box>{new Date(data.row.contentChangedAt).toLocaleDateString('en-GB')}</Box>
-                            <Box>{new Date(data.row.contentChangedAt).toLocaleTimeString('en-GB')}</Box>
-                        </Stack>
-                        ),
-                    },
                     { headerName: 'Status', field: 'status', valueFormatter: (params) => STATUS.find((status) => status.key === params.value)?.value },
-                    { headerName: 'Note', field: 'text', flex: 1.25, renderCell: (data: { row: DemandCapacityNotification }) => (
-                        <Stack display="flex" justifyContent="center" width="100%" height="100%">
-                            <Box>{data.row.text}</Box>
-                            {data.row.resolvingMeasureDescription && (
-                                <Box>Resolution: {data.row.resolvingMeasureDescription}</Box>
-                            )}
-                        </Stack>
-                        ),
+                    { headerName: 'Exchange Status', field: 'exchangeStatus', flex: 1,
+                        renderCell: (params) => {
+                            const request = dataExchangeRequests.find((r) => r.notificationId === params.row.notificationId);
+                            const isCustomer = isCustomerEffect(params.row.effect);
+
+                            if (isCustomer && params.row.reported === true) {
+                                // no request no approval
+                                if (!request) {
+                                    return (
+                                        <Typography color="primary" sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onCreateRequestClicked?.(params.row); }}>
+                                            Request Approval
+                                        </Typography>
+                                    );
+                                }
+                                // request no approval
+                                if (request && !request.dataExchangeApproval) {
+                                    return (
+                                        <Typography sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(request); }}>
+                                            Ongoing
+                                        </Typography>
+                                    );
+                                }
+                                // request + approval
+                                return (
+                                    <Box display="flex" alignItems="center" gap={1}>
+                                        <Typography sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(request); }}>
+                                            View Request
+                                        </Typography>
+                                        <IconButton color="primary" size="small" onClick={(e) => { e.stopPropagation(); onViewApprovalClicked?.(request); }}>
+                                            <Visibility />
+                                        </IconButton>
+                                    </Box>
+                                );
+                            }
+
+                            // supplier view-
+                            // no request no approval
+                            if (!request) {
+                                return null;
+                            }
+                            // request, no approval
+                            if (request && !request.dataExchangeApproval) {
+                                return (
+                                    <Box display="flex" alignItems="center" gap={1}>
+                                        <Typography color="error" sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onCreateApprovalClicked?.(request); }}>
+                                            Approve Request
+                                        </Typography>
+                                        <IconButton color="primary" size="small" onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(request); }}>
+                                            <Visibility />
+                                        </IconButton>
+                                    </Box>
+                                );
+                            }
+                            // request + approval
+                            return (
+                                <Box display="flex" alignItems="center" gap={1}>
+                                    <Typography sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onViewApprovalClicked?.(request); }}>
+                                        Request Approved
+                                    </Typography>
+                                    <IconButton color="primary" size="small" onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(request); }}>
+                                        <Visibility />
+                                    </IconButton>
+                                </Box>
+                            );
+                        },
                     },
                     { headerName: 'Action', field: 'actions', renderCell: (params) => {
                         if (params.row.status === 'resolved' || params.row.reported === true) {

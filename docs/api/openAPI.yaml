@@ -1751,6 +1751,60 @@ paths:
       summary: Creates a new own data exchange request
       tags:
       - data-exchange-request-controller
+  /data-exchange-request/all:
+    get:
+      description: Get all own data exchange requests.
+      operationId: getAllOwnDataExchangeRequests
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DataExchangeRequestDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all own data exchange requests
+      tags:
+      - data-exchange-request-controller
+  /data-exchange-request/approvals-reported:
+    get:
+      description: Get all reported data exchange approvals.
+      operationId: getAllReportedDataExchangeApprovals
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DataExchangeApprovalDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all reported data exchange approvals
+      tags:
+      - data-exchange-request-controller
+  /data-exchange-request/own-approvals:
+    get:
+      description: Get all own data exchange approvals.
+      operationId: getAllOwnDataExchangeApprovals
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DataExchangeApprovalDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all own data exchange approvals
+      tags:
+      - data-exchange-request-controller
   /data-exchange-request/reported:
     get:
       description: Get all reported data exchange requests.
@@ -1838,7 +1892,7 @@ paths:
       - data-exchange-request-api-controller
   /data-exchange-request/{id}/approvals:
     get:
-      description: Get all reported data exchange approvals.
+      description: Get all reported data exchange approvals for a specific request.
       operationId: getReportedDataExchangeApproval
       parameters:
       - in: path
@@ -1857,7 +1911,7 @@ paths:
                 $ref: '#/components/schemas/DataExchangeApprovalDto'
                 additionalProperties: false
           description: OK
-      summary: Get all reported data exchange approvals
+      summary: Get all reported data exchange approvals for a specific request
       tags:
       - data-exchange-request-controller
   /days-of-supply/customer:

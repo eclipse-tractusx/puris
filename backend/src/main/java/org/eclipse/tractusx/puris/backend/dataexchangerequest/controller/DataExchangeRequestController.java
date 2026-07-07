@@ -82,6 +82,20 @@ public class DataExchangeRequestController {
     @Autowired
     private ExecutorService executorService;
 
+    @GetMapping("/all")
+    @ResponseBody
+    @Operation(summary = "Get all own data exchange requests", description = "Get all own data exchange requests.")
+    public List<DataExchangeRequestDto> getAllOwnDataExchangeRequests() {
+        return ownDataExchangeRequestService.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    @GetMapping("/own-approvals")
+    @ResponseBody
+    @Operation(summary = "Get all own data exchange approvals", description = "Get all own data exchange approvals.")
+    public List<DataExchangeApprovalDto> getAllOwnDataExchangeApprovals() {
+        return ownDataExchangeApprovalService.findAll().stream().map(this::convertApprovalToDto).collect(Collectors.toList());
+    }
+
     @PostMapping()
     @ResponseBody
     @Operation(summary = "Creates a new own data exchange request", description = "Creates a new own data exchange request. \n")
@@ -160,12 +174,19 @@ public class DataExchangeRequestController {
     @ResponseBody
     @Operation(summary = "Get all reported data exchange requests", description = "Get all reported data exchange requests.")
     public List<DataExchangeRequestDto> getAllReportedDataExchangeRequest() {
-        return reportedDataExchangeRequestService.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
+        return reportedDataExchangeRequestService.findAll().stream().map(this::convertReportedToDto).collect(Collectors.toList());
+    }
+
+    @GetMapping("approvals-reported")
+    @ResponseBody
+    @Operation(summary = "Get all reported data exchange approvals", description = "Get all reported data exchange approvals.")
+    public List<DataExchangeApprovalDto> getAllReportedDataExchangeApprovals() {
+        return reportedDataExchangeApprovalService.findAll().stream().map(this::approvalConvertToDto).collect(Collectors.toList());
     }
 
     @GetMapping("{id}/approvals")
     @ResponseBody
-    @Operation(summary = "Get all reported data exchange approvals", description = "Get all reported data exchange approvals.")
+    @Operation(summary = "Get all reported data exchange approvals for a specific request", description = "Get all reported data exchange approvals for a specific request.")
     public DataExchangeApprovalDto getReportedDataExchangeApproval(@PathVariable UUID id) {
         OwnDataExchangeRequest ownRequest = ownDataExchangeRequestService.findById(id);
 
@@ -179,9 +200,21 @@ public class DataExchangeRequestController {
         return approvalConvertToDto(approval);
     }
 
-    private DataExchangeRequestDto convertToDto(ReportedDataExchangeRequest entity) {
+    private DataExchangeRequestDto convertReportedToDto(ReportedDataExchangeRequest entity) {
         DataExchangeRequestDto dto = modelMapper.map(entity, DataExchangeRequestDto.class);
         dto.setNotificationId(entity.getNotification().getNotificationId());
+        return dto;
+    }
+
+    private DataExchangeRequestDto convertToDto(OwnDataExchangeRequest entity) {
+        DataExchangeRequestDto dto = modelMapper.map(entity, DataExchangeRequestDto.class);
+        dto.setNotificationId(entity.getNotification().getNotificationId());
+        return dto;
+    }
+
+    private DataExchangeApprovalDto convertApprovalToDto(OwnDataExchangeApproval entity) {
+        DataExchangeApprovalDto dto = modelMapper.map(entity, DataExchangeApprovalDto.class);
+        dto.setDataExchangeRequestId(entity.getDataExchangeRequest().getRequestId());
         return dto;
     }
 
