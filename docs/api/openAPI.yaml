@@ -1848,7 +1848,7 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 6.0.0
+  version: 6.1.0
 openapi: 3.1.0
 paths:
   /batch/partner-data-update:
@@ -2336,7 +2336,7 @@ paths:
       summary: Updates a delivery by its UUID
       tags:
       - delivery-controller
-  /delivery-information/anonymized/request/{materialNumberCx}/submodel/{representation}:
+  /delivery-information/anonymized/request/{materialNumberCx}/{partnerBpnl}/submodel/{representation}:
     get:
       operationId: getAnonymizedDeliveryMapping
       parameters:
@@ -2362,6 +2362,13 @@ paths:
           maxItems: 50
           type: string
       - in: path
+        name: partnerBpnl
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
         name: representation
         required: true
         schema:
@@ -2378,13 +2385,15 @@ paths:
           description: Ok
         '400':
           description: Bad Request
+        '403':
+          description: Access forbidden - self-access only
         '500':
           description: Internal Server Error
         '501':
           description: Unsupported representation
       summary: 'This endpoint receives the Delivery Information Anonymized Submodel
-        1.0.0 requests. This endpoint is meant to be accessed by partners via EDC
-        only. '
+        1.0.0 requests. This endpoint is meant to be accessed by our own EDC only,
+        on behalf of the partner identified by the bpnl path parameter. '
       tags:
       - delivery-request-api-controller
   /delivery-information/request/{materialNumberCx}/submodel/{representation}:
@@ -3215,7 +3224,7 @@ paths:
       summary: Import data via excel file -- ADMIN ONLY
       tags:
       - file-controller
-  /item-stock/anonymized/request/{materialnumber}/{direction}/submodel/{representation}:
+  /item-stock/anonymized/request/{materialnumber}/{partnerBpnl}/{direction}/submodel/{representation}:
     get:
       operationId: getAnonymizedItemStockMapping
       parameters:
@@ -3235,6 +3244,13 @@ paths:
           type: string
       - in: path
         name: materialnumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: partnerBpnl
         required: true
         schema:
           additionalProperties: false
@@ -3267,12 +3283,15 @@ paths:
           description: Ok
         '400':
           description: Bad Request
+        '403':
+          description: Access forbidden - self-access only
         '500':
           description: Internal Server Error
         '501':
           description: Unsupported representation
       summary: 'This endpoint receives the ItemStockAnonymized Submodel 1.0.0 requests.
-        This endpoint is meant to be accessed by partners via EDC only. '
+        This endpoint is meant to be accessed by our own EDC only, on behalf of the
+        partner identified by the bpnl path parameter. '
       tags:
       - item-stock-request-api-controller
   /item-stock/request/{materialnumber}/{direction}/submodel/{representation}:
@@ -4101,7 +4120,7 @@ paths:
           description: 'Unsupported representation requested. '
       tags:
       - part-type-information-controller
-  /planned-production/anonymized/request/{materialNumberCx}/submodel/{representation}:
+  /planned-production/anonymized/request/{materialNumberCx}/{partnerBpnl}/submodel/{representation}:
     get:
       operationId: getAnonymizedProductionMapping
       parameters:
@@ -4127,6 +4146,13 @@ paths:
           maxItems: 50
           type: string
       - in: path
+        name: partnerBpnl
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
         name: representation
         required: true
         schema:
@@ -4143,13 +4169,15 @@ paths:
           description: Ok
         '400':
           description: Bad Request
+        '403':
+          description: Access forbidden - self-access only
         '500':
           description: Internal Server Error
         '501':
           description: Unsupported representation
       summary: 'This endpoint receives the Anonymized Planned Production Submodel
-        1.0.0 requests. This endpoint is meant to be accessed by partners via EDC
-        only. '
+        1.0.0 requests. This endpoint is meant to be accessed by our own EDC only,
+        on behalf of the partner identified by the bpnl path parameter. '
       tags:
       - production-request-api-controller
   /planned-production/request/{materialnumbercx}/submodel/{representation}:

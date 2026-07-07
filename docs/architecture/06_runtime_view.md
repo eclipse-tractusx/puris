@@ -148,7 +148,7 @@ Details on the Web-Ui can be found in the [User Guide](../user/User_Guide.md).
 
 ## Scenario: Exchange anonymized data
 
-This features allows to facilitate data exchange across multiple tiers, and PURIS provides **anonymized versions** of selected PURIS data standards, so partners can consume and forward production-related information without sensitive identifiers.
+This features allows to facilitate data exchange across multiple tiers, and PURIS provides **anonymized versions** of selected PURIS data standards, so an application acting on the provider's behalf can consume and forward production-related information without sensitive identifiers. These anonymized submodels are consumable only through the provider's own EDC — partners can no longer pull them directly through their own EDC.
 
 ### Scope
 
@@ -170,14 +170,22 @@ SubmodelDescriptor → contract submodel asset → transfer → EDR → `$value`
 
 2. **Provider registers assets/submodels; operator provides contracts**  
    PURIS registers the anonymized **EDC assets** and **DTR submodels**, but **does not create contract definitions or
-   policies** for the anonymized models. Operators must create those in the EDC (see Admin Guide).
+   policies** for the anonymized models. Operators must create those in the EDC (see Admin Guide), scoped to the
+   provider's own BPNL rather than the partner's, since only the provider's own EDC is permitted to negotiate and
+   pull these assets.
 
 3. **Contract-scoped anonymization**  
    Selected sensitive properties are replaced by hashed variants, and some are omitted entirely.
    Hashing uses Spring Security’s `PasswordEncoder` with a **salt** to reduce correlation across agreements.
    The salt is taken from the **contract agreement id** supplied in request header `contract-agreement-id`.
 
-4. **Dedicated provider endpoint(s) returning anonymized SAMM**  
+4. **Self-access enforcement via BPNL path segment**  
+   The submodel descriptor `href` embeds the requesting partner's BPNL as a path segment
+   (`.../{materialNumberCx}/{bpnl}/{direction}/submodel`), identifying whose data to serve. The provider backend
+   validates the `edc-bpn` request header against its own BPNL and rejects any mismatch with `403 Forbidden`,
+   ensuring the anonymized endpoints can only be reached through the provider's own EDC.
+
+5. **Dedicated provider endpoint(s) returning anonymized SAMM**  
    The provider backend exposes endpoints that map “own” operational data to the anonymized SAMM.
 
 ### Validation
@@ -186,7 +194,8 @@ End-to-end behavior is covered by unit tests (mappers, DTO constraints) and Brun
 
 1. contract setup (prepares the provider-side policies and contract definition for the anonymized submodel asset)
 2. DTR negotiation and submodel descriptor retrieval
-3. submodel asset negotiation + transfer + `$value` pull for anonymized data
+3. submodel asset negotiation + transfer + `$value` pull for anonymized data, performed through the **provider's
+   own EDC** to confirm access succeeds, and (where covered) through a partner's EDC to confirm it is rejected
 
 ## NOTICE
 

@@ -28,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.anonymizedplannedproductionsamm.PlannedProductionOutputAnonymized;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproductionsamm.PlannedProductionOutput;
 import org.eclipse.tractusx.puris.backend.production.logic.service.ProductionRequestApiService;
@@ -48,6 +49,9 @@ public class ProductionRequestApiController {
 
     @Autowired
     private ProductionRequestApiService productionRequestApiService;
+
+    @Autowired
+    private VariablesService variablesService;
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
@@ -83,23 +87,30 @@ public class ProductionRequestApiController {
     }
 
     @Operation(summary = "This endpoint receives the Anonymized Planned Production Submodel 1.0.0 requests. " +
-        "This endpoint is meant to be accessed by partners via EDC only. ")
+        "This endpoint is meant to be accessed by our own EDC only. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),
         @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Access forbidden - self-access only", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content),
         @ApiResponse(responseCode = "501", description = "Unsupported representation", content = @Content)
     })
-    @GetMapping("anonymized/request/{materialNumberCx}/submodel/{representation}")
+    @GetMapping("anonymized/request/{materialNumberCx}/{partnerBpnl}/submodel/{representation}")
     public ResponseEntity<PlannedProductionOutputAnonymized> getAnonymizedProductionMapping(
-        @RequestHeader("edc-bpn") String bpnl,
+        @RequestHeader("edc-bpn") String edcBpnl,
         @RequestHeader("edc-contract-agreement-id") String contractAgreementId,
         @PathVariable String materialNumberCx,
+        @PathVariable String partnerBpnl,
         @PathVariable String representation
     ) {
-        if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialNumberCx).matches()) {
+        if (!bpnlPattern.matcher(partnerBpnl).matches() || !urnPattern.matcher(materialNumberCx).matches()) {
             log.warn("Rejecting request at Anonymized Planned Production Submodel request 1.0.0 endpoint");
             return ResponseEntity.badRequest().build();
+        }
+
+        if (!variablesService.getOwnBpnl().equals(edcBpnl)) {
+            log.warn("Rejecting request at Anonymized Planned Production Submodel request 1.0.0 endpoint, edc-bpn header did not match own BPNL");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         if (!"$value".equals(representation)) {
@@ -107,12 +118,12 @@ public class ProductionRequestApiController {
             if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
                 representation = "<REPLACED_INVALID_REPRESENTATION>";
             }
-            log.info("Received " + representation + " from " + bpnl);
+            log.info("Received " + representation + " from " + partnerBpnl);
             return ResponseEntity.status(501).build();
         }
 
-        log.info("Received request for " + materialNumberCx + " from " + bpnl);
-        var samm = productionRequestApiService.handleProductionAnonymizedSubmodelRequest(bpnl, materialNumberCx, contractAgreementId);
+        log.info("Received request for " + materialNumberCx + " from " + partnerBpnl);
+        var samm = productionRequestApiService.handleProductionAnonymizedSubmodelRequest(partnerBpnl, materialNumberCx, contractAgreementId);
         if (samm == null) {
             log.error("SAMM for production is null, return 500.");
             return ResponseEntity.status(500).build();
