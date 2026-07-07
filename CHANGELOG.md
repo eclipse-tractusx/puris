@@ -37,6 +37,9 @@ The **need for configuration updates** is **marked bold**.
 
 PURIS FOSS may not be run on a shared DTR and EDC with full scope. See [Admin Guide](docs/admin/Admin_Guide.md#running-the-puris-foss-application-on-shared-enablement-services) for more information of possible scenarios.
 
+#### Limitations to anonymized submodels
+
+ Currently, the anonymized submodels are limited to single customer scenarios, where each Digital Twin is exclusive to one partner. 
 #### Upgradeability
 
 Data base migrations are performed but assets.

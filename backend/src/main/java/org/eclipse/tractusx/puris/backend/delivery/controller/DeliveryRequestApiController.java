@@ -95,7 +95,7 @@ public class DeliveryRequestApiController {
     }
 
     @Operation(summary = "This endpoint receives the Delivery Information Anonymized Submodel 1.0.0 requests. " +
-        "This endpoint is meant to be accessed by our own EDC only, on behalf of the partner identified by the bpnl path parameter. ")
+        "This endpoint is meant to be accessed by our own EDC only.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),
         @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),

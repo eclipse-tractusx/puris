@@ -162,7 +162,7 @@ public class DtrRequestBodyBuilder {
 
     /**
      * The anonymized submodels are only ever exposed via our own EDC; {@code partnerBpnl} is embedded as a path segment in their
-     * href so the respective Controller can identify which partner's data to serve, instead of trusting an unauthenticated caller.
+     * href so the respective Controller can identify which partner's data to serve.
      * Access itself is still enforced by validating the edc-bpn header against the provider's own BPNL.
      */
     private SubmodelHrefs buildSubmodelHrefs(String pathSegment, String partnerBpnl, DirectionCharacteristic direction) {
