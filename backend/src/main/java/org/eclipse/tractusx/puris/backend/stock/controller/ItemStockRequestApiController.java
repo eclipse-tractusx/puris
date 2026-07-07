@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockAnonymizedSamm;
@@ -51,6 +52,9 @@ public class ItemStockRequestApiController {
 
     @Autowired
     private ItemStockRequestApiService itemStockRequestApiService;
+
+    @Autowired
+    private VariablesService variablesService;
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
@@ -90,33 +94,39 @@ public class ItemStockRequestApiController {
     }
 
     @Operation(summary = "This endpoint receives the ItemStockAnonymized Submodel 1.0.0 requests. " +
-        "This endpoint is meant to be accessed by partners via EDC only. ")
+        "This endpoint is meant to be accessed by our own EDC only, on behalf of the partner identified by the bpnl path parameter. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),
         @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Access forbidden - self-access only", content = @Content),
         @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content),
         @ApiResponse(responseCode = "501", description = "Unsupported representation", content = @Content)
     })
-    @GetMapping("anonymized/request/{materialnumber}/{direction}/submodel/{representation}")
-    public ResponseEntity<ItemStockAnonymizedSamm> getAnonymizedItemStockMapping(@RequestHeader("edc-bpn") String bpnl,
+    @GetMapping("anonymized/request/{materialnumber}/{partnerBpnl}/{direction}/submodel/{representation}")
+    public ResponseEntity<ItemStockAnonymizedSamm> getAnonymizedItemStockMapping(@RequestHeader("edc-bpn") String edcBpnl,
                                                               @RequestHeader("edc-contract-agreement-id") String contractAgreementId,
                                                               @PathVariable String materialnumber,
+                                                              @PathVariable String partnerBpnl,
                                                               @PathVariable DirectionCharacteristic direction,
                                                               @PathVariable String representation) {
-        if (!bpnlPattern.matcher(bpnl).matches() || !urnPattern.matcher(materialnumber).matches() || direction == null) {
+        if (!bpnlPattern.matcher(partnerBpnl).matches() || !urnPattern.matcher(materialnumber).matches() || direction == null) {
             log.warn("Rejecting request at ItemStockAnonymized Submodel request 1.0.0 endpoint");
             return ResponseEntity.badRequest().build();
+        }
+        if (!variablesService.getOwnBpnl().equals(edcBpnl)) {
+            log.warn("Rejecting request at ItemStockAnonymized Submodel request 1.0.0 endpoint, edc-bpn header did not match own BPNL");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         if (!"$value".equals(representation)) {
             log.warn("Rejecting request at ItemStockAnonymized Submodel request 1.0.0 endpoint, missing '@value' in request");
             if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
                 representation = "<REPLACED_INVALID_REPRESENTATION>";
             }
-            log.warn("Received {} from {} with direction {}", representation, bpnl, direction);
+            log.warn("Received {} from {} with direction {}", representation, partnerBpnl, direction);
             return ResponseEntity.status(501).build();
         }
-        log.info("Received request for {} with {} from {}", materialnumber, direction, bpnl);
-        var samm = itemStockRequestApiService.handleItemStockAnonymizedSubmodelRequest(bpnl, materialnumber, direction, contractAgreementId);
+        log.info("Received request for {} with {} from {}", materialnumber, direction, partnerBpnl);
+        var samm = itemStockRequestApiService.handleItemStockAnonymizedSubmodelRequest(partnerBpnl, materialnumber, direction, contractAgreementId);
         if (samm == null) {
             return ResponseEntity.status(500).build();
         }

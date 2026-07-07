@@ -4,6 +4,8 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 
 <!-- TOC -->
 - [Migration Guide](#migration-guide)
+  - [Version 7.0.x to 7.1.x](#version-70x-to-71x)
+    - [Anonymized submodels restricted to own EDC](#anonymized-submodels-restricted-to-own-edc)
   - [Version 6.1.x to 7.0.x](#version-61x-to-70x)
     - [Helm chart migration to Cloudpirates and Postgres update](#helm-chart-migration-to-cloudpirates-and-postgres-update)
     - [Defining a custom postgres user](#defining-a-custom-postgres-user)
@@ -35,6 +37,22 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
   - [Older Versions](#older-versions)
   - [NOTICE](#notice)
 <!-- TOC -->
+
+## Version 7.0.x to 7.1.x
+
+### Anonymized submodels restricted to own EDC
+
+The anonymized submodels (`DeliveryInformationAnonymized`, `PlannedProductionOutputAnonymized`, `ItemStockAnonymized`) are now only consumable via your own EDC, so that other applications can retrieve them on your behalf, but partners can no longer pull them directly through their own EDC.
+
+To achieve this:
+
+- the submodel descriptors' `href` now additionally contains the requesting partner's BPNL as a path segment
+- the backend validates the `edc-bpn` header of incoming requests to these submodels against its own BPNL and rejects any mismatch with `403 Forbidden`
+- the access policy for these submodel assets now needs to restrict access to your own BPNL instead of the partner's BPNL
+
+The "MigrationCommandLineRunner" will automatically update the affected Digital Twins with the new `href` format on application start, so no manual DTR changes are required.
+
+> [!note] Please make sure to verify that the affected Digital Twins were successfully updated, and that the access policy of the anonymized submodel assets has been adjusted to your own BPNL.
 
 ## Version 6.1.x to 7.0.x
 
