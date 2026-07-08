@@ -16,39 +16,30 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-package org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.dto;
+package org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 
-import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.RequestedTypeEnumeration;
-
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
+@Entity
+@SuperBuilder
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-@ToString
-public class DataExchangeApprovalDto implements Serializable {
-    private UUID uuid;
-    private String approvalId;
-
+@ToString(callSuper = true)
+public class ReportedDataExchangeApproval extends DataExchangeApproval{
     @NotNull
-    private boolean isFinalized;
-
-    private Date timestamp;
-
-    @NotNull
-    private String dataExchangeRequestId;
-
-    @NotEmpty
-    private List<RequestedTypeEnumeration> approvedTypes;
-    
+    @OneToOne(optional = true)
+    @JoinColumn(name = "data_exchange_request_uuid", nullable = false, unique = true)
+    @ToString.Exclude
+    protected OwnDataExchangeRequest dataExchangeRequest;
 }

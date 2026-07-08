@@ -444,7 +444,7 @@ public class EdcRequestBodyBuilder {
         body.set("properties", propertiesObject);
         var dctTypeObject = MAPPER.createObjectNode();
         propertiesObject.set("dct:type", dctTypeObject);
-        dctTypeObject.put("@id", "cx-taxo:DataExchangeRequestReceiveApi");
+        dctTypeObject.put("@id", "cx-taxo:DataExchangeRequestApi");
         propertiesObject.put("cx-common:version", "1.0");
         body.set("dataAddress", createDataAddressObject(endpoint, "true"));
         return body;

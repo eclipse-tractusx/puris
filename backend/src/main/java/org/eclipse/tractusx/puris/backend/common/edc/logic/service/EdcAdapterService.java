@@ -19,10 +19,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
@@ -35,12 +40,16 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
@@ -196,7 +205,7 @@ public class EdcAdapterService {
             AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID
         )));
         log.info("Registration of DataExchangeRequest 1.0.0 asset successful {}", (assetRegistration = registerDataExchangeRequestAsset(
-            variablesService.getDataExchangeRequestReceiveApiAssetId(),
+            variablesService.getDataExchangeRequestApiAssetId(),
             variablesService.getDataExchangeRequestEndpoint()
         )));
         log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
@@ -223,7 +232,7 @@ public class EdcAdapterService {
         result &= createSubmodelContractDefinitionForPartner(AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDemandSubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDeliverySubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.NOTIFICATION.URN_SEMANTIC_ID, variablesService.getNotificationApiAssetId(), partner);
-        result &= createSubmodelContractDefinitionForPartner(AssetType.DATA_EXCHANGE_REQUEST.URN_SEMANTIC_ID, variablesService.getDataExchangeRequestReceiveApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner(AssetType.DATA_EXCHANGE_REQUEST.URN_SEMANTIC_ID, variablesService.getDataExchangeRequestApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
         return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
     }
@@ -573,7 +582,7 @@ public class EdcAdapterService {
 
         String assetId = switch (type) {
             case NOTIFICATION -> variablesService.getNotificationApiAssetId();
-            case DATA_EXCHANGE_REQUEST -> variablesService.getDataExchangeRequestReceiveApiAssetId();
+            case DATA_EXCHANGE_REQUEST -> variablesService.getDataExchangeRequestApiAssetId();
             default -> throw new IllegalArgumentException("Unsupported type " + type);
         };
 
@@ -763,7 +772,11 @@ public class EdcAdapterService {
         return postAssetToPartner(partner, AssetType.NOTIFICATION, body, 2);
     }
 
-    public JsonNode doDataExchangePostRequest(Partner partner, JsonNode body) {
+    public JsonNode doDataExchangeRequestPostRequest(Partner partner, JsonNode body) {
+        return postAssetToPartner(partner, AssetType.DATA_EXCHANGE_REQUEST, body, 2);
+    }
+
+    public JsonNode doDataExchangeApprovalPostRequest(Partner partner, JsonNode body) {
         return postAssetToPartner(partner, AssetType.DATA_EXCHANGE_REQUEST, body, 2);
     }
 
@@ -1120,9 +1133,9 @@ public class EdcAdapterService {
         equalFilters.put(EdcRequestBodyBuilder.CX_COMMON_NAMESPACE + "version", "1.0");
         equalFilters.put(
             "'" + EdcRequestBodyBuilder.DCT_NAMESPACE + "type'.'@id'",
-            EdcRequestBodyBuilder.CX_TAXO_NAMESPACE + "DataExchangeRequestReceiveApi"
+            EdcRequestBodyBuilder.CX_TAXO_NAMESPACE + "DataExchangeRequestApi"
         );
-        return negotiateContract(partner, variablesService.getDataExchangeRequestReceiveApiAssetId(), type, partner.getEdcUrl(), equalFilters);
+        return negotiateContract(partner, variablesService.getDataExchangeRequestApiAssetId(), type, partner.getEdcUrl(), equalFilters);
     }
 
     public boolean negotiateContract(Partner partner, String assetId, AssetType type, String dspUrl, Map<String, String> equalFilters) {

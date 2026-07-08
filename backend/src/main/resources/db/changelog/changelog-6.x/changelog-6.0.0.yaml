@@ -237,3 +237,61 @@ databaseChangeLog:
             referencedTableName: reported_data_exchange_request
             referencedColumnNames: uuid
             constraintName: fk_own_data_exchange_approval_data_exchange_request
+  - changeSet:
+      id: "4"
+      author: OlgaIvkovic
+      changes:
+        - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: data_exchange_approval_contract_mapping_pkey
+                    name: partner_bpnl
+                    type: VARCHAR(255)
+              tableName: data_exchange_approval_contract_mapping
+        - createTable:
+            tableName: reported_data_exchange_approval
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_data_exchange_approval_pkey
+              - column:
+                  name: approval_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_finalized
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: approved_types
+                  type: SMALLINT[]
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timestamp
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: data_exchange_request_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_reported_data_exchange_approval_data_exchange_request
+        - addForeignKeyConstraint:
+            baseTableName: reported_data_exchange_approval
+            baseColumnNames: data_exchange_request_uuid
+            referencedTableName: own_data_exchange_request
+            referencedColumnNames: uuid
+            constraintName: fk_reported_data_exchange_approval_data_exchange_request

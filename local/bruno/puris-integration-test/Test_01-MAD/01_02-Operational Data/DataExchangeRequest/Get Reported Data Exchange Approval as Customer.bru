@@ -1,0 +1,32 @@
+meta {
+  name: Get Reported Data Exchange Approval as Customer
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/data-exchange-request/{{ownRequestUuid}}/approvals
+  body: none
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+}
+
+script:pre-request {
+  console.log("Waiting 5 seconds");
+  await (new Promise(resolve => setTimeout(resolve, 5000)));
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+
+  test("Verify response contains a reported data exchange approval object", function () {
+      expect(res.getBody()).to.be.an("object");
+      expect(res.getBody()).to.have.property("uuid");
+  });
+
+}
