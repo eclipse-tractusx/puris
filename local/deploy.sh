@@ -142,6 +142,9 @@ else
   echo "Both images rebuilt."
 fi
 
+echo "Building Tier2 Mock..."
+docker compose build puris-tier2-mock || { echo "Tier2 mock build failed \nExiting..."; exit 1; }
+
 echo "Removing the PURIS + EDCs with their DTR and Database..."
 docker compose down -v
 

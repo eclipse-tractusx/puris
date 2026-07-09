@@ -270,6 +270,28 @@ public class DataInjectionCommandLineRunner implements CommandLineRunner {
      */
     private void setupSupplierRole() {
 
+        // Register tier2 as an upstream supplier partner so the Supplier PURIS backend
+        // knows tier2's DSP URL and can negotiate contracts with the tier2 mock.
+        // Done before the restart check below, since it must run on every startup
+        // (idempotent via findByBpnl), not just on a fresh database.
+        Partner tier2Partner = partnerService.findByBpnl("BPNL3333333333T3");
+        if (tier2Partner == null) {
+            tier2Partner = new Partner(
+                "Tier2 Supplier Inc.",
+                "http://puris-tier2-mock:8083/api/v1/dsp",
+                "BPNL3333333333T3",
+                "BPNS3333333333T3",
+                "Tier2 Supplier Inc. Production Site",
+                "BPNA3333333333T3",
+                "Main Street 1",
+                "20001 Hamburg",
+                "Germany",
+                PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
+            );
+            tier2Partner = partnerService.create(tier2Partner);
+            log.info("Created tier2 partner: {}", tier2Partner);
+        }
+
         Partner customerPartner = partnerService.findByBpnl("BPNL4444444444XX");
         if (customerPartner != null){
             log.info("Restart of demo setup for role {} detected (customer partner has been existing before setup). Skipping data seeding for master data and operational data.", variablesService.getDemoRole());

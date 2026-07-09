@@ -126,3 +126,8 @@ backend/.vscode/
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,visualstudiocode,git
+
+### Python ###
+__pycache__/
+*.py[cod]
+*.egg-info/
