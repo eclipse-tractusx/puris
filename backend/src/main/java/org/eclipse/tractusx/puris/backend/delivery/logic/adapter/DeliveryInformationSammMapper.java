@@ -20,6 +20,7 @@
 package org.eclipse.tractusx.puris.backend.delivery.logic.adapter;
 
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
+import org.eclipse.tractusx.puris.backend.common.security.logic.AnonymizationService;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.EventTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedDelivery;
@@ -37,7 +38,6 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class DeliveryInformationSammMapper {
     private MaterialService materialService;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private AnonymizationService anonymizationService;
 
     public DeliveryInformation ownDeliveryToSamm(List<OwnDelivery> deliveryList, Partner partner, Material material) {
         if (deliveryList.stream().anyMatch(deli -> !deli.getPartner().equals(partner))) {
@@ -122,15 +122,15 @@ public class DeliveryInformationSammMapper {
             return null;
         }
         DeliveryInformationAnonymized samm = new DeliveryInformationAnonymized();
-        samm.setMaterialGlobalAssetIdAnonymized(passwordEncoder.encode(material.getMaterialNumberCx() + salt));
+        samm.setMaterialGlobalAssetIdAnonymized(anonymizationService.anonymize(material.getMaterialNumberCx(), salt));
         samm.setDeliveries(new HashSet<>());
         for (var delivery : deliveryList) {
             var anonymizedDelivery = new DeliveryAnonymized(
                 new ItemQuantityEntity(delivery.getQuantity(), delivery.getMeasurementUnit()),
                 delivery.getLastUpdatedOnDateTime(),
                 Set.of(new TransitEvent(delivery.getDateOfDeparture(), delivery.getDepartureType()), new TransitEvent(delivery.getDateOfArrival(), delivery.getArrivalType())),
-                passwordEncoder.encode(delivery.getOriginBpns() + salt),
-                passwordEncoder.encode(delivery.getDestinationBpns() + salt)
+                anonymizationService.anonymize(delivery.getOriginBpns(), salt),
+                anonymizationService.anonymize(delivery.getDestinationBpns(), salt)
             );
             samm.getDeliveries().add(anonymizedDelivery);
         }

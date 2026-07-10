@@ -22,6 +22,7 @@ package org.eclipse.tractusx.puris.backend.stock.logic.adapter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
+import org.eclipse.tractusx.puris.backend.common.security.logic.AnonymizationService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
@@ -31,7 +32,6 @@ import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksam
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockAnonymizedSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public class ItemStockSammMapper {
     @Autowired
     private MaterialPartnerRelationService mprService;
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private AnonymizationService anonymizationService;
 
     public ItemStockSamm materialItemStocksToItemStockSamm(List<MaterialItemStock> materialItemStocks, Partner partner, Material material) {
         return listToItemStockSamm(materialItemStocks, DirectionCharacteristic.INBOUND, partner, material);
@@ -130,16 +130,16 @@ public class ItemStockSammMapper {
         ItemStockAnonymizedSamm samm = new ItemStockAnonymizedSamm();
 
         if (directionCharacteristic == DirectionCharacteristic.INBOUND) {
-            samm.setMaterialGlobalAssetIdAnonymized(passwordEncoder.encode(mprService.find(material, partner).getPartnerCXNumber() + salt));
+            samm.setMaterialGlobalAssetIdAnonymized(anonymizationService.anonymize(mprService.find(material, partner).getPartnerCXNumber(), salt));
         } else {
-            samm.setMaterialGlobalAssetIdAnonymized(passwordEncoder.encode(material.getMaterialNumberCx() + salt));
+            samm.setMaterialGlobalAssetIdAnonymized(anonymizationService.anonymize(material.getMaterialNumberCx(), salt));
         }
 
         samm.setDirection(directionCharacteristic);
         var anonymizedAllocatedStockList = new HashSet<AllocatedStockAnonymized>();
         for (var itemStock : itemStocks) {
             ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(itemStock.getQuantity(), itemStock.getMeasurementUnit());
-            AllocatedStockAnonymized allocatedStock = new AllocatedStockAnonymized(itemQuantityEntity, passwordEncoder.encode(itemStock.getLocationBpns() + salt), itemStock.isBlocked(), itemStock.getLastUpdatedOnDateTime());
+            AllocatedStockAnonymized allocatedStock = new AllocatedStockAnonymized(itemQuantityEntity, anonymizationService.anonymize(itemStock.getLocationBpns(), salt), itemStock.isBlocked(), itemStock.getLastUpdatedOnDateTime());
             anonymizedAllocatedStockList.add(allocatedStock);
         }
         samm.setAllocatedStocksAnonymized(anonymizedAllocatedStockList);

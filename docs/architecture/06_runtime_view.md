@@ -176,7 +176,7 @@ SubmodelDescriptor → contract submodel asset → transfer → EDR → `$value`
 
 3. **Contract-scoped anonymization**  
    Selected sensitive properties are replaced by hashed variants, and some are omitted entirely.
-   Hashing uses Spring Security’s `PasswordEncoder` with a **salt** to reduce correlation across agreements.
+   Hashing uses a custom `AnonymizationService` (HMAC-SHA256, Base64-encoded) with a **salt** to reduce correlation across agreements.
    The salt is taken from the **contract agreement id** supplied in request header `contract-agreement-id`.
 
 4. **Self-access enforcement via BPNL path segment**  
