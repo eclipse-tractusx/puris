@@ -217,6 +217,8 @@ frontend:
     endpointDemandAndCapacityNotification: demand-and-capacity-notification
     # -- The endpoint for data exchange requests
     endpointDataExchangeRequest: data-exchange-request
+    # -- The endpoint for data exchange approvals
+    endpointDataExchangeApproval: data-exchange-approval
     # -- The endpoint for importing excel files
     endpointImportFiles: files
     # -- The endpoint for interfacing with all materials

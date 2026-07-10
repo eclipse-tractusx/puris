@@ -31,15 +31,75 @@ import { CriticalityEnumeration, DataExchangeRequest, RequestedTypeEnumeration }
 import { postDataExchangeApproval, postDataExchangeRequest } from '@services/data-exchange-service';
 import { CRITICALITY } from '@models/constants/criticality';
 import { DataExchangeApproval } from '@models/types/data/data-exchange-approval';
+import { EFFECTS } from '@models/constants/effects';
+import { InfoButton } from '@components/ui/InfoButton';
 
-const isValidDataExchangeRequest = (request: Partial<DataExchangeRequest>) =>
+const startOfToday = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+};
+
+const getDefaultDesiredStartDateTime = (demandCapacityNotification: DemandCapacityNotification): Date => {
+    const now = new Date();
+    const notificationStart = demandCapacityNotification.startDateOfEffect
+        ? new Date(demandCapacityNotification.startDateOfEffect)
+        : null;
+    return notificationStart && notificationStart > now ? notificationStart : now;
+};
+
+const isDesiredStartDateTimeValid = (
+    request: Partial<DataExchangeRequest>,
+    demandCapacityNotification: DemandCapacityNotification,
+) => {
+    if (!request.desiredStartDateTime) return false;
+    const start = new Date(request.desiredStartDateTime);
+    if (start < startOfToday()) return false;
+    if (demandCapacityNotification.startDateOfEffect &&
+        start < new Date(demandCapacityNotification.startDateOfEffect)) return false;
+    if (demandCapacityNotification.expectedEndDateOfEffect &&
+        start > new Date(demandCapacityNotification.expectedEndDateOfEffect)) return false;
+    if (request.desiredEndDateTime && start > new Date(request.desiredEndDateTime)) return false;
+    return true;
+};
+
+const isDesiredEndDateTimeValid = (
+    request: Partial<DataExchangeRequest>,
+    demandCapacityNotification: DemandCapacityNotification,
+) => {
+    if (!request.desiredEndDateTime) return false;
+    const end = new Date(request.desiredEndDateTime);
+    if (end < new Date()) return false;
+    if (demandCapacityNotification.startDateOfEffect &&
+        end < new Date(demandCapacityNotification.startDateOfEffect)) return false;
+    if (demandCapacityNotification.expectedEndDateOfEffect &&
+        end > new Date(demandCapacityNotification.expectedEndDateOfEffect)) return false;
+    if (request.desiredStartDateTime && end < new Date(request.desiredStartDateTime)) return false;
+    return true;
+};
+
+const getDataExchangeStatus = (dataExchangeRequest: DataExchangeRequest, demandCapacityNotification: DemandCapacityNotification, dataExchangeApproval: DataExchangeApproval | null): { label: string; explanation: string } => {
+    if (demandCapacityNotification.status === 'resolved') {
+        return { label: 'Terminated', explanation: 'The notification has been resolved' };
+    }
+    if (dataExchangeRequest.desiredEndDateTime && new Date(dataExchangeRequest.desiredEndDateTime) < new Date()) {
+        return { label: 'Expired', explanation: `The request has ended on ${new Date(dataExchangeRequest.desiredEndDateTime).toLocaleString()}`};
+    }
+    if (dataExchangeApproval) {
+        return { label: 'Approved', explanation: 'The request has been approved' };
+    }
+    return { label: 'Pending', explanation: 'Data exchange request created, waiting for approval' };
+};
+
+const isValidDataExchangeRequest = (request: Partial<DataExchangeRequest>, demandCapacityNotification: DemandCapacityNotification) =>
     request.notificationId &&
     request.criticality &&
     request.desiredStartDateTime &&
     request.desiredEndDateTime &&
     request.requestedTypes && request.requestedTypes?.length > 0 &&
     request.text &&
-    (!request.desiredEndDateTime || request.desiredStartDateTime < request.desiredEndDateTime);
+    isDesiredStartDateTimeValid(request, demandCapacityNotification) &&
+    isDesiredEndDateTimeValid(request, demandCapacityNotification);
 
 type DataExchangeRequestModalProps = {
     open: boolean;
@@ -62,8 +122,6 @@ type DataExchangeRequestViewProps = {
     partners: Partner[] | null;
     partnerMaterials: PartnerMaterials;
     dataApprovalMode: boolean;
-    approvedTypes: RequestedTypeEnumeration[];
-    onApprovedTypesChange: (checked: boolean) => void;
 };
 
 const AffectedMaterialsSection = ({ materialNumbers, partnerMaterials }: { materialNumbers?: string[]; partnerMaterials: PartnerMaterials; }) => (
@@ -100,13 +158,9 @@ const DataExchangeRequestView = ({
     partnerMaterials,
     dataExchangeApproval,
     dataApprovalMode,
-    approvedTypes,
-    onApprovedTypesChange,
 }: DataExchangeRequestViewProps) => {
     const isCreatingApproval = dataApprovalMode && !dataExchangeApproval;
-    const isNTierChecked = dataApprovalMode
-        ? (dataExchangeApproval ? dataExchangeApproval.approvedTypes.includes('n-tier') : approvedTypes.includes('n-tier'))
-        : dataExchangeRequest.requestedTypes.includes('n-tier');
+    const status = getDataExchangeStatus(dataExchangeRequest, demandCapacityNotification, dataExchangeApproval);
 
     return (
         <Grid container spacing={3} padding=".25rem">
@@ -139,12 +193,14 @@ const DataExchangeRequestView = ({
             )}
             <Grid display="grid" item xs={12}><Divider flexItem /></Grid>
             <Grid display="grid" item xs={6}>
-                <FormLabel>Desired Start Time and Date</FormLabel>
-                <Typography variant="body2">{dataExchangeRequest.desiredStartDateTime ? new Date(dataExchangeRequest.desiredStartDateTime).toLocaleString() : ''}</Typography>
+                <FormLabel>Desired Start and End Time and Date</FormLabel>
+                <Typography variant="body2">{dataExchangeRequest.desiredStartDateTime ? new Date(dataExchangeRequest.desiredStartDateTime).toLocaleString() : ''} - {dataExchangeRequest.desiredEndDateTime ? new Date(dataExchangeRequest.desiredEndDateTime).toLocaleString() : ''}</Typography>
             </Grid>
             <Grid display="grid" item xs={6}>
-                <FormLabel>Desired End Time and Date</FormLabel>
-                <Typography variant="body2">{dataExchangeRequest.desiredEndDateTime ? new Date(dataExchangeRequest.desiredEndDateTime).toLocaleString() : ''}</Typography>
+                <FormLabel>Data Exchange Status</FormLabel>
+                <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} padding=".75rem .5rem">
+                    <Typography variant="body2">{status.label}<InfoButton text={status.explanation}></InfoButton></Typography>
+                </Stack>
             </Grid>
             <Grid display="grid" item xs={12}><Divider flexItem /></Grid>
             <Grid display="grid" item xs={12}>
@@ -157,9 +213,8 @@ const DataExchangeRequestView = ({
                 <Stack direction="row" alignItems="center">
                     <Checkbox
                         id="requested-types-n-tier"
-                        checked={isNTierChecked}
+                        checked={true}
                         disabled={!isCreatingApproval}
-                        onChange={isCreatingApproval ? (_, checked) => onApprovedTypesChange(checked) : undefined}
                         data-testid="requested-types-n-tier"
                     />
                     <InputLabel htmlFor="requested-types-n-tier"> Exchange anonymous data with relevant participants (N-Tier) </InputLabel>
@@ -181,7 +236,6 @@ export const DataExchangeRequestInformationModal = ({
     onSave,
 }: DataExchangeRequestModalProps) => {
     const [temporaryDataExchangeRequest, setTemporaryDataExchangeRequest] = useState<Partial<DataExchangeRequest>>({});
-    const [temporaryApprovedTypes, setTemporaryApprovedTypes] = useState<RequestedTypeEnumeration[]>([]);
     const { partnerMaterials } = usePartnerMaterials(demandCapacityNotification.partnerBpnl);
 
     const theme = useTheme();
@@ -194,20 +248,19 @@ export const DataExchangeRequestInformationModal = ({
                 setTemporaryDataExchangeRequest(dataExchangeRequest);
             } else {
                 const initialData: Partial<DataExchangeRequest> = {
-                    requestedTypes: [],
+                    requestedTypes: ['n-tier'],
                     criticality: 'low' as CriticalityEnumeration,
-                    notificationId: demandCapacityNotification.notificationId
+                    notificationId: demandCapacityNotification.notificationId,
+                    desiredStartDateTime: getDefaultDesiredStartDateTime(demandCapacityNotification)
                 };
 
                 setTemporaryDataExchangeRequest(initialData);
             }
-            setTemporaryApprovedTypes(dataExchangeApproval?.approvedTypes ?? []);
         }
-    }, [open, dataExchangeRequest, dataExchangeApproval]);
+    }, [open, dataExchangeRequest, dataExchangeApproval, demandCapacityNotification]);
 
     const handleSaveClick = () => {
-        if (!isValidDataExchangeRequest(temporaryDataExchangeRequest) ||
-            !temporaryDataExchangeRequest.text?.trim()) {
+        if (!isValidDataExchangeRequest(temporaryDataExchangeRequest, demandCapacityNotification)) {
             setFormError(true);
             return;
         }
@@ -232,16 +285,12 @@ export const DataExchangeRequestInformationModal = ({
             .finally(handleClose);
     };
 
-    const handleApprovedTypesChange = (checked: boolean) => {
-        setTemporaryApprovedTypes(checked ? ['n-tier'] : []);
-    };
-
     const handleApproveClick = () => {
         if (!dataExchangeRequest) {
             return;
         }
         const approvalToSave: Partial<DataExchangeApproval> = {
-            approvedTypes: temporaryApprovedTypes,
+            approvedTypes: ['n-tier'],
             dataExchangeRequestId: dataExchangeRequest.requestId,
             isFinalized: true
         };
@@ -268,7 +317,6 @@ export const DataExchangeRequestInformationModal = ({
     const handleClose = () => {
         setFormError(false);
         setTemporaryDataExchangeRequest({});
-        setTemporaryApprovedTypes([]);
         onClose();
     };
     return (
@@ -285,12 +333,20 @@ export const DataExchangeRequestInformationModal = ({
                                 <Typography variant="body2">{partners?.find((p) => p.bpnl === demandCapacityNotification.partnerBpnl)?.name}</Typography>
                             </Grid>
                             <Grid display="grid" item xs={6}>
-                                <FormLabel>Notification ID</FormLabel>
-                                <Typography variant="body2">{demandCapacityNotification.notificationId}</Typography>
+                                <FormLabel>Effect</FormLabel>
+                                <Typography variant="body2">{EFFECTS.find((dt) => dt.key === demandCapacityNotification.effect)?.value}</Typography>
                             </Grid>
                             <Grid display="grid" item xs={6}>
                                 <FormLabel>Leading Cause</FormLabel>
                                 <Typography variant="body2">{LEADING_ROOT_CAUSE.find((dt) => dt.key === demandCapacityNotification.leadingRootCause)?.value}</Typography>
+                            </Grid>
+                            <Grid display="grid" item xs={6}>
+                                <FormLabel>Notification Start Date of Effect</FormLabel>
+                                <Typography variant="body2">{demandCapacityNotification.startDateOfEffect ? new Date(demandCapacityNotification.startDateOfEffect).toLocaleString() : ''}</Typography>
+                            </Grid>
+                            <Grid display="grid" item xs={6}>
+                                <FormLabel>Notification Desired End Date of Effect</FormLabel>
+                                <Typography variant="body2">{demandCapacityNotification.expectedEndDateOfEffect ? new Date(demandCapacityNotification.expectedEndDateOfEffect).toLocaleString() : ''}</Typography>
                             </Grid>
                             {demandCapacityNotification.affectedMaterialNumbers && demandCapacityNotification.affectedMaterialNumbers.length > 0 && (
                                 <AffectedMaterialsSection
@@ -304,16 +360,9 @@ export const DataExchangeRequestInformationModal = ({
                                     <Checkbox
                                         id="requestedTypes-n-tier"
                                         checked={temporaryDataExchangeRequest?.requestedTypes?.includes('n-tier') ?? false}
-                                        onChange={(_, checked) =>
-                                            setTemporaryDataExchangeRequest({
-                                                ...temporaryDataExchangeRequest,
-                                                requestedTypes: checked
-                                                    ? ['n-tier']
-                                                    : [],
-                                            })
-                                        }
+                                        disabled
                                     />
-                                    <InputLabel error={formError && !temporaryDataExchangeRequest?.requestedTypes?.length} htmlFor="requestedTypes-n-tier"> Anonymous data from relevant participants (N-Tier) </InputLabel>
+                                    <InputLabel htmlFor="requestedTypes-n-tier"> Anonymous data from relevant participants (N-Tier) </InputLabel>
                                 </Stack>
                             </Grid>
                             <Grid item xs={6}>
@@ -339,13 +388,7 @@ export const DataExchangeRequestInformationModal = ({
                                     label="Desired Start Time and Date*"
                                     placeholder="Pick Desired Start Time and Date"
                                     locale="de"
-                                    error={
-                                        formError &&
-                                        (!temporaryDataExchangeRequest.desiredStartDateTime ||
-                                            (!!temporaryDataExchangeRequest.desiredEndDateTime &&
-                                                temporaryDataExchangeRequest.desiredStartDateTime >
-                                                temporaryDataExchangeRequest.desiredEndDateTime))
-                                    }
+                                    error={formError && !isDesiredStartDateTimeValid(temporaryDataExchangeRequest, demandCapacityNotification)}
                                     value={temporaryDataExchangeRequest?.desiredStartDateTime ?? null}
                                     onValueChange={(date) =>
                                         setTemporaryDataExchangeRequest({
@@ -360,15 +403,7 @@ export const DataExchangeRequestInformationModal = ({
                                     label="Desired End Time and Date*"
                                     placeholder="Pick Desired End Time and Date"
                                     locale="de"
-                                    error={
-                                        formError &&
-                                        !!temporaryDataExchangeRequest?.desiredEndDateTime && (
-                                            temporaryDataExchangeRequest.desiredEndDateTime < new Date() ||
-                                            (!!temporaryDataExchangeRequest.desiredStartDateTime &&
-                                                temporaryDataExchangeRequest.desiredEndDateTime <
-                                                temporaryDataExchangeRequest.desiredStartDateTime)
-                                        )
-                                    }
+                                    error={formError && !isDesiredEndDateTimeValid(temporaryDataExchangeRequest, demandCapacityNotification)}
                                     value={temporaryDataExchangeRequest?.desiredEndDateTime ?? null}
                                     onValueChange={(date) =>
                                         setTemporaryDataExchangeRequest({
@@ -393,7 +428,7 @@ export const DataExchangeRequestInformationModal = ({
                                     error={formError && !temporaryDataExchangeRequest?.text?.trim()}
                                     className={formError && !temporaryDataExchangeRequest?.text?.trim() ? 'error-textarea' : ''}
                                 />
-                                <Typography variant="body3" sx={{ color: theme.palette.error.main, py: 1 }} ><ReportProblem></ReportProblem> These notes will be released to all selected partners and may include sensitive data. Proceed with caution!</Typography>
+                                <Typography variant="body3" sx={{ color: theme.palette.error.main, py: 1 }} ><ReportProblem></ReportProblem> These notes will be released to the selected partner and may include sensitive data. Proceed with caution!</Typography>
                             </Grid>
                         </Grid>
 
@@ -405,8 +440,6 @@ export const DataExchangeRequestInformationModal = ({
                             partners={partners}
                             partnerMaterials={partnerMaterials}
                             dataApprovalMode={dataApprovalMode}
-                            approvedTypes={temporaryApprovedTypes}
-                            onApprovedTypesChange={handleApprovedTypesChange}
                         ></DataExchangeRequestView>
                     ) : null}
                     <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="1rem">

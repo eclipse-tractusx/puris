@@ -25,11 +25,9 @@ import java.util.stream.Collectors;
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.OwnDataExchangeApproval;
-import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.ReportedDataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.dto.DataExchangeApprovalDto;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.DataExchangeApprovalApiService;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.OwnDataExchangeApprovalService;
-import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.ReportedDataExchangeApprovalService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.DataExchangeRequestDto;
@@ -76,24 +74,15 @@ public class DataExchangeRequestController {
     @Autowired
     private OwnDataExchangeApprovalService ownDataExchangeApprovalService;
     @Autowired
-    private ReportedDataExchangeApprovalService reportedDataExchangeApprovalService;
-    @Autowired
     private ModelMapper modelMapper;
     @Autowired
     private ExecutorService executorService;
 
-    @GetMapping("/all")
+    @GetMapping
     @ResponseBody
     @Operation(summary = "Get all own data exchange requests", description = "Get all own data exchange requests.")
     public List<DataExchangeRequestDto> getAllOwnDataExchangeRequests() {
         return ownDataExchangeRequestService.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
-    }
-
-    @GetMapping("/own-approvals")
-    @ResponseBody
-    @Operation(summary = "Get all own data exchange approvals", description = "Get all own data exchange approvals.")
-    public List<DataExchangeApprovalDto> getAllOwnDataExchangeApprovals() {
-        return ownDataExchangeApprovalService.findAll().stream().map(this::convertApprovalToDto).collect(Collectors.toList());
     }
 
     @PostMapping()
@@ -177,29 +166,6 @@ public class DataExchangeRequestController {
         return reportedDataExchangeRequestService.findAll().stream().map(this::convertReportedToDto).collect(Collectors.toList());
     }
 
-    @GetMapping("approvals-reported")
-    @ResponseBody
-    @Operation(summary = "Get all reported data exchange approvals", description = "Get all reported data exchange approvals.")
-    public List<DataExchangeApprovalDto> getAllReportedDataExchangeApprovals() {
-        return reportedDataExchangeApprovalService.findAll().stream().map(this::approvalConvertToDto).collect(Collectors.toList());
-    }
-
-    @GetMapping("{id}/approvals")
-    @ResponseBody
-    @Operation(summary = "Get all reported data exchange approvals for a specific request", description = "Get all reported data exchange approvals for a specific request.")
-    public DataExchangeApprovalDto getReportedDataExchangeApproval(@PathVariable UUID id) {
-        OwnDataExchangeRequest ownRequest = ownDataExchangeRequestService.findById(id);
-
-        if (ownRequest == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referenced own data exchange request does not exist.");
-        }
-        ReportedDataExchangeApproval approval = reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(id);
-        if (approval == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No reported approval exists for this request.");
-        }
-        return approvalConvertToDto(approval);
-    }
-
     private DataExchangeRequestDto convertReportedToDto(ReportedDataExchangeRequest entity) {
         DataExchangeRequestDto dto = modelMapper.map(entity, DataExchangeRequestDto.class);
         dto.setNotificationId(entity.getNotification().getNotificationId());
@@ -209,18 +175,6 @@ public class DataExchangeRequestController {
     private DataExchangeRequestDto convertToDto(OwnDataExchangeRequest entity) {
         DataExchangeRequestDto dto = modelMapper.map(entity, DataExchangeRequestDto.class);
         dto.setNotificationId(entity.getNotification().getNotificationId());
-        return dto;
-    }
-
-    private DataExchangeApprovalDto convertApprovalToDto(OwnDataExchangeApproval entity) {
-        DataExchangeApprovalDto dto = modelMapper.map(entity, DataExchangeApprovalDto.class);
-        dto.setDataExchangeRequestId(entity.getDataExchangeRequest().getRequestId());
-        return dto;
-    }
-
-    private DataExchangeApprovalDto approvalConvertToDto(ReportedDataExchangeApproval entity) {
-        DataExchangeApprovalDto dto = modelMapper.map(entity, DataExchangeApprovalDto.class);
-        dto.setDataExchangeRequestId(entity.getDataExchangeRequest().getRequestId());
         return dto;
     }
 

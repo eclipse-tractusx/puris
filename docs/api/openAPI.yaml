@@ -1723,7 +1723,84 @@ paths:
           description: OK
       tags:
       - partner-data-update-batch-controller
+  /data-exchange-approval:
+    get:
+      description: Get all own data exchange approvals.
+      operationId: getAllOwnDataExchangeApprovals
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DataExchangeApprovalDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all own data exchange approvals
+      tags:
+      - data-exchange-approval-controller
+  /data-exchange-approval/reported:
+    get:
+      description: Get all reported data exchange approvals.
+      operationId: getAllReportedDataExchangeApprovals
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DataExchangeApprovalDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all reported data exchange approvals
+      tags:
+      - data-exchange-approval-controller
+  /data-exchange-approval/{id}:
+    get:
+      description: Get all reported data exchange approvals for a specific request.
+      operationId: getReportedDataExchangeApproval
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DataExchangeApprovalDto'
+                additionalProperties: false
+          description: OK
+      summary: Get all reported data exchange approvals for a specific request
+      tags:
+      - data-exchange-approval-controller
   /data-exchange-request:
+    get:
+      description: Get all own data exchange requests.
+      operationId: getAllOwnDataExchangeRequests
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DataExchangeRequestDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all own data exchange requests
+      tags:
+      - data-exchange-request-controller
     post:
       description: "Creates a new own data exchange request. \n"
       operationId: createDataExchangeRequest
@@ -1749,60 +1826,6 @@ paths:
         '500':
           description: Internal Server Error.
       summary: Creates a new own data exchange request
-      tags:
-      - data-exchange-request-controller
-  /data-exchange-request/all:
-    get:
-      description: Get all own data exchange requests.
-      operationId: getAllOwnDataExchangeRequests
-      responses:
-        '200':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                items:
-                  $ref: '#/components/schemas/DataExchangeRequestDto'
-                maxItems: 50
-                type: array
-          description: OK
-      summary: Get all own data exchange requests
-      tags:
-      - data-exchange-request-controller
-  /data-exchange-request/approvals-reported:
-    get:
-      description: Get all reported data exchange approvals.
-      operationId: getAllReportedDataExchangeApprovals
-      responses:
-        '200':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                items:
-                  $ref: '#/components/schemas/DataExchangeApprovalDto'
-                maxItems: 50
-                type: array
-          description: OK
-      summary: Get all reported data exchange approvals
-      tags:
-      - data-exchange-request-controller
-  /data-exchange-request/own-approvals:
-    get:
-      description: Get all own data exchange approvals.
-      operationId: getAllOwnDataExchangeApprovals
-      responses:
-        '200':
-          content:
-            '*/*':
-              schema:
-                additionalProperties: false
-                items:
-                  $ref: '#/components/schemas/DataExchangeApprovalDto'
-                maxItems: 50
-                type: array
-          description: OK
-      summary: Get all own data exchange approvals
       tags:
       - data-exchange-request-controller
   /data-exchange-request/reported:
@@ -1890,30 +1913,6 @@ paths:
         endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - data-exchange-request-api-controller
-  /data-exchange-request/{id}/approvals:
-    get:
-      description: Get all reported data exchange approvals for a specific request.
-      operationId: getReportedDataExchangeApproval
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          additionalProperties: false
-          format: uuid
-          maxItems: 50
-          type: string
-      responses:
-        '200':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DataExchangeApprovalDto'
-                additionalProperties: false
-          description: OK
-      summary: Get all reported data exchange approvals for a specific request
-      tags:
-      - data-exchange-request-controller
   /days-of-supply/customer:
     get:
       description: Calculate days of supply for customer for given number of days.

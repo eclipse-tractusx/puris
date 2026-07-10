@@ -229,7 +229,7 @@ export const DemandCapacityNotificationView = () => {
 
                 {Object.keys(resolvedGroups).length > 0 ? (
                     Object.entries(resolvedGroups).map(([sourceDisruptionId, notifications]) => (
-                        <Box key={sourceDisruptionId} width="100%" display="flex" flexDirection="column" paddingBottom="2rem">
+                        <Box key={sourceDisruptionId} width="100%" display="flex" flexDirection="column" paddingBottom="1">
                             <CollapsibleDisruptionPanel
                                 key={sourceDisruptionId}
                                 disruptionId={sourceDisruptionId}

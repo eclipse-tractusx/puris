@@ -24,7 +24,7 @@ import { DataExchangeApproval } from "@models/types/data/data-exchange-approval"
 
 export const getDataExchangeRequest = async (isIncoming: boolean) => {
 
-    const endpoint = isIncoming ? `${config.app.ENDPOINT_DATA_EXCHANGE_REQUEST}/reported` : `${config.app.ENDPOINT_DATA_EXCHANGE_REQUEST}/all`;
+    const endpoint = isIncoming ? `${config.app.ENDPOINT_DATA_EXCHANGE_REQUEST}/reported` : `${config.app.ENDPOINT_DATA_EXCHANGE_REQUEST}`;
     const res = await fetch(`${config.app.BACKEND_BASE_URL}${endpoint}`, {
         method: 'GET',
         headers: {
@@ -58,7 +58,7 @@ export const postDataExchangeRequest = async (request: Partial<DataExchangeReque
 
 export const getDataExchangeApproval = async (isIncoming: boolean) => {
 
-    const endpoint = isIncoming ? `${config.app.ENDPOINT_DATA_EXCHANGE_REQUEST}/approvals-reported` : `${config.app.ENDPOINT_DATA_EXCHANGE_REQUEST}/own-approvals`;
+    const endpoint = isIncoming ? `${config.app.ENDPOINT_DATA_EXCHANGE_APPROVAL}/reported` : `${config.app.ENDPOINT_DATA_EXCHANGE_APPROVAL}`;
     const res = await fetch(`${config.app.BACKEND_BASE_URL}${endpoint}`, {
         method: 'GET',
         headers: {

@@ -27,6 +27,7 @@ import { LEADING_ROOT_CAUSE } from '@models/constants/leading-root-causes';
 import { EFFECTS } from '@models/constants/effects';
 import { STATUS } from '@models/constants/status';
 import { DataExchangeRequest } from '@models/types/data/data-exchange-request';
+import { InfoButton } from '@components/ui/InfoButton';
 
 type CollapsibleDemandNotificationProps = {
     disruptionId: string;
@@ -43,6 +44,18 @@ type CollapsibleDemandNotificationProps = {
     onViewApprovalClicked?: (request: DataExchangeRequest) => void;
     onCreateRequestClicked?: (notification: DemandCapacityNotification) => void;
 };
+
+
+const getApprovalStatusLabel = (request: DataExchangeRequest, demandCapacityNotification: DemandCapacityNotification) => {
+    if (demandCapacityNotification.status === 'resolved') {
+        return 'Terminated';
+    }
+    if (request.desiredEndDateTime && new Date(request.desiredEndDateTime) < new Date()) {
+        return 'Expired';
+    }
+    return 'Approved';
+};
+const isCustomerEffect = (effect: EffectType): boolean => effect === 'capacity-reduction' || effect === 'capacity-increase';
 
 export function CollapsibleDisruptionPanel({
         disruptionId,
@@ -115,9 +128,11 @@ export function CollapsibleDisruptionPanel({
 
                 {!isResolved && (
                     <Box sx={{ position: 'absolute', top: '50%', right: '1rem', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 2, zIndex: 1 }} >
-                        <Typography variant="body2" color={ dataExchangeRequests.some((request) => !request.dataExchangeApproval) ? 'error' : '#fff'}>
-                            <b>Data Exchange Requests:</b> {dataExchangeRequests.length}
-                        </Typography>
+                        {isCustomerEffect(notifications[0].effect) && (
+                            <Typography variant="body2" color={dataExchangeRequests.some((request) => !request.dataExchangeApproval) ? 'error' : '#fff'}>
+                                <b>Data Exchange Requests:</b> {dataExchangeRequests.length}
+                            </Typography>
+                        )}
                         <Button variant="contained" onClick={() => onForwardClick(disruptionId, notifications)}>
                             {notifications.some((n) =>!n.reported && (!n.relatedNotificationIds || n.relatedNotificationIds.length === 0)) ? 'New Notification' : 'Forward'}
                         </Button>
@@ -161,7 +176,6 @@ type NotificationTableProps = {
 }
 
 const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ notifications, dataExchangeRequests, partners, onRowSelected, onCheckClicked, onEditClicked, onViewRequestClicked, onCreateApprovalClicked, onViewApprovalClicked, onCreateRequestClicked, showActionsColumn = true, incomingCount}) => {
-    const isCustomerEffect = (effect: EffectType): boolean => effect === 'capacity-reduction' || effect === 'capacity-increase';
     return (
         <Box width="100%" className="hide-title">
             <Table
@@ -191,6 +205,21 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                         </Stack>
                         ),
                     },
+                    { headerName: 'End date', field: 'expectedEndDateOfEffect', renderCell: (data: { row: DemandCapacityNotification }) =>
+                        data.row.expectedEndDateOfEffect ? (
+                        <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                            <Box>{new Date(data.row.expectedEndDateOfEffect).toLocaleDateString('en-GB')}</Box>
+                            <Box>{new Date(data.row.expectedEndDateOfEffect).toLocaleTimeString('en-GB')}</Box>
+                        </Stack>
+                        ) : null
+                    },
+                    { headerName: 'Last Updated', field: 'contentChangedAt', renderCell: (data: { row: DemandCapacityNotification }) => (
+                        <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                            <Box>{new Date(data.row.contentChangedAt).toLocaleDateString('en-GB')}</Box>
+                            <Box>{new Date(data.row.contentChangedAt).toLocaleTimeString('en-GB')}</Box>
+                        </Stack>
+                        ),
+                    },
                     { headerName: 'Status', field: 'status', valueFormatter: (params) => STATUS.find((status) => status.key === params.value)?.value },
                     { headerName: 'Exchange Status', field: 'exchangeStatus', flex: 1,
                         renderCell: (params) => {
@@ -202,7 +231,7 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                                 if (!request) {
                                     return (
                                         <Typography color="primary" sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onCreateRequestClicked?.(params.row); }}>
-                                            Request Approval
+                                            Not Requested
                                         </Typography>
                                     );
                                 }
@@ -210,7 +239,7 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                                 if (request && !request.dataExchangeApproval) {
                                     return (
                                         <Typography sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(request); }}>
-                                            Ongoing
+                                            Pending
                                         </Typography>
                                     );
                                 }
@@ -218,7 +247,7 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                                 return (
                                     <Box display="flex" alignItems="center" gap={1}>
                                         <Typography sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(request); }}>
-                                            View Request
+                                            {getApprovalStatusLabel(request, params.row)}
                                         </Typography>
                                         <IconButton color="primary" size="small" onClick={(e) => { e.stopPropagation(); onViewApprovalClicked?.(request); }}>
                                             <Visibility />
@@ -230,7 +259,11 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                             // supplier view-
                             // no request no approval
                             if (!request) {
-                                return null;
+                                return (
+                                    <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} padding=".75rem .5rem">
+                                        <InfoButton text={'Requesting data exchange is not possible for the specified effect of the notification.'}></InfoButton>
+                                    </Stack>
+                                );
                             }
                             // request, no approval
                             if (request && !request.dataExchangeApproval) {
@@ -249,7 +282,7 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                             return (
                                 <Box display="flex" alignItems="center" gap={1}>
                                     <Typography sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onViewApprovalClicked?.(request); }}>
-                                        Request Approved
+                                        {getApprovalStatusLabel(request, params.row)}
                                     </Typography>
                                     <IconButton color="primary" size="small" onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(request); }}>
                                         <Visibility />
@@ -257,6 +290,15 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                                 </Box>
                             );
                         },
+                    },
+                    { headerName: 'Note', field: 'text', flex: 1.25, renderCell: (data: { row: DemandCapacityNotification }) => (
+                        <Stack display="flex" justifyContent="center" width="100%" height="100%">
+                            <Box>{data.row.text}</Box>
+                            {data.row.resolvingMeasureDescription && (
+                                <Box>Resolution: {data.row.resolvingMeasureDescription}</Box>
+                            )}
+                        </Stack>
+                        ),
                     },
                     { headerName: 'Action', field: 'actions', renderCell: (params) => {
                         if (params.row.status === 'resolved' || params.row.reported === true) {
