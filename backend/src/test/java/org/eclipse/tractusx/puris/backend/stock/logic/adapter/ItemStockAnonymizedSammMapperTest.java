@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
+import org.eclipse.tractusx.puris.backend.common.security.logic.AnonymizationService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -46,7 +47,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ItemStockAnonymizedSammMapperTest {
@@ -92,7 +92,7 @@ public class ItemStockAnonymizedSammMapperTest {
     private MaterialService materialService;
 
     @Mock
-    PasswordEncoder passwordEncoder;
+    AnonymizationService anonymizationService;
 
     @InjectMocks
     private ItemStockSammMapper itemStockSammMapper;
@@ -136,7 +136,7 @@ public class ItemStockAnonymizedSammMapperTest {
         // When
         when(mprService.find(semiconductorMaterial, supplierPartner)).thenReturn(mpr);
 
-        when(passwordEncoder.encode(anyString())).thenAnswer(invocation -> "enc:" + invocation.getArgument(0));
+        when(anonymizationService.anonymize(anyString(), anyString())).thenAnswer(invocation -> "enc:" + invocation.getArgument(0));
 
         ItemStockAnonymizedSamm materialItemStockAnonymizedSamm = itemStockSammMapper.materialItemStocksToItemStockAnonymizedSamm(List.of(materialItemStock), supplierPartner, semiconductorMaterial, "SALT");
 

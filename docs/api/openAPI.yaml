@@ -1848,7 +1848,7 @@ components:
       type: apiKey
 info:
   title: PURIS FOSS Open API
-  version: 6.1.0
+  version: 6.1.1
 openapi: 3.1.0
 paths:
   /batch/partner-data-update:
@@ -2391,9 +2391,8 @@ paths:
           description: Internal Server Error
         '501':
           description: Unsupported representation
-      summary: 'This endpoint receives the Delivery Information Anonymized Submodel
-        1.0.0 requests. This endpoint is meant to be accessed by our own EDC only,
-        on behalf of the partner identified by the bpnl path parameter. '
+      summary: This endpoint receives the Delivery Information Anonymized Submodel
+        1.0.0 requests. This endpoint is meant to be accessed by our own EDC only.
       tags:
       - delivery-request-api-controller
   /delivery-information/request/{materialNumberCx}/submodel/{representation}:
@@ -3290,8 +3289,7 @@ paths:
         '501':
           description: Unsupported representation
       summary: 'This endpoint receives the ItemStockAnonymized Submodel 1.0.0 requests.
-        This endpoint is meant to be accessed by our own EDC only, on behalf of the
-        partner identified by the bpnl path parameter. '
+        This endpoint is meant to be accessed by our own EDC only. '
       tags:
       - item-stock-request-api-controller
   /item-stock/request/{materialnumber}/{direction}/submodel/{representation}:
@@ -4176,8 +4174,7 @@ paths:
         '501':
           description: Unsupported representation
       summary: 'This endpoint receives the Anonymized Planned Production Submodel
-        1.0.0 requests. This endpoint is meant to be accessed by our own EDC only,
-        on behalf of the partner identified by the bpnl path parameter. '
+        1.0.0 requests. This endpoint is meant to be accessed by our own EDC only. '
       tags:
       - production-request-api-controller
   /planned-production/request/{materialnumbercx}/submodel/{representation}:

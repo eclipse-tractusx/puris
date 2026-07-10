@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
+import org.eclipse.tractusx.puris.backend.common.security.logic.AnonymizationService;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.EventTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.OwnDelivery;
@@ -50,7 +51,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -92,7 +92,7 @@ class DeliveryInformationSammMapperTest {
     MaterialService materialService;
 
     @Mock
-    PasswordEncoder passwordEncoder;
+    AnonymizationService anonymizationService;
 
     @Test
     void ownDeliveryToSamm_success() {
@@ -161,7 +161,7 @@ class DeliveryInformationSammMapperTest {
                 .lastUpdatedOnDateTime(now)
                 .build();
 
-        when(passwordEncoder.encode(anyString())).thenAnswer(invocation -> "enc:" + invocation.getArgument(0));
+        when(anonymizationService.anonymize(anyString(), anyString())).thenAnswer(invocation -> "enc:" + invocation.getArgument(0));
 
         var samm = mapper.ownDeliveryToAnonymizedSamm(List.of(od), PARTNER, MATERIAL_3, "SALT");
         assertNotNull(samm);

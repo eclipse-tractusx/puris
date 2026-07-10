@@ -20,6 +20,7 @@
 package org.eclipse.tractusx.puris.backend.production.logic.adapter;
 
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
+import org.eclipse.tractusx.puris.backend.common.security.logic.AnonymizationService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
@@ -29,7 +30,6 @@ import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproduction
 import org.eclipse.tractusx.puris.backend.production.logic.dto.anonymizedplannedproductionsamm.PlannedProductionOutputAnonymized;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.anonymizedplannedproductionsamm.AllocatedPlannedProductionOutputAnonymized;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +45,7 @@ public class PlannedProductionSammMapper {
     private MaterialPartnerRelationService mprService;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private AnonymizationService anonymizationService;
 
     public PlannedProductionOutput ownProductionToSamm(List<OwnProduction> production, Partner partner, Material material) {
         if (production.stream().anyMatch(prod -> !prod.getPartner().equals(partner))) {
@@ -106,12 +106,12 @@ public class PlannedProductionSammMapper {
             return null;
         }
         PlannedProductionOutputAnonymized samm = new PlannedProductionOutputAnonymized();
-        samm.setMaterialGlobalAssetIdAnonymized(passwordEncoder.encode(material.getMaterialNumberCx() + salt));
+        samm.setMaterialGlobalAssetIdAnonymized(anonymizationService.anonymize(material.getMaterialNumberCx(), salt));
         samm.setAllocatedPlannedProductionOutputs(new HashSet<>());
         for (var production : productionList) {
             var anonymizedAllocatedPlannedProductionOutput = new AllocatedPlannedProductionOutputAnonymized(
                 new ItemQuantityEntity(production.getQuantity(), production.getMeasurementUnit()),
-                passwordEncoder.encode(production.getProductionSiteBpns() + salt),
+                anonymizationService.anonymize(production.getProductionSiteBpns(), salt),
                 production.getEstimatedTimeOfCompletion(),
                 production.getLastUpdatedOnDateTime()
             );
