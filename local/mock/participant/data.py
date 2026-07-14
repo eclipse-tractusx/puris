@@ -16,7 +16,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Mock data for DTR and PURIS submodels served by the tier2 mock data plane."""
+"""Mock data for DTR and PURIS submodels served by the mock participant's data plane."""
 
 import base64
 import json

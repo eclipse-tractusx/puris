@@ -17,7 +17,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """
-Tier2 mock — single-container mock for n-tier supply-chain simulation.
+Mock participant — single-container mock for n-tier supply-chain simulation.
 
 Implements the provider side of:
   - DSP v0.8 catalog / negotiation / transfer endpoints
@@ -38,13 +38,13 @@ import data as mock_data
 from dsp import catalog, negotiations, outbound, transfers
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("tier2-mock")
+logger = logging.getLogger("mock-participant")
 
 # --------------------------------------------------------------------------
 # Config (from environment)
 # --------------------------------------------------------------------------
 BPNL = os.getenv("TIER2_BPNL", "BPNL3333333333T3")
-BASE_URL = os.getenv("TIER2_MOCK_BASE_URL", "http://puris-tier2-mock:8083")
+BASE_URL = os.getenv("MOCK_PARTICIPANT_BASE_URL", "http://puris-mock-participant:8083")
 SUPPLIER_BPNL = os.getenv("SUPPLIER_BPNL", "BPNL1234567890ZZ")
 WALLET_URL = os.getenv("WALLET_URL", "http://wallet:80")
 WALLET_OAUTH_SECRET = os.getenv("WALLET_OAUTH_SECRET", "miw_private_client")
@@ -59,7 +59,7 @@ WALLET_KWARGS = {
     "wallet_secret": WALLET_OAUTH_SECRET,
 }
 
-app = FastAPI(title="PURIS Tier2 Mock", version="1.0.0")
+app = FastAPI(title="PURIS Mock Participant", version="1.0.0")
 
 # Tasks fired from request handlers without being awaited. asyncio only holds a weak
 # reference to a Task, so without this the task can be garbage-collected mid-execution;
@@ -186,7 +186,7 @@ async def terminate_transfer(transfer_id: str):
 
 
 # --------------------------------------------------------------------------
-# DSP: Consumer callbacks (tier2 acting as consumer, e.g. for sending notifications)
+# DSP: Consumer callbacks (this participant acting as consumer, e.g. for sending notifications)
 # --------------------------------------------------------------------------
 
 @app.post("/api/v1/dsp/negotiations/{consumer_pid}/agreement")
@@ -226,13 +226,13 @@ async def consumer_transfer_start(consumer_pid: str, request: Request):
 
 
 # --------------------------------------------------------------------------
-# Mock trigger: tier2 sends a notification to the supplier
+# Mock trigger: the participant sends a notification to the supplier
 # --------------------------------------------------------------------------
 
 @app.post("/api/mock/send-notification")
 async def mock_send_notification():
-    """Trigger tier2 to send a DemandAndCapacityNotification to the supplier via full DSP flow."""
-    logger.info("Mock trigger: tier2 initiating outbound notification to supplier")
+    """Trigger the mock participant to send a DemandAndCapacityNotification to the supplier via full DSP flow."""
+    logger.info("Mock trigger: participant initiating outbound notification to supplier")
     ok, step = await outbound.negotiate_and_send_notification(
         supplier_dsp_url=SUPPLIER_DSP_URL,
         base_url=BASE_URL,
@@ -242,13 +242,13 @@ async def mock_send_notification():
         return {"status": "sent", "notificationId": outbound.FIXED_NOTIFICATION_ID}
     return JSONResponse(
         status_code=500,
-        content={"error": f"Failed at step: {step} — check tier2 mock logs"},
+        content={"error": f"Failed at step: {step} — check mock participant logs"},
     )
 
 
 @app.get("/api/mock/debug/supplier-catalog")
 async def debug_supplier_catalog():
-    """Fetch and return the supplier's DSP catalog as seen by tier2 (for debugging)."""
+    """Fetch and return the supplier's DSP catalog as seen by the mock participant (for debugging)."""
     asset_id, offer = await outbound.fetch_notification_asset(SUPPLIER_DSP_URL, **WALLET_KWARGS)
     return {
         "supplier_dsp_url": SUPPLIER_DSP_URL,
@@ -259,7 +259,7 @@ async def debug_supplier_catalog():
 
 @app.get("/api/mock/debug/iatp-token")
 async def debug_iatp_token():
-    """Obtain and decode the IATP token tier2 would use for negotiations (for debugging)."""
+    """Obtain and decode the IATP token the mock participant would use for negotiations (for debugging)."""
     token = await outbound.get_iatp_token(**WALLET_KWARGS)
     if not token:
         return JSONResponse(status_code=500, content={"error": "Failed to obtain IATP token — check logs"})
