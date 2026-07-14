@@ -413,6 +413,24 @@ services:
       - "host.docker.internal:host-gateway"
     command: start-dev --import-realm
 
+  puris-tier2-mock:
+    build: ./mock/tier2
+    container_name: tier2-mock
+    ports:
+      - "127.0.0.1:8083:8083"
+    environment:
+      TIER2_BPNL: ${TIER2_BPNL}
+      TIER2_MOCK_BASE_URL: http://puris-tier2-mock:8083
+      SUPPLIER_BPNL: ${SUPPLIER_BPNL}
+      WALLET_URL: http://wallet:80
+      WALLET_OAUTH_SECRET: miw_private_client
+      PORT: 8083
+      SUPPLIER_DSP_URL: http://supplier-control-plane:9184/api/v1/dsp
+    networks:
+      - miw-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 networks:
   miw-net:
     external: true
