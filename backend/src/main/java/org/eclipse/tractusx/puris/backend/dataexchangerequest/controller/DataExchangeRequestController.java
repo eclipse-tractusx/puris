@@ -24,10 +24,13 @@ import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
+import org.eclipse.tractusx.puris.backend.dataexchangeapproval.controller.DataExchangeApprovalController;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.OwnDataExchangeApproval;
+import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.ReportedDataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.dto.DataExchangeApprovalDto;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.DataExchangeApprovalApiService;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.OwnDataExchangeApprovalService;
+import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.ReportedDataExchangeApprovalService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.DataExchangeRequestDto;
@@ -73,6 +76,10 @@ public class DataExchangeRequestController {
     private DataExchangeRequestApiService dataExchangeRequestApiService;
     @Autowired
     private OwnDataExchangeApprovalService ownDataExchangeApprovalService;
+    @Autowired
+    private ReportedDataExchangeApprovalService reportedDataExchangeApprovalService;
+    @Autowired
+    private DataExchangeApprovalController dataExchangeApprovalController;
     @Autowired
     private ModelMapper modelMapper;
     @Autowired
@@ -164,6 +171,22 @@ public class DataExchangeRequestController {
     @Operation(summary = "Get all reported data exchange requests", description = "Get all reported data exchange requests.")
     public List<DataExchangeRequestDto> getAllReportedDataExchangeRequest() {
         return reportedDataExchangeRequestService.findAll().stream().map(this::convertReportedToDto).collect(Collectors.toList());
+    }
+
+    @GetMapping("{id}/approvals")
+    @ResponseBody
+    @Operation(summary = "Get all reported data exchange approvals for a specific request", description = "Get all reported data exchange approvals for a specific request.")
+    public DataExchangeApprovalDto getReportedDataExchangeApproval(@PathVariable UUID id) {
+        OwnDataExchangeRequest ownRequest = ownDataExchangeRequestService.findById(id);
+
+        if (ownRequest == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referenced own data exchange request does not exist.");
+        }
+        ReportedDataExchangeApproval approval = reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(id);
+        if (approval == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No reported approval exists for this request.");
+        }
+        return dataExchangeApprovalController.approvalConvertToDto(approval);
     }
 
     private DataExchangeRequestDto convertReportedToDto(ReportedDataExchangeRequest entity) {

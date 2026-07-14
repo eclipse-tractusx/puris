@@ -46,16 +46,66 @@ type CollapsibleDemandNotificationProps = {
 };
 
 
-const getApprovalStatusLabel = (request: DataExchangeRequest, demandCapacityNotification: DemandCapacityNotification) => {
-    if (demandCapacityNotification.status === 'resolved') {
-        return 'Terminated';
+type ExchangeStatusDescriptor =
+    | { kind: 'info'; text: string }
+    | { kind: 'status'; label: string; onClick?: () => void; request?: DataExchangeRequest; };
+
+const getExchangeStatus = (notification: DemandCapacityNotification, request: DataExchangeRequest | undefined, 
+    callbacks: Pick<NotificationTableProps, 'onCreateRequestClicked' | 'onViewRequestClicked' | 'onCreateApprovalClicked' | 'onViewApprovalClicked'>,
+): ExchangeStatusDescriptor => {
+    const { onCreateRequestClicked, onViewRequestClicked, onCreateApprovalClicked, onViewApprovalClicked } = callbacks;
+
+    if (!isDemandEffect(notification.effect)) {
+        return {
+            kind: 'info',
+            text: 'Requesting data exchange is not possible for the specified effect of the notification.',
+        };
+    }
+    if (!request) {
+        return notification.reported === true ? { kind: 'status', label: 'Not Requested', onClick: () => onCreateRequestClicked?.(notification) } : { kind: 'status', label: 'Not Requested' };
+    }
+    if (notification.status === 'resolved') {
+        return { kind: 'status', label: 'Terminated', onClick: () => onViewApprovalClicked?.(request), request };
+    }
+    if (!request.dataExchangeApproval) {
+        return notification.reported === true ?  { kind: 'status', label: 'Pending', onClick: () => onViewRequestClicked?.(request), request } : { kind: 'status', label: 'Pending', onClick: () => onCreateApprovalClicked?.(request), request };
     }
     if (request.desiredEndDateTime && new Date(request.desiredEndDateTime) < new Date()) {
-        return 'Expired';
+        return { kind: 'status', label: 'Expired', onClick: () => onViewApprovalClicked?.(request), request };
     }
-    return 'Approved';
+    return { kind: 'status', label: 'Approved', onClick: () => onViewApprovalClicked?.(request), request };
 };
-const isCustomerEffect = (effect: EffectType): boolean => effect === 'capacity-reduction' || effect === 'capacity-increase';
+const isDemandEffect = (effect: EffectType): boolean => effect === 'capacity-reduction' || effect === 'capacity-increase';
+
+const ExchangeStatusCell: React.FC<{ status: ExchangeStatusDescriptor; onViewRequestClicked?: (request: DataExchangeRequest) => void; }> = ({ status, onViewRequestClicked }) => {
+    if (status.kind === 'info') {
+        return (
+            <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} padding=".75rem .5rem">
+                <InfoButton text={status.text} />
+            </Stack>
+        );
+    }
+
+    const label = (
+        <Typography sx={status.onClick ? { cursor: 'pointer' } : undefined} onClick={status.onClick ? (e) => { e.stopPropagation(); status.onClick!(); } : undefined }
+        >
+            {status.label}
+        </Typography>
+    );
+
+    if (!status.request) {
+        return label;
+    }
+
+    return (
+        <Box display="flex" alignItems="center" gap={1}>
+            {label}
+            <IconButton color="primary" size="small" onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(status.request!); }}>
+                <Visibility />
+            </IconButton>
+        </Box>
+    );
+};
 
 export function CollapsibleDisruptionPanel({
         disruptionId,
@@ -128,7 +178,7 @@ export function CollapsibleDisruptionPanel({
 
                 {!isResolved && (
                     <Box sx={{ position: 'absolute', top: '50%', right: '1rem', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 2, zIndex: 1 }} >
-                        {isCustomerEffect(notifications[0].effect) && (
+                        {isDemandEffect(notifications[0].effect) && (
                             <Typography variant="body2" color={dataExchangeRequests.some((request) => !request.dataExchangeApproval) ? 'error' : '#fff'}>
                                 <b>Data Exchange Requests:</b> {dataExchangeRequests.length}
                             </Typography>
@@ -224,71 +274,10 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                     { headerName: 'Exchange Status', field: 'exchangeStatus', flex: 1,
                         renderCell: (params) => {
                             const request = dataExchangeRequests.find((r) => r.notificationId === params.row.notificationId);
-                            const isCustomer = isCustomerEffect(params.row.effect);
-
-                            if (isCustomer && params.row.reported === true) {
-                                // no request no approval
-                                if (!request) {
-                                    return (
-                                        <Typography color="primary" sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onCreateRequestClicked?.(params.row); }}>
-                                            Not Requested
-                                        </Typography>
-                                    );
-                                }
-                                // request no approval
-                                if (request && !request.dataExchangeApproval) {
-                                    return (
-                                        <Typography sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(request); }}>
-                                            Pending
-                                        </Typography>
-                                    );
-                                }
-                                // request + approval
-                                return (
-                                    <Box display="flex" alignItems="center" gap={1}>
-                                        <Typography sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(request); }}>
-                                            {getApprovalStatusLabel(request, params.row)}
-                                        </Typography>
-                                        <IconButton color="primary" size="small" onClick={(e) => { e.stopPropagation(); onViewApprovalClicked?.(request); }}>
-                                            <Visibility />
-                                        </IconButton>
-                                    </Box>
-                                );
-                            }
-
-                            // supplier view-
-                            // no request no approval
-                            if (!request) {
-                                return (
-                                    <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} padding=".75rem .5rem">
-                                        <InfoButton text={'Requesting data exchange is not possible for the specified effect of the notification.'}></InfoButton>
-                                    </Stack>
-                                );
-                            }
-                            // request, no approval
-                            if (request && !request.dataExchangeApproval) {
-                                return (
-                                    <Box display="flex" alignItems="center" gap={1}>
-                                        <Typography color="error" sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onCreateApprovalClicked?.(request); }}>
-                                            Approve Request
-                                        </Typography>
-                                        <IconButton color="primary" size="small" onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(request); }}>
-                                            <Visibility />
-                                        </IconButton>
-                                    </Box>
-                                );
-                            }
-                            // request + approval
-                            return (
-                                <Box display="flex" alignItems="center" gap={1}>
-                                    <Typography sx={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onViewApprovalClicked?.(request); }}>
-                                        {getApprovalStatusLabel(request, params.row)}
-                                    </Typography>
-                                    <IconButton color="primary" size="small" onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(request); }}>
-                                        <Visibility />
-                                    </IconButton>
-                                </Box>
-                            );
+                            const status = getExchangeStatus(params.row, request, {
+                                onCreateRequestClicked, onViewRequestClicked, onCreateApprovalClicked, onViewApprovalClicked,
+                            });
+                            return <ExchangeStatusCell status={status} onViewRequestClicked={onViewRequestClicked} />;
                         },
                     },
                     { headerName: 'Note', field: 'text', flex: 1.25, renderCell: (data: { row: DemandCapacityNotification }) => (

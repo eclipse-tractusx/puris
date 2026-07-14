@@ -33,7 +33,6 @@ export type DataExchangeRequest = {
     requestedTypes: RequestedTypeEnumeration[],
     text: string | null,
     timestamp: Date,
-    notification: DemandCapacityNotification,
     notificationId: string,
     relatedDataExchangeRequest: string[]
     dataExchangeApproval:  DataExchangeApproval | null;

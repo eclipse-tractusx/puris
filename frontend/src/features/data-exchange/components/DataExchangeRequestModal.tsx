@@ -34,6 +34,35 @@ import { DataExchangeApproval } from '@models/types/data/data-exchange-approval'
 import { EFFECTS } from '@models/constants/effects';
 import { InfoButton } from '@components/ui/InfoButton';
 
+type ReferencedNotificationCardProps = {
+    notification: DemandCapacityNotification;
+    partners: Partner[] | null;
+};
+
+const formatDate = (date?: string | Date | null) => date ? new Date(date).toLocaleDateString('en-GB') : null;
+
+export const ReferencedNotificationCard = ({ notification, partners }: ReferencedNotificationCardProps) => {
+    const rootCause = LEADING_ROOT_CAUSE.find((c) => c.key === notification.leadingRootCause)?.value ?? notification.leadingRootCause;
+    const effect = EFFECTS.find((e) => e.key === notification.effect)?.value ?? notification.effect;
+    const partnerName = partners?.find((p) => p.bpnl === notification.partnerBpnl)?.name ?? notification.partnerBpnl;
+    const startDate = formatDate(notification.startDateOfEffect);
+    const endDate = formatDate(notification.expectedEndDateOfEffect);
+
+    return (
+        <Stack gap={0.5}>
+            <FormLabel>Reference Notification</FormLabel>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, px: 1.5, py: 1 }} >
+                <Box>
+                    <Typography variant="body2" component="span" fontWeight="bold">{rootCause}</Typography>
+                    <Typography variant="body2" component="span" color="text.secondary"> ({effect})</Typography>
+                </Box>
+                <Typography variant="body2">{partnerName}</Typography>
+                <Typography variant="body2"> {startDate}{endDate ? ` - ${endDate}` : ''} </Typography>
+            </Stack>
+        </Stack>
+    );
+};
+
 const startOfToday = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -126,11 +155,11 @@ type DataExchangeRequestViewProps = {
 
 const AffectedMaterialsSection = ({ materialNumbers, partnerMaterials }: { materialNumbers?: string[]; partnerMaterials: PartnerMaterials; }) => (
     <Grid display="grid" item xs={12}>
-        <FormLabel>Customer Affected Materials:</FormLabel>
+        <FormLabel>Affected Materials:</FormLabel>
         <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, mt: 0.5, maxHeight: 180, overflowY: 'auto' }}>
             <Grid container>
                 {materialNumbers?.map((materialNumber, index) => {
-                    const name = partnerMaterials?.find((m) => m.ownMaterialNumber === materialNumber)?.description;
+                    const name = partnerMaterials?.find((m) => m.ownMaterialNumber === materialNumber)?.name;
                     return (
                         <Grid item xs={4} key={index}>
                             <Tooltip
@@ -164,17 +193,8 @@ const DataExchangeRequestView = ({
 
     return (
         <Grid container spacing={3} padding=".25rem">
-            <Grid display="grid" item xs={6}>
-                <FormLabel>Notification ID</FormLabel>
-                <Typography variant="body2">{demandCapacityNotification.notificationId}</Typography>
-            </Grid>
-            <Grid display="grid" item xs={6}>
-                <FormLabel>Leading Cause</FormLabel>
-                <Typography variant="body2">{LEADING_ROOT_CAUSE.find((dt) => dt.key === demandCapacityNotification.leadingRootCause)?.value}</Typography>
-            </Grid>
-            <Grid display="grid" item xs={6}>
-                <FormLabel>Affected Partner</FormLabel>
-                <Typography variant="body2">{partners?.find((p) => p.bpnl === demandCapacityNotification.partnerBpnl)?.name}</Typography>
+            <Grid item xs={12}>
+                <ReferencedNotificationCard notification={demandCapacityNotification} partners={partners} />
             </Grid>
             <Grid display="grid" item xs={6}>
                 <FormLabel>Criticality</FormLabel>
@@ -217,7 +237,7 @@ const DataExchangeRequestView = ({
                         disabled={!isCreatingApproval}
                         data-testid="requested-types-n-tier"
                     />
-                    <InputLabel htmlFor="requested-types-n-tier"> Exchange anonymous data with relevant participants (N-Tier) </InputLabel>
+                    <InputLabel htmlFor="requested-types-n-tier"> Exchange anonymous data with relevant participants across multiple tiers </InputLabel>
                 </Stack>
             </Grid>
         </Grid>
@@ -269,16 +289,16 @@ export const DataExchangeRequestInformationModal = ({
             .then(() => {
                 onSave();
                 notify({
-                    title: 'Data Exchange Request Added',
-                    description: 'Data exchange request has been added',
+                    title: 'Data Exchange Approval requested',
+                    description: 'Data exchange approval for the specified notification has been requested',
                     severity: 'success',
                 });
             })
             .catch((error) => {
-                console.error("Error occurred while saving data exchange request: ", error);
+                console.error("Error occurred while requesting data exchange approval: ", error);
                 notify({
                     title: error.status === 409 ? 'Conflict' : 'Error',
-                    description: error.status === 409 ? 'Data exchange request conflicting with an existing one' : error.error,
+                    description: error.status === 409 ? 'Data exchange approval has already been requested' : error.error,
                     severity: 'error',
                 });
             })
@@ -298,16 +318,16 @@ export const DataExchangeRequestInformationModal = ({
             .then(() => {
                 onSave();
                 notify({
-                    title: 'Data Exchange Approval Added',
-                    description: 'Data exchange approval has been added',
+                    title: 'Data Exchange approved',
+                    description: 'The requested data exchange approval has been approved',
                     severity: 'success',
                 });
             })
             .catch((error) => {
-                console.error("Error occurred while saving data exchange approval: ", error);
+                console.error("Error occurred while approving data exchange: ", error);
                 notify({
                     title: error.status === 409 ? 'Conflict' : 'Error',
-                    description: error.status === 409 ? 'Data exchange approval conflicting with an existing one' : error.error,
+                    description: error.status === 409 ? 'Data exchange has already been approved' : error.error,
                     severity: 'error',
                 });
             })
@@ -328,25 +348,8 @@ export const DataExchangeRequestInformationModal = ({
                 <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
                     {!dataApprovalMode && (!dataExchangeRequest || isEditMode) ? (
                         <Grid container spacing={3} padding=".25rem">
-                            <Grid display="grid" item xs={12}>
-                                <FormLabel>Partner</FormLabel>
-                                <Typography variant="body2">{partners?.find((p) => p.bpnl === demandCapacityNotification.partnerBpnl)?.name}</Typography>
-                            </Grid>
-                            <Grid display="grid" item xs={6}>
-                                <FormLabel>Effect</FormLabel>
-                                <Typography variant="body2">{EFFECTS.find((dt) => dt.key === demandCapacityNotification.effect)?.value}</Typography>
-                            </Grid>
-                            <Grid display="grid" item xs={6}>
-                                <FormLabel>Leading Cause</FormLabel>
-                                <Typography variant="body2">{LEADING_ROOT_CAUSE.find((dt) => dt.key === demandCapacityNotification.leadingRootCause)?.value}</Typography>
-                            </Grid>
-                            <Grid display="grid" item xs={6}>
-                                <FormLabel>Notification Start Date of Effect</FormLabel>
-                                <Typography variant="body2">{demandCapacityNotification.startDateOfEffect ? new Date(demandCapacityNotification.startDateOfEffect).toLocaleString() : ''}</Typography>
-                            </Grid>
-                            <Grid display="grid" item xs={6}>
-                                <FormLabel>Notification Desired End Date of Effect</FormLabel>
-                                <Typography variant="body2">{demandCapacityNotification.expectedEndDateOfEffect ? new Date(demandCapacityNotification.expectedEndDateOfEffect).toLocaleString() : ''}</Typography>
+                            <Grid item xs={12}>
+                                <ReferencedNotificationCard notification={demandCapacityNotification} partners={partners} />
                             </Grid>
                             {demandCapacityNotification.affectedMaterialNumbers && demandCapacityNotification.affectedMaterialNumbers.length > 0 && (
                                 <AffectedMaterialsSection
@@ -362,7 +365,7 @@ export const DataExchangeRequestInformationModal = ({
                                         checked={temporaryDataExchangeRequest?.requestedTypes?.includes('n-tier') ?? false}
                                         disabled
                                     />
-                                    <InputLabel htmlFor="requestedTypes-n-tier"> Anonymous data from relevant participants (N-Tier) </InputLabel>
+                                    <InputLabel htmlFor="requestedTypes-n-tier"> Anonymous data from relevant participants accross multiple tiers </InputLabel>
                                 </Stack>
                             </Grid>
                             <Grid item xs={6}>

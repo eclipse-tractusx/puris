@@ -1759,30 +1759,6 @@ paths:
       summary: Get all reported data exchange approvals
       tags:
       - data-exchange-approval-controller
-  /data-exchange-approval/{id}:
-    get:
-      description: Get all reported data exchange approvals for a specific request.
-      operationId: getReportedDataExchangeApproval
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          additionalProperties: false
-          format: uuid
-          maxItems: 50
-          type: string
-      responses:
-        '200':
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/DataExchangeApprovalDto'
-                additionalProperties: false
-          description: OK
-      summary: Get all reported data exchange approvals for a specific request
-      tags:
-      - data-exchange-approval-controller
   /data-exchange-request:
     get:
       description: Get all own data exchange requests.
@@ -1913,6 +1889,30 @@ paths:
         endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - data-exchange-request-api-controller
+  /data-exchange-request/{id}/approvals:
+    get:
+      description: Get all reported data exchange approvals for a specific request.
+      operationId: getReportedDataExchangeApproval
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DataExchangeApprovalDto'
+                additionalProperties: false
+          description: OK
+      summary: Get all reported data exchange approvals for a specific request
+      tags:
+      - data-exchange-request-controller
   /days-of-supply/customer:
     get:
       description: Calculate days of supply for customer for given number of days.

@@ -64,7 +64,7 @@ export const DemandCapacityNotificationView = () => {
         setTitle('Notifications');
     }, [setTitle]);
 
-    const fetchAndLogNotification = useCallback(async () => {
+    const fetchNotificationsAndRequests = useCallback(async () => {
         try {
             const [incoming, outgoing] = await Promise.all([
                 getDemandAndCapacityNotification(true),
@@ -103,8 +103,8 @@ export const DemandCapacityNotificationView = () => {
     }, []);
 
     useEffect(() => {
-        fetchAndLogNotification();
-    }, [fetchAndLogNotification]);
+        fetchNotificationsAndRequests();
+    }, [fetchNotificationsAndRequests]);
 
     const groupedNotifications = demandCapacityNotification.reduce((groups: Record<string, DemandCapacityNotification[]>, notification) => {
         if (!groups[notification.sourceDisruptionId]) groups[notification.sourceDisruptionId] = [];
@@ -287,7 +287,7 @@ export const DemandCapacityNotificationView = () => {
                     setFilterPartners(null);
                     setForwardData(undefined);
                 }}
-                onSave={fetchAndLogNotification}
+                onSave={fetchNotificationsAndRequests}
 
             />
 
@@ -308,7 +308,7 @@ export const DemandCapacityNotificationView = () => {
                         setSelectedApproval(null);
                         setSelectedRequest(null);
                     }}
-                    onSave={fetchAndLogNotification}
+                    onSave={fetchNotificationsAndRequests}
                 />
             )}
 
@@ -318,7 +318,7 @@ export const DemandCapacityNotificationView = () => {
                 onClose={() =>
                     setConfirmModalOpen(false)
                 }
-                onSave={fetchAndLogNotification}
+                onSave={fetchNotificationsAndRequests}
 
             />
         </>
