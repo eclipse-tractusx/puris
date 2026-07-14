@@ -24,31 +24,25 @@ import uuid
 from datetime import date, timedelta
 from typing import Optional
 
-# Material numbers used in the tier2 mock.
-# These must match what the Supplier PURIS registers as partnerMaterialNumber for tier2.
+
+# Must match what the Supplier PURIS registers as partnerMaterialNumber for tier2.
 TIER2_MATERIAL_NUMBER = "MNR-8101-ID175283.001"
 TIER2_AAS_ID = "urn:uuid:tier2-aas-01"
 
-# Submodel asset-id prefixes: shared between the DTR shell descriptors (_build_shell) and
-# the data-plane dispatch table (get_submodel). The DTR points consumers at these ids for a
-# subsequent GET on the data plane, so the two sides must stay in sync.
+# Shared between the DTR shell descriptors (_build_shell) and the data-plane dispatch table (get_submodel).
 ITEM_STOCK_ASSET = "itemstocksubmodel-api-asset"
-PRODUCTION_ASSET = "productionsubmodel-api-asset"
+PLANNED_PRODUCTION_ASSET = "productionsubmodel-api-asset"
 DELIVERY_ASSET = "deliverysubmodel-api-asset"
 DAYS_OF_SUPPLY_ASSET = "daysofsupplysubmodel-api-asset"
 NOTIFICATION_ASSET = "notification-api-asset"
 PART_TYPE_INFO_ASSET = "PartTypeInformationSubmodelApi"
 PART_TYPE_INFO_SEMANTIC_ID = "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation"
 
-# Single source of truth for (asset-id prefix, semantic id, catalog version), shared with
-# dsp/catalog.py so the DSP catalog offers and the DTR shell descriptors can't drift apart.
-# Pull submodels only — these are GET-able via the data plane and are advertised as
-# SUBMODEL-3.0 descriptors in the DTR shell (_build_shell).
+# Single source of truth for catalog offers and DTR shell descriptors.
+# Pull submodels only; these are GET-able via the data plane and advertised as SUBMODEL-3.0.
 SUBMODELS = [
     (ITEM_STOCK_ASSET, "urn:samm:io.catenax.item_stock:2.0.0#ItemStock", "2.0"),
-    (PRODUCTION_ASSET, "urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput", "2.0"),
-    # Demand submodel is not supported for this supplier-only mock and therefore is
-    # intentionally omitted from the offered SUBMODELS list.
+    (PLANNED_PRODUCTION_ASSET, "urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput", "2.0"),
     (DELIVERY_ASSET, "urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation", "2.0"),
     (DAYS_OF_SUPPLY_ASSET, "urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply", "2.0"),
 ]
@@ -62,9 +56,7 @@ NOTIFICATION_SUBMODEL = (
 # Everything dsp/catalog.py should expose as a DSP catalog offer / EDC asset.
 CATALOG_ASSETS = SUBMODELS + [NOTIFICATION_SUBMODEL]
 
-# PURIS backend validates catenaXId/materialGlobalAssetId against a strict UUID pattern
-# (urn:uuid:<uuid> or bare <uuid>), so this must be a real UUID rather than a readable label.
-# Deterministic (uuid5) so it stays stable across mock restarts and matches across submodels.
+# PURIS backend expects a real UUID here, so use a deterministic uuid5 for stability.
 
 
 def _material_global_asset_id(bpnl: str) -> str:
@@ -205,7 +197,7 @@ def _item_stock(bpnl: str) -> dict:
     }
 
 
-def _production(bpnl: str) -> dict:
+def _planned_production_output(bpnl: str) -> dict:
     return {
         "materialGlobalAssetId": _material_global_asset_id(bpnl),
         "positions": [
@@ -322,7 +314,7 @@ def _part_type_info(bpnl: str) -> dict:
 
 _SUBMODEL_DISPATCH = {
     ITEM_STOCK_ASSET: _item_stock,
-    PRODUCTION_ASSET: _production,
+    PLANNED_PRODUCTION_ASSET: _planned_production_output,
     DELIVERY_ASSET: _delivery,
     DAYS_OF_SUPPLY_ASSET: _days_of_supply,
     NOTIFICATION_ASSET: _notification,
