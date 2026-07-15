@@ -20,7 +20,7 @@
 Mock participant — single-container mock for n-tier supply-chain simulation.
 
 Implements the provider side of:
-    - DSP v1.0 catalog / negotiation / transfer endpoints
+  - DSP v0.8 catalog / negotiation / transfer endpoints
   - A data plane (HttpData-PULL) serving DTR lookups and PURIS submodels
 """
 
@@ -82,7 +82,7 @@ def _spawn(coro) -> asyncio.Task:
 async def dsp_version():
     return {
         "protocolVersions": [
-            {"version": "v1.0", "path": "/", "binding": "HTTPS"}
+            {"version": "v0.8", "path": "/", "binding": "HTTPS"}
         ]
     }
 
@@ -137,7 +137,7 @@ async def verify_agreement(neg_id: str):
         )
     )
     return {
-        "@context": {"dspace": "https://w3id.org/dspace/v1.0/"},
+        "@context": {"dspace": "https://w3id.org/dspace/v0.8/"},
         "@type": "dspace:ContractNegotiation",
         "dspace:providerPid": neg_id,
         "dspace:state": "dspace:FINALIZED",
@@ -273,7 +273,7 @@ async def debug_iatp_token():
 
     # Also probe whether the supplier catalog is accessible without any auth
     catalog_url = f"{SUPPLIER_DSP_URL.rstrip('/')}/catalog/request"
-    catalog_body = {"@context": {"dspace": "https://w3id.org/dspace/v1.0/"}, "@type": "dspace:CatalogRequestMessage"}
+    catalog_body = {"@context": {"dspace": "https://w3id.org/dspace/v0.8/"}, "@type": "dspace:CatalogRequestMessage"}
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             r = await client.post(catalog_url, json=catalog_body)
