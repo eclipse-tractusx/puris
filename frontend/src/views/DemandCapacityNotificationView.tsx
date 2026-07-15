@@ -189,14 +189,12 @@ export const DemandCapacityNotificationView = () => {
                                 onViewRequestClicked={(request) => {
                                     setSelectedRequest(request);
                                     setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
-                                    setIsEditMode(false);
                                     setDataApprovalMode(false);
                                     setDataRequestModalOpen(true);
                                 }}
                                 onViewApprovalClicked={(request) => {
                                     setSelectedRequest(request);
                                     setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
-                                    setIsEditMode(false);
                                     setDataApprovalMode(true);
                                     setSelectedApproval(request.dataExchangeApproval);
                                     setDataRequestModalOpen(true);
@@ -204,14 +202,12 @@ export const DemandCapacityNotificationView = () => {
                                 onCreateRequestClicked={(notification) => {
                                     setSelectedNotification(notification);
                                     setSelectedRequest(null);
-                                    setIsEditMode(true);
                                     setDataApprovalMode(false);
                                     setDataRequestModalOpen(true);
                                 }}
                                 onCreateApprovalClicked={(request) => {
                                     setSelectedRequest(request);
                                     setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
-                                    setIsEditMode(false);
                                     setDataApprovalMode(true);
                                     setSelectedApproval(null);
                                     setDataRequestModalOpen(true);
@@ -255,14 +251,12 @@ export const DemandCapacityNotificationView = () => {
                                 onViewRequestClicked={(request) => {
                                     setSelectedRequest(request);
                                     setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
-                                    setIsEditMode(false);
                                     setDataApprovalMode(false);
                                     setDataRequestModalOpen(true);
                                 }}
                                 onViewApprovalClicked={(request) => {
                                     setSelectedRequest(request);
                                     setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
-                                    setIsEditMode(false);
                                     setDataApprovalMode(true);
                                     setSelectedApproval(request.dataExchangeApproval);
                                     setDataRequestModalOpen(true);
@@ -294,7 +288,6 @@ export const DemandCapacityNotificationView = () => {
             {activeRequestNotification && (
                 <DataExchangeRequestInformationModal
                     open={dataRequestModalOpen}
-                    isEditMode={isEditMode}
                     dataApprovalMode={dataApprovalMode}
                     dataExchangeApproval={selectedApproval}
                     demandCapacityNotification={activeRequestNotification}
@@ -302,7 +295,6 @@ export const DemandCapacityNotificationView = () => {
                     partners={filterPartners ?? partners}
                     onClose={() => {
                         setDataRequestModalOpen(false);
-                        setIsEditMode(false);
                         setFilterPartners(null);
                         setDataApprovalMode(false);
                         setSelectedApproval(null);

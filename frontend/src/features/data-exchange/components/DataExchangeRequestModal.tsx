@@ -84,10 +84,8 @@ const isDesiredStartDateTimeValid = (
     if (!request.desiredStartDateTime) return false;
     const start = new Date(request.desiredStartDateTime);
     if (start < startOfToday()) return false;
-    if (demandCapacityNotification.startDateOfEffect &&
-        start < new Date(demandCapacityNotification.startDateOfEffect)) return false;
-    if (demandCapacityNotification.expectedEndDateOfEffect &&
-        start > new Date(demandCapacityNotification.expectedEndDateOfEffect)) return false;
+    if (start < new Date(demandCapacityNotification.startDateOfEffect)) return false;
+    if (demandCapacityNotification.expectedEndDateOfEffect && start > new Date(demandCapacityNotification.expectedEndDateOfEffect)) return false;
     if (request.desiredEndDateTime && start > new Date(request.desiredEndDateTime)) return false;
     return true;
 };
@@ -99,10 +97,8 @@ const isDesiredEndDateTimeValid = (
     if (!request.desiredEndDateTime) return false;
     const end = new Date(request.desiredEndDateTime);
     if (end < new Date()) return false;
-    if (demandCapacityNotification.startDateOfEffect &&
-        end < new Date(demandCapacityNotification.startDateOfEffect)) return false;
-    if (demandCapacityNotification.expectedEndDateOfEffect &&
-        end > new Date(demandCapacityNotification.expectedEndDateOfEffect)) return false;
+    if (end < new Date(demandCapacityNotification.startDateOfEffect)) return false;
+    if (demandCapacityNotification.expectedEndDateOfEffect && end > new Date(demandCapacityNotification.expectedEndDateOfEffect)) return false;
     if (request.desiredStartDateTime && end < new Date(request.desiredStartDateTime)) return false;
     return true;
 };
@@ -135,7 +131,6 @@ type DataExchangeRequestModalProps = {
     demandCapacityNotification: DemandCapacityNotification;
     dataExchangeRequest: DataExchangeRequest | null;
     partners: Partner[] | null;
-    isEditMode: boolean;
     dataApprovalMode: boolean;
     dataExchangeApproval: DataExchangeApproval | null;
     onClose: () => void;
@@ -218,8 +213,8 @@ const DataExchangeRequestView = ({
             </Grid>
             <Grid display="grid" item xs={6}>
                 <FormLabel>Data Exchange Status</FormLabel>
-                <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} padding=".75rem .5rem">
-                    <Typography variant="body2">{status.label}<InfoButton text={status.explanation}></InfoButton></Typography>
+                <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} paddingBlock=".75rem">
+                    <Typography variant="body2">{status.label}</Typography><InfoButton text={status.explanation}></InfoButton>
                 </Stack>
             </Grid>
             <Grid display="grid" item xs={12}><Divider flexItem /></Grid>
@@ -249,7 +244,6 @@ export const DataExchangeRequestInformationModal = ({
     demandCapacityNotification,
     dataExchangeRequest,
     partners,
-    isEditMode,
     dataApprovalMode,
     dataExchangeApproval,
     onClose,
@@ -343,10 +337,10 @@ export const DataExchangeRequestInformationModal = ({
         <>
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle variant="h3" textAlign="center">
-                    {dataApprovalMode ? 'Data Exchange Approval' : isEditMode ? 'Create Data Exchange Request' : 'Data Exchange'}
+                    {dataApprovalMode ? 'Data Exchange Approval' : 'Data Exchange'}
                 </DialogTitle>
                 <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
-                    {!dataApprovalMode && (!dataExchangeRequest || isEditMode) ? (
+                    {!dataApprovalMode && (!dataExchangeRequest) ? (
                         <Grid container spacing={3} padding=".25rem">
                             <Grid item xs={12}>
                                 <ReferencedNotificationCard notification={demandCapacityNotification} partners={partners} />
@@ -459,7 +453,7 @@ export const DataExchangeRequestInformationModal = ({
                                     <Send /> Approve and close
                                 </Button>
                             )
-                        ) : isEditMode || !dataExchangeRequest ? (
+                        ) : !dataExchangeRequest ? (
                             <Button variant="contained" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleSaveClick}
                             >
                                 <Send /> Send

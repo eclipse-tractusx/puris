@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { useState } from 'react';
 import { Box, Button, IconButton, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { Check, ChevronRightOutlined, Edit, Visibility } from '@mui/icons-material';
+import { AddBoxOutlined, Check, ChevronRightOutlined, Edit, Visibility } from '@mui/icons-material';
 import { DemandCapacityNotification, EffectType } from '@models/types/data/demand-capacity-notification';
 import { Partner } from '@models/types/edc/partner';
 import { Table } from '@catena-x/portal-shared-components';
@@ -58,11 +58,11 @@ const getExchangeStatus = (notification: DemandCapacityNotification, request: Da
     if (!isDemandEffect(notification.effect)) {
         return {
             kind: 'info',
-            text: 'Requesting data exchange is not possible for the specified effect of the notification.',
+            text: 'Requesting data exchange is currently not supported for the specified effect of the notification.',
         };
     }
     if (!request) {
-        return notification.reported === true ? { kind: 'status', label: 'Not Requested', onClick: () => onCreateRequestClicked?.(notification) } : { kind: 'status', label: 'Not Requested' };
+        return { kind: 'status', label: 'Not Requested', onClick: notification.reported === true ? () => onCreateRequestClicked?.(notification) : undefined };
     }
     if (notification.status === 'resolved') {
         return { kind: 'status', label: 'Terminated', onClick: () => onViewApprovalClicked?.(request), request };
@@ -77,33 +77,27 @@ const getExchangeStatus = (notification: DemandCapacityNotification, request: Da
 };
 const isDemandEffect = (effect: EffectType): boolean => effect === 'capacity-reduction' || effect === 'capacity-increase';
 
-const ExchangeStatusCell: React.FC<{ status: ExchangeStatusDescriptor; onViewRequestClicked?: (request: DataExchangeRequest) => void; }> = ({ status, onViewRequestClicked }) => {
+const ExchangeStatusCell: React.FC<{ status: ExchangeStatusDescriptor }> = ({ status }) => {
     if (status.kind === 'info') {
         return (
             <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} padding=".75rem .5rem">
-                <InfoButton text={status.text} />
+                - <InfoButton text={status.text} />
             </Stack>
         );
     }
 
-    const label = (
-        <Typography sx={status.onClick ? { cursor: 'pointer' } : undefined} onClick={status.onClick ? (e) => { e.stopPropagation(); status.onClick!(); } : undefined }
-        >
-            {status.label}
-        </Typography>
-    );
+    const label = <Typography>{status.label}</Typography>;
 
-    if (!status.request) {
+    if (!status.onClick) {
         return label;
     }
 
     return (
-        <Box display="flex" alignItems="center" gap={1}>
+        <Button variant="text" sx={{ textTransform: 'none' }} onClick={(e) => { e.stopPropagation(); status.onClick?.(); }}
+            startIcon={status.request ? <Visibility /> : <AddBoxOutlined />}
+        >
             {label}
-            <IconButton color="primary" size="small" onClick={(e) => { e.stopPropagation(); onViewRequestClicked?.(status.request!); }}>
-                <Visibility />
-            </IconButton>
-        </Box>
+        </Button>
     );
 };
 
@@ -128,6 +122,10 @@ export function CollapsibleDisruptionPanel({
     const incomingCount = notifications.filter(n => n.reported === true).length;
     const outgoingCount = notifications.filter(n => n.reported === false).length;
     const resolvedCount = notifications.filter(n => n.status === 'resolved').length;
+
+    const pendingRequestCount = dataExchangeRequests.filter((request) =>
+        !request.dataExchangeApproval && notifications.some((n) => n.notificationId === request.notificationId && n.reported === true)
+    ).length;
     
     return (
         <>
@@ -178,9 +176,9 @@ export function CollapsibleDisruptionPanel({
 
                 {!isResolved && (
                     <Box sx={{ position: 'absolute', top: '50%', right: '1rem', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 2, zIndex: 1 }} >
-                        {isDemandEffect(notifications[0].effect) && (
-                            <Typography variant="body2" color={dataExchangeRequests.some((request) => !request.dataExchangeApproval) ? 'error' : '#fff'}>
-                                <b>Data Exchange Requests:</b> {dataExchangeRequests.length}
+                        {isDemandEffect(notifications[0].effect) && pendingRequestCount > 0 && (
+                            <Typography variant="body2" color="error">
+                                <b>Pending Data Exchange Requests:</b> {pendingRequestCount}
                             </Typography>
                         )}
                         <Button variant="contained" onClick={() => onForwardClick(disruptionId, notifications)}>
@@ -277,7 +275,7 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                             const status = getExchangeStatus(params.row, request, {
                                 onCreateRequestClicked, onViewRequestClicked, onCreateApprovalClicked, onViewApprovalClicked,
                             });
-                            return <ExchangeStatusCell status={status} onViewRequestClicked={onViewRequestClicked} />;
+                            return <ExchangeStatusCell status={status} />;
                         },
                     },
                     { headerName: 'Note', field: 'text', flex: 1.25, renderCell: (data: { row: DemandCapacityNotification }) => (
