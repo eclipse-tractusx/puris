@@ -25,7 +25,7 @@ import httpx
 
 logger = logging.getLogger("mock-participant")
 
-DSPACE_NS = "https://w3id.org/dspace/v0.8/"
+DSPACE_NS = "https://w3id.org/dspace/v1.0/"
 ODRL_NS = "http://www.w3.org/ns/odrl/2/"
 
 # Used by the ContractRequestMessage/ContractAgreementMessage contexts (trailing slash, unlike
