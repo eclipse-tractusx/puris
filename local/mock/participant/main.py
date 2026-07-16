@@ -310,7 +310,7 @@ async def dtr_shell(aas_id_b64: str):
 
 
 @app.get("/api/public/{asset_id:path}")
-async def data_plane(asset_id: str, request: Request):
+async def data_plane(asset_id: str):
     # Strip trailing $value representation suffix if present
     clean_id = asset_id.split("/$value")[0].split("/$metadata")[0]
     logger.info("Data plane request: asset=%s", clean_id)

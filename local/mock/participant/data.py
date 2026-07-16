@@ -39,22 +39,15 @@ PART_TYPE_INFO_ASSET = "PartTypeInformationSubmodelApi"
 PART_TYPE_INFO_SEMANTIC_ID = "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation"
 
 # Single source of truth for catalog offers and DTR shell descriptors.
-# Pull submodels only; these are GET-able via the data plane and advertised as SUBMODEL-3.0.
+# GET-able via the data plane and advertised as SUBMODEL-3.0.
 SUBMODELS = [
     (ITEM_STOCK_ASSET, "urn:samm:io.catenax.item_stock:2.0.0#ItemStock", "2.0"),
     (PLANNED_PRODUCTION_ASSET, "urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput", "2.0"),
     (DELIVERY_ASSET, "urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation", "2.0"),
     (DAYS_OF_SUPPLY_ASSET, "urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply", "2.0"),
+    (PART_TYPE_INFO_ASSET, PART_TYPE_INFO_SEMANTIC_ID, "1.0"),
 ]
 
-NOTIFICATION_SUBMODEL = (
-    NOTIFICATION_ASSET,
-    "urn:samm:io.catenax.demand_and_capacity_notification:3.0.0#DemandAndCapacityNotification",
-    "3.0",
-)
-
-# Everything dsp/catalog.py should expose as a DSP catalog offer / EDC asset.
-CATALOG_ASSETS = SUBMODELS + [NOTIFICATION_SUBMODEL]
 
 # PURIS backend expects a real UUID here, so use a deterministic uuid5 for stability.
 
@@ -127,11 +120,6 @@ def _build_shell(bpnl: str, base_url: str) -> dict:
         _submodel_descriptor(semantic_id, f"{prefix}@{bpnl}")
         for prefix, semantic_id, _version in SUBMODELS
     ]
-    submodel_descriptors.append(
-        _submodel_descriptor(PART_TYPE_INFO_SEMANTIC_ID,
-                             f"{PART_TYPE_INFO_ASSET}@{bpnl}")
-    )
-
     return {
         "id": TIER2_AAS_ID,
         "globalAssetId": _material_global_asset_id(bpnl),
@@ -271,30 +259,6 @@ def _days_of_supply(bpnl: str) -> dict:
     }
 
 
-def _notification(bpnl: str) -> dict:
-    return {
-        "notificationId": str(uuid.uuid5(uuid.NAMESPACE_URL, f"tier2-mock-notification-{bpnl}")),
-        "affectedSitesSender": [_bpns(bpnl)],
-        "affectedSitesRecipient": ["BPNS1234567890ZZ"],
-        "leadingRootCause": "strike",
-        "effect": "capacity-reduction",
-        "materialsAffected": [
-            {
-                "materialGlobalAssetId": _material_global_asset_id(bpnl),
-                "materialNumberSupplier": TIER2_MATERIAL_NUMBER,
-                "materialNumberCustomer": TIER2_MATERIAL_NUMBER,
-            }
-        ],
-        "startDateOfEffect": f"{_today()}T00:00:00Z",
-        "expectedEndDateOfEffect": f"{_future(14)}T00:00:00Z",
-        "status": "open",
-        "contentChangedAt": f"{_today()}T00:00:00Z",
-        "relatedNotificationIds": None,
-        "sourceDisruptionId": str(uuid.uuid4()),
-        "text": "Mock notification",
-    }
-
-
 def _part_type_info(bpnl: str) -> dict:
     return {
         "catenaXId": _material_global_asset_id(bpnl),
@@ -317,6 +281,5 @@ _SUBMODEL_DISPATCH = {
     PLANNED_PRODUCTION_ASSET: _planned_production_output,
     DELIVERY_ASSET: _delivery,
     DAYS_OF_SUPPLY_ASSET: _days_of_supply,
-    NOTIFICATION_ASSET: _notification,
     PART_TYPE_INFO_ASSET: _part_type_info,
 }
