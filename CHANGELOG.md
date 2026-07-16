@@ -16,6 +16,7 @@ The **need for configuration updates** is **marked bold**.
 - Added Data exchange request edc integration ([#1126](https://github.com/eclipse-tractusx/puris/pull/1126))
 - Added IC Notification Message Header integration ([#1143](https://github.com/eclipse-tractusx/puris/pull/1143))
 - Added Data exchange approval edc integration ([#1173](https://github.com/eclipse-tractusx/puris/pull/1173))
+- Added frontend implementation of data exhcange requests and approvals ([#1175](https://github.com/eclipse-tractusx/puris/pull/1175))
 
 ### Changed
 

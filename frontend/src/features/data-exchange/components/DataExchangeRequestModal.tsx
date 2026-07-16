@@ -27,7 +27,7 @@ import { DemandCapacityNotification } from '@models/types/data/demand-capacity-n
 import { usePartnerMaterials } from '@hooks/usePartnerMaterials';
 import { Partner } from '@models/types/edc/partner';
 import { useNotifications } from '@contexts/notificationContext';
-import { CriticalityEnumeration, DataExchangeRequest, RequestedTypeEnumeration } from '@models/types/data/data-exchange-request';
+import { CriticalityEnumeration, DataExchangeRequest } from '@models/types/data/data-exchange-request';
 import { postDataExchangeApproval, postDataExchangeRequest } from '@services/data-exchange-service';
 import { CRITICALITY } from '@models/constants/criticality';
 import { DataExchangeApproval } from '@models/types/data/data-exchange-approval';
