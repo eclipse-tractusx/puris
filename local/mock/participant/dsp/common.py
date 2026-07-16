@@ -25,18 +25,11 @@ import httpx
 
 logger = logging.getLogger("mock-participant")
 
-DSPACE_NS = "https://w3id.org/dspace/v0.8/"
-ODRL_NS = "http://www.w3.org/ns/odrl/2/"
-
-# Used by the ContractRequestMessage/ContractAgreementMessage contexts (trailing slash, unlike
-# the catalog's own @context which uses the non-trailing-slash form).
-CX_POLICY_NS = "https://w3id.org/catenax/2025/9/policy/"
-
-CONTEXT_DSPACE = {"dspace": DSPACE_NS}
+CONTEXT_DSPACE = {"dspace": "https://w3id.org/dspace/v0.8/"}
 CONTEXT_DSPACE_ODRL_POLICY = {
-    "dspace": DSPACE_NS,
-    "odrl": ODRL_NS,
-    "cx-policy": CX_POLICY_NS,
+    "dspace": "https://w3id.org/dspace/v0.8/",
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "cx-policy": "https://w3id.org/catenax/2025/9/policy/",
 }
 
 FRAMEWORK_AGREEMENT = "DataExchangeGovernance:1.0"
