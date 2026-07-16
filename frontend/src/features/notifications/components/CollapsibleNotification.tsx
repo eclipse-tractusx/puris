@@ -45,7 +45,6 @@ type CollapsibleDemandNotificationProps = {
     onCreateRequestClicked?: (notification: DemandCapacityNotification) => void;
 };
 
-
 type ExchangeStatusDescriptor =
     | { kind: 'info'; text: string }
     | { kind: 'status'; label: string; onClick?: () => void; request?: DataExchangeRequest; };

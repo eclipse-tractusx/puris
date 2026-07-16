@@ -39,7 +39,6 @@ import { getDataExchangeApproval, getDataExchangeRequest } from '@services/data-
 export const DemandCapacityNotificationView = () => {
     const [demandCapacityNotification, setDemandCapacityNotification] = useState<DemandCapacityNotification[]>([]);
     const [dataExchangeRequests, setDataExchangeRequests] = useState<DataExchangeRequest[]>([]);
-    const [dataExchangeApprovals, setDataExchangeApprovals] = useState<DataExchangeApproval[]>([]);
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [dataRequestModalOpen, setDataRequestModalOpen] = useState<boolean>(false);
     const [dataApprovalMode, setDataApprovalMode] = useState<boolean>(false);
@@ -96,7 +95,6 @@ export const DemandCapacityNotificationView = () => {
             }));
 
             setDataExchangeRequests([...incomingRequestWithApproval, ...outgoingRequestWithApproval]);
-            setDataExchangeApprovals([...incomingApproval, ...outgoingApproval]);
         } catch (error) {
             console.error(error);
         }

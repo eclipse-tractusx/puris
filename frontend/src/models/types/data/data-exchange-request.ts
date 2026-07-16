@@ -18,12 +18,9 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { DataExchangeApproval } from "./data-exchange-approval";
-import { DemandCapacityNotification } from "./demand-capacity-notification";
-
 
 export type CriticalityEnumeration = "low" | "medium" | "high";
 export type RequestedTypeEnumeration = "n-tier";
-
 export type DataExchangeRequest = {
     uuid: string,
     requestId: string,
@@ -31,9 +28,8 @@ export type DataExchangeRequest = {
     desiredStartDateTime: Date,
     desiredEndDateTime: Date,
     requestedTypes: RequestedTypeEnumeration[],
-    text: string | null,
+    text: string,
     timestamp: Date,
     notificationId: string,
-    relatedDataExchangeRequest: string[]
     dataExchangeApproval:  DataExchangeApproval | null;
 };

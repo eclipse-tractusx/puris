@@ -23,7 +23,6 @@ import { DataExchangeRequest } from "@models/types/data/data-exchange-request";
 import { DataExchangeApproval } from "@models/types/data/data-exchange-approval";
 
 export const getDataExchangeRequest = async (isIncoming: boolean) => {
-
     const endpoint = isIncoming ? `${config.app.ENDPOINT_DATA_EXCHANGE_REQUEST}/reported` : `${config.app.ENDPOINT_DATA_EXCHANGE_REQUEST}`;
     const res = await fetch(`${config.app.BACKEND_BASE_URL}${endpoint}`, {
         method: 'GET',
@@ -40,7 +39,6 @@ export const getDataExchangeRequest = async (isIncoming: boolean) => {
 }
 
 export const postDataExchangeRequest = async (request: Partial<DataExchangeRequest>) => {
-    console.log("Posting data exchange request: ", request);
     const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_DATA_EXCHANGE_REQUEST, {
         method: 'POST',
         body: JSON.stringify(request),
@@ -57,7 +55,6 @@ export const postDataExchangeRequest = async (request: Partial<DataExchangeReque
 }
 
 export const getDataExchangeApproval = async (isIncoming: boolean) => {
-
     const endpoint = isIncoming ? `${config.app.ENDPOINT_DATA_EXCHANGE_APPROVAL}/reported` : `${config.app.ENDPOINT_DATA_EXCHANGE_APPROVAL}`;
     const res = await fetch(`${config.app.BACKEND_BASE_URL}${endpoint}`, {
         method: 'GET',
