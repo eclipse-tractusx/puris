@@ -36,16 +36,15 @@ DELIVERY_ASSET = "deliverysubmodel-api-asset"
 DAYS_OF_SUPPLY_ASSET = "daysofsupplysubmodel-api-asset"
 NOTIFICATION_ASSET = "notification-api-asset"
 PART_TYPE_INFO_ASSET = "PartTypeInformationSubmodelApi"
-PART_TYPE_INFO_SEMANTIC_ID = "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation"
 
 # Single source of truth for catalog offers and DTR shell descriptors.
 # GET-able via the data plane and advertised as SUBMODEL-3.0.
 SUBMODELS = [
-    (ITEM_STOCK_ASSET, "urn:samm:io.catenax.item_stock:2.0.0#ItemStock", "2.0"),
-    (PLANNED_PRODUCTION_ASSET, "urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput", "2.0"),
-    (DELIVERY_ASSET, "urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation", "2.0"),
-    (DAYS_OF_SUPPLY_ASSET, "urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply", "2.0"),
-    (PART_TYPE_INFO_ASSET, PART_TYPE_INFO_SEMANTIC_ID, "1.0"),
+    (ITEM_STOCK_ASSET, "urn:samm:io.catenax.item_stock:2.0.0#ItemStock"),
+    (PLANNED_PRODUCTION_ASSET, "urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput"),
+    (DELIVERY_ASSET, "urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation"),
+    (DAYS_OF_SUPPLY_ASSET, "urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply"),
+    (PART_TYPE_INFO_ASSET, "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation"),
 ]
 
 
@@ -111,14 +110,14 @@ def _build_shell(bpnl: str, base_url: str) -> dict:
                         "subprotocol": "DSP",
                         "subprotocolBody": f"id={asset_id};dspEndpoint={dsp_url}",
                         "subprotocolBodyEncoding": "plain",
-                    },
+                    }, 
                 }
             ],
         }
 
     submodel_descriptors = [
         _submodel_descriptor(semantic_id, f"{prefix}@{bpnl}")
-        for prefix, semantic_id, _version in SUBMODELS
+        for prefix, semantic_id in SUBMODELS
     ]
     return {
         "id": TIER2_AAS_ID,
@@ -230,10 +229,10 @@ def _delivery(bpnl: str) -> dict:
                         ],
                         "transitLocations": {
                             "origin": {"bpnsProperty": _bpns(bpnl), "bpnaProperty": _bpna(bpnl)},
-                            "destination": {"bpnsProperty": "BPNS1234567890ZZ", "bpnaProperty": "BPNA1234567890ZZ"},
+                            "destination": {"bpnsProperty": "BPNS1234567890ZZ", "bpnaProperty": "BPNA1234567890AA"},
                         },
                         "trackingNumber": "1Z9829WDE02128",
-                        "incoterm": "EXW",
+                        "incoterm": "DAP",
                     }
                 ],
             }
