@@ -1,0 +1,249 @@
+#
+# Copyright (c) 2026 Volkswagen AG
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+databaseChangeLog:
+  - changeSet:
+      id: "1"
+      author: OlgaIvkovic
+      changes:
+        - createTable:
+            tableName: partner_aggregated_data
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: partner_aggregated_data_pkey
+              - column:
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: partner_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: child_aggregated_data
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: child_aggregated_data_pkey
+              - column:
+                  name: external_material_number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: external_material_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: parent_aggregated_data_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: reported_anonymized_delivery
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_anonymized_delivery_pkey
+              - column:
+                  name: aggregated_data_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: FLOAT8
+                  constraints:
+                    nullable: false
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_of_departure
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_of_arrival
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: departure_type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: arrival_type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: origin_bpns_anonymized
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: destination_bpns_anonymized
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: reported_anonymized_stock
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_anonymized_stock_pkey
+              - column:
+                  name: aggregated_data_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: FLOAT8
+                  constraints:
+                    nullable: false
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: stock_location_bpns_anonymized
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_blocked
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: reported_anonymized_production
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_anonymized_production_pkey
+              - column:
+                  name: aggregated_data_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: FLOAT8
+                  constraints:
+                    nullable: false
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: production_site_bpns_anonymized
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: estimated_time_of_completion
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: material_global_asset_id_anonymized
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseTableName: partner_aggregated_data
+            baseColumnNames: material_own_material_number
+            referencedTableName: material
+            referencedColumnNames: own_material_number
+            constraintName: fk_partner_aggregated_data_material
+        - addForeignKeyConstraint:
+            baseTableName: partner_aggregated_data
+            baseColumnNames: partner_uuid
+            referencedTableName: partner
+            referencedColumnNames: uuid
+            constraintName: fk_partner_aggregated_data_partner
+        - createIndex:
+            indexName: idx_child_aggregated_data_parent
+            tableName: child_aggregated_data
+            columns:
+              - column:
+                  name: parent_aggregated_data_uuid
+        - createIndex:
+            indexName: idx_reported_anonymized_delivery_aggregated_data
+            tableName: reported_anonymized_delivery
+            columns:
+              - column:
+                  name: aggregated_data_uuid
+        - createIndex:
+            indexName: idx_reported_anonymized_stock_aggregated_data
+            tableName: reported_anonymized_stock
+            columns:
+              - column:
+                  name: aggregated_data_uuid
+        - createIndex:
+            indexName: idx_reported_anonymized_production_aggregated_data
+            tableName: reported_anonymized_production
+            columns:
+              - column:
+                  name: aggregated_data_uuid
