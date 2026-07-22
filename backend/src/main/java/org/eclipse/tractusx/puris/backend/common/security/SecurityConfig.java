@@ -115,6 +115,7 @@ public class SecurityConfig {
                         "/delivery/**",
                         "/demand/**",
                         "/demand-and-capacity-notification/**",
+                        "/aggregated-data/**",
                         "/planned-production/**",
                         "/material-demand/**",
                         "/delivery-information/**",

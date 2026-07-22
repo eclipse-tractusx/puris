@@ -40,6 +40,39 @@ components:
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       type: object
+    AggregatedDataDto:
+      additionalProperties: false
+      properties:
+        childDataIds:
+          items:
+            format: uuid
+            maxItems: 50
+            type: string
+          maxItems: 50
+          type: array
+        deliveries:
+          items:
+            $ref: '#/components/schemas/DeliveryAnonymized'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        productions:
+          items:
+            $ref: '#/components/schemas/AllocatedPlannedProductionOutputAnonymized'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        stocks:
+          items:
+            $ref: '#/components/schemas/AllocatedStockAnonymized'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+      type: object
     AllocatedDaysOfSupply:
       additionalProperties: false
       properties:
@@ -1851,6 +1884,38 @@ info:
   version: 6.2.0
 openapi: 3.1.0
 paths:
+  /aggregated-data:
+    get:
+      description: Get all aggregated data reported by partners for the given material
+        number.
+      operationId: getAggregatedData
+      parameters:
+      - description: encoded in base64
+        in: query
+        name: ownMaterialNumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/AggregatedDataDto'
+                maxItems: 50
+                type: array
+          description: Ok
+        '400':
+          description: Malformed material number.
+        '404':
+          description: Material does not exist.
+      summary: Get all aggregated data for the given material
+      tags:
+      - aggregated-data-controller
   /batch/partner-data-update:
     get:
       operationId: history
