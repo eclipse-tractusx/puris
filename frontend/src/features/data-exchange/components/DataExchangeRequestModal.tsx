@@ -16,7 +16,7 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-import { Textarea } from '@catena-x/portal-shared-components';
+import { DialogActions, DialogContent, Textarea } from '@catena-x/portal-shared-components';
 import { DateTime } from '@components/ui/DateTime';
 import { Send, ReportProblem, Info, Close } from '@mui/icons-material';
 import { Box, Button, Checkbox, Dialog, DialogTitle, Divider, FormLabel, Grid, InputLabel, Stack, Tooltip, Typography, useTheme } from '@mui/material';
@@ -29,7 +29,7 @@ import { Partner } from '@models/types/edc/partner';
 import { useNotifications } from '@contexts/notificationContext';
 import { CriticalityEnumeration, DataExchangeRequest } from '@models/types/data/data-exchange-request';
 import { postDataExchangeApproval, postDataExchangeRequest } from '@services/data-exchange-service';
-import { CRITICALITY } from '@models/constants/criticality';
+import { CRITICALITY, RequestedType } from '@models/constants/criticality';
 import { DataExchangeApproval } from '@models/types/data/data-exchange-approval';
 import { EFFECTS } from '@models/constants/effects';
 import { InfoButton } from '@components/ui/InfoButton';
@@ -86,7 +86,7 @@ const isDesiredStartDateTimeValid = (
     if (start < startOfToday()) return false;
     if (start < new Date(demandCapacityNotification.startDateOfEffect)) return false;
     if (demandCapacityNotification.expectedEndDateOfEffect && start > new Date(demandCapacityNotification.expectedEndDateOfEffect)) return false;
-    if (request.desiredEndDateTime && start > new Date(request.desiredEndDateTime)) return false;
+    if (request.desiredEndDateTime && start >= new Date(request.desiredEndDateTime)) return false;
     return true;
 };
 
@@ -99,7 +99,7 @@ const isDesiredEndDateTimeValid = (
     if (end < new Date()) return false;
     if (end < new Date(demandCapacityNotification.startDateOfEffect)) return false;
     if (demandCapacityNotification.expectedEndDateOfEffect && end > new Date(demandCapacityNotification.expectedEndDateOfEffect)) return false;
-    if (request.desiredStartDateTime && end < new Date(request.desiredStartDateTime)) return false;
+    if (request.desiredStartDateTime && end <= new Date(request.desiredStartDateTime)) return false;
     return true;
 };
 
@@ -250,6 +250,7 @@ export const DataExchangeRequestInformationModal = ({
     onSave,
 }: DataExchangeRequestModalProps) => {
     const [temporaryDataExchangeRequest, setTemporaryDataExchangeRequest] = useState<Partial<DataExchangeRequest>>({});
+    const [isConfirmApproveOpen, setIsConfirmApproveOpen] = useState(false);
     const { partnerMaterials } = usePartnerMaterials(demandCapacityNotification.partnerBpnl);
 
     const theme = useTheme();
@@ -262,10 +263,11 @@ export const DataExchangeRequestInformationModal = ({
                 setTemporaryDataExchangeRequest(dataExchangeRequest);
             } else {
                 const initialData: Partial<DataExchangeRequest> = {
-                    requestedTypes: ['n-tier'],
+                    requestedTypes: [RequestedType.N_TIER],
                     criticality: 'low' as CriticalityEnumeration,
                     notificationId: demandCapacityNotification.notificationId,
-                    desiredStartDateTime: getDefaultDesiredStartDateTime(demandCapacityNotification)
+                    desiredStartDateTime: getDefaultDesiredStartDateTime(demandCapacityNotification),
+                    desiredEndDateTime: demandCapacityNotification.expectedEndDateOfEffect ? new Date(demandCapacityNotification?.expectedEndDateOfEffect) : new Date(),
                 };
 
                 setTemporaryDataExchangeRequest(initialData);
@@ -304,7 +306,7 @@ export const DataExchangeRequestInformationModal = ({
             return;
         }
         const approvalToSave: Partial<DataExchangeApproval> = {
-            approvedTypes: ['n-tier'],
+            approvedTypes: [RequestedType.N_TIER],
             dataExchangeRequestId: dataExchangeRequest.requestId,
             isFinalized: true
         };
@@ -327,18 +329,21 @@ export const DataExchangeRequestInformationModal = ({
             })
             .finally(handleClose);
     };
-
+    
+    const handleApproveConfirm = () => {
+        setIsConfirmApproveOpen(false);
+        handleApproveClick();
+    };
     const handleClose = () => {
         setFormError(false);
+        setIsConfirmApproveOpen(false);
         setTemporaryDataExchangeRequest({});
         onClose();
     };
     return (
         <>
             <Dialog open={open} onClose={handleClose}>
-                <DialogTitle variant="h3" textAlign="center">
-                    {dataApprovalMode ? 'Data Exchange Approval' : 'Data Exchange'}
-                </DialogTitle>
+                <DialogTitle variant="h3" textAlign="center">{dataApprovalMode ? 'Data Exchange Approval' : 'Data Exchange'}</DialogTitle>
                 <Stack padding="0 2rem 2rem" sx={{ width: '60rem' }}>
                     {!dataApprovalMode && (!dataExchangeRequest) ? (
                         <Grid container spacing={3} padding=".25rem">
@@ -352,14 +357,14 @@ export const DataExchangeRequestInformationModal = ({
                                 />    
                             )}
                             <Grid item xs={6}>
-                                <FormLabel>Request*:</FormLabel>
+                                <FormLabel>Request*</FormLabel>
                                 <Stack direction="row" alignItems="center">
                                     <Checkbox
                                         id="requestedTypes-n-tier"
-                                        checked={temporaryDataExchangeRequest?.requestedTypes?.includes('n-tier') ?? false}
+                                        checked={temporaryDataExchangeRequest?.requestedTypes?.includes(RequestedType.N_TIER) ?? false}
                                         disabled
                                     />
-                                    <InputLabel htmlFor="requestedTypes-n-tier"> Anonymous data from relevant participants accross multiple tiers </InputLabel>
+                                    <InputLabel htmlFor="requestedTypes-n-tier" sx={{ whiteSpace: 'normal', overflow: 'visible', textOverflow: 'unset' }}> Anonymous data from relevant participants accross multiple tiers </InputLabel>
                                 </Stack>
                             </Grid>
                             <Grid item xs={6}>
@@ -411,7 +416,7 @@ export const DataExchangeRequestInformationModal = ({
                                 />
                             </Grid>
                             <Grid item xs={12}>
-                                <FormLabel>Message (available only to direct partners)</FormLabel>
+                                <FormLabel>Message (available only to direct partners)*</FormLabel>
                                 <Textarea
                                     minRows="5"
                                     id="text"
@@ -425,10 +430,9 @@ export const DataExchangeRequestInformationModal = ({
                                     error={formError && !temporaryDataExchangeRequest?.text?.trim()}
                                     className={formError && !temporaryDataExchangeRequest?.text?.trim() ? 'error-textarea' : ''}
                                 />
-                                <Typography variant="body3" sx={{ color: theme.palette.error.main, py: 1 }} ><ReportProblem></ReportProblem> These notes will be released to the selected partner and may include sensitive data. Proceed with caution!</Typography>
+                                <Typography variant="body3" sx={{ color: theme.palette.error.main, py: 1 }} ><ReportProblem></ReportProblem> IMPORTANT: Please note that the requested data may be competitively sensitive and, according to appliable antitrust laws, must not be shared with competitors that are not involved. The message is only shared with the selected partner. Please consult your legal department, if necessary.</Typography>
                             </Grid>
                         </Grid>
-
                     ) : dataExchangeRequest ? (
                         <DataExchangeRequestView
                             dataExchangeApproval={dataExchangeApproval}
@@ -449,7 +453,7 @@ export const DataExchangeRequestInformationModal = ({
                                     Approved
                                 </Button>
                             ) : (
-                                <Button variant="contained" sx={{ display: 'flex', gap: '.25rem' }} onClick={handleApproveClick}>
+                                <Button variant="contained" sx={{ display: 'flex', gap: '.25rem' }} onClick={() => setIsConfirmApproveOpen(true)}>
                                     <Send /> Approve and close
                                 </Button>
                             )
@@ -462,6 +466,16 @@ export const DataExchangeRequestInformationModal = ({
                     </Box>
                 </Stack>
             </Dialog >
+            <Dialog open={isConfirmApproveOpen} onClose={() => setIsConfirmApproveOpen(false)}>
+                <DialogTitle variant="h3" textAlign="center">Confirm Approval</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2">Do you really want to approve the data exchange request?</Typography>
+                </DialogContent>
+                <DialogActions sx={{ padding: '0 1.5rem 1.5rem' }}>
+                    <Button variant="outlined" color="primary" onClick={() => setIsConfirmApproveOpen(false)}>Cancel</Button>
+                    <Button variant="contained" onClick={handleApproveConfirm} autoFocus><Send sx={{ mr: 0.5 }} /> Approve</Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 };
