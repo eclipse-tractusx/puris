@@ -20,7 +20,7 @@
 Mock participant — single-container mock for n-tier supply-chain simulation.
 
 Implements the provider side of:
-  - DSP v0.8 catalog / negotiation / transfer endpoints
+  - DSP 1.0 catalog / negotiation / transfer endpoints
   - A data plane (HttpData-PULL) serving DTR lookups and PURIS submodels
 """
 
@@ -36,6 +36,10 @@ from fastapi.responses import JSONResponse
 
 import data as mock_data
 from dsp import catalog, negotiations, outbound, transfers
+from dsp.common import DSP_VERSION_PATH
+
+DSP_BASE = "/api/v1/dsp"
+DSP = f"{DSP_BASE}{DSP_VERSION_PATH}"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mock-participant")
@@ -78,11 +82,12 @@ def _spawn(coro) -> asyncio.Task:
 # DSP: Version discovery (required by Tractus-X EDC before accepting negotiations)
 # --------------------------------------------------------------------------
 
-@app.get("/api/v1/dsp/.well-known/dspace-version")
+@app.get(f"{DSP_BASE}/.well-known/dspace-version")
 async def dsp_version():
     return {
+        "@context": "https://w3id.org/dspace/2025/1/context.jsonld",
         "protocolVersions": [
-            {"version": "v0.8", "path": "/", "binding": "HTTPS"}
+            {"version": "2025-1", "path": DSP_VERSION_PATH, "binding": "HTTPS"}
         ]
     }
 
@@ -91,7 +96,7 @@ async def dsp_version():
 # DSP: Catalog
 # --------------------------------------------------------------------------
 
-@app.post("/api/v1/dsp/catalog/request")
+@app.post(f"{DSP}/catalog/request")
 async def handle_catalog(request: Request):
     logger.info("Catalog request from %s", request.client.host if request.client else "unknown")
     return catalog.build(BPNL, BASE_URL)
@@ -101,7 +106,7 @@ async def handle_catalog(request: Request):
 # DSP: Contract Negotiations
 # --------------------------------------------------------------------------
 
-@app.post("/api/v1/dsp/negotiations/request")
+@app.post(f"{DSP}/negotiations/request")
 async def start_negotiation(request: Request):
     body = await request.json()
     response, neg_id, callback = negotiations.create(body)
@@ -117,7 +122,7 @@ async def start_negotiation(request: Request):
     return response
 
 
-@app.get("/api/v1/dsp/negotiations/{neg_id}")
+@app.get(f"{DSP}/negotiations/{{neg_id}}")
 async def get_negotiation(neg_id: str):
     state = negotiations.get_state(neg_id)
     if state is None:
@@ -125,7 +130,7 @@ async def get_negotiation(neg_id: str):
     return state
 
 
-@app.post("/api/v1/dsp/negotiations/{neg_id}/agreement/verification")
+@app.post(f"{DSP}/negotiations/{{neg_id}}/agreement/verification")
 async def verify_agreement(neg_id: str):
     logger.info("Agreement verification for negotiation %s", neg_id)
     callback = negotiations.get_callback_address(neg_id) or SUPPLIER_DSP_URL
@@ -136,19 +141,16 @@ async def verify_agreement(neg_id: str):
             **WALLET_KWARGS,
         )
     )
-    return {
-        "@context": {"dspace": "https://w3id.org/dspace/v0.8/"},
-        "@type": "dspace:ContractNegotiation",
-        "dspace:providerPid": neg_id,
-        "dspace:state": "dspace:FINALIZED",
-    }
+    return negotiations.get_state(neg_id) or JSONResponse(
+        status_code=404, content={"error": f"Negotiation {neg_id} not found"}
+    )
 
 
 # --------------------------------------------------------------------------
 # DSP: Transfers
 # --------------------------------------------------------------------------
 
-@app.post("/api/v1/dsp/transfers/request")
+@app.post(f"{DSP}/transfers/request")
 async def start_transfer(request: Request):
     body = await request.json()
     response, provider_pid, callback = transfers.create(body, BASE_URL)
@@ -165,7 +167,7 @@ async def start_transfer(request: Request):
     return response
 
 
-@app.get("/api/v1/dsp/transfers/{transfer_id}")
+@app.get(f"{DSP}/transfers/{{transfer_id}}")
 async def get_transfer(transfer_id: str):
     state = transfers.get_state(transfer_id)
     if state is None:
@@ -173,13 +175,13 @@ async def get_transfer(transfer_id: str):
     return state
 
 
-@app.post("/api/v1/dsp/transfers/{transfer_id}/completion")
+@app.post(f"{DSP}/transfers/{{transfer_id}}/completion")
 async def complete_transfer(transfer_id: str):
     logger.info("Transfer completion for %s", transfer_id)
     return JSONResponse(status_code=200, content={})
 
 
-@app.post("/api/v1/dsp/transfers/{transfer_id}/termination")
+@app.post(f"{DSP}/transfers/{{transfer_id}}/termination")
 async def terminate_transfer(transfer_id: str):
     logger.info("Transfer termination for %s", transfer_id)
     return JSONResponse(status_code=200, content={})
@@ -189,7 +191,7 @@ async def terminate_transfer(transfer_id: str):
 # DSP: Consumer callbacks (this participant acting as consumer, e.g. for sending notifications)
 # --------------------------------------------------------------------------
 
-@app.post("/api/v1/dsp/negotiations/{consumer_pid}/agreement")
+@app.post(f"{DSP}/negotiations/{{consumer_pid}}/agreement")
 async def consumer_negotiation_agreement(consumer_pid: str, request: Request):
     """Receive ContractAgreementMessage from supplier EDC and fire verification."""
     body = await request.json()
@@ -207,7 +209,7 @@ async def consumer_negotiation_agreement(consumer_pid: str, request: Request):
     return JSONResponse(status_code=200, content={})
 
 
-@app.post("/api/v1/dsp/negotiations/{consumer_pid}/events")
+@app.post(f"{DSP}/negotiations/{{consumer_pid}}/events")
 async def consumer_negotiation_events(consumer_pid: str, request: Request):
     """Receive ContractNegotiationEventMessage (FINALIZED) from supplier EDC."""
     body = await request.json()
@@ -216,7 +218,7 @@ async def consumer_negotiation_events(consumer_pid: str, request: Request):
     return JSONResponse(status_code=200, content={})
 
 
-@app.post("/api/v1/dsp/transfers/{consumer_pid}/start")
+@app.post(f"{DSP}/transfers/{{consumer_pid}}/start")
 async def consumer_transfer_start(consumer_pid: str, request: Request):
     """Receive TransferStartMessage (with EDR) from supplier EDC."""
     body = await request.json()
@@ -245,47 +247,6 @@ async def mock_send_notification():
         content={"error": f"Failed at step: {step} — check mock participant logs"},
     )
 
-
-@app.get("/api/mock/debug/supplier-catalog")
-async def debug_supplier_catalog():
-    """Fetch and return the supplier's DSP catalog as seen by the mock participant (for debugging)."""
-    asset_id, offer = await outbound.fetch_notification_asset(SUPPLIER_DSP_URL, **WALLET_KWARGS)
-    return {
-        "supplier_dsp_url": SUPPLIER_DSP_URL,
-        "notification_asset_id": asset_id,
-        "notification_offer": offer,
-    }
-
-
-@app.get("/api/mock/debug/iatp-token")
-async def debug_iatp_token():
-    """Obtain and decode the IATP token the mock participant would use for negotiations (for debugging)."""
-    token = await outbound.get_iatp_token(**WALLET_KWARGS)
-    if not token:
-        return JSONResponse(status_code=500, content={"error": "Failed to obtain IATP token — check logs"})
-
-    try:
-        parts = token.split(".")
-        payload_b64 = parts[1] + "==" * (4 - len(parts[1]) % 4)
-        payload = json.loads(base64.urlsafe_b64decode(payload_b64))
-    except Exception as exc:
-        payload = {"decode_error": str(exc)}
-
-    # Also probe whether the supplier catalog is accessible without any auth
-    catalog_url = f"{SUPPLIER_DSP_URL.rstrip('/')}/catalog/request"
-    catalog_body = {"@context": {"dspace": "https://w3id.org/dspace/v0.8/"}, "@type": "dspace:CatalogRequestMessage"}
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            r = await client.post(catalog_url, json=catalog_body)
-            catalog_no_auth = r.status_code
-    except Exception as exc:
-        catalog_no_auth = f"error: {exc}"
-
-    return {
-        "token_first_80": token[:80],
-        "jwt_payload": payload,
-        "catalog_status_no_auth": catalog_no_auth,
-    }
 
 
 # --------------------------------------------------------------------------

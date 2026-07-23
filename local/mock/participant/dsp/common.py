@@ -25,12 +25,22 @@ import httpx
 
 logger = logging.getLogger("mock-participant")
 
-CONTEXT_DSPACE = {"dspace": "https://w3id.org/dspace/v0.8/"}
-CONTEXT_DSPACE_ODRL_POLICY = {
-    "dspace": "https://w3id.org/dspace/v0.8/",
-    "odrl": "http://www.w3.org/ns/odrl/2/",
-    "cx-policy": "https://w3id.org/catenax/2025/9/policy/",
-}
+
+CONTEXT_DSPACE = "https://w3id.org/dspace/2025/1/context.jsonld"
+CONTEXT_DSPACE_ODRL_POLICY = [
+    "https://w3id.org/dspace/2025/1/context.jsonld",
+    {"cx-policy": "https://w3id.org/catenax/2025/9/policy/"},
+]
+
+DSP_VERSION_PATH = "/2025-1"
+
+
+def versioned_callback_base(callback_address: str) -> str:
+    """Append DSP_VERSION_PATH unless already present (some callers already hand us a versioned base)."""
+    base = callback_address.rstrip("/")
+    if base.endswith(DSP_VERSION_PATH):
+        return base
+    return f"{base}{DSP_VERSION_PATH}"
 
 FRAMEWORK_AGREEMENT = "DataExchangeGovernance:1.0"
 USAGE_PURPOSE = "cx.puris.base:1"
@@ -45,20 +55,20 @@ def auth_headers(token: Optional[str]) -> dict:
 
 
 def build_permission() -> dict:
-    """The odrl:permission block granting use under the PURIS framework agreement/usage purpose."""
+    """The permission block granting use under the PURIS framework agreement/usage purpose."""
     return {
-        "odrl:action": {"@id": "odrl:use"},
-        "odrl:constraint": {
-            "odrl:and": [
+        "action": "use",
+        "constraint": {
+            "and": [
                 {
-                    "odrl:leftOperand": {"@id": "cx-policy:FrameworkAgreement"},
-                    "odrl:operator": {"@id": "odrl:eq"},
-                    "odrl:rightOperand": FRAMEWORK_AGREEMENT,
+                    "leftOperand": "cx-policy:FrameworkAgreement",
+                    "operator": "eq",
+                    "rightOperand": FRAMEWORK_AGREEMENT,
                 },
                 {
-                    "odrl:leftOperand": {"@id": "cx-policy:UsagePurpose"},
-                    "odrl:operator": {"@id": "odrl:isAnyOf"},
-                    "odrl:rightOperand": USAGE_PURPOSE,
+                    "leftOperand": "cx-policy:UsagePurpose",
+                    "operator": "isAnyOf",
+                    "rightOperand": USAGE_PURPOSE,
                 },
             ]
         },
@@ -66,26 +76,24 @@ def build_permission() -> dict:
 
 
 async def get_iatp_token(
-    consumer_bpnl: str,
-    provider_bpnl: str,
+    own_bpnl: str,
+    counterparty_bpnl: str,
     wallet_url: str,
     wallet_secret: str,
     credential_types: Sequence[str] = ("MembershipCredential",),
     log_prefix: str = "",
 ) -> Optional[str]:
     """Obtain a scoped IATP token from the wallet.
-    Callback flows (agreement/finalized/transfer-start messages) only need MembershipCredential.
-    The outbound consumer flow requests the fuller VC scope, since negotiation requests are
-    validated against it by the provider's EDC.
     """
     prefix = f"{log_prefix}: " if log_prefix else ""
+    consumer_bpnl, provider_bpnl = own_bpnl, counterparty_bpnl
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.post(
                 f"{wallet_url}/oauth/token",
                 data={
                     "grant_type": "client_credentials",
-                    "client_id": consumer_bpnl,
+                    "client_id": own_bpnl,
                     "client_secret": wallet_secret,
                 },
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
@@ -134,7 +142,13 @@ async def push_dsp_message(
     wallet_secret: str,
 ) -> None:
     """POST a DSP callback message (agreement/event/transfer-start) with a bearer IATP token."""
-    iatp_token = await get_iatp_token(provider_bpnl, consumer_bpnl, wallet_url, wallet_secret)
+    iatp_token = await get_iatp_token(
+        provider_bpnl,
+        consumer_bpnl,
+        wallet_url,
+        wallet_secret,
+        credential_types=("DataExchangeGovernanceCredential", "MembershipCredential", "BpnCredential"),
+    )
     headers = auth_headers(iatp_token)
 
     try:
