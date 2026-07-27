@@ -34,8 +34,6 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -47,14 +45,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.SuperBuilder;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-@SuperBuilder
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
 @ToString
 public class AggregatedMaterialDataNode {
@@ -77,7 +72,7 @@ public class AggregatedMaterialDataNode {
     protected List<AggregatedMaterialDataNode> childMaterialData = new ArrayList<>();
 
     @NotNull
-    protected Double quantity;
+    protected double quantity;
 
     @NotNull
     protected ItemUnitEnumeration measurementUnit;
