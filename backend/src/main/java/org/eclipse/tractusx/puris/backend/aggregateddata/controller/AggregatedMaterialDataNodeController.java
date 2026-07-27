@@ -16,7 +16,7 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-package org.eclipse.tractusx.puris.backend.aggregateddata.domain.controller;
+package org.eclipse.tractusx.puris.backend.aggregateddata.controller;
 
 import java.util.Base64;
 import java.util.HashSet;
@@ -24,10 +24,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.ChildAggregatedData;
-import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.PartnerAggregatedData;
-import org.eclipse.tractusx.puris.backend.aggregateddata.logic.dto.AggregatedDataDto;
-import org.eclipse.tractusx.puris.backend.aggregateddata.logic.service.PartnerAggregatedDataService;
+import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialData;
+import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialDataNode;
+import org.eclipse.tractusx.puris.backend.aggregateddata.logic.dto.AggregatedMaterialDataDto;
+import org.eclipse.tractusx.puris.backend.aggregateddata.logic.dto.AggregatedMaterialDataNodeDto;
+import org.eclipse.tractusx.puris.backend.aggregateddata.logic.service.AggregatedMaterialDataService;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedAnonymizedDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.logic.dto.anonymizeddeliverysamm.DeliveryAnonymized;
@@ -40,6 +41,7 @@ import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedAnonymizedS
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.AllocatedStockAnonymized;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -57,50 +59,62 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("aggregated-data")
 @Slf4j
-public class AggregatedDataController {
-
+public class AggregatedMaterialDataNodeController {
     @Autowired
-    private PartnerAggregatedDataService partnerAggregatedDataService;
+    private AggregatedMaterialDataService aggregatedMaterialDataService;
 
     @Autowired
     private MaterialService materialService;
 
     @GetMapping()
     @ResponseBody
-    @Operation(summary = "Get all aggregated data for the given material",
-        description = "Get all aggregated data reported by partners for the given material number.")
+    @Operation(summary = "Get all aggregated data for the given material", description = "Get all aggregated data reported by partners for the given material number.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok"),
-        @ApiResponse(responseCode = "400", description = "Malformed material number.", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Incorrect material number.", content = @Content),
         @ApiResponse(responseCode = "404", description = "Material does not exist.", content = @Content)
     })
-    public List<AggregatedDataDto> getAggregatedData(
-            @RequestParam @Parameter(description = "encoded in base64") String ownMaterialNumber) {
+    public ResponseEntity<List<AggregatedMaterialDataDto>> getAggregatedData(@RequestParam @Parameter String ownMaterialNumber) {
         try {
             ownMaterialNumber = new String(Base64.getDecoder().decode(ownMaterialNumber));
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Malformed material number.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect material number.");
         }
         Material material = materialService.findByOwnMaterialNumber(ownMaterialNumber);
         if (material == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material does not exist.");
         }
 
-        return partnerAggregatedDataService.findAllByMaterial(material).stream().map(this::convertToDto).toList();
+        var result = aggregatedMaterialDataService.findAllByMaterial_OwnMaterialNumber(ownMaterialNumber).stream().map(this::toDto).toList();
+ 
+        return ResponseEntity.ok(result);
+
     }
 
-    private AggregatedDataDto convertToDto(PartnerAggregatedData entity) {
-        AggregatedDataDto dto = new AggregatedDataDto();
-        dto.setUuid(entity.getUuid());
-        dto.setDeliveries(entity.getDeliveries().stream().map(this::convertToDeliveryAnonymized)
-                .collect(Collectors.toSet()));
-        dto.setStocks(entity.getStocks().stream()
-                .map(this::convertToAllocatedStockAnonymized)
-                .collect(Collectors.toSet()));
-        dto.setProductions(entity.getProductions().stream()
-                .map(this::convertToAllocatedPlannedProductionOutputAnonymized)
-                .collect(Collectors.toSet()));
-        dto.setChildDataIds(entity.getChildData().stream().map(ChildAggregatedData::getUuid).toList());
+    private AggregatedMaterialDataDto toDto(AggregatedMaterialData data) {
+        var dto = new AggregatedMaterialDataDto();
+        dto.setUuid(data.getUuid());
+        dto.setOwnMaterialNumber(data.getMaterial() != null ? data.getMaterial().getOwnMaterialNumber() : null);
+        if (data.getChildMaterialData() != null) {
+            dto.setChildMaterialData(data.getChildMaterialData().stream().map(this::toDto).toList());
+        }
+        return dto;
+    }
+
+ 
+    private AggregatedMaterialDataNodeDto toDto(AggregatedMaterialDataNode node) {
+        var dto = new AggregatedMaterialDataNodeDto();
+        dto.setUuid(node.getUuid());
+        dto.setExternalMaterialNumber(node.getExternalMaterialNumber());
+        dto.setExternalMaterialName(node.getExternalMaterialName());
+        dto.setQuantity(node.getQuantity());
+        dto.setMeasurementUnit(node.getMeasurementUnit());
+        dto.setDeliveries(node.getDeliveries().stream().map(this::convertToDeliveryAnonymized).collect(Collectors.toSet()));
+        dto.setStocks(node.getStocks().stream().map(this::convertToAllocatedStockAnonymized).collect(Collectors.toSet()));
+        dto.setProductions(node.getProductions().stream().map(this::convertToAllocatedPlannedProductionOutputAnonymized).collect(Collectors.toSet()));
+        if (node.getChildMaterialData() != null) {
+            dto.setChildMaterialData(node.getChildMaterialData().stream().map(this::toDto).toList());
+        }
         return dto;
     }
 
@@ -120,6 +134,7 @@ public class AggregatedDataController {
             entity.getDestinationBpnsAnonymized());
     }
 
+
     private AllocatedStockAnonymized convertToAllocatedStockAnonymized(ReportedAnonymizedStock entity) {
         return new AllocatedStockAnonymized(
             new ItemQuantityEntity(entity.getQuantity(), entity.getMeasurementUnit()),
@@ -135,4 +150,5 @@ public class AggregatedDataController {
             entity.getEstimatedTimeOfCompletion(),
             entity.getLastUpdatedOnDateTime());
     }
+
 }

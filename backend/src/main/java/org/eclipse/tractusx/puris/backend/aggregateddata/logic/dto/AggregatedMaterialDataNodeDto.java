@@ -19,11 +19,13 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.aggregateddata.logic.dto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.logic.dto.anonymizeddeliverysamm.DeliveryAnonymized;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.anonymizedplannedproductionsamm.AllocatedPlannedProductionOutputAnonymized;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.AllocatedStockAnonymized;
@@ -38,16 +40,28 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString
-public class AggregatedDataDto implements Serializable {
+public class AggregatedMaterialDataNodeDto implements Serializable {
+ 
     private UUID uuid;
+ 
+    private String externalMaterialNumber;
+ 
+    private String externalMaterialName;
+ 
+    private double quantity;
+ 
+    private ItemUnitEnumeration measurementUnit;
+ 
     @Valid
     private Set<AllocatedPlannedProductionOutputAnonymized> productions = new HashSet<>();
-
+ 
     @Valid
     private Set<DeliveryAnonymized> deliveries = new HashSet<>();
-
+ 
     @Valid
     private Set<AllocatedStockAnonymized> stocks = new HashSet<>();
-    
-    private List<UUID> childDataIds;
+ 
+    @Valid
+    private List<AggregatedMaterialDataNodeDto> childMaterialData = new ArrayList<>();
 }
+
