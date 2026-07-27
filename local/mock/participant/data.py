@@ -49,10 +49,8 @@ SUBMODELS = [
 
 
 # PURIS backend expects a real UUID here, so use a deterministic uuid5 for stability.
-
-
-def _material_global_asset_id(bpnl: str) -> str:
-    return f"urn:uuid:{uuid.uuid5(uuid.NAMESPACE_URL, f'tier2-mock-material-{bpnl}')}"
+def _material_global_asset_id(material_number: str) -> str:
+    return f"urn:uuid:{uuid.uuid5(uuid.NAMESPACE_URL, f'tier2-mock-material-{material_number}')}"
 
 # -------------------------------------------------------------------
 # DTR
@@ -91,7 +89,7 @@ def get_shell(aas_id_b64: str, bpnl: str, base_url: str) -> Optional[dict]:
 def _build_shell(bpnl: str, base_url: str) -> dict:
     dsp_url = f"{base_url}/api/v1/dsp"
     public_url = f"{base_url}/api/public"
-    material_global_asset_id = _material_global_asset_id(bpnl)
+    material_global_asset_id = _material_global_asset_id(TIER2_MATERIAL_NUMBER)
 
     def _submodel_descriptor(semantic_id: str, asset_id: str) -> dict:
         return {
@@ -121,7 +119,7 @@ def _build_shell(bpnl: str, base_url: str) -> dict:
     ]
     return {
         "id": TIER2_AAS_ID,
-        "globalAssetId": _material_global_asset_id(bpnl),
+        "globalAssetId": _material_global_asset_id(TIER2_MATERIAL_NUMBER),
         "specificAssetIds": [
             {"name": "manufacturerPartId", "value": TIER2_MATERIAL_NUMBER},
             {"name": "manufacturerId", "value": bpnl},
@@ -161,7 +159,7 @@ def _bpna(bpnl: str) -> str:
 
 def _item_stock(bpnl: str) -> dict:
     return {
-        "materialGlobalAssetId": _material_global_asset_id(bpnl),
+        "materialGlobalAssetId": _material_global_asset_id(TIER2_MATERIAL_NUMBER),
         "positions": [
             {
                 "orderPositionReference": {
@@ -186,7 +184,7 @@ def _item_stock(bpnl: str) -> dict:
 
 def _planned_production_output(bpnl: str) -> dict:
     return {
-        "materialGlobalAssetId": _material_global_asset_id(bpnl),
+        "materialGlobalAssetId": _material_global_asset_id(TIER2_MATERIAL_NUMBER),
         "positions": [
             {
                 "orderPositionReference": {
@@ -209,7 +207,7 @@ def _planned_production_output(bpnl: str) -> dict:
 
 def _delivery(bpnl: str) -> dict:
     return {
-        "materialGlobalAssetId": _material_global_asset_id(bpnl),
+        "materialGlobalAssetId": _material_global_asset_id(TIER2_MATERIAL_NUMBER),
         "positions": [
             {
                 "orderPositionReference": {
@@ -242,7 +240,7 @@ def _delivery(bpnl: str) -> dict:
 
 def _days_of_supply(bpnl: str) -> dict:
     return {
-        "materialGlobalAssetId": _material_global_asset_id(bpnl),
+        "materialGlobalAssetId": _material_global_asset_id(TIER2_MATERIAL_NUMBER),
         "allocatedDaysOfSupply": [
             {
                 "stockLocationBPNS": _bpns(bpnl),
@@ -260,7 +258,7 @@ def _days_of_supply(bpnl: str) -> dict:
 
 def _part_type_info(bpnl: str) -> dict:
     return {
-        "catenaXId": _material_global_asset_id(bpnl),
+        "catenaXId": _material_global_asset_id(TIER2_MATERIAL_NUMBER),
         "partTypeInformation": {
             "manufacturerPartId": TIER2_MATERIAL_NUMBER,
             "nameAtManufacturer": "Tier2 Semiconductor",
