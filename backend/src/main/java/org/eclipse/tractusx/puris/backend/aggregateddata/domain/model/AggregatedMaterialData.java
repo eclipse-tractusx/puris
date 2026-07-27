@@ -17,37 +17,49 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.aggregateddata.domain.model;
-import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.hibernate.annotations.SQLRestriction;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.SuperBuilder;
 
-@Entity
-@SuperBuilder
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-@ToString(callSuper = true)
-public class ChildAggregatedData extends AggregatedData {
-    @NotNull
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
-    protected String externalMaterialNumber;
+@Entity
+@Builder
+@ToString
+public class AggregatedMaterialData {
+    @Id
+    @GeneratedValue
+    protected UUID uuid;
 
-    @NotNull
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
-    protected String externalMaterialName;
-
-    @ManyToOne
-    @JoinColumn(name = "parent_aggregated_data_uuid")
+    @ManyToOne()
+    @JoinColumn(name = "material_ownMaterialNumber")
     @ToString.Exclude
     @NotNull
-    protected AggregatedData parentData;
+    protected Material material;
+
+    @OneToMany(mappedBy = "aggregatedMaterialData", cascade = CascadeType.ALL)
+    @SQLRestriction("parent_node_id is null")
+    @ToString.Exclude
+    protected List<AggregatedMaterialDataNode> childMaterialData = new ArrayList<>();
 }
