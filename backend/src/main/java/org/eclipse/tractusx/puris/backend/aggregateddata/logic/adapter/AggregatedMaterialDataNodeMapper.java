@@ -88,13 +88,16 @@ public class AggregatedMaterialDataNodeMapper {
  
     private AggregatedMaterialDataNode mapNode(JsonNode json, AggregatedMaterialData root, AggregatedMaterialDataNode parent) {
         var quantity = readQuantity(json);
+        if (quantity == null) {
+            throw new IllegalArgumentException("Missing quantity for node " + getText(json, "materialNumber"));
+        }
         var node = AggregatedMaterialDataNode.builder()
             .aggregatedMaterialData(root)
             .parentNode(parent)
             .externalMaterialNumber(getText(json, "materialNumber"))
             .externalMaterialName(getText(json, "materialName"))
-            .quantity(quantity != null ? quantity.getValue() : null)
-            .measurementUnit(quantity != null ? quantity.getUnit() : null)
+            .quantity(quantity.getValue())
+            .measurementUnit(quantity.getUnit())
             .productions(new HashSet<>())
             .deliveries(new HashSet<>())
             .stocks(new HashSet<>())
