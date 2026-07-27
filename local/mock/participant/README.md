@@ -22,7 +22,7 @@ A single FastAPI container that stands in for an entire upstream partner (EDC co
 
 The local PURIS FOSS application deployment demonstrates a two-tier supply chain with 2 participants: a Customer and a Supplier, each with their own EDC connector, Digital Twin Registry, and PURIS backend.
 
- Simulating a **third** participant, Supplier's own supplier, "Tier-2", the same way would mean deploying and wiring up another full connector + DTR + backend stack. This work replaces that with one Python service.
+Simulating a **third** participant, Supplier's own supplier, "Tier-2", the same way would mean deploying and wiring up another full connector + DTR + backend stack. This work replaces that with one Python service.
 
 The mock participant speaks just enough of the Dataspace Protocol (DSP 1.0) and the Tractus-X EDC's HttpData-PULL data plane convention to be indistinguishable, from the Supplier EDC's point of view, from a real partner connector. It serves a static Digital Twin Registry shell and five submodel payloads (ItemStock, PlannedProductionOutput, DeliveryInformation, DaysOfSupply, PartTypeInformation). It can also act as the initiator of an outbound DemandAndCapacityNotification back to the Supplier, driving a full negotiate → transfer → POST cycle against the real Supplier EDC.
 
@@ -50,10 +50,11 @@ The mock never talks to the Supplier's DTR or backend directly. Every exchange g
 - `data.py`: the static DTR shell and the five PURIS submodel payloads, keyed off a BPNL-derived deterministic UUID so IDs stay stable across restarts.
 - `dsp/common.py`: shared constants, the ODRL permission block, and the wallet/IATP token exchange used by every other module.
 - `dsp/catalog.py`: builds the catalog offered to consumers.
-- `dsp/negotiations.py` & `dsp/transfers.py`: the mock's *provider*-side state machines, in-memory, for when a real EDC negotiates against the mock.
-- `dsp/outbound.py`: the mock's *consumer*-side flow, for when the mock itself initiates a negotiation against the real Supplier EDC to deliver a notification.
+- `dsp/negotiations.py` & `dsp/transfers.py`: the mock's _provider_-side state machines, in-memory, for when a real EDC negotiates against the mock.
+- `dsp/outbound.py`: the mock's _consumer_-side flow, for when the mock itself initiates a negotiation against the real Supplier EDC to deliver a notification.
 
 ## 4. Authentication & trust
+
 The mock is authenticated very differently depending on which direction traffic is flowing, and that asymmetry is deliberate.
 
 Catena-X connectors authenticate each other via **IATP** (Identity And Trust Protocol): the consumer authenticates to its own wallet's Secure Token Service and requests a token scoped to a specific counterparty and set of verifiable-credential types, getting back a short-lived, self-issued bearer JWT. `dsp/common.py:get_iatp_token()` implements exactly that two-step exchange: an OAuth2 `client_credentials` call to `{WALLET_URL}/oauth/token`, using the caller's own BPNL as `client_id`, followed by a `POST {WALLET_URL}/api/sts` with the requested credential types and consumer/provider DIDs, returning the `jwt` that gets attached as `Authorization: Bearer <token>`.
@@ -63,34 +64,34 @@ Catena-X connectors authenticate each other via **IATP** (Identity And Trust Pro
 - Catalog, negotiation, transfer, and data-plane (`/api/public/*`) endpoints accept **any** caller; no inbound token is checked.
 - The EDR handed out in `dspace:dataAddress` carries a fixed placeholder bearer (`"tier2-mock-token"`) that is never validated on receipt either.
 - Safe here only because the mock is reachable exclusively inside the local docker-compose network, by the demo's own Supplier EDC. Not a pattern to copy into anything internet-facing.
-- The async callback *pushes* the mock sends back to the Supplier EDC (`ContractAgreementMessage`, the FINALIZED event, `TransferStartMessage`) are the exception: they're outbound calls into the real, policy-enforcing EDC, so `dsp/negotiations.py` and `dsp/transfers.py` route them through `push_dsp_message()`, which attaches a fresh IATP bearer token. Unauthenticated only applies to inbound traffic to the mock; any outbound traffic from the mock is authenticated regardless of which DSP role it's playing.
+- The async callback _pushes_ the mock sends back to the Supplier EDC (`ContractAgreementMessage`, the FINALIZED event, `TransferStartMessage`) are the exception: they're outbound calls into the real, policy-enforcing EDC, so `dsp/negotiations.py` and `dsp/transfers.py` route them through `push_dsp_message()`, which attaches a fresh IATP bearer token. Unauthenticated only applies to inbound traffic to the mock; any outbound traffic from the mock is authenticated regardless of which DSP role it's playing.
 
 **As consumer: fully authenticated outbound** (mock → Supplier EDC, real)
 
 - Every outbound catalog, negotiation, transfer, and verification call carries a fresh IATP token. This is required, because the real Supplier EDC does enforce it. `dsp/outbound.py` gets these directly via `get_iatp_token()` / `auth_headers()` rather than through `push_dsp_message()` (that helper is provider-side only, see above).
-- The Supplier EDC's own callbacks landing back on the mock (agreement, FINALIZED event, transfer-start) hit the mock's consumer-callback routes.  As inbound traffic, these requests are once again accepted without authentication check.
+- The Supplier EDC's own callbacks landing back on the mock (agreement, FINALIZED event, transfer-start) hit the mock's consumer-callback routes. As inbound traffic, these requests are once again accepted without authentication check.
 - Posting the notification payload itself uses the EDR from the transfer: if the EDR carries a refresh token, the mock refreshes it first against the Tractus-X data-plane `/token` endpoint since a cached EDR may be stale; otherwise it falls back to using the EDR's bearer token as-is.
 
-> **Why the asymmetry is fine.** The mock's job is to be a convincing *peer* for the real Supplier EDC, not to reimplement access control. The line isn't drawn by DSP role (provider vs. consumer); it's drawn by direction: any call the mock makes *out* to the real Supplier EDC carries a real IATP token, because that EDC enforces it and the call would otherwise be rejected. Any call landing *on* the mock's own endpoints (inbound negotiation/transfer requests as provider, or inbound callbacks as consumer) goes unchecked, because there's no policy enforcement to satisfy on the mock's side, and adding fake enforcement would just be more code standing in for something the mock doesn't need to prove.
+> **Why the asymmetry is fine.** The mock's job is to be a convincing _peer_ for the real Supplier EDC, not to reimplement access control. The line isn't drawn by DSP role (provider vs. consumer); it's drawn by direction: any call the mock makes _out_ to the real Supplier EDC carries a real IATP token, because that EDC enforces it and the call would otherwise be rejected. Any call landing _on_ the mock's own endpoints (inbound negotiation/transfer requests as provider, or inbound callbacks as consumer) goes unchecked, because there's no policy enforcement to satisfy on the mock's side, and adding fake enforcement would just be more code standing in for something the mock doesn't need to prove.
 
 ## 5. Catalog
 
 `GET /api/v1/dsp/.well-known/dspace-version` answers the protocol-discovery probe the Tractus-X EDC makes before it will negotiate at all: it advertises protocol version `2025-1` (the concrete version string this Tractus-X EDC release speaks for DSP 1.0) at path `/2025-1`, so every other DSP route below lives under `/api/v1/dsp/2025-1/...`. `POST /api/v1/dsp/2025-1/catalog/request` then returns a DCAT catalog listing the DTR asset, the five submodel assets, and a `notification-api-asset`, every offer carrying the same ODRL policy: the PURIS framework agreement (`DataExchangeGovernance:1.0`) plus usage purpose `cx.puris.base:1`.
 
-| Method | Path | |
-|---|---|---|
-| `GET` | `/api/v1/dsp/.well-known/dspace-version` | protocol discovery |
-| `POST` | `/api/v1/dsp/2025-1/catalog/request` | DCAT catalog |
+| Method | Path                                     |                    |
+| ------ | ---------------------------------------- | ------------------ |
+| `GET`  | `/api/v1/dsp/.well-known/dspace-version` | protocol discovery |
+| `POST` | `/api/v1/dsp/2025-1/catalog/request`     | DCAT catalog       |
 
 ## 6. DTR
 
 DTR lookups follow the standard shell/submodel-descriptor shape, pointing back at the mock's own `/api/public/*` data plane for each submodel's `SUBMODEL-3.0` endpoint. The submodel payloads themselves are fixed, minimally valid sample data, not simulated over time.
 
-| Method | Path | |
-|---|---|---|
-| `GET` | `/api/public/lookup/shells` | DTR shell lookup by manufacturerPartId |
-| `GET` | `/api/public/shell-descriptors/{id}` | AAS shell descriptor |
-| `GET` | `/api/public/{assetId}` | submodel payload (HttpData-PULL) |
+| Method | Path                                 |                                        |
+| ------ | ------------------------------------ | -------------------------------------- |
+| `GET`  | `/api/public/lookup/shells`          | DTR shell lookup by manufacturerPartId |
+| `GET`  | `/api/public/shell-descriptors/{id}` | AAS shell descriptor                   |
+| `GET`  | `/api/public/{assetId}`              | submodel payload (HttpData-PULL)       |
 
 ## 7. Negotiation & transfer: mock as provider
 
@@ -153,7 +154,7 @@ Every callback above routes through `push_dsp_message()` (in `dsp/negotiations.p
 
 ## 8. Outbound notification: mock as consumer
 
-`dsp/outbound.py` lets the mock *initiate* a negotiation against the real Supplier EDC, to deliver a `DemandAndCapacityNotification` the other direction: Tier-2 flagging a capacity disruption up to the Supplier.
+`dsp/outbound.py` lets the mock _initiate_ a negotiation against the real Supplier EDC, to deliver a `DemandAndCapacityNotification` the other direction: Tier-2 flagging a capacity disruption up to the Supplier.
 
 ```mermaid
 sequenceDiagram
@@ -200,9 +201,9 @@ Each call in this flow, apart from the final notification POST, requests its own
 
 The Bruno collection `Test_04-Tier2-Mock` walks the whole thing in order:
 
-| Folder | Exercises |
-|---|---|
-| `01-Setup` | Mock health check, catalog-shape assertions (7 assets), registers Tier-2 as a real Partner + material-partner-relation in the Supplier PURIS backend. |
-| `02-Verify` | Triggers a real Supplier → Tier-2 partner-data-update, asserts the reported ItemStock came back through the full DSP path. |
-| `03-Tier2-Sends-Notification` | Triggers the mock's outbound flow, asserts the Supplier received and stored the reported notification. |
-| `04-Manual-EDC-Walkthrough` | Raw, step-by-step catalog / negotiate / transfer / EDR / fetch calls, for debugging without backend orchestration in the way. |
+| Folder                        | Exercises                                                                                                                                             |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `01-Setup`                    | Mock health check, catalog-shape assertions (7 assets), registers Tier-2 as a real Partner + material-partner-relation in the Supplier PURIS backend. |
+| `02-Verify`                   | Triggers a real Supplier → Tier-2 partner-data-update, asserts the reported ItemStock came back through the full DSP path.                            |
+| `03-Tier2-Sends-Notification` | Triggers the mock's outbound flow, asserts the Supplier received and stored the reported notification.                                                |
+| `04-Manual-EDC-Walkthrough`   | Raw, step-by-step catalog / negotiate / transfer / EDR / fetch calls, for debugging without backend orchestration in the way.                         |
