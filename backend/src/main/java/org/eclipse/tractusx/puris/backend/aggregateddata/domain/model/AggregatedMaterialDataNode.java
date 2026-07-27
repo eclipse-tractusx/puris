@@ -18,11 +18,14 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.aggregateddata.domain.model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedAnonymizedDelivery;
 import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedAnonymizedProduction;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedAnonymizedStock;
@@ -34,8 +37,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -51,26 +57,51 @@ import lombok.experimental.SuperBuilder;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
 @ToString
-public abstract class AggregatedData {
+public class AggregatedMaterialDataNode {
     @Id
     @GeneratedValue
     protected UUID uuid;
+    
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "aggregated_material_data_id")
+    @ToString.Exclude
+    protected AggregatedMaterialData aggregatedMaterialData;
+
+    @ManyToOne
+    @JoinColumn(name = "parent_node_id")
+    @ToString.Exclude
+    protected AggregatedMaterialDataNode parentNode;
+
+    @OneToMany(mappedBy = "parentNode", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    protected List<AggregatedMaterialDataNode> childMaterialData = new ArrayList<>();
+
+    @NotNull
+    protected Double quantity;
+
+    @NotNull
+    protected ItemUnitEnumeration measurementUnit;
+
+    @NotNull
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    protected String externalMaterialNumber;
+
+    @NotNull
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
+    protected String externalMaterialName;
 
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "aggregated_data_uuid")
+    @JoinColumn(name = "aggregated_material_data_node_id")
     @Valid
     protected Set<ReportedAnonymizedProduction> productions = new HashSet<>();
 
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "aggregated_data_uuid")
+    @JoinColumn(name = "aggregated_material_data_node_id")
     @Valid
     protected Set<ReportedAnonymizedDelivery> deliveries = new HashSet<>();
 
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "aggregated_data_uuid")
+    @JoinColumn(name = "aggregated_material_data_node_id")
     @Valid
     protected Set<ReportedAnonymizedStock> stocks = new HashSet<>();
-
-    @OneToMany(mappedBy = "parentData")
-    protected List<ChildAggregatedData> childData;
 }

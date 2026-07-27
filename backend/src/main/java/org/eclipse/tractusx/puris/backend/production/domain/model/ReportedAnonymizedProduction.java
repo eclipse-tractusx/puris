@@ -50,8 +50,8 @@ public class ReportedAnonymizedProduction {
     @GeneratedValue
     protected UUID uuid;
 
-    @Column(name = "aggregated_data_uuid")
-    protected UUID aggregatedDataId;
+    @Column(name = "aggregated_material_data_node_id", insertable = false, updatable = false)
+    protected UUID aggregatedMaterialDataNodeId;
 
     protected double quantity;
     protected ItemUnitEnumeration measurementUnit;
