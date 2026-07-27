@@ -22,7 +22,7 @@ databaseChangeLog:
       author: OlgaIvkovic
       changes:
         - createTable:
-            tableName: partner_aggregated_data
+            tableName: aggregated_material_data
             columns:
               - column:
                   name: uuid
@@ -30,19 +30,14 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     primaryKey: true
-                    primaryKeyName: partner_aggregated_data_pkey
+                    primaryKeyName: aggregated_material_data_pkey
               - column:
                   name: material_own_material_number
                   type: VARCHAR(255)
                   constraints:
                     nullable: false
-              - column:
-                  name: partner_uuid
-                  type: UUID
-                  constraints:
-                    nullable: false
         - createTable:
-            tableName: child_aggregated_data
+            tableName: aggregated_material_data_node
             columns:
               - column:
                   name: uuid
@@ -50,7 +45,17 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     primaryKey: true
-                    primaryKeyName: child_aggregated_data_pkey
+                    primaryKeyName: aggregated_material_data_node_pkey
+              - column:
+                  name: aggregated_material_data_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: parent_node_id
+                  type: UUID
+                  constraints:
+                    nullable: true
               - column:
                   name: external_material_number
                   type: VARCHAR(255)
@@ -62,8 +67,13 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: parent_aggregated_data_uuid
-                  type: UUID
+                  name: quantity
+                  type: FLOAT8
+                  constraints:
+                    nullable: false
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
                   constraints:
                     nullable: false
         - createTable:
@@ -77,7 +87,7 @@ databaseChangeLog:
                     primaryKey: true
                     primaryKeyName: reported_anonymized_delivery_pkey
               - column:
-                  name: aggregated_data_uuid
+                  name: aggregated_material_data_node_id
                   type: UUID
                   constraints:
                     nullable: false
@@ -137,7 +147,7 @@ databaseChangeLog:
                     primaryKey: true
                     primaryKeyName: reported_anonymized_stock_pkey
               - column:
-                  name: aggregated_data_uuid
+                  name: aggregated_material_data_node_id
                   type: UUID
                   constraints:
                     nullable: false
@@ -177,7 +187,7 @@ databaseChangeLog:
                     primaryKey: true
                     primaryKeyName: reported_anonymized_production_pkey
               - column:
-                  name: aggregated_data_uuid
+                  name: aggregated_material_data_node_id
                   type: UUID
                   constraints:
                     nullable: false
@@ -212,38 +222,50 @@ databaseChangeLog:
                   constraints:
                     nullable: true
         - addForeignKeyConstraint:
-            baseTableName: partner_aggregated_data
+            baseTableName: aggregated_material_data
             baseColumnNames: material_own_material_number
             referencedTableName: material
             referencedColumnNames: own_material_number
-            constraintName: fk_partner_aggregated_data_material
+            constraintName: fk_aggregated_material_data_material
         - addForeignKeyConstraint:
-            baseTableName: partner_aggregated_data
-            baseColumnNames: partner_uuid
-            referencedTableName: partner
+            baseTableName: aggregated_material_data_node
+            baseColumnNames: aggregated_material_data_id
+            referencedTableName: aggregated_material_data
             referencedColumnNames: uuid
-            constraintName: fk_partner_aggregated_data_partner
+            constraintName: fk_aggregated_material_data_node_root
+        - addForeignKeyConstraint:
+            baseTableName: aggregated_material_data_node
+            baseColumnNames: parent_node_id
+            referencedTableName: aggregated_material_data_node
+            referencedColumnNames: uuid
+            constraintName: fk_aggregated_material_data_node_parent
         - createIndex:
-            indexName: idx_child_aggregated_data_parent
-            tableName: child_aggregated_data
+            indexName: idx_aggregated_material_data_node_root
+            tableName: aggregated_material_data_node
             columns:
               - column:
-                  name: parent_aggregated_data_uuid
+                  name: aggregated_material_data_id
+        - createIndex:
+            indexName: idx_aggregated_material_data_node_parent
+            tableName: aggregated_material_data_node
+            columns:
+              - column:
+                  name: parent_node_id
         - createIndex:
             indexName: idx_reported_anonymized_delivery_aggregated_data
             tableName: reported_anonymized_delivery
             columns:
               - column:
-                  name: aggregated_data_uuid
+                  name: aggregated_material_data_node_id
         - createIndex:
             indexName: idx_reported_anonymized_stock_aggregated_data
             tableName: reported_anonymized_stock
             columns:
               - column:
-                  name: aggregated_data_uuid
+                  name: aggregated_material_data_node_id
         - createIndex:
             indexName: idx_reported_anonymized_production_aggregated_data
             tableName: reported_anonymized_production
             columns:
               - column:
-                  name: aggregated_data_uuid
+                  name: aggregated_material_data_node_id

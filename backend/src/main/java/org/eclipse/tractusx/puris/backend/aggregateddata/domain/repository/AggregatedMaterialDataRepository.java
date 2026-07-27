@@ -20,11 +20,11 @@ package org.eclipse.tractusx.puris.backend.aggregateddata.domain.repository;
 
 import java.util.UUID;
 
-import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.ChildAggregatedData;
+import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ChildAggregatedDataRepository extends JpaRepository<ChildAggregatedData, UUID> {
+public interface AggregatedMaterialDataRepository extends JpaRepository<AggregatedMaterialData, UUID> {
     
 }
