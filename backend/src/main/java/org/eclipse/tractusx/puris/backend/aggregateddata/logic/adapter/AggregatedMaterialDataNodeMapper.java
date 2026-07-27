@@ -17,14 +17,15 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.aggregateddata.logic.adapter;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedData;
-import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.ChildAggregatedData;
-import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.PartnerAggregatedData;
+import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialData;
+import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialDataNode;
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.EventTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedAnonymizedDelivery;
@@ -48,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class AggregatedDataMapper {
+public class AggregatedMaterialDataNodeMapper {
     @Autowired
     private MaterialPartnerRelationService mprService;
  
@@ -57,9 +58,8 @@ public class AggregatedDataMapper {
  
     @Autowired
     private ObjectMapper objectMapper;
-
  
-    public PartnerAggregatedData jsonToPartnerAggregatedData(JsonNode json, Partner partner) {
+    public AggregatedMaterialData jsonToAggregatedMaterialData(JsonNode json, Partner partner) {
         String globalAssetId = getText(json, "globalAssetId");
         if (globalAssetId == null) {
             log.warn("Missing globalAssetId in aggregated data payload");
@@ -68,26 +68,49 @@ public class AggregatedDataMapper {
         var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, globalAssetId);
         Material material = materialService.findByMaterialNumberCx(globalAssetId);
         if (material == null && mpr == null) {
-            log.warn("Could not identify material " + globalAssetId);
+            log.warn("Could not find material {}", globalAssetId);
             return null;
         }
         if (material == null) {
             material = mpr.getMaterial();
         }
-        var data = PartnerAggregatedData.builder()
-            .partner(partner)
+ 
+        var aggregatedData = AggregatedMaterialData.builder()
             .material(material)
+            .childMaterialData(new ArrayList<>())
+            .build();
+ 
+        var rootNode = mapNode(json, aggregatedData, null);
+        aggregatedData.getChildMaterialData().add(rootNode);
+ 
+        return aggregatedData;
+    }
+ 
+    private AggregatedMaterialDataNode mapNode(JsonNode json, AggregatedMaterialData root, AggregatedMaterialDataNode parent) {
+        var quantity = readQuantity(json);
+        var node = AggregatedMaterialDataNode.builder()
+            .aggregatedMaterialData(root)
+            .parentNode(parent)
+            .externalMaterialNumber(getText(json, "materialNumber"))
+            .externalMaterialName(getText(json, "materialName"))
+            .quantity(quantity != null ? quantity.getValue() : null)
+            .measurementUnit(quantity != null ? quantity.getUnit() : null)
             .productions(new HashSet<>())
             .deliveries(new HashSet<>())
             .stocks(new HashSet<>())
+            .childMaterialData(new ArrayList<>())
             .build();
  
-        mapAspectItems(json.get("items"), data);
-        data.setChildData(mapChildItems(json.get("childItems"), data));
-        return data;
+        mapAspectItems(json.get("items"), node);
+ 
+        for (JsonNode childNode : elements(json.get("childItems"))) {
+            node.getChildMaterialData().add(mapNode(childNode, root, node));
+        }
+ 
+        return node;
     }
  
-    private void mapAspectItems(JsonNode itemsNode, AggregatedData target) {
+    private void mapAspectItems(JsonNode itemsNode, AggregatedMaterialDataNode target) {
         for (JsonNode itemNode : elements(itemsNode)) {
             String aspect = getText(itemNode, "aspect");
             JsonNode payload = itemNode.get("items");
@@ -109,14 +132,12 @@ public class AggregatedDataMapper {
             }
         }
     }
- 
+
     private Set<ReportedAnonymizedDelivery> mapDeliveries(DeliveryInformationAnonymized samm) {
         var deliveries = new HashSet<ReportedAnonymizedDelivery>();
         for (var deliveryAnonymized : samm.getDeliveries()) {
             var departureEvent = deliveryAnonymized.getTransitEvents().stream()
-                .filter(e -> e.getEventType() == EventTypeEnumeration.ACTUAL_DEPARTURE || e.getEventType() == EventTypeEnumeration.ESTIMATED_DEPARTURE)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Delivery without departure transit event"));
+                .filter(e -> e.getEventType() == EventTypeEnumeration.ACTUAL_DEPARTURE || e.getEventType() == EventTypeEnumeration.ESTIMATED_DEPARTURE).findFirst().orElseThrow(() -> new IllegalArgumentException("Delivery without departure transit event"));
             var arrivalEvent = deliveryAnonymized.getTransitEvents().stream()
                 .filter(e -> e.getEventType() == EventTypeEnumeration.ACTUAL_ARRIVAL || e.getEventType() == EventTypeEnumeration.ESTIMATED_ARRIVAL)
                 .findFirst();
@@ -163,26 +184,19 @@ public class AggregatedDataMapper {
         }
         return productions;
     }
- 
-    private List<ChildAggregatedData> mapChildItems(JsonNode childItemsNode, AggregatedData parent) {
-        var children = new ArrayList<ChildAggregatedData>();
-        for (JsonNode childNode : elements(childItemsNode)) {
-            var child = ChildAggregatedData.builder()
-                .externalMaterialNumber(getText(childNode, "materialNumber"))
-                .externalMaterialName(getText(childNode, "materialName"))
-                .parentData(parent)
-                .productions(new HashSet<>())
-                .deliveries(new HashSet<>())
-                .stocks(new HashSet<>())
-                .build();
- 
-            mapAspectItems(childNode.get("items"), child);
-            child.setChildData(mapChildItems(childNode.get("childItems"), child));
-            children.add(child);
-        }
-        return children;
-    }
 
+    private ItemQuantityEntity readQuantity(JsonNode json) {
+        JsonNode quantity = json.get("quantity");
+        if (quantity == null || quantity.isNull()) {
+            return null;
+        }
+        try {
+            return objectMapper.treeToValue(quantity, ItemQuantityEntity.class);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Error processing quantity " + quantity, e);
+        }
+    }
+ 
     private static Iterable<JsonNode> elements(JsonNode node) {
         return node != null && node.isArray() ? node : List.<JsonNode>of();
     }
