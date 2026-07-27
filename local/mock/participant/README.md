@@ -44,7 +44,7 @@ The mock participant is a **DSP provider** when the Supplier pulls data from it,
 
 The mock never talks to the Supplier's DTR or backend directly. Every exchange goes through the same DSP/HTTP surface a real EDC connector would use.
 
-**Module layout**
+### Module layout
 
 - `main.py`: FastAPI routes only; delegates all logic to the modules below.
 - `data.py`: the static DTR shell and the five PURIS submodel payloads, keyed off a BPNL-derived deterministic UUID so IDs stay stable across restarts.
@@ -97,7 +97,7 @@ DTR lookups follow the standard shell/submodel-descriptor shape, pointing back a
 
 `dsp/negotiations.py` and `dsp/transfers.py` implement real, callback-driven state machines, matching how an EDC actually negotiates: asynchronously, via pushed callback messages rather than long-held HTTP responses.
 
-Each offer in the catalog covers exactly one asset, and a negotiation always targets one specific offer (`_extract_asset_id()` in `dsp/negotiations.py` reads the asset straight off `offer.target`). So a single negotiate/transfer cycle only ever hands back an EDR for that one asset. That's enough to reach the DTR, since the DTR is itself just one asset, but not enough to reach a submodel, because a submodel's asset id isn't known in advance; it only shows up once you've read the DTR's shell descriptor. Getting a submodel therefore takes **two separate negotiate/transfer cycles**: first one for the DTR asset, then a second one for that specific submodel asset, using the submodel asset id named in the shell descriptor's `subprotocolBody`.
+Each offer in the catalog covers exactly one asset, and a negotiation always targets one specific offer (`_extract_asset_id()` in `dsp/negotiations.py` reads the asset straight off `offer.target`). So a single negotiate/transfer cycle only ever yields an EDR for one asset: enough to reach the DTR, but not a submodel. The submodel's asset id isn't actually hidden (in this mock, each submodel type sits at a fixed, catalog-visible asset id per partner); the real PURIS backend just always resolves submodels through the DTR rather than scanning the catalog directly, looking up the shell for a given `manufacturerPartId` and reading the matching submodel descriptor's `subprotocolBody` for the asset id and endpoint to negotiate. The mock mirrors that path, so getting a submodel takes **two separate negotiate/transfer cycles**: one for the DTR asset, then one for the submodel asset named in its shell descriptor.
 
 ```mermaid
 sequenceDiagram
