@@ -142,6 +142,9 @@ else
   echo "Both images rebuilt."
 fi
 
+echo "Building Mock Participant..."
+docker compose build puris-mock-participant || { echo "Mock participant build failed \nExiting..."; exit 1; }
+
 echo "Removing the PURIS + EDCs with their DTR and Database..."
 docker compose down -v
 
