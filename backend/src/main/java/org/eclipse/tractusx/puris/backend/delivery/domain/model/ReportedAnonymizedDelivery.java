@@ -54,8 +54,8 @@ public class ReportedAnonymizedDelivery {
     @GeneratedValue
     protected UUID uuid;
 
-    @Column(name = "aggregated_data_uuid", insertable = false, updatable = false)
-    protected UUID aggregatedDataId;
+    @Column(name = "aggregated_material_data_node_id", insertable = false, updatable = false)
+    protected UUID aggregatedMaterialDataNodeId;
 
     private double quantity;
     private ItemUnitEnumeration measurementUnit;
