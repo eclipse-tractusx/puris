@@ -61,6 +61,8 @@ const PartnerDataBatchDetailModal = ({ open, onClose, runId }: Props) => {
             columns={columns}
             rows={rows}
             rowCount={total}
+            getRowHeight={() => "auto"}
+            rowSelection={false}
             loading={isLoadingEntries}
             reload={() => refreshEntries()}
             pagination
