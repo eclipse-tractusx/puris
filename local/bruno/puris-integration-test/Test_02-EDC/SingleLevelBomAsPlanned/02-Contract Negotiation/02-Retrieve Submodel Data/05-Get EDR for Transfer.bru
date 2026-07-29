@@ -1,0 +1,34 @@
+meta {
+  name: 05-Get EDR for Transfer
+  type: http
+  seq: 5
+  tags: [
+    single-level-bom-as-planned
+  ]
+}
+
+get {
+  url: {{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v3/edrs/{{SUBMODEL_TRANSFER_PROCESS_ID}}/dataaddress?auto_refresh=true
+  body: none
+  auth: inherit
+}
+
+params:query {
+  auto_refresh: true
+}
+
+script:pre-request {
+  console.log("Waiting 10 seconds to let transfer process start");
+  await new Promise(resolve => setTimeout(resolve, 10000));
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+  bru.setVar("SUBMODEL_EDR_AUTH", jsonData.authorization);
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

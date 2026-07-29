@@ -119,11 +119,13 @@ public class SecurityConfig {
                         "/material-demand/**",
                         "/delivery-information/**",
                         "/days-of-supply/**",
+                        "/single-level-bom-as-planned/**",
                         "/edc/**",
                         "/erp-adapter/**",
                         "/parttypeinformation/**",
                         "/files/**",
-                        "/batch/**"
+                        "/batch/**",
+                        "/material-relations/**"
                     )
                     .authenticated()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/health/**").permitAll()

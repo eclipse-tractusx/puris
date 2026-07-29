@@ -452,6 +452,16 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
     }
 
     /**
+     * Returns a list of all MaterialPartnerRelations, that contain the given material entity.
+     * @param material
+     * @return
+     */
+    @Override
+    public List<MaterialPartnerRelation> findAllByMaterial(Material material) {
+        return mprRepository.findAllByMaterial_OwnMaterialNumber(material.getOwnMaterialNumber());
+    }
+
+    /**
      * Generates a Map of key-value-pairs. Each key represents the BPNL of a
      * partner (and yourself), each corresponding value is the materialNumber
      * that the owner of the BPNL is using in his own house to define the given Material.
@@ -541,6 +551,22 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
      */
     public List<Partner> findAllCustomersForMaterial(Material material) {
         return findAllCustomersForOwnMaterialNumber(material.getOwnMaterialNumber());
+    }
+
+    /**
+     * Returns a list of all MaterialPartnerRelations for the given own material number.
+     *
+     * @param ownMaterialNumber the own material number to search for
+     * @return a list of MaterialPartnerRelations for this material
+     */
+    @Override
+    public List<MaterialPartnerRelation> findAllByOwnMaterialNumber(String ownMaterialNumber) {
+        return mprRepository.findAllByMaterial_OwnMaterialNumber(ownMaterialNumber);
+    }
+
+    @Override
+    public List<MaterialPartnerRelation> findAllSupplierRelations(String ownMaterialNumber) {
+        return mprRepository.findAllByMaterial_OwnMaterialNumberAndPartnerSuppliesMaterialIsTrue(ownMaterialNumber);
     }
 
     /**

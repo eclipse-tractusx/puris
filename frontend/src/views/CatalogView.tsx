@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
 import { Input, Table } from '@catena-x/portal-shared-components';
 import { useCatalog } from '@hooks/edc/useCatalog';
 import { useEffect, useRef, useState } from 'react';
-import { CatalogOperation, CatalogPermission } from '@models/types/edc/catalog';
+import { CatalogItem, CatalogPermission } from '@models/types/edc/catalog';
 import { Box, Button, Stack, Typography, Autocomplete } from '@mui/material';
 import { Partner } from '@models/types/edc/partner';
 import { useAllPartners } from '@hooks/useAllPartners';
@@ -30,32 +30,20 @@ import { getCatalogOperator } from '@util/helpers';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import { useTitle } from '@contexts/titleProvider';
 
-const PermissionList = ({ permission }: { permission: CatalogPermission }) => {
+const PermissionList = ({ permission }: { permission: CatalogPermission | null }) => {
+    if (!permission) return null;
     return (
         <Stack>
-            {permission['odrl:constraint'] &&
-                'odrl:and' in permission['odrl:constraint'] &&
-                permission['odrl:constraint']['odrl:and'].map((constraint) => {
-                    const permissionString = `${constraint['odrl:leftOperand']['@id']} ${getCatalogOperator(
-                        constraint['odrl:operator']['@id']
-                    )} ${constraint['odrl:rightOperand']}`;
-                    return (
-                        <div key={constraint['@type']} title={permissionString}>
-                            {permissionString}
-                        </div>
-                    );
-                })}
+            {permission.constraints.map((c, i) => {
+                const permissionString = `${c.leftOperand} ${getCatalogOperator(c.operator)} ${c.rightOperand}`;
+                return (
+                    <div key={`${c.leftOperand}-${i}`} title={permissionString}>
+                        {permissionString}
+                    </div>
+                );
+            })}
         </Stack>
     );
-};
-
-type CatalogItem = {
-    assetId: string;
-    assetType: string;
-    assetVersion: string;
-    permission: CatalogPermission;
-    prohibitions: CatalogOperation[];
-    obligations: CatalogOperation[];
 };
 
 type CatalogListProps = {
@@ -81,9 +69,8 @@ const CatalogList = ({ catalog, title }: CatalogListProps) => {
                     field: 'permission.action',
                     flex: 0.5,
                     renderCell: (row) => {
-                        const actionString = row.row.permission['odrl:action']['@id'];
-                        const action = actionString.split('/')[actionString.split('/').length - 1];
-                        return <div title={actionString}> {action} </div>;
+                        const action = row.row.permission?.action ?? '';
+                        return <div title={action}> {action} </div>;
                     },
                 },
                 {

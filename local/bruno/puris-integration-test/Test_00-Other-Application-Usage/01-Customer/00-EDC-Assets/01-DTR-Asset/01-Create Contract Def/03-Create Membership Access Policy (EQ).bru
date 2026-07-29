@@ -23,14 +23,14 @@ body:json {
   {
     "@context" : [ "http://www.w3.org/ns/odrl.jsonld", {
       "edc" : "https://w3id.org/edc/v0.0.1/ns/",
-      "cx-policy" : "https://w3id.org/catenax/policy/"
+      "cx-policy" : "{{CUSTOMER_POLICY_NAMESPACE}}"
     } ],
     "@type" : "PolicyDefinitionRequestDto",
     "@id" : "{{DTR_ACCESS_POLICY_ID}}",
     "edc:policy" : {
       "@type" : "Set",
       "permission" : [ {
-        "action" : "use",
+        "action" : "{{CUSTOMER_POLICY_ACTION}}",
         "constraint" : {
           "@type" : "LogicalConstraint",
             "leftOperand" : "cx-policy:Membership",

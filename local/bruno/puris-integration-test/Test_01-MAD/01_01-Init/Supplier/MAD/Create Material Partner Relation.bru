@@ -17,18 +17,18 @@ headers {
 body:json {
   {
     "partnerBpnl": "{{CUSTOMER_BPNL}}",
-    "ownMaterialNumber": "{{MATERIAL_NUMBER_SUPPLIER}}",
-    "partnerMaterialNumber": "{{MATERIAL_NUMBER_CUSTOMER}}",
+    "ownMaterialNumber": "{{SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER}}",
+    "partnerMaterialNumber": "{{SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER}}",
     "partnerSuppliesMaterial": false,
     "partnerBuysMaterial": true
   }
 }
 
 script:pre-request {
-  var plain = bru.getEnvVar("MATERIAL_NUMBER_CUSTOMER")
+  var plain = bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER")
   var encoded = Buffer.from(plain).toString("base64")
   bru.setVar("B64_MNR_CUSTOMER", encoded)
-  var plain = bru.getEnvVar("MATERIAL_NUMBER_SUPPLIER")
+  var plain = bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER")
   var encoded = Buffer.from(plain).toString("base64")
   bru.setVar("B64_MNR_SUPPLIER", encoded)
 }

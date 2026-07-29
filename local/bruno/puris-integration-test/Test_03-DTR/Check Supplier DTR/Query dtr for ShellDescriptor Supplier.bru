@@ -23,8 +23,8 @@ auth:bearer {
 }
 
 script:pre-request {
-  const materialNumberCustomer = bru.getEnvVar('MATERIAL_NUMBER_CUSTOMER');
-  const materialNumberSupplier = bru.getEnvVar('MATERIAL_NUMBER_SUPPLIER');
+  const materialNumberCustomer = bru.getEnvVar('SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER');
+  const materialNumberSupplier = bru.getEnvVar('SEMICONDUCTOR_MATERIAL_NUMBER_SUPPLIER');
   
   const queryParam = '{"name":"customerPartId","value":"'+materialNumberCustomer+'"},{"name":"manufacturerPartId","value":"'+materialNumberSupplier+'"}';
   

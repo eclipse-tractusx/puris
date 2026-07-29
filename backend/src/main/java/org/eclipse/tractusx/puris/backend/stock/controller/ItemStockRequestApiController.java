@@ -27,9 +27,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
+import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockAnonymizedSamm;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockRequestApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,15 +53,12 @@ public class ItemStockRequestApiController {
     @Autowired
     private ItemStockRequestApiService itemStockRequestApiService;
 
+    @Autowired
+    private VariablesService variablesService;
+
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
     private final Pattern urnPattern = PatternStore.URN_OR_UUID_PATTERN;
-
-    @RequestMapping(value = "/**")
-    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-    public ResponseEntity<String> handleNotImplemented() {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-    }
 
     @Operation(summary = "This endpoint receives the ItemStock Submodel 2.0.0 requests. " +
         "This endpoint is meant to be accessed by partners via EDC only. ")
@@ -91,5 +91,51 @@ public class ItemStockRequestApiController {
             return ResponseEntity.status(500).build();
         }
         return ResponseEntity.ok(samm);
+    }
+
+    @Operation(summary = "This endpoint receives the ItemStockAnonymized Submodel 1.0.0 requests. " +
+        "This endpoint is meant to be accessed by our own EDC only. ")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Ok"),
+        @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Access forbidden - self-access only", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content),
+        @ApiResponse(responseCode = "501", description = "Unsupported representation", content = @Content)
+    })
+    @GetMapping("anonymized/request/{materialnumber}/{partnerBpnl}/{direction}/submodel/{representation}")
+    public ResponseEntity<ItemStockAnonymizedSamm> getAnonymizedItemStockMapping(@RequestHeader("edc-bpn") String edcBpnl,
+                                                              @RequestHeader("edc-contract-agreement-id") String contractAgreementId,
+                                                              @PathVariable String materialnumber,
+                                                              @PathVariable String partnerBpnl,
+                                                              @PathVariable DirectionCharacteristic direction,
+                                                              @PathVariable String representation) {
+        if (!bpnlPattern.matcher(partnerBpnl).matches() || !urnPattern.matcher(materialnumber).matches() || direction == null) {
+            log.warn("Rejecting request at ItemStockAnonymized Submodel request 1.0.0 endpoint");
+            return ResponseEntity.badRequest().build();
+        }
+        if (!variablesService.getOwnBpnl().equals(edcBpnl)) {
+            log.warn("Rejecting request at ItemStockAnonymized Submodel request 1.0.0 endpoint, edc-bpn header did not match own BPNL");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (!"$value".equals(representation)) {
+            log.warn("Rejecting request at ItemStockAnonymized Submodel request 1.0.0 endpoint, missing '@value' in request");
+            if (!PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(representation).matches()) {
+                representation = "<REPLACED_INVALID_REPRESENTATION>";
+            }
+            log.warn("Received {} from {} with direction {}", representation, partnerBpnl, direction);
+            return ResponseEntity.status(501).build();
+        }
+        log.info("Received request for {} with {} from {}", materialnumber, direction, partnerBpnl);
+        var samm = itemStockRequestApiService.handleItemStockAnonymizedSubmodelRequest(partnerBpnl, materialnumber, direction, contractAgreementId);
+        if (samm == null) {
+            return ResponseEntity.status(500).build();
+        }
+        return ResponseEntity.ok(samm);
+    }
+
+    @RequestMapping(value = "/**")
+    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+    public ResponseEntity<String> handleNotImplemented() {
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 }
