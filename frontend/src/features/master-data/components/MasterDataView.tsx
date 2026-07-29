@@ -327,6 +327,8 @@ export const MasterDataView = () => {
                     rows={mrs ?? []}
                     getRowId={(row) => row.parentMaterialNumber + '-' + row.childMaterialNumber}
                     noRowsMsg='No material relations found.'
+                    getRowHeight={() => 'auto'}
+                    rowSelection={false}
                 />
             </Stack>
 
