@@ -31,7 +31,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -93,7 +93,7 @@ public class DtrRequestBodyBuilder {
         var submodelDescriptorsArray = objectMapper.createArrayNode();
         body.set("submodelDescriptors", submodelDescriptorsArray);
 
-        var hrefs = buildSubmodelHrefs(materialPartnerRelation.getPartnerCXNumber(), materialPartnerRelation.getPartner().getBpnl(), DirectionCharacteristic.INBOUND);
+        var hrefs = buildSubmodelHrefs(materialPartnerRelation.getPartnerCXNumber(), materialPartnerRelation.getPartner().getBpnl(), DirectionEnum.INBOUND);
 
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, hrefs.directionHref(), variablesService.getItemStockSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, hrefs.href(), variablesService.getDemandSubmodelApiAssetId()));
@@ -141,7 +141,7 @@ public class DtrRequestBodyBuilder {
         body.set("submodelDescriptors", submodelDescriptorsArray);
 
         // the anonymized href can only carry one BPNL (see buildSubmodelHrefs); we use the first partner's BPNL
-        var hrefs = buildSubmodelHrefs(material.getMaterialNumberCx(), mprs.get(0).getPartner().getBpnl(), DirectionCharacteristic.OUTBOUND);
+        var hrefs = buildSubmodelHrefs(material.getMaterialNumberCx(), mprs.get(0).getPartner().getBpnl(), DirectionEnum.OUTBOUND);
 
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, hrefs.directionHref(), variablesService.getItemStockSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.PRODUCTION_SUBMODEL.URN_SEMANTIC_ID, hrefs.href(), variablesService.getProductionSubmodelApiAssetId()));
@@ -165,7 +165,7 @@ public class DtrRequestBodyBuilder {
      * href so the respective Controller can identify which partner's data to serve.
      * Access itself is still enforced by validating the edc-bpn header against the provider's own BPNL.
      */
-    private SubmodelHrefs buildSubmodelHrefs(String pathSegment, String partnerBpnl, DirectionCharacteristic direction) {
+    private SubmodelHrefs buildSubmodelHrefs(String pathSegment, String partnerBpnl, DirectionEnum direction) {
         String base = variablesService.getEdcDataplanePublicUrl();
         base = base.endsWith("/") ? base : base + "/";
         base += pathSegment + "/";

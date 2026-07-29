@@ -17,7 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm;
+package org.eclipse.tractusx.puris.backend.common.samm;
 
 /**
  * Generated class {@link DirectionCharacteristic}.

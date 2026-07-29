@@ -36,8 +36,8 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerServic
 import org.eclipse.tractusx.puris.backend.stock.domain.model.MaterialItemStock;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
 import org.eclipse.tractusx.puris.backend.stock.logic.adapter.ItemStockSammMapper;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.ItemStockAnonymizedSamm;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.ItemStockSamm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,7 +75,7 @@ public class ItemStockRequestApiService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public ItemStockSamm handleItemStockSubmodelRequest(String bpnl, String materialNumber, DirectionCharacteristic direction) {
+    public ItemStockSamm handleItemStockSubmodelRequest(String bpnl, String materialNumber, DirectionEnum direction) {
         ItemStockRequestData data = getItemStockRequestData(bpnl, materialNumber, direction, true);
         if (data == null) {
             return null;
@@ -89,7 +89,7 @@ public class ItemStockRequestApiService {
 
     }
 
-    public ItemStockAnonymizedSamm handleItemStockAnonymizedSubmodelRequest(String bpnl, String materialNumber, DirectionCharacteristic direction, String contractAgreementId) {
+    public ItemStockAnonymizedSamm handleItemStockAnonymizedSubmodelRequest(String bpnl, String materialNumber, DirectionEnum direction, String contractAgreementId) {
         ItemStockRequestData data = getItemStockRequestData(bpnl, materialNumber, direction, false);
         if (data == null) {
             return null;
@@ -103,7 +103,7 @@ public class ItemStockRequestApiService {
 
     }
 
-    private ItemStockRequestData getItemStockRequestData(String bpnl, String materialNumberCx, DirectionCharacteristic direction, boolean notifyPartnerRequest) {
+    private ItemStockRequestData getItemStockRequestData(String bpnl, String materialNumberCx, DirectionEnum direction, boolean notifyPartnerRequest) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
             log.error("Unknown Partner BPNL {}", bpnl);
@@ -188,7 +188,7 @@ public class ItemStockRequestApiService {
         List<RefreshError> errors = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
-            var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL, mpr, DirectionCharacteristic.OUTBOUND, 1);
+            var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL, mpr, DirectionEnum.OUTBOUND, 1);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedMaterialItemStock(samm, partner);
             for (var stock : stocks) {
@@ -241,7 +241,7 @@ public class ItemStockRequestApiService {
                 mprService.triggerPartTypeRetrievalTask(partner);
                 mpr = mprService.find(material, partner);
             }
-            var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL ,mpr, DirectionCharacteristic.INBOUND, 1);
+            var data = edcAdapterService.doSubmodelRequest(AssetType.ITEM_STOCK_SUBMODEL ,mpr, DirectionEnum.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ItemStockSamm.class);
             var stocks = sammMapper.itemStockSammToReportedProductItemStock(samm, partner);
             for (var stock : stocks) {

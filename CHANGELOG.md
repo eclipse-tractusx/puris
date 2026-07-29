@@ -17,6 +17,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Changed
 
+- Refactor usage of direction-characteristics ([#1128](https://github.com/eclipse-tractusx/puris/pull/1128))
 - Remove demonstrator data injection via command line runner ([#1132](https://github.com/eclipse-tractusx/puris/pull/1132))
 - Updated table row height and selection behavior ([#1135](https://github.com/eclipse-tractusx/puris/pull/1135))
 
