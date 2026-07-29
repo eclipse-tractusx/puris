@@ -49,7 +49,7 @@ type ExchangeDirection = 'incoming' | 'outgoing';
 
 type ExchangeStatusDescriptor =
     | { kind: 'info'; text: string }
-    | { kind: 'status'; label: string; direction?: ExchangeDirection; onClick?: () => void; request?: DataExchangeRequest; };
+    | { kind: 'status'; label: string; color?: string; direction?: ExchangeDirection; onClick?: () => void; request?: DataExchangeRequest; };
 
 const getExchangeStatus = (
     notification: DemandCapacityNotification,
@@ -66,14 +66,14 @@ const getExchangeStatus = (
     }
 
     const direction: ExchangeDirection = notification.reported ? 'outgoing' : 'incoming';
-    const status = (label: string, onClick: () => void) => ({ kind: 'status' as const, label, direction, request, onClick });
+    const status = (label: string, onClick: () => void, color?: string) => ({ kind: 'status' as const, label, color, direction, request, onClick });
 
     if (notification.status === 'resolved') return status('Terminated', () => onViewApprovalClicked?.(request));
     if (!request.dataExchangeApproval) return direction === 'outgoing'
         ? status('Request Pending', () => onViewRequestClicked?.(request))
         : status('Approval Pending', () => onCreateApprovalClicked?.(request));
-    if (request.desiredEndDateTime && new Date(request.desiredEndDateTime) < new Date()) return status('Expired', () => onViewApprovalClicked?.(request));
-    return status('Approved', () => onViewApprovalClicked?.(request));
+    if (request.desiredEndDateTime && new Date(request.desiredEndDateTime) < new Date()) return status('Expired', () => onViewApprovalClicked?.(request), 'text.disabled');
+    return status('Approved', () => onViewApprovalClicked?.(request), 'success.main');
 };
 const isDemandEffect = (effect: EffectType): boolean => effect === 'capacity-reduction' || effect === 'capacity-increase';
 
@@ -93,7 +93,7 @@ const ExchangeStatusCell: React.FC<{ status: ExchangeStatusDescriptor }> = ({ st
 
     const meta = status.direction && DIRECTION_META[status.direction];
     const label = (
-        <Stack direction="row" alignItems="center" gap={0.5}>
+        <Stack direction="row" alignItems="center" gap={0.5} sx={{ color: status.color }}>
             {meta && (
                 <Tooltip title={meta.label} arrow>
                     <Box component="span" role="img" aria-label={meta.label} sx={{ display: 'inline-flex', color: 'text.secondary' }}>
@@ -101,7 +101,7 @@ const ExchangeStatusCell: React.FC<{ status: ExchangeStatusDescriptor }> = ({ st
                     </Box>
                 </Tooltip>
             )}
-            <Typography>{status.label}</Typography>
+            <Typography color="inherit">{status.label}</Typography>
         </Stack>
     );
 
@@ -114,7 +114,7 @@ const ExchangeStatusCell: React.FC<{ status: ExchangeStatusDescriptor }> = ({ st
             : <Visibility />;
 
     return (
-        <Button variant="text" sx={{ textTransform: 'none' }} onClick={(e) => { e.stopPropagation(); status.onClick?.(); }} startIcon={actionIcon}>
+        <Button variant="text" sx={{ textTransform: 'none', color: status.color, '&:hover': { color: status.color } }} onClick={(e) => { e.stopPropagation(); status.onClick?.(); }} startIcon={actionIcon}>
             {label}
         </Button>
     );
