@@ -1,12 +1,14 @@
 {
-  "name": "PURIS integration test",
+  "name": "puris-integration-test",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "local-test-prepare-existing-assets": "cd bruno/puris-integration-test && bru run --tags share-enablement-services --exclude-tags admin --env local --reporter-junit local-prepare-existing-assets-results.xml --reporter-html local-prepare-existing-assets-results.html --output local-prepare-existing-assets-results.json",
-    "local-test": " cd bruno/puris-integration-test && bru run --exclude-tags admin,share-enablement-services --env local --reporter-junit local-results.xml --reporter-html local-results.html --output local-results.json",
+    "local-test": " cd bruno/puris-integration-test && bru run --exclude-tags admin,share-enablement-services,edc-cross-version --env local --reporter-junit local-results.xml --reporter-html local-results.html --output local-results.json",
+    "back-compat-test-prepare-existing-assets": "cd bruno/puris-integration-test && bru run --tags share-enablement-services --exclude-tags admin --env back-compat --reporter-junit back-compat-prepare-existing-assets-results.xml --reporter-html back-compat-prepare-existing-assets-results.html --output back-compat-prepare-existing-assets-results.json",
+    "back-compat-test": " cd bruno/puris-integration-test && bru run --exclude-tags admin,share-enablement-services --env back-compat --reporter-junit back-compat-results.xml --reporter-html back-compat-results.html --output back-compat-results.json",
     "int-test-prepare-existing-assets": "cd bruno/puris-integration-test && bru run --tags share-enablement-services --exclude-tags admin --env INT --reporter-junit int-prepare-existing-assets-results.xml --reporter-html int-prepare-existing-assets-results.html --output int-prepare-existing-assets-results.json",
     "int-test": " cd bruno/puris-integration-test && bru run --exclude-tags admin,share-enablement-services --env INT --reporter-junit int-results.xml --reporter-html int-results.html --output int-results.json"
   },

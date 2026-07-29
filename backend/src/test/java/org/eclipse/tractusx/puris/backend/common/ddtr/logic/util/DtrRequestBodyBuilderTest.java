@@ -28,6 +28,7 @@ import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -102,7 +103,8 @@ class DtrRequestBodyBuilderTest {
             "BPNA1234567890ZZ",
             "Test Street 5",
             "4711 Test City",
-            "Testonia"
+            "Testonia",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
         );
 
         PARTNER2 = new Partner(
@@ -114,7 +116,8 @@ class DtrRequestBodyBuilderTest {
             "BPNA6666666666ZZ",
             "Test Street 5",
             "4711 Test City",
-            "Testonia"
+            "Testonia",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
         );
 
         MPR = new MaterialPartnerRelation(

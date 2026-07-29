@@ -22,6 +22,9 @@ package org.eclipse.tractusx.puris.backend;
 
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -65,7 +68,8 @@ public class DataInjectionCommandLineRunnerTest {
             "BPNA1234567890AA",
             "Test Street 1",
             "12345 Testcity",
-            "Testland"
+            "Testland",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
         );
 
         when(partnerService.create(Mockito.any(Partner.class))).thenReturn(createdPartner);
@@ -87,7 +91,8 @@ public class DataInjectionCommandLineRunnerTest {
             "BPNA1234567890AA",
             "Test Street 1",
             "12345 Testcity",
-            "Testland"
+            "Testland",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
         );
         // Set up test values
         when(variablesService.getOwnBpnl()).thenReturn("BPNL1234567890ZZ");

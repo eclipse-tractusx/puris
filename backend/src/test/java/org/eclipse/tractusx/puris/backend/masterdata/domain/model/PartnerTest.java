@@ -46,7 +46,8 @@ public class PartnerTest {
     @Test
     public void test_invalidPartnerName() {
         Partner partner = new Partner("Invalid\nName", "https://www.example.com", "BPNL1234567890LE",
-            "BPNS1234567890LE", "Site A", "BPNA1234567890LE", "123 Main St", "12345 New York", "USA");
+            "BPNS1234567890LE", "Site A", "BPNA1234567890LE", "123 Main St", "12345 New York", "USA",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         Set<ConstraintViolation<Partner>> violations = validator.validate(partner);
 
@@ -64,7 +65,8 @@ public class PartnerTest {
     })
     public void test_invalidBpnlRegex(String bpnl) {
         Partner partner = new Partner("ABC Company", "https://www.example.com", bpnl,
-            "BPNS1234567890EE", "Site A", "BPNA1234567890AA", "123 Main St 12", "12345 New York", "USA");
+            "BPNS1234567890EE", "Site A", "BPNA1234567890AA", "123 Main St 12", "12345 New York", "USA",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         Set<ConstraintViolation<Partner>> violations = validator.validate(partner);
 
@@ -80,7 +82,8 @@ public class PartnerTest {
     })
     public void test_validBpnlRegex(String bpnl) {
         Partner partner = new Partner("ABC Company", "https://www.example.com", bpnl,
-            "BPNS1234567890EE", "Site A", "BPNA1234567890AA", "123 Main St 12", "12345 New York", "USA");
+            "BPNS1234567890EE", "Site A", "BPNA1234567890AA", "123 Main St 12", "12345 New York", "USA",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         Set<ConstraintViolation<Partner>> violations = validator.validate(partner);
 
@@ -96,7 +99,8 @@ public class PartnerTest {
     })
     public void test_validEdcRegex(String edcUrl) {
         Partner partner = new Partner("ABC Company", edcUrl, "BPNL1234567890LE",
-            "BPNS1234567890ZZ", "Site A", "BPNA1234567890ZZ", "123 Main Str.", "12345 New York", "USA");
+            "BPNS1234567890ZZ", "Site A", "BPNA1234567890ZZ", "123 Main Str.", "12345 New York", "USA",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         Set<ConstraintViolation<Partner>> violations = validator.validate(partner);
 
@@ -110,7 +114,8 @@ public class PartnerTest {
     })
     public void test_invalidEdcRegex(String edcUrl) {
         Partner partner = new Partner("ABC Company", edcUrl, "BPNL1234567890LE",
-            "BPNS1234567890ZZ", "Site A", "BPNA1234567890ZZ", "123 Main Str.", "12345 New York", "USA");
+            "BPNS1234567890ZZ", "Site A", "BPNA1234567890ZZ", "123 Main Str.", "12345 New York", "USA",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
 
         Set<ConstraintViolation<Partner>> violations = validator.validate(partner);
 
