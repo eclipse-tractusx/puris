@@ -1,17 +1,13 @@
 meta {
   name: Query catalog for DTR and Submodel Assets
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
   url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/catalog/request
   body: json
-  auth: none
-}
-
-headers {
-  X-Api-Key: {{CUSTOMER_EDC_API_KEY}}
+  auth: inherit
 }
 
 body:json {
@@ -20,9 +16,9 @@ body:json {
       "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
     },
     "@type": "CatalogRequest",
-    "protocol": "dataspace-protocol-http",
-    "counterPartyAddress": "{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
-    "counterPartyId": "{{SUPPLIER_BPNL}}",
+    "protocol": "{{CUSTOMER_COUNTERPARTY_PROTOCOL}}",
+    "counterPartyAddress": "{{CUSTOMER_COUNTERPARTY_ADDRESS}}",
+    "counterPartyId": "{{CUSTOMER_COUNTERPARTY_ID}}",
     "querySpec": {
       "offset": 0,
       "limit": 100,
@@ -48,7 +44,11 @@ tests {
       expect(res.getStatus()).to.equal(200);
   });
   
-  const contractOffers = res.getBody()['dcat:dataset'];
+  const protocol = bru.getVar("CUSTOMER_COUNTERPARTY_PROTOCOL");
+  
+  const datasetPropertyName = protocol.includes("2025-1") ? "dataset" : "dcat:dataset";
+  
+  const contractOffers = res.getBody()[datasetPropertyName];
   
   test("Verify response contains six data offers", function () {
       expect(contractOffers).to.be.an("array");
@@ -76,9 +76,9 @@ tests {
   ];
   
   expectedSemanticIds.forEach(function(semanticId){
-      sumbodelName = semanticId.split("#")[1];
+      const submodelName = semanticId.split("#")[1];
   
-      test("Verify that " + sumbodelName + " Submodel has been offered (dct:type, cx-common:version, aas-semantics:semanticId)", function () {
+      test("Verify that " + submodelName + " Submodel has been offered (dct:type, cx-common:version, aas-semantics:semanticId)", function () {
           const contractOffer = contractOffers.find(function (offer) {
               return offer["dct:type"]["@id"] === "https://w3id.org/catenax/taxonomy#Submodel" && offer["https://admin-shell.io/aas/3/0/HasSemantics/semanticId"]["@id"] === semanticId;
           });

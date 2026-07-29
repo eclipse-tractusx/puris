@@ -23,12 +23,15 @@ package org.eclipse.tractusx.puris.backend.common.edc.logic.service.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockitoAnnotations;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.List;
 
 @Slf4j
 public class JsonLdUtilsTest {
@@ -48,16 +51,21 @@ public class JsonLdUtilsTest {
         var catalogJson = objectMapper.readTree(input);
         log.info("Input:\n" + catalogJson.toPrettyString());
 
-        //WHEN
-        var expanded = util.expand(catalogJson);
-        log.info("Expanded first time:\n"+ expanded.toPrettyString());
-        var compacted = util.compact(expanded);
-        log.info("Compacted:\n" + compacted.toPrettyString());
-        var expandedAgain = util.expand(compacted);
-        log.info("Expanded again:\n" + expandedAgain.toPrettyString());
+        List<PolicyProfileVersionEnumeration> profileVersions = List.of(PolicyProfileVersionEnumeration.values());
 
-        // THEN
-        assertEquals(expandedAgain, expanded);
+        for (PolicyProfileVersionEnumeration profileVersion : profileVersions) {
+            log.info("Using profile: " + profileVersion.getValue());
+            //WHEN
+            var expanded = util.expand(catalogJson, profileVersion);
+            log.info("Expanded first time:\n"+ expanded.toPrettyString());
+            var compacted = util.compact(expanded, profileVersion);
+            log.info("Compacted:\n" + compacted.toPrettyString());
+            var expandedAgain = util.expand(compacted, profileVersion);
+            log.info("Expanded again:\n" + expandedAgain.toPrettyString());
+
+            // THEN
+            assertEquals(expandedAgain, expanded);
+        }
     }
 
     final static String test0 = "{\n" +
@@ -77,14 +85,14 @@ public class JsonLdUtilsTest {
         "                \"odrl:constraint\": {\n" +
         "                    \"odrl:and\": [\n" +
         "                        {\n" +
-        "                            \"odrl:leftOperand\": \"BusinessPartnerNumber\",\n" +
+        "                            \"odrl:leftOperand\": \"cx-policy:BusinessPartnerNumber\",\n" +
         "                            \"odrl:operator\": {\n" +
         "                                \"@id\": \"odrl:eq\"\n" +
         "                            },\n" +
         "                            \"odrl:rightOperand\": \"BPNL4444444444XX\"\n" +
         "                        },\n" +
         "                        {\n" +
-        "                            \"odrl:leftOperand\": \"Membership\",\n" +
+        "                            \"odrl:leftOperand\": \"cx-policy:Membership\",\n" +
         "                            \"odrl:operator\": {\n" +
         "                                \"@id\": \"odrl:eq\"\n" +
         "                            },\n" +
@@ -146,7 +154,7 @@ public class JsonLdUtilsTest {
         "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
         "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
         "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
-        "        \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+        "        \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
         "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
         "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
         "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
@@ -241,7 +249,7 @@ public class JsonLdUtilsTest {
         "    \"edc\" : \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
         "    \"tx\" : \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
         "    \"tx-auth\" : \"https://w3id.org/tractusx/auth/\",\n" +
-        "    \"cx-policy\" : \"https://w3id.org/catenax/policy/\",\n" +
+        "    \"cx-policy\" : \"https://w3id.org/catenax/2025/9/policy/\",\n" +
         "    \"dcat\" : \"http://www.w3.org/ns/dcat#\",\n" +
         "    \"dct\" : \"http://purl.org/dc/terms/\",\n" +
         "    \"odrl\" : \"http://www.w3.org/ns/odrl/2/\",\n" +
@@ -266,13 +274,13 @@ public class JsonLdUtilsTest {
         "        },\n" +
         "        \"odrl:constraint\" : {\n" +
         "          \"odrl:and\" : [ {\n" +
-        "            \"odrl:leftOperand\" : \"https://w3id.org/catenax/policy/FrameworkAgreement\",\n" +
+        "            \"odrl:leftOperand\" : \"https://w3id.org/catenax/2025/9/policy/FrameworkAgreement\",\n" +
         "            \"odrl:operator\" : {\n" +
         "              \"@id\" : \"odrl:eq\"\n" +
         "            },\n" +
         "            \"odrl:rightOperand\" : \"Puris:1.0\"\n" +
         "          }, {\n" +
-        "            \"odrl:leftOperand\" : \"https://w3id.org/catenax/policy/UsagePurpose\",\n" +
+        "            \"odrl:leftOperand\" : \"https://w3id.org/catenax/2025/9/policy/UsagePurpose\",\n" +
         "            \"odrl:operator\" : {\n" +
         "              \"@id\" : \"odrl:eq\"\n" +
         "            },\n" +
@@ -359,7 +367,7 @@ public class JsonLdUtilsTest {
         "    \"edc\" : \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
         "    \"tx\" : \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
         "    \"tx-auth\" : \"https://w3id.org/tractusx/auth/\",\n" +
-        "    \"cx-policy\" : \"https://w3id.org/catenax/policy/\",\n" +
+        "    \"cx-policy\" : \"https://w3id.org/catenax/2025/9/policy/\",\n" +
         "    \"dcat\" : \"http://www.w3.org/ns/dcat#\",\n" +
         "    \"dct\" : \"http://purl.org/dc/terms/\",\n" +
         "    \"odrl\" : \"http://www.w3.org/ns/odrl/2/\",\n" +
@@ -453,7 +461,7 @@ public class JsonLdUtilsTest {
         "    \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
         "    \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
         "    \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
-        "    \"cx-policy\": \"https://w3id.org/catenax/policy/\",\n" +
+        "    \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
         "    \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
         "    \"dct\": \"http://purl.org/dc/terms/\",\n" +
         "    \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +

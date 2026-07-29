@@ -1,0 +1,30 @@
+meta {
+  name: 07-Terminate Transfer
+  type: http
+  seq: 7
+  tags: [
+    single-level-bom-as-planned
+  ]
+}
+
+post {
+  url: {{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v3/transferprocesses/{{SUBMODEL_TRANSFER_PROCESS_ID}}/terminate
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "@context": {
+      "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+    },
+    "@type": "https://w3id.org/edc/v0.0.1/ns/TerminateTransfer",
+    "reason": "a reason to terminate"
+  }
+}
+
+tests {
+  test("Status code is 204", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+}

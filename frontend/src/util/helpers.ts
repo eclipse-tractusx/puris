@@ -32,7 +32,7 @@ export const getIncoterm = (incoterm: string) => {
 
 export const getCatalogOperator = (operatorId: string) => {
     switch (operatorId) {
-        case 'odrl:eq':
+        case 'eq':
             return 'equals';
         default:
             return operatorId;

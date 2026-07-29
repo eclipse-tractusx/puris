@@ -93,18 +93,14 @@ public class DtrRequestBodyBuilder {
         var submodelDescriptorsArray = objectMapper.createArrayNode();
         body.set("submodelDescriptors", submodelDescriptorsArray);
 
-        String href = variablesService.getEdcDataplanePublicUrl();
-        href = href.endsWith("/") ? href : href + "/";
-        href += materialPartnerRelation.getPartnerCXNumber() + "/";
+        var hrefs = buildSubmodelHrefs(materialPartnerRelation.getPartnerCXNumber(), materialPartnerRelation.getPartner().getBpnl(), DirectionEnum.INBOUND);
 
-        // all api definitions follow the same syntax, but some need to be direction specific
-        String directionHref = href + DirectionEnum.INBOUND + "/submodel";
-        href += "submodel";
-
-        submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, directionHref, variablesService.getItemStockSubmodelApiAssetId()));
-        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, href, variablesService.getDemandSubmodelApiAssetId()));
-        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, href, variablesService.getDeliverySubmodelApiAssetId()));
-        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, directionHref, variablesService.getDaysOfSupplySubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, hrefs.directionHref(), variablesService.getItemStockSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, hrefs.href(), variablesService.getDemandSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, hrefs.href(), variablesService.getDeliverySubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, hrefs.directionHref(), variablesService.getDaysOfSupplySubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedDirectionHref(), variablesService.getItemStockAnonymizedSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedHref(), variablesService.getDeliveryAnonymizedSubmodelApiAssetId()));
         log.debug("Created body for material {}\n{}", material.getOwnMaterialNumber(), body.toPrettyString());
         return body;
     }
@@ -144,24 +140,44 @@ public class DtrRequestBodyBuilder {
         var submodelDescriptorsArray = objectMapper.createArrayNode();
         body.set("submodelDescriptors", submodelDescriptorsArray);
 
-        String href = variablesService.getEdcDataplanePublicUrl();
-        href = href.endsWith("/") ? href : href + "/";
-        href += material.getMaterialNumberCx() + "/";
+        // the anonymized href can only carry one BPNL (see buildSubmodelHrefs); we use the first partner's BPNL
+        var hrefs = buildSubmodelHrefs(material.getMaterialNumberCx(), mprs.get(0).getPartner().getBpnl(), DirectionEnum.OUTBOUND);
 
-        // all api definitions follow the same syntax, but some need to be direction specific
-        String directionHref = href + DirectionEnum.OUTBOUND + "/submodel";
-        href += "submodel";
-
-        submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, directionHref, variablesService.getItemStockSubmodelApiAssetId()));
-        submodelDescriptorsArray.add(createSubmodelObject(AssetType.PRODUCTION_SUBMODEL.URN_SEMANTIC_ID, href, variablesService.getProductionSubmodelApiAssetId()));
-        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, href, variablesService.getDeliverySubmodelApiAssetId()));
-        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, directionHref, variablesService.getDaysOfSupplySubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, hrefs.directionHref(), variablesService.getItemStockSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.PRODUCTION_SUBMODEL.URN_SEMANTIC_ID, hrefs.href(), variablesService.getProductionSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, hrefs.href(), variablesService.getDeliverySubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, hrefs.directionHref(), variablesService.getDaysOfSupplySubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedDirectionHref(), variablesService.getItemStockAnonymizedSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedHref(), variablesService.getDeliveryAnonymizedSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedHref(), variablesService.getProductionAnonymizedSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, hrefs.href(), variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createPartTypeSubmodelObject(material.getOwnMaterialNumber()));
 
         log.debug("Created body for product {}\n{}", material.getOwnMaterialNumber(), body.toPrettyString());
         return body;
     }
 
+    private record SubmodelHrefs(String href, String directionHref, String anonymizedHref, String anonymizedDirectionHref) {
+    }
+
+    /**
+     * The anonymized submodels are only ever exposed via our own EDC; {@code partnerBpnl} is embedded as a path segment in their
+     * href so the respective Controller can identify which partner's data to serve.
+     * Access itself is still enforced by validating the edc-bpn header against the provider's own BPNL.
+     */
+    private SubmodelHrefs buildSubmodelHrefs(String pathSegment, String partnerBpnl, DirectionEnum direction) {
+        String base = variablesService.getEdcDataplanePublicUrl();
+        base = base.endsWith("/") ? base : base + "/";
+        base += pathSegment + "/";
+        String anonymizedBase = base + partnerBpnl + "/";
+
+        return new SubmodelHrefs(
+            base + "submodel",
+            base + direction + "/submodel",
+            anonymizedBase + "submodel",
+            anonymizedBase + direction + "/submodel"
+        );
+    }
 
     private ObjectNode createGenericIdObject(String name, String id, List<ObjectNode> refObjects) {
         var idObject = objectMapper.createObjectNode();
