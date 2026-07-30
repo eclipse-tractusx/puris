@@ -468,12 +468,14 @@ export const DataExchangeRequestInformationModal = ({
             </Dialog >
             <Dialog open={isConfirmApproveOpen} onClose={() => setIsConfirmApproveOpen(false)}>
                 <DialogTitle variant="h3" textAlign="center">Confirm Approval</DialogTitle>
-                <DialogContent>
+                <DialogContent sx={{ display: 'flex', padding: "0.1rem 1rem" }}>
                     <Typography variant="body2">Do you really want to approve the data exchange request?</Typography>
                 </DialogContent>
-                <DialogActions sx={{ padding: '0 1.5rem 1.5rem' }}>
-                    <Button variant="outlined" color="primary" onClick={() => setIsConfirmApproveOpen(false)}>Cancel</Button>
-                    <Button variant="contained" onClick={handleApproveConfirm} autoFocus><Send sx={{ mr: 0.5 }} /> Approve</Button>
+                <DialogActions sx={{ padding: 0 }}>
+                    <Stack direction="row" justifyContent="center" width="100%" gap={1}> 
+                        <Button variant="outlined" color="primary" onClick={() => setIsConfirmApproveOpen(false)}>Cancel</Button>
+                        <Button variant="contained" onClick={handleApproveConfirm} autoFocus><Send sx={{ mr: 0.5 }} /> Approve</Button>
+                    </Stack>
                 </DialogActions>
             </Dialog>
         </>
