@@ -41,6 +41,145 @@ dependencies:
 
 {{ template "chart.requirementsSection" . }}
 
+## Configuration Quick Guides
+
+Consider these quick guides for specific topics.
+
+### Authentication
+
+Two sections are relevant:
+
+- postgresql.auth - define a superuser with custom name
+- postgresql.customUser - define a custom non-root user (optional but **recommended**)
+
+All templates allow to overwrite values, if the respective key is overwritten
+
+
+```yaml
+postgresql:
+  auth:
+    existingSecret: "admin-secret-name" # will be used / created and overriden
+    database: "postgres" # will override
+    username: "postgres" # will override
+    password: "your-admin-password-eg-from-vault" # will override
+  customUser:
+    existingSecret: "custom-secret-name" # will be used / created and overriden
+    database: "puris" # will override
+    name: "puris" # will override
+    password: "your-customer-user-password-eg-from-vault" # will override
+```
+
+To support the previous mechanism, a catch all secret may be created if `postgresql.auth.existingSecret` is set.It also contains the customUser information, if customUser has name or existingSecret (also same name is considered).
+
+### Autocreation of Separate Secrets (**RECOMMENDED**)
+
+This yaml
+
+```yaml
+postgresql:
+ auth:
+    existingSecret: ""
+    database: "postgres"
+    username: "postgres".
+    password: "1"
+  customUser:
+    existingSecret: ""
+    name: "puris"
+    database: "puris"
+    password: ""
+```
+
+Results in two secret:
+
+- `{Release Name}-postgresql` updated with `postgres-password`.
+- `{Release Name}-postgresql-custom-user-credentials` updated with `CUSTOM_PASSWORD`, `CUSTOM_USER`, `CUSTOM_DB`.
+
+### Reusage and Update of Secrets
+
+Beside the following options, for existingSecrets, also specific secretKeys may be used.
+
+For `postgresql.auth` the following keys may be specified:
+
+- `adminPasswordKey`: default `postgres-password`
+
+For `postgresql.customUser` the following keys may be specified:
+
+- `name`: default `CUSTOM_USER` 
+- `password`: default `CUSTOM_PASSWORD` 
+- `database`: default `CUSTOM_DB` 
+
+> [!note]
+> If postgres is disabled (`postgresql.enabled: false`), no secret for postgres is created, then the secret for the backend is created based on the `backend.puris.datasource.password` value.
+
+#### Option A: Existing admin secret with automatically created custom user secret
+
+This yaml
+
+```yaml
+postgresql:
+ auth:
+    existingSecret: "existing"
+    database: "postgres"
+    username: "postgres".
+    password: "1"
+  customUser:
+    existingSecret: ""
+    name: "puris"
+    database: "puris"
+    password: ""
+```
+
+Results in two secret:
+
+- `existing` secret updated with `postgres-password`.
+- `{Release Name}-postgresql-custom-user-credentials` secret updated with `CUSTOM_PASSWORD`, `CUSTOM_USER`, `CUSTOM_DB`.
+
+#### Option B: Existing custom user secret with automatically created admin secret
+
+This yaml
+
+```yaml
+postgresql:
+ auth:
+    existingSecret: ""
+    database: "postgres"
+    username: "postgres".
+    password: "1"
+  customUser:
+    existingSecret: "existing"
+    name: "puris"
+    database: "puris"
+    password: ""
+```
+
+Results in two secret:
+
+- `{Release Name}-postgresql` updated with `postgres-password`, `host`, `port`, `username`, `database`, `uri`.
+- `existing` secret updated with `CUSTOM_PASSWORD`, `CUSTOM_USER`, `CUSTOM_DB`.
+
+#### Option C: Shared Existing Secret
+
+> [!note]
+> This represents the old way and is **NOT RECOMMENDED**.
+
+This yaml
+
+```yaml
+postgresql:
+ auth:
+    existingSecret: "existing"
+    database: "postgres"
+    username: "postgres".
+    password: "1"
+  customUser:
+    existingSecret: "existing"
+    name: "puris"
+    database: "puris"
+    password: ""
+```
+
+Results in one secret (`existing`) that will be updated with the `postgres-password`, `CUSTOM_PASSWORD`, `CUSTOM_USER`, `CUSTOM_DB`.
+
 {{ template "chart.valuesSection" . }}
 
 {{ template "helm-docs.versionFooter" . }}

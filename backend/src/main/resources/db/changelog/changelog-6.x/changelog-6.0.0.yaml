@@ -18,87 +18,19 @@
 #
 databaseChangeLog:
   - changeSet:
-      id: "1"
-      author: OlgaIvkovic
-      changes:
-        - createTable:
-            tableName: own_data_exchange_request
-            columns:
-              - column:
-                  name: uuid
-                  type: UUID
-                  constraints:
-                    nullable: false
-                    primaryKey: true
-                    primaryKeyName: own_data_exchange_request_pkey
-              - column:
-                  name: request_id
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: notification_uuid
-                  type: UUID
-                  constraints:
-                    nullable: false
-              - column:
-                  name: criticality
-                  type: SMALLINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: requested_types
-                  type: SMALLINT[]
-                  constraints:
-                    nullable: false
-              - column:
-                  name: desired_start_date_time
-                  type: TIMESTAMP WITHOUT TIME ZONE
-                  constraints:
-                    nullable: false
-              - column:
-                  name: desired_end_date_time
-                  type: TIMESTAMP WITHOUT TIME ZONE
-                  constraints:
-                    nullable: false
-              - column:
-                  name: text
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: timestamp
-                  type: TIMESTAMP WITHOUT TIME ZONE
-                  constraints:
-                    nullable: false
-
-        - createTable:
-            tableName: own_data_exchange_request_requested_types
-            columns:
-              - column:
-                  name: own_data_exchange_request_uuid
-                  type: UUID
-                  constraints:
-                    nullable: false
-              - column:
-                  name: requested_type
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-
-        - addForeignKeyConstraint:
-            baseTableName: own_data_exchange_request
-            baseColumnNames: notification_uuid
-            referencedTableName: reported_demand_and_capacity_notification
-            referencedColumnNames: uuid
-            constraintName: fk_own_data_exchange_request_notification
-
-        - addForeignKeyConstraint:
-            baseTableName: own_data_exchange_request_requested_types
-            baseColumnNames: own_data_exchange_request_uuid
-            referencedTableName: own_data_exchange_request
-            referencedColumnNames: uuid
-            constraintName: fk_own_data_exchange_request_requested_types
+        id: "1"
+        author: ReneSchroederLJ
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: delivery_anonymized_contract_mapping_pkey
+                    name: partner_bpnl
+                    type: VARCHAR(255)
+              tableName: delivery_anonymized_contract_mapping
   - changeSet:
         id: "2"
         author: OlgaIvkovic
@@ -109,150 +41,70 @@ databaseChangeLog:
                     constraints:
                       nullable: false
                       primaryKey: true
-                      primaryKeyName: data_exchange_request_contract_mapping_pkey
+                      primaryKeyName: item_stock_anonymized_contract_mapping_pkey
                     name: partner_bpnl
                     type: VARCHAR(255)
-              tableName: data_exchange_request_contract_mapping
-          - addColumn:
-              tableName: own_data_exchange_request
-              columns:
-                - column:
-                    name: related_data_exchange_request_uuid
-                    type: UUID
+              tableName: item_stock_anonymized_contract_mapping
+  - changeSet:
+        id: "3"
+        author: jakoballgaier
+        changes:
           - createTable:
-              tableName: reported_data_exchange_request
-              columns:
-                - column:
-                    name: uuid
-                    type: UUID
-                    constraints:
-                      nullable: false
-                      primaryKey: true
-                      primaryKeyName: reported_data_exchange_request_pkey
-                - column:
-                    name: request_id
-                    type: VARCHAR(255)
-                    constraints:
-                      nullable: false
-                - column:
-                    name: notification_uuid
-                    type: UUID
-                    constraints:
-                      nullable: false
-                - column:
-                    name: criticality
-                    type: SMALLINT
-                    constraints:
-                      nullable: false
-                - column:
-                    name: requested_types
-                    type: SMALLINT[]
-                    constraints:
-                      nullable: false
-                - column:
-                    name: desired_start_date_time
-                    type: TIMESTAMP WITHOUT TIME ZONE
-                    constraints:
-                      nullable: false
-                - column:
-                    name: desired_end_date_time
-                    type: TIMESTAMP WITHOUT TIME ZONE
-                    constraints:
-                      nullable: false
-                - column:
-                    name: text
-                    type: VARCHAR(255)
-                    constraints:
-                      nullable: false
-                - column:
-                    name: timestamp
-                    type: TIMESTAMP WITHOUT TIME ZONE
-                    constraints:
-                      nullable: false
-          - addForeignKeyConstraint:
-              baseTableName: reported_data_exchange_request
-              baseColumnNames: notification_uuid
-              referencedTableName: own_demand_and_capacity_notification
-              referencedColumnNames: uuid
-              constraintName: fk_reported_data_exchange_request_notification
-  - changeSet:
-      id: "3"
-      author: OlgaIvkovic
-      changes:
-        - createTable:
-            tableName: own_data_exchange_approval
-            columns:
-              - column:
-                  name: uuid
-                  type: UUID
-                  constraints:
-                    nullable: false
-                    primaryKey: true
-                    primaryKeyName: own_data_exchange_approval_pkey
-              - column:
-                    name: approval_id
-                    type: VARCHAR(255)
-                    constraints:
-                      nullable: false
-              - column:
-                  name: is_finalized
-                  type: BOOLEAN
-                  constraints:
-                    nullable: false
-              - column:
-                  name: approved_types
-                  type: SMALLINT[]
-                  constraints:
-                    nullable: false
-              - column:
-                  name: timestamp
-                  type: TIMESTAMP WITHOUT TIME ZONE
-                  defaultValueComputed: CURRENT_TIMESTAMP
-                  constraints:
-                    nullable: false
-              - column:
-                  name: data_exchange_request_uuid
-                  type: UUID
-                  constraints:
-                    nullable: false
-                    unique: true
-                    uniqueConstraintName: uk_own_data_exchange_approval_data_exchange_request
-        - createTable:
-            tableName: data_exchange_approval_approved_types
-            columns:
-              - column:
-                  name: data_exchange_approval_uuid
-                  type: UUID
-                  constraints:
-                    nullable: false
-              - column:
-                  name: approved_type
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-
-        - addForeignKeyConstraint:
-            baseTableName: own_data_exchange_approval
-            baseColumnNames: data_exchange_request_uuid
-            referencedTableName: reported_data_exchange_request
-            referencedColumnNames: uuid
-            constraintName: fk_own_data_exchange_approval_data_exchange_request
-  - changeSet:
-      id: "4"
-      author: OlgaIvkovic
-      changes:
-        - createTable:
               columns:
                 - column:
                     constraints:
                       nullable: false
                       primaryKey: true
-                      primaryKeyName: data_exchange_approval_contract_mapping_pkey
+                      primaryKeyName: production_anonymized_contract_mapping_pkey
                     name: partner_bpnl
                     type: VARCHAR(255)
-              tableName: data_exchange_approval_contract_mapping
+              tableName: production_anonymized_contract_mapping
+  - changeSet:
+        id: "4"
+        author: ReneSchroederLJ
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: migration_task_pkey
+                    name: id
+                    type: UUID
+                    defaultValueComputed: "gen_random_uuid()"
+                - column:
+                    name: target_version
+                    type: VARCHAR(255)
+                    constraints:
+                      nullable: false
+                - column:
+                    name: status
+                    type: SMALLINT
+                    defaultValue: "0"
+                    constraints:
+                      nullable: false
+                - column:
+                    name: errors
+                    type: VARCHAR(255)
+              tableName: migration_task
+          - insert:
+              columns:
+                - column:
+                    name: target_version
+                    value: "6.0.0"
+              tableName: migration_task
+  - changeSet:
+      id: "5"
+      author: ReneSchroederLJ
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: material_relation
+      changes:
         - createTable:
-            tableName: reported_data_exchange_approval
+            tableName: material_relation
             columns:
               - column:
                   name: uuid
@@ -260,38 +112,63 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     primaryKey: true
-                    primaryKeyName: reported_data_exchange_approval_pkey
+                    primaryKeyName: material_relation_pkey
               - column:
-                  name: approval_id
+                  name: parent_own_material_number
                   type: VARCHAR(255)
                   constraints:
                     nullable: false
               - column:
-                  name: is_finalized
-                  type: BOOLEAN
+                  name: child_own_material_number
+                  type: VARCHAR(255)
                   constraints:
                     nullable: false
               - column:
-                  name: approved_types
-                  type: SMALLINT[]
+                  name: quantity
+                  type: FLOAT8
                   constraints:
                     nullable: false
               - column:
-                  name: timestamp
+                  name: measurement_unit
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: valid_from
                   type: TIMESTAMP WITHOUT TIME ZONE
-                  defaultValueComputed: CURRENT_TIMESTAMP
-                  constraints:
-                    nullable: false
               - column:
-                  name: data_exchange_request_uuid
-                  type: UUID
+                  name: valid_to
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: created_on
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: last_modified_on
+                  type: TIMESTAMP WITHOUT TIME ZONE
+  - changeSet:
+        id: "6"
+        author: gobica
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: single_level_bom_as_planned_contract_mapping_pkey
+                    name: partner_bpnl
+                    type: VARCHAR(255)
+              tableName: single_level_bom_as_planned_contract_mapping
+  - changeSet:
+      id: "7"
+      author: ReneSchroederLJ
+      changes:
+        - addColumn:
+            tableName: partner
+            columns:
+              - column:
+                  name: policy_profile_version
+                  type: SMALLINT
                   constraints:
                     nullable: false
-                    unique: true
-                    uniqueConstraintName: uk_reported_data_exchange_approval_data_exchange_request
-        - addForeignKeyConstraint:
-            baseTableName: reported_data_exchange_approval
-            baseColumnNames: data_exchange_request_uuid
-            referencedTableName: own_data_exchange_request
-            referencedColumnNames: uuid
-            constraintName: fk_reported_data_exchange_approval_data_exchange_request
+                  defaultValueNumeric: 0

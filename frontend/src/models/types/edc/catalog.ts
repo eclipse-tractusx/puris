@@ -18,55 +18,30 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
+export type CatalogConstraint = {
+    leftOperand: string;
+    operator: string;
+    rightOperand: string;
+};
+export type CatalogPermission = {
+    action: string;
+    constraints: CatalogConstraint[];
+};
 export type CatalogOperation = {
-    'odrl:constraint': {
-        'odrl:leftOperand': string;
-        'odrl:operator': {
-            '@id': string;
-        };
-        'odrl:rightOperand': string;
-    };
+    constraints: CatalogConstraint[];
+};
+export type CatalogItem = {
+    assetId: string;
+    assetType: string;
+    assetVersion: string;
+    permission: CatalogPermission | null;
+    prohibitions: CatalogOperation[];
+    obligations: CatalogOperation[];
 };
 
-export type CatalogPermission = {
-    'odrl:target': string;
-    'odrl:action': {
-        '@id': string;
-    }
-    'odrl:constraint': {
-        'odrl:leftOperand': {
-            "@id": string;
-        };
-        'odrl:operator': {
-            '@id': string;
-        };
-        'odrl:rightOperand': string;
-    } | {
-        '@type': string,
-        'odrl:and': {
-            '@type': string,
-            'odrl:leftOperand': {
-                "@id": string;
-            };
-            'odrl:operator': {
-                '@id': string;
-            };
-            'odrl:rightOperand': string;
-        }[]
-    };
-};
 
 export type RawCatalogData = {
-    'dcat:dataset': {
-        '@id': string;
-        'dct:type': {
-            '@id': string;
-        }
-        'https://w3id.org/catenax/ontology/common#version': string;
-        'odrl:hasPolicy': {
-            'odrl:permission': CatalogPermission;
-            'odrl:prohibition': CatalogOperation[];
-            'odrl:obligation': CatalogOperation[];
-        };
-    }[];
+    'dcat:dataset'?: unknown[];
+    dataset?: unknown[];
+    [key: string]: unknown;
 };

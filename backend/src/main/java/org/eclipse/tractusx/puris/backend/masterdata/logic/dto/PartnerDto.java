@@ -25,6 +25,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 
 import java.io.Serializable;
 import java.util.SortedSet;
@@ -51,4 +52,5 @@ public class PartnerDto implements Serializable {
     @Valid
     private SortedSet<SiteDto> sites = new TreeSet<>();
 
+    private PolicyProfileVersionEnumeration policyProfileVersion;
 }

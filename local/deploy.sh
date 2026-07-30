@@ -21,12 +21,13 @@
 
 cleanup=0
 edc_only=0
+backwards_compatibility=0
 int_seed=0
 logs=0
 attach=0
 preserve_images=0
 # Remove previous installations if -c flag has been specified, and generate new keys
-while getopts "aceilph" opt;do
+while getopts "acbeilph" opt;do
   case $opt in
     a)
         echo "Alright, we'll run PURIS backends in attached mode."
@@ -35,6 +36,10 @@ while getopts "aceilph" opt;do
     c)
       echo "Alright, we'll clean-up the infrastructure."
       cleanup=1
+      ;;
+    b)
+      echo "Alright, we'll start the EDCs with different versions to simulate a backwards compatibility scenario."
+      backwards_compatibility=1
       ;;
     i)
       echo "Alright, we'll seed the INT Test Data."
@@ -62,11 +67,12 @@ while getopts "aceilph" opt;do
       echo "\$docker compose up"
       echo ""
       echo "You can use options to alter behavior:"
-      echo "-a attach        = attach puris backend containers after whole setup (includes int data seed). -l option will be ignored."
-      echo "-c clean         = run sh.cleanup before starting to create a new environment (Wallet, Keycloak, Keys)"
-      echo "-i seed-int-data = start backends with empty role and seed integration test data"
-      echo "-l logs          = Follows the logs of the EDC, DTR and PURIS same as with docker-compose but detached mode."
-      echo "-p preserve-img  = Do not rebuild backend/frontend images; use existing ones"
+      echo "-a attach               = attach puris backend containers after whole setup (includes int data seed). -l option will be ignored."
+      echo "-c clean                = run sh.cleanup before starting to create a new environment (Wallet, Keycloak, Keys)"
+      echo "-b backwards-compatible = start the applications with different EDC versions to simulate a backwards compatibility scenario. "
+      echo "-i seed-int-data        = start backends with empty role and seed integration test data"
+      echo "-l logs                 = Follows the logs of the EDC, DTR and PURIS same as with docker-compose but detached mode."
+      echo "-p preserve-img         = Do not rebuild backend/frontend images; use existing ones"
       echo "- If -p is used but images are missing, a one-time build will run to avoid compose failures."
       echo "\nExiting..."
       exit 1
@@ -139,15 +145,22 @@ fi
 echo "Removing the PURIS + EDCs with their DTR and Database..."
 docker compose down -v
 
+compose_file="docker-compose.yaml"
+
+if [ $backwards_compatibility -eq 1 ]; then
+  echo "Using docker-compose-legacy.yaml to start EDCs with different versions."
+  compose_file="docker-compose-legacy.yaml"
+fi
+
 if [ $int_seed -eq 1 ]; then
   # overwrite role to enable the local integration test
   # don't register customer dtr asset as we simulate the sceanrio in which another application has been onboarded before
   echo "Starting PURIS demonstrator containers without demonstration role..."
-  CUSTOMER_DEMONSTRATOR_ROLE="" SUPPLIER_DEMONSTRATOR_ROLE="" CUSTOMER_PURIS_DTR_EDC_ASSET_REGISTER="false" docker compose up -d
+  CUSTOMER_DEMONSTRATOR_ROLE="" SUPPLIER_DEMONSTRATOR_ROLE="" CUSTOMER_PURIS_DTR_EDC_ASSET_REGISTER="false" docker compose -f $compose_file up -d
 else
   # Start the PURIS demonstrator containers
   echo "Starting PURIS demonstrator containers..."
-  docker compose up -d
+  docker compose -f $compose_file up -d
 fi
 
 # Prepare the following asset data:
@@ -168,7 +181,11 @@ if [ $int_seed -eq 1 ]; then
   printf '.'
   sleep 5
   done
-  npm run local-test-prepare-existing-assets
+  if [ $backwards_compatibility -eq 1 ]; then
+    npm run back-compat-test-prepare-existing-assets
+  else
+    npm run local-test-prepare-existing-assets
+  fi
   echo "...seeded existing EDC Assets."
 fi
 
@@ -189,7 +206,11 @@ python3 generate_openapi_yaml.py
 
 if [ $int_seed -eq 1 ]; then
   echo "Seeding Int Data (2/2)..."
-  npm run local-test
+  if [ $backwards_compatibility -eq 1 ]; then
+    npm run back-compat-test
+  else
+    npm run local-test
+  fi
   echo "...seeded data. PLEASE CHECK RESULTS ON YOUR OWN."
 fi
 

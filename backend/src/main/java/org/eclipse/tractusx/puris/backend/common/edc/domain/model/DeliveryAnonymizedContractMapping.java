@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2026 Volkswagen AG
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,12 +16,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm;
 
-/**
- * Generated class {@link DirectionCharacteristic}.
- */
+ package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
-public enum DirectionCharacteristic {
-	INBOUND, OUTBOUND;
-}
+ import jakarta.persistence.Entity;
+ import lombok.ToString;
+ 
+ @Entity
+ @ToString(callSuper = true)
+ public class DeliveryAnonymizedContractMapping extends ContractMapping {
+ }
+ 
