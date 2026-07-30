@@ -113,6 +113,7 @@ public class SecurityConfig {
                         "/delivery/**",
                         "/demand/**",
                         "/data-exchange-request/**",
+                        "/data-exchange-approval/**",
                         "/demand-and-capacity-notification/**",
                         "/planned-production/**",
                         "/material-demand/**",
