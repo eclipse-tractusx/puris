@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2026 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+# Copyright (c) 2026 Volkswagen AG
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -19,6 +19,22 @@
 databaseChangeLog:
   - changeSet:
       id: "1"
+      author: jakoballgaier
+      changes:
+        - renameColumn:
+            tableName: erp_adapter_request
+            oldColumnName: direction_characteristic
+            newColumnName: direction_enum
+        - renameColumn:
+            tableName: erp_adapter_trigger_dataset
+            oldColumnName: direction_characteristic
+            newColumnName: direction_enum
+        - modifyDataType:
+            tableName: erp_adapter_request
+            columnName: direction_enum
+            newDataType: VARCHAR(255)
+  - changeSet:
+      id: "2"
       author: OlgaIvkovic
       changes:
         - createTable:
@@ -100,7 +116,7 @@ databaseChangeLog:
             referencedColumnNames: uuid
             constraintName: fk_own_data_exchange_request_requested_types
   - changeSet:
-        id: "2"
+        id: "3"
         author: OlgaIvkovic
         changes:
           - createTable:
@@ -176,7 +192,7 @@ databaseChangeLog:
               referencedColumnNames: uuid
               constraintName: fk_reported_data_exchange_request_notification
   - changeSet:
-      id: "3"
+      id: "4"
       author: OlgaIvkovic
       changes:
         - createTable:
@@ -238,7 +254,7 @@ databaseChangeLog:
             referencedColumnNames: uuid
             constraintName: fk_own_data_exchange_approval_data_exchange_request
   - changeSet:
-      id: "4"
+      id: "5"
       author: OlgaIvkovic
       changes:
         - createTable:
@@ -295,19 +311,3 @@ databaseChangeLog:
             referencedTableName: own_data_exchange_request
             referencedColumnNames: uuid
             constraintName: fk_reported_data_exchange_approval_data_exchange_request
-  - changeSet:
-      id: "5"
-      author: jakoballgaier
-      changes:
-        - renameColumn:
-            tableName: erp_adapter_request
-            oldColumnName: direction_characteristic
-            newColumnName: direction_enum
-        - renameColumn:
-            tableName: erp_adapter_trigger_dataset
-            oldColumnName: direction_characteristic
-            newColumnName: direction_enum
-        - modifyDataType:
-            tableName: erp_adapter_request
-            columnName: direction_enum
-            newDataType: VARCHAR(255)
