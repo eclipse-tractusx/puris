@@ -199,7 +199,7 @@ End-to-end behavior is covered by unit tests (mappers, DTO constraints) and Brun
 
 ## Scenario: Data Exchange
 
-This features allows to recursively ask partners and their partners for permission to exchange anonymized data via Data Exchange Request and Data Exchange Approval. The base for each Data Exchange Request is an ongoing disruption represented by an incoming Supply Chain Disruption Notification. in response to this Notification a Data Exchange Request is sent to the partner. The partner can choose to accept or decline this request. Each partner responds with a Data Exchange Approval, which contains whether or not they approve or decline.
+This features allows to recursively ask partners and their partners for permission to exchange anonymized data via Data Exchange Request and Data Exchange Approval. The base for each Data Exchange Request is an ongoing disruption represented by an incoming Demand and Capacity Notification. In response to this Notification a Data Exchange Request is sent to the partner. The partner can choose to accept this request. In case they accept, each partner responds with a Data Exchange Approval. Disapproval is implicitly given at the moment by not responding.
 
 ### Validation
 
