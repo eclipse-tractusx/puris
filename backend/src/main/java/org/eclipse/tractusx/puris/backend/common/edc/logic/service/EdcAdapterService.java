@@ -1,5 +1,4 @@
- /*
- /*
+/*
  * Copyright (c) 2022 Volkswagen AG
  * Copyright (c) 2022 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
@@ -28,13 +27,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DspProtocolVersionEnum;
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DspProtocolVersionEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
@@ -43,8 +38,6 @@ import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.jetbrains.annotations.Nullable;
@@ -63,7 +56,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EdcAdapterService {
     private static final OkHttpClient CLIENT = new OkHttpClient();
     private final Map<DspaceVersionCacheKey, DspaceVersionParams> dspaceVersionParamsCache = new ConcurrentHashMap<>();
-    private final Map<DspaceVersionCacheKey, DspaceVersionParams> dspaceVersionParamsCache = new ConcurrentHashMap<>();
     @Autowired
     private VariablesService variablesService;
     private final ObjectMapper objectMapper;
@@ -77,26 +69,6 @@ public class EdcAdapterService {
     private JsonLdUtils jsonLdUtils;
 
     private final Pattern urlPattern = PatternStore.URL_PATTERN;
-
-    @Autowired
-    @Autowired
-    public EdcAdapterService(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
-
-    public EdcAdapterService(
-        ObjectMapper objectMapper,
-        VariablesService variablesService,
-        EdcRequestBodyBuilder edcRequestBodyBuilder,
-        EdcContractMappingService edcContractMappingService,
-        JsonLdUtils jsonLdUtils
-    ) {
-        this.objectMapper = objectMapper;
-        this.variablesService = variablesService;
-        this.edcRequestBodyBuilder = edcRequestBodyBuilder;
-        this.edcContractMappingService = edcContractMappingService;
-        this.jsonLdUtils = jsonLdUtils;
-    }
 
     public EdcAdapterService(
         ObjectMapper objectMapper,
@@ -162,7 +134,6 @@ public class EdcAdapterService {
      * @throws IOException If the connection to your control plane fails
      */
     public Response sendPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
-    public Response sendPostRequest(JsonNode requestBody, List<String> pathSegments) throws IOException {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(variablesService.getEdcManagementUrl()).newBuilder();
         for (var pathSegment : pathSegments) {
             urlBuilder.addPathSegment(pathSegment);
@@ -192,10 +163,6 @@ public class EdcAdapterService {
         if (variablesService.getEdcProfileVersion() == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509) {
             log.info("Registration of PURIS contract policy for profile 25.09 successful {}", (result = createPurisContractPolicy(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509)));
         }
-        log.info("Registration of PURIS contract policy for profile 24.05 successful {}", (result = createPurisContractPolicy(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405)));
-        if (variablesService.getEdcProfileVersion() == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509) {
-            log.info("Registration of PURIS contract policy for profile 25.09 successful {}", (result = createPurisContractPolicy(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509)));
-        }
         boolean assetRegistration;
 
         // In future one may detect DTR Asset
@@ -211,10 +178,6 @@ public class EdcAdapterService {
             // Contract und Access Policy as expected
             log.info("Registration of DTR Asset successful {}", (assetRegistration = registerDtrAsset()));
             result &= assetRegistration;
-            log.info("Registration of DTR contract policy for profile 24.05 successful {}", (result &= createDtrContractPolicy(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405)));
-            if (variablesService.getEdcProfileVersion() == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509) {
-                log.info("Registration of DTR contract policy for profile 25.09 successful {}", (result &= createDtrContractPolicy(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509)));
-            }
             log.info("Registration of DTR contract policy for profile 24.05 successful {}", (result &= createDtrContractPolicy(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405)));
             if (variablesService.getEdcProfileVersion() == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509) {
                 log.info("Registration of DTR contract policy for profile 25.09 successful {}", (result &= createDtrContractPolicy(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509)));
@@ -250,7 +213,6 @@ public class EdcAdapterService {
             variablesService.getNotificationApiAssetId(),
             variablesService.getNotificationEndpoint()
         )));
-        result &= assetRegistration;
         result &= assetRegistration;
         log.info("Registration of Days of Supply 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getDaysOfSupplySubmodelApiAssetId(),
@@ -290,11 +252,8 @@ public class EdcAdapterService {
         result &= assetRegistration;
         log.info("Registration of self-contracts successful {}", (assetRegistration = createPolicyAndContractDefForOwnPartner()));
         result &= assetRegistration;
-        log.info("Registration of self-contracts successful {}", (assetRegistration = createPolicyAndContractDefForOwnPartner()));
-        result &= assetRegistration;
         return result;
     }
-
 
     /**
      * Utility method to register policy- and contract-definitions for both the
@@ -317,31 +276,6 @@ public class EdcAdapterService {
         result &= createSubmodelContractDefinitionForPartner(AssetType.DATA_EXCHANGE_REQUEST.URN_SEMANTIC_ID, variablesService.getDataExchangeRequestApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
         return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
-    }
-
-    /**
-     * Register contract definitions for assets that should only be accessible by the own organization.
-     * Creates access policy restricted to own BPNL (with membership credential requirement).
-     * Contract policy uses standard Framework Agreement terms.
-     * 
-     * @return true if all registrations were successful, otherwise false
-     */
-    private boolean createPolicyAndContractDefForOwnPartner() {
-        Partner ownPartner = new Partner();
-        ownPartner.setPolicyProfileVersion(variablesService.getEdcProfileVersion());
-        ownPartner.setBpnl(variablesService.getOwnBpnl());
-        
-        boolean result = createBpnlAndMembershipPolicyDefinitionForPartner(ownPartner);
-        log.info("Self policy definition registration {}", result ? "successful" : "failed");
-        
-        boolean contractReg = createSubmodelContractDefinitionForPartner(
-            AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID,
-            variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(),
-            ownPartner
-        );
-        log.info("Self-contract for SingleLevelBomAsPlanned {}", contractReg ? "successful" : "failed");
-        
-        return result && contractReg;
     }
 
     /**
@@ -458,8 +392,6 @@ public class EdcAdapterService {
      */
     private boolean createDtrContractPolicy(PolicyProfileVersionEnumeration profileVersion) {
         var body = edcRequestBodyBuilder.buildDtrFrameworkPolicy(profileVersion);
-    private boolean createPurisContractPolicy(PolicyProfileVersionEnumeration profileVersion) {
-        var body = edcRequestBodyBuilder.buildPurisFrameworkPolicy(profileVersion);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
                 if (response.code() == 409) {
@@ -478,33 +410,6 @@ public class EdcAdapterService {
             return false;
         }
     }
-
-    /**
-     * Registers the framework agreement policy definition
-     *
-     * @return true, if registration ran successfully
-     */
-    private boolean createDtrContractPolicy(PolicyProfileVersionEnumeration profileVersion) {
-        var body = edcRequestBodyBuilder.buildDtrFrameworkPolicy(profileVersion);
-        try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
-            if (!response.isSuccessful()) {
-                if (response.code() == 409) {
-                    log.info("Framework agreement policy definition already existed");
-                    return true;
-                }
-                log.warn("Framework Policy Registration failed");
-                if (response.body() != null) {
-                    log.warn("Response: \n" + response.body().string());
-                }
-                return false;
-            }
-            return true;
-        } catch (Exception e) {
-            log.error("Failed to register Framework Policy", e);
-            return false;
-        }
-    }
-
 
     private boolean registerDtrAsset() {
         var body = edcRequestBodyBuilder.buildDtrRegistrationBody();
@@ -554,16 +459,11 @@ public class EdcAdapterService {
     /**
      * Retrieve the response to an unfiltered catalog request from the partner
      * using the resolved DSP version parameters.
-     * using the resolved DSP version parameters.
      *
-     * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of your partner
-     * @param filter              Map of key (leftOperand) and values (rightOperand) to use as filterExpression with equal operand
      * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of your partner
      * @param filter              Map of key (leftOperand) and values (rightOperand) to use as filterExpression with equal operand
      * @return The response containing the full catalog, if successful
      */
-    public Response getCatalogResponse(DspaceVersionParams dspaceVersionParams, Map<String, String> filter) throws IOException {
-        return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspaceVersionParams, filter), List.of("v3", "catalog", "request"));
     public Response getCatalogResponse(DspaceVersionParams dspaceVersionParams, Map<String, String> filter) throws IOException {
         return sendPostRequest(edcRequestBodyBuilder.buildBasicCatalogRequestBody(dspaceVersionParams, filter), List.of("v3", "catalog", "request"));
     }
@@ -571,10 +471,7 @@ public class EdcAdapterService {
     /**
      * Retrieve an (unfiltered) catalog from the partner with the
      * resolved DSP version parameters.
-     * resolved DSP version parameters.
      *
-     * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of your partner
-     * @param filter              Map of key (leftOperand) and values (rightOperand) to use as filterExpression with equal operand
      * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of your partner
      * @param filter              Map of key (leftOperand) and values (rightOperand) to use as filterExpression with equal operand
      * @return The full catalog
@@ -582,107 +479,11 @@ public class EdcAdapterService {
      */
     public JsonNode getCatalog(DspaceVersionParams dspaceVersionParams, Map<String, String> filter) throws IOException {
         try (var response = getCatalogResponse(dspaceVersionParams, filter)) {
-    public JsonNode getCatalog(DspaceVersionParams dspaceVersionParams, Map<String, String> filter) throws IOException {
-        try (var response = getCatalogResponse(dspaceVersionParams, filter)) {
             JsonNode responseNode = objectMapper.readTree(response.body().string());
             log.debug("Got Catalog response {}", responseNode.toPrettyString());
             return responseNode;
         }
 
-    }
-
-    /**
-     * represents the latest version information from dspaceVersionParams endpoint
-     *
-     * @param counterPartyId      The counterPartyId taken from endpoint
-     * @param counterPartyAddress The dsp url taken from endpoint for the given protocol
-     * @param protocol            The protocol version used
-     * @return a newly initialized DspaceVersionParams
-     */
-    public record DspaceVersionParams (String counterPartyId, String counterPartyAddress, DspProtocolVersionEnum protocol) {}
-
-    private record DspaceVersionCacheKey(String partnerBpnl, String dspUrl) {}
-
-    /**
-     * represents the latest version information from dspaceVersionParams endpoint
-     *
-     * @param partnerBpnl The bpnl of your partner used for identification and lookup of did 
-     * @param dspUrl      The dsp url known from your partner (master data / discovery)
-     * @return the cached or freshly resolved {@link DspaceVersionParams} of your partner, or a fallback prior to TX Connector 0.10.0
-     */
-    public DspaceVersionParams getPartnerDspaceVersionParams(String partnerBpnl, String dspUrl) throws IOException{
-        DspaceVersionCacheKey cacheKey = new DspaceVersionCacheKey(partnerBpnl, dspUrl);
-        DspaceVersionParams cachedParams = dspaceVersionParamsCache.get(cacheKey);
-        if (cachedParams != null) {
-            log.debug("Using cached Dspace Version Params for partner {} and dspUrl {}", partnerBpnl, dspUrl);
-            return cachedParams;
-        }
-
-        JsonNode dspaceVersionParamsRequest = edcRequestBodyBuilder.buildDspaceVersionParamsRequest(dspUrl, partnerBpnl);
-        final DspaceVersionParams fallback = new DspaceVersionParams(partnerBpnl, dspUrl, DspProtocolVersionEnum.V_0_8);
-        try (Response response = this.sendPostRequest(dspaceVersionParamsRequest, List.of("v4alpha", "connectordiscovery", "dspversionparams"))) {
-            DspaceVersionParams dspaceVersionParams = null;
-            // if connector version < 0.10.x 404 is returned, then assemble default from dsp v0.8
-            if (response.code() == 404)
-            {
-                // Note: following swagger-ui counterPartyId should be a did - likely this is an upstream example bug
-                log.debug("Connector does not yet support endpoint /v4alpha/connectordiscovery/dspversionparams. Fallback to following parameters: {}", fallback.toString());
-                dspaceVersionParamsCache.put(cacheKey, fallback);
-                return fallback;
-            } else if (!response.isSuccessful()){
-                log.warn("Dspace version could not be determined and error was not expected. Status code {}; error: {}", response.code(), response.body());
-                log.debug("No supported version found, fallback: {}", fallback.toString());
-                return fallback;
-            }
-            JsonNode responseNode = objectMapper.readTree(response.body().string());
-            responseNode = jsonLdUtils.expand(responseNode, variablesService.getEdcProfileVersion());
-                
-            log.debug("Got response from Dspace Version Params request: {}", responseNode.toPrettyString());
-
-            ArrayNode responseArray = null;
-            // ensure it's an array
-            if (responseNode.isObject()){
-                responseArray = objectMapper.createArrayNode().add(responseNode);
-            } else {
-                responseArray = (ArrayNode) responseNode;
-            }
-
-            // collect supported dspace versions
-            List<DspaceVersionParams> partnerSupportedDspaceVersions = new ArrayList<>();
-            for (JsonNode entry: responseArray){
-                // fallback to v.0.8 in case of missing information / issues
-                String counterPartyAddress = entry.get(JsonLdConstants.EDC_NAMESPACE + "counterPartyAddress")
-                    .get(0)
-                    .get("@value")
-                    .asText(dspUrl);
-                String counterPartyId = entry.get(JsonLdConstants.EDC_NAMESPACE + "counterPartyId")
-                    .get(0)
-                    .get("@value")
-                    .asText(partnerBpnl);
-                String protocolString = entry.get(JsonLdConstants.EDC_NAMESPACE + "protocol")
-                    .get(0)
-                    .get("@value")
-                    .asText(DspProtocolVersionEnum.V_0_8.getVersion());
-                DspProtocolVersionEnum dspProtocolVersion = DspProtocolVersionEnum.fromVersion(protocolString);
-                dspaceVersionParams = new DspaceVersionParams(counterPartyId, counterPartyAddress, dspProtocolVersion);
-                log.debug("Partner supports the following dsp version: {}", dspaceVersionParams.toString());
-                partnerSupportedDspaceVersions.add(dspaceVersionParams);
-            }
-
-            // Identify the highest enum in the list of supported versions based on natural order (youngest -> latest)
-            Optional<DspaceVersionParams> latest = partnerSupportedDspaceVersions.stream()
-                .max(Comparator.comparingInt(p -> p.protocol().ordinal()));
-
-            // If found any is given / latest found return it or use fallback
-            if (latest.isPresent()) {
-                log.debug("Will use the following dsp version information for partner: {}", latest.get().toString());
-                dspaceVersionParamsCache.put(cacheKey, latest.get());
-                return latest.get();
-            } else {
-                log.debug("No supported version found, fallback: {}", fallback.toString());
-                return fallback;
-            }
-        }
     }
 
     /**
@@ -793,25 +594,17 @@ public class EdcAdapterService {
     private JsonNode initiateNegotiation(Partner partner, JsonNode catalogItem) throws IOException {
         DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partner.getEdcUrl());
         return initiateNegotiation(catalogItem, dspaceVersionParams);
-        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partner.getEdcUrl());
-        return initiateNegotiation(catalogItem, dspaceVersionParams);
     }
 
     /**
      * Helper method for negotiating a contract for a specific catalog item using
      * already resolved DSP version parameters.
-     * Helper method for negotiating a contract for a specific catalog item using
-     * already resolved DSP version parameters.
      *
-     * @param catalogItem         An excerpt from a catalog
-     * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
      * @param catalogItem         An excerpt from a catalog
      * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
      * @return The JSON response to your contract offer.
      * @throws IOException If the connection to the partners control plane fails
      */
-    private JsonNode initiateNegotiation(JsonNode catalogItem, DspaceVersionParams dspaceVersionParams) throws IOException {
-        var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(catalogItem, dspaceVersionParams);
     private JsonNode initiateNegotiation(JsonNode catalogItem, DspaceVersionParams dspaceVersionParams) throws IOException {
         var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(catalogItem, dspaceVersionParams);
         try (Response response = sendPostRequest(requestBody, List.of("v3", "contractnegotiations"))) {
@@ -856,15 +649,10 @@ public class EdcAdapterService {
      * @param partner       The partner
      * @param contractId    The contract id
      * @param partnerEdcUrl The DSP URL to use for this transfer
-     * @param partner       The partner
-     * @param contractId    The contract id
-     * @param partnerEdcUrl The DSP URL to use for this transfer
      * @return The response object
      * @throws IOException If the connection to your control plane fails
      */
     public JsonNode initiateProxyPullTransfer(Partner partner, String contractId, String partnerEdcUrl) throws IOException {
-        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partnerEdcUrl);
-        var body = edcRequestBodyBuilder.buildProxyPullRequestBody(contractId, dspaceVersionParams);
         DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partnerEdcUrl);
         var body = edcRequestBodyBuilder.buildProxyPullRequestBody(contractId, dspaceVersionParams);
         try (var response = sendPostRequest(body, List.of("v3", "transferprocesses"))) {
@@ -1051,7 +839,6 @@ public class EdcAdapterService {
     }
 
     private JsonNode getSubmodelFromPartner(MaterialPartnerRelation mpr, AssetType type, DirectionEnum direction, int retries) {
-    private JsonNode getSubmodelFromPartner(MaterialPartnerRelation mpr, AssetType type, DirectionEnum direction, int retries) {
         if (retries < 0) {
             return null;
         }
@@ -1158,7 +945,6 @@ public class EdcAdapterService {
     }
 
     public JsonNode doSubmodelRequest(AssetType type, MaterialPartnerRelation mpr, DirectionEnum direction, int retries) {
-    public JsonNode doSubmodelRequest(AssetType type, MaterialPartnerRelation mpr, DirectionEnum direction, int retries) {
         if (retries < 0) {
             return null;
         }
@@ -1185,24 +971,10 @@ public class EdcAdapterService {
         try {
             Map<String, String> equalFilters = new HashMap<>();
             equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "3.0");
-            equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "3.0");
             equalFilters.put(
                 "'" + JsonLdConstants.DCT_NAMESPACE + "type'.'@id'",
                 JsonLdConstants.CX_TAXO_NAMESPACE + "DigitalTwinRegistry"
-                "'" + JsonLdConstants.DCT_NAMESPACE + "type'.'@id'",
-                JsonLdConstants.CX_TAXO_NAMESPACE + "DigitalTwinRegistry"
             );
-            DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partner.getEdcUrl());
-            var responseNode = getCatalog(dspaceVersionParams, equalFilters);
-            responseNode = jsonLdUtils.expand(responseNode, partner.getPolicyProfileVersion());
-            log.debug("Catalog response after expansion: {}", responseNode);
-
-            // per specifciation jsonLd wraps into an array if multiple entries, thus take first entry as we get only one contract.
-            if (responseNode.isArray()) {
-                responseNode = responseNode.get(0);
-            }
-
-            var catalogArray = responseNode.get(JsonLdConstants.DCAT_NAMESPACE + "dataset");
             DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partner.getEdcUrl());
             var responseNode = getCatalog(dspaceVersionParams, equalFilters);
             responseNode = jsonLdUtils.expand(responseNode, partner.getPolicyProfileVersion());
@@ -1260,7 +1032,6 @@ public class EdcAdapterService {
         }
     }
 
-    private SubmodelData fetchSubmodelDataByDirection(MaterialPartnerRelation mpr, String semanticId, DirectionEnum direction) {
     private SubmodelData fetchSubmodelDataByDirection(MaterialPartnerRelation mpr, String semanticId, DirectionEnum direction) {
         String manufacturerPartId = switch (direction) {
             case INBOUND -> mpr.getMaterial().getOwnMaterialNumber();
@@ -1518,7 +1289,6 @@ public class EdcAdapterService {
      */
 
     private boolean negotiateContractForSubmodel(MaterialPartnerRelation mpr, AssetType type, DirectionEnum direction) {
-    private boolean negotiateContractForSubmodel(MaterialPartnerRelation mpr, AssetType type, DirectionEnum direction) {
         Partner partner = mpr.getPartner();
         SubmodelData submodelData = switch (type) {
             case DTR -> throw new IllegalArgumentException("DTR not supported");
@@ -1534,15 +1304,12 @@ public class EdcAdapterService {
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
-            case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
         };
         Map<String, String> equalFilters = new HashMap<>();
         // use only assetId and version (previously semanticId, submodel type, no assetId) to follow all conventions:
         // - asset per asset type per material
         // - asset per asset type
         // - asset for submodel bundle
-        equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "3.0");
-        equalFilters.put(JsonLdConstants.EDC_NAMESPACE + "id", submodelData.assetId);
         equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "3.0");
         equalFilters.put(JsonLdConstants.EDC_NAMESPACE + "id", submodelData.assetId);
 
@@ -1552,10 +1319,7 @@ public class EdcAdapterService {
     public boolean negotiateContractForNotification(Partner partner, AssetType type) {
         Map<String, String> equalFilters = new HashMap<>();
         equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "1.0");
-        equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "1.0");
         equalFilters.put(
-            "'" + JsonLdConstants.DCT_NAMESPACE + "type'.'@id'",
-            JsonLdConstants.CX_TAXO_NAMESPACE + "DemandAndCapacityNotificationApi"
             "'" + JsonLdConstants.DCT_NAMESPACE + "type'.'@id'",
             JsonLdConstants.CX_TAXO_NAMESPACE + "DemandAndCapacityNotificationApi"
         );
@@ -1584,16 +1348,7 @@ public class EdcAdapterService {
             }
 
             var catalogArray = responseNode.get(JsonLdConstants.DCAT_NAMESPACE + "dataset");
-            DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), dspUrl);
-            var responseNode = getCatalog(dspaceVersionParams, equalFilters);
-            responseNode = jsonLdUtils.expand(responseNode, partner.getPolicyProfileVersion());
 
-            // per specifciation jsonLd wraps into an array if multiple entries, thus take first entry as we get only one contract.
-            if (responseNode.isArray()) {
-                responseNode = responseNode.get(0);
-            }
-
-            var catalogArray = responseNode.get(JsonLdConstants.DCAT_NAMESPACE + "dataset");
             // If there is exactly one asset, the catalogContent will be a JSON object.
             // In all other cases catalogContent will be a JSON array.
             // For the sake of uniformity we will embed a single object in an array.
@@ -1607,7 +1362,6 @@ public class EdcAdapterService {
                 }
 
                 for (JsonNode entry : catalogArray) {
-                    if (testContractPolicyConstraints(entry, partner.getPolicyProfileVersion())) {
                     if (testContractPolicyConstraints(entry, partner.getPolicyProfileVersion())) {
                         targetCatalogEntry = entry;
                         break;
@@ -1627,7 +1381,6 @@ public class EdcAdapterService {
                 log.warn("CATALOG CONTENT \n" + catalogArray.toPrettyString());
                 return false;
             }
-            JsonNode negotiationResponse = initiateNegotiation(targetCatalogEntry, dspaceVersionParams);
             JsonNode negotiationResponse = initiateNegotiation(targetCatalogEntry, dspaceVersionParams);
             String negotiationId = negotiationResponse.get("@id").asText();
             // Await confirmation of contract and contractId
@@ -1678,26 +1431,19 @@ public class EdcAdapterService {
      *
      * @param catalogEntry   the catalog item containing the desired api asset in expanded form
      * @param profileVersion the policy profile version to validate against
-     * @param catalogEntry   the catalog item containing the desired api asset in expanded form
-     * @param profileVersion the policy profile version to validate against
      * @return true, if the policy matches yours, otherwise false
      */
     public boolean testContractPolicyConstraints(JsonNode catalogEntry, PolicyProfileVersionEnumeration profileVersion) {
-    public boolean testContractPolicyConstraints(JsonNode catalogEntry, PolicyProfileVersionEnumeration profileVersion) {
         log.debug("Testing constraints in the following catalogEntry: \n{}", catalogEntry.toPrettyString());
-        var constraint = Optional.ofNullable(catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy"))
         var constraint = Optional.ofNullable(catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy"))
             .filter(policy -> policy.isArray() && policy.size() == 1)
             .map(policy -> policy.get(0))
             .map(policy -> policy.get(JsonLdConstants.ODRL_NAMESPACE + "permission"))
-            .map(policy -> policy.get(JsonLdConstants.ODRL_NAMESPACE + "permission"))
             .filter(permission -> permission.isArray() && permission.size() == 1)
             .map(permission -> permission.get(0))
             .map(permission -> permission.get(JsonLdConstants.ODRL_NAMESPACE + "constraint"))
-            .map(permission -> permission.get(JsonLdConstants.ODRL_NAMESPACE + "constraint"))
             .filter(constr -> constr.isArray() && constr.size() == 1)
             .map(constr -> constr.get(0))
-            .map(con -> con.get(JsonLdConstants.ODRL_NAMESPACE + "and"));
             .map(con -> con.get(JsonLdConstants.ODRL_NAMESPACE + "and"));
         if (constraint.isEmpty()) {
             log.debug("Constraint mismatch: we expect to have a constraint in permission node.");
@@ -1705,8 +1451,6 @@ public class EdcAdapterService {
         }
 
         for (String rule : new String[] {"obligation", "prohibition"}) {
-            var policy = catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy").get(0);
-            var ruleNode = policy.get(JsonLdConstants.ODRL_NAMESPACE + rule);
             var policy = catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy").get(0);
             var ruleNode = policy.get(JsonLdConstants.ODRL_NAMESPACE + rule);
             boolean test = ruleNode == null || (ruleNode.isArray() && ruleNode.isEmpty());
@@ -1724,14 +1468,11 @@ public class EdcAdapterService {
 
             for (JsonNode con : constraint.get()) { // Iterate over array elements and find the nodes
                 JsonNode leftOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "leftOperand");
-                JsonNode leftOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "leftOperand");
                 leftOperandNode = leftOperandNode.get(0);
                 leftOperandNode = leftOperandNode.get("@id");
                 if (leftOperandNode != null && (profileVersion.CX_POLICY_NAMESPACE + "FrameworkAgreement").equals(leftOperandNode.asText())) {
-                if (leftOperandNode != null && (profileVersion.CX_POLICY_NAMESPACE + "FrameworkAgreement").equals(leftOperandNode.asText())) {
                     frameworkAgreementConstraint = Optional.of(con);
                 }
-                if (leftOperandNode != null && (profileVersion.CX_POLICY_NAMESPACE + "UsagePurpose").equals(leftOperandNode.asText())) {
                 if (leftOperandNode != null && (profileVersion.CX_POLICY_NAMESPACE + "UsagePurpose").equals(leftOperandNode.asText())) {
                     purposeConstraint = Optional.of(con);
                 }
@@ -1751,8 +1492,6 @@ public class EdcAdapterService {
                 frameworkAgreementConstraint,
                 profileVersion.CX_POLICY_NAMESPACE + "FrameworkAgreement",
                 JsonLdConstants.ODRL_NAMESPACE + "eq",
-                profileVersion.CX_POLICY_NAMESPACE + "FrameworkAgreement",
-                JsonLdConstants.ODRL_NAMESPACE + "eq",
                 variablesService.getPurisFrameworkAgreementWithVersion()
             );
 
@@ -1760,14 +1499,9 @@ public class EdcAdapterService {
                 purposeConstraint,
                 profileVersion.CX_POLICY_NAMESPACE + "UsagePurpose",
                 JsonLdConstants.ODRL_NAMESPACE + (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509 ? "isAnyOf" : "eq"),
-                profileVersion.CX_POLICY_NAMESPACE + "UsagePurpose",
-                JsonLdConstants.ODRL_NAMESPACE + (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509 ? "isAnyOf" : "eq"),
                 variablesService.getPurisPurposeWithVersion()
             );
 
-            JsonNode policy = catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy");
-            JsonNode prohibition = policy.get(JsonLdConstants.ODRL_NAMESPACE + "prohibition");
-            JsonNode obligation = policy.get(JsonLdConstants.ODRL_NAMESPACE + "obligation");
             JsonNode policy = catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy");
             JsonNode prohibition = policy.get(JsonLdConstants.ODRL_NAMESPACE + "prohibition");
             JsonNode obligation = policy.get(JsonLdConstants.ODRL_NAMESPACE + "obligation");
@@ -1792,7 +1526,6 @@ public class EdcAdapterService {
         JsonNode con = constraintToTest.get();
 
         JsonNode leftOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "leftOperand");
-        JsonNode leftOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "leftOperand");
         leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get(0);
         leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get("@id");
         if (leftOperandNode == null || !targetLeftOperand.equals(leftOperandNode.asText())) {
@@ -1802,7 +1535,6 @@ public class EdcAdapterService {
         }
 
         JsonNode operatorNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "operator");
-        JsonNode operatorNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "operator");
         operatorNode = operatorNode == null ? null : operatorNode.get(0);
         operatorNode = operatorNode == null ? null : operatorNode.get("@id");
         if (operatorNode == null || !targetOperator.equals(operatorNode.asText())) {
@@ -1811,7 +1543,6 @@ public class EdcAdapterService {
             return false;
         }
 
-        JsonNode rightOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "rightOperand");
         JsonNode rightOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "rightOperand");
         rightOperandNode = rightOperandNode == null ? null : rightOperandNode.get(0);
         rightOperandNode = rightOperandNode == null ? null : rightOperandNode.get("@value");
