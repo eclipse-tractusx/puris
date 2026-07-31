@@ -27,8 +27,6 @@ import org.springframework.stereotype.Service;
 
 import lombok.Getter;
 
-import lombok.Getter;
-
 @Getter
 @Service
 /**
@@ -238,21 +236,6 @@ public class VariablesService {
      */
     private String itemStockAnonymizedSubmodelApiAssetId;
 
-    /**
-     * The url under which this application's anonymized item stock request endpoint can
-     * be reached by external machines.
-     */
-    public String getItemStockAnonymizedSubmodelEndpoint() {
-        return getPurisBaseUrl() + getContextPath() + "item-stock/anonymized/request";
-    }
-
-    @Value("${puris.itemstockanonymizedsubmodel.apiassetid}")
-    /**
-     * The assetId that shall be assigned to the Anonymized Item Stock request API
-     * during asset creation.
-     */
-    private String itemStockAnonymizedSubmodelApiAssetId;
-
     @Value("${puris.frameworkagreement.version}")
     /**
      * The version of the framework agreement to be used.
@@ -276,13 +259,6 @@ public class VariablesService {
      * The key for accessing the api.
      */
     private String apiKey;
-
-    @Value("${puris.edc.profile.version}")
-    /**
-     * The EDC profile version to be used. Valid values are profile2405, profile2509.
-     * Defaults to the latest supported profile of the application.
-     */
-    private String edcProfileVersion;
 
     @Value("${puris.edc.profile.version}")
     /**
@@ -432,22 +408,6 @@ public class VariablesService {
         return singleLevelBomAsPlannedSubmodelAssetId + "@" + ownBpnl;
     }
 
-    public String getItemStockAnonymizedSubmodelApiAssetId() {
-        return itemStockAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
-    }
-    
-    public String getDeliveryAnonymizedSubmodelApiAssetId() {
-        return deliveryAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
-    }
-
-    public String getProductionAnonymizedSubmodelApiAssetId() {
-        return productionAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
-    }
-
-    public String getSingleLevelBomAsPlannedSubmodelApiAssetId() {
-        return singleLevelBomAsPlannedSubmodelAssetId + "@" + ownBpnl;
-    }
-
     public String getNotificationApiAssetId() {
         return notificationAssetId + "@" + ownBpnl;
     }
@@ -466,15 +426,6 @@ public class VariablesService {
 
     public String getPurisPurposeWithVersion() {
         return getPurisPurposeName() + ":" + getPurisPurposeVersion();
-    }
-
-    public PolicyProfileVersionEnumeration getEdcProfileVersion() {
-        if (edcProfileVersion != null && edcProfileVersion.equals(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.getValue())) {
-            return PolicyProfileVersionEnumeration.POLICY_PROFILE_2405;
-        } else {
-            // default to latest supported profile
-            return PolicyProfileVersionEnumeration.POLICY_PROFILE_2509;
-        }
     }
 
     public PolicyProfileVersionEnumeration getEdcProfileVersion() {
