@@ -284,7 +284,7 @@ A user may use the page to send notifications to partners or read received notif
 The notifications are grouped into collapsible sections based on their source disruption. Each collapsible displays the cause as well as effect of the disruption and can be expanded to display the list of notifications in table form.
 The table displays `Outgoing` if the message was sent to a partner and `Incoming` if it was received from a partner.
 If the notification has been resolved, the row will be grayed out and the text column will additionally display the Resolution Message.
-If there is a data exchange request that needs approval the table header with indicate the number of Requests and appropriate arrow depending on if the data exchange request is `Incoming` (Left arrow) or `Outgoing` (Right arrow).
+If there is a data exchange request that needs approval the table header will indicate the number of Requests and display an appropriate arrow depending on if the data exchange request is `Incoming` (Left arrow) or `Outgoing` (Right arrow).
 
 ### Notification View
 
@@ -357,12 +357,6 @@ Possible status options are the following:
 
 A customer may create a data exchange request for incoming notifications who's effect is 'Capacity reduction' or 'Capacity increase'.
 
-### Data exchange Detail Modal
-
-![Detailed data exchange request after clicking the entry](img/data_exchange_detail.png)
-
-If a data exchange request has been created the user can view the relevant information when clicking on the status of the request. The same view is displayed when a Supplier wants to Approve a request. When triggering the button "Not requested", a modal dialog is opened allowing a user to compose the data exchange request. 
-
 ### Send Data Exchange Request
 
 ![Send data exchange request modal](img/data_exchange_send.png)
@@ -373,6 +367,12 @@ After filling the mandatory data (see `*`), the user can send the data exchange 
 - Desired Start Time and Date
 - Desired End Time and Date
 - Message
+
+### Data exchange Detail Modal
+
+![Detailed data exchange request after clicking the entry](img/data_exchange_detail.png)
+
+If a data exchange request has been created the user can view the relevant information when clicking on the status of the request. The same view is displayed when a Supplier wants to Approve a request. When triggering the button "Not requested", a modal dialog is opened allowing a user to compose the data exchange request. 
 
 ### Approve Data Exchange Request Modal
 

@@ -198,17 +198,18 @@ End-to-end behavior is covered by unit tests (mappers, DTO constraints) and Brun
    own EDC** to confirm access succeeds, and (where covered) through a partner's EDC to confirm it is rejected
 
 ## Scenario: Data Exchange
+
 This features allows to recursively ask partners and their partners for permission to exchange anonymized data via Data Exchange Request and Data Exchange Approval. The base for each Data Exchange Request is an ongoing disruption represented by an incoming Supply Chain Disruption Notification. in response to this Notification a Data Exchange Request is sent to the partner. The partner can choose to accept or decline this request. Each partner responds with a Data Exchange Approval, which contains whether or not they approve or decline.
 
 ### Validation
 
-Currently Data Exchange Request creation is suppored for customers and Data Exchange Approval is supported for suppliers.
+Currently Data Exchange Request creation is supported for disruptions with capacity-related effects (capacity-reduction, capacity-increase).
 End-to-end behavior is covered by unit tests (mappers, DTO constraints) and Bruno integration tests that execute:
 
-1. Creation of a Data Exchange Request (uses existing demand and capacity notification upon which it creates the request)
-2. Data Exchange Request retrieval (as Reported Data Exchange Request)
-3. Creation of a Data Exchange Request (uses existing reported request `reportedRequestUuid` upon which it creates the approval)
-4. Data Exchange Approval retrieval (as Reported Data Exchange Approval `ownRequestUuid`)
+1. Creation of a Data Exchange Request on customer side (uses existing demand and capacity notification upon which it creates the request)
+2. Data Exchange Request retrieval on supplier side (as `ReportedDataExchangeRequest`)
+3. Creation of a Data Exchange Approval on supplier side (uses existing `ReportedDataExchangeRequest` upon which it creates the approval)
+4. Data Exchange Approval retrieval on customer side (as `ReportedDataExchangeApproval`)
 
 ## NOTICE
 
