@@ -33,7 +33,7 @@ import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequ
 import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ErpAdapterTriggerService;
 import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ItemStockErpAdapterService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -76,14 +76,14 @@ public class ErpAdapterController {
         @RequestParam("own-materialnumber")
         @Parameter(description = "encoded in base64") String materialNumber,
         @RequestParam("asset-type") AssetType assetType,
-        @RequestParam(required = false, value = "direction") DirectionCharacteristic directionCharacteristic
+        @RequestParam(required = false, value = "direction") DirectionEnum directionEnum
     ) {
         materialNumber = new String(Base64.getDecoder().decode(materialNumber));
         boolean valid = BPNL_PATTERN.matcher(bpnl).matches()
             && NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN.matcher(materialNumber).matches()
             && ErpAdapterRequest.SUPPORTED_TYPES.contains(assetType);
         if (valid && mprService.find(bpnl, materialNumber) != null) {
-            erpAdapterTriggerService.notifyPartnerRequest(bpnl, materialNumber, assetType, directionCharacteristic);
+            erpAdapterTriggerService.notifyPartnerRequest(bpnl, materialNumber, assetType, directionEnum);
             return ResponseEntity.status(201).build();
         } else {
             return ResponseEntity.badRequest().build();

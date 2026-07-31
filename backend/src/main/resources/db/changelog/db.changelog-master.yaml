@@ -25,4 +25,3 @@ databaseChangeLog:
       path: db/changelog/changelog-5.x
   - includeAll:
       path: db/changelog/changelog-6.x
-

@@ -33,7 +33,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -105,7 +105,7 @@ public class DemandRequestApiService {
                 mprService.triggerPartTypeRetrievalTask(partner);
                 mpr = mprService.find(material, partner);
             }
-            var data = edcAdapterService.doSubmodelRequest(AssetType.DEMAND_SUBMODEL, mpr, DirectionCharacteristic.INBOUND, 1);
+            var data = edcAdapterService.doSubmodelRequest(AssetType.DEMAND_SUBMODEL, mpr, DirectionEnum.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ShortTermMaterialDemand.class);
             var demands = sammMapper.sammToReportedDemand(samm, partner);
             

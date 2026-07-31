@@ -364,6 +364,7 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                 columnVisibilityModel={{
                     actions: showActionsColumn
                 }}
+                getRowHeight={() => "auto"}
             />
         </Box>
     );

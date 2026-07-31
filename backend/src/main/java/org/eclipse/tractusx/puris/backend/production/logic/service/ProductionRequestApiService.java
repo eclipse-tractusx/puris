@@ -32,9 +32,11 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartn
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedProduction;
+import org.eclipse.tractusx.puris.backend.production.domain.model.OwnProduction;
 import org.eclipse.tractusx.puris.backend.production.logic.adapter.PlannedProductionSammMapper;
+import org.eclipse.tractusx.puris.backend.production.logic.dto.anonymizedplannedproductionsamm.PlannedProductionOutputAnonymized;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.plannedproductionsamm.PlannedProductionOutput;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -82,11 +84,31 @@ public class ProductionRequestApiService {
         return sammMapper.ownProductionToSamm(currentProduction, partner, material);
     }
 
+    public PlannedProductionOutputAnonymized handleProductionAnonymizedSubmodelRequest(String bpnl, String materialNumberCx, String contractAgreementId) {
+        Partner partner = partnerService.findByBpnl(bpnl);
+        if (partner == null) {
+            log.error("Unknown Partner with BPNL {}", bpnl);
+            return null;
+        }
+        Material material = materialService.findByMaterialNumberCx(materialNumberCx);
+        if (material == null) {
+            log.error("Unknown Material with Material Number CX {}", materialNumberCx);
+            return null;
+        }
+        if (!mprService.find(material, partner).isPartnerBuysMaterial()) {
+            // only send an answer if partner is registered as customer
+            log.error("Partner with BPNL {} is not registered as customer for material {}", bpnl, materialNumberCx);
+            return null;
+        }
+        List<OwnProduction> currentProduction = ownProductionService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty(), Optional.empty());
+        return sammMapper.ownProductionToAnonymizedSamm(currentProduction, partner, material, contractAgreementId);
+    }
+
     public RefreshResult doReportedProductionRequest(Partner partner, Material material) {
         List<RefreshError> errors = new ArrayList<>();
         try {
             var mpr = mprService.find(material, partner);
-            var data = edcAdapterService.doSubmodelRequest(AssetType.PRODUCTION_SUBMODEL, mpr, DirectionCharacteristic.OUTBOUND, 1);
+            var data = edcAdapterService.doSubmodelRequest(AssetType.PRODUCTION_SUBMODEL, mpr, DirectionEnum.OUTBOUND, 1);
             var samm = objectMapper.treeToValue(data, PlannedProductionOutput.class);
             var productions = sammMapper.sammToReportedProduction(samm, partner);
             for (var production : productions) {

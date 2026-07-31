@@ -31,15 +31,25 @@ export const TableWithRowHeader = ({ rows, title, ...tableProps }: TableWithRowH
                     title={title}
                     columns={[{ field: 'name', headerName: '', width: 180 }]}
                     rows={rows}
-                    density='standard'
+                    getRowHeight={() => "auto"}
+                    sortingMode={'server'}
                     rowSelection={false}
-                    hideFooter={true}
+                    hideFooter
                     disableColumnFilter
                     disableColumnMenu
-                    sortingMode={'server'}
                 />
                 <Box sx={{width: '100%', display: 'flex', overflowX: 'auto'}}>
-                    <Table title=" " {...tableProps} rows={rows} density='standard' disableColumnFilter disableColumnMenu sortingMode={'server'} showCellVerticalBorder showColumnVerticalBorder />
+                    <Table
+                        title=" "
+                        {...tableProps}
+                        rows={rows}
+                        getRowHeight={() => "auto"}
+                        sortingMode={'server'}
+                        disableColumnFilter
+                        disableColumnMenu
+                        showCellVerticalBorder
+                        showColumnVerticalBorder
+                    />
                 </Box>
             </div>
         </Box>

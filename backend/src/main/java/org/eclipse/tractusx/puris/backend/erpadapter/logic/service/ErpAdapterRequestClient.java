@@ -53,7 +53,7 @@ public class ErpAdapterRequestClient {
         ObjectNode requestBody = mapper.createObjectNode();
 
         requestBody.put("material", erpAdapterRequest.getOwnMaterialNumber());
-        requestBody.put("direction", erpAdapterRequest.getDirectionCharacteristic().toString());
+        requestBody.put("direction", erpAdapterRequest.getDirectionEnum().toString());
         requestBody.put("responseUrl", erpAdapterConfiguration.getErpResponseUrl());
 
         RequestBody body = RequestBody.create(requestBody.toString(), MediaType.parse("application/json"));

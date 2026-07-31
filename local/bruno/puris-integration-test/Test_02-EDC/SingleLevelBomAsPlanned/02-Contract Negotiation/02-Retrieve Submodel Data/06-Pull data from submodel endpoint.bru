@@ -1,0 +1,24 @@
+meta {
+  name: 06-Pull data from submodel endpoint
+  type: http
+  seq: 6
+  tags: [
+    single-level-bom-as-planned
+  ]
+}
+
+get {
+  url: {{SUBMODEL_ENDPOINT}}/$value
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: {{SUBMODEL_EDR_AUTH}}
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

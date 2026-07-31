@@ -49,7 +49,7 @@ public class ErpAdapterTriggerDataset {
     private AssetType assetType;
 
     @Id
-    private String directionCharacteristic;
+    private String directionEnum;
 
     private long lastPartnerRequest;
 
@@ -61,7 +61,7 @@ public class ErpAdapterTriggerDataset {
             "partnerBpnl='" + partnerBpnl + '\'' +
             ", ownMaterialNumber='" + ownMaterialNumber + '\'' +
             ", assetType=" + assetType +
-            ", directionCharacteristic='" + directionCharacteristic + '\'' +
+            ", directionEnum='" + directionEnum + '\'' +
             ", lastPartnerRequest=" + new Date(lastPartnerRequest) +
             ", nextErpRequestScheduled=" + new Date(nextErpRequestScheduled) +
             '}';
@@ -73,12 +73,12 @@ public class ErpAdapterTriggerDataset {
         if (!(o instanceof ErpAdapterTriggerDataset dataset)) return false;
         return Objects.equals(partnerBpnl, dataset.partnerBpnl) && Objects.equals(ownMaterialNumber,
             dataset.ownMaterialNumber) && assetType == dataset.assetType &&
-            Objects.equals(directionCharacteristic, dataset.directionCharacteristic);
+            Objects.equals(directionEnum, dataset.directionEnum);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(partnerBpnl, ownMaterialNumber, assetType, directionCharacteristic);
+        return Objects.hash(partnerBpnl, ownMaterialNumber, assetType, directionEnum);
     }
 
     @Getter
@@ -91,7 +91,6 @@ public class ErpAdapterTriggerDataset {
         private String partnerBpnl;
         private String ownMaterialNumber;
         private AssetType assetType;
-        private String directionCharacteristic;
-
+        private String directionEnum;
     }
 }

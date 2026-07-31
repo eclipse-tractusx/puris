@@ -6,6 +6,50 @@ The runtime view mainly focuses on the following scenarios:
 - Create Digital Twins for Material or Product
 - Interact with Data in the Web-UI
 
+## Technical Capability: Catalog Request
+
+When performing a catalog request the folling steps are performed:
+
+```mermaid
+sequenceDiagram
+   title
+   autonumber
+
+   box "Data Consumer"
+   participant app_cons as Business<br/>Application
+   participant edc_cons as EDC<br/>Consumer
+   end
+
+   box "Data Provider"
+   participant edc_prov as EDC<br/>Provider
+   end
+
+   note over app_cons,edc_prov: Identify Catalog DSP Version
+   app_cons -->>+ edc_cons: call `v4alpha/connectordiscovery/dspaceversionversions`
+   edc_cons <<-->> edc_prov: lookup .well-known/dpace-version
+   edc_cons -->>-app_cons: return response
+   app_cons ->> app_cons: evaluate response
+   alt endpoint not found (404) or any non-success
+      app_cons ->> app_cons: assemble fallback parameters<br>(partner dsp url, bpnl)
+   else endpoint returned 
+      app_cons ->> app_cons: expand JsonLD
+      app_cons ->> app_cons: take latest dsp version parameters<br>from endpoint (partner dsp url, bpnl)
+   end
+   
+   note over app_cons,edc_prov: Lookup Datasets in partner catalog
+   app_cons -->>+ edc_cons: call `vX/management/catalog` with determined parameters
+   edc_cons <<-->> edc_prov: communicate via <br>data space protocol (DSP)<br>and decentralized claims protocol
+   edc_cons -->>-app_cons: return catalog
+
+   app_cons ->> app_cons: expand JsonLD
+   note over app_cons,edc_cons: The constraint evaluation is currently only<br>performed against submodel assets.<br>The DTR asset is not evaluated.
+   app_cons ->> app_cons: identify first matching dataset for<br>contract policy constraints<br>PURIS FOSS can handle<br>(see data sovereignty concepts)
+
+   break if no dataset found with contract policy that we can fulfill
+      app_cons ->> app_cons: log error
+   end
+```
+
 ## Scenario: Update partner-related data
 
 The information exchange in PURIS follows a shared asset approach of the Digital Twin KIT and the Industry Core KIT.
@@ -102,10 +146,62 @@ is performed, then the frontend hands over the request to the backend to perform
 
 Details on the Web-Ui can be found in the [User Guide](../user/User_Guide.md).
 
+## Scenario: Exchange anonymized data
+
+This features allows to facilitate data exchange across multiple tiers, and PURIS provides **anonymized versions** of selected PURIS data standards, so an application acting on the provider's behalf can consume and forward production-related information without sensitive identifiers. These anonymized submodels are consumable only through the provider's own EDC — partners can no longer pull them directly through their own EDC.
+
+### Scope
+
+- Exchange direction for anonymized delivery information, production and item stock: **Supplier → Customer**
+- Supported anonymized standards:
+  - Planned Production Output (anonymized)
+  - Delivery Information (anonymized)
+  - Item Stock Exchange (anonymized)
+
+### What changes in the runtime flow
+
+The discovery and transfer mechanics remain the same as in “Scenario: Update partner-related data” (DTR → Shell lookup →
+SubmodelDescriptor → contract submodel asset → transfer → EDR → `$value`), but with the following adjustments:
+
+1. **Anonymized semantic IDs and AssetTypes**  
+   Each anonymized standard is registered as its own AssetType and submodel semantic ID (one asset per anonymized
+   submodel type). Example (production anonymized):  
+   `urn:samm:io.catenax.planned_production_output_anonymized:1.0.0#PlannedProductionOutputAnonymized`
+
+2. **Provider registers assets/submodels; operator provides contracts**  
+   PURIS registers the anonymized **EDC assets** and **DTR submodels**, but **does not create contract definitions or
+   policies** for the anonymized models. Operators must create those in the EDC (see Admin Guide), scoped to the
+   provider's own BPNL rather than the partner's, since only the provider's own EDC is permitted to negotiate and
+   pull these assets.
+
+3. **Contract-scoped anonymization**  
+   Selected sensitive properties are replaced by hashed variants, and some are omitted entirely.
+   Hashing uses a custom `AnonymizationService` (HMAC-SHA256, Base64-encoded) with a **salt** to reduce correlation across agreements.
+   The salt is taken from the **contract agreement id** supplied in request header `contract-agreement-id`.
+
+4. **Self-access enforcement via BPNL path segment**  
+   The submodel descriptor `href` embeds the requesting partner's BPNL as a path segment
+   (`.../{materialNumberCx}/{bpnl}/{direction}/submodel`), identifying whose data to serve. The provider backend
+   validates the `edc-bpn` request header against its own BPNL and rejects any mismatch with `403 Forbidden`,
+   ensuring the anonymized endpoints can only be reached through the provider's own EDC.
+
+5. **Dedicated provider endpoint(s) returning anonymized SAMM**  
+   The provider backend exposes endpoints that map “own” operational data to the anonymized SAMM.
+
+### Validation
+
+End-to-end behavior is covered by unit tests (mappers, DTO constraints) and Bruno integration tests that execute:
+
+1. contract setup (prepares the provider-side policies and contract definition for the anonymized submodel asset)
+2. DTR negotiation and submodel descriptor retrieval
+3. submodel asset negotiation + transfer + `$value` pull for anonymized data, performed through the **provider's
+   own EDC** to confirm access succeeds, and (where covered) through a partner's EDC to confirm it is rejected
+
 ## NOTICE
 
 This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 - SPDX-License-Identifier: Apache-2.0
 - SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+- SPDX-FileCopyrightText: 2025 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
 - Source URL: https://github.com/eclipse-tractusx/puris

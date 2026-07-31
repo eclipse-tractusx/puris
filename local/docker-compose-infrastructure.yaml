@@ -29,7 +29,7 @@ services:
       - /etc/hosts:/tmp/hosts
 
   postgres:
-    image: postgres:15.4-alpine
+    image: postgres:18.0-alpine
     container_name: postgres-wallet
     healthcheck:
       test: ["CMD-SHELL", "pg_isready  -d wallet -U ${PG_USER}"]
