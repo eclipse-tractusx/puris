@@ -284,6 +284,7 @@ A user may use the page to send notifications to partners or read received notif
 The notifications are grouped into collapsible sections based on their source disruption. Each collapsible displays the cause as well as effect of the disruption and can be expanded to display the list of notifications in table form.
 The table displays `Outgoing` if the message was sent to a partner and `Incoming` if it was received from a partner.
 If the notification has been resolved, the row will be grayed out and the text column will additionally display the Resolution Message.
+If there is a data exchange request that needs approval the table header with indicate the number of Requests and appropriate arrow depending on if the data exchange request is `Incoming` (Left arrow) or `Outgoing` (Right arrow).
 
 ### Notification View
 
@@ -341,6 +342,46 @@ The following fields are pre-selected and read only:
 - Status (this field is automatically pre-selected with the `Open` option)
 
 The Partner field only provides options for partners that aren't linked to any of the related or any of the existing outgoing notifications. This creates another entry in the existing table.
+
+### Data exchange
+
+Each notification has the status of the potential data exchange in the table under the column Exchange Status.
+Possible status options are the following:
+  - `Terminated` (if the notification has been resolved)
+  - `Expired` (The data exchange request End Time and Date has passed)
+  - `Request Pending` (the outgoing notification doesn't have a data exchange request yet)
+  - `Not requested` (the incoming notification doesn't have a data exchange request yet)
+  - `-` (Requesting data exchange is currently not supported for the specified effect of the notification.)
+  - `Approval Pending` (the data exchange request has been created and is waiting to be approved)
+  - `Approved` (a data exchange request has been approved)
+
+A customer may create a data exchange request for incoming notifications who's effect is 'Capacity reduction' or 'Capacity increase'.
+
+### Data exchange Detail Modal
+
+![Detailed data exchange request after clicking the entry](img/data_exchange_detail.png)
+
+If a data exchange request has been created the user can view the relevant information when clicking on the status of the request. The same view is displayed when a Supplier wants to Approve a request. When triggering the button "Not requested", a modal dialog is opened allowing a user to compose the data exchange request. 
+
+### Send Data Exchange Request
+
+![Send data exchange request modal](img/data_exchange_send.png)
+
+After filling the mandatory data (see `*`), the user can send the data exchange request to the relevant supplier for approval:
+
+- Criticality (either `Low` or `Medium` or `High`)
+- Desired Start Time and Date
+- Desired End Time and Date
+- Message
+
+### Approve Data Exchange Request Modal
+
+![Data Exchange Approval Modal](img/data_exchange_approval.png)
+
+If there is an incoming data exchange request the user can approve it by clicking `Approval Pending` in the status column. This will open the same modal showing all the relevant information. Upon clicking "APPROVE AND CLOSE" the user is prompted with a Dialog to finalize the approval.
+Once approved the status of the data exchange is changed to `Approved`. 
+
+![Data Exchange Approval Dialog](img/data_exchange_approval_dialog.png)
 
 ## Master Data Maintenance
 
