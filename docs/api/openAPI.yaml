@@ -179,6 +179,89 @@ components:
       - classificationID
       - classificationStandard
       type: object
+    DataExchangeApprovalDto:
+      additionalProperties: false
+      properties:
+        approvalId:
+          maxItems: 50
+          type: string
+        approvedTypes:
+          items:
+            enum:
+            - n-tier
+            maxItems: 50
+            type: string
+          maxItems: 50
+          type: array
+        dataExchangeRequestId:
+          maxItems: 50
+          type: string
+        finalized:
+          type: boolean
+        timestamp:
+          format: date-time
+          maxItems: 50
+          type: string
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+      required:
+      - approvedTypes
+      - dataExchangeRequestId
+      type: object
+    DataExchangeRequestDto:
+      additionalProperties: false
+      properties:
+        criticality:
+          enum:
+          - high
+          - medium
+          - low
+          maxItems: 50
+          type: string
+        desiredEndDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        desiredStartDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        notificationId:
+          format: uuid
+          maxItems: 50
+          type: string
+        requestId:
+          maxItems: 50
+          type: string
+        requestedTypes:
+          items:
+            enum:
+            - n-tier
+            maxItems: 50
+            type: string
+          maxItems: 50
+          type: array
+        text:
+          maxItems: 50
+          type: string
+        timestamp:
+          format: date-time
+          maxItems: 50
+          type: string
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+      required:
+      - criticality
+      - desiredEndDateTime
+      - desiredStartDateTime
+      - notificationId
+      - requestedTypes
+      - text
+      type: object
     DataImportError:
       additionalProperties: false
       properties:
@@ -1935,6 +2018,196 @@ paths:
           description: OK
       tags:
       - partner-data-update-batch-controller
+  /data-exchange-approval:
+    get:
+      description: Get all own data exchange approvals.
+      operationId: getAllOwnDataExchangeApprovals
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DataExchangeApprovalDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all own data exchange approvals
+      tags:
+      - data-exchange-approval-controller
+  /data-exchange-approval/reported:
+    get:
+      description: Get all reported data exchange approvals.
+      operationId: getAllReportedDataExchangeApprovals
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DataExchangeApprovalDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all reported data exchange approvals
+      tags:
+      - data-exchange-approval-controller
+  /data-exchange-request:
+    get:
+      description: Get all own data exchange requests.
+      operationId: getAllOwnDataExchangeRequests
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DataExchangeRequestDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all own data exchange requests
+      tags:
+      - data-exchange-request-controller
+    post:
+      description: "Creates a new own data exchange request. \n"
+      operationId: createDataExchangeRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataExchangeRequestDto'
+              additionalProperties: false
+        required: true
+      responses:
+        '201':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DataExchangeRequestDto'
+                additionalProperties: false
+          description: Own Data Exchange Request was created.
+        '400':
+          description: Malformed or invalid request body.
+        '409':
+          description: Own Data Exchange Request already exists.
+        '500':
+          description: Internal Server Error.
+      summary: Creates a new own data exchange request
+      tags:
+      - data-exchange-request-controller
+  /data-exchange-request/reported:
+    get:
+      description: Get all reported data exchange requests.
+      operationId: getAllReportedDataExchangeRequest
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/DataExchangeRequestDto'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all reported data exchange requests
+      tags:
+      - data-exchange-request-controller
+  /data-exchange-request/reported/{id}/approvals:
+    post:
+      description: "Creates a new own data exchange approval in response to an existing\
+        \ ReportedDataExchangeRequest. \n"
+      operationId: createDataExchangeApproval
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataExchangeApprovalDto'
+              additionalProperties: false
+        required: true
+      responses:
+        '201':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DataExchangeApprovalDto'
+                additionalProperties: false
+          description: Own Data Exchange Approval was created.
+        '400':
+          description: Malformed or invalid request body.
+        '409':
+          description: Own Data Exchange Approval already exists.
+        '500':
+          description: Internal Server Error.
+      summary: Creates a new own data exchange approval
+      tags:
+      - data-exchange-request-controller
+  /data-exchange-request/request:
+    post:
+      operationId: postDataExchangeRequest
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonNode'
+              additionalProperties: false
+        required: true
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      summary: 'This endpoint receives the DataExchangeRequest 1.0.0 requests. This
+        endpoint is meant to be accessed by partners via EDC only. '
+      tags:
+      - data-exchange-request-api-controller
+  /data-exchange-request/{id}/approvals:
+    get:
+      description: Get all reported data exchange approvals for a specific request.
+      operationId: getReportedDataExchangeApproval
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          additionalProperties: false
+          format: uuid
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DataExchangeApprovalDto'
+                additionalProperties: false
+          description: OK
+      summary: Get all reported data exchange approvals for a specific request
+      tags:
+      - data-exchange-request-controller
   /days-of-supply/customer:
     get:
       description: Calculate days of supply for customer for given number of days.
@@ -3127,6 +3400,7 @@ paths:
           - NOTIFICATION
           - DAYS_OF_SUPPLY
           - PART_TYPE_INFORMATION_SUBMODEL
+          - DATA_EXCHANGE_REQUEST
           - ITEM_STOCK_ANONYMIZED_SUBMODEL
           - DELIVERY_ANONYMIZED_SUBMODEL
           - PRODUCTION_ANONYMIZED_SUBMODEL

@@ -217,6 +217,10 @@ frontend:
     endpointDaysOfSupply: days-of-supply
     # -- The endpoint for demand and capacity notifications
     endpointDemandAndCapacityNotification: demand-and-capacity-notification
+    # -- The endpoint for data exchange requests
+    endpointDataExchangeRequest: data-exchange-request
+    # -- The endpoint for data exchange approvals
+    endpointDataExchangeApproval: data-exchange-approval
     # -- The endpoint for importing excel files
     endpointImportFiles: files
     # -- The endpoint for interfacing with all materials
@@ -495,6 +499,9 @@ backend:
     notification:
       # -- Asset ID for Notification API
       apiassetid: notification-api-asset
+    dataexchangerequestapi:
+      # -- Asset ID for Data Exchange Request API
+      apiassetid: dataexchangerequestapi-api-asset
     frameworkagreement:
       # -- The name of the framework agreement. Starting with Uppercase and using CamelCase.
       credential: DataExchangeGovernance

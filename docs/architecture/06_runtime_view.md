@@ -197,6 +197,20 @@ End-to-end behavior is covered by unit tests (mappers, DTO constraints) and Brun
 3. submodel asset negotiation + transfer + `$value` pull for anonymized data, performed through the **provider's
    own EDC** to confirm access succeeds, and (where covered) through a partner's EDC to confirm it is rejected
 
+## Scenario: Data Exchange
+
+This features allows to recursively ask partners and their partners for permission to exchange anonymized data via Data Exchange Request and Data Exchange Approval. The base for each Data Exchange Request is an ongoing disruption represented by an incoming Demand and Capacity Notification. In response to this Notification a Data Exchange Request is sent to the partner. The partner can choose to accept this request. In case they accept, each partner responds with a Data Exchange Approval. Disapproval is implicitly given at the moment by not responding.
+
+### Validation
+
+Currently Data Exchange Request creation is supported for disruptions with capacity-related effects (capacity-reduction, capacity-increase).
+End-to-end behavior is covered by unit tests (mappers, DTO constraints) and Bruno integration tests that execute:
+
+1. Creation of a Data Exchange Request on customer side (uses existing demand and capacity notification upon which it creates the request)
+2. Data Exchange Request retrieval on supplier side (as `ReportedDataExchangeRequest`)
+3. Creation of a Data Exchange Approval on supplier side (uses existing `ReportedDataExchangeRequest` upon which it creates the approval)
+4. Data Exchange Approval retrieval on customer side (as `ReportedDataExchangeApproval`)
+
 ## NOTICE
 
 This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).

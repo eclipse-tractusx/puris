@@ -25,12 +25,12 @@ import java.lang.reflect.Constructor;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.ContractMapping;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DtrContractMapping;
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DeliveryAnonymizedContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ProductionAnonymizedContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DaysOfSupplyContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DeliveryContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandAndCapacityNotificationContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DataExchangeRequestContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DtrContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.GeneralContractMappingRepository;
@@ -83,6 +83,7 @@ public class EdcContractMappingService {
     private PartTypeContractMappingRepository partTypeContractMappingRepository;
 
     @Autowired
+    private DataExchangeRequestContractMappingRepository dataExchangeRequestContractMappingRepository;
     private SingleLevelBomAsPlannedContractMappingRepository singleLevelBomAsPlannedContractMappingRepository;
 
     private final String SEPARATOR = "\n@\n";
@@ -151,6 +152,7 @@ public class EdcContractMappingService {
             case DELIVERY_ANONYMIZED_SUBMODEL -> deliveryAnonymizedContractMappingRepository;
             case PRODUCTION_ANONYMIZED_SUBMODEL -> productionAnonymizedContractMappingRepository;
             case PART_TYPE_INFORMATION_SUBMODEL -> partTypeContractMappingRepository;
+            case DATA_EXCHANGE_REQUEST -> dataExchangeRequestContractMappingRepository;
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> singleLevelBomAsPlannedContractMappingRepository;
         };
         return repository;

@@ -181,6 +181,8 @@ spec:
               value: "{{ .Values.backend.puris.singlelevelbomasplannedsubmodel.apiassetid }}"
             - name: PURIS_NOTIFICATION_APIASSETID
               value: "{{ .Values.backend.puris.notification.apiassetid }}"
+            - name: PURIS_DATAEXCHANGEREQUESTAPI_APIASSETID
+              value: "{{ .Values.backend.puris.dataexchangerequestapi.apiassetid }}"
             - name: PURIS_FRAMEWORKAGREEMENT_CREDENTIAL
               value: "{{ .Values.backend.puris.frameworkagreement.credential }}"
             - name: PURIS_FRAMEWORKAGREEMENT_VERSION

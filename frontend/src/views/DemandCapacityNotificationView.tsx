@@ -30,14 +30,23 @@ import { useAllPartners } from '@hooks/useAllPartners';
 import { Partner } from '@models/types/edc/partner';
 import { DemandCapacityNotificationResolutionModal } from '@features/notifications/components/NotificationResolutionMessageModal';
 import { CollapsibleDisruptionPanel } from '@features/notifications/components/CollapsibleNotification';
+import { DataExchangeRequest } from '@models/types/data/data-exchange-request';
+import { DataExchangeApproval } from '@models/types/data/data-exchange-approval';
+import { DataExchangeRequestInformationModal } from '@features/data-exchange/components/DataExchangeRequestModal';
+import { getDataExchangeApproval, getDataExchangeRequest } from '@services/data-exchange-service';
 
 
 export const DemandCapacityNotificationView = () => {
     const [demandCapacityNotification, setDemandCapacityNotification] = useState<DemandCapacityNotification[]>([]);
+    const [dataExchangeRequests, setDataExchangeRequests] = useState<DataExchangeRequest[]>([]);
     const [modalOpen, setModalOpen] = useState<boolean>(false);
+    const [dataRequestModalOpen, setDataRequestModalOpen] = useState<boolean>(false);
+    const [dataApprovalMode, setDataApprovalMode] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
     const [selectedNotification, setSelectedNotification] = useState<DemandCapacityNotification | null>(null);
+    const [selectedRequest, setSelectedRequest] = useState<DataExchangeRequest | null>(null);
+    const [selectedApproval, setSelectedApproval] = useState<DataExchangeApproval | null>(null);
     const [filterPartners, setFilterPartners] = useState<Partner[] | null>(null);
     const [forwardData, setForwardData] = useState<{
         relatedNotificationIds?: string[];
@@ -48,24 +57,52 @@ export const DemandCapacityNotificationView = () => {
     const { partners } = useAllPartners();
 
     const { setTitle } = useTitle();
+    const activeRequestNotification = selectedNotification ?? demandCapacityNotification.find(n => n.notificationId === selectedRequest?.notificationId) ?? null;
 
     useEffect(() => {
         setTitle('Notifications');
     }, [setTitle]);
 
-    const fetchAndLogNotification = useCallback(async () => {
+    const fetchNotificationsAndRequests = useCallback(async () => {
         try {
-            const incoming = await getDemandAndCapacityNotification(true);
-            const outgoing = await getDemandAndCapacityNotification(false);
+            const [incoming, outgoing] = await Promise.all([
+                getDemandAndCapacityNotification(true),
+                getDemandAndCapacityNotification(false),
+            ]);
             setDemandCapacityNotification([...incoming, ...outgoing]);
+
+            const [incomingRequest, outgoingRequest, incomingApproval, outgoingApproval] = await Promise.all([
+                getDataExchangeRequest(false),
+                getDataExchangeRequest(true),
+                getDataExchangeApproval(false),
+                getDataExchangeApproval(true),
+            ]);
+
+            // match outgoing requests to incoming approvals
+            const outgoingRequestWithApproval = outgoingRequest.map((request: DataExchangeRequest) => ({
+                ...request,
+                dataExchangeApproval: incomingApproval.find(
+                    (approval: DataExchangeApproval) => approval.dataExchangeRequestId === request.requestId
+                ) ?? null,
+            }));
+
+            // match incoming requests to outgoing approvals
+            const incomingRequestWithApproval = incomingRequest.map((request: DataExchangeRequest) => ({
+                ...request,
+                dataExchangeApproval: outgoingApproval.find(
+                    (approval: DataExchangeApproval) => approval.dataExchangeRequestId === request.requestId
+                ) ?? null,
+            }));
+
+            setDataExchangeRequests([...incomingRequestWithApproval, ...outgoingRequestWithApproval]);
         } catch (error) {
             console.error(error);
         }
     }, []);
 
     useEffect(() => {
-        fetchAndLogNotification();
-    }, [fetchAndLogNotification]);
+        fetchNotificationsAndRequests();
+    }, [fetchNotificationsAndRequests]);
 
     const groupedNotifications = demandCapacityNotification.reduce((groups: Record<string, DemandCapacityNotification[]>, notification) => {
         if (!groups[notification.sourceDisruptionId]) groups[notification.sourceDisruptionId] = [];
@@ -129,6 +166,7 @@ export const DemandCapacityNotificationView = () => {
                                 key={sourceDisruptionId}
                                 disruptionId={sourceDisruptionId}
                                 notifications={notifications}
+                                dataExchangeRequests={dataExchangeRequests.filter(r => notifications.some(n => n.notificationId === r.notificationId))}
                                 partners={partners}
                                 isResolved={false}
                                 onForwardClick={handleCreateNotificationFromDisruption}
@@ -146,6 +184,32 @@ export const DemandCapacityNotificationView = () => {
                                     setSelectedNotification(notification);
                                     setConfirmModalOpen(true);
                                 }}
+                                onViewRequestClicked={(request) => {
+                                    setSelectedRequest(request);
+                                    setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
+                                    setDataApprovalMode(false);
+                                    setDataRequestModalOpen(true);
+                                }}
+                                onViewApprovalClicked={(request) => {
+                                    setSelectedRequest(request);
+                                    setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
+                                    setDataApprovalMode(true);
+                                    setSelectedApproval(request.dataExchangeApproval);
+                                    setDataRequestModalOpen(true);
+                                }}
+                                onCreateRequestClicked={(notification) => {
+                                    setSelectedNotification(notification);
+                                    setSelectedRequest(null);
+                                    setDataApprovalMode(false);
+                                    setDataRequestModalOpen(true);
+                                }}
+                                onCreateApprovalClicked={(request) => {
+                                    setSelectedRequest(request);
+                                    setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
+                                    setDataApprovalMode(true);
+                                    setSelectedApproval(null);
+                                    setDataRequestModalOpen(true);
+                                }}
                             />
                         </Box>
                     ))
@@ -159,11 +223,12 @@ export const DemandCapacityNotificationView = () => {
 
                 {Object.keys(resolvedGroups).length > 0 ? (
                     Object.entries(resolvedGroups).map(([sourceDisruptionId, notifications]) => (
-                        <Box key={sourceDisruptionId} width="100%" display="flex" flexDirection="column" paddingBottom="2rem">
+                        <Box key={sourceDisruptionId} width="100%" display="flex" flexDirection="column" paddingBottom="1">
                             <CollapsibleDisruptionPanel
                                 key={sourceDisruptionId}
                                 disruptionId={sourceDisruptionId}
                                 notifications={notifications}
+                                dataExchangeRequests={dataExchangeRequests.filter(r => notifications.some(n => n.notificationId === r.notificationId))}
                                 partners={partners}
                                 isResolved={true}
                                 onForwardClick={handleCreateNotificationFromDisruption}
@@ -180,6 +245,19 @@ export const DemandCapacityNotificationView = () => {
                                 onCheckClicked={(notification) => {
                                     setSelectedNotification(notification);
                                     setConfirmModalOpen(true);
+                                }}
+                                onViewRequestClicked={(request) => {
+                                    setSelectedRequest(request);
+                                    setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
+                                    setDataApprovalMode(false);
+                                    setDataRequestModalOpen(true);
+                                }}
+                                onViewApprovalClicked={(request) => {
+                                    setSelectedRequest(request);
+                                    setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
+                                    setDataApprovalMode(true);
+                                    setSelectedApproval(request.dataExchangeApproval);
+                                    setDataRequestModalOpen(true);
                                 }}
                             />
                         </Box>
@@ -201,9 +279,28 @@ export const DemandCapacityNotificationView = () => {
                     setFilterPartners(null);
                     setForwardData(undefined);
                 }}
-                onSave={fetchAndLogNotification}
+                onSave={fetchNotificationsAndRequests}
 
             />
+
+            {activeRequestNotification && (
+                <DataExchangeRequestInformationModal
+                    open={dataRequestModalOpen}
+                    dataApprovalMode={dataApprovalMode}
+                    dataExchangeApproval={selectedApproval}
+                    demandCapacityNotification={activeRequestNotification}
+                    dataExchangeRequest={selectedRequest}
+                    partners={filterPartners ?? partners}
+                    onClose={() => {
+                        setDataRequestModalOpen(false);
+                        setFilterPartners(null);
+                        setDataApprovalMode(false);
+                        setSelectedApproval(null);
+                        setSelectedRequest(null);
+                    }}
+                    onSave={fetchNotificationsAndRequests}
+                />
+            )}
 
             <DemandCapacityNotificationResolutionModal
                 open={confirmModalOpen}
@@ -211,7 +308,7 @@ export const DemandCapacityNotificationView = () => {
                 onClose={() =>
                     setConfirmModalOpen(false)
                 }
-                onSave={fetchAndLogNotification}
+                onSave={fetchNotificationsAndRequests}
 
             />
         </>

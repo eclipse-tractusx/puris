@@ -21,7 +21,6 @@
  */
 package org.eclipse.tractusx.puris.backend.common.util;
 
-import lombok.Getter;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -155,6 +154,21 @@ public class VariablesService {
      * during asset creation.
      */
     private String daysOfSupplySubmodelAssetId;
+
+    /**
+     * The url under which this application's data exchange request endpoint can
+     * be reached by external machines.
+     */
+    public String getDataExchangeRequestEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "data-exchange-request/request";
+    }
+
+    @Value("${puris.dataExchangeRequestApi.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the Data Exchange Request request API
+     * during asset creation.
+     */
+    private String dataExchangeRequestApi;
 
     /**
      * The url under which this application's anonymized delivery information request endpoint can
@@ -396,6 +410,10 @@ public class VariablesService {
 
     public String getNotificationApiAssetId() {
         return notificationAssetId + "@" + ownBpnl;
+    }
+
+    public String getDataExchangeRequestApiAssetId() {
+        return dataExchangeRequestApi + "@" + ownBpnl;
     }
 
     public String getPartTypeSubmodelApiAssetId() {

@@ -31,6 +31,7 @@ public enum AssetType {
     NOTIFICATION("urn:samm:io.catenax.demand_and_capacity_notification:3.0.0#DemandAndCapacityNotification", "none", "none", "3.0"),
     DAYS_OF_SUPPLY("urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply", "$value", "DaysOfSupply", "2.0"),
     PART_TYPE_INFORMATION_SUBMODEL("urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation", "$value", "none", "1.0"),
+    DATA_EXCHANGE_REQUEST("urn:samm:io.catenax.data_exchange_request:1.0.0#DataExchangeRequest", "none", "none", "1.0"),
     ITEM_STOCK_ANONYMIZED_SUBMODEL("urn:samm:io.catenax.item_stock_anonymized:1.0.0#ItemStockAnonymized", "$value", "none", "1.0"),
     DELIVERY_ANONYMIZED_SUBMODEL("urn:samm:io.catenax.delivery_information_anonymized:1.0.0#DeliveryInformationAnonymized", "$value", "none", "1.0"),
     PRODUCTION_ANONYMIZED_SUBMODEL("urn:samm:io.catenax.planned_production_output_anonymized:1.0.0#PlannedProductionOutputAnonymized", "$value", "none", "1.0"),
@@ -54,6 +55,8 @@ public enum AssetType {
             case "urn:samm:io.catenax.days_of_supply:2.0.0#DaysOfSupply" -> AssetType.DAYS_OF_SUPPLY;
             case "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation" ->
                 AssetType.PART_TYPE_INFORMATION_SUBMODEL;
+            case "urn:samm:io.catenax.data_exchange_request:1.0.0#DataExchangeRequest" ->
+                AssetType.DATA_EXCHANGE_REQUEST;
             case "urn:samm:io.catenax.item_stock_anonymized:1.0.0#ItemStockAnonymized" ->
                 AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL;
             case "urn:samm:io.catenax.delivery_information_anonymized:1.0.0#DeliveryInformationAnonymized" ->
