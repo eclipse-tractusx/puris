@@ -311,3 +311,19 @@ databaseChangeLog:
             referencedTableName: own_data_exchange_request
             referencedColumnNames: uuid
             constraintName: fk_reported_data_exchange_approval_data_exchange_request
+  - changeSet:
+      id: "6"
+      author: yourname
+      changes:
+        - delete:
+            tableName: notification_related_notification_ids
+            where: notification_uuid IN (SELECT uuid FROM reported_demand_and_capacity_notification)
+        - renameTable:
+            oldTableName: notification_related_notification_ids
+            newTableName: own_notification_related_notification_ids
+        - addForeignKeyConstraint:
+            constraintName: fk_own_notification_related
+            baseTableName: own_notification_related_notification_ids
+            baseColumnNames: notification_uuid
+            referencedTableName: own_demand_and_capacity_notification
+            referencedColumnNames: uuid
