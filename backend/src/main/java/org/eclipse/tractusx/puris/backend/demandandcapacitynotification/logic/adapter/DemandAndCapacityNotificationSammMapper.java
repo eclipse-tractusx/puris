@@ -134,9 +134,9 @@ public class DemandAndCapacityNotificationSammMapper {
             .filter(site -> samm.getAffectedSitesRecipient().contains(site.getBpns()))
             .collect(Collectors.toList());
         var notification = builder
-                .notificationId(UUID.fromString(samm.getNotificationId()))
-                .relatedNotificationIds(samm.getRelatedNotificationIds() != null ? samm.getRelatedNotificationIds().stream().map(id ->  UUID.fromString(id)).toList() : null)
-                .sourceDisruptionId(samm.getSourceDisruptionId() != null ? UUID.fromString(samm.getSourceDisruptionId()) : null)
+                .notificationId(samm.getNotificationId())
+                .relatedNotificationIds(samm.getRelatedNotificationIds() != null ? samm.getRelatedNotificationIds().stream().map(id -> id).toList() : null)
+                .sourceDisruptionId(samm.getSourceDisruptionId() != null ? samm.getSourceDisruptionId() : null)
                 .text(samm.getText())
                 .resolvingMeasureDescription(samm.getResolvingMeasureDescription())
                 .leadingRootCause(samm.getLeadingRootCause())

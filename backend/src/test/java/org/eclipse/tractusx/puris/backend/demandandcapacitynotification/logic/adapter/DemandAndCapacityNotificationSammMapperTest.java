@@ -37,6 +37,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
@@ -52,6 +54,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.mockito.Mockito.when;
 
@@ -61,14 +64,16 @@ public class DemandAndCapacityNotificationSammMapperTest {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     final static String CUSTOMER_MAT_NUMBER = "MNR-7307-AU340474.002";
     final static String SUPPLIER_MAT_NUMBER = "MNR-8101-ID146955.001";
-    final static String CX_MAT_NUMBER = "caf4a1df-6b97-46c9-8492-d137e911e611";
+    final static String CX_MAT_NUMBER = UUID.randomUUID().toString();
+    final static String CX_MAT_NUMBER_URN = "urn:uuid:" + UUID.randomUUID().toString();
     final static String SUPPLIER_BPNL = "BPNL1111111111LE";
     final static String SUPPLIER_BPNS = "BPNS1111111111SI";
     final static String SUPPLIER_BPNA = "BPNA1111111111AD";
 
     final static String DUMMY_MATERIAL_SUPPLIER_MNR = "supplier-mnr-123";
     final static String DUMMY_MATERIAL_CUSTOMER_MNR = "customer-mnr-456";
-    final static String DUMMY_MATERIAL_CX = "dbf4a1df-6b97-46c9-8492-d137e911e722";
+    final static String DUMMY_MATERIAL_CX = UUID.randomUUID().toString();
+    final static String DUMMY_MATERIAL_CX_URN ="urn:uuid:" + UUID.randomUUID().toString();
 
     final static Partner supplierPartner = new Partner(
         "Scenario Supplier",
@@ -123,12 +128,21 @@ public class DemandAndCapacityNotificationSammMapperTest {
 
 
     @Test
-    public void testSammCreationAsSupplier() throws Exception {
+    public void testSammCreationAsSupplierWithCxMatNumber() throws Exception{
+        testSammCreationAsSupplier(CX_MAT_NUMBER);
+    }
+    
+    @Test
+    public void testSammCreationAsSupplierWithCxMatNumberUrn() throws Exception{
+        testSammCreationAsSupplier(CX_MAT_NUMBER_URN);
+    }
+
+    public void testSammCreationAsSupplier(String materialNumber) throws Exception {
         // create Samm from Entity as a supplier
         Partner mySelf = supplierPartner;
         Partner externalPartner = customerPartner;
         Material semiconductorMaterial = new Material(false,
-            true, SUPPLIER_MAT_NUMBER, CX_MAT_NUMBER, "Semiconductor", new Date());
+            true, SUPPLIER_MAT_NUMBER, materialNumber, "Semiconductor", new Date());
 
         MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
             externalPartner,
@@ -137,9 +151,9 @@ public class DemandAndCapacityNotificationSammMapperTest {
             true);
 
         OwnDemandAndCapacityNotification notification = OwnDemandAndCapacityNotification.builder()
-            .notificationId(UUID.randomUUID())
+            .notificationId(UUID.randomUUID().toString())
             .relatedNotificationIds(null)
-            .sourceDisruptionId(UUID.randomUUID())
+            .sourceDisruptionId(UUID.randomUUID().toString())
             .text("We are in big trouble!")
             .materials(List.of(semiconductorMaterial))
             .partner(externalPartner)
@@ -172,14 +186,14 @@ public class DemandAndCapacityNotificationSammMapperTest {
 
         JsonNode material = materialsAffected.get(0);
 
-        Assertions.assertEquals(CX_MAT_NUMBER, material.get("materialGlobalAssetId").asText());
+        Assertions.assertEquals(materialNumber, material.get("materialGlobalAssetId").asText());
         Assertions.assertEquals(CUSTOMER_MAT_NUMBER, material.get("materialNumberCustomer").asText());
         Assertions.assertEquals(SUPPLIER_MAT_NUMBER, material.get("materialNumberSupplier").asText());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {regularSammFromSupplier, sammWithoutCXIdFromSupplier, sammWithoutCXIdAndSupplierMnrFromSupplier})
-    void testSammDeSerializationAsCustomer(String receivedSammString) throws Exception {
+    @MethodSource("strings")
+    void testSammDeSerializationAsCustomer(String receivedSammString, String materialNumber) throws Exception {
         // parse a Samm, we received from supplier as a customer
 
         DemandAndCapacityNotificationSamm samm = objectMapper.readValue(receivedSammString, DemandAndCapacityNotificationSamm.class);
@@ -193,7 +207,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
             SUPPLIER_MAT_NUMBER, true, false);
 
         when(materialService.findByOwnMaterialNumber(CUSTOMER_MAT_NUMBER)).thenReturn(semiconductorMaterial);
-        when(mprService.findByPartnerAndPartnerCXNumber(externalPartner, CX_MAT_NUMBER)).thenReturn(materialPartnerRelation);
+        when(mprService.findByPartnerAndPartnerCXNumber(externalPartner, materialNumber)).thenReturn(materialPartnerRelation);
         when(mprService.find(semiconductorMaterial, externalPartner)).thenReturn(materialPartnerRelation);
         when(partnerService.getOwnPartnerEntity()).thenReturn(mySelf);
 
@@ -270,7 +284,16 @@ public class DemandAndCapacityNotificationSammMapperTest {
 
 
     @Test
-    public void testSammCreationAsCustomer() throws Exception {
+    public void testSammCreationAsCustomerWithCxMatNumber() throws Exception {
+        testSammCreationAsCustomer(CX_MAT_NUMBER);
+    }
+
+    @Test
+    public void testSammCreationAsCustomerWithCxMatNumberUrn() throws Exception {
+        testSammCreationAsCustomer(CX_MAT_NUMBER_URN);
+    }
+
+    public void testSammCreationAsCustomer(String materialNumber) throws Exception {
         // create Samm from Entity as a customer
         Partner mySelf = customerPartner;
         Partner externalPartner = supplierPartner;
@@ -282,12 +305,12 @@ public class DemandAndCapacityNotificationSammMapperTest {
             SUPPLIER_MAT_NUMBER,
             true,
             false);
-        materialPartnerRelation.setPartnerCXNumber(CX_MAT_NUMBER);
+        materialPartnerRelation.setPartnerCXNumber(materialNumber);
 
         OwnDemandAndCapacityNotification notification = OwnDemandAndCapacityNotification.builder()
-            .notificationId(UUID.randomUUID())
+            .notificationId(UUID.randomUUID().toString())
             .relatedNotificationIds(null)
-            .sourceDisruptionId(UUID.randomUUID())
+            .sourceDisruptionId(UUID.randomUUID().toString())
             .text("We are in big trouble!")
             .materials(List.of(semiconductorMaterial))
             .partner(externalPartner)
@@ -321,14 +344,14 @@ public class DemandAndCapacityNotificationSammMapperTest {
 
         JsonNode material = materialsAffected.get(0);
 
-        Assertions.assertEquals(CX_MAT_NUMBER, material.get("materialGlobalAssetId").asText());
+        Assertions.assertEquals(materialNumber, material.get("materialGlobalAssetId").asText());
         Assertions.assertEquals(CUSTOMER_MAT_NUMBER, material.get("materialNumberCustomer").asText());
         Assertions.assertEquals(SUPPLIER_MAT_NUMBER, material.get("materialNumberSupplier").asText());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {regularSammFromCustomer, sammWithoutCXIdFromCustomer, sammWithoutCXIdAndCustomerMnrFromCustomer})
-    void testSammDeSerializationAsSupplier(String receivedSammString) throws Exception {
+    @MethodSource("strings")
+    void testSammDeSerializationAsSupplier(String receivedSammString, String materialNumber) throws Exception {
         // parse a Samm, we received from customer as a supplier
 
         DemandAndCapacityNotificationSamm samm = objectMapper.readValue(receivedSammString, DemandAndCapacityNotificationSamm.class);
@@ -336,12 +359,12 @@ public class DemandAndCapacityNotificationSammMapperTest {
         Partner externalPartner = customerPartner;
 
         Material semiconductorMaterial = new Material(true, false,
-            SUPPLIER_MAT_NUMBER, CX_MAT_NUMBER, "Semiconductor", new Date());
+            SUPPLIER_MAT_NUMBER, materialNumber, "Semiconductor", new Date());
 
         MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial, externalPartner,
             CUSTOMER_MAT_NUMBER, false, true);
 
-        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(semiconductorMaterial);
+        when(materialService.findByMaterialNumberCx(materialNumber)).thenReturn(semiconductorMaterial);
         when(materialService.findByOwnMaterialNumber(SUPPLIER_MAT_NUMBER)).thenReturn(semiconductorMaterial);
         when(mprService.findAllByPartnerMaterialNumber(CUSTOMER_MAT_NUMBER)).thenReturn(List.of(semiconductorMaterial));
         when(mprService.find(semiconductorMaterial, externalPartner)).thenReturn(materialPartnerRelation);
@@ -420,12 +443,23 @@ public class DemandAndCapacityNotificationSammMapperTest {
 
 
     @Test
-    public void testSammCreationWithTwoMaterialsAsSupplier() throws Exception {
+    public void testSammCreationWithTwoMaterialsAsSupplierWithCxMatNumber() throws Exception{
+        testSammCreationWithTwoMaterialsAsSupplier(CX_MAT_NUMBER, DUMMY_MATERIAL_CX);
+    }
+    
+
+    @Test
+    public void testSammCreationWithTwoMaterialsAsSupplierWithCxMatNumberUrn() throws Exception{
+        testSammCreationWithTwoMaterialsAsSupplier(CX_MAT_NUMBER_URN, DUMMY_MATERIAL_CX_URN);
+    }
+    
+
+    public void testSammCreationWithTwoMaterialsAsSupplier(String materialNumber, String materialNumberDummy) throws Exception {
         // create Samm from Entity as a supplier
         Partner mySelf = supplierPartner;
         Partner externalPartner = customerPartner;
         Material semiconductorMaterial = new Material(false,
-            true, SUPPLIER_MAT_NUMBER, CX_MAT_NUMBER, "Semiconductor", new Date());
+            true, SUPPLIER_MAT_NUMBER, materialNumber, "Semiconductor", new Date());
 
         MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial,
             externalPartner,
@@ -434,7 +468,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
             true);
 
         Material dummyMaterial = new Material(false,
-            true, DUMMY_MATERIAL_SUPPLIER_MNR, DUMMY_MATERIAL_CX, "Dummy Material", new Date());
+            true, DUMMY_MATERIAL_SUPPLIER_MNR, materialNumberDummy, "Dummy Material", new Date());
 
         MaterialPartnerRelation dummyMpr = new MaterialPartnerRelation(dummyMaterial,
             externalPartner,
@@ -443,9 +477,9 @@ public class DemandAndCapacityNotificationSammMapperTest {
             true);
 
         OwnDemandAndCapacityNotification notification = OwnDemandAndCapacityNotification.builder()
-            .notificationId(UUID.randomUUID())
+            .notificationId(UUID.randomUUID().toString())
             .relatedNotificationIds(null)
-            .sourceDisruptionId(UUID.randomUUID())
+            .sourceDisruptionId(UUID.randomUUID().toString())
             .text("We are in big trouble!")
             .materials(List.of(semiconductorMaterial, dummyMaterial))
             .partner(externalPartner)
@@ -481,19 +515,29 @@ public class DemandAndCapacityNotificationSammMapperTest {
 
         JsonNode material = materialsAffected.get(0);
 
-        Assertions.assertEquals(CX_MAT_NUMBER, material.get("materialGlobalAssetId").asText());
+        Assertions.assertEquals(materialNumber, material.get("materialGlobalAssetId").asText());
         Assertions.assertEquals(CUSTOMER_MAT_NUMBER, material.get("materialNumberCustomer").asText());
         Assertions.assertEquals(SUPPLIER_MAT_NUMBER, material.get("materialNumberSupplier").asText());
 
         JsonNode material2 = materialsAffected.get(1);
 
-        Assertions.assertEquals(DUMMY_MATERIAL_CX, material2.get("materialGlobalAssetId").asText());
+        Assertions.assertEquals(materialNumberDummy, material2.get("materialGlobalAssetId").asText());
         Assertions.assertEquals(DUMMY_MATERIAL_CUSTOMER_MNR, material2.get("materialNumberCustomer").asText());
         Assertions.assertEquals(DUMMY_MATERIAL_SUPPLIER_MNR, material2.get("materialNumberSupplier").asText());
     }
 
     @Test
-    void testSammDeSerializationWithTwoMaterialsAsCustomer() throws Exception {
+    void testSammDeSerializationWithTwoMaterialsAsCustomerWithCxMatNumber() throws Exception{
+        testSammDeSerializationWithTwoMaterialsAsCustomer(CX_MAT_NUMBER, DUMMY_MATERIAL_CX);
+    }
+    
+    @Test
+    void testSammDeSerializationWithTwoMaterialsAsCustomerWithCxMatNumberUrn() throws Exception{
+        testSammDeSerializationWithTwoMaterialsAsCustomer(CX_MAT_NUMBER_URN, DUMMY_MATERIAL_CX_URN);
+    }
+    
+
+    void testSammDeSerializationWithTwoMaterialsAsCustomer(String materialNumber, String materialNumberDummy) throws Exception {
         // parse a Samm, we received from supplier as a customer
 
         String receivedSammString = "{\n" +
@@ -539,8 +583,8 @@ public class DemandAndCapacityNotificationSammMapperTest {
 
         when(materialService.findByOwnMaterialNumber(CUSTOMER_MAT_NUMBER)).thenReturn(semiconductorMaterial);
         when(materialService.findByOwnMaterialNumber(DUMMY_MATERIAL_CUSTOMER_MNR)).thenReturn(dummyMaterial);
-        when(mprService.findByPartnerAndPartnerCXNumber(externalPartner, CX_MAT_NUMBER)).thenReturn(materialPartnerRelation);
-        when(mprService.findByPartnerAndPartnerCXNumber(externalPartner, DUMMY_MATERIAL_CX)).thenReturn(dummyMpr);
+        when(mprService.findByPartnerAndPartnerCXNumber(externalPartner, materialNumber)).thenReturn(materialPartnerRelation);
+        when(mprService.findByPartnerAndPartnerCXNumber(externalPartner, materialNumberDummy)).thenReturn(dummyMpr);
         when(mprService.find(semiconductorMaterial, externalPartner)).thenReturn(materialPartnerRelation);
         when(mprService.find(dummyMaterial, externalPartner)).thenReturn(dummyMpr);
         when(partnerService.getOwnPartnerEntity()).thenReturn(mySelf);
@@ -558,5 +602,13 @@ public class DemandAndCapacityNotificationSammMapperTest {
         Assertions.assertEquals(LeadingRootCauseEnumeration.LOGISTICS_DISRUPTION, reportedDemandAndCapacityNotification.getLeadingRootCause());
         Assertions.assertEquals(EffectEnumeration.CAPACITY_REDUCTION, reportedDemandAndCapacityNotification.getEffect());
     }
+    
+    private static Stream<Arguments> strings() {
+    return Stream.of(
+        Arguments.of(regularSammFromSupplier, CX_MAT_NUMBER),
+        Arguments.of(sammWithoutCXIdFromSupplier, CX_MAT_NUMBER),
+        Arguments.of(sammWithoutCXIdAndSupplierMnrFromSupplier, CX_MAT_NUMBER_URN)
+    );
+}
 
 }
