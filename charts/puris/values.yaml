@@ -573,6 +573,29 @@ backend:
       # -- Period since last received partner request after which no more new update requests to the
       # erp adapter will be sent (days)
       timelimit: 7
+    # -- Configuration for the IRS adapter. The IRS adapter is used to send requests to the IRS for data exchange.
+    # The IRS is not part of the PURIS application and must be provided by the user. Please note that in addition to enabled = true, 
+    # the IRS url must be specified and the adminauthsecret must be set correctly for the IRS adapter to be active.
+    irsadapter:
+      # -- Toggles usage of the IRS adapter
+      enabled: false
+      # -- Base URL of the external IRS service. Must contain protocol (http/https).
+      url: https://my-irs-url:8080
+      # -- Header key used for IRS API authentication.
+      authkey: x-api-key
+      # -- The auth secret to be used on your IRS adapter's request api. The secret requires admin permissions. Reused from existing secret. Secret key "puris-irsadapter-adminauthsecret".
+      adminauthsecret: "my-irs-admin-secret"
+      queue:
+        # -- How often (in seconds) the IRS request queue worker checks for due requests.
+        pollintervalseconds: 30
+        # -- Maximum number of attempts (including the first) made for a queued IRS request before it is marked permanently failed.
+        maxattempts: 5
+        # -- Delay (in seconds) before the first retry of a failed queued IRS request.
+        initialretrydelayseconds: 30
+        # -- Multiplier applied to the retry delay after each failed attempt.
+        backoffmultiplier: 2
+        # -- Upper bound (in seconds) on the delay between two attempts of a queued IRS request.
+        maxretrydelayseconds: 3600
     batch:
       partnerdataupdate:
         # -- if true, the partner data update is triggered for all materials and partners onboarded; else not.
