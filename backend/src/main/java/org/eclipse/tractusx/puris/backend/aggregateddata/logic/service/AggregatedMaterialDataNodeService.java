@@ -26,10 +26,11 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialData;
 import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialDataNode;
 import org.eclipse.tractusx.puris.backend.aggregateddata.domain.repository.AggregatedMaterialDataNodeRepository;
+import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedAnonymizedDelivery;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AggregatedMaterialDataNodeService<TEntity extends AggregatedMaterialDataNode, TRepository extends AggregatedMaterialDataNodeRepository> {
+public class AggregatedMaterialDataNodeService {
     private final AggregatedMaterialDataNodeRepository repository;
  
     public AggregatedMaterialDataNodeService(AggregatedMaterialDataNodeRepository repository) {
@@ -83,28 +84,41 @@ public class AggregatedMaterialDataNodeService<TEntity extends AggregatedMateria
     }
  
     private boolean validateDeliveries(AggregatedMaterialDataNode node) {
-        return node.getDeliveries() == null
-            || node.getDeliveries().stream().allMatch(delivery ->
-                delivery.getMeasurementUnit() != null
-                && delivery.getLastUpdatedOnDateTime() != null
-                && delivery.getDateOfDeparture() != null
-                && delivery.getDepartureType() != null
-                && delivery.getOriginBpnsAnonymized() != null
-                && delivery.getDestinationBpnsAnonymized() != null);
+        return node.getDeliveries() == null || node.getDeliveries().stream().allMatch(this::isValidDelivery);
     }
- 
+
+    private boolean isValidDelivery(ReportedAnonymizedDelivery delivery) {
+        return delivery.getQuantity() > 0
+            && delivery.getMeasurementUnit() != null
+            && delivery.getLastUpdatedOnDateTime() != null
+            && delivery.getDateOfDeparture() != null
+            && delivery.getDepartureType() != null
+            && delivery.getOriginBpnsAnonymized() != null
+            && delivery.getDestinationBpnsAnonymized() != null
+            && isArrivalDateValid(delivery);
+    }
+
+    private static boolean isArrivalDateValid(ReportedAnonymizedDelivery delivery) {
+        if ( delivery.getDateOfArrival() == null) {
+            return delivery.getArrivalType() == null;
+        }
+        return delivery.getArrivalType() != null && delivery.getDateOfArrival().toInstant().isAfter(delivery.getDateOfDeparture().toInstant());
+    }
+
     private boolean validateStocks(AggregatedMaterialDataNode node) {
         return node.getStocks() == null
             || node.getStocks().stream().allMatch(stock ->
-                stock.getMeasurementUnit() != null
+                stock.getQuantity() > 0
+                && stock.getMeasurementUnit() != null
                 && stock.getStockLocationBpnsAnonymized() != null
                 && stock.getLastUpdatedOnDateTime() != null);
     }
- 
+
     private boolean validateProductions(AggregatedMaterialDataNode node) {
         return node.getProductions() == null
             || node.getProductions().stream().allMatch(production ->
-                production.getMeasurementUnit() != null
+                production.getQuantity() > 0
+                && production.getMeasurementUnit() != null
                 && production.getProductionSiteBpnsAnonymized() != null
                 && production.getEstimatedTimeOfCompletion() != null
                 && production.getLastUpdatedOnDateTime() != null);

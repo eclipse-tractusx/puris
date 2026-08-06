@@ -26,9 +26,9 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
-import org.eclipse.tractusx.puris.backend.delivery.logic.dto.anonymizeddeliverysamm.DeliveryAnonymized;
-import org.eclipse.tractusx.puris.backend.production.logic.dto.anonymizedplannedproductionsamm.AllocatedPlannedProductionOutputAnonymized;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.anonymizeditemstocksamm.AllocatedStockAnonymized;
+import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedAnonymizedDelivery;
+import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedAnonymizedProduction;
+import org.eclipse.tractusx.puris.backend.stock.domain.model.ReportedAnonymizedStock;
 
 import jakarta.validation.Valid;
 import lombok.Getter;
@@ -53,13 +53,13 @@ public class AggregatedMaterialDataNodeDto implements Serializable {
     private ItemUnitEnumeration measurementUnit;
  
     @Valid
-    private Set<AllocatedPlannedProductionOutputAnonymized> productions = new HashSet<>();
+    private Set<ReportedAnonymizedProduction> productions = new HashSet<>();
  
     @Valid
-    private Set<DeliveryAnonymized> deliveries = new HashSet<>();
+    private Set<ReportedAnonymizedDelivery> deliveries = new HashSet<>();
  
     @Valid
-    private Set<AllocatedStockAnonymized> stocks = new HashSet<>();
+    private Set<ReportedAnonymizedStock> stocks = new HashSet<>();
  
     @Valid
     private List<AggregatedMaterialDataNodeDto> childMaterialData = new ArrayList<>();
