@@ -16,17 +16,30 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-package org.eclipse.tractusx.puris.backend.aggregateddata.domain.repository;
+package org.eclipse.tractusx.puris.backend.aggregateddata.logic.dto;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialData;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import jakarta.validation.Valid;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-@Repository
-public interface AggregatedMaterialDataRepository extends JpaRepository<AggregatedMaterialData, UUID> {
-    List<AggregatedMaterialData> findAllByMaterial_OwnMaterialNumber(String ownMaterialNumber);
-
+@Getter
+@Setter
+@NoArgsConstructor
+@ToString
+public class AggregatedMaterialDataDto implements Serializable {
+ 
+    private UUID uuid;
+ 
+    private String ownMaterialNumber;
+ 
+    @Valid
+    private List<AggregatedMaterialDataNodeDto> childMaterialData = new ArrayList<>();
 }
+
