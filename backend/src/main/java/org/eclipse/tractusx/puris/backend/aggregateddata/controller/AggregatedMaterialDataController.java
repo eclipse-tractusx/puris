@@ -83,7 +83,7 @@ public class AggregatedMaterialDataController {
 
     private AggregatedMaterialDataDto convertToDto(AggregatedMaterialData data) {
         var dto = mapper.convertValue(data, AggregatedMaterialDataDto.class);
-        dto.setOwnMaterialNumber(data.getMaterial() == null ? null : data.getMaterial().getOwnMaterialNumber());
+        dto.setOwnMaterialNumber(data.getMaterial().getOwnMaterialNumber());
         return dto;
     }
 
