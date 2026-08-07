@@ -51,7 +51,8 @@ public abstract class DemandAndCapacityNotification {
     @Id
     @GeneratedValue
     protected UUID uuid;
-    protected UUID notificationId;
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
+    protected String notificationId;
 
     @ElementCollection
     @CollectionTable(
@@ -59,9 +60,10 @@ public abstract class DemandAndCapacityNotification {
         joinColumns = @JoinColumn(name = "notification_uuid")
     )
     @Column(name = "related_notification_id")
-    protected List<UUID> relatedNotificationIds;
+    protected List<@Pattern(regexp = PatternStore.URN_OR_UUID_STRING) String> relatedNotificationIds;
 
-    protected UUID sourceDisruptionId;
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
+    protected String sourceDisruptionId;
 
     @ManyToOne()
     @JoinColumn(name = "partner_uuid")

@@ -55,6 +55,7 @@ public class ItemStockSammMapperTest {
     final static String CUSTOMER_MAT_NUMBER = "MNR-7307-AU340474.002";
     final static String SUPPLIER_MAT_NUMBER = "MNR-8101-ID146955.001";
     final static String CX_MAT_NUMBER = UUID.randomUUID().toString();
+    final static String CX_MAT_NUMBER_URN = "urn:uuid:" + UUID.randomUUID().toString();
     final static String OWN_BPNS = "BPNS4444444444SS";
     final static String OWN_BPNA = "BPNA4444444444AA";
     final static String SUPPLIER_BPNL = "BPNL1111111111LE";
@@ -109,7 +110,120 @@ public class ItemStockSammMapperTest {
 
     @Test
     @Order(1)
-    void map_WhenSingleMaterialItemStock_ReturnsItemStockSamm() {
+    void map_WhenSingleMaterialItemStock_ReturnsItemStockSammUuid(){
+        map_WhenSingleMaterialItemStock_ReturnsItemStockSamm(CX_MAT_NUMBER);
+    }
+
+    @Test
+    @Order(1)
+    void map_WhenSingleMaterialItemStock_ReturnsItemStockSammTestUrn(){
+        map_WhenSingleMaterialItemStock_ReturnsItemStockSamm(CX_MAT_NUMBER_URN);
+    }
+
+
+    /**
+     * Tests following Scenario: Supplier asks the Customer for Stocks of a given material that the customer
+     * has in place and has been supplied by the Supplier earlier. The supplier receives the INBOUND ItemStockSAMM and
+     * maps it to the ReportedProductItemStock.
+     *
+     * In technical terms, this means the following:
+     * <li>Given: Create INBOUND ItemStock to represent the Stock level on Customer side</li>
+     * <li>When: Use mapper to create the ReportedProductItemStock</li>
+     * <li>Then: Validate the Mappings</li>
+     *
+     * Note: The test brings fills the {@code SAMM_FROM_CUSTOMER_PARTNER}.
+     */
+    @Test
+    @Order(2)
+    void map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStockTestUuid(){
+        map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStock(CX_MAT_NUMBER);
+    }
+
+    @Test
+    @Order(2)
+    void map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStockTestUrn(){
+        map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStock(CX_MAT_NUMBER_URN);
+    }
+
+    /**
+     * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedProductItemStock
+     *
+     * In technical terms, this means the following:
+     * <li>Given: Use the {@code SAMM_FROM_CUSTOMER_PARTNER} created in previous test</li>
+     * <li>When: Use objectMapper switch representation from SAMM json to ItemStock class</li>
+     * <li>Then: Validate that mapping took place</li>
+     */
+    @Test
+    @Order(3)
+    void test_unmarshallingUuid(){
+        test_unmarshalling(CX_MAT_NUMBER);
+    }
+
+    @Test
+    @Order(3)
+    void test_unmarshallingUrn(){
+        test_unmarshalling(CX_MAT_NUMBER_URN);
+    }
+    
+
+    /**
+     * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedProductItemStock via the
+     * JSON serializationS
+     *
+     * In technical terms, this means the following:
+     * <li>Given: Use the {@code SAMM_FROM_CUSTOMER_PARTNER} created in previous test</li>
+     * <li>When: Use objectMapper switch representation from SAMM json to ItemStock class</li>
+     * <li>Then: Validate that mapping took place</li>
+     */
+    @Test
+    @Order(4)
+    void test_deserializationFromJsonUuid() throws Exception{
+        test_deserializationFromJson(CX_MAT_NUMBER);
+    }
+
+    @Test
+    @Order(4)
+    void test_deserializationFromJsonUrn() throws Exception {
+        test_deserializationFromJson(CX_MAT_NUMBER_URN);
+    }
+    
+
+
+    private List<? extends ItemStock> filterReportedItemStock(List<? extends ItemStock> reportedProductItemStocks, AllocatedStock allocatedStock, Position position, String cxMaterialNumber) {
+
+        if (position.getOrderPositionReference() == null) {
+
+            List<? extends ItemStock> potentialStocks = reportedProductItemStocks.stream()
+                .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
+                .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
+                .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
+                .filter(item -> item.getMaterial().getMaterialNumberCx().equals(cxMaterialNumber))
+                .filter(item -> item.getLocationBpna().equals(allocatedStock.getStockLocationBPNA()))
+                .filter(item -> item.getLocationBpns().equals(allocatedStock.getStockLocationBPNS()))
+                .filter(item -> item.getLastUpdatedOnDateTime() == allocatedStock.getLastUpdatedOnDateTime())
+                .filter(item -> item.getCustomerOrderId() == null)
+                .filter(item -> item.getSupplierOrderId() == null)
+                .filter(item -> item.getCustomerOrderPositionId() == null)
+                .collect(Collectors.toList());
+            return potentialStocks;
+        } else {
+            List<? extends ItemStock> potentialStocks = reportedProductItemStocks.stream()
+                .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
+                .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
+                .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
+                .filter(item -> item.getMaterial().getMaterialNumberCx().equals(cxMaterialNumber))
+                .filter(item -> item.getLocationBpna().equals(allocatedStock.getStockLocationBPNA()))
+                .filter(item -> item.getLocationBpns().equals(allocatedStock.getStockLocationBPNS()))
+                .filter(item -> item.getLastUpdatedOnDateTime() == allocatedStock.getLastUpdatedOnDateTime())
+                .filter(item -> item.getCustomerOrderId().equals(position.getOrderPositionReference().getCustomerOrderId()))
+                .filter(item -> item.getSupplierOrderId().equals(position.getOrderPositionReference().getSupplierOrderId()))
+                .filter(item -> item.getCustomerOrderPositionId().equals(position.getOrderPositionReference().getCustomerOrderPositionId()))
+                .collect(Collectors.toList());
+            return potentialStocks;
+        }
+    }
+
+    void map_WhenSingleMaterialItemStock_ReturnsItemStockSamm(String materialNumber) {
         // Given
         Material semiconductorMaterial = Material.builder()
             .ownMaterialNumber(CUSTOMER_MAT_NUMBER)
@@ -124,7 +238,7 @@ public class ItemStockSammMapperTest {
         mpr.setPartnerBuysMaterial(false);
         mpr.setPartnerSuppliesMaterial(true);
         mpr.setPartnerMaterialNumber(SUPPLIER_MAT_NUMBER);
-        mpr.setPartnerCXNumber(CX_MAT_NUMBER);
+        mpr.setPartnerCXNumber(materialNumber);
 
         MaterialItemStock materialItemStock = MaterialItemStock.builder()
             .partner(supplierPartner)
@@ -155,7 +269,7 @@ public class ItemStockSammMapperTest {
         assertNotNull(materialItemStockSamm);
 
         assertEquals(DirectionCharacteristic.INBOUND, materialItemStockSamm.getDirection());
-        assertEquals(CX_MAT_NUMBER, materialItemStockSamm.getMaterialGlobalAssetId());
+        assertEquals(materialNumber, materialItemStockSamm.getMaterialGlobalAssetId());
 
         assertEquals(1, materialItemStockSamm.getPositions().size());
 
@@ -173,21 +287,7 @@ public class ItemStockSammMapperTest {
         assertEquals(materialItemStock.getLastUpdatedOnDateTime(), allocatedStock.getLastUpdatedOnDateTime());
     }
 
-    /**
-     * Tests following Scenario: Supplier asks the Customer for Stocks of a given material that the customer
-     * has in place and has been supplied by the Supplier earlier. The supplier receives the INBOUND ItemStockSAMM and
-     * maps it to the ReportedProductItemStock.
-     *
-     * In technical terms, this means the following:
-     * <li>Given: Create INBOUND ItemStock to represent the Stock level on Customer side</li>
-     * <li>When: Use mapper to create the ReportedProductItemStock</li>
-     * <li>Then: Validate the Mappings</li>
-     *
-     * Note: The test brings fills the {@code SAMM_FROM_CUSTOMER_PARTNER}.
-     */
-    @Test
-    @Order(2)
-    void map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStock() {
+    void map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStock(String materialNumber) {
         // If we want to map a Samm to a ProductItemStock entity, then this implies
         // that we are the supplier, who has received a Samm from his customer partner.
         // That customer partner therefore would have generated the Samm from his
@@ -199,7 +299,7 @@ public class ItemStockSammMapperTest {
         ItemStockSamm inboundProductStockSamm = new ItemStockSamm();
 
         inboundProductStockSamm.setDirection(DirectionCharacteristic.INBOUND);
-        inboundProductStockSamm.setMaterialGlobalAssetId(CX_MAT_NUMBER);
+        inboundProductStockSamm.setMaterialGlobalAssetId(materialNumber);
 
         // first position
         Position anonymousPosition = new Position();
@@ -277,7 +377,7 @@ public class ItemStockSammMapperTest {
 
         Material semiconductorProduct = Material.builder()
             .ownMaterialNumber(SUPPLIER_MAT_NUMBER)
-            .materialNumberCx(CX_MAT_NUMBER)
+            .materialNumberCx(materialNumber)
             .materialFlag(true)
             .productFlag(true)
             .name("Semiconductor")
@@ -293,7 +393,7 @@ public class ItemStockSammMapperTest {
         // When
         // Find material based on CX number and mpr
         when(mprService.find(semiconductorProduct, customerPartner)).thenReturn(mpr);
-        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(semiconductorProduct);
+        when(materialService.findByMaterialNumberCx(materialNumber)).thenReturn(semiconductorProduct);
 
         // Then we should build 5 reported product stocks:
         // - no OrderPositionReference (OPR), blocked, 10 pieces, BPNS & BPNA
@@ -311,7 +411,7 @@ public class ItemStockSammMapperTest {
             reportedProductItemStocks,
             stockBlocked,
             anonymousPosition,
-            CX_MAT_NUMBER
+            materialNumber
         );
 
         assertEquals(1, potentialBlockedAnonymousStock.size());
@@ -327,7 +427,7 @@ public class ItemStockSammMapperTest {
             reportedProductItemStocks,
             stockNotBlocked,
             anonymousPosition,
-            CX_MAT_NUMBER
+            materialNumber
         );
 
         assertEquals(1, potentialNotBlockedAnonymousStock.size());
@@ -337,7 +437,7 @@ public class ItemStockSammMapperTest {
             reportedProductItemStocks,
             stockOtherSite,
             anonymousPosition,
-            CX_MAT_NUMBER
+            materialNumber
         );
         assertEquals(1, potentialAnonymousStockOtherSite.size());
 
@@ -348,7 +448,7 @@ public class ItemStockSammMapperTest {
             reportedProductItemStocks,
             oprStockBlocked,
             positionWithOrderPositionReference,
-            CX_MAT_NUMBER
+            materialNumber
         );
         assertEquals(1, potentialOprStockBlocked.size());
 
@@ -363,7 +463,7 @@ public class ItemStockSammMapperTest {
             reportedProductItemStocks,
             oprStockBlocked,
             positionWithOrderPositionReference,
-            CX_MAT_NUMBER
+            materialNumber
         );
         assertEquals(1, potentialOprStockNotBlocked.size());
 
@@ -372,31 +472,21 @@ public class ItemStockSammMapperTest {
         SAMM_FROM_CUSTOMER_PARTNER = inboundProductStockSamm;
     }
 
-    /**
-     * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedProductItemStock
-     *
-     * In technical terms, this means the following:
-     * <li>Given: Use the {@code SAMM_FROM_CUSTOMER_PARTNER} created in previous test</li>
-     * <li>When: Use objectMapper switch representation from SAMM json to ItemStock class</li>
-     * <li>Then: Validate that mapping took place</li>
-     */
-    @Test
-    @Order(3)
-    void test_unmarshalling() {
+    void test_unmarshalling(String materialNumber) {
         // Setup from the suppliers point of view
         Material material = new Material();
         material.setProductFlag(true);
         material.setOwnMaterialNumber(SUPPLIER_MAT_NUMBER);
-        material.setMaterialNumberCx(CX_MAT_NUMBER);
+        material.setMaterialNumberCx(materialNumber);
 
         MaterialPartnerRelation mpr = new MaterialPartnerRelation();
         mpr.setPartner(customerPartner);
         mpr.setMaterial(material);
         mpr.setPartnerBuysMaterial(true);
         mpr.setPartnerMaterialNumber(CUSTOMER_MAT_NUMBER);
-        mpr.setPartnerCXNumber(CX_MAT_NUMBER);
+        mpr.setPartnerCXNumber(materialNumber);
 
-        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(material);
+        when(materialService.findByMaterialNumberCx(materialNumber)).thenReturn(material);
         when(mprService.find(material, customerPartner)).thenReturn(mpr);
 
         var list = itemStockSammMapper.itemStockSammToReportedProductItemStock(SAMM_FROM_CUSTOMER_PARTNER, supplierPartner);
@@ -404,32 +494,21 @@ public class ItemStockSammMapperTest {
         assertEquals(5, list.size());
     }
 
-    /**
-     * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedProductItemStock via the
-     * JSON serializationS
-     *
-     * In technical terms, this means the following:
-     * <li>Given: Use the {@code SAMM_FROM_CUSTOMER_PARTNER} created in previous test</li>
-     * <li>When: Use objectMapper switch representation from SAMM json to ItemStock class</li>
-     * <li>Then: Validate that mapping took place</li>
-     */
-    @Test
-    @Order(4)
-    void test_deserializationFromJson() throws Exception {
+    void test_deserializationFromJson(String materialNumber) throws Exception {
         // Setup from the suppliers point of view
 
         Material material = new Material();
         material.setProductFlag(true);
-        material.setMaterialNumberCx(CX_MAT_NUMBER);
+        material.setMaterialNumberCx(materialNumber);
 
         MaterialPartnerRelation mpr = new MaterialPartnerRelation();
         mpr.setPartner(customerPartner);
         mpr.setMaterial(material);
         mpr.setPartnerBuysMaterial(true);
         mpr.setPartnerMaterialNumber(SUPPLIER_MAT_NUMBER);
-        mpr.setPartnerCXNumber(CX_MAT_NUMBER);
+        mpr.setPartnerCXNumber(materialNumber);
         
-        when(materialService.findByMaterialNumberCx(CX_MAT_NUMBER)).thenReturn(material);
+        when(materialService.findByMaterialNumberCx(materialNumber)).thenReturn(material);
         when(mprService.find(material, customerPartner)).thenReturn(mpr);
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -447,38 +526,5 @@ public class ItemStockSammMapperTest {
         var list = itemStockSammMapper.itemStockSammToReportedProductItemStock(itemStockSamm, supplierPartner);
         assertEquals(5, list.size());
     }
-
-    private List<? extends ItemStock> filterReportedItemStock(List<? extends ItemStock> reportedProductItemStocks, AllocatedStock allocatedStock, Position position, String cxMaterialNumber) {
-
-        if (position.getOrderPositionReference() == null) {
-
-            List<? extends ItemStock> potentialStocks = reportedProductItemStocks.stream()
-                .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
-                .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
-                .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
-                .filter(item -> item.getMaterial().getMaterialNumberCx().equals(cxMaterialNumber))
-                .filter(item -> item.getLocationBpna().equals(allocatedStock.getStockLocationBPNA()))
-                .filter(item -> item.getLocationBpns().equals(allocatedStock.getStockLocationBPNS()))
-                .filter(item -> item.getLastUpdatedOnDateTime() == allocatedStock.getLastUpdatedOnDateTime())
-                .filter(item -> item.getCustomerOrderId() == null)
-                .filter(item -> item.getSupplierOrderId() == null)
-                .filter(item -> item.getCustomerOrderPositionId() == null)
-                .collect(Collectors.toList());
-            return potentialStocks;
-        } else {
-            List<? extends ItemStock> potentialStocks = reportedProductItemStocks.stream()
-                .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
-                .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
-                .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
-                .filter(item -> item.getMaterial().getMaterialNumberCx().equals(cxMaterialNumber))
-                .filter(item -> item.getLocationBpna().equals(allocatedStock.getStockLocationBPNA()))
-                .filter(item -> item.getLocationBpns().equals(allocatedStock.getStockLocationBPNS()))
-                .filter(item -> item.getLastUpdatedOnDateTime() == allocatedStock.getLastUpdatedOnDateTime())
-                .filter(item -> item.getCustomerOrderId().equals(position.getOrderPositionReference().getCustomerOrderId()))
-                .filter(item -> item.getSupplierOrderId().equals(position.getOrderPositionReference().getSupplierOrderId()))
-                .filter(item -> item.getCustomerOrderPositionId().equals(position.getOrderPositionReference().getCustomerOrderPositionId()))
-                .collect(Collectors.toList());
-            return potentialStocks;
-        }
-    }
+    
 }
