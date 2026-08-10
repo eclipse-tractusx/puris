@@ -76,7 +76,7 @@ public class DataExchangeApprovalApiService {
 
         OwnDataExchangeRequest ownRequest = approval.getDataExchangeRequest();
         if (!partner.getBpnl().equals(ownRequest.getNotification().getPartner().getBpnl())) {
-            log.error("Partner {} is not the recipient of request {}", bpnl, ownRequest.getRequestId());
+            log.error("Partner {} is not the recipient of request {}", partner.getBpnl(), ownRequest.getRequestId());
             return null;
         }
 

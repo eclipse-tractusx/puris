@@ -61,14 +61,14 @@ public class DataExchangeRequestForwardService {
 
         for (ReportedDemandAndCapacityNotification target : reportedNotificationService.findByNotificationIdIn(relatedIds)) {
             if (requesterBpnl.equals(target.getPartner().getBpnl())) {
-                log.info("Skipping forward because the notification belongs to the same partner", target.getNotificationId());
+                log.info("Skipping forward target {}: notification belongs to the requesting partner", target.getNotificationId());
                 continue;
             }
             Date start = maxDate(origin.getDesiredStartDateTime(), target.getStartDateOfEffect());
             Date end = target.getExpectedEndDateOfEffect() == null ? origin.getDesiredEndDateTime() : minDate(origin.getDesiredEndDateTime(), target.getExpectedEndDateOfEffect());
 
             if (!start.before(end)) {
-                log.info("Skipping forward because the requested window does not overlap notification window", target.getNotificationId());
+                log.info("Skipping forward target {}: requested window does not overlap the notification window", target.getNotificationId());
                 continue;
             }
             targets.add(new ForwardTarget(target, start, end));
