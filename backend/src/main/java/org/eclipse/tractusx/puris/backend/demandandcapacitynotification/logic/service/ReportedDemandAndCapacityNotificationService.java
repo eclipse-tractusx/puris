@@ -25,6 +25,7 @@ import java.util.List;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningGrantService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.stereotype.Service;
@@ -32,9 +33,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReportedDemandAndCapacityNotificationService extends DemandAndCapacityNotificationService<ReportedDemandAndCapacityNotification, ReportedDemandAndCapacityNotificationRepository> {
 
+    private final IrsChainOpeningGrantService irsChainOpeningGrantService;
+
     public ReportedDemandAndCapacityNotificationService(ReportedDemandAndCapacityNotificationRepository reportedNotificationRepository,
-            PartnerService partnerService, MaterialPartnerRelationService mpr) {
+            PartnerService partnerService, MaterialPartnerRelationService mpr, IrsChainOpeningGrantService irsChainOpeningGrantService) {
         super(reportedNotificationRepository, partnerService, mpr);
+        this.irsChainOpeningGrantService = irsChainOpeningGrantService;
+    }
+
+    @Override
+    protected void afterUpdate(ReportedDemandAndCapacityNotification previous, ReportedDemandAndCapacityNotification updated) {
+        irsChainOpeningGrantService.onReportedNotificationUpdated(previous, updated);
     }
 
     public List<ReportedDemandAndCapacityNotification> findAllByPartnerBpnl(String bpnl) {

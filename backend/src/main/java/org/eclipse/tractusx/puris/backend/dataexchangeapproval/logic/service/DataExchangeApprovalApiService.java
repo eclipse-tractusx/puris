@@ -27,6 +27,7 @@ import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.OwnD
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.ReportedDataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.adapter.DataExchangeApprovalSammMapper;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.dto.dataexchangeapprovalsamm.DataExchangeApprovalSamm;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningGrantService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,8 @@ public class DataExchangeApprovalApiService {
     private EdcAdapterService edcAdapterService;
     @Autowired
     private DataExchangeApprovalSammMapper sammMapper;
+    @Autowired
+    private IrsChainOpeningGrantService irsChainOpeningGrantService;
 
     public ReportedDataExchangeApproval handleIncomingDataExchangeApproval(String bpnl, DataExchangeApprovalSamm samm) {
         Partner partner = partnerService.findByBpnl(bpnl);
@@ -75,7 +78,12 @@ public class DataExchangeApprovalApiService {
         }
         try {
             log.info("Creating new Approval");
-            return reportedDataExchangeApprovalService.create(approval);
+            ReportedDataExchangeApproval created = reportedDataExchangeApprovalService.create(approval);
+            if (created.getDataExchangeRequest().getRelatedDataExchangeRequest() == null) {
+                // create root grants for the notification if the approval is for a root request
+                irsChainOpeningGrantService.syncGrantsForNotification(created.getDataExchangeRequest().getNotification());
+            }
+            return created;
         } catch (KeyAlreadyExistsException e) {
             log.error("Approval already exists", e);
             return null;
@@ -93,6 +101,7 @@ public class DataExchangeApprovalApiService {
         } catch (Exception e) {
             log.error("Error in ReportedDataExchangeApproval for partner " + partner.getBpnl(), e);
         }
+        
     }
 
     private JsonNode createDataExchangeApprovalBody(OwnDataExchangeApproval approval) {

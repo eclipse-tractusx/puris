@@ -127,6 +127,16 @@ public class MaterialRelationService {
         return materialRelationRepository.findAllByParentOwnMaterialNumber(parentOwnMaterialNumber);
     }
 
+    /**
+     * Retrieves all parent relations for a given child own material number.
+     *
+     * @param childOwnMaterialNumber the child own material number
+     * @return a list of parent relations for the given child material
+     */
+    public List<MaterialRelation> findAllParents(String childOwnMaterialNumber) {
+        return materialRelationRepository.findAllByChildOwnMaterialNumber(childOwnMaterialNumber);
+    }
+
     protected MaterialRelation findExistingRelation(MaterialRelation materialRelation) {
         return materialRelationRepository.findByParentOwnMaterialNumberAndChildOwnMaterialNumber(
             materialRelation.getParentOwnMaterialNumber(),

@@ -89,15 +89,27 @@ public abstract class DemandAndCapacityNotificationService<TEntity extends Deman
         if (!validator.apply(notification)) {
             throw new IllegalArgumentException("Invalid notification");
         }
-        if (notification.getUuid() == null || repository.findById(notification.getUuid()).isEmpty()) {
+        TEntity existing = notification.getUuid() == null ? null : repository.findById(notification.getUuid()).orElse(null);
+        if (existing == null) {
             return null;
         }
         notification.setContentChangedAt(new Date());
-        return repository.save(notification);
+        TEntity saved = repository.save(notification);
+        afterUpdate(existing, saved);
+        return saved;
     }
 
     public final void delete(UUID uuid) {
         repository.deleteById(uuid);
+    }
+
+    /**
+     * Hook invoked after a notification has been successfully updated, with both its previous and
+     * new state. No-op by default; subclasses override this to react to changes (e.g. resolution,
+     * or a change of affected materials).
+     */
+    protected void afterUpdate(TEntity previous, TEntity updated) {
+        // no-op by default
     }
 
     public abstract boolean validate(TEntity notification);

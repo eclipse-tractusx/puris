@@ -5,6 +5,7 @@ import java.time.Instant;
 
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,6 +31,19 @@ public class IrsRequestBodybuilder {
     ObjectMapper objectMapper = new ObjectMapper()
         .registerModule(new JavaTimeModule())
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+    /**
+     * Builds the request body for creating a Chain Opening Grant at the IRS.
+     * <p>
+     * {@link IrsChainOpeningGrant} already carries the wire shape (via its
+     * {@code @JsonProperty} annotations), so it is serialized directly instead of being mapped field by field.
+     *
+     * @param grant the Chain Opening Grant to build the request body for
+     * @return the grant creation request body
+     */
+    public JsonNode buildGrantCreationRequestBody(IrsChainOpeningGrant grant) {
+        return objectMapper.valueToTree(grant);
+    }
 
     /**
      * Builds the request body for registering the PURIS framework policy at the IRS Policy Store,
